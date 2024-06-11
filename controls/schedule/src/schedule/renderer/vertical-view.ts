@@ -131,6 +131,9 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.highlightCurrentTime();
         }
         this.retainScrollPosition();
+        if (!isNullOrUndefined(timeCells) && !isNullOrUndefined(content) && timeCells.scrollTop !== content.scrollTop) {
+            timeCells.scrollTop = content.scrollTop;
+        }
     }
 
     public setContentHeight(element: HTMLElement, leftPanelElement: HTMLElement, height: number): void {

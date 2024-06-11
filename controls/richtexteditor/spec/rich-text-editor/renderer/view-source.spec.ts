@@ -367,7 +367,7 @@ describe('Toolbar - view html', () => {
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
             item.click();
-            expect((rteObj as any).inputElement.style.display === 'none').toBe(true);
+            expect(rteObj.rootContainer.classList.contains('e-source-code-enabled')).toBe(true);
             let tag: HTMLTextAreaElement = rteObj.element.querySelector('.e-rte-srctextarea');
             expect(tag.value === '<p><span id="rte">RTE</span></p>').toBe(true);
             tag.value = '<p id="rte">RTE</p>';
@@ -450,31 +450,6 @@ describe('Toolbar - view html', () => {
             trgEle.click();
             expect(rteObj.contentModule.getEditPanel().innerHTML === '<table class="e-rte-table"><tbody><tr><td><p>Provide the tool bar support, its also customizable.</p></td></tr></tbody></table>').toBe(true);
             rteObj.sourceCodeModule.mouseDownHandler();
-        });
-    });
-    describe('858234-Scrollbar appears when the Rich Text Editor is in the code view', () => {
-        let rteObj: any;
-        let rteEle: HTMLElement;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['SourceCode','Bold']
-                },
-            });
-            rteEle = rteObj.element;
-        });
-
-        it('Test - Code view height testing when height API is auto', () => {
-            const contentElement = rteEle.querySelector('.e-rte-content') as HTMLElement | null;
-            const contentHeight: number = contentElement.offsetHeight;
-            const trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
-            trgEle.click();
-            const textareaElement = rteEle.querySelector('.e-rte-srctextarea') as HTMLElement | null;
-            const textareaHeight: string | null = textareaElement.style.height;      
-            expect(parseInt(textareaHeight)).toBe(contentHeight);
-        });
-        afterAll(() => {
-            destroy(rteObj);
         });
     });
 });

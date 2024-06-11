@@ -130,6 +130,10 @@ export class Selection {
     /**
      * @private
      */
+    public isHighlightContentControlEditRegionIn: boolean = false;
+    /**
+     * @private
+     */
     private isHighlightFormFields: boolean = false;
     /**
      * @private
@@ -158,7 +162,15 @@ export class Selection {
     /**
      * @private
      */
+    public contentControlHighlighters: Dictionary<string, Dictionary<LineWidget, SelectionWidgetInfo[]>> = undefined;
+    /**
+     * @private
+     */
     public editRegionHighlighters: Dictionary<LineWidget, SelectionWidgetInfo[]> = undefined;
+    /**
+     * @private
+     */
+    public contentControleditRegionHighlighters: Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>> = undefined;
     /**
      * @private
      */
@@ -199,6 +211,20 @@ export class Selection {
     public set isHighlightEditRegion(value: boolean) {
         this.isHighlightEditRegionIn = value;
         this.onHighlight();
+    }
+    /**
+     * @private
+     * @returns {boolean} - Retuens true if highlighting editing region
+     */
+    public get isHighlightContentControlEditRegion(): boolean {
+        return this.isHighlightContentControlEditRegionIn;
+    }
+    /**
+     * @private
+     */
+    public set isHighlightContentControlEditRegion(value: boolean) {
+        this.isHighlightContentControlEditRegionIn = value;
+        this.onHighlightContentControl();
     }
     /**
      * @private
@@ -525,7 +551,9 @@ export class Selection {
         this.imageFormatInternal = new SelectionImageFormat(this);
         this.editRangeCollection = [];
         this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        this.contentControleditRegionHighlighters = new Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>>();
         this.formFieldHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        this.contentControleditRegionHighlighters = new Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>>();
     }
     private getSelBookmarks(includeHidden: boolean): string[] {
         const bookmarkCln: string[] = [];
@@ -761,6 +789,24 @@ export class Selection {
      * @param fieldStart
      * @returns {void}
      */
+    public selectContentControlInternal(fieldStart: ContentControl): void {
+        if (fieldStart) {
+            const offset: number = fieldStart.line.getOffset(fieldStart, 1);
+            const startPosition: TextPosition = new TextPosition(this.owner);
+            let fieldEnd: ContentControl = fieldStart.reference;
+            startPosition.setPositionParagraph(fieldStart.line, offset);
+            const endoffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
+            const endPosition: TextPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(fieldEnd.line, endoffset);
+            //selects the field range
+            this.documentHelper.selection.selectRange(startPosition, endPosition);
+        }
+    }
+    /**
+     * @private
+     * @param fieldStart
+     * @returns {void}
+     */
     public selectFieldInternal(fieldStart: FieldElementBox, isKeyBoardEvent?: boolean, isReplacingFormResult?:boolean): void {
         if (fieldStart) {
             const formFillingMode: boolean = this.documentHelper.isFormFillProtectedMode || isReplacingFormResult;
@@ -783,6 +829,25 @@ export class Selection {
             if (!isReplacingFormResult) {
                 this.triggerFormFillEvent(isKeyBoardEvent);
             }
+        }
+    }
+    /**
+     * @private
+     * @param contentControl
+     * @returns {void}
+     */
+    public selectContentInternal(contentControl: ContentControl): void {
+        if (contentControl) {
+            let fieldEnd: ElementBox = contentControl.reference;
+            const offset: number = contentControl.line.getOffset(contentControl, 0);
+            const startPosition: TextPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(contentControl.line, offset);
+            const endoffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
+            const endPosition: TextPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(fieldEnd.line, endoffset);
+            startPosition.offset++;
+            endPosition.offset;
+            this.documentHelper.selection.selectRange(startPosition, endPosition);
         }
     }
     /**
@@ -1016,7 +1081,7 @@ export class Selection {
         }
     }
 
-    private createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number, isElementBoxHighlight: boolean): void {
+    private createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number, isElementBoxHighlight: boolean, contentControl?: ContentControl): void {
         if (width < 0) {
             width = 0;
         }
@@ -1048,7 +1113,10 @@ export class Selection {
         const widgets: Dictionary<IWidget, object> = this.selectedWidgets;
         let selectionWidget: SelectionWidgetInfo = undefined;
         let selectionWidgetCollection: SelectionWidgetInfo[] = undefined;
-        if (this.isHightlightEditRegionInternal) {
+        if (this.isHighlightContentControlEditRegion && !isNullOrUndefined(contentControl)) {
+            this.addContentControlEditRegionHighlight(lineWidget, left, width, contentControl);
+            return;
+        } else if (this.isHightlightEditRegionInternal) {
             this.addEditRegionHighlight(lineWidget, left, width);
             return;
         } else if (this.isHighlightFormFields) {
@@ -1215,6 +1283,18 @@ export class Selection {
         }
         highlighters.push(editRegionHighlight);
         return editRegionHighlight;
+    }
+
+    private addContentControlEditRegionHighlight(lineWidget: LineWidget, left: number, width: number, contentControl?: ContentControl): void {
+        const collection: Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>> = this.contentControleditRegionHighlighters;
+        let highlighters: SelectionWidgetInfo[] = [];
+        if (!collection.containsKey(contentControl)) {
+            collection.add(contentControl, new Dictionary<LineWidget, SelectionWidgetInfo[]>());
+        }
+        let contentInfo = collection.get(contentControl);
+        contentInfo.add(lineWidget, highlighters);
+        const editRegionHighlight: SelectionWidgetInfo = new SelectionWidgetInfo(left, width);
+        highlighters.push(editRegionHighlight);
     }
 
     private addFormFieldHighlight(lineWidget: LineWidget, left: number, width: number): void {
@@ -3933,6 +4013,7 @@ export class Selection {
         }
         if (!isNullOrUndefined(nextParagraphWidget) && !nextParagraphWidget.isEmpty()) {
             const lineWidget: LineWidget = nextParagraphWidget.childWidgets[0] as LineWidget;
+
             if (isNullOrUndefined(nextParagraphWidget.previousSplitWidget)) {
                 text = text + '\r';
             }
@@ -5132,7 +5213,7 @@ export class Selection {
      * @private
      * @returns {void}
      */
-    public highlight(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
+    public highlight(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, contentControl?: ContentControl): void {
         let selectionStartIndex: number = 0;
         let selectionEndIndex: number = 0;
         let startElement: ElementBox = undefined;
@@ -5205,15 +5286,15 @@ export class Selection {
                             if (paragraph.bidi && !elementIsRTL) {
                                 width -= paragraphMarkWidth;
                                 // Highlight the element.
-                                this.createHighlightBorder(startLineWidget, width, left, top, true);
+                                this.createHighlightBorder(startLineWidget, width, left, top, true, contentControl);
                                 // Highlight the paragraph mark of Bidi paragrph. 
                                 left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
-                                this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true);
+                                this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true, contentControl);
                                 // continue to next element.
                                 continue;
                             }
                         }
-                        this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true);
+                        this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true, contentControl);
                     }
                 } else { // Need to handle the Paragraph mark highlighting.
                     if (endElement instanceof TextElementBox && selectionEndIndex > (endElement as TextElementBox).length) {
@@ -5224,29 +5305,29 @@ export class Selection {
                             right += paragraphMarkWidth;
                             width -= paragraphMarkWidth;
                             // Highlight the element.
-                            this.createHighlightBorder(startLineWidget, width, right, top, true);
+                            this.createHighlightBorder(startLineWidget, width, right, top, true, contentControl);
                             // Highlight the paragraph mark. 
                             right += endElement.width;
-                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, right, top, true);
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, right, top, true, contentControl);
                         } else if (paragraph.bidi && !isRtlText) {
                             width -= paragraphMarkWidth;
                             // Highlight the element.
-                            this.createHighlightBorder(startLineWidget, width, left, top, true);
+                            this.createHighlightBorder(startLineWidget, width, left, top, true, contentControl);
                             // Highlight the paragraph mark of Bidi paragrph. 
                             left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
-                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true);
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true, contentControl);
                         } else {
-                            this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top, false);
+                            this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top, false, contentControl);
                         }
 
                     } else {
-                        this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top, false);
+                        this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top, false, contentControl);
                     }
                 }
             } else {
                 // Start element and end element will be in reverese for Bidi paragraph highlighting. 
                 // So, the right is considered based on Bidi property.
-                this.createHighlightBorder(startLineWidget, width, paragraph.bidi ? right : left, top, false);
+                this.createHighlightBorder(startLineWidget, width, paragraph.bidi ? right : left, top, false, contentControl);
             }
         } else {
             if (!isNullOrUndefined(startLineWidget)) {
@@ -5276,7 +5357,7 @@ export class Selection {
                                 elementIsRTL = element.isRightToLeft;
                             }
                             width = Math.abs(right - left);
-                            this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true);
+                            this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true, contentControl);
                         }
                         // Highlight the Paragrph mark for last line.
                         if (startLineWidget.isLastLine()) {
@@ -5289,17 +5370,17 @@ export class Selection {
                             } else { // The paragraph mark will at right most end.
                                 left = elementIsRTL ? startLineWidget.paragraph.x + this.getWidth(startLineWidget, false) : right;
                             }
-                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true);
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true, contentControl);
                         }
                     } else {
-                        this.createHighlightBorder(startLineWidget, width, left, top, false);
+                        this.createHighlightBorder(startLineWidget, width, left, top, false, contentControl);
                     }
                 } else {
-                    this.createHighlightBorder(startLineWidget, width, left, top, false);
+                    this.createHighlightBorder(startLineWidget, width, left, top, false, contentControl);
                 }
                 let lineIndex: number = startLineWidget.paragraph.childWidgets.indexOf(startLineWidget);
                 //Iterates to last item of paragraph or selection end.                                             
-                this.highlightParagraph(paragraph as ParagraphWidget, lineIndex + 1, endLineWidget, endElement, selectionEndIndex);
+                this.highlightParagraph(paragraph as ParagraphWidget, lineIndex + 1, endLineWidget, endElement, selectionEndIndex, contentControl);
                 if (paragraph.childWidgets.indexOf(end.currentWidget) !== -1) {
                     return;
                 }
@@ -6524,7 +6605,7 @@ export class Selection {
         return lineWidget;
     }
 
-    private highlightParagraph(widget: ParagraphWidget, startIndex: number, endLine: LineWidget, endElement: ElementBox, endIndex: number): void {
+    private highlightParagraph(widget: ParagraphWidget, startIndex: number, endLine: LineWidget, endElement: ElementBox, endIndex: number, contentControl?: ContentControl): void {
         let top: number = 0;
         let width: number = 0;
         let isRtlText: boolean = false;
@@ -6571,21 +6652,21 @@ export class Selection {
                             } else if (widget.bidi && !elementIsRTL) { // Paragrph and Selection ends in normal text
                                 width -= paragraphMarkWidth;
                                 // Highlight the element.
-                                this.createHighlightBorder(line, width, left, top, true);
+                                this.createHighlightBorder(line, width, left, top, true, contentControl);
                                 // Highlight the paragraph mark of Bidi paragrph.
                                 left = this.getLineStartLeft(line) - paragraphMarkWidth;
-                                this.createHighlightBorder(line, paragraphMarkWidth, left, top, true);
+                                this.createHighlightBorder(line, paragraphMarkWidth, left, top, true, contentControl);
                                 // continue to next element.
                                 continue;
                             }
                         }
-                        this.createHighlightBorder(line, width, elementIsRTL ? right : left, top, true);
+                        this.createHighlightBorder(line, width, elementIsRTL ? right : left, top, true, contentControl);
                     }
                     return;
                 } else {
                     right = this.getLeftInternal(endLine, endElement, endIndex);
                     width = Math.abs(right - left);
-                    this.createHighlightBorder(line, width, isRtlText ? right : left, top, false);
+                    this.createHighlightBorder(line, width, isRtlText ? right : left, top, false, contentControl);
                     return;
                 }
             } else {
@@ -6594,7 +6675,7 @@ export class Selection {
                 if (widget.bidi && line.isLastLine()) {
                     left -= this.documentHelper.textHelper.getParagraphMarkSize(widget.characterFormat).Width;
                 }
-                this.createHighlightBorder(line, width, left, top, false);
+                this.createHighlightBorder(line, width, left, top, false, contentControl);
                 top += line.height;
             }
 
@@ -7518,7 +7599,7 @@ export class Selection {
         if (this.isModifyingSelectionInternally) {
             return;
         }
-        if (this.documentHelper.formFields.length > 0) {
+        if (this.documentHelper.formFields.length > 0 && !this.owner.editor.isRemoteAction) {
             this.currentFormField = this.getCurrentFormField();
         } else {
             this.currentFormField = undefined;
@@ -9686,9 +9767,7 @@ export class Selection {
         if (isNullOrUndefined(this.owner.sfdtExportModule)) {
             return;
         }
-        this.owner.editorModule.isCopying = true;
         this.copyToClipboard(this.getHtmlContent());
-        this.owner.editorModule.isCopying = false;
         if (isCut && this.owner.editorModule) {
             this.owner.editorModule.handleCut(this);
         }
@@ -10254,7 +10333,7 @@ export class Selection {
                 this.selectInternal(formField.line, formField, index, point);
             }
         }
-        if (!this.owner.isReadOnlyMode || this.documentHelper.isCommentOnlyMode || this.isInlineFormFillMode()) {
+        if (!this.owner.isReadOnlyMode || this.documentHelper.isCommentOnlyMode || this.isInlineFormFillMode() || (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.owner.editor.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked())) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
         } else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
             if (event.keyCode === 9 || event.keyCode === 32) {
@@ -11050,6 +11129,30 @@ export class Selection {
         }
         this.viewer.renderVisiblePages();
     }
+    //Restrict editing implementation starts
+    /**
+     * @private
+     * @returns {void}
+     */
+    public onHighlightContentControl(): void {
+        if (this.isHighlightContentControlEditRegionIn) {
+            if (this.documentHelper.contentControlCollection.length > 0) {
+                for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+                    this.highlightContentControlEditRegionInternal(this.documentHelper.contentControlCollection[i] as ContentControl);
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public highlightContentControlEditRegionInternal(editRangeStart: ContentControl): void {
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let startPosition: TextPosition = positionInfo.startPosition;
+        let endPosition: TextPosition = positionInfo.endPosition;
+        this.highlight(editRangeStart.line.paragraph, startPosition, endPosition, editRangeStart);
+    }
     /**
      * @private
      * @returns {void}
@@ -11414,7 +11517,10 @@ export class Selection {
                     && (contentControlStart.contentControlProperties.type === 'CheckBox'
                         || contentControlStart.contentControlProperties.type === 'ComboBox'
                         || contentControlStart.contentControlProperties.type === 'DropDownList'
-                        || contentControlStart.contentControlProperties.type === 'Date')) {
+                        || contentControlStart.contentControlProperties.type === 'Date'
+                        || contentControlStart.contentControlProperties.type === 'Picture'
+                        || contentControlStart.contentControlProperties.type === 'Text'
+                        || contentControlStart.contentControlProperties.type === 'RichText')) {
                     this.owner.trigger(contentControlEvent);
                     return true;
                 }
@@ -11810,7 +11916,6 @@ export class Selection {
         let isDropdown: boolean = false;
         let splittedWidget: ParagraphWidget[] = block.getSplitWidgets() as ParagraphWidget[];
         for (let i: number = 0; i < splittedWidget.length; i++) {
-
             for (let j: number = 0; j < splittedWidget[i].childWidgets.length; j++) {
                 let line: LineWidget = splittedWidget[i].childWidgets[j] as LineWidget;
                 for (let k: number = 0; k < line.children.length; k++) {
@@ -11830,7 +11935,6 @@ export class Selection {
                     if (element === targetElement) {
                         return offset + elementIndex;
                     }
-
                     if (element instanceof ShapeElementBox || element instanceof FootnoteElementBox) {
                         if (element instanceof ShapeElementBox) {
                             if (element.textFrame.childWidgets.length > 0) {
@@ -11838,7 +11942,6 @@ export class Selection {
                                     offset = this.getBlockLength(paragraphInfo, element.textFrame.childWidgets[m] as BlockWidget, offset, { done: false }, false, undefined, undefined);
                                 }
                             }
-
                         } else {
                             if (element.bodyWidget.childWidgets.length > 0) {
                                 for (let m: number = 0; m < element.bodyWidget.childWidgets.length; m++) {

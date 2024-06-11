@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-data/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-data)
-
 # Overview
 
 `@syncfusion/ej2-data` is a data management package to perform data operations such as grouping, sorting in client applications.

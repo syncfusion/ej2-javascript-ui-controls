@@ -638,7 +638,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private keyHandler(e: KeyboardEvent): void {
-        if (e.keyCode === 38 || e.keyCode === 40) { 
+        if (e.keyCode === 38 || e.keyCode === 40) {
             if (e.target && ((e.target as Element).classList.contains('e-contextmenu') || (e.target as Element).classList.contains('e-menu-item'))) {
                 e.preventDefault();
             }
@@ -781,6 +781,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             popup = [this.getWrapper()].concat([].slice.call(popups))[navIdxLen as number];
             return isNullOrUndefined(popup) ? null : select('.e-menu-parent', popup) as HTMLElement;
         } else {
+            if (!document.body.contains(this.element) && navIdxLen === 0) { return null; }
             return this.getWrapper().children[navIdxLen as number] as HTMLElement;
         }
     }
@@ -810,15 +811,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     this.trigger('select', eventArgs);
                     const aEle: HTMLElement = fli.querySelector('.e-menu-url');
                     if (item.url && aEle) {
-                        switch(aEle.getAttribute('target')) {
-                            case '_blank':
-                                window.open(item.url, '_blank');
-                                break;
-                            case '_parent':
-                                window.parent.location.href = item.url;
-                                break;
-                            default:
-                                window.location.href = item.url;
+                        switch (aEle.getAttribute('target')) {
+                        case '_blank':
+                            window.open(item.url, '_blank');
+                            break;
+                        case '_parent':
+                            window.parent.location.href = item.url;
+                            break;
+                        default:
+                            window.location.href = item.url;
                         }
                     }
                     this.closeMenu(null, e);
@@ -927,8 +928,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.isCMenu = false;
                     }
                     if (this.isMenu && trgtpopUp && popupId.length) {
-                        // eslint-disable-next-line
-                        trgtliId = new RegExp('(.*)-ej2menu-' + this.element.id + '-popup').exec(popupId)[1];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const regExp: any = RegExp;
+                        trgtliId = new regExp('(.*)-ej2menu-' + this.element.id + '-popup').exec(popupId)[1];
                         closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
                         trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
                     } else if (trgtpopUp) {
@@ -1125,6 +1127,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private copyObject(source: any, destination: any): any {
+        // eslint-disable-next-line guard-for-in
         for (const prop in source) {
             destination[`${prop}`] = source[`${prop}`];
         }
@@ -1307,10 +1310,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     this.trigger('select', eventArgs);
                 }
                 (li as HTMLElement).focus(); cul = this.getUlByNavIdx();
-                if (cul) {
-                    const index: number = this.isValidLI(cul.children[0], 0, this.action);
-                    cul.children[index as number].classList.add(FOCUSED); (cul.children[index as number] as HTMLElement).focus();
-                }
+                const index: number = this.isValidLI(cul.children[0], 0, this.action);
+                cul.children[index as number].classList.add(FOCUSED); (cul.children[index as number] as HTMLElement).focus();
             }
         });
     }
@@ -1438,7 +1439,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             showIcon: showIcon,
             moduleName: 'menu',
             fields: fields,
-            template: this.template as any,
+            template: this.template as string | Function,
             itemNavigable: true,
             itemCreating: (args: { curData: obj, fields: obj }): void => {
                 if (!args.curData[(<obj>args.fields)[fields.id] as string]) {
@@ -1508,7 +1509,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private moverHandler(e: MouseEvent): void {
         const trgt: Element = e.target as Element;
         this.liTrgt = trgt;
-        if (!this.isMenu) this.isCmenuHover = true;
+        if (!this.isMenu) {
+            this.isCmenuHover = true;
+        }
         const cli: Element = this.getLI(trgt);
         const wrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
         const hdrWrapper: Element = this.getWrapper(); const regex: RegExp = new RegExp('-ej2menu-(.*)-popup'); let ulId: string;
@@ -1558,7 +1561,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             this.isClosed = false;
         }
-        if (!this.isMenu) this.isCmenuHover = false;
+        if (!this.isMenu) {
+            this.isCmenuHover = false;
+        }
     }
     private removeStateWrapper(): void {
         if (this.liTrgt) {
@@ -1679,9 +1684,19 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             }
                             this.isClosed = true;
                             this.keyType = 'click';
-                            if (this.showItemOnClick) { this.setLISelected(cli); if (!this.isMenu) this.isCmenuHover = true; }
+                            if (this.showItemOnClick) { 
+                                this.setLISelected(cli); 
+                                if (!this.isMenu) {
+                                    this.isCmenuHover = true;
+                                }
+                            }
                             this.closeMenu(culIdx + 1, e);
-                            if (this.showItemOnClick) { this.setLISelected(cli); if (!this.isMenu) this.isCmenuHover = false; }
+                            if (this.showItemOnClick) { 
+                                this.setLISelected(cli); 
+                                if (!this.isMenu) {
+                                    this.isCmenuHover = false;
+                                }
+                            }
                         }
                     }
                     if (!this.isClosed) {
@@ -1765,7 +1780,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private getLIByClass(ul: Element, classname: string): Element {
-        if (ul) {
+        if (ul && ul.children) {
             for (let i: number = 0, len: number = ul.children.length; i < len; i++) {
                 if (ul.children[i as number].classList.contains(classname)) {
                     return ul.children[i as number];
@@ -2126,7 +2141,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private end(ul: HTMLElement, isMenuOpen: boolean): void {
         if (isMenuOpen) {
-            if (this.isMenu || !Browser.isDevice) ul.style.display = 'block';
+            if (this.isMenu || !Browser.isDevice) {
+                ul.style.display = 'block';
+            }
             ul.style.maxHeight = '';
             this.triggerOpen(ul);
             if (ul.querySelector('.' + FOCUSED)) {

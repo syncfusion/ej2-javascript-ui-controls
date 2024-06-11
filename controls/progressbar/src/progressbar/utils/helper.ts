@@ -1,9 +1,3 @@
-/* eslint-disable security/detect-unsafe-regex */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { remove, createElement } from '@syncfusion/ej2-base';
 /**
@@ -79,25 +73,49 @@ export class ColorValue {
     }
 }
 
-/** @private */
+/**
+ * Converts a color value to its hexadecimal representation.
+ *
+ * @param {ColorValue} value - The color value to convert.
+ * @returns {string} - The hexadecimal representation of the color.
+ * @private
+ */
 export function convertToHexCode(value: ColorValue): string {
     return '#' + componentToHex(value.r) + componentToHex(value.g) + componentToHex(value.b);
 }
 
-/** @private */
+/**
+ * Converts a color component value to its hexadecimal representation.
+ *
+ * @param {number} value - The color component value to convert.
+ * @returns {string} - The hexadecimal representation of the color component.
+ * @private
+ */
 export function componentToHex(value: number): string {
     const hex: string = value.toString(16);
     return hex.length === 1 ? '0' + hex : hex;
 }
 
-/** @private */
+/**
+ * Converts a hexadecimal color code to a ColorValue.
+ *
+ * @param {string} hex - The hexadecimal color code to convert.
+ * @returns {ColorValue} - The ColorValue representing the color.
+ * @private
+ */
 export function convertHexToColor(hex: string): ColorValue {
     const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? new ColorValue(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
         new ColorValue(255, 255, 255);
 }
 
-/** @private */
+/**
+ * Converts a color name to its corresponding hexadecimal representation.
+ *
+ * @param {string} color - The color name to convert.
+ * @returns {string} - The hexadecimal representation of the color.
+ * @private
+ */
 export function colorNameToHex(color: string): string {
     color = color === 'transparent' ? 'white' : color;
     document.body.appendChild(createElement('text', { id: 'chartmeasuretext' }));
@@ -105,8 +123,11 @@ export function colorNameToHex(color: string): string {
     element.style.color = color;
     color = window.getComputedStyle(element).color;
     remove(element);
-    const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
-    const isRGBValue: RegExpExecArray = exp.exec(color);
+    let isRGBValue: string[];
+    if (color.indexOf('rgb') === 0 || color.indexOf('hsl') === 0) {
+        color = color.replace(/\s/g, '').replace(/[()]/g, '');
+        isRGBValue = color.slice(3).split(',');
+    }
     return convertToHexCode(
         new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
     );
@@ -142,7 +163,15 @@ export class TextOption {
         this.height = height ? height : 0;
     }
 }
-/** calculate the start and end point of circle */
+/**
+ * Converts polar coordinates (angle in degrees) to Cartesian coordinates.
+ *
+ * @param {number} centerX - The x-coordinate of the center point.
+ * @param {number} centerY - The y-coordinate of the center point.
+ * @param {number} radius - The radius from the center point.
+ * @param {number} angleInDegrees - The angle in degrees.
+ * @returns {Pos} - The Cartesian coordinates (x, y) corresponding to the given polar coordinates.
+ */
 export function degreeToLocation(centerX: number, centerY: number, radius: number, angleInDegrees: number): Pos {
     const angleInRadians: number = (angleInDegrees - 90) * (Math.PI / 180);
 
@@ -151,7 +180,18 @@ export function degreeToLocation(centerX: number, centerY: number, radius: numbe
         y: centerY + (radius * Math.sin(angleInRadians))
     };
 }
-/** calculate the path of the circle */
+/**
+ * Generates an SVG path arc string based on given parameters.
+ *
+ * @param {number} x - The x-coordinate of the center of the arc.
+ * @param {number} y - The y-coordinate of the center of the arc.
+ * @param {number} radius - The radius of the arc.
+ * @param {number} startAngle - The start angle of the arc in degrees.
+ * @param {number} endAngle - The end angle of the arc in degrees.
+ * @param {boolean} enableRtl - Indicates whether the drawing direction is right-to-left.
+ * @param {boolean} pieView - Indicates whether the arc should be drawn as a pie slice.
+ * @returns {string} - The SVG path arc string representing the arc.
+ */
 export function getPathArc(
     x: number, y: number, radius: number, startAngle: number, endAngle: number,
     enableRtl: boolean, pieView?: boolean
@@ -175,14 +215,28 @@ export function getPathArc(
     }
     return d;
 }
-/** @private */
+/**
+ * Converts a string value to a number, considering the container size.
+ *
+ * @param {string} value - The string value to convert to a number.
+ * @param {number} containerSize - The size of the container to consider for relative values.
+ * @returns {number} - The converted number value.
+ * @private
+ */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
     }
     return null;
 }
-/** @private */
+/**
+ * Sets attributes on an HTML element based on the provided options.
+ *
+ * @param {any} options - The options object containing attributes to set.
+ * @param {Element} element - The HTML element to set attributes on.
+ * @returns {Element} - The modified HTML element.
+ * @private
+ */
 export function setAttributes(options: any, element: Element): Element {
     const keys: string[] = Object.keys(options);
     for (let i: number = 0; i < keys.length; i++) {
@@ -191,8 +245,14 @@ export function setAttributes(options: any, element: Element): Element {
     return element;
 }
 /**
- * Animation Effect Calculation
+ * Calculates the effect value at a given time based on the start and end values, duration, and direction.
  *
+ * @param {number} currentTime - The current time in milliseconds.
+ * @param {number} startValue - The start value of the effect.
+ * @param {number} endValue - The end value of the effect.
+ * @param {number} duration - The duration of the effect in milliseconds.
+ * @param {boolean} enableRtl - Indicates whether the effect direction is right-to-left.
+ * @returns {number} - The calculated effect value at the given time.
  * @private
  */
 export function effect(currentTime: number, startValue: number, endValue: number, duration: number, enableRtl: boolean): number {
@@ -205,12 +265,21 @@ export function effect(currentTime: number, startValue: number, endValue: number
  */
 export const annotationRender: string = 'annotationRender';
 /**
+ * Retrieves an HTML element from the DOM by its ID.
+ *
+ * @param {string} id - The ID of the HTML element to retrieve.
+ * @returns {Element} - The HTML element with the specified ID.
  * @private
  */
 export function getElement(id: string): Element {
     return document.getElementById(id);
 }
 /**
+ * Removes an HTML element from the DOM.
+ *
+ * @param {string | Element} id - The ID of the HTML element or the element itself to remove.
+ *                                If provided as a string, it's assumed to be the ID of the element.
+ * @returns {void}
  * @private
  */
 export function removeElement(id: string | Element): void {

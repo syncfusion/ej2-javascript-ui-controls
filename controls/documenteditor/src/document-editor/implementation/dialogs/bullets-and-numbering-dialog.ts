@@ -149,7 +149,7 @@ export class BulletsAndNumberingDialog {
             className: 'e-de-ui-wfloating-menuitem e-de-ui-wfloating-bullet-menuitem-md e-de-list-items  e-de-list-item-size ' + className
         });
         ulTag.appendChild(liTag);
-        let isNone: boolean = className === 'e-bullet-none';
+        const isNone: boolean = className === 'e-bullet-none';
         const liInnerDiv: HTMLElement = createElement('div', {
             className: 'e-de-ui-bullet-list-header-presetmenu e-de-bullet-icon-size',
             styles: isNone ? 'font-size:9px;text-align: center;top: 13px;left:-2px;line-height:normal;position: relative' : ''

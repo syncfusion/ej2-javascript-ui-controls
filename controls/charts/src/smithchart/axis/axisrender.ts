@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Smithchart } from '../../smithchart';
 import { SmithchartFontModel } from '../../smithchart/utils/utils-model';
 import { SmithchartAxisModel, SmithchartAxisLineModel, SmithchartMinorGridLinesModel } from '../../smithchart/axis/axis-model';
@@ -896,7 +895,7 @@ export class AxisRender {
         const maxCount: number = smithchart.radialAxis.minorGridLines.count;
         let arcCx: number;
         let nextAngle: number;
-        let k: number = 0;
+        // let k: number = 0;
         let betweenAngle: number;
         let circlePoint: LabelCollection[];
         let previous: RadialLabelCollections;
@@ -948,7 +947,7 @@ export class AxisRender {
                     isLargeArc: false,
                     size: size
                 });
-                k++;
+                // k++;
             }
         }
     }

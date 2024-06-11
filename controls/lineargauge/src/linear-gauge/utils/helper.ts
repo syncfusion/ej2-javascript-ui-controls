@@ -181,7 +181,7 @@ export function getFontStyle(font: FontModel): string {
     return style;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function textFormatter(format: string, data: any, gauge: LinearGauge): string {
     if (isNullOrUndefined(format)) {
         return null;
@@ -567,6 +567,15 @@ export function getRangePalette(theme: LinearGaugeTheme): string[] {
     case 'material3dark':
         palette = ['#4EAAFF', '#FA4EAB', '#FFF500', '#17EA58', '#38FFE7',
             '#FF9E45', '#B3F32F', '#B93CE4', '#FC5664', '#9B55FF'];
+        break;
+    case 'fluent2':
+        palette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F', '#0364DE', 
+            '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
+        break;
+    case 'fluent2dark':
+    case 'fluent2highcontrast':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6', '#E85F9C', 
+            '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
         break;
     default:
         palette = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];

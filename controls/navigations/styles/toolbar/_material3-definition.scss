@@ -1,20 +1,13 @@
-/*! Toolbar's material3 theme wise override definitions and variables */
 /* stylelint-disable */
 $tbar-skin: 'material3' !default;
-
-//font definitions
 $tbar-icons-bgr-font-size: $text-2xl;
 $tbar-btn-font-size: $text-lg !default;
 $tbar-btn-txt-font-size: $text-sm !default;
-
-// box shadow definitions
 $tbar-pop-box-shadow: $shadow-md;
 $tbar-btn-box-shadow: none !default;
 $tbar-box-shadow: none !default;
 $tbar-nav-pressed-box-shadow: none !default;
 $tbar-btn-pressed-box-shadow: none !default;
-
-// padding definitions
 $tbar-item-bgr-padding: 8px 4px 8px 4px !default;
 $tbar-item-nrml-padding: 8px 4px 8px 4px !default;
 $tbar-btn-nrml-padding: 0 7px !default;
@@ -41,8 +34,6 @@ $tbar-pop-icon-nrml-padding: 0 8px 0 0 !default;
 $tbar-pop-btn-txt-nrml-pad: 0 0 0 8px !default;
 $tbar-pop-btn-txt-bgr-pad: 0 0 0 8px !default;
 $tbar-popup-padding: 0 !default;
-
-// dimension definitions
 $tbar-btn-nrml-minheight: 32px !default;
 $tbar-btn-nrml-line-height: 22px !default;
 $tbar-btn-icon-nrml-line-height: 16px !default;
@@ -78,8 +69,6 @@ $tbar-separator-bgr-minheight: $tbar-separator-bgr-height !default;
 $tbar-separator-size: 1px !default;
 $tba-horizontal-separator: 0 $tbar-separator-size 0 0 !default;
 $tba-vertical-separator: 0 0 $tbar-separator-size 0 !default;
-
-// margin definitions
 $tbar-item-nrml-mrgn: 8px !default;
 $tbar-item-bgr-mrgn: 12px !default;
 $tbar-multirow-items-mrgn-bigger: 12px !default;
@@ -91,8 +80,6 @@ $tbar-separator-vertical-nrml-mrgn: 8px 4px 8px 4px !default;
 $tbar-separator-bgr-mrgn: 8px 4px 8px 4px !default;
 $tbar-separator-vertical-bgr-mrgn: 8px 4px 8px 4px !default;
 $tbar-separator-nrml-mrgn: 8px 4px 8px 4px !default;
-
-// border definitions
 $border-size: 1px;
 $border-type: solid;
 $tbar-border-radius: 1px !default;
@@ -119,8 +106,6 @@ $tbar-nav-press-border: 0 !default;
 $tbar-nav-hover-border: 1px solid $tbar-default-border !default;
 $tbar-nav-focus-border: 0 !default;
 $tbar-btn-border-radius: 4px !default;
-
-// color definitions
 $tbar-default-bg: $content-bg-color-alt2 !default;
 $tbar-items-default-bg: $transparent !default;
 $tbar-default-font: rgba($icon-color) !default;
@@ -141,15 +126,12 @@ $tbar-press-font: rgba($primary-darker) !default;
 $tbar-default-font-overlay: rgba($icon-color) !default;
 $tbar-active-font-color: rgba($primary-darker) !default;
 $tbar-pop-bg: $flyout-bg-color !default;
-
 $tbar-bgr-btn-text-font-size: $text-sm !default;
 $tbar-bgr-btn-icon-font-size: $text-xl !default;
 $tbar-bgr-btn-focus-padding: 0 8px !default;
-
 $tbar-nrml-btn-border-radius: 4px !default;
 $tbar-nrml-btn-focus-padding: 0 7px !default;
 $tbar-nrml-btn-focus-outline: 0 !default;
-
 $tbar-btn-icons-focus-color: rgba($icon-color) !default;
 $tbar-btn-text-focus-color: rgba($icon-color) !default;
 $tbar-btn-focus-border-color: rgba($icon-color) !default;
@@ -165,14 +147,12 @@ $tbar-btn-pressed-text-color: rgba($primary-darker) !default;
 $tbar-btn-pressed-focus-box-shadow: $secondary-shadow-focus !default;
 $tbar-btn-pressed-bg: $secondary-bg-color-pressed !default;
 $tbar-flat-btn-active-box-shadow: none !default;
-
 $tbar-ext-btn-focus-padding: 0 7px !default;
 $tbar-ext-btn-icon-padding: 0 !default;
 $tbar-ext-btn-icon-font-size: $text-lg !default;
 $tbar-ext-btn-focus-box-shadow: $shadow-focus-ring1 !default;
 $tbar-ext-btn-hover-border-color: $tbar-hover-border-color !default;
 $tbar-ext-btn-border: none !default;
-
 $tbar-popup-icon-font-size: $text-sm !default;
 $tbar-popup-text-btn-icon-padding: 4px 4px 5px 4px !default;
 $tbar-popup-bgr-text-btn-icon-padding: 4px 6px 3px 6px !default;
@@ -210,7 +190,6 @@ $tbar-popup-nav-pressed-border-size: 0 !default;
 $tbar-popup-nav-pressed-focus-border-color: $tbar-pressed-bg !default;
 $tbar-popup-nav-pressed-focus-border-size: 0 !default;
 $tbar-popup-btn-hover-border-size: $tbar-zero-value !default;
-
 @mixin tbar-btn-animation {
   content: '';
 }

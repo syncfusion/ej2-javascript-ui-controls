@@ -1,6 +1,4 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-import { withInRange, getPoint, ChartLocation } from '../../common/utils/helper';
+import { withInRange, getPoint, ChartLocation, animateAddPoints } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
@@ -15,12 +13,17 @@ export class RangeAreaSeries extends LineBase {
 
     public borderDirection : string = '';
     /**
-     * Render RangeArea Series.
+     * Renders the provided Range Area series on the chart based on the given x-axis, y-axis, and inversion status.
      *
+     * @param {Series} series - The series to render.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
+     * @param {boolean} inverted - A flag indicating whether the chart is inverted or not.
+     * @param {boolean} pointAnimate - A flag indicating whether the points should be animated.
+     * @param {boolean} pointUpdate - A flag indicating whether the points should be updated.
      * @returns {void}
-     * @private
      */
-    public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
+    public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean, pointAnimate: boolean, pointUpdate?: boolean): void {
         let point: Points;
         let direction: string = '';
         let command: string = 'M';
@@ -91,13 +94,13 @@ export class RangeAreaSeries extends LineBase {
         const options: PathOption = new PathOption(
             name, series.interior,
             0, 'transparent', series.opacity, series.dashArray, direction);
-        this.appendLinePath(options, series, '');
+        this[pointAnimate ? 'addPath' : 'appendLinePath'](options, series, '');
 
         /**
          * To draw border for the path directions of area
          */
         if (series.border.width !== 0) {
-            this.appendLinePath(
+            this[pointAnimate ? 'addPath' : 'appendLinePath'](
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index, 'transparent',
                     borderWidth, borderColor, 1, series.dashArray,
@@ -107,7 +110,7 @@ export class RangeAreaSeries extends LineBase {
             );
             this.borderDirection = '';
         }
-        this.renderMarker(series);
+        if (!pointUpdate) { this.renderMarker(series); }
     }
 
     /**
@@ -132,12 +135,68 @@ export class RangeAreaSeries extends LineBase {
     }
 
     /**
+     * To animate point for range area series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
+        for (let i: number = 0; i < point.length; i++) {
+            if (series.marker && series.marker.visible) {
+                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
+                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
+    }
+
+    public addPath(options: PathOption, series: Series, clipRect: string): void {
+        const points: { element: Element; previousDirection: string; } =
+            this.appendPathElement(options, series, clipRect);
+        if (points.previousDirection !== '' && options.d !== '') {
+            const startPathCommands: string[] = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (startPathCommands.length < endPathCommands.length) {
+                for (let i: number = startPathCommands.length; i < endPathCommands.length; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        startPathCommands.splice((startPathCommands.length - 1) / 2, 0,
+                                                 startPathCommands.slice(0, (startPathCommands.length - 1) / 2).pop(),
+                                                 startPathCommands.slice(0, ((startPathCommands.length - 1) / 2) + 1).pop());
+                    }
+                }
+                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+            } else if (startPathCommands.length > endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        endPathCommands.splice(1, 0, endPathCommands[0]);
+                        endPathCommands.splice(endPathCommands.length - 2, 0, endPathCommands[endPathCommands.length - 2]);
+                    }
+                }
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
+            }
+            else {
+                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+            }
+        }
+    }
+    /**
      * Animates the series.
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
      */
-
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;
         this.doLinearAnimation(series, option);
@@ -145,11 +204,12 @@ export class RangeAreaSeries extends LineBase {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'RangeAreaSeries';
     }
@@ -160,10 +220,9 @@ export class RangeAreaSeries extends LineBase {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys range area series
+         * Destroys range area series.
          */
     }
 }

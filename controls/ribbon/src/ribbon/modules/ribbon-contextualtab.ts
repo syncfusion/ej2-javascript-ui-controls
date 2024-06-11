@@ -82,9 +82,10 @@ export class RibbonContextualTab {
             }
         }
         if (newProp.tabs) {
-            for (const key in newProp.tabs) {
-                let index: number = parseInt(key, 10);
-                const tab: RibbonTabModel = this.parent.tabs.filter((e: RibbonTabModel) => e.id === contextualTab.tabs[parseInt(index.toString(), 10)].id)[0];
+            for (const key of Object.keys(newProp.tabs)) {
+                const index: number = parseInt(key, 10);
+                const tab: RibbonTabModel = this.parent.tabs.filter((e: RibbonTabModel) =>
+                    e.id === contextualTab.tabs[parseInt(index.toString(), 10)].id)[0];
                 this.parent.updateTab(tab);
             }
         }

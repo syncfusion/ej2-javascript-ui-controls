@@ -257,6 +257,39 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
                 { 'color': '#FFF500' }]
         };
         break;
+    case 'fluent2':
+        style = {
+            heatMapTitle: '#242424',
+            axisTitle: '#242424',
+            axisLabel: '#242424',
+            cellBorder: 'transparent',
+            background: 'transparent',
+            cellTextColor: '#242424',
+            toggledColor: '#EDEBE9',
+            emptyCellColor: '#EDEBE9',
+            legendLabel: '#242424',
+            palette: [{ 'color': '#6200EE' },
+                { 'color': '#09AF74' },
+                { 'color': '#0076E5' }]
+        };
+        break;
+    case 'fluent2dark':
+    case 'fluent2highcontrast':
+        style = {
+            heatMapTitle: '#FFFFFF',
+            axisTitle: '#FFFFFF',
+            axisLabel: '#FFFFFF',
+            cellBorder: 'transparent',
+            background: 'transparent',
+            cellTextColor: '#FFFFFF',
+            toggledColor: '#292827',
+            emptyCellColor: '#292827',
+            legendLabel: '#FFFFFF',
+            palette: [{ 'color': '#9BB449' },
+                { 'color': '#2A72D5' },
+                { 'color': '#43B786' }]
+        };
+        break;
     default:
         style = {
             heatMapTitle: '#424242',

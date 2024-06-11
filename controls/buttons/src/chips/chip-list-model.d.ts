@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';import { EventHandler, detach, EmitType, Event, addClass, getElement } from '@syncfusion/ej2-base';import { ChipModel } from './chip';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';import { EventHandler, detach, EmitType, Event, addClass} from '@syncfusion/ej2-base';import { ChipModel } from './chip';
 import {Selection,ClickEventArgs,DeleteEventArgs,ChipDeletedEventArgs} from "./chip-list";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -125,7 +125,7 @@ export interface ChipListModel extends ComponentModel{
      * Triggers when the component is created successfully.
      * {% codeBlock src='chips/created/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event created
      */
     created?: EmitType<Event>;
 
@@ -133,7 +133,7 @@ export interface ChipListModel extends ComponentModel{
      * Triggers when a chip is clicked.
      * {% codeBlock src='chips/click/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event click
      */
     click?: EmitType<ClickEventArgs>;
 
@@ -143,7 +143,7 @@ export interface ChipListModel extends ComponentModel{
      *
      * {% codeBlock src='chips/beforeClick/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event beforeClick
      */
     beforeClick?: EmitType<ClickEventArgs>;
 
@@ -151,7 +151,7 @@ export interface ChipListModel extends ComponentModel{
      * Fires before removing the chip element.
      * {% codeBlock src='chips/delete/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event delete
      */
     delete?: EmitType<DeleteEventArgs>;
 
@@ -159,7 +159,7 @@ export interface ChipListModel extends ComponentModel{
      * Triggers when the chip item is removed.
      * {% codeBlock src='chips/deleted/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event deleted
      */
     deleted?: EmitType<ChipDeletedEventArgs>;
 

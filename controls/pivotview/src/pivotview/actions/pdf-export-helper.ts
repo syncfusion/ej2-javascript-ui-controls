@@ -113,8 +113,7 @@ export class PDFExportHelper {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private drawText(pageTemplate: PdfPageTemplateElement, content: any): void {
+    private drawText(pageTemplate: PdfPageTemplateElement, content: PdfHeaderFooterContent): void {
         const font: PdfFont = this.getFontFromContent(content);
         let brush: PdfSolidBrush = this.getBrushFromContent(content);
         let pen: PdfPen = null;
@@ -140,8 +139,7 @@ export class PDFExportHelper {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private drawPageNumber(documentHeader: PdfPageTemplateElement, content: any): void {
+    private drawPageNumber(documentHeader: PdfPageTemplateElement, content: PdfHeaderFooterContent): void {
         const font: PdfFont = this.getFontFromContent(content);
         let brush: PdfSolidBrush = null;
         if (!isNullOrUndefined(content.style) && !isNullOrUndefined(content.style.textBrushColor)) {
@@ -190,8 +188,7 @@ export class PDFExportHelper {
         compositeField.draw(documentHeader.graphics, x, y);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private drawImage(documentHeader: PdfPageTemplateElement, content: any): void {
+    private drawImage(documentHeader: PdfPageTemplateElement, content: PdfHeaderFooterContent): void {
         const x: number = content.position.x * 0.75;
         const y: number = content.position.y * 0.75;
         const width: number = (!isNullOrUndefined(content.size) && !isNullOrUndefined(content.size.width)) ?
@@ -206,8 +203,7 @@ export class PDFExportHelper {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private drawLine(documentHeader: PdfPageTemplateElement, content: any): void {
+    private drawLine(documentHeader: PdfPageTemplateElement, content: PdfHeaderFooterContent): void {
         const x1: number = content.points.x1 * 0.75;
         const y1: number = content.points.y1 * 0.75;
         const x2: number = content.points.x2 * 0.75;
@@ -222,13 +218,12 @@ export class PDFExportHelper {
         documentHeader.graphics.drawLine(pen, x1, y1, x2, y2);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private getFontFromContent(content: any): PdfFont {
-        const fontSize: number = (!isNullOrUndefined(content.font) && !isNullOrUndefined(content.font.fontSize)) ?
-            (content.font.fontSize * 0.75) : (!isNullOrUndefined(content.style) && !isNullOrUndefined(content.style.fontSize)) ?
-                (content.style.fontSize * 0.75) : 9.75;
-        const fontFamily: number = (!isNullOrUndefined(content.font) && !isNullOrUndefined(content.font.pdfFontFamily))
-            ? content.font.pdfFontFamily : PdfFontFamily.TimesRoman;
+    private getFontFromContent(content: PdfHeaderFooterContent): PdfFont {
+        const fontSize: number = (!isNullOrUndefined(content.font) && !isNullOrUndefined((content.font as PdfStandardFont)['fontSize'])) ?
+            ((content.font as PdfStandardFont)['fontSize'] * 0.75) : (!isNullOrUndefined(content.style) &&
+                !isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
+        const fontFamily: number = (!isNullOrUndefined(content.font) && !isNullOrUndefined((content.font as PdfStandardFont)['pdfFontFamily']))
+            ? (content.font as PdfStandardFont)['pdfFontFamily'] : PdfFontFamily.TimesRoman;
         let fontStyle: PdfFontStyle = PdfFontStyle.Regular;
         if (!isNullOrUndefined(content.font) && !isNullOrUndefined(content.font.bold)) {
             fontStyle |= PdfFontStyle.Bold;

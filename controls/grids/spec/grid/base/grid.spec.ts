@@ -1,13 +1,13 @@
 /**
  * Grid base spec 
  */
-import { L10n,EventHandler, select } from '@syncfusion/ej2-base';
+import { L10n,EventHandler, select, Browser } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { Column, ColumnModel } from '../../../src/grid/models/column';
-import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
+import { QueryCellInfoEventArgs, LoadEventArgs } from '../../../src/grid/base/interface';
 import { Page } from '../../../src/grid/actions/page';
 import { Edit } from '../../../src/grid/actions/edit';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
@@ -18,15 +18,20 @@ import  {profile , inMB, getMemoryProfile} from './common.spec';
 import { KeyboardEventArgs } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
 import { getNumberFormat, getActualRowHeight, padZero, getColumnModelByFieldName,
-    getCollapsedRowsCount, distinctStringValues } from '../../../src/grid/base/util';
+    getCollapsedRowsCount, distinctStringValues, parents, getComplexFieldID, getParsedFieldID,
+    getPrintGridModel, getPrototypesOfObj, resetCachedRowIndex, sliceElements, applyStickyLeftRightPosition,
+    getCellFromRow } from '../../../src/grid/base/util';
 import { Group } from '../../../src/grid/actions/group';
 import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Filter } from '../../../src/grid/actions/filter';
+import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import { PdfExport } from '../../../src/grid/actions/pdf-export';
-Grid.Inject(Aggregate, Page, Edit, Toolbar, Group, ColumnChooser, DetailRow, PdfExport, ExcelExport, Filter);
+import { Resize } from '../../../src/grid/actions/resize';
+Grid.Inject(Aggregate, Page, Edit, Resize, Toolbar, Group, ColumnChooser, VirtualScroll, InfiniteScroll, DetailRow, PdfExport, ExcelExport, Filter);
 
 describe('Grid base module', () => {
     describe('Grid properties', () => {
@@ -35,7 +40,7 @@ describe('Grid base module', () => {
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
-                this.skip(); //Skips test (in Chai)
+                pending; //Skips test (in Chai)
             }
             gridObj = createGrid(
                 {
@@ -893,7 +898,7 @@ describe('Grid base module', () => {
             beforeAll((done: Function) => {
                 const isDef = (o: any) => o !== undefined && o !== null;
                     if (!isDef(window.performance)) {
-                        this.skip(); //Skips test (in Chai)
+                        pending; //Skips test (in Chai)
                     }
                 gridObj = createGrid(
                     {
@@ -979,7 +984,7 @@ describe('Grid base module', () => {
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
-                this.skip(); //Skips test (in Chai)
+                pending; //Skips test (in Chai)
             }
             gridObj = createGrid(
                 {
@@ -1072,7 +1077,7 @@ describe('Grid base module', () => {
             beforeAll((done: Function) => {
                 const isDef = (o: any) => o !== undefined && o !== null;
                 if (!isDef(window.performance)) {
-                    this.skip(); //Skips test (in Chai)
+                    pending; //Skips test (in Chai)
                 }
                 gridObj = createGrid(
                     {
@@ -2284,6 +2289,9 @@ describe('EJ2-871826: Error when using Stacked Header with Column Template and u
         (gridObj.columns[1] as Column).setProperties(col);
         done();
     });
+    it('execute column toJSON method', () => {
+        (gridObj.columns[1] as Column).toJSON();
+    });
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
@@ -2323,6 +2331,2161 @@ describe('EJ2-880511: When entering the grid through the tab key press, want to 
     });
 });
 
+
+// used for code coverage
+describe('Focusing  code coverage =>', () => {
+    let gridObj: Grid;
+    let e: object;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship Cit', width: 150 },
+                        { field: 'ShipCountry', headerText: 'Ship Counrty', width: 150 },
+                        { field: 'Verified', width: 120, textAlign: 'Right' }]
+                }, done);
+    });
+    it('for coverage - 1', () => {
+        e = { target: gridObj.element.querySelector('.e-emptyrow') };
+        (gridObj.focusModule as any).focusCheck(e);
+        parents(gridObj.element.querySelector('.e-content')as Element, gridObj.element.id, true);
+    });
+    it('for coverage - 2', () => {
+        getComplexFieldID(undefined);
+        getParsedFieldID(undefined);
+        padZero(12);
+        getPrintGridModel(null, gridObj.hierarchyPrintMode);
+        getPrototypesOfObj({id: '1', value: '2'});
+        (gridObj.focusModule as any).onFocus(e);
+    });
+    it('for coverage - 3', () => {
+        (e as any).target.classList.add('e-detailcell');
+        gridObj.focusModule.currentInfo.element = (e as any).target;
+        (gridObj.focusModule as any).passiveFocus(e);
+    });
+    it('for coverage - 4', () => {
+        gridObj.focusModule.currentInfo.skipAction = true;
+        (gridObj.focusModule as any).skipOn(e);
+    });
+    it('for coverage - 5', () => {
+        (gridObj.focusModule as any).addOutline();
+        gridObj.focusModule.currentInfo.element = null;
+        (gridObj.focusModule as any).focusHeader();
+        (gridObj.focusModule as any).focusContent();
+        (gridObj.focusModule as any).resetFocus();
+    });
+    it('for coverage - 6', () => {
+        (gridObj.focusModule as any).findNextCellFocus(0, 0);
+        gridObj.isDestroyed = true;
+        (gridObj.focusModule as any).addEventListener();
+        gridObj.resetIndentWidth();
+        gridObj.addListener();
+        gridObj.isDestroyed = false;
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = e = null;
+    });
+});
+
+// used for code coverage
+describe('Focusing  code coverage =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    frozenRows: 2,
+                    groupSettings: { showDropArea: false, showGroupedColumn: true, columns: ['CustomerID'] },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship Cit', width: 150 },
+                        { field: 'ShipCountry', headerText: 'Ship Counrty', width: 150 },
+                        { field: 'Verified', width: 120, textAlign: 'Right' }]
+                }, done);
+    });
+    it('for coverage - 7', () => {
+        gridObj.groupModule.groupTextFocus = true;
+        gridObj.focusModule.restoreFocus();
+        gridObj.focusModule.setActiveByKey('home', gridObj.focusModule.active);
+        
+    });
+    it('for coverage - 8', () => {
+        (gridObj.focusModule as any).header.getHeaderType();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+// used for code coverage
+describe('Focusing  code coverage =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    frozenRows: 2,
+                    allowFiltering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        {
+                            headerText: 'Order Details', columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                                {
+                                    headerText: 'Ship Details', columns: [
+                                        { field: 'ShippedDate', headerText: 'Shipped Date', textAlign: 'Right', width: 145, format: 'yMd', minWidth: 10},
+                                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140, minWidth: 10 },
+                                    ]
+                                }
+                            ]
+                        },
+                        { field: 'Verified', width: 120, textAlign: 'Right' }
+                    ]
+                }, done);
+    });
+
+    it('for coverage - 9', () => {
+        (gridObj.focusModule as any).content.getGridSeletion();
+        gridObj.focusModule.header.matrix.current = [-1, -1];
+        (gridObj.focusModule as any).header.shouldFocusChange();
+        gridObj.enableHeaderFocus = true;
+        gridObj.focusModule.header.jump('tab',[0, 3]);
+    });
+
+    it('for coverage - 10', () => {
+        (gridObj.focusModule as any).header.getNextCurrent(null, null, null, 'shiftRight');
+        (gridObj.focusModule as any).header.getNextCurrent([1, 0], null, null, 'tab');
+        (gridObj.focusModule as any).content.getNextCurrent([1, 0], null, null, 'tab');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+
+// used for code coverage
+describe('Focusing  code coverage =>', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship Cit', width: 150 },
+                        { field: 'ShipCountry', headerText: 'Ship Counrty', width: 150 },
+                        { field: 'Verified', width: 120, textAlign: 'Right' }]
+                }, done);
+    });
+    it('for coverage - 11', () => {
+        (gridObj as any).frozenLeftBorderColumns(null);
+        (gridObj as any).frozenRightBorderColumns(null);
+        (gridObj as any).widthUnit(true);
+        (gridObj as any).defaultIndentWidth(true);
+    });
+    it('for coverage - 12', () => {
+        let e: object = { target: gridObj.element.querySelector('.e-rowcell') };
+        gridObj.element.classList.add('e-gantt');
+        (gridObj.focusModule as any).onBlur(e);
+    });
+    it('for coverage - 13', () => {
+        let e: object = { target: gridObj.element.querySelector('.e-rowcell'), key: 'Tab', shiftKey : true, preventDefault };
+        (gridObj.focusModule as any).handleFilterNavigation(e, '.e-rowcell', '.e-rowcell');
+        (e as any).shiftKey = false;
+        (gridObj.focusModule as any).handleFilterNavigation(e, '.e-rowcell', '.e-rowcell');
+        (gridObj.focusModule as any).onKeyPress(e);
+    });
+
+    it('for coverage - 14', () => {
+        let e: object = { target: gridObj.element.querySelector('.e-numericitem'), action: 'shiftTab', keyCode: 38, preventDefault };
+        gridObj.pagerModule.pagerObj.element.tabIndex = 0;
+        (gridObj.focusModule as any).onKeyPress(e);
+        let elem: Element = (gridObj.pagerModule as any).element.querySelector('[tabindex]:not([tabindex="-1"])');
+        elem.classList.add('e-focused');
+        (gridObj.focusModule as any).onKeyPress(e);
+        gridObj.element.classList.add('e-detailcell');
+        gridObj.element.classList.add('e-childgrid');
+        (e as any).action = 'tab';
+        (e as any).target = elem;
+        (gridObj.focusModule as any).onKeyPress(e);
+        (e as any).action = '';
+        (gridObj.focusModule as any).onKeyPress(e);
+     
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+// used for code coverage
+describe('Column code coverage =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120
+                        },
+                        {field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Center', width: '80'},
+                        {field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Center', width: '60'},
+                    
+                    ],
+                }, done);
+    });
+    it('execute column setProperties method', (done: Function) => {
+        const col: Column = 
+            {field: 'CustomerID', template: '#template', editTemplate: '#template', textAlign: 'Center', width: '80'} as Column;
+        (gridObj as any).isReact = true;
+        (gridObj.columns[1] as Column).setProperties(col);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+// used for code coverage
+describe('Util  code coverage =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableInfiniteScrolling: true,
+                    height: 400,
+                    frozenRows: 1,
+                    infiniteScrollSettings: { enableCache: true },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship Cit', width: 150 },
+                        { field: 'ShipCountry', headerText: 'Ship Counrty', width: 150 },
+                        { field: 'Verified', width: 120, textAlign: 'Right' }]
+                }, done);
+    });
+    it('for coverage - resetCachedRowIndex', () => {
+        resetCachedRowIndex(gridObj)
+    });
+
+    it('for coverage - sliceElements', () => {
+        sliceElements(gridObj.element.querySelector('.e-row'), 0, 3);
+    });
+
+    it('for coverage - applyStickyLeftRightPosition', () => {
+        applyStickyLeftRightPosition(gridObj.element.querySelector('.e-rowcell'), 100, true, 'Left');
+        applyStickyLeftRightPosition(gridObj.element.querySelector('.e-rowcell'), 100, true, 'Right');
+        getCellFromRow(gridObj, 1, 6);
+    });
+    it('Conetnt-renderer getInfiniteMovableRows coverage', () => {
+        (gridObj as any).contentModule.getInfiniteMovableRows();
+        (gridObj as any).contentModule.infiniteRowVisibility(true);
+    });
+    it('Conetnt-renderer drop coverage', () => {
+        let e = { target: gridObj.element.querySelector('.e-rowcell'), droppedElement: gridObj.element.querySelector('.e-rowcell') };
+        (gridObj as any).contentModule.drop(e);
+    });
+    it('for coverage - canSkip', () => {
+        (gridObj as any).contentModule.canSkip(gridObj.columns[0], gridObj.getRowsObject()[0], 0);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+// used for code coverage
+describe('Conetent-renderer  code coverage =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableVirtualization: true,
+                    height: 400,
+                    frozenRows: 1,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship Cit', width: 150 }]
+                }, done);
+    });
+
+    it('refresh virtual grid', function(done: Function){
+        let dataBound = () => {
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.refresh();
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+// used for code coverage
+describe('Conetnt-renderer code coverage =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,4),
+                    frozenRows: 1,
+                    rowTemplate: '<tr><td>${OrderID}</td><td>${CustomerID}</td><td>${EmployeeID}</td></tr>',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship Cit', width: 150 }]
+                }, done);
+    });
+
+    it('refresh grid', function(done: Function){
+        (gridObj as any).isReact = true;
+        let dataBound = () => {
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.refresh();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+// used for code coverage
+describe('requireTemplateRef code coverage =>', () => {
+    let gridObj: Grid;
+    let load: (args: LoadEventArgs) => void;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' }]
+                }, done);
+    });
+
+    it('hide spinner', function () {
+        gridObj.isExportGrid = true;
+        gridObj.hideSpinner();
+        gridObj.isExportGrid = false;
+    });
+
+    it('freeze refresh 1', function () {
+        gridObj.isReact = true;
+        load = (args: LoadEventArgs) => {
+            args.requireTemplateRef = false;
+        };
+        gridObj.load = load;
+        gridObj.freezeRefresh();
+    });
+
+    it('freeze refresh 2', function () {
+        load = (args: LoadEventArgs) => {
+            args.requireTemplateRef = true;
+        };
+        gridObj.load = load;
+        gridObj.freezeRefresh();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = load = null;
+    });
+});
+
+// used for code coverage
+describe('width controller  code coverage =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: '100%',
+                    width:'100',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID',minWidth:'100', textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name',  },
+                        { field: 'ShipCity', headerText: 'Ship Cit' }]
+                }, done);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+// used for code coverage
+describe('width controller  code coverage =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    width:'100',
+                    allowResizing: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'Customer Name',  },
+                        { field: 'ShipCity', headerText: 'Ship Cit' }]
+                }, done);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for currentViewData public property
+    it("currentViewData", () => {
+        // Test with null value
+        gridObj.currentViewData = null;
+        gridObj.dataBind();
+        expect(gridObj.currentViewData).toBe(null);
+
+        // Test with undefined value
+        gridObj.currentViewData = undefined;
+        gridObj.dataBind();
+        expect(gridObj.currentViewData).toBe(undefined);
+    });
+
+    // Test cases for aggregates public property
+    it("aggregates", () => {
+        // Test with null value
+        gridObj.aggregates = null;
+        gridObj.dataBind();
+        expect(gridObj.aggregates.length).toBe(0);
+
+        // Test with undefined value
+        gridObj.aggregates = undefined;
+        gridObj.dataBind();
+        expect(gridObj.aggregates.length).toBe(0);
+    });
+
+    // Test cases for allowExcelExport public property
+    it("allowExcelExport", () => {
+        // Test with null value
+        gridObj.allowExcelExport = null;
+        gridObj.dataBind();
+        expect(gridObj.allowExcelExport).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowExcelExport = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowExcelExport).toBe(undefined);
+    });
+
+    // Test cases for allowFiltering public property
+    it("allowFiltering", () => {
+        // Test with null value
+        gridObj.allowFiltering = null;
+        gridObj.dataBind();
+        expect(gridObj.allowFiltering).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowFiltering = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowFiltering).toBe(undefined);
+    });
+
+    // Test cases for allowGrouping public property
+    it("allowGrouping", () => {
+        // Test with null value
+        gridObj.allowGrouping = null;
+        gridObj.dataBind();
+        expect(gridObj.allowGrouping).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowGrouping = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowGrouping).toBe(undefined);
+    });
+
+    // Test cases for allowKeyboard public property
+    it("allowKeyboard", () => {
+        // Test with null value
+        gridObj.allowKeyboard = null;
+        gridObj.dataBind();
+        expect(gridObj.allowKeyboard).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowKeyboard = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowKeyboard).toBe(undefined);
+    });
+
+    // Test cases for allowMultiSorting public property
+    it("allowMultiSorting", () => {
+        // Test with null value
+        gridObj.allowMultiSorting = null;
+        gridObj.dataBind();
+        expect(gridObj.allowMultiSorting).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowMultiSorting = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowMultiSorting).toBe(undefined);
+    });
+
+    // Test cases for allowPaging public property
+    it("allowPaging", () => {
+        // Test with null value
+        gridObj.allowPaging = null;
+        gridObj.dataBind();
+        expect(gridObj.allowPaging).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowPaging = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowPaging).toBe(undefined);
+    });
+
+    // Test cases for allowPdfExport public property
+    it("allowPdfExport", () => {
+        // Test with null value
+        gridObj.allowPdfExport = null;
+        gridObj.dataBind();
+        expect(gridObj.allowPdfExport).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowPdfExport = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowPdfExport).toBe(undefined);
+    });
+
+    // Test cases for allowReordering public property
+    it("allowReordering", () => {
+        // Test with null value
+        gridObj.allowReordering = null;
+        gridObj.dataBind();
+        expect(gridObj.allowReordering).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowReordering = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowReordering).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for allowResizing public property
+    it("allowResizing", () => {
+        // Test with null value
+        gridObj.allowResizing = null;
+        gridObj.dataBind();
+        expect(gridObj.allowResizing).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowResizing = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowResizing).toBe(undefined);
+    });
+
+    // Test cases for allowRowDragAndDrop public property
+    it("allowRowDragAndDrop", () => {
+        // Test with null value
+        gridObj.allowRowDragAndDrop = null;
+        gridObj.dataBind();
+        expect(gridObj.allowRowDragAndDrop).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowRowDragAndDrop = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowRowDragAndDrop).toBe(undefined);
+    });
+
+    // Test cases for allowSelection public property
+    it("allowSelection", () => {
+        // Test with null value
+        gridObj.allowSelection = null;
+        gridObj.dataBind();
+        expect(gridObj.allowSelection).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowSelection = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowSelection).toBe(undefined);
+    });
+
+    // Test cases for allowSorting public property
+    it("allowSorting", () => {
+        // Test with null value
+        gridObj.allowSorting = null;
+        gridObj.dataBind();
+        expect(gridObj.allowSorting).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowSorting = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowSorting).toBe(undefined);
+    });
+
+    // Test cases for allowTextWrap public property
+    it("allowTextWrap", () => {
+        // Test with null value
+        gridObj.allowTextWrap = null;
+        gridObj.dataBind();
+        expect(gridObj.allowTextWrap).toBe(null);
+
+        // Test with undefined value
+        gridObj.allowTextWrap = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowTextWrap).toBe(undefined);
+    });
+
+    // Test cases for autoFit public property
+    it("autoFit", () => {
+        // Test with null value
+        gridObj.autoFit = null;
+        gridObj.dataBind();
+        expect(gridObj.autoFit).toBe(null);
+
+        // Test with undefined value
+        gridObj.autoFit = undefined;
+        gridObj.dataBind();
+        expect(gridObj.autoFit).toBe(undefined);
+    });
+
+    // Test cases for childGrid public property
+    it("childGrid", () => {
+        // Test with null value
+        gridObj.childGrid = null;
+        gridObj.dataBind();
+        expect(gridObj.childGrid).toBe(null);
+
+        // Test with undefined value
+        gridObj.childGrid = undefined;
+        gridObj.dataBind();
+        expect(gridObj.childGrid).toBe(undefined);
+    });
+
+    // Test cases for clipMode public property
+    it("clipMode", () => {
+        // Test with null value
+        gridObj.clipMode = null;
+        gridObj.dataBind();
+        expect(gridObj.clipMode).toBe(null);
+
+        // Test with undefined value
+        gridObj.clipMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.clipMode).toBe(undefined);
+    });
+
+    // Test cases for columnMenuItems public property
+    it("columnMenuItems", () => {
+        // Test with null value
+        gridObj.columnMenuItems = null;
+        gridObj.dataBind();
+        expect(gridObj.columnMenuItems).toBe(null);
+
+        // Test with undefined value
+        gridObj.columnMenuItems = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columnMenuItems).toBe(undefined);
+    });
+
+    // Test cases for columnQueryMode public property
+    it("columnQueryMode", () => {
+        // Test with null value
+        gridObj.columnQueryMode = null;
+        gridObj.dataBind();
+        expect(gridObj.columnQueryMode).toBe(null);
+
+        // Test with undefined value
+        gridObj.columnQueryMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columnQueryMode).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for columns public property
+    it("columns", () => {
+        // Test with null value
+        gridObj.columns = null;
+        gridObj.dataBind();
+        expect(gridObj.columns).toBe(null);
+
+        // Test with undefined value
+        gridObj.columns = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columns).toBe(undefined);
+    });
+
+    // Test cases for contextMenuItems public property
+    it("contextMenuItems", () => {
+        // Test with null value
+        gridObj.contextMenuItems = null;
+        gridObj.dataBind();
+        expect(gridObj.contextMenuItems).toBe(null);
+
+        // Test with undefined value
+        gridObj.contextMenuItems = undefined;
+        gridObj.dataBind();
+        expect(gridObj.contextMenuItems).toBe(undefined);
+    });
+
+    // Test cases for cssClass public property
+    it("cssClass", () => {
+        // Test with null value
+        gridObj.cssClass = null;
+        gridObj.dataBind();
+        expect(gridObj.cssClass).toBe(null);
+
+        // Test with undefined value
+        gridObj.cssClass = undefined;
+        gridObj.dataBind();
+        expect(gridObj.cssClass).toBe(undefined);
+    });
+
+    // Test cases for currentAction public property
+    it("currentAction", () => {
+        // Test with null value
+        gridObj.currentAction = null;
+        gridObj.dataBind();
+        expect(gridObj.currentAction).toBe(null);
+
+        // Test with undefined value
+        gridObj.currentAction = undefined;
+        gridObj.dataBind();
+        expect(gridObj.currentAction).toBe(undefined);
+    });
+
+    // Test cases for dataSource public property
+    it("dataSource", () => {
+        // Test with null value
+        gridObj.dataSource = null;
+        gridObj.dataBind();
+        expect(gridObj.dataSource).toBe(null);
+
+        // Test with undefined value
+        gridObj.dataSource = undefined;
+        gridObj.dataBind();
+        expect(gridObj.dataSource).toBe(undefined);
+    });
+
+    // Test cases for detailTemplate public property
+    it("detailTemplate", () => {
+        // Test with null value
+        gridObj.detailTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.detailTemplate).toBe(null);
+
+        // Test with undefined value
+        gridObj.detailTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.detailTemplate).toBe(undefined);
+    });
+
+    // Test cases for ej2StatePersistenceVersion public property
+    it("ej2StatePersistenceVersion", () => {
+        // Test with null value
+        gridObj.ej2StatePersistenceVersion = null;
+        gridObj.dataBind();
+        expect(gridObj.ej2StatePersistenceVersion).toBe(null);
+
+        // Test with undefined value
+        gridObj.ej2StatePersistenceVersion = undefined;
+        gridObj.dataBind();
+        expect(gridObj.ej2StatePersistenceVersion).toBe(undefined);
+    });
+
+    // Test cases for emptyRecordTemplate public property
+    it("emptyRecordTemplate", () => {
+        // Test with null value
+        gridObj.emptyRecordTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.emptyRecordTemplate).toBe(null);
+
+        // Test with undefined value
+        gridObj.emptyRecordTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.emptyRecordTemplate).toBe(undefined);
+    });
+
+    // Test cases for enableAdaptiveUI public property
+    it("enableAdaptiveUI", () => {
+        // Test with null value
+        gridObj.enableAdaptiveUI = null;
+        gridObj.dataBind();
+        expect(gridObj.enableAdaptiveUI).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableAdaptiveUI = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableAdaptiveUI).toBe(undefined);
+    });
+
+    // Test cases for enableAltRow public property
+    it("enableAltRow", () => {
+        // Test with null value
+        gridObj.enableAltRow = null;
+        gridObj.dataBind();
+        expect(gridObj.enableAltRow).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableAltRow = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableAltRow).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for enableAutoFill public property
+    it("enableAutoFill", () => {
+        // Test with null value
+        gridObj.enableAutoFill = null;
+        gridObj.dataBind();
+        expect(gridObj.enableAutoFill).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableAutoFill = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableAutoFill).toBe(undefined);
+    });
+
+    // Test cases for enableColumnVirtualization public property
+    it("enableColumnVirtualization", () => {
+        // Test with null value
+        gridObj.enableColumnVirtualization = null;
+        gridObj.dataBind();
+        expect(gridObj.enableColumnVirtualization).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableColumnVirtualization = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableColumnVirtualization).toBe(undefined);
+    });
+
+    // Test cases for enableHeaderFocus public property
+    it("enableHeaderFocus", () => {
+        // Test with null value
+        gridObj.enableHeaderFocus = null;
+        gridObj.dataBind();
+        expect(gridObj.enableHeaderFocus).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableHeaderFocus = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableHeaderFocus).toBe(undefined);
+    });
+
+    // Test cases for enableHover public property
+    it("enableHover", () => {
+        // Test with null value
+        gridObj.enableHover = null;
+        gridObj.dataBind();
+        expect(gridObj.enableHover).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableHover = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableHover).toBe(undefined);
+    });
+
+    // Test cases for enableHtmlSanitizer public property
+    it("enableHtmlSanitizer", () => {
+        // Test with null value
+        gridObj.enableHtmlSanitizer = null;
+        gridObj.dataBind();
+        expect(gridObj.enableHtmlSanitizer).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableHtmlSanitizer = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableHtmlSanitizer).toBe(undefined);
+    });
+
+    // Test cases for enableImmutableMode public property
+    it("enableImmutableMode", () => {
+        // Test with null value
+        gridObj.enableImmutableMode = null;
+        gridObj.dataBind();
+        expect(gridObj.enableImmutableMode).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableImmutableMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableImmutableMode).toBe(undefined);
+    });
+
+    // Test cases for enableInfiniteScrolling public property
+    it("enableInfiniteScrolling", () => {
+        // Test with null value
+        gridObj.enableInfiniteScrolling = null;
+        gridObj.dataBind();
+        expect(gridObj.enableInfiniteScrolling).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableInfiniteScrolling = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableInfiniteScrolling).toBe(undefined);
+    });
+
+    // Test cases for enablePersistence public property
+    it("enablePersistence", () => {
+        // Test with null value
+        gridObj.enablePersistence = null;
+        gridObj.dataBind();
+        expect(gridObj.enablePersistence).toBe(null);
+
+        // Test with undefined value
+        gridObj.enablePersistence = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enablePersistence).toBe(undefined);
+    });
+
+    // Test cases for enableRtl public property
+    it("enableRtl", () => {
+        // Test with null value
+        gridObj.enableRtl = null;
+        gridObj.dataBind();
+        expect(gridObj.enableRtl).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableRtl = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableRtl).toBe(undefined);
+    });
+
+    // Test cases for enableStickyHeader public property
+    it("enableStickyHeader", () => {
+        // Test with null value
+        gridObj.enableStickyHeader = null;
+        gridObj.dataBind();
+        expect(gridObj.enableStickyHeader).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableStickyHeader = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableStickyHeader).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for enableVirtualMaskRow public property
+    it("enableVirtualMaskRow", () => {
+        // Test with null value
+        gridObj.enableVirtualMaskRow = null;
+        gridObj.dataBind();
+        expect(gridObj.enableVirtualMaskRow).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableVirtualMaskRow = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableVirtualMaskRow).toBe(undefined);
+    });
+
+    // Test cases for enableVirtualization public property
+    it("enableVirtualization", () => {
+        // Test with null value
+        gridObj.enableVirtualization = null;
+        gridObj.dataBind();
+        expect(gridObj.enableVirtualization).toBe(null);
+
+        // Test with undefined value
+        gridObj.enableVirtualization = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableVirtualization).toBe(undefined);
+    });
+
+    // Test cases for exportGrids public property
+    it("exportGrids", () => {
+        // Test with null value
+        gridObj.exportGrids = null;
+        gridObj.dataBind();
+        expect(gridObj.exportGrids).toBe(null);
+
+        // Test with undefined value
+        gridObj.exportGrids = undefined;
+        gridObj.dataBind();
+        expect(gridObj.exportGrids).toBe(undefined);
+    });
+
+    // Test cases for frozenColumns public property
+    it("frozenColumns", () => {
+        // Test with null value
+        gridObj.frozenColumns = null;
+        gridObj.dataBind();
+        expect(gridObj.frozenColumns).toBe(null);
+
+        // Test with undefined value
+        gridObj.frozenColumns = undefined;
+        gridObj.dataBind();
+        expect(gridObj.frozenColumns).toBe(undefined);
+    });
+
+    // Test cases for frozenRows public property
+    it("frozenRows", () => {
+        // Test with null value
+        gridObj.frozenRows = null;
+        gridObj.dataBind();
+        expect(gridObj.frozenRows).toBe(null);
+
+        // Test with undefined value
+        gridObj.frozenRows = undefined;
+        gridObj.dataBind();
+        expect(gridObj.frozenRows).toBe(undefined);
+    });
+
+    // Test cases for gridLines public property
+    it("gridLines", () => {
+        // Test with null value
+        gridObj.gridLines = null;
+        gridObj.dataBind();
+        expect(gridObj.gridLines).toBe(null);
+
+        // Test with undefined value
+        gridObj.gridLines = undefined;
+        gridObj.dataBind();
+        expect(gridObj.gridLines).toBe(undefined);
+    });
+
+    // Test cases for height public property
+    it("height", () => {
+        // Test with null value
+        gridObj.height = null;
+        gridObj.dataBind();
+        expect(gridObj.height).toBe(null);
+
+        // Test with undefined value
+        gridObj.height = undefined;
+        gridObj.dataBind();
+        expect(gridObj.height).toBe(undefined);
+    });
+
+    // Test cases for hierarchyPrintMode public property
+    it("hierarchyPrintMode", () => {
+        // Test with null value
+        gridObj.hierarchyPrintMode = null;
+        gridObj.dataBind();
+        expect(gridObj.hierarchyPrintMode).toBe(null);
+
+        // Test with undefined value
+        gridObj.hierarchyPrintMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.hierarchyPrintMode).toBe(undefined);
+    });
+
+    // Test cases for loadingIndicator public property
+    it("loadingIndicator", () => {
+        // Test with null value
+        gridObj.loadingIndicator.indicatorType = null;
+        gridObj.dataBind();
+        expect(gridObj.loadingIndicator.indicatorType).toBe(null);
+
+        // Test with undefined value
+        gridObj.loadingIndicator.indicatorType = undefined;
+        gridObj.dataBind();
+        expect(gridObj.loadingIndicator.indicatorType).toBe(undefined);
+    });
+
+    // Test cases for locale public property
+    it("locale", () => {
+        // Test with null value
+        gridObj.locale = null;
+        gridObj.dataBind();
+        expect(gridObj.locale).toBe(null);
+
+        // Test with undefined value
+        gridObj.locale = undefined;
+        gridObj.dataBind();
+        expect(gridObj.locale).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for pagerTemplate public property
+    it("pagerTemplate", () => {
+        // Test with null value
+        gridObj.pagerTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.pagerTemplate).toBe(null);
+
+        // Test with undefined value
+        gridObj.pagerTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.pagerTemplate).toBe(undefined);
+    });
+
+    // Test cases for parentDetails public property
+    it("parentDetails", () => {
+        // Test with null value
+        gridObj.parentDetails = null;
+        gridObj.dataBind();
+        expect(gridObj.parentDetails).toBe(null);
+
+        // Test with undefined value
+        gridObj.parentDetails = undefined;
+        gridObj.dataBind();
+        expect(gridObj.parentDetails).toBe(undefined);
+    });
+
+    // Test cases for printMode public property
+    it("printMode", () => {
+        // Test with null value
+        gridObj.printMode = null;
+        gridObj.dataBind();
+        expect(gridObj.printMode).toBe(null);
+
+        // Test with undefined value
+        gridObj.printMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.printMode).toBe(undefined);
+    });
+
+    // Test cases for query public property
+    it("query", () => {
+        // Test with null value
+        gridObj.query = null;
+        gridObj.dataBind();
+        expect(gridObj.query).toBe(null);
+
+        // Test with undefined value
+        gridObj.query = undefined;
+        gridObj.dataBind();
+        expect(gridObj.query).toBe(undefined);
+    });
+
+    // Test cases for queryString public property
+    it("queryString", () => {
+        // Test with null value
+        gridObj.queryString = null;
+        gridObj.dataBind();
+        expect(gridObj.queryString).toBe(null);
+
+        // Test with undefined value
+        gridObj.queryString = undefined;
+        gridObj.dataBind();
+        expect(gridObj.queryString).toBe(undefined);
+    });
+
+    // Test cases for requireTemplateRef public property
+    it("requireTemplateRef", () => {
+        // Test with null value
+        gridObj.requireTemplateRef = null;
+        gridObj.dataBind();
+        expect(gridObj.requireTemplateRef).toBe(null);
+
+        // Test with undefined value
+        gridObj.requireTemplateRef = undefined;
+        gridObj.dataBind();
+        expect(gridObj.requireTemplateRef).toBe(undefined);
+    });
+
+    // Test cases for rowHeight public property
+    it("rowHeight", () => {
+        // Test with null value
+        gridObj.rowHeight = null;
+        gridObj.dataBind();
+        expect(gridObj.rowHeight).toBe(null);
+
+        // Test with undefined value
+        gridObj.rowHeight = undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowHeight).toBe(undefined);
+    });
+
+    // Test cases for rowRenderingMode public property
+    it("rowRenderingMode", () => {
+        // Test with null value
+        gridObj.rowRenderingMode = null;
+        gridObj.dataBind();
+        expect(gridObj.rowRenderingMode).toBe(null);
+
+        // Test with undefined value
+        gridObj.rowRenderingMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowRenderingMode).toBe(undefined);
+    });
+
+    // Test cases for rowTemplate public property
+    it("rowTemplate", () => {
+        // Test with null value
+        gridObj.rowTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.rowTemplate).toBe(null);
+
+        // Test with undefined value
+        gridObj.rowTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowTemplate).toBe(undefined);
+    });
+
+    // Test cases for selectedRowIndex public property
+    it("selectedRowIndex", () => {
+        // Test with null value
+        gridObj.selectedRowIndex = null;
+        gridObj.dataBind();
+        expect(gridObj.selectedRowIndex).toBe(null);
+
+        // Test with undefined value
+        gridObj.selectedRowIndex = undefined;
+        gridObj.dataBind();
+        expect(gridObj.selectedRowIndex).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for showColumnChooser public property
+    it("showColumnChooser", () => {
+        // Test with null value
+        gridObj.showColumnChooser = null;
+        gridObj.dataBind();
+        expect(gridObj.showColumnChooser).toBe(null);
+
+        // Test with undefined value
+        gridObj.showColumnChooser = undefined;
+        gridObj.dataBind();
+        expect(gridObj.showColumnChooser).toBe(undefined);
+    });
+
+    // Test cases for showColumnMenu public property
+    it("showColumnMenu", () => {
+        // Test with null value
+        gridObj.showColumnMenu = null;
+        gridObj.dataBind();
+        expect(gridObj.showColumnMenu).toBe(null);
+
+        // Test with undefined value
+        gridObj.showColumnMenu = undefined;
+        gridObj.dataBind();
+        expect(gridObj.showColumnMenu).toBe(undefined);
+    });
+
+    // Test cases for showHider public property
+    it("showHider", () => {
+        // Test with null value
+        gridObj.showHider = null;
+        gridObj.dataBind();
+        expect(gridObj.showHider).toBe(null);
+
+        // Test with undefined value
+        gridObj.showHider = undefined;
+        gridObj.dataBind();
+        expect(gridObj.showHider).toBe(undefined);
+    });
+
+    // Test cases for toolbar public property
+    it("toolbar", () => {
+        // Test with null value
+        gridObj.toolbar = null;
+        gridObj.dataBind();
+        expect(gridObj.toolbar).toBe(null);
+
+        // Test with undefined value
+        gridObj.toolbar = undefined;
+        gridObj.dataBind();
+        expect(gridObj.toolbar).toBe(undefined);
+    });
+
+    // Test cases for toolbarTemplate public property
+    it("toolbarTemplate", () => {
+        // Test with null value
+        gridObj.toolbarTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.toolbarTemplate).toBe(null);
+
+        // Test with undefined value
+        gridObj.toolbarTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.toolbarTemplate).toBe(undefined);
+    });
+
+    // Test cases for width public property
+    it("width", () => {
+        // Test with null value
+        gridObj.width = null;
+        gridObj.dataBind();
+        expect(gridObj.width).toBe(null);
+
+        // Test with undefined value
+        gridObj.width = undefined;
+        gridObj.dataBind();
+        expect(gridObj.width).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for each public property
+    it("clipboardModule", () => {
+        // Test with null value
+        gridObj.clipboardModule = null;
+        gridObj.dataBind();
+        expect(gridObj.clipboardModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.clipboardModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.clipboardModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("columnMenuModule", () => {
+        // Test with null value
+        gridObj.columnMenuModule = null;
+        gridObj.dataBind();
+        expect(gridObj.columnMenuModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.columnMenuModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columnMenuModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("contextMenuModule", () => {
+        // Test with null value
+        gridObj.contextMenuModule = null;
+        gridObj.dataBind();
+        expect(gridObj.contextMenuModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.contextMenuModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.contextMenuModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("editModule", () => {
+        // Test with null value
+        gridObj.editModule = null;
+        gridObj.dataBind();
+        expect(gridObj.editModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.editModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.editModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("excelExportModule", () => {
+        // Test with null value
+        gridObj.excelExportModule = null;
+        gridObj.dataBind();
+        expect(gridObj.excelExportModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.excelExportModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.excelExportModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("filterModule", () => {
+        // Test with null value
+        gridObj.filterModule = null;
+        gridObj.dataBind();
+        expect(gridObj.filterModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.filterModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.filterModule).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for each public property
+    it("groupModule", () => {
+        // Test with null value
+        gridObj.groupModule = null;
+        gridObj.dataBind();
+        expect(gridObj.groupModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.groupModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.groupModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("infiniteScrollModule", () => {
+        // Test with null value
+        gridObj.infiniteScrollModule = null;
+        gridObj.dataBind();
+        expect(gridObj.infiniteScrollModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.infiniteScrollModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.infiniteScrollModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("keyboardModule", () => {
+        // Test with null value
+        gridObj.keyboardModule = null;
+        gridObj.dataBind();
+        expect(gridObj.keyboardModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.keyboardModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.keyboardModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("pagerModule", () => {
+        // Test with null value
+        gridObj.pagerModule = null;
+        gridObj.dataBind();
+        expect(gridObj.pagerModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.pagerModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.pagerModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("pdfExportModule", () => {
+        // Test with null value
+        gridObj.pdfExportModule = null;
+        gridObj.dataBind();
+        expect(gridObj.pdfExportModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.pdfExportModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.pdfExportModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("printModule", () => {
+        // Test with null value
+        gridObj.printModule = null;
+        gridObj.dataBind();
+        expect(gridObj.printModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.printModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.printModule).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for each public property
+    it("reorderModule", () => {
+        // Test with null value
+        gridObj.reorderModule = null;
+        gridObj.dataBind();
+        expect(gridObj.reorderModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.reorderModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.reorderModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("rowDragAndDropModule", () => {
+        // Test with null value
+        gridObj.rowDragAndDropModule = null;
+        gridObj.dataBind();
+        expect(gridObj.rowDragAndDropModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.rowDragAndDropModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowDragAndDropModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("scrollModule", () => {
+        // Test with null value
+        gridObj.scrollModule = null;
+        gridObj.dataBind();
+        expect(gridObj.scrollModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.scrollModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.scrollModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("searchModule", () => {
+        // Test with null value
+        gridObj.searchModule = null;
+        gridObj.dataBind();
+        expect(gridObj.searchModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.searchModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.searchModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("selectionModule", () => {
+        // Test with null value
+        gridObj.selectionModule = null;
+        gridObj.dataBind();
+        expect(gridObj.selectionModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.selectionModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.selectionModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("sortModule", () => {
+        // Test with null value
+        gridObj.sortModule = null;
+        gridObj.dataBind();
+        expect(gridObj.sortModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.sortModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.sortModule).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("toolbarModule", () => {
+        // Test with null value
+        gridObj.toolbarModule = null;
+        gridObj.dataBind();
+        expect(gridObj.toolbarModule).toBe(null);
+
+        // Test with undefined value
+        gridObj.toolbarModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.toolbarModule).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for each public property
+    it("columnChooserSettings", () => {
+        // Test with null value
+        gridObj.columnChooserSettings.ignoreAccent = null;
+        gridObj.columnChooserSettings.operator = null;
+        gridObj.dataBind();
+        expect(gridObj.columnChooserSettings.ignoreAccent).toBe(null);
+        expect(gridObj.columnChooserSettings.operator).toBe(null);
+
+        // Test with undefined value
+        gridObj.columnChooserSettings.ignoreAccent = undefined;
+        gridObj.columnChooserSettings.operator = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columnChooserSettings.ignoreAccent).toBe(undefined);
+        expect(gridObj.columnChooserSettings.operator).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("editSettings", () => {
+        // Test with null value
+        gridObj.editSettings.allowAdding = null;
+        gridObj.editSettings.allowDeleting = null;
+        gridObj.editSettings.allowEditOnDblClick = null;
+        gridObj.editSettings.allowEditing = null;
+        gridObj.editSettings.allowNextRowEdit = null;
+        gridObj.editSettings.dialog = null;
+        gridObj.editSettings.footerTemplate = null;
+        gridObj.editSettings.headerTemplate = null;
+        gridObj.editSettings.mode = null;
+        gridObj.dataBind();
+        expect(gridObj.editSettings.allowAdding).toBe(null);
+        expect(gridObj.editSettings.allowDeleting).toBe(null);
+        expect(gridObj.editSettings.allowEditOnDblClick).toBe(null);
+        expect(gridObj.editSettings.allowEditing).toBe(null);
+        expect(gridObj.editSettings.allowNextRowEdit).toBe(null);
+        expect(gridObj.editSettings.dialog).toBe(null);
+        expect(gridObj.editSettings.footerTemplate).toBe(null);
+        expect(gridObj.editSettings.headerTemplate).toBe(null);
+        expect(gridObj.editSettings.mode).toBe(null);
+
+        // Test with undefined value
+        gridObj.editSettings.allowAdding = undefined;
+        gridObj.editSettings.allowDeleting = undefined;
+        gridObj.editSettings.allowEditOnDblClick= undefined;
+        gridObj.editSettings.allowEditing = undefined;
+        gridObj.editSettings.allowNextRowEdit = undefined;
+        gridObj.editSettings.dialog = undefined;
+        gridObj.editSettings.footerTemplate = undefined;
+        gridObj.editSettings.headerTemplate = undefined;
+        gridObj.editSettings.mode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.editSettings.allowAdding).toBe(undefined);
+        expect(gridObj.editSettings.allowDeleting).toBe(undefined);
+        expect(gridObj.editSettings.allowEditOnDblClick).toBe(undefined);
+        expect(gridObj.editSettings.allowEditing).toBe(undefined);
+        expect(gridObj.editSettings.allowNextRowEdit).toBe(undefined);
+        expect(gridObj.editSettings.dialog).toBe(undefined);
+        expect(gridObj.editSettings.footerTemplate).toBe(undefined);
+        expect(gridObj.editSettings.headerTemplate).toBe(undefined);
+        expect(gridObj.editSettings.mode).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("filterSettings", () => {
+        // Test with null value
+        gridObj.filterSettings.columns = null;
+        gridObj.filterSettings.enableCaseSensitivity = null;
+        gridObj.filterSettings.enableInfiniteScrolling = null;
+        gridObj.filterSettings.ignoreAccent = null;
+        gridObj.filterSettings.immediateModeDelay = null;
+        gridObj.filterSettings.itemsCount = null;
+        gridObj.filterSettings.loadingIndicator = null;
+        gridObj.filterSettings.mode = null;
+        gridObj.filterSettings.operators = null;
+        gridObj.filterSettings.showFilterBarOperator = null;
+        gridObj.filterSettings.showFilterBarStatus = null;
+        gridObj.filterSettings.type = null;
+        gridObj.dataBind();
+        expect(gridObj.filterSettings.columns.length).toBe(0);
+        expect(gridObj.filterSettings.enableCaseSensitivity).toBe(null);
+        expect(gridObj.filterSettings.enableInfiniteScrolling).toBe(null);
+        expect(gridObj.filterSettings.ignoreAccent).toBe(null);
+        expect(gridObj.filterSettings.immediateModeDelay).toBe(null);
+        expect(gridObj.filterSettings.itemsCount).toBe(null);
+        expect(gridObj.filterSettings.loadingIndicator).toBe(null);
+        expect(gridObj.filterSettings.mode).toBe(null);
+        expect(gridObj.filterSettings.operators).toBe(null);
+        expect(gridObj.filterSettings.showFilterBarOperator).toBe(null);
+        expect(gridObj.filterSettings.showFilterBarStatus).toBe(null);
+        expect(gridObj.filterSettings.type).toBe(null);
+
+        // Test with undefined value
+        gridObj.filterSettings.columns = undefined;
+        gridObj.filterSettings.enableCaseSensitivity = undefined;
+        gridObj.filterSettings.enableInfiniteScrolling = undefined;
+        gridObj.filterSettings.ignoreAccent = undefined;
+        gridObj.filterSettings.immediateModeDelay = undefined;
+        gridObj.filterSettings.itemsCount = undefined;
+        gridObj.filterSettings.loadingIndicator = undefined;
+        gridObj.filterSettings.mode = undefined;
+        gridObj.filterSettings.operators = undefined;
+        gridObj.filterSettings.showFilterBarOperator = undefined;
+        gridObj.filterSettings.showFilterBarStatus = undefined;
+        gridObj.filterSettings.type = undefined;
+        gridObj.dataBind();
+        expect(gridObj.filterSettings.columns.length).toBe(0);
+        expect(gridObj.filterSettings.enableCaseSensitivity).toBe(undefined);
+        expect(gridObj.filterSettings.enableInfiniteScrolling).toBe(undefined);
+        expect(gridObj.filterSettings.ignoreAccent).toBe(undefined);
+        expect(gridObj.filterSettings.immediateModeDelay).toBe(undefined);
+        expect(gridObj.filterSettings.itemsCount).toBe(undefined);
+        expect(gridObj.filterSettings.loadingIndicator).toBe(undefined);
+        expect(gridObj.filterSettings.mode).toBe(undefined);
+        expect(gridObj.filterSettings.operators).toBe(undefined);
+        expect(gridObj.filterSettings.showFilterBarOperator).toBe(undefined);
+        expect(gridObj.filterSettings.showFilterBarStatus).toBe(undefined);
+        expect(gridObj.filterSettings.type).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("groupSettings", () => {
+        // Test with null value
+        gridObj.groupSettings.allowReordering = null;
+        gridObj.groupSettings.captionTemplate = null;
+        gridObj.groupSettings.columns = null;
+        gridObj.groupSettings.disablePageWiseAggregates = null;
+        gridObj.groupSettings.enableLazyLoading = null;
+        gridObj.groupSettings.showDropArea = null;
+        gridObj.groupSettings.showGroupedColumn = null;
+        gridObj.groupSettings.showToggleButton = null;
+        gridObj.groupSettings.showUngroupButton = null;
+        gridObj.dataBind();
+        expect(gridObj.groupSettings.allowReordering).toBe(null);
+        expect(gridObj.groupSettings.captionTemplate).toBe(null);
+        expect(gridObj.groupSettings.columns).toBe(null);
+        expect(gridObj.groupSettings.disablePageWiseAggregates).toBe(null);
+        expect(gridObj.groupSettings.enableLazyLoading).toBe(null);
+        expect(gridObj.groupSettings.showDropArea).toBe(null);
+        expect(gridObj.groupSettings.showGroupedColumn).toBe(null);
+        expect(gridObj.groupSettings.showToggleButton).toBe(null);
+        expect(gridObj.groupSettings.showUngroupButton).toBe(null);
+
+        // Test with undefined value
+        gridObj.groupSettings.allowReordering = undefined;
+        gridObj.groupSettings.captionTemplate = undefined;
+        gridObj.groupSettings.columns = undefined;
+        gridObj.groupSettings.disablePageWiseAggregates = undefined;
+        gridObj.groupSettings.enableLazyLoading = undefined;
+        gridObj.groupSettings.showDropArea = undefined;
+        gridObj.groupSettings.showGroupedColumn = undefined;
+        gridObj.groupSettings.showToggleButton = undefined;
+        gridObj.groupSettings.showUngroupButton = undefined;
+        gridObj.dataBind();
+        expect(gridObj.groupSettings.allowReordering).toBe(undefined);
+        expect(gridObj.groupSettings.captionTemplate).toBe(undefined);
+        expect(gridObj.groupSettings.columns).toBe(undefined);
+        expect(gridObj.groupSettings.disablePageWiseAggregates).toBe(undefined);
+        expect(gridObj.groupSettings.enableLazyLoading).toBe(undefined);
+        expect(gridObj.groupSettings.showDropArea).toBe(undefined);
+        expect(gridObj.groupSettings.showGroupedColumn).toBe(undefined);
+        expect(gridObj.groupSettings.showToggleButton).toBe(undefined);
+        expect(gridObj.groupSettings.showUngroupButton).toBe(undefined);
+    });
+
+
+    // Test cases for each public property
+    it("infiniteScrollSettings", () => {
+        // Test with null value
+        gridObj.infiniteScrollSettings.enableCache = null;
+        gridObj.infiniteScrollSettings.initialBlocks = null;
+        gridObj.infiniteScrollSettings.maxBlocks = null;
+        gridObj.dataBind();
+        expect(gridObj.infiniteScrollSettings.enableCache).toBe(null);
+        expect(gridObj.infiniteScrollSettings.initialBlocks).toBe(null);
+        expect(gridObj.infiniteScrollSettings.maxBlocks).toBe(null);
+
+        // Test with undefined value
+        gridObj.infiniteScrollSettings.enableCache = undefined;
+        gridObj.infiniteScrollSettings.initialBlocks = undefined;
+        gridObj.infiniteScrollSettings.maxBlocks = undefined;
+        gridObj.dataBind();
+        expect(gridObj.infiniteScrollSettings.enableCache).toBe(undefined);
+        expect(gridObj.infiniteScrollSettings.initialBlocks).toBe(undefined);
+        expect(gridObj.infiniteScrollSettings.maxBlocks).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("pageSettings", () => {
+        // Test with null value
+        gridObj.pageSettings.currentPage = null;
+        gridObj.pageSettings.enableQueryString = null;
+        gridObj.pageSettings.pageCount = null;
+        gridObj.pageSettings.pageSize = null;
+        gridObj.pageSettings.pageSizes = null;
+        gridObj.pageSettings.template = null;
+        gridObj.dataBind();
+        expect(gridObj.pageSettings.currentPage).toBe(null);
+        expect(gridObj.pageSettings.enableQueryString).toBe(null);
+        expect(gridObj.pageSettings.pageCount).toBe(null);
+        expect(gridObj.pageSettings.pageSize).toBe(null);
+        expect(gridObj.pageSettings.pageSizes).toBe(null);
+        expect(gridObj.pageSettings.template).toBe(null);
+
+        // Test with undefined value
+        gridObj.pageSettings.currentPage = undefined;
+        gridObj.pageSettings.enableQueryString = undefined;
+        gridObj.pageSettings.pageCount = undefined;
+        gridObj.pageSettings.pageSize = undefined;
+        gridObj.pageSettings.pageSizes = undefined;
+        gridObj.pageSettings.template = undefined;
+        gridObj.dataBind();
+        expect(gridObj.pageSettings.currentPage).toBe(undefined);
+        expect(gridObj.pageSettings.enableQueryString).toBe(undefined);
+        expect(gridObj.pageSettings.pageCount).toBe(undefined);
+        expect(gridObj.pageSettings.pageSize).toBe(undefined);
+        expect(gridObj.pageSettings.pageSizes).toBe(undefined);
+        expect(gridObj.pageSettings.template).toBe(undefined);
+    });
+
+        // Test cases for each public property
+        it("resizeSettings", () => {
+            // Test with null value
+            gridObj.resizeSettings.mode = null;
+            gridObj.dataBind();
+            expect(gridObj.resizeSettings.mode).toBe(null);
+    
+            // Test with undefined value
+            gridObj.resizeSettings.mode = undefined;
+            gridObj.dataBind();
+            expect(gridObj.resizeSettings.mode).toBe(undefined);
+        });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Grid Public properties null or undefined value testing", () => {
+    let gridObj: Grid;
+    // Setup
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'Customer Name',  },
+                    { field: 'ShipCity', headerText: 'Ship Cit' }]
+            }, done);
+        });
+
+    // Test cases for each public property
+    it("rowDropSettings", () => {
+        // Test with null value
+        gridObj.rowDropSettings.targetID= null;
+        gridObj.dataBind();
+        expect(gridObj.rowDropSettings.targetID).toBe(null);
+
+        // Test with undefined value
+        gridObj.rowDropSettings.targetID= undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowDropSettings.targetID).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("searchSettings", () => {
+        // Test with null value
+        gridObj.searchSettings.fields = null;
+        gridObj.searchSettings.ignoreAccent = null;
+        gridObj.searchSettings.ignoreCase = null;
+        gridObj.searchSettings.key = null;
+        gridObj.searchSettings.operator = null;
+        gridObj.dataBind();
+        expect(gridObj.searchSettings.fields).toBe(null);
+        expect(gridObj.searchSettings.ignoreAccent).toBe(null);
+        expect(gridObj.searchSettings.ignoreCase).toBe(null);
+        expect(gridObj.searchSettings.key).toBe(null);
+        expect(gridObj.searchSettings.operator).toBe(null);
+
+        // Test with undefined value
+        gridObj.searchSettings.fields = undefined;
+        gridObj.searchSettings.ignoreAccent = undefined;
+        gridObj.searchSettings.ignoreCase = undefined;
+        gridObj.searchSettings.key = undefined;
+        gridObj.searchSettings.operator = undefined;
+        gridObj.dataBind();
+        expect(gridObj.searchSettings.fields).toBe(undefined);
+        expect(gridObj.searchSettings.ignoreAccent).toBe(undefined);
+        expect(gridObj.searchSettings.ignoreCase).toBe(undefined);
+        expect(gridObj.searchSettings.key).toBe(undefined);
+        expect(gridObj.searchSettings.operator).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("selectionSettings", () => {
+        // Test with null value
+        gridObj.selectionSettings.allowColumnSelection = null;
+        gridObj.selectionSettings.cellSelectionMode = null;
+        gridObj.selectionSettings.checkboxMode = null;
+        gridObj.selectionSettings.checkboxOnly = null;
+        gridObj.selectionSettings.enableSimpleMultiRowSelection = null;
+        gridObj.selectionSettings.enableToggle = null;
+        gridObj.selectionSettings.mode = null;
+        gridObj.selectionSettings.persistSelection = null;
+        gridObj.selectionSettings.mode = null;
+        gridObj.selectionSettings.type = null;
+        gridObj.dataBind();
+        expect(gridObj.selectionSettings.allowColumnSelection).toBe(null);
+        expect(gridObj.selectionSettings.cellSelectionMode).toBe(null);
+        expect(gridObj.selectionSettings.checkboxMode).toBe(null);
+        expect(gridObj.selectionSettings.checkboxOnly).toBe(null);
+        expect(gridObj.selectionSettings.enableSimpleMultiRowSelection).toBe(null);
+        expect(gridObj.selectionSettings.enableToggle).toBe(null);
+        expect(gridObj.selectionSettings.mode).toBe(null);
+        expect(gridObj.selectionSettings.type).toBe(null);
+        expect(gridObj.selectionSettings.mode).toBe(null);
+        expect(gridObj.selectionSettings.persistSelection).toBe(null);
+
+        // Test with undefined value
+        gridObj.selectionSettings.allowColumnSelection = undefined;
+        gridObj.selectionSettings.cellSelectionMode = undefined;
+        gridObj.selectionSettings.checkboxMode = undefined;
+        gridObj.selectionSettings.checkboxOnly = undefined;
+        gridObj.selectionSettings.enableSimpleMultiRowSelection = undefined;
+        gridObj.selectionSettings.enableToggle = undefined;
+        gridObj.selectionSettings.mode = undefined;
+        gridObj.selectionSettings.persistSelection = undefined;
+        gridObj.selectionSettings.mode = undefined;
+        gridObj.selectionSettings.type = undefined;
+        gridObj.dataBind();
+        expect(gridObj.selectionSettings.allowColumnSelection).toBe(undefined);
+        expect(gridObj.selectionSettings.cellSelectionMode).toBe(undefined);
+        expect(gridObj.selectionSettings.checkboxMode).toBe(undefined);
+        expect(gridObj.selectionSettings.checkboxOnly).toBe(undefined);
+        expect(gridObj.selectionSettings.enableSimpleMultiRowSelection).toBe(undefined);
+        expect(gridObj.selectionSettings.enableToggle).toBe(undefined);
+        expect(gridObj.selectionSettings.mode).toBe(undefined);
+        expect(gridObj.selectionSettings.type).toBe(undefined);
+        expect(gridObj.selectionSettings.mode).toBe(undefined);
+        expect(gridObj.selectionSettings.persistSelection).toBe(undefined);
+    });
+
+    // Test cases for each public property
+    it("sortSettings", () => {
+        // Test with null value
+        gridObj.sortSettings.allowUnsort = null;
+        gridObj.sortSettings.columns = null;
+        gridObj.dataBind();
+        expect(gridObj.sortSettings.allowUnsort).toBe(null);
+        expect(gridObj.sortSettings.columns.length).toBe(0);
+
+        // Test with undefined value
+        gridObj.sortSettings.allowUnsort = undefined;
+        gridObj.sortSettings.columns = undefined;
+        gridObj.dataBind();
+        expect(gridObj.sortSettings.allowUnsort).toBe(undefined);
+        expect(gridObj.sortSettings.columns.length).toBe(0);
+    });
+
+    // Test cases for each public property
+    it("textWrapSettings", () => {
+        // Test with null value
+        gridObj.textWrapSettings.wrapMode= null;
+        gridObj.dataBind();
+        expect(gridObj.textWrapSettings.wrapMode).toBe(null);
+
+        // Test with undefined value
+        gridObj.textWrapSettings.wrapMode= undefined;
+        gridObj.dataBind();
+        expect(gridObj.textWrapSettings.wrapMode).toBe(undefined);
+    });
+
+    // Cleanup
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
 
 describe('EJ2-883850: Custom localization apply on expand/collapse icon =>', () => {
     let grid: Grid;
@@ -2369,3 +4532,4 @@ describe('EJ2-883850: Custom localization apply on expand/collapse icon =>', () 
     });
 
 });
+

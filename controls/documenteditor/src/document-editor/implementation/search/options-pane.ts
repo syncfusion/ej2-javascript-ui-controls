@@ -261,6 +261,7 @@ export class OptionsPane {
     }
     private nodeClick(args: NodeClickEventArgs): void {
         let targetNodeId: any = this.treeviewObject.selectedNodes[0];
+        if(!isNullOrUndefined(targetNodeId))
         this.documentHelper.selection.navigateBookmark(this.data[(targetNodeId - 1)].hyperlink.toString(), true);
     }
     /**
@@ -350,7 +351,7 @@ export class OptionsPane {
         let widgets: ParagraphWidget[] = this.documentHelper.owner.editorModule.buildToc(this.validateHeadingSettings(headingPaneSettings), code, false, true, true);
         if (this.documentHelper.owner.editorHistory) {
             this.documentHelper.owner.editorHistory.updateComplexHistory();
-            if (this.documentHelper.owner.editorHistory.undoStack.length > 1 
+            if (this.documentHelper.owner.editorHistory.undoStack.length > 1
                 && !isNullOrUndefined((this.documentHelper.owner.editorHistory.undoStack[this.documentHelper.owner.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions)) {
                 this.documentHelper.owner.editorHistory.undoStack.pop();
             }
@@ -1245,6 +1246,7 @@ export class OptionsPane {
      */
     public showHideOptionsPane(show: boolean): void {
         if (!isNullOrUndefined(this.documentHelper.owner.selectionModule)) {
+            this.documentHelper.owner.fireOptionPaneChange(show);
             if (show) {
                 this.localeValue = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
                 this.localeValue.setLocale(this.documentHelper.owner.locale);

@@ -246,7 +246,6 @@ describe('Map polygon properties tesing', () => {
                 expect(map.scale === 2.0300000000000002).toBe(true);
             };
             map.zoomSettings.zoomOnClick = true;
-            map.layers[0].layerType = 'Geometry';
             map.refresh();
         });
         it('Checking with Zoom in button with shouldZoomInitially as true', () => {
@@ -381,7 +380,7 @@ describe('Map polygon properties tesing', () => {
                 baseLayerIndex: 0,
                 layers: [
                     {
-                        layerType: 'OSM',
+                        urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
                     }
                 ]
             }, '#' + id);
@@ -632,7 +631,65 @@ describe('Map polygon properties tesing', () => {
         map.refresh();
         });
     });
-        
+    describe('polygon Checking with osm ', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                zoomSettings:{
+                    enable: true,
+                },
+                baseLayerIndex: 0,
+                layers: [
+                    {
+                        urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('polygon shape as null and empty', () => {
+            map.loaded = (args: ILoadedEventArgs) => {              
+                spec = getElementByID(id + "_LayerIndex_0_PolygonIndex_2");
+                expect(spec !== null).toBe(true);
+            };
+            map.layers[0].polygonSettings.polygons = [
+                {
+
+                },
+                {
+                    points: null
+                },
+                {
+                    points: [
+                        { longitude: 77.83745079947455, latitude: 35.49400950778776 },
+                        { longitude: 78.91226891471321, latitude: 34.32193634697578 },
+                        { longitude: 78.81108646028572, latitude: 33.506198025032404 },
+                        { longitude: 79.20889163606857, latitude: 32.99439463961371 },
+                        { longitude: 79.1761287779955, latitude: 32.483779812137705 },
+                        { longitude: 78.458446486326, latitude: 32.61816437431272 },
+                        { longitude: 78.738894484374, latitude: 31.515906073527056 },
+                        { longitude: 79.72136681510709, latitude: 30.882714748654724 },
+                        { longitude: 81.11125613802929, latitude: 30.1834809433134 },
+                        { longitude: 80.47672122591737, latitude: 29.729865220655334 },
+                        { longitude: 80.08842451367626, latitude: 28.794470119740136 },
+                        { longitude: 81.057202589852, latitude: 28.416095282499036 },
+                    ],
+                }
+        ];
+        map.refresh();
+        });
+    })
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

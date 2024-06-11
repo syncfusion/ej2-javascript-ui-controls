@@ -102,7 +102,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
     if ((node.shape as UmlClassifierShapeModel).classifier === 'Enumeration') {
         const member: UmlEnumerationMemberModel[] = (classifier as UmlEnumerationModel).members;
         if (member && member.length) {
-            addSeparator(node, diagram); 
+            addSeparator(node, diagram);
             let memberText: string = '';
             for (let i: number = 0; i < member.length; i++) {
                 const members: UmlEnumerationMemberModel = member[parseInt(i.toString(), 10)];
@@ -119,8 +119,9 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                                     id: 'name', content: memberText, offset: { x: 0, y: 0.5 },
                                     style: {
                                         bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                        textWrapping: textWrap,italic:style.italic,fontFamily:style.fontFamily,whiteSpace:style.whiteSpace,
-                                        textAlign:style.textAlign,textDecoration:style.textDecoration,textOverflow:style.textOverflow
+                                        textWrapping: textWrap, italic: style.italic, fontFamily: style.fontFamily,
+                                        whiteSpace: style.whiteSpace, textAlign: style.textAlign,
+                                        textDecoration: style.textDecoration, textOverflow: style.textOverflow
                                     },
                                     margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                                 }
@@ -133,14 +134,14 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                             (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
                             minHeight: 25
                         } as NodeModel,
-                    true);
+                        true);
                     diagram.initObject(temp);
                     diagram.nodes.push(temp);
                     diagram.UpdateBlazorDiagramModel(temp as Node, 'Node');
                     node.children.push(temp.id);
                     memberText = '';
                     if (members.isSeparator && (i !== member.length - 1)) {
-                        addSeparator(node, diagram,members.separatorStyle);
+                        addSeparator(node, diagram, members.separatorStyle);
                     }
                     //isSeperator boolean set as false whether it is set as true for last element
                     if (members.isSeparator && (i === member.length - 1)) {
@@ -182,8 +183,9 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                                     id: 'name', content: attributeText, offset: { x: 0, y: 0.5 },
                                     style: {
                                         bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                        textWrapping: textWrap,italic:style.italic,fontFamily:style.fontFamily,whiteSpace:style.whiteSpace,
-                                        textAlign:style.textAlign,textDecoration:style.textDecoration,textOverflow:style.textOverflow
+                                        textWrapping: textWrap, italic: style.italic, fontFamily: style.fontFamily,
+                                        whiteSpace: style.whiteSpace, textAlign: style.textAlign,
+                                        textDecoration: style.textDecoration, textOverflow: style.textOverflow
                                     },
                                     margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                                 }
@@ -199,7 +201,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                     node.children.push(temp.id);
                     attributeText = '';
                     if (attribute.isSeparator && (i !== attributes.length - 1)) {
-                        addSeparator(node, diagram,attribute.separatorStyle);
+                        addSeparator(node, diagram, attribute.separatorStyle);
                     }
                     //isSeperator boolean set as false whether it is set as true for last element
                     if (attribute.isSeparator && (i === attributes.length - 1)) {
@@ -221,26 +223,26 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
  * @param {TextWrap} textWrap - provide the textWrap  value.
  * @private
  */
- export function getClassNodesChild(node: Node, diagram: Diagram, classifier: UmlClassModel, textWrap: TextWrap): void {
+export function getClassNodesChild(node: Node, diagram: Diagram, classifier: UmlClassModel, textWrap: TextWrap): void {
     if ((node.shape as UmlClassifierShapeModel).classifier === 'Enumeration') {
         const member: UmlEnumerationMemberModel[] = (classifier as UmlEnumerationModel).members;
         let memberText: string = '';
         // if there is no members in existing array, then the separator need to be added for new member
-        if(member.length == 1){
-            let newIndex:number = member.length;
-            addSeparatorChild(node, diagram,newIndex);
+        if (member.length === 1) {
+            const newIndex: number = member.length;
+            addSeparatorChild(node, diagram, newIndex);
         }
-        let count:number = 0;
+        let count: number = 0;
         // Need to indentify the index value for newly added member
-        for (let i: number = 0; i < member.length-1; i++) {
-            if(member[parseInt(i.toString(), 10)].isSeparator == true){
+        for (let i: number = 0; i < member.length - 1; i++) {
+            if (member[parseInt(i.toString(), 10)].isSeparator === true) {
                 count++;
             }
         }
-        const index: number  = member.length + count +1;
+        const index: number = member.length + count + 1;
         //Iterate through an array of members and create each member as a child node to the UML node
         for (let i: number = 0; i < member.length; i++) {
-            const members: UmlEnumerationMemberModel = member[member.length-1];
+            const members: UmlEnumerationMemberModel = member[member.length - 1];
             if (members.name !== '') {
                 memberText += members.name;
             }
@@ -254,8 +256,9 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                                 id: 'name', content: memberText, offset: { x: 0, y: 0.5 },
                                 style: {
                                     bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                    textWrapping: textWrap,italic:style.italic,fontFamily:style.fontFamily,whiteSpace:style.whiteSpace,
-                                    textAlign:style.textAlign,textDecoration:style.textDecoration,textOverflow:style.textOverflow
+                                    textWrapping: textWrap, italic: style.italic, fontFamily: style.fontFamily,
+                                    whiteSpace: style.whiteSpace, textAlign: style.textAlign,
+                                    textDecoration: style.textDecoration, textOverflow: style.textOverflow
                                 },
                                 margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                             }
@@ -268,12 +271,11 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                         (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
                         minHeight: 25
                     } as NodeModel,
-                true);
+                    true);
                 (temp as Node).parentId = node.id;
                 (temp as Node).umlIndex = index;
                 diagram.add(temp);
                 memberText = '';
-              
             }
             break;
         }
@@ -291,27 +293,27 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
  * @param {TextWrap} textWrap - provide the textWrap  value.
  * @private
  */
- export function getClassAttributesChild(node: Node, diagram: Diagram, classifier: UmlClassModel, textWrap: TextWrap): void {
+export function getClassAttributesChild(node: Node, diagram: Diagram, classifier: UmlClassModel, textWrap: TextWrap): void {
     if ((classifier as UmlClassModel).attributes && (classifier as UmlClassModel).attributes.length) {
         const attributes: UmlClassAttributeModel[] = (classifier as UmlClassModel).attributes;
         let attributeText: string = '';
         let text: string;
         // if there is no attributes in existing array, then the separator need to be added for new attribute
-        if(attributes.length == 1){
-            let newIndex:number = attributes.length;
-            addSeparatorChild(node, diagram,newIndex);
+        if (attributes.length === 1) {
+            const newIndex: number = attributes.length;
+            addSeparatorChild(node, diagram, newIndex);
         }
-        let count:number = 0;
+        let count: number = 0;
         // Need to indentify the index value for newly added attribute
-        for (let i: number = 0; i < attributes.length-1; i++) {
-            if(attributes[parseInt(i.toString(), 10)].isSeparator == true){
+        for (let i: number = 0; i < attributes.length - 1; i++) {
+            if (attributes[parseInt(i.toString(), 10)].isSeparator === true) {
                 count++;
             }
         }
-        const index: number  = attributes.length + count +1;
+        const index: number = attributes.length + count + 1;
         //Iterate through an array of attributes and create each attribute as a child node to the UML node
         for (let i: number = 0; i < attributes.length; i++) {
-            const attribute: UmlClassAttributeModel = attributes[attributes.length-1];
+            const attribute: UmlClassAttributeModel = attributes[attributes.length - 1];
             if (attribute.scope && (attribute).scope === 'Public') {
                 text = ' +';
             } else if (attribute.scope && attribute.scope === 'Private') {
@@ -330,15 +332,18 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                 const style: TextStyleModel = getStyle(node, attribute);
                 const temp: NodeModel = new Node(
                     diagram, 'nodes', {
-                        id: randomId() + '_umlProperty', style: { fill: node.style.fill,
-                            strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor },
+                        id: randomId() + '_umlProperty', style: {
+                            fill: node.style.fill,
+                            strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor
+                        },
                         annotations: [
                             {
                                 id: 'name', content: attributeText, offset: { x: 0, y: 0.5 },
                                 style: {
                                     bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                    textWrapping: textWrap,italic:style.italic,fontFamily:style.fontFamily,whiteSpace:style.whiteSpace,
-                                    textAlign:style.textAlign,textDecoration:style.textDecoration,textOverflow:style.textOverflow
+                                    textWrapping: textWrap, italic: style.italic, fontFamily: style.fontFamily,
+                                    whiteSpace: style.whiteSpace, textAlign: style.textAlign,
+                                    textDecoration: style.textDecoration, textOverflow: style.textOverflow
                                 },
                                 margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                             }
@@ -347,7 +352,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                         (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
                         minHeight: 25
                     } as NodeModel,
-                true);
+                    true);
                 (temp as Node).parentId = node.id;
                 (temp as Node).umlIndex = index;
                 diagram.add(temp);
@@ -368,7 +373,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
  * @param {TextWrap} textWrap - provide the textWrap  value.
  * @private
  */
- export function getClassMembers(node: Node, diagram: Diagram, classifier: UmlClassModel, textWrap: TextWrap): void {
+export function getClassMembers(node: Node, diagram: Diagram, classifier: UmlClassModel, textWrap: TextWrap): void {
     if ((classifier as UmlClassModel).methods && (classifier as UmlClassModel).methods.length) {
         const methods: UmlClassMethodModel[] = (classifier as UmlClassModel).methods;
         addSeparator(node, diagram);
@@ -413,8 +418,9 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                                 id: 'name', content: methodText, offset: { x: 0, y: 0.5 },
                                 style: {
                                     bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                    textWrapping: textWrap,italic:style.italic,fontFamily:style.fontFamily,whiteSpace:style.whiteSpace,
-                                    textAlign:style.textAlign,textDecoration:style.textDecoration,textOverflow:style.textOverflow
+                                    textWrapping: textWrap, italic: style.italic, fontFamily: style.fontFamily,
+                                    whiteSpace: style.whiteSpace, textAlign: style.textAlign,
+                                    textDecoration: style.textDecoration, textOverflow: style.textOverflow
                                 },
                                 margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                             }
@@ -433,7 +439,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                 node.children.push(temp.id);
                 methodText = '';
                 if (method.isSeparator && (i !== methods.length - 1)) {
-                    addSeparator(node, diagram,method.separatorStyle);
+                    addSeparator(node, diagram, method.separatorStyle);
                 }
                 //isSeperator boolean set as false whether it is set as true for last element
                 if (method.isSeparator && (i === methods.length - 1)) {
@@ -454,43 +460,43 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
  * @param {TextWrap} textWrap - provide the textWrap  value.
  * @private
  */
- export function getClassMembersChild(node: Node, diagram: Diagram, classifier: UmlClassModel, textWrap: TextWrap): void {
+export function getClassMembersChild(node: Node, diagram: Diagram, classifier: UmlClassModel, textWrap: TextWrap): void {
     if ((classifier as UmlClassModel).methods && (classifier as UmlClassModel).methods.length) {
         const methods: UmlClassMethodModel[] = (classifier as UmlClassModel).methods;
         let argumentText: string = '';
         let methodText: string = '';
         let text: string;
-        let initialIndex:number = 1;
-        let index: number 
-        let attributeCount:number = 0;
-        let methodCount:number = 0;
+        let initialIndex: number = 1;
+        let index: number;
+        let attributeCount: number = 0;
+        let methodCount: number = 0;
 
-        const shapeModel = node.shape as UmlClassifierShapeModel;
-        const isClass = shapeModel.classifier === 'Class';
-        const isInterface = shapeModel.classifier === 'Interface';
-        const umlShape = isClass ? shapeModel.classShape : shapeModel.interfaceShape;
+        const shapeModel: UmlClassifierShapeModel = node.shape as UmlClassifierShapeModel;
+        const isClass: boolean = shapeModel.classifier === 'Class';
+        const isInterface: boolean = shapeModel.classifier === 'Interface';
+        const umlShape: UmlClassModel = isClass ? shapeModel.classShape : shapeModel.interfaceShape;
         // Need to indentify the index value for newly added method
         if (methods.length === 1) {
             if (umlShape.attributes.length > 0) {
-                attributeCount = umlShape.attributes.filter(attr => attr.isSeparator).length;
+                attributeCount = umlShape.attributes.filter((attr: UmlClassAttributeModel) => attr.isSeparator).length;
                 initialIndex = 1 + 1 + umlShape.attributes.length + attributeCount;
                 index = initialIndex + 1;
                 addSeparatorChild(node, diagram, initialIndex);
             } else {
                 index = initialIndex + 1;
             }
-        } 
+        }
         // To determine the index value for adding methods, it is essential to take into account the existing attributes
         else {
-            attributeCount = umlShape.attributes.filter(attr => attr.isSeparator).length;
-            methodCount = umlShape.methods.filter(method => method.isSeparator).length;
+            attributeCount = umlShape.attributes.filter((attr: UmlClassAttributeModel) => attr.isSeparator).length;
+            methodCount = umlShape.methods.filter((method: UmlClassMethodModel) => method.isSeparator).length;
 
             initialIndex = 1 + 1 + umlShape.attributes.length + attributeCount + umlShape.methods.length + methodCount;
             index = initialIndex + 1;
         }
-       //Iterate through an array of methods and create each method as a child node to the UML node
+        //Iterate through an array of methods and create each method as a child node to the UML node
         for (let i: number = 0; i < methods.length; i++) {
-            const method: UmlClassMethodModel = methods[methods.length-1];
+            const method: UmlClassMethodModel = methods[methods.length - 1];
             if (method.scope && method.scope === 'Public') {
                 text = ' +';
             } else if (method.scope && method.scope === 'Private') {
@@ -527,8 +533,9 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                                 id: 'name', content: methodText, offset: { x: 0, y: 0.5 },
                                 style: {
                                     bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                    textWrapping: textWrap,italic:style.italic,fontFamily:style.fontFamily,whiteSpace:style.whiteSpace,
-                                    textAlign:style.textAlign,textDecoration:style.textDecoration,textOverflow:style.textOverflow
+                                    textWrapping: textWrap, italic: style.italic, fontFamily: style.fontFamily,
+                                    whiteSpace: style.whiteSpace, textAlign: style.textAlign,
+                                    textDecoration: style.textDecoration, textOverflow: style.textOverflow
                                 },
                                 margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                             }
@@ -540,7 +547,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                         (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize)
                     } as NodeModel,
-                true);
+                    true);
                 (temp as Node).parentId = node.id;
                 (temp as Node).umlIndex = index;
                 diagram.add(temp);
@@ -552,21 +559,23 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
 }
 
 /**
-  * addSeparator method \
-  *
-  * @returns {void} addSeparator method .\
-  * @param { Node} stack - provide the stack  value.
-  * @param {Diagram} diagram - provide the diagram  value.
-  * @param {SeperatorStyle} SeperatorStyle - provide the Seperator color.
-  * @private
+ * addSeparator method \
+ *
+ * @returns {void} addSeparator method .\
+ * @param { Node} stack - provide the stack  value.
+ * @param {Diagram} diagram - provide the diagram  value.
+ * @param {SeperatorStyle} SeperatorStyle - provide the Seperator color.
+ * @private
  */
-export function addSeparator(stack: Node, diagram: Diagram,SeperatorStyle?:ShapeStyleModel): void {
+export function addSeparator(stack: Node, diagram: Diagram, SeperatorStyle?: ShapeStyleModel): void {
     const lineObject: Node = new Node(
         diagram, 'nodes', {
-            id: randomId() + '_path', height:1 , constraints: NodeConstraints.Default & ~(NodeConstraints.Select),
+            id: randomId() + '_path', height: 1, constraints: NodeConstraints.Default & ~(NodeConstraints.Select),
             verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
-            style: { strokeColor: (stack.style.strokeColor === 'black') ? '#ffffff00' : stack.style.strokeColor,
-                        fill: SeperatorStyle ? SeperatorStyle.fill : 'white'}
+            style: {
+                strokeColor: (stack.style.strokeColor === 'black') ? '#ffffff00' : stack.style.strokeColor,
+                fill: SeperatorStyle ? SeperatorStyle.fill : 'white'
+            }
         } as NodeModel,
         true);
     diagram.initObject(lineObject);
@@ -583,12 +592,12 @@ export function addSeparator(stack: Node, diagram: Diagram,SeperatorStyle?:Shape
  * @param {number} newIndex - provide the index value.
  * @private
  */
- export function addSeparatorChild(stack: Node, diagram: Diagram,newIndex?:number): void {
+export function addSeparatorChild(stack: Node, diagram: Diagram, newIndex?: number): void {
     const lineObject: Node = new Node(
         diagram, 'nodes', {
             id: randomId() + '_path', height: 1, constraints: NodeConstraints.Default & ~(NodeConstraints.Select),
             verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
-            style: { strokeColor: (stack.style.strokeColor === 'black') ? '#ffffff00' : stack.style.strokeColor ,fill:"white"}
+            style: { strokeColor: (stack.style.strokeColor === 'black') ? '#ffffff00' : stack.style.strokeColor, fill: 'white' }
         } as NodeModel,
         true);
     lineObject.parentId = stack.id;
@@ -609,7 +618,7 @@ export function getStyle(stack: Node, node: UmlClassModel): TextStyleModel {
     const style: TextStyleModel = (node.style as TextStyleModel);
     newStyle.fill = (style.fill !== 'transparent') ? style.fill : stack.style.fill;
     newStyle.color = style.color;
-    newStyle.fontFamily =(style.fontFamily !== 'Arial') ? style.fontFamily : (stack.style as TextStyleModel).fontFamily;
+    newStyle.fontFamily = (style.fontFamily !== 'Arial') ? style.fontFamily : (stack.style as TextStyleModel).fontFamily;
     newStyle.italic = style.italic;
     newStyle.bold = style.bold;
     newStyle.whiteSpace = style.whiteSpace;

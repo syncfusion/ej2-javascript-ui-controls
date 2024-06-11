@@ -95,7 +95,11 @@ export enum Theme {
     /** The dark variant of the Fabric theme. */
     FabricDark = 'FabricDark',
     /** The high contrast theme. */
-    Highcontrast = 'Highcontrast'
+    Highcontrast = 'Highcontrast',
+    /** The Fluent 2.0 UI theme. */
+    Fluent2 = 'Fluent2',
+    /** The dark variant of the Fluent 2.0 UI theme. */
+    Fluent2Dark = 'Fluent2Dark'
 }
 
 /**

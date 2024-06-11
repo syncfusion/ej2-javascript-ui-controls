@@ -39,11 +39,6 @@ export class ChartScroll {
         EventHandler.add(this.element, 'scroll' , this.onScroll, this);
         this.parent.treeGrid.grid.on('showGanttShimmer', this.updateShimmer, this);
         this.parent.treeGrid.grid.on('removeGanttShimmer', this.removeShimmer, this);
-        this.element.addEventListener('wheel', (event) => {
-            if (event.deltaY !== 0) {
-                this.onWheelScroll(event);
-            }
-        });
     }
     /**
      * Unbind events
@@ -55,7 +50,6 @@ export class ChartScroll {
         this.parent.off('grid-scroll', this.gridScrollHandler);
         this.parent.treeGrid.grid.off('showGanttShimmer', this.updateShimmer);
         this.parent.treeGrid.grid.off('removeGanttShimmer', this.removeShimmer);
-        EventHandler.remove(this.element, 'wheel', this.onWheelScroll);
     }
     /**
      *
@@ -73,9 +67,9 @@ export class ChartScroll {
      * @private
      */
     public updateContent(): void {
-        let ganttElement: HTMLElement = this.parent.element;
-        let currentCount: number = Math.round(this.element.scrollLeft / ganttElement.offsetWidth);
-        if (this.previousCount != currentCount || this.parent.timelineModule['performedTimeSpanAction']) {
+        const ganttElement: HTMLElement = this.parent.element;
+        const currentCount: number = Math.round(this.element.scrollLeft / ganttElement.offsetWidth);
+        if (this.previousCount !== currentCount || this.parent.timelineModule['performedTimeSpanAction']) {
             this.deleteTableElements();
             this.parent.timelineModule.createTimelineSeries();
             if (this.parent.gridLines === 'Vertical' || this.parent.gridLines === 'Both') {
@@ -95,22 +89,23 @@ export class ChartScroll {
                 this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
             }
         }
-    } 
+    }
 
     public getTimelineLeft(): number {
         let tLeft : number;
-        let ganttElement: HTMLElement = this.parent.element;
-        let resultantWidth: number = this.parent.timelineModule.wholeTimelineWidth > (ganttElement.offsetWidth * 3) ? this.parent.timelineModule.wholeTimelineWidth - ganttElement.offsetWidth * 3 : 0;
-        if (this.element.scrollLeft == (this.parent.enableRtl ? -resultantWidth : resultantWidth)) {
+        const ganttElement: HTMLElement = this.parent.element;
+        const resultantWidth: number = this.parent.timelineModule.wholeTimelineWidth > (ganttElement.offsetWidth * 3) ?
+            this.parent.timelineModule.wholeTimelineWidth - ganttElement.offsetWidth * 3 : 0;
+        if (this.element.scrollLeft === (this.parent.enableRtl ? -resultantWidth : resultantWidth)) {
             tLeft = this.element.scrollLeft;
         } else {
-            let left: number = this.parent.enableRtl ? -this.element.scrollLeft : this.element.scrollLeft;
+            const left: number = this.parent.enableRtl ? -this.element.scrollLeft : this.element.scrollLeft;
             tLeft = (left > ganttElement.offsetWidth) ? left - ganttElement.offsetWidth : 0;
         }
-        if(tLeft >= resultantWidth ){
+        if (tLeft >= resultantWidth ) {
             tLeft = resultantWidth;
         }
-        if((tLeft <= ganttElement.offsetWidth) && this.isBackwardScrolled){
+        if ((tLeft <= ganttElement.offsetWidth) && this.isBackwardScrolled) {
             tLeft = 0;
         }
         if (this.parent.timelineModule.isZoomToFit || this.parent.timelineModule.isZooming) {
@@ -118,35 +113,36 @@ export class ChartScroll {
         }
         return tLeft;
     }
-    
+
     public deleteTableElements(): void {
         const tableContainer: HTMLCollectionOf<Element> = this.parent.element.getElementsByClassName('e-timeline-header-table-container');
         do {
             tableContainer[0].remove();
         }
-        while(tableContainer.length > 0)
+        while (tableContainer.length > 0);
         if (this.parent.element.querySelector('#ganttContainerline-container')) {
             this.parent.element.querySelector('#ganttContainerline-container').innerHTML = '';
         }
         if (this.parent.element.querySelector('.e-nonworking-day-container')) {
             this.parent.element.querySelector('.e-nonworking-day-container').outerHTML = null;
         }
-      }
+    }
 
     public updateChartElementStyles(): void {
-        let translateXValue: number = this.getTimelineLeft();
+        const translateXValue: number = this.getTimelineLeft();
         if (this.parent.enableTimelineVirtualization) {
             // updating connector line & task table styles
-            let dependencyViewer: HTMLElement =  this.parent.connectorLineModule.dependencyViewContainer;
-            let taskTable: HTMLElement = this.parent.chartRowsModule.taskTable;
+            const dependencyViewer: HTMLElement =  this.parent.connectorLineModule.dependencyViewContainer;
+            const taskTable: HTMLElement = this.parent.chartRowsModule.taskTable;
             if (!this.parent.enableRtl) {
-                dependencyViewer.style.left = -translateXValue + "px";
-                taskTable.style.left = -translateXValue + "px";
+                dependencyViewer.style.left = -translateXValue + 'px';
+                taskTable.style.left = -translateXValue + 'px';
             }
             else {
-                dependencyViewer.style.left = translateXValue + "px";
+                dependencyViewer.style.left = translateXValue + 'px';
+                taskTable.style.right = -translateXValue + 'px';
             }
-            taskTable.style.width = this.parent.timelineModule.wholeTimelineWidth + "px";
+            taskTable.style.width = this.parent.timelineModule.wholeTimelineWidth + 'px';
         }
     }
     public updateTopPosition(): void {
@@ -178,15 +174,15 @@ export class ChartScroll {
         }
     }
     private removeShimmer(): void {
-        const parent: any = this.parent;
-        setTimeout(function () {
+        const parent: Gantt = this.parent;
+        setTimeout(() => {
             parent.hideMaskRow();
             if (!parent.allowTaskbarOverlap && parent.showOverAllocation) {
                 for (let i: number = 0; i < parent.currentViewData.length; i++) {
-                    const tr: Element = parent.chartRowsModule.ganttChartTableBody.childNodes[i as number];
+                    const tr: ChildNode = parent.chartRowsModule.ganttChartTableBody.childNodes[i as number];
                     if (tr['style'].display !== 'none' && parent.currentViewData[i as number].hasChildRecords && !parent.currentViewData[i as number].expanded) {
                         if (parent.ganttChartModule.isExpandAll || parent.ganttChartModule.isCollapseAll) {
-                           parent.treeGrid.getRowByIndex(i as number)['style'].height = tr['style'].height;
+                            parent.treeGrid.getRowByIndex(i as number)['style'].height = tr['style'].height;
                         }
                         else {
                             parent.treeGrid.getRows()[i as number]['style'].height = tr['style'].height;
@@ -200,32 +196,18 @@ export class ChartScroll {
         }, 0);
     }
     private updateShimmer(): void {
-        const parent: any = this.parent;
-        setTimeout(function () {
+        const parent: Gantt = this.parent;
+        setTimeout(() => {
             parent.showMaskRow();
         }, 0);
     }
     private updateSpinner(): void {
-        const parent: any = this.parent;
+        const parent: Gantt = this.parent;
         this.parent.showSpinner();
         window.clearTimeout(this.isScrolling);
-        this.isScrolling = setTimeout(function () {
+        this.isScrolling = setTimeout(() => {
             parent.hideSpinner();
         }, 200);
-    }
-    private onWheelScroll(event: WheelEvent): void {
-        event.preventDefault();
-        const delta = event.deltaY;
-        const scrollSpeed = 1;
-        const targetElement = this.element;
-        const gridElement = this.parent.treeGrid.element.querySelector('.e-content');
-        const scrollStep = delta * scrollSpeed;
-        const maxScrollTarget = targetElement.scrollHeight - targetElement.clientHeight;
-        const maxScrollGrid = gridElement.scrollHeight - gridElement.clientHeight;
-        const maxScroll = Math.min(maxScrollTarget, maxScrollGrid);
-        const limitedScrollStep = Math.max(-maxScroll, Math.min(maxScroll, scrollStep));
-        targetElement.scrollTop += limitedScrollStep;
-        gridElement.scrollTop += limitedScrollStep;
     }
     /**
      * Scroll event handler
@@ -252,7 +234,8 @@ export class ChartScroll {
             scrollArgs.scrollLeft = this.element.scrollLeft;
             scrollArgs.scrollDirection = 'Horizontal';
             scrollArgs.action = 'HorizontalScroll';
-            if (this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth > this.parent.element.offsetWidth * 3) {
+            if (this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth >
+                this.parent.element.offsetWidth * 3) {
                 this.isSetScrollLeft = true;
                 if (this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3) {
                     this.updateContent();
@@ -262,16 +245,18 @@ export class ChartScroll {
                     this.parent.element.getElementsByClassName('e-weekend-container')[0]['style'].height = '100%';
                 }
                 if (this.parent.element.getElementsByClassName('e-holiday-container')[0]) {
-                   this.parent.element.getElementsByClassName('e-holiday-container')[0]['style'].height = '100%';
+                    this.parent.element.getElementsByClassName('e-holiday-container')[0]['style'].height = '100%';
                 }
             }
-            else if (this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth < this.parent.element.offsetWidth * 3){
+            else if (this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth <
+                this.parent.element.offsetWidth * 3) {
                 this.parent.connectorLineModule.svgObject.setAttribute('width', '100%');
             }
         }
         this.parent.timelineModule['performedTimeSpanAction'] = false;
-        if ((!isNullOrUndefined(scrollArgs.scrollDirection)) && (this.parent.enableVirtualization === true || this.parent.enableTimelineVirtualization === true) && (this.parent.isToolBarClick
-            || isNullOrUndefined(this.parent.isToolBarClick))) {
+        if ((!isNullOrUndefined(scrollArgs.scrollDirection)) && (this.parent.enableVirtualization === true ||
+            this.parent.enableTimelineVirtualization === true) && (this.parent.isToolBarClick ||
+                isNullOrUndefined(this.parent.isToolBarClick))) {
             this.parent.isVirtualScroll = true;
             if (this.parent.showIndicator || isNullOrUndefined(this.parent.showIndicator)) {
                 if (!this.parent.enableVirtualMaskRow && this.parent.enableVirtualization && this.parent.loadingIndicator.indicatorType === 'Spinner') {
@@ -283,9 +268,8 @@ export class ChartScroll {
                     }
                     else {
                         this.parent.showMaskRow();
-                        const parent: any = this;
-                        setTimeout(function () {
-                            parent.removeShimmer();
+                        setTimeout(() => {
+                            this.removeShimmer();
                         }, 0);
                     }
                 }
@@ -342,8 +326,9 @@ export class ChartScroll {
         this.isSetScrollLeft = true;
         this.element.scrollLeft = scrollLeft;
         this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
-        if (!this.parent.enableTimelineVirtualization || (!this.parent.enableTimelineVirtualization && this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) {
-           this.previousScroll.left = this.element.scrollLeft;
+        if (!this.parent.enableTimelineVirtualization || (!this.parent.enableTimelineVirtualization &&
+            this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) {
+            this.previousScroll.left = this.element.scrollLeft;
         }
     }
 

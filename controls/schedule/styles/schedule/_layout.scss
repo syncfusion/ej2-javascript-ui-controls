@@ -1,7 +1,51 @@
+@mixin schedule-appointments-styles {
+  background: $schedule-appointment-bg-color;
+  border: 1px solid $schedule-appointment-border-color;
+  border-radius: $schedule-appointment-border-radius;
+  color: $schedule-appointment-font-color;
+  display: flex;
+  overflow: hidden;
+  position: absolute;
+}
+
+@mixin schedule-appointments-subject-styles {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-left: auto;
+  min-height: 18px;
+  overflow: hidden;
+}
+
+@mixin schedule-inline-appointment-styles {
+  background: transparent;
+  border: 0;
+  color: $schedule-appointment-font-color;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  padding-top: 4px;
+  width: 100%;
+}
+
+@mixin schedule-more-appointment-styles {
+  color: $schedule-secondary-content-font-color;
+  cursor: pointer;
+  font-size: $schedule-more-indicator-nrml-font-size;
+  line-height: 11px;
+  overflow: hidden;
+  padding: 2px 4px;
+  position: absolute;
+  text-overflow: ellipsis;
+}
+
+@mixin schedule-resource-column-styles {
+  border-bottom: $border-size $border-type $schedule-content-border-color;
+  vertical-align: top;
+  width: 75px;
+}
+
 @include export-module('schedule-layout') {
-
-  /*! schedule component layout */
-
   .e-schedule {
     display: block;
     outline: medium none;
@@ -168,7 +212,7 @@
             &.e-today .e-icon-today {
               display: block;
             }
-
+            
             &.e-today .e-icon-today + .e-tbar-btn-text {
               display: none;
             }
@@ -191,6 +235,15 @@
 
         .e-toolbar-items {
           height: $schedule-tbar-bgr-size;
+          
+          .e-toolbar-item {
+            &.e-today .e-icon-today + .e-tbar-btn-text {
+              display: none;
+            }
+            &.e-today .e-icon-today {
+              display: block;
+            }
+          }
           
           &.e-tbar-pos {
             height: $schedule-tbar-bgr-size;
@@ -502,14 +555,7 @@
       }
 
       .e-inline-subject {
-        background: transparent;
-        border: 0;
-        color: $schedule-appointment-font-color;
-        font-size: 13px;
-        font-weight: 500;
-        line-height: 1.2;
-        padding-top: 4px;
-        width: 100%;
+        @include schedule-inline-appointment-styles;
       }
 
       &.e-event-action {
@@ -663,15 +709,9 @@
         }
 
         .e-appointment {
-          background: $schedule-appointment-bg-color;
-          border: 1px solid $schedule-appointment-border-color;
-          border-radius: $schedule-appointment-border-radius;
-          color: $schedule-appointment-font-color;
-          display: flex;
+          @include schedule-appointments-styles;
           height: $schedule-timescale-appointment-height;
           margin-bottom: 2px;
-          overflow: hidden;
-          position: absolute;
 
           .e-appointment-details {
             display: flex;
@@ -686,12 +726,7 @@
           }
 
           .e-subject {
-            font-size: 13px;
-            font-weight: 500;
-            line-height: 1.2;
-            margin-left: auto;
-            min-height: 18px;
-            overflow: hidden;
+            @include schedule-appointments-subject-styles;
             overflow-wrap: break-word;
             padding-top: 1px;
             white-space: normal;
@@ -744,14 +779,7 @@
         }
 
         .e-more-indicator {
-          color: $schedule-secondary-content-font-color;
-          cursor: pointer;
-          font-size: $schedule-more-indicator-nrml-font-size;
-          line-height: 11px;
-          overflow: hidden;
-          padding: 2px 4px;
-          position: absolute;
-          text-overflow: ellipsis;
+          @include schedule-more-appointment-styles;
 
           &:focus {
             text-decoration: underline;
@@ -1001,14 +1029,8 @@
       }
 
       .e-all-day-appointment-wrapper .e-appointment {
-        background: $schedule-appointment-bg-color;
-        border: 1px solid $schedule-appointment-border-color;
-        border-radius: $schedule-appointment-border-radius;
-        color: $schedule-appointment-font-color;
-        display: flex;
+        @include schedule-appointments-styles;
         height: $schedule-month-appointment-height;
-        overflow: hidden;
-        position: absolute;
 
         .e-appointment-details {
           display: flex;
@@ -1071,12 +1093,7 @@
         }
 
         .e-subject {
-          font-size: 13px;
-          font-weight: 500;
-          line-height: 1.2;
-          margin-left: auto;
-          min-height: 18px;
-          overflow: hidden;
+          @include schedule-appointments-subject-styles;
           overflow-wrap: break-word;
           padding-top: 4px;
           white-space: normal;
@@ -1372,15 +1389,9 @@
       }
 
       .e-appointment {
-        background: $schedule-appointment-bg-color;
-        border: 1px solid $schedule-appointment-border-color;
-        border-radius: $schedule-appointment-border-radius;
-        color: $schedule-appointment-font-color;
+        @include schedule-appointments-styles;
         cursor: default;
-        display: flex;
         height: $schedule-month-appointment-height;
-        overflow: hidden;
-        position: absolute;
 
         .e-disable {
           display: none;
@@ -1437,14 +1448,7 @@
       }
 
       .e-more-indicator {
-        color: $schedule-secondary-content-font-color;
-        cursor: pointer;
-        font-size: $schedule-more-indicator-nrml-font-size;
-        line-height: 11px;
-        overflow: hidden;
-        padding: 2px 4px;
-        position: absolute;
-        text-overflow: ellipsis;
+        @include schedule-more-appointment-styles;
 
         &:focus {
           text-decoration: underline;
@@ -1458,11 +1462,7 @@
           margin: $schedule-date-header-margin-rtl;
         }
 
-        .e-left-indent {
-          border-left: $border-size $border-type $schedule-content-border-color;
-          border-right-width: 0;
-        }
-
+        .e-left-indent,
         .e-week-number {
           border-left: $border-size $border-type $schedule-content-border-color;
           border-right-width: 0;
@@ -1482,6 +1482,9 @@
           max-width: 100%;
           min-width: 260px;
           padding: 10px;
+          @if ($theme-name == 'fluent2') {
+            box-shadow: none;
+          }
 
           .e-header .e-title {
             cursor: default;
@@ -1766,15 +1769,9 @@
         }
 
         .e-appointment {
-          background: $schedule-appointment-bg-color;
-          border: 1px solid $schedule-appointment-border-color;
-          border-radius: $schedule-appointment-border-radius;
-          color: $schedule-appointment-font-color;
+          @include schedule-appointments-styles;
           cursor: default;
-          display: flex;
           height: $schedule-month-appointment-height;
-          overflow: hidden;
-          position: absolute;
 
           &.e-hidden {
             display: none;
@@ -1832,14 +1829,7 @@
         }
 
         .e-more-indicator {
-          color: $schedule-secondary-content-font-color;
-          cursor: pointer;
-          font-size: $schedule-more-indicator-nrml-font-size;
-          line-height: 11px;
-          overflow: hidden;
-          padding: 2px 4px;
-          position: absolute;
-          text-overflow: ellipsis;
+          @include schedule-more-appointment-styles;
 
           &.e-hidden {
             display: none;
@@ -2013,15 +2003,9 @@
       }
 
       .e-appointment {
-        background: $schedule-appointment-bg-color;
-        border: 1px solid $schedule-appointment-border-color;
-        border-radius: $schedule-appointment-border-radius;
-        color: $schedule-appointment-font-color;
+        @include schedule-appointments-styles;
         cursor: default;
-        display: flex;
         height: $schedule-timeline-appointment-height;
-        overflow: hidden;
-        position: absolute;
 
         .e-appointment-details {
           display: flex;
@@ -2036,12 +2020,7 @@
         }
 
         .e-subject {
-          font-size: 13px;
-          font-weight: 500;
-          line-height: 1.2;
-          margin-left: auto;
-          min-height: 18px;
-          overflow: hidden;
+          @include schedule-appointments-subject-styles;
           padding-top: 4px;
           text-overflow: ellipsis;
         }
@@ -2096,14 +2075,7 @@
       }
 
       .e-more-indicator {
-        color: $schedule-secondary-content-font-color;
-        cursor: pointer;
-        font-size: $schedule-more-indicator-nrml-font-size;
-        line-height: 11px;
-        overflow: hidden;
-        padding: 2px 4px;
-        position: absolute;
-        text-overflow: ellipsis;
+        @include schedule-more-appointment-styles;
 
         &:focus {
           text-decoration: underline;
@@ -2268,10 +2240,8 @@
       }
 
       .e-resource-column {
-        border-bottom: $border-size $border-type $schedule-content-border-color;
+        @include schedule-resource-column-styles;
         border-right: $border-size $border-type $schedule-content-border-color;
-        vertical-align: top;
-        width: 75px;
       }
 
       .e-resource-name {
@@ -2426,11 +2396,7 @@
 
     #{if(&, '&', '*')}.e-rtl {
       .e-month-agenda-view {
-        .e-left-indent {
-          border-left: $border-size $border-type $schedule-content-border-color;
-          border-right-width: 0;
-        }
-
+        .e-left-indent,
         .e-week-number {
           border-left: $border-size $border-type $schedule-content-border-color;
           border-right-width: 0;
@@ -2481,11 +2447,9 @@
       }
 
       .e-resource-column {
-        border-bottom: $border-size $border-type $schedule-content-border-color;
-        border-right: $border-size $border-type $schedule-content-border-color;
+        @include schedule-resource-column-styles;
         color: $schedule-header-font-color;
-        vertical-align: top;
-        width: 75px;
+        border-right: $border-size $border-type $schedule-content-border-color;
       }
 
       .e-month-header {
@@ -2678,11 +2642,9 @@
         }
 
         .e-resource-column {
-          border-bottom: $border-size $border-type $schedule-content-border-color;
           border-left: $border-size $border-type $schedule-content-border-color;
           border-right: 0;
-          vertical-align: top;
-          width: 75px;
+          @include schedule-resource-column-styles;
 
           .e-resource-name {
             white-space: normal;
@@ -3339,6 +3301,9 @@
     .e-dlg-header-content {
       background: $schedule-content-bg-color;
       box-shadow: $schedule-tbar-box-shadow;
+      @if ($theme-name == 'fluent2') {
+        box-shadow: none;
+      }
       margin-bottom: $schedule-tbar-box-shadow-bottom-margin;
     }
 
@@ -4019,12 +3984,7 @@
       }
 
       .e-subject {
-        font-size: 13px;
-        font-weight: 500;
-        line-height: 1.2;
-        margin-left: auto;
-        min-height: 18px;
-        overflow: hidden;
+        @include schedule-appointments-subject-styles;
         padding-top: 4px;
         text-overflow: ellipsis;
       }
@@ -4196,14 +4156,7 @@
     }
 
     .e-inline-subject {
-      background: transparent;
-      border: 0;
-      color: $schedule-appointment-font-color;
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 1.2;
-      padding-top: 4px;
-      width: 100%;
+      @include schedule-inline-appointment-styles;
     }
 
     .e-recurrence-icon,

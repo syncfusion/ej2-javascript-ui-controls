@@ -7,13 +7,14 @@ import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionTy
 import { Column, ExcelExportProperties } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation, PdfGridColumn } from '@syncfusion/ej2-pdf-export';
-import { SeriesModel, ExportType, Axis, IAxisMultiLabelRenderEventArgs } from '@syncfusion/ej2-charts';
+import { SeriesModel, ExportType, Axis, IChartEventArgs, FontModel, Alignment } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes, Sorting } from '../../base/types';
 import { DisplayOption, PivotView } from '../../pivotview/base/pivotview';
 import { OlapEngine } from '../../base/olap/engine';
 import { GridSettings } from '../../pivotview/model/gridsettings';
 import { ChartSettings } from '../../pivotview/model/chartsettings';
+import { Workbook } from '@syncfusion/ej2-excel-export';
 
 /**
  * Interface
@@ -207,7 +208,7 @@ export interface BeforeExportEventArgs {
      */
     excelExportProperties?: ExcelExportProperties;
     /** Defines current excel work book that holds the pivot table information which will be used to export */
-    workbook?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    workbook?: Workbook;
     /**
      * Defines the pivot chart export type
      *
@@ -385,8 +386,17 @@ export interface MultiLevelLabelClickEventArgs {
 /**
  * The event argument which holds the information of the multi-level labels that renders.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface MultiLevelLabelRenderEventArgs extends IAxisMultiLabelRenderEventArgs {
+export interface MultiLevelLabelRenderEventArgs extends IChartEventArgs {
+    /** Defines the current axis. */
+    axis: Axis;
+    /** Defines axis current label text. */
+    text: string;
+    /** Defines font style for multi labels. */
+    textStyle: FontModel;
+    /** Defines text alignment for multi labels. */
+    alignment: Alignment;
+    /** Defines custom objects for multi labels. */
+    customAttributes: object;
 }
 
 /**
@@ -1030,8 +1040,7 @@ export interface BeforeServiceInvokeEventArgs {
     /** Defines the action which is being performed. */
     action?: string;
     /** Defines the custom properties which needs to pass to server side. */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    customProperties?: any;
+    customProperties?: Object;
     /** Defines the drill item. */
     drillItem?: IDrilledItem;
     /** Defines the sort item. */
@@ -1051,7 +1060,7 @@ export interface BeforeServiceInvokeEventArgs {
     /** Defines the hash string. */
     hash?: string;
     /** Defines the internal properties. */
-    internalProperties?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    internalProperties?: Object;
     /** Defines the options for customizing the excel document during export. */
     excelExportProperties?: ExcelExportProperties;
     /** Allows you to export the pivot table data of all pages. */

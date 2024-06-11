@@ -92,7 +92,7 @@ export class TooltipRender {
                 fill: series.tooltip.fill || smithchart.themeStyle.tooltipFill,
                 opacity: series.tooltip.opacity,
                 data: currentPoint,
-                template: argsData.template as any,
+                template: argsData.template as string,
                 location: {
                     x: this.locationX + smithchart.element.offsetLeft,
                     y: this.locationY - markerHeight + smithchart.element.offsetTop
@@ -111,8 +111,8 @@ export class TooltipRender {
             this.tooltipElement.textStyle.size = smithchart.themeStyle.tooltipFontSize || '13px';
             this.tooltipElement.textStyle.color = smithchart.themeStyle.tooltipBoldLabel || this.tooltipElement.textStyle.color;
             this.tooltipElement.appendTo(div as HTMLElement);
-            let element: HTMLElement = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div_Trackball_0');
-            if (element) { element.setAttribute('role', 'img'); } 
+            const element: HTMLElement = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div_Trackball_0');
+            if (element) { element.setAttribute('role', 'img'); }
         };
         smithChartTooltipSuccess.bind(this, smithchart);
         smithchart.trigger('tooltipRender', argsData, smithChartTooltipSuccess);

@@ -1,6 +1,40 @@
-@include export-module('button-layout') {
+@mixin icon-left-right {
+  @if $skin-name == 'bootstrap4' {
+    padding: 0 $btn-bigger-icon-top-bottom-padding;
+  }
+  @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    line-height: 0;
+  }
+}
 
-  /*! button layout */
+@mixin icon-top-bottom {
+  display: block;
+  margin-top: 0;
+  width: auto;
+}
+
+@mixin top-bottom-icon-btn {
+  @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    line-height: 0;
+  }
+  @else {
+    line-height: 1;
+  }
+}
+
+@mixin mat3-border-radius {
+  @if $skin-name == 'Material3' {
+    border-radius: 4px;
+  }
+}
+
+@mixin fluent-focus-visible {
+  @if $skin-name == 'FluentUI' {
+    outline: none !important; /* stylelint-disable-line declaration-no-important */
+  }
+}
+
+@include export-module('button-layout') {
   .e-btn,
   .e-css.e-btn {
     /* stylelint-disable property-no-vendor-prefix */
@@ -51,55 +85,37 @@
         &.e-icon-left {
           margin-left: $btn-icon-margin;
           width: $btn-icon-width;
-          @if $skin-name == 'bootstrap4' {
-            padding: 0 $btn-bigger-icon-top-bottom-padding;
-          }
-          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-            line-height: 0;
-          }
+          @include icon-left-right;
         }
 
         &.e-icon-right {
-          margin-right: $btn-icon-margin;
           width: $btn-icon-width;
-          @if $skin-name == 'bootstrap4' {
-            padding: 0 $btn-bigger-icon-top-bottom-padding;
-          }
-          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-            line-height: 0;
-          }
+          margin-right: $btn-icon-margin;
+          @include icon-left-right;
         }
 
         &.e-icon-top {
-          display: block;
-          margin-top: 0;
           padding-bottom: $btn-icon-top-bottom-padding;
-          width: auto;
+          @include icon-top-bottom;
         }
 
         &.e-icon-bottom {
-          display: block;
-          margin-top: 0;
           padding-top: $btn-icon-top-bottom-padding;
-          width: auto;
+          @include icon-top-bottom;
         }
       }
 
       &.e-icon-btn {
         padding: $btn-icon-padding;
-        @if $skin-name == 'Material3' {
-          border-radius: 4px;
+        @if $skin-name == 'fluent2' {
+          line-height: 14px;
         }
+        @include mat3-border-radius;
       }
 
       &.e-top-icon-btn,
       &.e-bottom-icon-btn {
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          line-height: 0;
-        }
-        @else {
-          line-height: 1;
-        }
+        @include top-bottom-icon-btn;
         padding: $btn-top-icon-padding;
       }
 
@@ -163,23 +179,13 @@
           &.e-icon-left {
             margin-left: $btn-small-icon-margin;
             width: $btn-small-icon-width;
-            @if $skin-name == 'bootstrap4' {
-              padding: 0 $btn-bigger-icon-top-bottom-padding;
-            }
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-              line-height: 0;
-            }
+            @include icon-left-right;
           }
 
           &.e-icon-right {
             margin-right: $btn-small-icon-margin;
             width: $btn-small-icon-width;
-            @if $skin-name == 'bootstrap4' {
-              padding: 0 $btn-bigger-icon-top-bottom-padding;
-            }
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-              line-height: 0;
-            }
+            @include icon-left-right;
           }
 
           &.e-icon-top {
@@ -195,19 +201,12 @@
 
         &.e-icon-btn {
           padding: $btn-small-icon-padding;
-          @if $skin-name == 'Material3' {
-            border-radius: 4px;
-          }
+          @include mat3-border-radius;
         }
 
         &.e-top-icon-btn,
         &.e-bottom-icon-btn {
-          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-            line-height: 0;
-          }
-          @else {
-            line-height: 1;
-          }
+          @include top-bottom-icon-btn;
           padding: $btn-top-icon-padding;
         }
 
@@ -272,23 +271,13 @@
       &.e-icon-left {
         margin-left: $btn-small-icon-margin;
         width: $btn-small-icon-width;
-        @if $skin-name == 'bootstrap4' {
-          padding: 0 $btn-bigger-icon-top-bottom-padding;
-        }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          line-height: 0;
-        }
+        @include icon-left-right;
       }
 
       &.e-icon-right {
         margin-right: $btn-small-icon-margin;
         width: $btn-small-icon-width;
-        @if $skin-name == 'bootstrap4' {
-          padding: 0 $btn-bigger-icon-top-bottom-padding;
-        }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          line-height: 0;
-        }
+        @include icon-left-right;
       }
 
       &.e-icon-top {
@@ -304,19 +293,15 @@
 
     &.e-icon-btn {
       padding: $btn-small-icon-padding;
-      @if $skin-name == 'Material3' {
-        border-radius: 4px;
+      @if $skin-name == 'fluent2' {
+        line-height: 14px;
       }
+      @include mat3-border-radius;
     }
 
     &.e-top-icon-btn,
     &.e-bottom-icon-btn {
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        line-height: 0;
-      }
-      @else {
-        line-height: 1;
-      }
+      @include top-bottom-icon-btn;
       padding: $btn-top-icon-padding;
     }
 
@@ -374,23 +359,13 @@
       &.e-icon-left {
         margin-left: $btn-bigger-small-icon-margin;
         width: $btn-bigger-small-icon-width;
-        @if $skin-name == 'bootstrap4' {
-          padding: 0 $btn-bigger-icon-top-bottom-padding;
-        }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          line-height: 0;
-        }
+        @include icon-left-right;
       }
 
       &.e-icon-right {
         margin-right: $btn-bigger-small-icon-margin;
         width: $btn-bigger-small-icon-width;
-        @if $skin-name == 'bootstrap4' {
-          padding: 0 $btn-bigger-icon-top-bottom-padding;
-        }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          line-height: 0;
-        }
+        @include icon-left-right;
       }
 
       &.e-icon-top {
@@ -406,19 +381,15 @@
 
     &.e-icon-btn {
       padding: $btn-bigger-small-icon-padding;
-      @if $skin-name == 'Material3' {
-        border-radius: 4px;
+      @if $skin-name == 'fluent2' {
+        line-height: 16px;
       }
+      @include mat3-border-radius;
     }
 
     &.e-top-icon-btn,
     &.e-bottom-icon-btn {
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        line-height: 0;
-      }
-      @else {
-        line-height: 1;
-      }
+      @include top-bottom-icon-btn;
       padding: $btn-top-icon-bigger-padding;
     }
 
@@ -473,23 +444,13 @@
       &.e-icon-left {
         margin-left: $btn-bigger-icon-margin;
         width: $btn-bigger-icon-width;
-        @if $skin-name == 'bootstrap4' {
-          padding: 0 $btn-bigger-icon-top-bottom-padding;
-        }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          line-height: 0;
-        }
+        @include icon-left-right;
       }
 
       &.e-icon-right {
         margin-right: $btn-bigger-icon-margin;
         width: $btn-bigger-icon-width;
-        @if $skin-name == 'bootstrap4' {
-          padding: 0 $btn-bigger-icon-top-bottom-padding;
-        }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          line-height: 0;
-        }
+        @include icon-left-right;
       }
 
       &.e-icon-top {
@@ -505,19 +466,15 @@
 
     &.e-icon-btn {
       padding: $btn-bigger-icon-padding;
-      @if $skin-name == 'Material3' {
-        border-radius: 4px;
+      @if $skin-name == 'fluent2' {
+        line-height: 16px;
       }
+      @include mat3-border-radius;
     }
 
     &.e-top-icon-btn,
     &.e-bottom-icon-btn {
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        line-height: 0;
-      }
-      @else {
-        line-height: 1;
-      }
+      @include top-bottom-icon-btn;
       padding: $btn-top-icon-bigger-padding;
     }
 
@@ -571,23 +528,13 @@
         &.e-icon-left {
           margin-left: $btn-bigger-small-icon-margin;
           width: $btn-bigger-small-icon-width;
-          @if $skin-name == 'bootstrap4' {
-            padding: 0 $btn-bigger-icon-top-bottom-padding;
-          }
-          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-            line-height: 0;
-          }
+          @include icon-left-right;
         }
 
         &.e-icon-right {
           margin-right: $btn-bigger-small-icon-margin;
           width: $btn-bigger-small-icon-width;
-          @if $skin-name == 'bootstrap4' {
-            padding: 0 $btn-bigger-icon-top-bottom-padding;
-          }
-          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-            line-height: 0;
-          }
+          @include icon-left-right;
         }
 
         &.e-icon-top {
@@ -603,19 +550,12 @@
 
       &.e-icon-btn {
         padding: $btn-bigger-small-icon-padding;
-        @if $skin-name == 'Material3' {
-          border-radius: 4px;
-        }
+        @include mat3-border-radius;
       }
 
       &.e-top-icon-btn,
       &.e-bottom-icon-btn {
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          line-height: 0;
-        }
-        @else {
-          line-height: 1;
-        }
+        @include top-bottom-icon-btn;
         padding: $btn-top-icon-bigger-padding;
       }
 
@@ -646,6 +586,20 @@
           margin-right: $btn-bigger-small-icon-margin;
         }
       }
+    }
+  }
+
+  @if $skin-name == 'fluent2' {
+    .e-btn.e-icon-btn .e-btn-icon,
+    .e-small .e-btn.e-icon-btn .e-btn-icon {
+      font-size: 14px;
+      line-height: 14px;
+    }
+
+    .e-bigger.e-small .e-btn.e-icon-btn .e-btn-icon,
+    .e-bigger .e-btn.e-icon-btn .e-btn-icon {
+      font-size: 16px;
+      line-height: 16px;
     }
   }
 }

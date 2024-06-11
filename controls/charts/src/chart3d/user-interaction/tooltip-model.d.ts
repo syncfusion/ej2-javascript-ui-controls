@@ -102,22 +102,22 @@ export interface Chart3DTooltipSettingsModel {
     border?: BorderModel;
 
     /**
-     * Specifies the location of the tooltip, relative to the chart. 
-     * If x is 20, tooltip moves by 20 pixels to the right of the chart 
-     * ```html 
-     * <div id='Chart'></div> 
-     * ``` 
-     * ```typescript 
-     * let chart: Chart = new Chart({ 
-     * ... 
-     * tooltipSettings: { 
-     * enable: true, 
-     * location: { x: 100, y: 150 }, 
-     *   }, 
-     * ... 
-     * }); 
-     * chart.appendTo('#Chart'); 
-     * ``` 
+     * Specifies the location of the tooltip, relative to the chart.
+     * If x is 20, tooltip moves by 20 pixels to the right of the chart
+     * ```html
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let chart: Chart = new Chart({
+     * ...
+     * tooltipSettings: {
+     * enable: true,
+     * location: { x: 100, y: 150 },
+     *   },
+     * ...
+     * });
+     * chart.appendTo('#Chart');
+     * ```
      */
     location?: LocationModel;
 

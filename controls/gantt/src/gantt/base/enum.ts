@@ -27,6 +27,27 @@ export type GridLine =
     'None';
 
 /**
+ * To define the day of a week
+ * ```props
+ * * Monday :- To define the day as Monday.
+ * * Tuesday :- To define the day as Tuesday.
+ * * Wednesday :- To define the day as Wednesday.
+ * * Thursday :- To define the day as Thursday.
+ * * Friday :- To define the day as Friday.
+ * * Saturday :- To define the day as Saturday.
+ * * Sunday :- To define the day as Sunday.
+ * ```
+ */
+export type DayOfWeek =
+    'Monday' |
+    'Tuesday' |
+    'Wednesday' |
+    'Thursday' |
+    'Friday' |
+    'Saturday' |
+    'Sunday';
+
+/**
  * To define toolbar items in Gantt
  * ```props
  * * Add :- Add new record.
@@ -266,6 +287,7 @@ export type SortDirection =
 
 /**
  * Defines predefined contextmenu items.
+ *
  * ```props
  * * AutoFitAll :- Defines Auto fit the size of all columns.
  * * AutoFit :- Defines Auto fit the current column.
@@ -281,8 +303,10 @@ export type SortDirection =
  * * Split Task :- Defines the split a task or segment into two segmentse.
  * * Merge Task :- Defines the merge two segments into one segment.
  * ```
+ *
  * @hidden
  */
+
 export type ContextMenuItem =
     'AutoFitAll' |
     'AutoFit' |
@@ -300,12 +324,15 @@ export type ContextMenuItem =
 
 /**
  * Defines contextmenu types.
+ *
  * ```props
  * * Header :- Defines the header type context menu.
  * * Content :- Defines the content type context menu.
  * ```
+ *
  * @hidden
  */
+
 export type ContextMenuType =
     'Header' |
     'Content';
@@ -510,7 +537,7 @@ export type ViewType =
    'ProjectView' |
    'ResourceView';
 
-   /**
+/**
  * Defines PDF ContentType.
  * ```props
  * * Image :- PDF content is Image type

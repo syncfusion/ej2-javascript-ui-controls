@@ -843,3 +843,63 @@ describe('Resource viewType parent tooltip', () => {
         }
     });
 });
+describe('Gantt toolbar action', () => {
+    let ganttObj: Gantt;
+    let data: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual' : true,
+            'Children': [
+                {
+                    'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'Children': [{
+                        'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                        'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true
+                    },
+                    {
+                        'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                        'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40',
+                    }]
+                },
+
+            ]
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                tooltipSettings: {
+                    showTooltip: true
+                },
+            }, done);
+    });
+    it('taskbar Tooltip', () => {
+        let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-parent-taskbar') as HTMLElement;
+        triggerMouseEvent(taskbarElement, 'mouseover', 50);
+    });
+    it('taskbar Tooltip for manual task', () => {
+        let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-parent-taskbar') as HTMLElement;
+        triggerMouseEvent(taskbarElement, 'mouseover', 50);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

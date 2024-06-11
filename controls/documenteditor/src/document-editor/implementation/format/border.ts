@@ -519,6 +519,7 @@ export class WBorder {
     }
     /**
      * @private
+     * @returns {void}
      */
     public clearFormat(): void {
         if (!isNullOrUndefined(this.uniqueBorderFormat)) {
@@ -528,7 +529,9 @@ export class WBorder {
     }
     /**
      * Disposes the internal objects which are maintained.
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.clearFormat();
@@ -536,10 +539,14 @@ export class WBorder {
     }
     /**
      * @private
+     * @param  {WBorder} border - Specifies the border
+     * @returns {boolean} - Returns true or false
      */
     public isEqualFormat(border: WBorder): boolean {
         let value: boolean = false;
-        if (this.color === border.color && this.lineStyle === border.lineStyle && this.lineWidth === border.lineWidth && this.shadow == border.shadow && this.space === border.space) {
+        if (this.color === border.color && this.lineStyle === border.lineStyle
+            && this.lineWidth === border.lineWidth && this.shadow === border.shadow
+            && this.space === border.space) {
             value = true;
         }
         return value;
@@ -561,7 +568,7 @@ export class WBorder {
             if (border.hasValue('space')) {
                 this.space = border.space;
             }
-            if(border.hasValue('hasNoneStyle')) {
+            if (border.hasValue('hasNoneStyle')) {
                 this.hasNoneStyle = border.hasNoneStyle;
             }
         }

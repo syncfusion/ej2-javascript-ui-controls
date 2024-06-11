@@ -45,8 +45,6 @@ $btn-icon-margin-top: -2px !default;
 $btn-small-icon-top-bottom-padding: 6px !default;
 $btn-focus-outline-round: $btn-bgcolor 0 solid !default;
 
-//enddefault
-
 //hover
 $btn-hover-focus-box-shadow: 0 2px 7px 0 rgba(0, 0, 0, .26) !default;
 $btn-success-hover-color: #fff !default;
@@ -56,22 +54,14 @@ $btn-danger-hover-color: #fff !default;
 $btn-link-hover-color: #20b0e9 !default;
 $btn-success-hover-color: #fff !default;
 
-//endhover
-
 //active
 $btn-active-box-shadow: 0 8px 17px 0 rgba(0, 0, 0, .2) !default;
-
-//endactive
 
 //focus
 $btn-outline-default-focus-border-color: $btn-hover-border-color !default;
 
-//endfocus
-
 //disable
 $btn-link-disabled-bgcolor: transparent !default;
-
-//enddisable
 
 //normal
 $btn-color: $grey-dark-font !default;
@@ -140,7 +130,6 @@ $btn-info-disabled-border-color: $btn-disabled-border-color !default;
 $btn-warning-disabled-border-color: $btn-disabled-border-color !default;
 $btn-danger-disabled-border-color: $btn-disabled-border-color !default;
 
-//endnormal
 //primary
 $btn-primary-color: $accent-font !default;
 $btn-primary-bgcolor: $accent !default;
@@ -158,8 +147,6 @@ $btn-primary-disabled-bgcolor: $btn-disabled-bgcolor !default;
 $btn-primary-disabled-color: $btn-disabled-color !default;
 $btn-primary-disabled-border-color: $btn-disabled-border-color !default;
 $btn-ripple-primary-bgcolor: rgba($btn-primary-color, .24) !default;
-
-//endprimary
 
 //flatbutton
 $btn-flat-success-color: $success-font !default;
@@ -264,8 +251,6 @@ $btn-flat-danger-disabled-border-color: $btn-flat-border-color !default;
 $btn-ripple-flat-success-bgcolor: transparent !default;
 $btn-ripple-flat-warning-bgcolor: transparent !default;
 
-//endflatbutton
-
 //outline
 $btn-outline-color: $grey-dark-font !default;
 $btn-outline-hover-bgcolor: rgba($grey-white, .12) !default;
@@ -295,8 +280,6 @@ $btn-outline-primary-color: $btn-primary-bgcolor !default;
 $btn-outline-primary-focus-bgcolor: $btn-primary-focus-bgcolor !default;
 $btn-outline-primary-focus-color: $btn-primary-focus-color !default;
 
-//endoutline
-
 //roundbutton
 $btn-round-bgcolor: $btn-bgcolor !default;
 $btn-round-color: $btn-color !default;
@@ -306,8 +289,6 @@ $btn-round-hover-color: $btn-color !default;
 $btn-round-hover-border-color: $btn-round-hover-bgcolor !default;
 $btn-round-active-color: $btn-active-color !default;
 $btn-round-focus-color: $btn-focus-color !default;
-
-//endroundbutton
 
 //dimensions
 $btn-border-radius: 2px !default;

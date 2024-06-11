@@ -4,7 +4,8 @@ import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import {
     LineWidget, ElementBox, TextElementBox, ParagraphWidget,
-    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget, HeaderFooters, ShapeElementBox, TextFrame, FootnoteElementBox
+    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget,
+    HeaderFooters, ShapeElementBox, TextFrame, FootnoteElementBox
 } from '../viewer/page';
 import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
@@ -93,7 +94,9 @@ export class TextSearch {
         return undefined;
     }
 
-    public getElementInfo(inlineElement: ElementBox, indexInInline: number, includeNextLine?: boolean, pattern?: RegExp, findOption?: FindOption, isFirstMatch?: boolean, results?: TextSearchResults, selectionEnd?: TextPosition, isSpellCheck?: boolean): TextInLineInfo {
+    public getElementInfo(inlineElement: ElementBox, indexInInline: number, includeNextLine?: boolean, pattern?: RegExp,
+                          findOption?: FindOption, isFirstMatch?: boolean, results?: TextSearchResults, selectionEnd?: TextPosition,
+                          isSpellCheck?: boolean): TextInLineInfo {
         const inlines: ElementBox = inlineElement;
         let stringBuilder: string = '';
         const spans: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
@@ -101,7 +104,8 @@ export class TextSearch {
         let previousElementCount: number = 0;
         do {
             if (inlineElement instanceof TextElementBox && (!isNullOrUndefined((inlineElement as TextElementBox).text) && (inlineElement as TextElementBox).text !== '')) {
-                spans.add(inlineElement as TextElementBox, isSpellCheck ? stringBuilder.length + previousElementCount: stringBuilder.length);
+                spans.add(inlineElement as TextElementBox,
+                          isSpellCheck ? stringBuilder.length + previousElementCount : stringBuilder.length);
                 previousElementCount = 0;
                 // IndexInInline Handled specifically for simple find operation to start from starting point
                 if (inlineElement === inlines) {
@@ -115,16 +119,18 @@ export class TextSearch {
                     /* eslint-disable-next-line max-len */
                     inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd as FieldElementBox : fieldBegin.fieldSeparator as FieldElementBox;
                 }
-            } else if (inlineElement instanceof ShapeElementBox && !isNullOrUndefined(inlineElement.textFrame) && (inlineElement.textFrame as TextFrame).childWidgets.length > 0) {
+            } else if (inlineElement instanceof ShapeElementBox && !isNullOrUndefined(inlineElement.textFrame)
+                && (inlineElement.textFrame as TextFrame).childWidgets.length > 0) {
                 this.findInlineText(inlineElement.textFrame, pattern, findOption, isFirstMatch, results, selectionEnd);
             }
             if (!(inlineElement instanceof TextElementBox)) {
                 previousElementCount += inlineElement.length;
             }
             if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
-                let splittedParagraph: ParagraphWidget = inlineElement.paragraph.nextSplitWidget as ParagraphWidget;
-                if (!isSpellCheck && !isNullOrUndefined(splittedParagraph) && splittedParagraph !== inlineElement.paragraph && splittedParagraph.childWidgets.length > 0 &&
-                    splittedParagraph.childWidgets[0] instanceof LineWidget && (splittedParagraph.childWidgets[0] as LineWidget).children.length > 0) {
+                const splittedParagraph: ParagraphWidget = inlineElement.paragraph.nextSplitWidget as ParagraphWidget;
+                if (!isSpellCheck && !isNullOrUndefined(splittedParagraph) && splittedParagraph !== inlineElement.paragraph
+                && splittedParagraph.childWidgets.length > 0 && splittedParagraph.childWidgets[0] instanceof LineWidget
+                && (splittedParagraph.childWidgets[0] as LineWidget).children.length > 0) {
                     inlineElement = (splittedParagraph.childWidgets[0] as LineWidget).children[0] as ElementBox;
                     continue;
                 } else {
@@ -265,32 +271,34 @@ export class TextSearch {
             return;
         }
         this.findInlineText(section, pattern, findOption, isFirstMatch, results, selectionEnd);
-        
-        let headerFootersColletion: HeaderFooters[] = this.documentHelper.headersFooters;
-        for(let i: number = 0; i < headerFootersColletion.length; i++ ) {
-            let headerFooters: HeaderFooters = headerFootersColletion[parseInt(i.toString(), 10)];
+
+        const headerFootersColletion: HeaderFooters[] = this.documentHelper.headersFooters;
+        for (let i: number = 0; i < headerFootersColletion.length; i++ ) {
+            const headerFooters: HeaderFooters = headerFootersColletion[parseInt(i.toString(), 10)];
             if (headerFooters) {
                 for (const index in headerFooters) {
-                    let headerFooter: HeaderFooterWidget = headerFooters[parseInt(index.toString(), 10)];
-                    if (!isNullOrUndefined(headerFooter) && !isNullOrUndefined(headerFooter.page)) {
-                        this.findInlineText(headerFooter, pattern, findOption, isFirstMatch, results, selectionEnd);
+                    if (Object.prototype.hasOwnProperty.call(headerFooters, index)){
+                        const headerFooter: HeaderFooterWidget = headerFooters[parseInt(index.toString(), 10)];
+                        if (!isNullOrUndefined(headerFooter) && !isNullOrUndefined(headerFooter.page)) {
+                            this.findInlineText(headerFooter, pattern, findOption, isFirstMatch, results, selectionEnd);
+                        }
                     }
                 }
             }
         }
         // (EJ2-854069) - Added below code to add the search results of the endnote and footnote in the results.
-        let endNoteCollection: FootnoteElementBox[] = this.documentHelper.endnoteCollection;
-        for(let i: number = 0; i < endNoteCollection.length; i++ ) {
-            let endNote: FootnoteElementBox = endNoteCollection[parseInt(i.toString(), 10)];
+        const endNoteCollection: FootnoteElementBox[] = this.documentHelper.endnoteCollection;
+        for (let i: number = 0; i < endNoteCollection.length; i++ ) {
+            const endNote: FootnoteElementBox = endNoteCollection[parseInt(i.toString(), 10)];
             if (endNote) {
                 if (!isNullOrUndefined(endNote) && !isNullOrUndefined(endNote.bodyWidget.page)) {
                     this.findInlineText(endNote.bodyWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
                 }
             }
         }
-        let footNoteCollection: FootnoteElementBox[] = this.documentHelper.footnoteCollection;
-        for(let i: number = 0; i < footNoteCollection.length; i++ ) {
-            let footNote: FootnoteElementBox = footNoteCollection[parseInt(i.toString(), 10)];
+        const footNoteCollection: FootnoteElementBox[] = this.documentHelper.footnoteCollection;
+        for (let i: number = 0; i < footNoteCollection.length; i++ ) {
+            const footNote: FootnoteElementBox = footNoteCollection[parseInt(i.toString(), 10)];
             if (footNote) {
                 if (!isNullOrUndefined(footNote) && !isNullOrUndefined(footNote.bodyWidget.page)) {
                     this.findInlineText(footNote.bodyWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
@@ -328,7 +336,8 @@ export class TextSearch {
     /* eslint-disable-next-line max-len */
     private findInline(inlineElement: ElementBox, pattern: RegExp, option: FindOption, indexInInline: number, isFirstMatch: boolean, results: TextSearchResults, selectionEnd: TextPosition): ParagraphWidget {
         const inlines: ElementBox = inlineElement;
-        const textInfo: TextInLineInfo = this.getElementInfo(inlineElement, indexInInline, undefined, pattern, option, isFirstMatch, results, selectionEnd);
+        const textInfo: TextInLineInfo = this.getElementInfo(inlineElement, indexInInline, undefined,
+                                                             pattern, option, isFirstMatch, results, selectionEnd);
         const text: string = textInfo.fullText;
         const matches: RegExpExecArray[] = [];
         const spans: Dictionary<TextElementBox, number> = textInfo.elementsWithOffset;

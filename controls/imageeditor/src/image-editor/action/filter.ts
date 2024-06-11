@@ -51,9 +51,6 @@ export class Filter {
         case 'set-adjustment':
             this.setAdjustment(args.value['operation'] as string);
             break;
-        case 'update-filter':
-            this.updateFilter(args.value['operation'] as string, args.value['filter'] as string );
-            break;
         case 'initFilter':
             this.initFilter();
             break;
@@ -171,9 +168,8 @@ export class Filter {
                 parent.isUndoRedo = true;
                 const temp: string = this.lowerContext.filter;
                 this.lowerContext.filter = 'none';
-                parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-                parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-                    value: {context: this.lowerContext, points: null} });
+                parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                    value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
                 this.lowerContext.filter = temp;
                 parent.isUndoRedo = false;
             }
@@ -359,9 +355,8 @@ export class Filter {
             this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
                 'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
             this.bevelFilter = tempFilter;
-            parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-            parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-                value: {context: this.lowerContext, points: null} });
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
             this.lowerContext.filter = tempFilter;
             parent.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.lowerContext}});
             if ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop) {
@@ -528,18 +523,6 @@ export class Filter {
 
     private setSaturationFilterValue(value: number): number {
         return Math.round((value === 1) ? 0 : (value - 1) * 100);
-    }
-
-    private updateFilter(type: string, previousFilter?: string): void {
-        const parent: ImageEditor = this.parent;
-        const validTypes: string[] = ['default', 'chrome', 'cold', 'warm', 'grayscale', 'blackandwhite', 'sepia', 'invert', 'sharpen'];
-        if (validTypes.indexOf(type) !== -1) {
-            const selEle: HTMLElement = parent.element.querySelector('.e-contextual-toolbar-wrapper .e-toolbar-item.e-selected');
-            if (selEle) {selEle.classList.remove('e-selected'); }
-            const filterCanvas: HTMLElement = document.getElementById(parent.element.id + '_' + type + 'Canvas');
-            if (filterCanvas) { filterCanvas.parentElement.classList.add('e-selected'); }
-            this.parent.currentFilter = previousFilter ? previousFilter : parent.element.id + '_' + type;
-        }
     }
 
     private finetuneImage(finetuneOption: ImageFinetuneOption, value: number): void {

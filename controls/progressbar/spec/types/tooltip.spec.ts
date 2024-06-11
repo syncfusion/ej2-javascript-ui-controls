@@ -8,7 +8,7 @@ describe('ProgressBar Control', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });

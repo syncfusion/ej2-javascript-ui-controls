@@ -70,7 +70,7 @@ export class HierarchicalTree {
         nodes: INode[], nameTable: Object, layoutProp: Layout, viewport: PointModel, uniqueId: string, action?: DiagramAction): ILayout {
         const layout: ILayout = {
             type: layoutProp.type,
-            connectionPointOrigin:layoutProp.connectionPointOrigin,
+            connectionPointOrigin: layoutProp.connectionPointOrigin,
             nameTable: nameTable, anchorX: 0, anchorY: 0,
             firstLevelNodes: [], centerNode: null, levels: [], maxLevel: 0, graphNodes: {},
             orientation: layoutProp.orientation,
@@ -133,8 +133,8 @@ export class HierarchicalTree {
             let bounds: Bounds;
 
             for (i = 0; i < layout.firstLevelNodes.length; i++) {
-                bounds = this.updateTree(layout, x, y, layout.firstLevelNodes[parseInt(i.toString(), 10)], 0, layout.firstLevelNodes[i - 1]);
-
+                bounds = this.updateTree(layout, x, y, layout.firstLevelNodes[parseInt(i.toString(), 10)],
+                                         0, layout.firstLevelNodes[i - 1]);
                 const rootInfo: LayoutInfo = layout.graphNodes[layout.firstLevelNodes[parseInt(i.toString(), 10)].id];
                 bounds.y = Math.min(bounds.y, rootInfo.y);
                 bounds.x = Math.min(bounds.x, rootInfo.x);
@@ -727,9 +727,12 @@ export class HierarchicalTree {
                 //Update sub tree
                 const childInfo: LayoutInfo = layout.graphNodes[child.id];
                 childInfo.actualLevel = lev + 1 + i;
-                childBounds = this.updateTree(layout, right, bottom, child, lev + 1, layout.nameTable[leftTree[parseInt(i.toString(), 10)][j - 1]]);
+                childBounds = this.updateTree(layout, right, bottom, child, lev + 1,
+                                              layout.nameTable[leftTree[parseInt(i.toString(), 10)][j - 1]]);
                 if (j === 0) {
-                    leftBounds[parseInt(i.toString(), 10)] = { x: childBounds.x, y: childBounds.y, right: childBounds.right, bottom: childBounds.bottom };
+                    leftBounds[parseInt(i.toString(), 10)] = {
+                        x: childBounds.x, y: childBounds.y, right: childBounds.right, bottom: childBounds.bottom
+                    };
                 } else {
                     this.uniteRects(leftBounds[parseInt(i.toString(), 10)], childBounds);
                 }
@@ -798,7 +801,9 @@ export class HierarchicalTree {
                 diff = undefined;
                 if (!align && unique) {
                     if (max === 1) { i = 0; }
-                    diff = (rightBounds[parseInt(max.toString(), 10)].x + rightBounds[parseInt(max.toString(), 10)].right) / 2 - (rightBounds[parseInt(i.toString(), 10)].x + rightBounds[parseInt(i.toString(), 10)].right) / 2;
+                    diff = (rightBounds[parseInt(max.toString(), 10)].x + rightBounds[parseInt(max.toString(), 10)].right) / 2
+                        - (rightBounds[parseInt(i.toString(), 10)].x
+                            + rightBounds[parseInt(i.toString(), 10)].right) / 2;
                     if (i === 0) { info.mid += diff; }
                 } else if (!unique && rightX !== undefined) {
                     diff = rightX - layout.horizontalSpacing / 2 - (centeredX + childDimension.width / 2);
@@ -1278,7 +1283,7 @@ export class HierarchicalTree {
                         const segments: ConnSegments = layout.getConnectorSegments(conn);
                     } else {
                         if (info && info.tree.children.indexOf(conn.targetID) !== -1) {
-                            if (conn.type === 'Bezier' && layout.connectionPointOrigin == "SamePoint") {
+                            if (conn.type === 'Bezier' && layout.connectionPointOrigin === 'SamePoint') {
                                 conn.segments = [];
                                 (conn.segments).push(new BezierSegment(conn, 'segments', { type: 'Bezier'}, true));
                             }

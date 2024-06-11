@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.35 (2024-06-11)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I587571` - The issue with the `refreshLayout` method causing UI disruptions when utilizing `allowVirtualscrolling` has been resolved.
+- `#FB57769` - An issue with the events is not overlap properly when the event has same start and end time.
+
 ## 25.2.6 (2024-05-28)
 
 ### Schedule

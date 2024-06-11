@@ -836,7 +836,6 @@ describe('FileManager control LargeIcons view', () => {
                 done();
             }, 500);
         });
-
         it('mouse click on refresh button', (done: Function) => {
             feObj = new FileManager({
                 view: 'LargeIcons',
@@ -1356,7 +1355,7 @@ describe('FileManager control LargeIcons view', () => {
         let feObj: FileManager;
         let ele: HTMLElement;
         let originalTimeout: any;
-        let mouseEventArgs: any, tapEvent: any, count: any;
+        let mouseEventArgs: any, tapEvent: any, count: any, keyboardEventArgs: any;
         beforeEach((): void => {
             jasmine.Ajax.install();
             feObj = undefined;
@@ -1377,6 +1376,12 @@ describe('FileManager control LargeIcons view', () => {
             tapEvent = {
                 originalEvent: mouseEventArgs,
                 tapCount: 1
+            };
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
             };
         });
         afterEach((): void => {
@@ -1413,7 +1418,33 @@ describe('FileManager control LargeIcons view', () => {
                 done();
             }, 400);
         });
+        it('keydown click on sortby', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                beforeSend: (args: any) => {
+                    if (!isNullOrUndefined(args.ajaxSettings.data)) {
+                        count++;
+                    }
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                document.getElementById('file_tb_sortby').onkeydown({ keyCode: 13, key: 'Enter', target: document.getElementById('file_tb_sortby') } as any);
+                expect(count).toBe(1);
+                done();
+            }, 400);
+        });
     });
+
     describe('toolbar items testing', () => {
         let mouseEventArgs: any, tapEvent: any;
         let feObj: any;
@@ -1535,6 +1566,20 @@ describe('FileManager control LargeIcons view', () => {
                     done();
                 }, 500);
             }, 500);
+        });
+        it('dynamically change toolbar items', (done: Function) => {
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                feObj.toolbarItems = [{name:"Cut"}];
+                feObj.dataBind();
+                expect((feObj.toolbarModule as any).items.length).toBe(1);
+                expect((feObj.toolbarModule as any).items[0].text).toBe("Cut");
+                done();
+            }, 400);
         });
     });
 });

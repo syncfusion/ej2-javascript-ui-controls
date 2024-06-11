@@ -486,6 +486,13 @@ export let tools: { [key: string]: IToolsItems } = {
         'command': 'Formats',
         'subCommand': 'Pre'
     },
+    'blockquote': {
+        'id': 'Blockquote',
+        'icon': 'e-blockquote',
+        'tooltip': 'Blockquote',
+        'command': 'Formats',
+        'subCommand': 'blockquote'
+    },
     'tableheader': {
         'id': 'TableHeader',
         'icon': 'e-table-header',
@@ -674,10 +681,11 @@ export let TableStyleItems: IDropDownItemModel[] = [
     { text: 'Alternate Rows', cssClass: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
 ];
 
-export const predefinedItems: string[] = ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments',
+export const predefinedItems: string[] = ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote',
     'OrderedList', 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo'];
 
 export const fontFamily: IDropDownItemModel[] = [
+    { cssClass: 'e-default', text: 'Default', command: 'Font', subCommand: 'FontName', value: ''},
     { cssClass: 'e-segoe-ui', text: 'Segoe UI', command: 'Font', subCommand: 'FontName', value: 'Segoe UI'},
     { cssClass: 'e-arial', text: 'Arial', command: 'Font', subCommand: 'FontName', value: 'Arial,Helvetica,sans-serif'},
     { cssClass: 'e-georgia', text: 'Georgia', command: 'Font', subCommand: 'FontName', value: 'Georgia,serif'},
@@ -688,6 +696,7 @@ export const fontFamily: IDropDownItemModel[] = [
 ];
 
 export const fontSize: IDropDownItemModel[] = [
+    { text: 'Default', value: '' },
     { text: '8 pt', value: '8pt' },
     { text: '10 pt', value: '10pt' },
     { text: '12 pt', value: '12pt' },
@@ -700,7 +709,6 @@ export const fontSize: IDropDownItemModel[] = [
 export const formatItems: IDropDownItemModel[] = [
     { cssClass: 'e-paragraph', text: 'Paragraph', command: 'Formats', subCommand: 'P', value: 'P'},
     { cssClass: 'e-code', text: 'Code', command: 'Formats', subCommand: 'Pre', value: 'Pre'},
-    { cssClass: 'e-quote', text: 'Quotation', command: 'Formats', subCommand: 'BlockQuote', value: 'BlockQuote'},
     { cssClass: 'e-h1', text: 'Heading 1', command: 'Formats', subCommand: 'H1', value: 'H1'},
     { cssClass: 'e-h2', text: 'Heading 2', command: 'Formats', subCommand: 'H2', value: 'H2'},
     { cssClass: 'e-h3', text: 'Heading 3', command: 'Formats', subCommand: 'H3', value: 'H3'},
@@ -747,8 +755,8 @@ export const bulletFormatList: IListDropDownModel[] = [
 
 function getLocale(self: IRichTextEditor, localeItems: { [ket: string]: string }[], item: IDropDownItemModel): string {
     for (let i: number = 0; localeItems.length > i; i++) {
-        if (localeItems[i].value === item.subCommand) {
-            return self.localeObj.getConstant(localeItems[i].locale);
+        if (localeItems[i as number].value === item.subCommand) {
+            return self.localeObj.getConstant(localeItems[i as number].locale);
         }
     }
     return item.text;
@@ -756,28 +764,28 @@ function getLocale(self: IRichTextEditor, localeItems: { [ket: string]: string }
 
 export function updateDropDownLocale(self: IRichTextEditor): void {
     alignmentItems.forEach((item: IDropDownItemModel, i: number) => {
-        alignmentItems[i].text = getLocale(self, alignmentLocale, alignmentItems[i]);
+        alignmentItems[i as number].text = getLocale(self, alignmentLocale, alignmentItems[i as number]);
     });
     imageDisplayItems.forEach((item: IDropDownItemModel, i: number) => {
-        imageDisplayItems[i].text = getLocale(self, displayLocale, imageDisplayItems[i]);
+        imageDisplayItems[i as number].text = getLocale(self, displayLocale, imageDisplayItems[i as number]);
     });
     audioLayoutOptionItems.forEach((item: IDropDownItemModel, i: number) => {
-        audioLayoutOptionItems[i].text = getLocale(self, audioLayoutOptionLocale, audioLayoutOptionItems[i]);
+        audioLayoutOptionItems[i as number].text = getLocale(self, audioLayoutOptionLocale, audioLayoutOptionItems[i as number]);
     });
     videoLayoutOptionItems.forEach((item: IDropDownItemModel, i: number) => {
-        videoLayoutOptionItems[i].text = getLocale(self, videoLayoutOptionLocale, videoLayoutOptionItems[i]);
+        videoLayoutOptionItems[i as number].text = getLocale(self, videoLayoutOptionLocale, videoLayoutOptionItems[i as number]);
     });
     tableRowsItems.forEach((item: IDropDownItemModel, i: number) => {
-        tableRowsItems[i].text = getLocale(self, tableRowLocale, tableRowsItems[i]);
+        tableRowsItems[i as number].text = getLocale(self, tableRowLocale, tableRowsItems[i as number]);
     });
     tableColumnsItems.forEach((item: IDropDownItemModel, i: number) => {
-        tableColumnsItems[i].text = getLocale(self, tableColumnLocale, tableColumnsItems[i]);
+        tableColumnsItems[i as number].text = getLocale(self, tableColumnLocale, tableColumnsItems[i as number]);
     });
     TableCellVerticalAlignItems.forEach((item: IDropDownItemModel, i: number) => {
-        TableCellVerticalAlignItems[i].text = getLocale(self, tableVerticalLocale, TableCellVerticalAlignItems[i]);
+        TableCellVerticalAlignItems[i as number].text = getLocale(self, tableVerticalLocale, TableCellVerticalAlignItems[i as number]);
     });
     TableStyleItems.forEach((item: IDropDownItemModel, i: number) => {
-        TableStyleItems[i].text = getLocale(self, tableStyleLocale, TableStyleItems[i]);
+        TableStyleItems[i as number].text = getLocale(self, tableStyleLocale, TableStyleItems[i as number]);
     });
 }
 
@@ -997,5 +1005,5 @@ export const defaultEmojiIcons: EmojiIconsSet[] = [{
         { code: '1F4AC', desc: 'Speech balloon' },        
         { code: '2755', desc: 'White exclamation mark' },
         { code: '2754', desc: 'White question mark' },
-        { code: '2764', desc: 'Red heart' }]
+        { code: '2764', desc: 'Heart' }]
     }];

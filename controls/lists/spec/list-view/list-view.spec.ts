@@ -698,9 +698,11 @@ describe('ListView', () => {
                 document.body.appendChild(ele);
                 nTree = new ListView({
                     dataSource: new DataManager({
-                        url: '/api/Employees',
-                        adaptor: new ODataV4Adaptor
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+                        adaptor: new ODataV4Adaptor,
+                        crossDomain: true, 
                     }),
+                    query: new Query().from('Employees').select(['EmployeeID', 'FirstName']).take(9),
                     fields: { id: 'EmployeeID', text: 'FirstName' },
                     actionComplete: () => {
                         done();
@@ -717,20 +719,20 @@ describe('ListView', () => {
                 let liItem: HTMLElement = nTree.element.querySelectorAll('.e-list-item')[1] as HTMLElement;
                 nTree.selectItem(liItem);
                 expect(nTree.getSelectedItems().item).toBe(liItem);
-                expect(nTree.getSelectedItems().text).toBe('Fuller');
-                expect((nTree.getSelectedItems().data as { [key: string]: number }).EmployeeID).toBe(1002);
-                expect((nTree.getSelectedItems().data as { [key: string]: string }).FirstName).toBe('Fuller');
+                expect(nTree.getSelectedItems().text).toBe('Andrew');
+                expect((nTree.getSelectedItems().data as { [key: string]: number }).EmployeeID).toBe(2);
+                expect((nTree.getSelectedItems().data as { [key: string]: string }).FirstName).toBe('Andrew');
             });
 
             it('Find Item method', () => {
                 let liItem: HTMLElement = nTree.element.querySelectorAll('.e-list-item')[1] as HTMLElement;
-                let data: { [key: string]: Object } = { EmployeeID: '1002', FirstName: 'Fuller' };
+                let data: { [key: string]: Object } = { EmployeeID: '2', FirstName: 'Andrew' };
                 let findItemByData: { [key: string]: Object } = <SelectedItem & { [key: string]: Object }>nTree.findItem(data);
                 let findItemByLisItem: { [key: string]: Object } = <SelectedItem & { [key: string]: Object }>nTree.findItem(liItem);
-                expect(findItemByData.EmployeeID).toBe(1002);
-                expect(findItemByData.FirstName).toBe('Fuller');
-                expect(findItemByLisItem.EmployeeID).toBe(1002);
-                expect(findItemByLisItem.FirstName).toBe('Fuller');
+                expect(findItemByData.EmployeeID).toBe(2);
+                expect(findItemByData.FirstName).toBe('Andrew');
+                expect(findItemByLisItem.EmployeeID).toBe(2);
+                expect(findItemByLisItem.FirstName).toBe('Andrew');
             });
 
             it('check & uncheckItem should not have any effect for remote data', () => {
@@ -763,10 +765,10 @@ describe('ListView', () => {
                 document.body.appendChild(ele);
                 nTree = new ListView({
                     dataSource: new DataManager({
-                        url: '/api/Employees',
-                        adaptor: new ODataV4Adaptor,
-                        offline: true
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+                        adaptor: new ODataV4Adaptor,crossDomain: true,
                     }),
+                    query: new Query().from('Employees').select(['EmployeeID', 'FirstName']).take(1),
                     fields: { id: 'EmployeeID', text: 'FirstName' },
                     actionComplete: () => {
                         count = count + 1;
@@ -798,10 +800,10 @@ describe('ListView', () => {
                 document.body.appendChild(ele);
                 nTree = new ListView({
                     dataSource: new DataManager({
-                        url: '/api/Employees',
-                        adaptor: new ODataV4Adaptor,
-                        offline: true
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+                        adaptor: new ODataV4Adaptor,crossDomain: true,
                     }),
+                    query: new Query().from('Employees').select(['EmployeeID', 'FirstName']).take(1),
                     fields: { id: 'EmployeeID', text: 'FirstName' },
                     template: "#template",
                     actionComplete: () => {
@@ -870,8 +872,9 @@ describe('ListView', () => {
                 document.body.appendChild(ele);
                 nTree = new ListView({
                     dataSource: new DataManager({
-                        url: '/api',
-                        adaptor: new ODataV4Adaptor
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+                        adaptor: new ODataV4Adaptor,
+                        crossDomain: true,
                     }),
                     fields: { id: 'EmployeeID', text: 'FirstName', tableName: 'Employees' },
                     actionComplete: () => {
@@ -899,8 +902,9 @@ describe('ListView', () => {
                 document.body.appendChild(ele);
                 nTree = new ListView({
                     dataSource: new DataManager({
-                        url: '/api',
-                        adaptor: new ODataV4Adaptor
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+                        adaptor: new ODataV4Adaptor,
+                        crossDomain: true, 
                     }),
                     query: new Query().from('Employees').select(['EmployeeID', 'FirstName']).take(5),
                     fields: { id: 'EmployeeID', text: 'FirstName' },
@@ -3677,5 +3681,278 @@ describe('ListView', () => {
             expect(ele.querySelectorAll('li')[3].classList.contains('e-list-item')).toBe(true);
             expect(ele.querySelectorAll('li')[3].getAttribute('title')).toBe('text4');
         });
+    });
+    // Null or undefined test cases for listview public properties.
+    describe('Null or undefined value testing ', () => {
+        let listObj: any;
+        let ele: HTMLElement;
+        beforeEach(() => {
+            ele = createElement('div', { id: 'ListView' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (listObj) {
+                listObj.destroy();
+                ele.remove();
+            }
+        });
+        it('cssClass', () => {
+            listObj = new ListView({ dataSource: dataSource, cssClass: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.cssClass).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, cssClass: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.cssClass).toBe('');
+            listObj.destroy();
+        });
+        it('enableVirtualization', () => {
+            listObj = new ListView({ dataSource: dataSource, enableVirtualization: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.enableVirtualization).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, enableVirtualization: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.enableVirtualization).toBe(false);
+            listObj.destroy();
+        });
+        it('enableRtl', () => {
+            listObj = new ListView({ dataSource: dataSource, enableRtl: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.enableRtl).toBe(false);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, enableRtl: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.enableRtl).toBe(false);
+            listObj.destroy();
+        });
+        it('headerTitle', () => {
+            listObj = new ListView({ dataSource: dataSource, headerTitle: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.headerTitle).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, headerTitle: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.headerTitle).toBe('');
+            listObj.destroy();
+        });
+        it('height', () => {
+            listObj = new ListView({ dataSource: dataSource, height: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.height).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, height: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.height).toBe('');
+            listObj.destroy();
+        });
+        it('htmlAttributes', () => {
+            listObj = new ListView({ dataSource: dataSource, htmlAttributes: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.htmlAttributes).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, htmlAttributes: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.htmlAttributes).toEqual({});
+            listObj.destroy();
+        });
+        it('locale', () => {
+            listObj = new ListView({ dataSource: dataSource, locale: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.locale).toBe('en-US');
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, locale: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.locale).toBe('en-US');
+            listObj.destroy();
+        });
+        it('query', () => {
+            listObj = new ListView({ dataSource: dataSource, query: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.query).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, query: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.query).toBe(undefined);
+            listObj.destroy();
+        });
+        it('showHeader', () => {
+            listObj = new ListView({ dataSource: dataSource, showHeader: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.showHeader).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, showHeader: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.showHeader).toBe(false);
+            listObj.destroy();
+        });
+        it('sortOrder', () => {
+            listObj = new ListView({ dataSource: dataSource, sortOrder: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.sortOrder).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, sortOrder: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.sortOrder).toBe('None');
+            listObj.destroy();
+        });
+        it('width', () => {
+            listObj = new ListView({ dataSource: dataSource, width: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.width).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, width: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.width).toBe('');
+            listObj.destroy();
+        });
+        // animation
+        it('animation', () => {
+            listObj = new ListView({ dataSource: dataSource, animation: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.animation).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, animation: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.animation).toEqual({ effect: '', duration: 400, easing: 'ease' });
+            listObj.destroy();
+        });
+        // dataSource
+        it('dataSource', () => {
+            listObj = new ListView({ dataSource: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.dataSource).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.dataSource).toEqual([]);
+            listObj.destroy();
+        });
+        // headerTemplate
+        it('headerTemplate', () => {
+            listObj = new ListView({ dataSource: dataSource, headerTemplate: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.headerTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, headerTemplate: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.headerTemplate).toBe(null);
+            listObj.destroy();
+        });
+        // template
+        it('template', () => {
+            listObj = new ListView({ dataSource: dataSource, template: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.template).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, template: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.template).toBe(null);
+            listObj.destroy();
+        });
+        // showCheckBox
+        it('showCheckBox', () => {
+            listObj = new ListView({ dataSource: dataSource, showCheckBox: null });
+            listObj.appendTo('#ListView');
+            expect(listObj.showCheckBox).toBe(null);
+            listObj.destroy();
+            listObj = new ListView({ dataSource: dataSource, showCheckBox: undefined });
+            listObj.appendTo('#ListView');
+            expect(listObj.showCheckBox).toBe(false);
+            listObj.destroy();
+        });
+    });
+});
+
+describe('Local Data Binding (Array of Objects)', () => {
+    let listObj: any;
+    let ele: HTMLElement = createElement('div', { id: 'ListView' });
+    let arrayData: { [key: string]: Object; }[] = [
+        { text: "John", id: "1", city: "New York" },
+        { text: "Jane", id: "2", city: "Chicago" },
+        { text: "Mike", id: "3", city: "Los Angeles" }
+      ];
+    
+    beforeAll(() => {
+        document.body.appendChild(ele);
+        listObj = new ListView({ dataSource: arrayData, enablePersistence: true });
+        listObj.appendTo(ele);
+    });
+
+    it('enable the checkbox testing', () => {
+        listObj.showCheckBox = true;
+        listObj.selectedId =['1'];
+        listObj.dataBind();
+        listObj.selectItem(document.getElementsByClassName("e-list-item")[0]);
+        listObj.dataBind();
+        expect(ele.querySelectorAll('.e-checklist').length).toBe(3);
+    });
+
+    afterAll(() => {
+        ele.remove();
+    });
+});
+
+describe('ListView resetCurrentList method', () => {
+    let listObj: any;
+    let ele: HTMLElement = createElement('div', { id: 'ListView' });
+    let arrayData: { [key: string]: Object; }[] = [
+        { text: "John", id: 1, city: "New York" },
+        { text: "Jane", id: 2, city: "Chicago" },
+        { text: "Mike", id: 3, city: "Los Angeles" }
+      ];
+    
+    beforeAll(() => {
+        document.body.appendChild(ele);
+        listObj = new ListView({ dataSource: arrayData, enablePersistence: true, showCheckBox: true });
+        listObj.appendTo(ele);
+    });
+
+    it('enable the showIcon testing', () => {
+        listObj.showIcon = true;
+        listObj.dataBind();
+        listObj.showIcon = false;
+        listObj.dataBind();
+        expect(listObj.showIcon).toBe(false);
+    });
+
+    afterAll(() => {
+        ele.remove();
+    });
+});
+
+describe('ListView onListScroll method', () => {
+    let listObj: any;
+    let ele: HTMLElement = createElement('div', { id: 'ListView' });
+    it('adding data when scrollbar scrolled to top', (done: Function) => {
+        ele = createElement('div', { id: 'ListView', styles:"overflow:scroll;" });
+        document.body.appendChild(ele);
+        listObj = new ListView({
+            dataSource: dataSource,
+            height:100,
+            scroll: (args: ScrolledEventArgs) => {
+                if (args.scrollDirection === "Top") {
+                    if (args.distanceY < 200) {
+                        expect(ele.scrollTop).toBe(args.distanceY);
+                        expect(args.scrollDirection === "Top").toBe(true);
+                        let newData: any = [
+                            { id: '06', text: 'item6' },
+                            { id: '07', text: 'item7' },
+                        ];
+                        listObj.addItem(newData, null, 0);
+                        expect(listObj.element.querySelectorAll('.e-list-item')[1].getAttribute('data-uid')).toBe('06');
+                        expect(listObj.element.querySelectorAll('.e-list-item')[0].getAttribute('data-uid')).toBe('07');
+                    }
+                }
+                done();
+            } 
+        });
+        listObj.appendTo(ele);
+        simulateScrollEvent(ele, ele.scrollHeight);
+        simulateScrollEvent(ele, 0); 
+    });
+
+    afterAll(() => {
+        ele.remove();
     });
 });

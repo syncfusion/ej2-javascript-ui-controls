@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { Chart } from '../chart';
 import { TechnicalIndicator } from './technical-indicator';
@@ -14,6 +11,9 @@ export class MacdIndicator extends TechnicalAnalysis {
      * Defines the collection of series to represent the MACD indicator
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the series collection is initialized.
+     * @param {Chart} chart - The chart associated with the technical indicator.
+     * @returns {void}
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         super.initSeriesCollection(indicator, chart);
@@ -34,9 +34,11 @@ export class MacdIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Defines the predictions using MACD approach
+     * Defines the predictions using MACD approach.
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         let signalCollection: Points[] = [];
@@ -84,7 +86,13 @@ export class MacdIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Calculates the EMA values for the given period
+     * Calculates Exponential Moving Average (EMA) values for the given period and valid data points.
+     *
+     * @private
+     * @param {number} period - The period for which EMA values are to be calculated.
+     * @param {Points[]} validData - The valid data points used for calculating EMA.
+     * @param {string} field - The field of the data points to be used for EMA calculation.
+     * @returns {number[]} - An array containing the calculated EMA values.
      */
     private calculateEMAValues(period: number, validData: Points[], field: string): number[] {
         let sum: number = 0;
@@ -105,7 +113,15 @@ export class MacdIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Defines the MACD Points
+     * Calculates Moving Average Convergence Divergence (MACD) points based on the provided MACD values,
+     * valid data points, and series information.
+     *
+     * @private
+     * @param {TechnicalIndicator} indicator - The MACD indicator.
+     * @param {number[]} macdPoints - The array of MACD values.
+     * @param {Points[]} validData - The valid data points used for calculating MACD.
+     * @param {Series} series - The series information.
+     * @returns {Points[]} - An array containing the calculated MACD points.
      */
     private getMACDPoints(
         indicator: TechnicalIndicator, macdPoints: number[], validData: Points[], series: Series): Points[] {
@@ -123,7 +139,15 @@ export class MacdIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Calculates the signal points
+     * Calculates the signal line points for the Moving Average Convergence Divergence (MACD) indicator
+     * based on the provided signal EMA values, valid data points, and series information.
+     *
+     * @private
+     * @param {TechnicalIndicator} indicator - The MACD indicator.
+     * @param {number[]} signalEma - The array of signal EMA values.
+     * @param {Points[]} validData - The valid data points used for calculating MACD.
+     * @param {Series} series - The series information.
+     * @returns {Points[]} - An array containing the calculated signal line points.
      */
     private getSignalPoints(
         indicator: TechnicalIndicator, signalEma: number[], validData: Points[], series: Series): Points[] {
@@ -142,7 +166,14 @@ export class MacdIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Calculates the MACD values
+     * Calculates the Moving Average Convergence Divergence (MACD) values based on the provided short EMA
+     * and long EMA values for the MACD indicator.
+     *
+     * @private
+     * @param {TechnicalIndicator} indicator - The MACD indicator.
+     * @param {number[]} shortEma - The array of short EMA values.
+     * @param {number[]} longEma - The array of long EMA values.
+     * @returns {number[]} - An array containing the calculated MACD values.
      */
     private getMACDVales(indicator: TechnicalIndicator, shortEma: number[], longEma: number[]): number[] {
         const macdPoints: number[] = [];
@@ -154,7 +185,15 @@ export class MacdIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Calculates the Histogram Points
+     * Calculates the histogram points for the MACD indicator based on the provided MACD values and signal EMA values.
+     *
+     * @private
+     * @param {TechnicalIndicator} indicator - The MACD indicator.
+     * @param {number[]} macdPoints - The array of MACD values.
+     * @param {number[]} signalEma - The array of signal EMA values.
+     * @param {Points[]} validData - The array of valid data points.
+     * @param {Series} series - The series associated with the MACD indicator.
+     * @returns {Points[]} - An array containing the calculated histogram points.
      */
     private getHistogramPoints(
         indicator: TechnicalIndicator, macdPoints: number[], signalEma: number[],
@@ -181,19 +220,20 @@ export class MacdIndicator extends TechnicalAnalysis {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys the MACD indicator
+         * Destroys the MACD indicator.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'MacdIndicator';
     }

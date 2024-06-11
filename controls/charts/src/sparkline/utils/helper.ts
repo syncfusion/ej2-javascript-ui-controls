@@ -1,6 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-returns */
 import { Sparkline } from '../sparkline';
 import { IThemes } from '../model/interface';
 import { SparklineTheme } from '../model/enum';
@@ -28,8 +25,13 @@ export class Size {
         this.height = height;
     }
 }
-
-/** @private */
+/**
+ * Gets the series color.
+ *
+ * @private
+ * @param {SparklineTheme} theme - The theme for the sparkline.
+ * @returns {string[]} - The series color from the theme.
+ */
 export function getSeriesColor(theme: SparklineTheme): string[] {
     let palette: string[];
     switch (theme) {
@@ -86,6 +88,14 @@ export function getSeriesColor(theme: SparklineTheme): string[] {
         palette = ['#1AC9E6', '#DA4CB2', '#EDBB40', '#AF4BCF', '#FF7266',
             '#1BD565', '#EE993D', '#5887FF', '#EC548D', '#7D39C0'];
         break;
+    case 'Fluent2':
+        palette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F',
+            '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
+        break;
+    case 'Fluent2Dark':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
     case 'Material3':
         palette = ['#6355C7', '#00AEE0', '#FFB400', '#F7523F', '#963C70',
             '#FD7400', '#4BE0BC', '#2196F5', '#DE3D8A', '#162F88'];
@@ -106,8 +116,9 @@ export function getSeriesColor(theme: SparklineTheme): string[] {
  * To find the default colors based on theme.
  *
  * @private
+ * @param {SparklineTheme} theme - The theme for the sparkline.
+ * @returns {IThemes} - The theme colors.
  */
-// tslint:disable-next-line:max-func-body-length
 export function getThemeColor(theme: SparklineTheme): IThemes {
     let themeColors: IThemes;
     switch (theme) {
@@ -125,8 +136,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             trackerLineColor: '#ffffff',
             labelFontFamily: theme === 'BootstrapDark' ? 'Helvetica' : theme === 'FabricDark' ? 'Segoe UI' : theme === 'MaterialDark' ? 'Roboto' : 'Segoe UI',
             tooltipFontFamily: theme === 'BootstrapDark' ? 'Helvetica' : theme === 'FabricDark' ? 'Segoe UI' : theme === 'MaterialDark' ? 'Roboto' : 'Segoe UI',
-            dataLabelFont:{
-                fontFamily: theme === 'BootstrapDark' ? 'Helvetica' : theme === 'FabricDark' ? 'Segoe UI' : theme === 'MaterialDark' ? 'Roboto' : 'Segoe UI', color: theme === 'BootstrapDark' ? '#676767' : theme === 'FabricDark' ? '#A19F9D' : theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : '#969696'
+            dataLabelFont: {
+                fontFamily: theme === 'BootstrapDark' ? 'Helvetica' : theme === 'FabricDark' ? 'Segoe UI' : theme === 'MaterialDark' ? 'Roboto' : 'Segoe UI', color: theme === 'BootstrapDark' ? '#676767' : theme === 'FabricDark' ? '#A19F9D' : theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : '#969696', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: theme === 'BootstrapDark' ? '#0070F0' : theme === 'MaterialDark' ? '#00B0FF' : theme === 'FabricDark' ? '#0074CC' : '#FFD939'
         };
@@ -145,8 +156,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 0.9,
             labelFontFamily: 'Helvetica',
             tooltipFontFamily: 'Helvetica',
-            dataLabelFont:{
-                fontFamily: 'Helvetica', color: '#495057'
+            dataLabelFont: {
+                fontFamily: 'Helvetica', color: '#495057', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#007BFF'
         };
@@ -165,8 +176,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Inter',
             tooltipFontFamily: 'Inter',
-            dataLabelFont:{
-                fontFamily: 'Inter', color: '#6B7280'
+            dataLabelFont: {
+                fontFamily: 'Inter', color: '#6B7280', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#4F46E5'
         };
@@ -185,8 +196,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Inter',
             tooltipFontFamily: 'Inter',
-            dataLabelFont:{
-                fontFamily: 'Inter', color: '#9CA3AF'
+            dataLabelFont: {
+                fontFamily: 'Inter', color: '#9CA3AF', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#22D3EE'
         };
@@ -205,8 +216,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Helvetica',
             tooltipFontFamily: 'Helvetica',
-            dataLabelFont:{
-                fontFamily: 'Helvetica', color: '#495057'
+            dataLabelFont: {
+                fontFamily: 'Helvetica', color: '#495057', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#0D6EFD'
         };
@@ -225,8 +236,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Helvetica',
             tooltipFontFamily: 'Helvetica',
-            dataLabelFont:{
-                fontFamily: 'Helvetica', color: '#E9ECEF'
+            dataLabelFont: {
+                fontFamily: 'Helvetica', color: '#E9ECEF', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#0D6EFD'
         };
@@ -245,8 +256,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Segoe UI',
             tooltipFontFamily: 'Segoe UI',
-            dataLabelFont:{
-                fontFamily: 'Segoe UI', color: '#3B3A39'
+            dataLabelFont: {
+                fontFamily: 'Segoe UI', color: '#3B3A39', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#0078D4'
         };
@@ -265,8 +276,48 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Segoe UI',
             tooltipFontFamily: 'Segoe UI',
-            dataLabelFont:{
-                fontFamily: 'Segoe UI', color: '#D2D0CE'
+            dataLabelFont: {
+                fontFamily: 'Segoe UI', color: '#D2D0CE', size: '12px', fontWeight: '400', fontStyle: 'Medium'
+            },
+            tabColor: '#0078D4'
+        };
+        break;
+    case 'Fluent2':
+        themeColors = {
+            axisLineColor: '#D2D0CE',
+            dataLabelColor: '#424242',
+            rangeBandColor: '#A19F9D',
+            background: 'transparent',
+            tooltipFill: '#FFFFFF',
+            tooltipFontColor: '#242424',
+            trackerLineColor: '#D2D0CE',
+            fontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Segoe UI',
+            tooltipFontFamily: 'Segoe UI',
+            dataLabelFont: {
+                fontFamily: 'Segoe UI', color: '#242424', size: '12px', fontWeight: '400', fontStyle: 'Medium'
+            },
+            tabColor: '#0078D4'
+        };
+        break;
+    case 'Fluent2Dark':
+        themeColors = {
+            axisLineColor: '#8A8886',
+            dataLabelColor: '#D6D6D6',
+            rangeBandColor: '#8A8886',
+            background: 'transparent',
+            tooltipFill: '#292929',
+            tooltipFontColor: '#FFFFFF',
+            trackerLineColor: '#3B3A39',
+            fontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Segoe UI',
+            tooltipFontFamily: 'Segoe UI',
+            dataLabelFont: {
+                fontFamily: 'Segoe UI', color: '#D6D6D6', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#0078D4'
         };
@@ -285,8 +336,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Roboto',
             tooltipFontFamily: 'Roboto',
-            dataLabelFont:{
-                fontFamily: 'Roboto', color: '#49454E'
+            dataLabelFont: {
+                fontFamily: 'Roboto', color: '#49454E', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#49454E'
         };
@@ -305,8 +356,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipTextOpacity: 1,
             labelFontFamily: 'Roboto',
             tooltipFontFamily: 'Roboto',
-            dataLabelFont:{
-                fontFamily: 'Roboto', color: '#CAC4D0'
+            dataLabelFont: {
+                fontFamily: 'Roboto', color: '#CAC4D0', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#CAC4D0'
         };
@@ -322,8 +373,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             trackerLineColor: '#000000',
             labelFontFamily: theme === 'Bootstrap' ? 'Helvetica' : theme === 'Fabric' ? 'Segoe UI' : 'Roboto',
             tooltipFontFamily: theme === 'Bootstrap' ? 'Helvetica' : theme === 'Fabric' ? 'Segoe UI' : 'Roboto',
-            dataLabelFont:{
-                fontFamily: theme === 'Bootstrap' ? 'Helvetica' : theme === 'Fabric' ? 'Segoe UI' : 'Roboto', color: theme === 'Bootstrap' ? '#676767' : theme === 'Fabric' ? '#666666' : 'rgba(97, 97, 97, 1)' 
+            dataLabelFont: {
+                fontFamily: theme === 'Bootstrap' ? 'Helvetica' : theme === 'Fabric' ? 'Segoe UI' : 'Roboto', color: theme === 'Bootstrap' ? '#676767' : theme === 'Fabric' ? '#666666' : 'rgba(97, 97, 97, 1)', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: theme === 'Material' ? '#ff4081' : theme === 'Fabric' ? '#0078D6' : '#317AB9'
         };
@@ -334,9 +385,12 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
 }
 
 /**
- * To find number from string
+ * To find number from string.
  *
  * @private
+ * @param {string} value - The string containing the number.
+ * @param {number} containerSize - The container size for the number.
+ * @returns {number} - The extracted number from the string.
  */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {
@@ -347,6 +401,9 @@ export function stringToNumber(value: string, containerSize: number): number {
 
 /**
  * Method to calculate the width and height of the sparkline.
+ *
+ * @param {Sparkline} sparkline - The Sparkline instance.
+ * @returns {void}
  */
 export function calculateSize(sparkline: Sparkline): void {
     const containerWidth: number = !sparkline.element.clientWidth ? (!sparkline.element.parentElement ? 100 :
@@ -363,6 +420,9 @@ export function calculateSize(sparkline: Sparkline): void {
 
 /**
  * Method to create svg for sparkline.
+ *
+ * @param {Sparkline} sparkline - The Sparkline instance.
+ * @returns {void}
  */
 export function createSvg(sparkline: Sparkline): void {
     sparkline.renderer = new SvgRenderer(sparkline.element.id);
@@ -375,7 +435,7 @@ export function createSvg(sparkline: Sparkline): void {
 }
 
 /**
- * Internal use of type rect
+ * Internal use of type rect.
  *
  * @private
  */
@@ -395,7 +455,7 @@ export class Rect {
 }
 
 /**
- * Internal use of path options
+ * Internal use of path options.
  *
  * @private
  */
@@ -422,7 +482,7 @@ export class PathOption {
 }
 
 /**
- * Sparkline internal rendering options
+ * Sparkline internal rendering options.
  *
  * @private
  */
@@ -440,7 +500,7 @@ export interface SparkValues {
 }
 
 /**
- * Internal use of rectangle options
+ * Internal use of rectangle options.
  *
  * @private
  */
@@ -464,7 +524,7 @@ export class RectOption extends PathOption {
     }
 }
 /**
- * Internal use of circle options
+ * Internal use of circle options.
  *
  * @private
  */
@@ -484,9 +544,12 @@ export class CircleOption extends PathOption {
 }
 
 /**
- * Internal use of append shape element
+ * Internal use of append shape element.
  *
  * @private
+ * @param {Element} shape - The shape element to be appended.
+ * @param {Element} element - The parent element to which the shape will be appended.
+ * @returns {Element} - The appended shape element.
  */
 export function appendShape(shape: Element, element: Element): Element {
     if (element) { element.appendChild(shape); }
@@ -494,9 +557,13 @@ export function appendShape(shape: Element, element: Element): Element {
 }
 
 /**
- * Internal rendering of Circle
+ * Internal rendering of Circle.
  *
  * @private
+ * @param {Sparkline} sparkline - The Sparkline instance.
+ * @param {CircleOption} options - The options for rendering the circle.
+ * @param {Element} element - The parent element to which the circle will be appended.
+ * @returns {Element} - The rendered circle element.
  */
 export function drawCircle(sparkline: Sparkline, options: CircleOption, element?: Element): Element {
     return appendShape(sparkline.renderer.drawCircle(options), element);
@@ -504,6 +571,13 @@ export function drawCircle(sparkline: Sparkline, options: CircleOption, element?
 
 /**
  * To get rounded rect path direction.
+ *
+ * @param {Rect} r - The rect dimensions.
+ * @param {number} topLeft - The radius of the top-left corner.
+ * @param {number} topRight - The radius of the top-right corner.
+ * @param {number} bottomLeft - The radius of the bottom-left corner.
+ * @param {number} bottomRight - The radius of the bottom-right corner.
+ * @returns {string} - The SVG path string for the rounded rect path.
  */
 export function calculateRoundedRectPath(
     r: Rect, topLeft: number, topRight: number,
@@ -521,9 +595,13 @@ export function calculateRoundedRectPath(
         (topLeft + r.y) + ' ' + 'Z';
 }
 /**
- * Internal rendering of Rectangle
+ * Internal rendering of Rectangle.
  *
  * @private
+ * @param {Sparkline} sparkline - The Sparkline instance.
+ * @param {RectOption} options - The options for rendering the rectangle.
+ * @param {Element} element - The parent element to which the rectangle will be appended.
+ * @returns {Element} - The rendered rectangle element.
  */
 export function drawRectangle(sparkline: Sparkline, options: RectOption, element?: Element): Element {
     options.d = calculateRoundedRectPath(options.rect, options.topLeft, options.topRight, options.bottomLeft, options.bottomRight);
@@ -531,9 +609,13 @@ export function drawRectangle(sparkline: Sparkline, options: RectOption, element
 }
 
 /**
- * Internal rendering of Path
+ * Internal rendering of Path.
  *
  * @private
+ * @param {Sparkline} sparkline - The Sparkline instance.
+ * @param {PathOption} options - The options for rendering the path.
+ * @param {Element} element - The parent element to which the path will be appended.
+ * @returns {Element} - The rendered path.
  */
 export function drawPath(sparkline: Sparkline, options: PathOption, element?: Element): Element {
     return appendShape(sparkline.renderer.drawPath(options), element);
@@ -543,6 +625,10 @@ export function drawPath(sparkline: Sparkline, options: PathOption, element?: El
  * Function to measure the height and width of the text.
  *
  * @private
+ * @param {string} text - The text to measure.
+ * @param {SparklineFontModel} font - The font settings for the text.
+ * @param {FontModel} themeStyle - The theme style applied to the text.
+ * @returns {Size} - The size of the text.
  */
 export function measureText(text: string, font: SparklineFontModel, themeStyle?: FontModel): Size {
     let htmlObject: HTMLElement = document.getElementById('sparklinesmeasuretext');
@@ -553,14 +639,14 @@ export function measureText(text: string, font: SparklineFontModel, themeStyle?:
     }
 
     htmlObject.innerText = text;
-    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontStyle = font.fontStyle || themeStyle.fontStyle;
     htmlObject.style.fontFamily = font.fontFamily || themeStyle.fontFamily;
     htmlObject.style.visibility = 'hidden';
     htmlObject.style.top = '-100';
     htmlObject.style.left = '0';
     htmlObject.style.position = 'absolute';
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.fontSize = font.size || themeStyle.size;
+    htmlObject.style.fontWeight = font.fontWeight || themeStyle.fontWeight;
     htmlObject.style.whiteSpace = 'nowrap';
     // For Bootstrap line height issue
     htmlObject.style.lineHeight = 'normal';
@@ -592,11 +678,18 @@ export class TextOption {
     }
 }
 /**
- * Internal rendering of text
+ * Internal rendering of text.
  *
  * @private
+ * @param {TextOption} options - The options for rendering the text.
+ * @param {SparklineFontModel} font - The font settings for the text.
+ * @param {string} color - The color of the text.
+ * @param {HTMLElement | Element} parent - The parent element to which the text will be appended.
+ * @param {FontModel} themeStyle - The theme style applied to the text.
+ * @returns {Element} - The rendered text element.
  */
-export function renderTextElement(options: TextOption, font: SparklineFontModel, color: string, parent: HTMLElement | Element, themeStyle?:FontModel): Element {
+export function renderTextElement(options: TextOption, font: SparklineFontModel, color: string,
+                                  parent: HTMLElement | Element, themeStyle?: FontModel): Element {
     const textOptions: Object = {
         'id': options.id,
         'x': options.x,
@@ -605,9 +698,9 @@ export function renderTextElement(options: TextOption, font: SparklineFontModel,
         'opacity': font.opacity,
         'fill': color,
         'font-family': font.fontFamily || themeStyle.fontFamily,
-        'font-weight': font.fontWeight,
-        'font-size': font.size,
-        'font-style': font.fontStyle,
+        'font-weight': font.fontWeight || themeStyle.fontWeight,
+        'font-size': font.size || themeStyle.size,
+        'font-style': font.fontStyle || themeStyle.fontStyle,
         'text-anchor': options.anchor,
         'dominant-baseline': options.baseLine
     };
@@ -625,6 +718,9 @@ export function renderTextElement(options: TextOption, font: SparklineFontModel,
 }
 /**
  * To remove element by id.
+ *
+ * @param {string} id - The id of the element to remove.
+ * @returns {void}
  */
 export function removeElement(id: string): void {
     const element: Element = document.getElementById(id);
@@ -632,12 +728,20 @@ export function removeElement(id: string): void {
 }
 /**
  * To find the element by id.
+ *
+ * @param {string} id - The id of the element to find.
+ * @returns {Element} - The element with the specified id, if found.
  */
 export function getIdElement(id: string): Element {
     return document.getElementById(id);
 }
 /**
  * To find point within the bounds.
+ *
+ * @param {number} x - The x-coordinate of the point.
+ * @param {number} y - The y-coordinate of the point.
+ * @param {Rect} bounds - The bounding rectangle to check against.
+ * @returns {boolean} - True if the point is within the bounds, false otherwise.
  */
 export function withInBounds(x: number, y: number, bounds: Rect): boolean {
     return (x >= bounds.x && x <= bounds.x + bounds.width && y >= bounds.y && y <= bounds.y + bounds.height);

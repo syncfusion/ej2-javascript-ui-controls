@@ -208,8 +208,7 @@ export class Grouping implements IAction {
                 }
             }
         }
-        // eslint-disable-next-line security/detect-object-injection
-        delete this.parent.engineModule.groupingFieldsInfo[fieldName];
+        delete this.parent.engineModule.groupingFieldsInfo[fieldName as string];
         return groupFields;
     }
 
@@ -242,9 +241,10 @@ export class Grouping implements IAction {
      * @hidden
      */
     public getSelectedCells(axis: string, fieldName: string, name: string): SelectedCellsInfo[] {
-        const selectedCellsInfo: SelectedCellsInfo[] = []; // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
-        for (const element of selectedElements) {
+        const selectedCellsInfo: SelectedCellsInfo[] = [];
+        const selectedElements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
+        for (let i: number = 0; i < selectedElements.length; i++) {
+            const element: HTMLElement = selectedElements[i as number];
             const colIndex: number = Number(element.getAttribute('data-colindex'));
             const rowIndex: number = Number(element.getAttribute('index'));
             const cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
@@ -302,8 +302,7 @@ export class Grouping implements IAction {
         groupDialog.appendTo(groupDialogElement);
     }
     private createGroupOptions(fieldName: string, type: string): HTMLElement {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const groupInstance: Grouping = this;
+        const groupInstance: Grouping = this as Grouping;
         const mainDiv: HTMLElement = createElement('div', {
             className: 'e-group-field-div-content', id: this.parentElement.id + '_group_field_div_content',
             attrs: { 'data-fieldName': fieldName, 'data-type': type }
@@ -484,9 +483,16 @@ export class Grouping implements IAction {
                             (getInstance(select( '#' + groupInstance.parentElement.id + '_GroupDialog', document), Dialog) as Dialog
                             ).element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
                         },
-                        removed: () => { // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            if ((intervalObj as any).checkBoxSelectionModule.activeLi.length === 0) {
-                                (getInstance(select( '#' + groupInstance.parentElement.id + '_GroupDialog', document), Dialog) as Dialog
+                        removed: () => {
+                            const nodeList: HTMLElement[] = intervalObj['liCollections'];
+                            let activeListCount: number = 0;
+                            nodeList.forEach((item: HTMLElement) => {
+                                if (item.classList.contains('e-active')) {
+                                    activeListCount++;
+                                }
+                            });
+                            if (activeListCount === 0) {
+                                (getInstance(select('#' + groupInstance.parentElement.id + '_GroupDialog', document), Dialog) as Dialog
                                 ).element.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                             }
                         }
@@ -746,8 +752,8 @@ export class Grouping implements IAction {
             const groupFields: IGroupSettings[] = groupType === 'date' ? groups[groupOrders[0]] : groups[groupOrders[1]];
             if (groupType === 'date') {
                 groups[groupOrders[0]] = groupFields.filter((field: IGroupSettings) => { return field.name !== fieldName; });
-                if (groups[groupOrders[0]].length === 0) { // eslint-disable-next-line security/detect-object-injection
-                    delete this.parent.engineModule.groupingFieldsInfo[fieldName];
+                if (groups[groupOrders[0]].length === 0) {
+                    delete this.parent.engineModule.groupingFieldsInfo[fieldName as string];
                 }
             } else {
                 groups[groupOrders[1]] = groupFields.filter((field: IGroupSettings) => { return field.name !== fieldName; });

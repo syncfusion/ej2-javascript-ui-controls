@@ -156,7 +156,7 @@ export class Container extends DiagramElement {
                         child.arrange(child.desiredSize);
                     }
                     //EJ2-839298 - Connector draw cursor is not enabled while hover the group node port
-                    if(i==0){
+                    if (i === 0) {
                         this.outerBounds = child.outerBounds;
                     }
                     else{

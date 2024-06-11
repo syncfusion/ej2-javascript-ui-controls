@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, EmitType } from '@syncfusion/ej2-base';
 import { EventHandler, remove, INotifyPropertyChanged, ModuleDeclaration, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Internationalization } from '@syncfusion/ej2-base';
@@ -39,7 +35,7 @@ import { IFeatureBarBounds } from './model/bullet-interface';
 import { getBulletThemeColor } from './utils/theme';
 import { ExportUtils } from '../common/utils/export';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-import { PrintUtils } from '../common/utils/print'
+import { PrintUtils } from '../common/utils/print';
 
 /**
  * bullet chart
@@ -143,14 +139,14 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Options for customizing labels
      */
 
-    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, BulletLabelStyle)
     public labelStyle: BulletLabelStyleModel;
 
     /**
      * Options for customizing values labels.
      */
 
-    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
     public categoryLabelStyle: BulletLabelStyleModel;
 
 
@@ -176,7 +172,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Options for customizing the title styles of the bullet chart.
      */
-    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '500', color: null}, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, BulletLabelStyle)
     public titleStyle: BulletLabelStyleModel;
 
     /**
@@ -192,7 +188,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Options for customizing the sub title styles of the bullet chart.
      */
-    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, BulletLabelStyle)
     public subtitleStyle: BulletLabelStyleModel;
 
 
@@ -498,7 +494,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public containerWidth: number;
     /** @private */
-    // tslint:disable-next-line:no-any
     public resizeBound: any;
     /** @private */
     private resizeTo: number;
@@ -554,8 +549,10 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     public visibleRanges: Range[];
 
     /**
-     * Constructor for creating the bullet chart
+     * Constructor for creating the bullet chart.
      *
+     * @param {BulletChartModel} options - Specifies the bullet chart model.
+     * @param {string | HTMLElement} element - Specifies the element for the bullet chart.
      * @hidden
      */
     constructor(options?: BulletChartModel, element?: string | HTMLElement) {
@@ -564,6 +561,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Initialize the event handler.
+     *
+     * @returns {void}
      */
     protected preRender(): void {
         this.allowServerDataBinding = false;
@@ -574,7 +573,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To initialize the private variables
+     * To initialize the private variables.
+     *
+     * @returns {void}
      */
     private initPrivateValues(): void {
         this.delayRedraw = false;
@@ -588,7 +589,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Method to set culture for BulletChart
+     * Method to set culture for BulletChart.
+     *
+     * @returns {void}
      */
     private setCulture(): void {
         this.intl = new Internationalization();
@@ -596,8 +599,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
     /**
      * To Initialize the bullet chart rendering.
+     *
+     * @returns {void}
      */
-
     protected render(): void {
         const loadEventData: IBulletLoadedEventArgs = {
             bulletChart: this,
@@ -628,17 +632,19 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Theming for bullet chart
+     * Theming for bullet chart.
+     *
+     * @returns {void}
      */
     private setTheme(): void {
         this.themeStyle = getBulletThemeColor(this.theme);
         if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Fluent') > -1) {
             this.valueFill = !(this.valueFill) ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.valueFill;
-            this.targetColor = (this.targetColor == '#191919') ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.targetColor;
+            this.targetColor = (this.targetColor === '#191919') ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.targetColor;
         }
         if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Material3') > -1) {
             this.valueFill = !(this.valueFill) ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.valueFill;
-            this.targetColor = (this.targetColor == '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.targetColor;
+            this.targetColor = (this.targetColor === '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.targetColor;
         }
         if (!(document.getElementById(this.element.id + 'Keyboard_bullet_chart_focus'))) {
             const style: HTMLStyleElement = document.createElement('style');
@@ -689,7 +695,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Numeric Nice Interval for the axis.
      *
      * @private
-     * @returns {number} calculateNumericNiceInterval.
+     * @param {number} delta - The difference between maximum and minimum values.
+     * @returns {number} - The calculated numeric nice interval for the axis.
      */
     protected calculateNumericNiceInterval(delta: number): number {
         const actualDesiredIntervalsCount: number = this.getActualDesiredIntervalsCount(this.availableSize);
@@ -706,7 +713,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To set the left and top position for data label template for center aligned bulletchart
+     * To set the left and top position for data label template for center aligned bulletchart.
+     *
+     * @returns {void}
      */
     private setSecondaryElementPosition(): void {
         const element: HTMLDivElement = getElement(this.element.id + '_Secondary_Element') as HTMLDivElement;
@@ -736,7 +745,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Creating a background element to the svg object
+     * Creating a background element to the svg object.
+     *
+     * @returns {void}
      */
     private renderChartBackground(): void {
         const rect: RectOption = new RectOption(
@@ -749,15 +760,15 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
 
     /**
-     * Rendering the bullet elements
+     * Rendering the bullet elements.
+     *
+     * @returns {void}
      */
     private renderBulletElements(): void {
         const scaleGroup: Element = this.renderer.createGroup({ 'id': this.svgObject.id + '_scaleGroup' });
-       
         this.renderBulletChartTitle();
 
         this.svgObject.appendChild(scaleGroup);
-        
         this.rangeCollection = this.scale.drawScaleGroup(scaleGroup);
 
         const size: number = (this.orientation === 'Horizontal') ? this.initialClipRect.width : this.initialClipRect.height;
@@ -848,7 +859,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Process the data values of feature and comparative measure bar
+     * Process the data values of feature and comparative measure bar.
+     *
+     * @returns {void}
      */
     private bindData(): void {
         if (this.dataSource != null) {
@@ -858,7 +871,10 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Rendering the feature and comaparative measure bars
+     * Rendering the feature and comaparative measure bars.
+     *
+     * @param {number} dataCount - The count of bars to render.
+     * @returns {void}
      */
     private drawMeasures(dataCount: number): void {
         this.scale.renderFeatureBar(dataCount);
@@ -866,7 +882,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To calculate the title bounds
+     * To calculate the title bounds.
+     *
+     * @returns {void}
      */
     private calculatePosition(): void {
         const margin: MarginModel = this.margin;
@@ -881,8 +899,10 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         let maxTitlteHeight: number = 0;
         let maxVerticalTitlteHeight: number = padding;
         if (this.title) {
-            this.titleCollections = getTitle(this.title, this.titleStyle, this.titleStyle.maximumTitleWidth, this.enableRtl, this.themeStyle.titleFont);
-            titleHeight = (measureText(this.title, this.titleStyle, this.themeStyle.titleFont).height * this.titleCollections.length) + padding;
+            this.titleCollections = getTitle(this.title, this.titleStyle, this.titleStyle.maximumTitleWidth,
+                                             this.enableRtl, this.themeStyle.titleFont);
+            titleHeight = (measureText(this.title, this.titleStyle, this.themeStyle.titleFont).height *
+            this.titleCollections.length) + padding;
             for (const titleText of this.titleCollections) {
                 titleSize = measureText(titleText, this.titleStyle, this.themeStyle.titleFont);
                 maxTitlteWidth = titleSize.width > maxTitlteWidth ? titleSize.width : maxTitlteWidth;
@@ -896,8 +916,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     maxTitlteWidth = titleSize.width > maxTitlteWidth ? titleSize.width : maxTitlteWidth;
                     maxTitlteHeight = titleSize.height > maxTitlteHeight ? titleSize.height : maxTitlteHeight;
                 }
-                subTitleHeight = (measureText(this.subtitle, this.subtitleStyle, this.themeStyle.subTitleFont).height * this.subTitleCollections.length) +
-                    padding;
+                subTitleHeight = (measureText(this.subtitle, this.subtitleStyle,
+                                              this.themeStyle.subTitleFont).height * this.subTitleCollections.length) + padding;
                 maxVerticalTitlteHeight += maxTitlteHeight;
             }
         }
@@ -917,7 +937,11 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Calculate the rect values based on title position.
      *
-     * @returns {void}
+     * @param {number} maxTitlteWidth - The maximum width of the title.
+     * @param {number} titleHeight - The height of the title.
+     * @param {number} subTitleHeight - The height of the subtitle.
+     * @param {MarginModel} margin - The margin settings.
+     * @returns {Rect} - The calculated rect values.
      * @private
      */
     public getBulletBounds(
@@ -945,7 +969,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             format: isCustomFormat ? '' : format, useGrouping: this.enableGroupSeparator
         });
         const formatted: number = measureText(
-            this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, this.maximum), this.labelStyle, this.themeStyle.axisLabelFont).width;
+            this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, this.maximum),
+            this.labelStyle, this.themeStyle.axisLabelFont).width;
         let categoryLabelSize: number;
         if (this.orientation === 'Horizontal') {
             categoryLabelSize = this.maxLabelSize.width;
@@ -1009,13 +1034,15 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             return this.maxLabelSize;
         }
         let label: Size;
-        for (let i: number = 0, len: number = Object.keys(this.dataSource).length; i < len; i++) {
-            label = measureText((this.dataSource[i as number][this.categoryField] || ''), this.categoryLabelStyle, this.themeStyle.axisLabelFont);
-            if (label.width > this.maxLabelSize.width) {
-                this.maxLabelSize.width = label.width;
-            }
-            if (label.height > this.maxLabelSize.height) {
-                this.maxLabelSize.height = label.height;
+        if (!isNullOrUndefined(this.dataSource)) {
+            for (let i: number = 0, len: number = Object.keys(this.dataSource).length; i < len; i++) {
+                label = measureText((this.dataSource[i as number][this.categoryField] || ''), this.categoryLabelStyle, this.themeStyle.axisLabelFont);
+                if (label.width > this.maxLabelSize.width) {
+                    this.maxLabelSize.width = label.width;
+                }
+                if (label.height > this.maxLabelSize.height) {
+                    this.maxLabelSize.height = label.height;
+                }
             }
         }
         return this.maxLabelSize;
@@ -1028,15 +1055,15 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         for (let i: number = 0, len: number = rangeCollection.length; i < len; i++) {
             range = <Range>rangeCollection[i as number];
             range.index = i;
-            // eslint-disable-next-line no-self-assign
-            range.color = range.color;
             this.visibleRanges.push(range);
             rangeCollection[i as number] = range;
         }
     }
 
     /**
-     * To render the title of the bullet chart
+     * To render the title of the bullet chart.
+     *
+     * @returns {void}
      */
     private renderBulletChartTitle(): void {
         const margin: MarginModel = this.margin;
@@ -1047,7 +1074,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         let transform: string = '';
         const alignment: string = this.titleStyle.textAlignment;
         const elementSize: Size = measureText(this.title, this.titleStyle, this.themeStyle.titleFont);
-        const subTitleSize: Size = (this.subtitle) ? measureText(this.subtitle, this.subtitleStyle, this.themeStyle.subTitleFont) : new Size(0, 0);
+        const subTitleSize: Size = (this.subtitle) ? measureText(this.subtitle, this.subtitleStyle,
+                                                                 this.themeStyle.subTitleFont) : new Size(0, 0);
         if (this.title) {
             if (this.orientation === 'Horizontal') {
                 switch (this.titlePosition) {
@@ -1103,7 +1131,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             const options: TextOption = new TextOption(
                 this.element.id + '_BulletChartTitle', x, y, anchor, this.titleCollections, transform, 'auto');
             const element: Element = textElement(
-                this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFont.color, this.svgObject, null, null, null, null, null, null, null, null, null, null, this.themeStyle.titleFont);
+                this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFont.color, this.svgObject,
+                null, null, null, null, null, null, null, null, null, null, this.themeStyle.titleFont);
             if (element) {
                 element.setAttribute('aria-label', this.title + '. Syncfusion interactive chart.');
                 element.setAttribute('tabindex', '0');
@@ -1115,12 +1144,13 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         }
     }
     /**
-     * To render the data label for bullet chart
+     * To render the data label for bullet chart.
+     *
+     * @returns {void}
      */
     private renderDataLabel(): void {
         let x: number = 0;
         let y: number = 0;
-        const elementSpacing: number = 10;
         let anchor: string;
         const transform : string = '';
         const enableRtl: boolean = this.enableRtl;
@@ -1139,9 +1169,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                 });
                 labelText = isCustomFormat ? format.replace('{value}', this.format(labelText)) : labelText;
                 const labelSize: Object = measureText(labelText, this.dataLabel.labelStyle, this.themeStyle.axisLabelFont);
-                // tslint:disable-next-line:no-string-literal
                 const textWidth: number = labelSize['width'];
-                // tslint:disable-next-line:no-string-literal
                 const textHeight: number = labelSize['height'];
                 if (this.orientation === 'Horizontal') {
                     anchor = this.type === 'Rect' ? 'end' : (enableRtl ? 'end' : 'start');
@@ -1166,7 +1194,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     x, y, anchor, labelText, transform, 'middle');
                 textElement(
                     this.renderer, labelOptions, this.dataLabel.labelStyle,
-                    this.dataLabel.labelStyle.color || this.themeStyle.dataLabelFont.color, this.svgObject, null, null, null, null, null, null, null, null, null, null, this.themeStyle.dataLabelFont);
+                    this.dataLabel.labelStyle.color || this.themeStyle.dataLabelFont.color, this.svgObject,
+                    null, null, null, null, null, null, null, null, null, null, this.themeStyle.dataLabelFont);
             }
         }
     }
@@ -1174,19 +1203,19 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         const elementSpacing: number = 10;
         let x: number = 0;
         switch (alignment) {
-            case 'Center':
-                x = featureBounds.x + featureBounds.width / 2;
-                break;
-            case 'Near':
-                x = featureBounds.x + (this.orientation === 'Horizontal' ? (this.enableRtl ? featureBounds.width - elementSpacing / 2 : elementSpacing / 2)
-                    : (this.enableRtl ? elementSpacing : featureBounds.width));
-                break;
-            case 'Far':
-                x = featureBounds.x + (this.orientation === 'Horizontal' ? ((this.enableRtl ? (this.type === 'Rect' ? textWidth + elementSpacing : - elementSpacing) :
-                    featureBounds.width) + (this.type === 'Rect' ? -elementSpacing / 2 : elementSpacing / 2))
-                    : (this.enableRtl ? featureBounds.width + (this.type === 'Rect' ? - elementSpacing : elementSpacing) : 0) +
-                    (this.type === 'Rect' ? elementSpacing : - elementSpacing));
-                break;
+        case 'Center':
+            x = featureBounds.x + featureBounds.width / 2;
+            break;
+        case 'Near':
+            x = featureBounds.x + (this.orientation === 'Horizontal' ? (this.enableRtl ? featureBounds.width - elementSpacing / 2 : elementSpacing / 2)
+                : (this.enableRtl ? elementSpacing : featureBounds.width));
+            break;
+        case 'Far':
+            x = featureBounds.x + (this.orientation === 'Horizontal' ? ((this.enableRtl ? (this.type === 'Rect' ? textWidth + elementSpacing : - elementSpacing) :
+                featureBounds.width) + (this.type === 'Rect' ? -elementSpacing / 2 : elementSpacing / 2))
+                : (this.enableRtl ? featureBounds.width + (this.type === 'Rect' ? - elementSpacing : elementSpacing) : 0) +
+                (this.type === 'Rect' ? elementSpacing : - elementSpacing));
+            break;
         }
         return x;
     }
@@ -1223,7 +1252,12 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
 
     /**
-     * To render the sub title of the bullet chart
+     * To render the sub title of the bullet chart.
+     *
+     * @param {number} x - The x-coordinate of the sub title.
+     * @param {number} y - The y-coordinate of the sub title.
+     * @param {string} anchor - The anchor position of the sub title.
+     * @returns {void}
      */
     private renderBulletChartSubTitle(x: number, y: number, anchor: string): void {
         const margin: MarginModel = this.margin;
@@ -1267,7 +1301,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             this.element.id + '_BulletChartSubTitle', x, y, anchor, this.subTitleCollections, transform, 'auto');
         const element: Element = textElement(
             this.renderer, subTitleOptions, this.subtitleStyle,
-            this.subtitleStyle.color || this.themeStyle.subTitleFont.color, this.svgObject, null, null, null, null, null, null, null, null,null, null, this.themeStyle.subTitleFont
+            this.subtitleStyle.color || this.themeStyle.subTitleFont.color, this.svgObject,
+            null, null, null, null, null, null, null, null, null, null, this.themeStyle.subTitleFont
         );
         if (element) {
             element.setAttribute('aria-label', this.subtitle);
@@ -1307,7 +1342,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /** Wire, UnWire and Event releated calculation Started here */
 
     /**
-     * Method to un-bind events for bullet chart
+     * Method to un-bind events for bullet chart.
+     *
+     * @returns {void}
      */
     private unWireEvents(): void {
         /*! Find the Events type */
@@ -1330,7 +1367,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Method to bind events for bullet chart
+     * Method to bind events for bullet chart.
+     *
+     * @returns {void}
      */
     private wireEvents(): void {
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
@@ -1358,13 +1397,14 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Handles the mouse move on the bullet chart.
      *
      * @private
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {void}
      */
     private bulletMouseMove(e: PointerEvent): void {
         const pageX: number = e.clientX;
         const pageY: number = e.clientY;
         this.setPointMouseXY(pageX, pageY);
         const targetId: string = (e.target as Element).id;
-        // tslint:disable-next-line:no-string-literal
         const targetClass: string = (e.target as Element).className['baseVal'];
         if (targetClass !== this.svgObject.id + '_FeatureMeasure' || this.svgObject.id + '_ComparativeMeasure') {
             if (!isNullOrUndefined(this.dataSource)) {
@@ -1378,7 +1418,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             const id: string = 'tooltipDiv' + this.element.id;
             const tooltipDiv: Element = document.getElementById(id);
             if (tooltipDiv) {
-                // tslint:disable-next-line:no-any
                 if ((this as any).isReact) { this.clearTemplate(); }
                 remove(tooltipDiv);
             }
@@ -1389,7 +1428,11 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         }
     }
     /**
-     * To find mouse x, y for aligned bullet chart element svg position
+     * To find mouse x, y for aligned bullet chart element svg position.
+     *
+     * @param {number} pageX - The x-coordinate of the mouse position on the page.
+     * @param {number} pageY - The y-coordinate of the mouse position on the page.
+     * @returns {void}
      */
     private setPointMouseXY(pageX: number, pageY: number): void {
         const svgClientRect: ClientRect = getElement(this.svgObject.id).getBoundingClientRect();
@@ -1401,12 +1444,13 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Handles the mouse leave on the bullet chart.
      *
      * @private
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {void}
      */
     public bulletMouseLeave(e: PointerEvent): void {
         if (!this.isTouchEvent(e)) {
             const tooltipDiv: HTMLElement = document.getElementById('.tooltipDiv' + this.element.id);
             if (tooltipDiv) {
-                // tslint:disable-next-line:no-any
                 if ((this as any).isReact) { this.clearTemplate(); }
                 remove(tooltipDiv);
             }
@@ -1416,7 +1460,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Handles the touch event.
      *
-     * @returns {boolean} Touchh event.
+     * @param {PointerEvent} event - The pointer event.
+     * @returns {boolean} - Touch event.
      * @private
      */
     private isTouchEvent(event: PointerEvent): boolean {
@@ -1429,6 +1474,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Handles the mouse down on the bullet chart.
      *
      * @private
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {void}
      */
     private bulletMouseDown(e: PointerEvent): void {
         let pageX: number;
@@ -1446,14 +1493,12 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         }
         this.setPointMouseXY(pageX, pageY);
         if (this.isTouchEvent(e)) {
-            // tslint:disable-next-line:no-any
             if ((this as any).isReact) { this.clearTemplate(); }
             const Element: HTMLElement = document.getElementById(('tooltipDiv' + this.element.id));
             if (Element) {
-            remove(Element);
+                remove(Element);
             }
             const targetId: string = (e.target as Element).id;
-            // tslint:disable-next-line:no-string-literal
             const targetClass: string = (e.target as Element).className['baseVal'];
             if (this.bulletTooltipModule) {
                 this.bulletTooltipModule._elementTooltip(e, targetClass, targetId, this.mouseX);
@@ -1465,7 +1510,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Handles the mouse click on bullet chart.
      *
-     * @returns {boolean} Mouse click of bullet chart.
+     * @param {PointerEvent | TouchEvent} e - The pointer or touch event.
+     * @returns {boolean} - Mouse click of bullet chart.
      * @private
      */
     public bulletChartOnMouseClick(e: PointerEvent | TouchEvent): boolean {
@@ -1476,6 +1522,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
     /**
      * Handles the print method for bullet chart control.
+     *
+     * @param {string[] | string | Element} id - The id of the bullet chart to be printed on the page.
+     * @returns {void}
      */
     public print(id?: string[] | string | Element): void {
         new PrintUtils(this).print(id);
@@ -1484,12 +1533,14 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Handles the export method for bullet chart control.
      *
-     * @param {ExportType} type Type of the export.
-     * @param {string} fileName File name for exporting.
-     * @param {PdfPageOrientation} orientation Orientation of the export.
-     * @param {Chart | AccumulationChart | RangeNavigator | BulletChart} controls To mention the exporting chart.
-     * @param {number} width Width of the export.
-     * @param {number} height Height of the export.
+     * @param {ExportType} type - Type of the export.
+     * @param {string} fileName - File name for exporting.
+     * @param {PdfPageOrientation} orientation - Orientation of the export.
+     * @param {(Chart | AccumulationChart | RangeNavigator | BulletChart)[]} controls - To mention the exporting chart.
+     * @param {number} width - Width of the export.
+     * @param {number} height - Height of the export.
+     * @param {boolean} isVertical - Whether the export is in vertical orientation.
+     * @returns {void}
      */
     public export(
         type: ExportType, fileName: string, orientation?: PdfPageOrientation,
@@ -1503,7 +1554,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Handles the keyboard onkeydown on bullet chart.
      *
-     * @returns {boolean} false
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {boolean} - false
      * @private
      */
     public chartKeyUp(e: KeyboardEvent): boolean {
@@ -1578,8 +1630,10 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Called internally if any of the property value changed.
      *
      * @private
+     * @param {BulletChartModel} newProp - The new BulletChartModel.
+     * @returns {void}
      */
-    public onPropertyChanged(newProp: BulletChartModel, oldProp: BulletChartModel): void {
+    public onPropertyChanged(newProp: BulletChartModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         this.animateSeries = false;
@@ -1664,7 +1718,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To provide the array of modules needed for bullet chart rendering
+     * To provide the array of modules needed for bullet chart rendering.
      *
      * @private
      * @returns {ModuleDeclaration[]} requiredModules
@@ -1700,7 +1754,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To destroy the widget
+     * To destroy the widget.
      *
      * @returns {void} Destroy method
      * @member of BulletChart

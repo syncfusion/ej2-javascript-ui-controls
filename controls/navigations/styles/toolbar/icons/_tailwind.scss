@@ -1,6 +1,4 @@
 @include export-module('toolbar-tailwind-icons') {
-
-  /*! toolbar icons */
   #{&}.e-toolbar {
 
     .e-popup-down-icon::before {

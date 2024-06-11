@@ -32,6 +32,10 @@ export type SmithchartTheme =
     'Bootstrap5Dark' |
     /**  Render a smithchart with Fluent theme. */
     'Fluent' |
+    /**  Render a smithchart with Fluent 2 theme. */
+    'Fluent2' |
+    /**  Render a smithchart with Fluent 2 dark theme. */
+    'Fluent2Dark' |
     /**  Render a smithchart with FluentDark theme. */
     'FluentDark' |
     /**  Render a smithchart with Material 3 theme. */

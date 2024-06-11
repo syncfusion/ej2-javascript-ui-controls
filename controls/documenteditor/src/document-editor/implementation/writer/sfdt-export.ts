@@ -763,30 +763,11 @@ export class SfdtExport {
         }
         let next: BlockWidget = paragraphWidget;
         while (next instanceof ParagraphWidget) {
-            const selection = this.owner.selection;
-            let selectedParas: ParagraphWidget[];
-            let elementInfo: ElementInfo;
-            let selectionLength: number;
-            if (!isNullOrUndefined(selection)) {
-                elementInfo = selection.getElementInfo(selection.end.currentWidget, selection.end.offset);
-                selectionLength = selection.getParagraphLength(paragraphWidget, !selection.isForward? selection.start.currentWidget: selection.end.currentWidget, elementInfo);
-            }
-            if (!isNullOrUndefined(this.owner.editor) && this.owner.editor.isCopying && selection.getParagraphLength(paragraphWidget) + 1 === Math.abs(selectionLength) && selection.start.paragraph === selection.end.paragraph) {
-                selectedParas = selection.getParagraphsInSelection();
-            }
             if (this.writeLines(next, lineIndex, start, paragraph[inlinesProperty[this.keywordIndex]])) {
-                if (!isNullOrUndefined(selectedParas) && selectedParas.length === 1 && selectedParas[0] === paragraphWidget) {
-                    // To preserve the <P> tag while copying
-                    paragraph[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]] = true;
-                }
                 return undefined;
             }
             lineIndex = 0;
             start = 0;
-            if (!isNullOrUndefined(selectedParas) && selectedParas.length === 1 && selectedParas[0] === paragraphWidget) {
-                // To preserve the <P> tag while copying
-                paragraph[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]] = true;
-            }
             paragraphWidget = next;
             next = paragraphWidget.nextSplitWidget as ParagraphWidget;
         }
@@ -1602,7 +1583,6 @@ export class SfdtExport {
         HelperMethods.writeCharacterFormat(characterFormat, isInline, format, keywordIndex);
         characterFormat[boldBidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.boldBidi, keywordIndex) : format.getValue('boldBidi');
         characterFormat[italicBidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.italicBidi, keywordIndex) : format.getValue('italicBidi');
-        characterFormat[fontSizeBidiProperty[keywordIndex]] = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
         if (format.revisions.length > 0) {
             characterFormat[revisionIdsProperty[keywordIndex]] = [];
             for (let x: number = 0; x < format.revisions.length; x++) {
@@ -1619,7 +1599,7 @@ export class SfdtExport {
      */
     public writeParagraphFormat(format: WParagraphFormat, keywordIndex: number, isInline?: boolean): any {
         let paragraphFormat: any = {};
-        // this.keywordIndex = isNullOrUndefined(this.keywordIndex) ? 0 : this.keywordIndex;
+        this.keywordIndex = isNullOrUndefined(this.keywordIndex) ? 0 : this.keywordIndex;
         HelperMethods.writeParagraphFormat(paragraphFormat, isInline, format, keywordIndex);
         paragraphFormat[listFormatProperty[keywordIndex]] = this.writeListFormat(format.listFormat, isInline);
         paragraphFormat[tabsProperty[keywordIndex]] = this.writeTabs(format.tabs);
@@ -2113,14 +2093,13 @@ export class SfdtExport {
         }
         if (ctext.indexOf('span') !== -1) {
             let email = ctext.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-            let matchText : RegExpMatchArray = ctext.match(/&nbsp;(.+)/);
-            let text : string = matchText ? matchText[1] : '';
-            ctext = email + " " + text;
+            ctext = email? email + " " : ctext;
         }
         inlines[textProperty[this.keywordIndex]] = mentions.length > 0 ? text : ctext;
         blocks[inlinesProperty[this.keywordIndex]].push(inlines);
         return blocks;
     }
+
 
     private serializeMentions(dataName: string, url: string, blocks: string): any {
         var inlines = {};

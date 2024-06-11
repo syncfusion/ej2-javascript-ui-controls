@@ -28,6 +28,7 @@ export class WAbstractList {
     /**
      * Disposes the internal objects which are maintained.
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.levels)) {

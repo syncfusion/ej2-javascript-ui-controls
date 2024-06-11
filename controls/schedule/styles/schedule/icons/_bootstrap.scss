@@ -33,10 +33,6 @@
         content: '\e319';
       }
 
-      & .e-icon-month::before {
-        content: '\e960';
-      }
-
       & .e-icon-month-agenda::before {
         content: '\e31c';
       }
@@ -45,14 +41,9 @@
         content: '\e31a';
       }
 
-      & .e-icon-year::before {
-        content: '\e960';
-      }
-
-      & .e-icon-timeline-year-vertical::before {
-        content: '\e960';
-      }
-
+      & .e-icon-month::before,
+      & .e-icon-year::before,
+      & .e-icon-timeline-year-vertical::before,
       & .e-icon-timeline-year-horizontal::before {
         content: '\e960';
       }
@@ -74,10 +65,7 @@
       }
 
       &.e-toolbar {
-        .e-popup-down-icon::before {
-          content: '\e936';
-        }
-
+        .e-popup-down-icon::before,
         .e-popup-up-icon::before {
           content: '\e936';
         }

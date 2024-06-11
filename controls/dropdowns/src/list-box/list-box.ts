@@ -1,3 +1,4 @@
+
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
@@ -39,7 +40,6 @@ export type CheckBoxPosition = 'Left' | 'Right';
 
 type dataType = { [key: string]: object } | string | boolean | number;
 type obj = { [key: string]: object };
-const ITEMTEMPLATE_PROPERTY: string = 'ItemTemplate';
 /**
  * Defines the Selection settings of List Box.
  */
@@ -453,6 +453,7 @@ export class ListBox extends DropDownBase {
         const hiddenSelect: HTMLElement = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
         hiddenSelect.style.visibility = 'hidden';
         this.list.classList.add('e-listbox-wrapper');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.list.querySelector('.e-list-parent') as any).setAttribute('role', 'presentation');
         const groupHdrs: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.e-list-group-item');
         for (let i: number = 0; i < groupHdrs.length; i++) {
@@ -470,7 +471,7 @@ export class ListBox extends DropDownBase {
                 this.element.appendChild(this.list);
             }
         } else {
-            if (this.initLoad) {
+            if (this.initLoad && this.element.parentElement) {
                 this.element.parentElement.insertBefore(this.list, this.element);
             }
             this.list.insertBefore(this.element, this.list.firstChild);
@@ -541,6 +542,7 @@ export class ListBox extends DropDownBase {
     private initToolbar(): void {
         const pos: string = this.toolbarSettings.position;
         const prevScope: string = this.element.getAttribute('data-value');
+        this.toolbarSettings.items = isNullOrUndefined(this.toolbarSettings.items) ? [] : this.toolbarSettings.items;
         if (this.toolbarSettings.items.length) {
             const toolElem: Element = this.createElement('div', { className: 'e-listbox-tool', attrs: { 'role': 'toolbar' } });
             const wrapper: Element = this.createElement('div', {
@@ -638,7 +640,9 @@ export class ListBox extends DropDownBase {
             this.spinner = this.createElement('div', { className: 'e-listbox-wrapper' });
         }
         this.spinner.style.height = formatUnit(this.height);
-        this.element.parentElement.insertBefore(this.spinner, this.element.nextSibling);
+        if (this.element.parentElement) {
+            this.element.parentElement.insertBefore(this.spinner, this.element.nextSibling);
+        }
         createSpinner({ target: this.spinner }, this.createElement);
         showSpinner(this.spinner);
     }
@@ -703,14 +707,14 @@ export class ListBox extends DropDownBase {
             this.list.insertBefore(searchEle, this.list.firstElementChild);
             this.filterParent = this.list.getElementsByClassName('e-filter-parent')[0] as HTMLElement;
             this.filterWireEvents(searchEle);
-            let inputSearch: HTMLElement = searchEle.querySelector('.e-input-filter');
+            const inputSearch: HTMLElement = searchEle.querySelector('.e-input-filter');
             if (inputSearch) {
-                inputSearch.addEventListener('focus', function() {
+                inputSearch.addEventListener('focus', function(): void {
                     if (!(searchEle.childNodes[0] as HTMLElement).classList.contains('e-input-focus')) {
                         (searchEle.childNodes[0] as HTMLElement).classList.add('e-input-focus');
                     }
                 });
-                inputSearch.addEventListener('blur', function() {
+                inputSearch.addEventListener('blur', function(): void {
                     if ((searchEle.childNodes[0] as HTMLElement).classList.contains('e-input-focus')) {
                         (searchEle.childNodes[0] as HTMLElement).classList.remove('e-input-focus');
                     }
@@ -793,7 +797,7 @@ export class ListBox extends DropDownBase {
         || args.target.classList.contains('e-filter-parent') || args.target.classList.contains('e-input-group')
         || args.target.closest('.e-list-item'))) {
             if (args.target.classList.contains('e-list-item') || args.target.classList.contains('e-filter-parent')
-            || args.target.classList.contains('e-input-group') 
+            || args.target.classList.contains('e-input-group')
             || args.target.closest('.e-list-item')) {
                 wrapper = args.target.closest('.e-listbox-wrapper') as HTMLElement;
             } else {
@@ -834,7 +838,7 @@ export class ListBox extends DropDownBase {
 
     private beforeDragEnd(args: DropEventArgs): void {
         this.stopTimer();
-        let items: object[] = [];
+        const items: object[] = [];
         this.dragValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value')) as string;
         if ((this.value as string[]).indexOf(this.dragValue) > -1) {
             args.items = this.getDataByValues(this.value);
@@ -890,7 +894,7 @@ export class ListBox extends DropDownBase {
                     selectedOptions = [];
                     this.customDraggedItem.forEach((item: object) => {
                         selectedOptions.push(getValue(this.fields.value, item));
-                    })
+                    });
                 }
                 selectedOptions.forEach((value: string) => {
                     if (value !== dropValue) {
@@ -921,10 +925,10 @@ export class ListBox extends DropDownBase {
                 selectedOptions = [];
                 this.customDraggedItem.forEach((item: object) => {
                     selectedOptions.push(getValue(this.fields.value, item));
-                })
+                });
             }
             const fListData: dataType[] = [].slice.call(this.listData); const fSortData: dataType[] = [].slice.call(this.sortedData);
-            selectedOptions.forEach((value: string, index: number) => {
+            selectedOptions.forEach((value: string) => {
                 droppedData = this.getDataByValue(value);
                 const srcIdx: number = (this.listData as dataType[]).indexOf(droppedData);
                 const jsonSrcIdx: number = (this.jsonData as dataType[]).indexOf(droppedData);
@@ -1103,16 +1107,16 @@ export class ListBox extends DropDownBase {
         }
         this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
-        let selElems: Element[] = [];
-	    for (let i: number = 0; i < items.length; i++) {
-	    const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
-	    for (let j: number = 0; j < liColl.length; j++) {
-	        if (items[i as number] === this.getFormattedValue(liColl[j as number].getAttribute('data-value')) as string) {
-	            selElems.push(liColl[j as number])
-		}
-	    }
-	}
-	this.triggerChange(selElems, null);
+        const selElems: Element[] = [];
+        for (let i: number = 0; i < items.length; i++) {
+            const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
+            for (let j: number = 0; j < liColl.length; j++) {
+                if (items[i as number] === this.getFormattedValue(liColl[j as number].getAttribute('data-value')) as string) {
+                    selElems.push(liColl[j as number]);
+                }
+            }
+        }
+        this.triggerChange(selElems, null);
     }
 
     /**
@@ -1252,7 +1256,7 @@ export class ListBox extends DropDownBase {
      * @param  { string[] | number[] | boolean[] } value - Specifies the value(s).
      * @returns {void}
      */
-      public moveTop(value?: string[] | number[] | boolean[]): void {
+    public moveTop(value?: string[] | number[] | boolean[]): void {
         const elem: Element[] = (value) ? this.getElemByValue(value) : this.getSelectedItems();
         this.moveUpDown(null, false, elem, true);
     }
@@ -1262,7 +1266,7 @@ export class ListBox extends DropDownBase {
      * @param  { string[] | number[] | boolean[] } value - Specifies the value(s).
      * @returns {void}
      */
-     public moveBottom(value?: string[] | number[] | boolean[]): void {
+    public moveBottom(value?: string[] | number[] | boolean[]): void {
         const elem: Element[] = (value) ? this.getElemByValue(value) : this.getSelectedItems();
         this.moveUpDown(true, false, elem, false, true);
     }
@@ -1732,7 +1736,7 @@ export class ListBox extends DropDownBase {
                 moveTo(this.ulElement, this.ulElement, [idx], 0);
                 this.changeData(idx, 0 , jsonToIdx, ele);
             }
-            else if(isBottom) {
+            else if (isBottom) {
                 moveTo(this.ulElement, this.ulElement, [idx], this.ulElement.querySelectorAll('.e-list-item').length);
                 this.changeData(idx, this.ulElement.querySelectorAll('.e-list-item').length, jsonToIdx, ele);
             }
@@ -1910,7 +1914,7 @@ export class ListBox extends DropDownBase {
         const jsonData: {[key: string]: object}[] = [].slice.call(tListBox.jsonData);
         const isRefresh: boolean | string | Function = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
             fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
-        const tempLiColl: HTMLElement[] = []; const tempData: { [key: string]: Object }[] = []; let flistboxarray: number[] = []
+        const tempLiColl: HTMLElement[] = []; const tempData: { [key: string]: Object }[] = []; let flistboxarray: number[] = [];
         this.removeSelected(fListBox, fListBox.getSelectedItems());
         const tempItems: Object[] = [].slice.call(fListBox.listData);
         const localDataArgs: { [key: string]: Object } = { cancel: false, items: tempItems, eventName: this.toolbarAction };
@@ -1930,6 +1934,7 @@ export class ListBox extends DropDownBase {
         }
         for (let i: number = 0; i < fListBox.ulElement.childElementCount; i++) {
             if ((fListBox.ulElement.childNodes[i as number] as Element).classList.contains('e-disabled')) {
+                // eslint-disable-next-line @typescript-eslint/tslint/config
                 flistboxarray = flistboxarray.filter(function(item: number) { return item !== i; });
                 tempLiColl.push(fListBox.ulElement.childNodes[i as number] as HTMLElement);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2346,6 +2351,7 @@ export class ListBox extends DropDownBase {
     }
 
     private setSelection(
+        // eslint-disable-next-line max-len
         values: (string | boolean | number | object)[] = this.value, isSelect: boolean = true, isText: boolean = false, canFocus: boolean = true): void {
         let li: Element;
         let liselect: boolean;
@@ -2406,7 +2412,15 @@ export class ListBox extends DropDownBase {
     }
 
     private checkDisabledState(inst: ListBox): boolean {
-        return inst.ulElement.querySelectorAll('.' + cssClass.li).length === 0;
+        if (isNullOrUndefined(inst.ulElement)) {
+            if (!isNullOrUndefined(this.dataSource) && isNullOrUndefined((this.dataSource as any).length)) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return inst.ulElement.querySelectorAll('.' + cssClass.li).length === 0;
+        }
     }
 
     private updateToolBarState(): void {
@@ -2639,6 +2653,7 @@ export class ListBox extends DropDownBase {
                     }
                 }
                 if (newProp.toolbarSettings.items) {
+                    oldProp.toolbarSettings.items = isNullOrUndefined(oldProp.toolbarSettings.items) ? [] : oldProp.toolbarSettings.items;
                     if (oldProp.toolbarSettings && oldProp.toolbarSettings.items.length) {
                         ele = this.list.parentElement;
                         ele.parentElement.insertBefore(this.list, ele);

@@ -1,4 +1,3 @@
-/*! component's theme wise override definitions and variables */
 $pivotgrid-skin: 'highcontrast' !default;
 $pivotgrid-active-color: $selection-bg !default;
 $pivotgrid-primary-color: $selection-bg !default;
@@ -116,8 +115,6 @@ $pivotgrid-rowsheader-cellvalue-margin-top: 0 !default;
 $pivotgrid-excelfilter-member-editor-node-limit-height: 75px !default;
 $pivotgrid-member-editor-node-limit-bigger-height: 450px !default;
 $pivotgrid-cell-value-margin: 0 !default;
-
-/*! component's common definitions and variables */
 $pivotgrid-grouping-height: 30px !default;
 $pivotgrid-editor-search-padding-size: 20px !default;
 $pivotgrid-member-editor-search-padding: 0 $pivotgrid-editor-search-padding-size 10px !default;
@@ -140,8 +137,6 @@ $pivotgrid-grouping-bigger-padding-top: 0 !default;
 $pivotgrid-button-icon-wrapper-size: 18px !default;
 $pivotgrid-bigger-button-icon-wrapper-size: 20px !default;
 $pivotgrid-bigger-button-icon-touch-margin-size: 0 !default;
-
-/* pivot-pager */
 $pivotpager-padding: 4px 12px !default;
 $pivotpage-touch-padding: 4px 16px !default;
 $pivotpager-separator-border: 1px solid #dadada !default;

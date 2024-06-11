@@ -221,7 +221,8 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
         for (let i: number = 0; i < series.points.length; i++) {
             const point: CircularChart3DPoints = series.points[i as number];
             const pointText: string = this.getDatalabelText(series.dataLabel.format, chart, point.text ? point.text : isNullOrUndefined(point.y) ? '' : point.y.toString());
-            const border: BorderModel = { width: series.dataLabel.border.width, color: series.dataLabel.border.color, dashArray: series.dataLabel.border.dashArray};
+            const border: BorderModel = { width: series.dataLabel.border.width, color: series.dataLabel.border.color,
+                dashArray: series.dataLabel.border.dashArray};
             const argsFont: FontModel = <FontModel>(extend({}, getValue('properties', series.dataLabel.font), null, true));
             const argsData: CircularChart3DTextRenderEventArgs = {
                 cancel: false, name: textRender, series: series, point: point,
@@ -263,9 +264,9 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
             createElement('div', {
                 id: chart.element.id + '-series-' + series.index + '-data-label-' + labelIndex,
                 styles: 'position: absolute;background-color:' + data.color + ';' +
-                    getFontStyle(dataLabel.font) + ';border:' + data.border.width + 'px solid ' + data.border.color + ';'
+                    getFontStyle(dataLabel.font, chart.themeStyle.datalabelFont) + ';border:' + data.border.width + 'px solid ' + data.border.color + ';'
             }),
-            data.template, chart, point, series, chart.element.id + '-data-label-', labelIndex, location);
+            data.template, chart, point, series, chart.element.id + '-data-label-');
         this.calculateTemplateLabelSize(parentElement, childElement, point, series, dataLabel, redraw, location);
     }
 
@@ -302,15 +303,11 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
      * @param {CircularChart3DPoints} point - The data point for which the template is created (optional).
      * @param {CircularChart3DSeries} series - The 3D series to which the data point belongs (optional).
      * @param {string} dataLabelId - The ID for the data label element (optional).
-     * @param {number} labelIndex - The index of the data label (optional).
-     * @param {CircularChart3DLocation} location - The location values for the data label (optional).
-     * @param {boolean} redraw - Indicates whether the template should be redrawn (optional).
      * @returns {HTMLElement} - The created template element.
      */
     private createTemplate(
         childElement: HTMLElement, content: string | Function, chart: CircularChart3D,
-        point?: CircularChart3DPoints, series?: CircularChart3DSeries, dataLabelId?: string,
-        labelIndex?: number, location?: CircularChart3DLocation, redraw?: boolean
+        point?: CircularChart3DPoints, series?: CircularChart3DSeries, dataLabelId?: string
     ): HTMLElement {
         const templateFn: Function = getTemplateFunction(content);
         let templateElement: HTMLCollection;
@@ -326,7 +323,6 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
                 }
             }
             let reactCallback: Function;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         } catch (e) {
             return childElement;
@@ -394,8 +390,10 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
         if (chart.circularChartLegend3DModule && chart.legendSettings.visible && point.visible && series.dataLabel.position === 'Outside') {
             let rect: Rect = chart.circularChartLegend3DModule.legendBounds;
             const legendpadding: number = chart.legendSettings.border.width / 2;
-            rect = new Rect(rect.x - legendpadding, rect.y - legendpadding, rect.width + (2 * legendpadding), rect.height + (2 * legendpadding));
-            const labelRegion: Rect = new Rect(element.label.location.x + (size.width / 2) + 20, element.label.location.y + 2.5, element.width, element.height);
+            rect = new Rect(rect.x - legendpadding, rect.y - legendpadding, rect.width +
+                (2 * legendpadding), rect.height + (2 * legendpadding));
+            const labelRegion: Rect = new Rect(element.label.location.x + (size.width / 2) + 20, element.label.location.y + 2.5,
+                                               element.width, element.height);
             if (isOverlap(labelRegion, rect)) {
                 if (chart.circularChartLegend3DModule.position === 'Right') {
                     element.width = rect.x - labelRegion.x;
@@ -407,10 +405,11 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
                     }
                 }
                 if (labelRegion && element.width < labelRegion.width) {
-                    element.label.text = textTrim(element.width, element.label.text, series.dataLabel.font, chart.enableRtl, chart.themeStyle.datalabelFont);
+                    element.label.text = textTrim(element.width, element.label.text, series.dataLabel.font, chart.enableRtl,
+                                                  chart.themeStyle.datalabelFont);
                 }
                 if (element.label.text.length === 3 && element.label.text.indexOf('...') > -1) {
-                    return
+                    return;
                 }
             }
         }
@@ -423,9 +422,9 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
                 createElement('div', {
                     id: chart.element.id + '-series-data-label-' + 0,
                     styles: 'position: absolute;background-color:' + point.argsData.color + ';' +
-                        getFontStyle(point.argsData.font) + ';border:' + point.argsData.border.width + 'px solid ' + point.argsData.border.color + ';'
+                        getFontStyle(point.argsData.font, chart.themeStyle.datalabelFont) + ';border:' + point.argsData.border.width + 'px solid ' + point.argsData.border.color + ';'
                 }),
-                point.argsData.template, chart, point, series, chart.element.id + '-data-label-', 0, location);
+                point.argsData.template, chart, point, series, chart.element.id + '-data-label-');
             size = measureText(childElement.textContent, series.dataLabel.font, chart.themeStyle.datalabelFont);
         }
         if (chart.circularChartLegend3DModule && chart.legendSettings.visible && (series.dataLabel.position === 'Outside')) {
@@ -436,7 +435,7 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
         let heightPadding: number = 0;
         let textAngle: number = point.symbolLocation.angle;
         if (series.dataLabel.position !== 'Inside') {
-            if ((textAngle> 1.5 && textAngle < 1.8) || (textAngle > 1.3 && textAngle < 1.5) ||
+            if ((textAngle > 1.5 && textAngle < 1.8) || (textAngle > 1.3 && textAngle < 1.5) ||
                 (textAngle > 4.5 && textAngle < 4.8) || (textAngle > 4.3 && textAngle < 4.5)) {
                 location.x = connectorPoints.x;
                 location.y = connectorPoints.y;
@@ -458,8 +457,8 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
             if (series.dataLabel.enableRotation) {
                 angle = degree = series.dataLabel.angle;
                 if (angle === 0) {
-                    const toDegrees = (angle: number) => angle * (180 / Math.PI);
-                    const midAngle = toDegrees(point.symbolLocation.angle);
+                    const toDegrees: (angle: number) => number = (angle: number) => angle * (180 / Math.PI);
+                    const midAngle: number = toDegrees(point.symbolLocation.angle);
                     if (series.dataLabel.position === 'Outside') {
                         degree = 0;
                     }
@@ -476,7 +475,8 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
             }
             element.transform = transform;
             const borderElement: CircularChart3DPolygon = chart.polygon.createTextElement(
-                chart.vector.vector3D(pointX + padding, pointY + heightPadding, (point.symbolLocation.z) ? point.symbolLocation.z : 0), element, 0, -size.height);
+                chart.vector.vector3D(pointX + padding, pointY + heightPadding, (point.symbolLocation.z) ?
+                    point.symbolLocation.z : 0), element, 0, -size.height);
             chart.circular3DPolygon.push(borderElement);
         }
         element.angle = series.dataLabel.enableRotation ? series.dataLabel.angle !== 0 ? series.dataLabel.angle : degree : 0;
@@ -499,7 +499,7 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
 
         saturatedColor = color === 'transparent' ? this.getLabelBackground(point, chart) : color;
 
-        saturatedColor = (saturatedColor === 'transparent') ? ((chart.theme.indexOf('Dark') > -1 || chart.theme === 'HighContrast') ? 'black' : 'white') : saturatedColor;
+        saturatedColor = (saturatedColor === 'transparent') ? ((chart.theme.indexOf('Dark') > -1 || chart.theme.indexOf('HighContrast') > -1) ? 'black' : 'white') : saturatedColor;
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';

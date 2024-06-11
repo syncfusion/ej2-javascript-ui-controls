@@ -7,11 +7,12 @@ import { HelperMethods, Point } from '../editor/editor-helper';
 import { ParagraphWidget } from '../viewer';
 import { WTabStop } from '../format/paragraph-format';
 import { TabJustification } from '../../base/types';
-import { TableWidget, TableRowWidget, TableCellWidget } from '../viewer/page';
+import { TableWidget, TableRowWidget, TableCellWidget, IWidget } from '../viewer/page';
 import { TextPosition } from '../selection';
 import { WColumnFormat, WSectionFormat } from '../format';
 /**
  * Size defines and processes the size(width/height) of the objects
+ *
  * @private
  */
 export class Size {
@@ -48,12 +49,12 @@ export class Size {
     }
 
     /**
-    * clone method \
-    *
-    * @returns { Size } clone method .\
-    *
-    * @private
-    */
+     * clone method \
+     *
+     * @returns { Size } clone method .\
+     *
+     * @private
+     */
     public clone(): Size {
         return new Size(this.width, this.height);
     }
@@ -114,7 +115,7 @@ export class RulerHelper {
      * @private
      */
     public createHtmlElement(elementType: string, attribute: Object): HTMLElement {
-        const element: HTMLElement = createElement(elementType);
+        const element: HTMLElement = createElement(elementType, attribute);
         this.setAttributeHtml(element, attribute);
         return element;
     }
@@ -203,7 +204,7 @@ export class RulerHelper {
             class: 'e-ruler-overlap'
         };
         const overlap: HTMLElement = this.createHtmlElement('div', attributes);
-        let element: HTMLElement = document.getElementById(documentEditor.element.id + '_viewerContainer');
+        const element: HTMLElement = document.getElementById(documentEditor.element.id + '_viewerContainer');
         element.insertBefore(overlap, element.firstChild);
         return overlap;
     }
@@ -219,11 +220,11 @@ export class RulerHelper {
         };
         const markIndicator: HTMLElement = this.createHtmlElement('div', attributes);
         this.tabStopStwitch = markIndicator;
-        let element: HTMLElement = document.getElementById(documentEditor.element.id + '_viewerContainer');
+        const element: HTMLElement = document.getElementById(documentEditor.element.id + '_viewerContainer');
         element.insertBefore(markIndicator, element.firstChild);
-        let ownerId: string = documentEditor.element.id;
-        let firstLineIndent: HTMLElement = document.getElementById(ownerId + '_firstLineIndent').cloneNode(true) as HTMLElement;
-        let hangingIndent: HTMLElement = document.getElementById(ownerId + '_hangingIndent').cloneNode(true) as HTMLElement;
+        const ownerId: string = documentEditor.element.id;
+        const firstLineIndent: HTMLElement = document.getElementById(ownerId + '_firstLineIndent').cloneNode(true) as HTMLElement;
+        const hangingIndent: HTMLElement = document.getElementById(ownerId + '_hangingIndent').cloneNode(true) as HTMLElement;
         firstLineIndent.style.left = '1px';
         firstLineIndent.style.top = rulerSize.height / 2 - 3 + 'px';
         firstLineIndent.style.display = 'none';
@@ -236,16 +237,16 @@ export class RulerHelper {
         hangingIndent.setAttribute('id', ownerId + '_hangingIndent_-1');
         markIndicator.appendChild(hangingIndent);
         markIndicator.appendChild(firstLineIndent);
-        var justification = ['Left', 'Center', 'Right', 'Decimal', 'Bar'];
+        const justification: string[] = ['Left', 'Center', 'Right', 'Decimal', 'Bar'];
         const locale: L10n = new L10n('documenteditor', documentEditor.defaultLocale);
         locale.setLocale(documentEditor.locale);
-        for (let i = 0; i < 5; i++) {
+        for (let i: number = 0; i < 5; i++) {
             this.renderTab(documentEditor, rulerSize, undefined, justification[parseInt(i.toString(), 10)] as TabJustification, -1, locale);
             const element: HTMLElement = document.getElementById(documentEditor.element.id + '_' + justification[parseInt(i.toString(), 10)] + 'Tab_-1');
             if (!isNullOrUndefined(element)) {
                 element.classList.remove('e-de-ruler-tab');
                 element.classList.add('e-de-ruler-marker');
-                element.style.display = i == 0 ? 'block' : 'none';
+                element.style.display = i === 0 ? 'block' : 'none';
                 element.style.position = 'absolute';
                 element.style.margin = '4px 3px';
                 markIndicator.appendChild(element);
@@ -253,10 +254,10 @@ export class RulerHelper {
 
         }
 
-        markIndicator.addEventListener('click', (event) => {
-            let divElements: HTMLElement = document.querySelector('.e-de-ruler-markIndicator') as any;
+        markIndicator.addEventListener('click', (event: MouseEvent) => {
+            const divElements: HTMLElement = document.querySelector('.e-de-ruler-markIndicator') as HTMLElement;
             for (let i: number = 0; i < divElements.childNodes.length; i++) {
-                let currentDiv: HTMLElement = divElements.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
+                const currentDiv: HTMLElement = divElements.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
                 if (currentDiv.style.display === 'block') {
                     currentDiv.style.display = 'none';
                     const nextIndex: number = (i + 1) % divElements.childNodes.length;
@@ -312,10 +313,16 @@ export class RulerHelper {
             style: style, class: (isHorizontal ? 'e-de-hRuler' : 'e-de-vRuler')
         };
         const overlap: HTMLElement = this.createHtmlElement('div', attributes);
-        isHorizontal ? (this.hRulerBottom = overlap) : (this.vRulerBottom = overlap);
+        // isHorizontal ? (this.hRulerBottom = overlap) : (this.vRulerBottom = overlap);
+        if (isHorizontal) {
+            this.hRulerBottom = overlap;
+        }
+        else {
+            this.vRulerBottom = overlap;
+        }
         const parentElement: HTMLElement = document.getElementById(documentEditor.element.id + '_viewerContainer');
         parentElement.insertBefore(overlap, parentElement.firstChild);
-        let element: HTMLElement = isHorizontal ? document.getElementById(documentEditor.element.id + '_hRulerBottom') : document.getElementById(documentEditor.element.id + '_vRulerBottom');
+        const element: HTMLElement = isHorizontal ? document.getElementById(documentEditor.element.id + '_hRulerBottom') : document.getElementById(documentEditor.element.id + '_vRulerBottom');
         element.insertBefore(div, element.firstChild);
         this.renderRulerMargins(documentEditor, isHorizontal, div);
         //const documentEditorRuler: DocumentEditorRulerModel = isHorizontal ? documentEditor.documentEditorSettings.rulerSettings.horizontalRuler : documentEditor.documentEditorSettings.rulerSettings.verticalRuler;
@@ -365,11 +372,13 @@ export class RulerHelper {
                 if (documentEditor.isDestroyed || !documentEditor.documentEditorSettings.showRuler) {
                     return;
                 }
-                const divRect = hRuler.getBoundingClientRect();
-                const leftMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor;
-                const rightMargin = (HelperMethods.convertPixelToPoint(divRect.width) - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor);
+                const divRect: DOMRect = hRuler.getBoundingClientRect() as DOMRect;
+                const leftMargin: number = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin
+                * documentEditor.zoomFactor;
+                const rightMargin: number = (HelperMethods.convertPixelToPoint(divRect.width) -
+                documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor);
                 let pixelValue: number = Math.round(e.clientX - divRect.left);
-                let mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
+                let mouseXRelativeToDiv: number = HelperMethods.convertPixelToPoint(pixelValue);
                 if (!isDragging) {
                     if (documentEditor.isOnIndent) {
                         hRuler.style.cursor = 'default';
@@ -392,28 +401,28 @@ export class RulerHelper {
                             isLeftRulerMargin = false;
                         }
                     } else if (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
-                        let columns: WColumnFormat[] = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns
+                        const columns: WColumnFormat[] = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns;
                         if (documentEditor.layoutType === 'Pages') {
-                            for (let i = 1; i <= columns.length; i++) {
-                                let rulerMarginDiv = document.getElementById(documentEditor.element.id + '_hRuler_Margin' + i);
-                                let maginLeft: number = rulerMarginDiv.getBoundingClientRect().left;
-                                let width: number = rulerMarginDiv.getBoundingClientRect().width;
+                            for (let i: number = 1; i <= columns.length; i++) {
+                                const rulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_Margin' + i);
+                                const maginLeft: number = rulerMarginDiv.getBoundingClientRect().left;
+                                const width: number = rulerMarginDiv.getBoundingClientRect().width;
                                 if (((maginLeft - 3) <= e.clientX) && ((maginLeft + 3) >= e.clientX)) {
-                                    hRuler.style.cursor = "e-resize";
+                                    hRuler.style.cursor = 'e-resize';
                                     multiColumnElement = rulerMarginDiv;
                                     hRuler.setAttribute('title', this.locale.getConstant('Left Margin'));
                                     isLeftMultiColumn = true;
                                     resizerEnabled = true;
                                     break;
                                 } else if (((maginLeft + width - 3) <= e.clientX) && ((maginLeft + width + 3) >= e.clientX)) {
-                                    hRuler.style.cursor = "e-resize";
+                                    hRuler.style.cursor = 'e-resize';
                                     multiColumnElement = rulerMarginDiv;
                                     hRuler.setAttribute('title', this.locale.getConstant('Right Margin'));
                                     isRightMultiColumn = true;
                                     resizerEnabled = true;
                                     break;
                                 } else {
-                                    hRuler.style.cursor = "default";
+                                    hRuler.style.cursor = 'default';
                                     if (hRuler.hasAttribute('title')) {
                                         hRuler.removeAttribute('title');
                                     }
@@ -433,19 +442,22 @@ export class RulerHelper {
                     }
                 }
                 if (isDragging) {
-                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
-                    let pageWidth: number = documentEditor.selectionModule.sectionFormat.pageWidth;
-                    let rightMarginValue: number = documentEditor.selectionModule.sectionFormat.rightMargin;
+                    const rulerZeroPoint: number = HelperMethods.convertPointToPixel(
+                        1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                    const pageWidth: number = documentEditor.selectionModule.sectionFormat.pageWidth;
+                    const rightMarginValue: number = documentEditor.selectionModule.sectionFormat.rightMargin;
                     let rightIndentValue: number = documentEditor.selectionModule.paragraphFormat.rightIndent;
                     rightIndentValue = rightIndentValue > 0 ? rightIndentValue : 0;
-                    let minimumValue: number = 42;
+                    const minimumValue: number = 42;
                     let firstLineIndent: number = documentEditor.selectionModule.paragraphFormat.firstLineIndent;
-                    let leftMarginValue: number = documentEditor.selectionModule.sectionFormat.leftMargin;
+                    const leftMarginValue: number = documentEditor.selectionModule.sectionFormat.leftMargin;
                     firstLineIndent = firstLineIndent >= 0 ? firstLineIndent : 0;
-                    let leftIndent: number = documentEditor.selectionModule.paragraphFormat.leftIndent;
+                    const leftIndent: number = documentEditor.selectionModule.paragraphFormat.leftIndent;
                     if (isLeftRulerMargin) {
-                        let leftMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(pageWidth - rightMarginValue - rightIndentValue - minimumValue - firstLineIndent - leftIndent) * documentEditor.zoomFactor);
-                        let leftMinLimit: number = rulerZeroPoint;
+                        const leftMaxLimit: number = rulerZeroPoint + (
+                            HelperMethods.convertPointToPixel(pageWidth - rightMarginValue -
+                                rightIndentValue - minimumValue - firstLineIndent - leftIndent) * documentEditor.zoomFactor);
+                        const leftMinLimit: number = rulerZeroPoint;
                         if (pixelValue + rulerZeroPoint > leftMaxLimit) {
                             pixelValue = leftMaxLimit - rulerZeroPoint;
                             mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
@@ -454,8 +466,10 @@ export class RulerHelper {
                             mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
                         }
                     } else {
-                        let rightMinLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(leftMarginValue + leftIndent + firstLineIndent + minimumValue + rightIndentValue) * documentEditor.zoomFactor);
-                        let rightMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(pageWidth) * documentEditor.zoomFactor);
+                        const rightMinLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(
+                            leftMarginValue + leftIndent + firstLineIndent + minimumValue + rightIndentValue) * documentEditor.zoomFactor);
+                        const rightMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(
+                            pageWidth) * documentEditor.zoomFactor);
                         if (pixelValue + rulerZeroPoint > rightMaxLimit) {
                             pixelValue = rightMaxLimit - rulerZeroPoint;
                             mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
@@ -465,19 +479,21 @@ export class RulerHelper {
                         }
                     }
                     finalmouseXRelativeToDiv = mouseXRelativeToDiv;
-                    const currentRightMargin = (HelperMethods.convertPixelToPoint(divRect.width) - (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor));
+                    const currentRightMargin: number = (HelperMethods.convertPixelToPoint(divRect.width)
+                    - (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor));
                     if (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.numberOfColumns <= 1) {
-                        this.resizeRulerMargins(isLeftRulerMargin, initialValue, currentScrollLeft, currentRightMargin, hRuler, mouseXRelativeToDiv, true, documentEditor);
+                        this.resizeRulerMargins(isLeftRulerMargin, initialValue,
+                                                currentScrollLeft, currentRightMargin, hRuler, mouseXRelativeToDiv, true, documentEditor);
                     }
-                    let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
+                    const rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
                     if (isLeftRulerMargin) {
-                        let difference: number = mouseXRelativeToDiv - initialValue;
+                        const difference: number = mouseXRelativeToDiv - initialValue;
                         rightIndent.style.left = (initialRightMargin - HelperMethods.convertPointToPixel(difference)) + 'px';
                     } else {
-                        let difference: number = mouseXRelativeToDiv - initialValue;
+                        const difference: number = mouseXRelativeToDiv - initialValue;
                         rightIndent.style.left = (initialRightMargin + HelperMethods.convertPointToPixel(difference)) + 'px';
                     }
-                    let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
+                    const startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
                     const indicatorLineValue: number = startValue + pixelValue;
                     const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.left = indicatorLineValue + 'px';
@@ -486,47 +502,51 @@ export class RulerHelper {
             });
             let mouseDownTabValue: number;
             let mouseUpTabValue: number;
-            hRuler.addEventListener("mouseenter", (e) => {
+            hRuler.addEventListener('mouseenter', (e: MouseEvent) => {
                 if (!isNullOrUndefined(this.currentTabStopElement)) {
                     this.currentTabStopElement.style.display = 'block';
                 }
             });
-            hRuler.addEventListener("mouseleave", (e) => {
+            hRuler.addEventListener('mouseleave', (e: MouseEvent) => {
                 if (!isNullOrUndefined(this.currentTabStopElement)) {
                     this.currentTabStopElement.style.display = 'none';
                     //this.currentTabStopElement = undefined;
                 }
             });
-            hRuler.addEventListener("mousedown", (e) => {
+            hRuler.addEventListener('mousedown', (e: MouseEvent) => {
                 if (resizerEnabled && !documentEditor.isTableMarkerDragging) {
                     isDragging = true;
                     if (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
                         if (isLeftMultiColumn) {
                             columnInitialValue = multiColumnElement.getBoundingClientRect().left;
                         } else if (isRightMultiColumn) {
-                            columnInitialValue = multiColumnElement.getBoundingClientRect().left + multiColumnElement.getBoundingClientRect().width;
+                            columnInitialValue = multiColumnElement.getBoundingClientRect().left
+                                + multiColumnElement.getBoundingClientRect().width;
                         }
                     }
-                    const divRect = hRuler.getBoundingClientRect();
+                    const divRect: DOMRect = hRuler.getBoundingClientRect() as DOMRect;
                     initialValue = HelperMethods.convertPixelToPoint(Math.round(e.clientX - divRect.left));
                     currentScrollLeft = hRuler.scrollLeft;
-                    let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
+                    const rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
                     initialRightMargin = HelperMethods.getNumberFromString(rightIndent.style.left);
 
-                    let pixelValue: number = Math.round(e.clientX - divRect.left);
-                    let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                    let indicatorLineValue: number = startValue + pixelValue;
+                    const pixelValue: number = Math.round(e.clientX - divRect.left);
+                    const startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
+                    const indicatorLineValue: number = startValue + pixelValue;
 
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.left = indicatorLineValue + 'px';
                     lineSvg.style.display = 'block';
                 }
-                const divRect = hRuler.getBoundingClientRect() as DOMRect;
+                const divRect: DOMRect  = hRuler.getBoundingClientRect() as DOMRect;
 
                 if (divRect.y + (divRect.height / 2) <= e.clientY) {
                     mouseDownTabValue = e.clientX - hRuler.getBoundingClientRect().left;
                     if (documentEditor.layoutType === 'Pages') {
-                        mouseDownTabValue = HelperMethods.convertPixelToPoint(mouseDownTabValue - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) * documentEditor.zoomFactor);
+                        mouseDownTabValue = HelperMethods.convertPixelToPoint(
+                            mouseDownTabValue - HelperMethods.convertPointToPixel(
+                                documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) *
+                                documentEditor.zoomFactor);
                         if (this.position.paragraph.paragraphFormat.bidi) {
                             let paraWidth: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['width'].toString()) : this.position.paragraph.width;
                             paraWidth = HelperMethods.convertPixelToPoint(paraWidth * documentEditor.zoomFactor);
@@ -544,14 +564,17 @@ export class RulerHelper {
                     }
                 }
             });
-            hRuler.addEventListener("mouseup", (e) => {
-                const container = document.getElementById(documentEditor.element.id + '_markIndicator');
-                const divRect = hRuler.getBoundingClientRect() as DOMRect;
+            hRuler.addEventListener('mouseup', (e: MouseEvent) => {
+                const container: HTMLElement = document.getElementById(documentEditor.element.id + '_markIndicator');
+                const divRect: DOMRect = hRuler.getBoundingClientRect() as DOMRect;
 
                 if (divRect.y + (divRect.height / 2) <= e.clientY) {
                     mouseUpTabValue = e.clientX - hRuler.getBoundingClientRect().left;
                     if (documentEditor.layoutType === 'Pages') {
-                        mouseUpTabValue = HelperMethods.convertPixelToPoint(mouseUpTabValue - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) * documentEditor.zoomFactor);
+                        mouseUpTabValue = HelperMethods.convertPixelToPoint(mouseUpTabValue -
+                            HelperMethods.convertPointToPixel(
+                                documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin)
+                            * documentEditor.zoomFactor);
                         if (this.position.paragraph.paragraphFormat.bidi) {
                             let paraWidth: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['width'].toString()) : this.position.paragraph.width;
                             paraWidth = HelperMethods.convertPixelToPoint(paraWidth * documentEditor.zoomFactor);
@@ -567,30 +590,33 @@ export class RulerHelper {
                             mouseUpTabValue = HelperMethods.convertPixelToPoint((mouseUpTabValue) - 20);
                         }
                     }
-                    let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
-                    let rightIndentValue: number = HelperMethods.getNumberFromString(rightIndent.style.left);
-                    let maxValue: number = rightIndentValue;
-                    if (mouseUpTabValue > 0 && mouseUpTabValue < maxValue && mouseDownTabValue == mouseUpTabValue) {
+                    const rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
+                    const rightIndentValue: number = HelperMethods.getNumberFromString(rightIndent.style.left);
+                    const maxValue: number = rightIndentValue;
+                    if (mouseUpTabValue > 0 && mouseUpTabValue < maxValue && mouseDownTabValue === mouseUpTabValue) {
                         if (!isNullOrUndefined(container)) {
-                            const visibleElement = container.querySelector('.e-de-ruler-marker[style*="display: block;"]');
+                            const visibleElement: Element = container.querySelector('.e-de-ruler-marker[style*="display: block;"]');
                             if (!isNullOrUndefined(visibleElement)) {
                                 mouseUpTabValue /= documentEditor.zoomFactor;
-                                const dataNameValue = visibleElement.getAttribute('data-name');
-                                if (dataNameValue == 'LeftTab' || dataNameValue == 'CenterTab' || dataNameValue == 'RightTab' || dataNameValue == 'DecimalTab' || dataNameValue == 'BarTab') {
-                                    let tabStop: WTabStop = new WTabStop();
+                                const dataNameValue: string = visibleElement.getAttribute('data-name');
+                                if (dataNameValue === 'LeftTab' || dataNameValue === 'CenterTab'
+                                    || dataNameValue === 'RightTab' || dataNameValue === 'DecimalTab' || dataNameValue === 'BarTab') {
+                                    const tabStop: WTabStop = new WTabStop();
                                     tabStop.position = mouseUpTabValue;
                                     tabStop.tabJustification = this.getTabJustification(dataNameValue);
                                     tabStop.deletePosition = 0;
                                     tabStop.tabLeader = 'None';
                                     documentEditor.editorModule.onApplyParagraphFormat('tabStop', [tabStop], false, false);
-                                } else if (dataNameValue == 'FirstLineIndent' || dataNameValue == 'HangingIndent') {
-                                    let property = 'firstLineIndent';
-                                    if (dataNameValue == 'HangingIndent') {
-                                        var initialValue = documentEditor.selectionModule.paragraphFormat.firstLineIndent;
-                                        var differenceValue = mouseUpTabValue + initialValue;
-                                        var currentValue = documentEditor.selectionModule.start.paragraph.paragraphFormat.firstLineIndent;
+                                } else if (dataNameValue === 'FirstLineIndent' || dataNameValue === 'HangingIndent') {
+                                    const property: string = 'firstLineIndent';
+                                    if (dataNameValue === 'HangingIndent') {
+                                        const initialValue: number = documentEditor.selectionModule.paragraphFormat.firstLineIndent;
+                                        const differenceValue: number = mouseUpTabValue + initialValue;
+                                        let currentValue: number =
+                                            documentEditor.selectionModule.start.paragraph.paragraphFormat.firstLineIndent;
                                         documentEditor.editorModule.onApplyParagraphFormat('firstLineIndent', currentValue - differenceValue, false, false);
-                                        var leftIndentCurrentValue = documentEditor.selectionModule.start.paragraph.paragraphFormat.leftIndent + currentValue;
+                                        const leftIndentCurrentValue: number =
+                                            documentEditor.selectionModule.start.paragraph.paragraphFormat.leftIndent + currentValue;
                                         currentValue = currentValue - differenceValue;
                                         documentEditor.editorModule.onApplyParagraphFormat('leftIndent', leftIndentCurrentValue - currentValue, false, false, true);
                                     }
@@ -604,10 +630,10 @@ export class RulerHelper {
                 }
             });
 
-            document.addEventListener("mouseup", (e) => {
+            document.addEventListener('mouseup', (e: MouseEvent) => {
                 if (isDragging && !documentEditor.isTableMarkerDragging) {
-                    const divRect = hRuler.getBoundingClientRect();
-                    const mouseXRelativeToDiv = finalmouseXRelativeToDiv; // HelperMethods.convertPixelToPoint(Math.round(e.clientX - divRect.left));
+                    const divRect: DOMRect = hRuler.getBoundingClientRect() as DOMRect;
+                    const mouseXRelativeToDiv: number = finalmouseXRelativeToDiv; // HelperMethods.convertPixelToPoint(Math.round(e.clientX - divRect.left));
                     // const currentLeftMargin = documentEditor.hRuler.startMargin * documentEditor.zoomFactor;
                     // const currentScrollLeft = hRuler.scrollLeft;
                     // const currentRightMargin = (HelperMethods.convertPixelToPoint(divRect.width) - (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor));
@@ -619,13 +645,20 @@ export class RulerHelper {
                     if (isLeftMultiColumn || isRightMultiColumn) {
                         let finalvalue: number = 0;
                         finalvalue = e.clientX - columnInitialValue;
-                        let secFormat: WSectionFormat = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.cloneFormat();
-                        let pageWidth: number = documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin;
-                        let columnSpace: number = isLeftMultiColumn ? (secFormat.columns[0].space + ((HelperMethods.convertPixelToPoint(finalvalue)))) : (secFormat.columns[0].space - ((HelperMethods.convertPixelToPoint(finalvalue))));
+                        const secFormat: WSectionFormat =
+                            documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.cloneFormat();
+                        const pageWidth: number = documentEditor.selectionModule.sectionFormat.pageWidth
+                            - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin -
+                            documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin;
+                        const columnSpace: number = isLeftMultiColumn ? (secFormat.columns[0].space +
+                            ((HelperMethods.convertPixelToPoint(finalvalue))))
+                            : (secFormat.columns[0].space - ((HelperMethods.convertPixelToPoint(finalvalue))));
                         for (let i: number = 0; i < secFormat.columns.length; i++) {
-                            let col: WColumnFormat = secFormat.columns[parseInt(i.toString(), 10)];
+                            const col: WColumnFormat = secFormat.columns[parseInt(i.toString(), 10)];
                             if (columnSpace >= 0 && col.width >= 36) {
-                                let widthCal: number = HelperMethods.convertPointToPixel((pageWidth - (HelperMethods.convertPixelToPoint(columnSpace) * (secFormat.numberOfColumns - 1))) / (secFormat.numberOfColumns));
+                                const widthCal: number = HelperMethods.convertPointToPixel(
+                                    (pageWidth - (HelperMethods.convertPixelToPoint(
+                                        columnSpace) * (secFormat.numberOfColumns - 1))) / (secFormat.numberOfColumns));
                                 col.width = widthCal;
                                 if (i < secFormat.columns.length - 1) {
                                     col.space = columnSpace;
@@ -641,7 +674,8 @@ export class RulerHelper {
                         documentEditor.hRuler.startMargin = (mouseXRelativeToDiv / documentEditor.zoomFactor);
                         documentEditor.selectionModule.sectionFormat.leftMargin = mouseXRelativeToDiv / documentEditor.zoomFactor;
                     } else {
-                        const rightMargin = HelperMethods.convertPixelToPoint(rulerGeometry.width) - (mouseXRelativeToDiv / documentEditor.zoomFactor);
+                        const rightMargin: number = HelperMethods.convertPixelToPoint(
+                            rulerGeometry.width) - (mouseXRelativeToDiv / documentEditor.zoomFactor);
                         // documentEditor.hRuler.endMargin = rightMargin;
                         documentEditor.selectionModule.sectionFormat.rightMargin = rightMargin;
                     }
@@ -649,7 +683,7 @@ export class RulerHelper {
                     resizerEnabled = false;
                     isDragging = false;
                     isLeftRulerMargin = undefined;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.display = 'none';
                 }
             });
@@ -657,35 +691,38 @@ export class RulerHelper {
         }
         //Vertical Ruler Resizing
 
-        let vRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler');
+        const vRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler');
         let isTopRulerMargin: boolean = false;
         let initialYValue: number;
         let currentScrollTop: number;
         if (!isHorizontal) {
-            document.addEventListener("mousemove", (e) => {
+            document.addEventListener('mousemove', (e: MouseEvent) => {
                 if (documentEditor.isDestroyed || !documentEditor.documentEditorSettings.showRuler) {
                     return;
                 }
-                const divRect = vRuler.getBoundingClientRect();
-                const topMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor;
-                const bottomMargin = (HelperMethods.convertPixelToPoint(divRect.height) - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor);
-                const mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
+                const divRect: DOMRect = vRuler.getBoundingClientRect() as DOMRect;
+                const topMargin: number = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin
+                    * documentEditor.zoomFactor;
+                const bottomMargin: number = (HelperMethods.convertPixelToPoint(
+                    divRect.height) - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin
+                    * documentEditor.zoomFactor);
+                const mouseXRelativeToDiv: number = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
                 let pixelValue: number = Math.round(e.clientY - divRect.top);
                 if (!isDragging) {
                     if (((topMargin - 3) <= mouseXRelativeToDiv) && ((topMargin + 3) >= mouseXRelativeToDiv)) {
-                        vRuler.style.cursor = "n-resize";
+                        vRuler.style.cursor = 'n-resize';
                         vRuler.setAttribute('title', this.locale.getConstant('Top Margin'));
                         resizerEnabled = true;
                         isTopRulerMargin = true;
 
                     } else if ((((bottomMargin - 3) <= mouseXRelativeToDiv) && ((bottomMargin + 3) >= mouseXRelativeToDiv))) {
-                        vRuler.style.cursor = "n-resize";
+                        vRuler.style.cursor = 'n-resize';
                         vRuler.setAttribute('title', this.locale.getConstant('Bottom Margin'));
                         resizerEnabled = true;
                         isTopRulerMargin = false;
                     }
                     else {
-                        vRuler.style.cursor = "default";
+                        vRuler.style.cursor = 'default';
                         if (vRuler.hasAttribute('title')) {
                             vRuler.removeAttribute('title');
                         }
@@ -693,15 +730,18 @@ export class RulerHelper {
                     }
                 }
                 if (isDragging) {
-                    let mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
-                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.topMargin) * documentEditor.zoomFactor;
-                    let pageHeight: number = documentEditor.selectionModule.sectionFormat.pageHeight;
-                    let minimumValue: number = 12;
-                    let bottomMarginValue: number = documentEditor.selectionModule.sectionFormat.bottomMargin;
-                    let topMarginValue: number = documentEditor.selectionModule.sectionFormat.topMargin;
+                    let mouseXRelativeToDiv: number = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
+                    const rulerZeroPoint: number = HelperMethods.convertPointToPixel(
+                        1584 - documentEditor.selectionModule.sectionFormat.topMargin)
+                        * documentEditor.zoomFactor;
+                    const pageHeight: number = documentEditor.selectionModule.sectionFormat.pageHeight;
+                    const minimumValue: number = 12;
+                    const bottomMarginValue: number = documentEditor.selectionModule.sectionFormat.bottomMargin;
+                    const topMarginValue: number = documentEditor.selectionModule.sectionFormat.topMargin;
                     if (isTopRulerMargin) {
-                        let topMinLimit: number = rulerZeroPoint;
-                        let topMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(pageHeight - bottomMarginValue - minimumValue) * documentEditor.zoomFactor);
+                        const topMinLimit: number = rulerZeroPoint;
+                        const topMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(
+                            pageHeight - bottomMarginValue - minimumValue) * documentEditor.zoomFactor);
                         if (pixelValue + rulerZeroPoint > topMaxLimit) {
                             pixelValue = topMaxLimit - rulerZeroPoint;
                             mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
@@ -710,8 +750,10 @@ export class RulerHelper {
                             mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
                         }
                     } else {
-                        let bottomMinLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(topMarginValue + minimumValue) * documentEditor.zoomFactor);
-                        let bottomMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(pageHeight) * documentEditor.zoomFactor);
+                        const bottomMinLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(
+                            topMarginValue + minimumValue) * documentEditor.zoomFactor);
+                        const bottomMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(
+                            pageHeight) * documentEditor.zoomFactor);
                         if (pixelValue + rulerZeroPoint > bottomMaxLimit) {
                             pixelValue = bottomMaxLimit - rulerZeroPoint;
                             mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
@@ -720,36 +762,38 @@ export class RulerHelper {
                             mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
                         }
                     }
-                    const currentBottomMargin = (HelperMethods.convertPixelToPoint(divRect.height) - (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor));
-                    this.resizeVRulerMargins(isTopRulerMargin, initialYValue, currentScrollTop, currentBottomMargin, vRuler, mouseXRelativeToDiv, documentEditor);
-                    
-                    let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.y * documentEditor.zoomFactor;
-                    let indicatorLineValue: number = startValue + pixelValue; // + 15;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
+                    const currentBottomMargin: number = (HelperMethods.convertPixelToPoint(divRect.height) -
+                        (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor));
+                    this.resizeVRulerMargins(isTopRulerMargin, initialYValue, currentScrollTop,
+                                             currentBottomMargin, vRuler, mouseXRelativeToDiv, documentEditor);
+
+                    const startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.y * documentEditor.zoomFactor;
+                    const indicatorLineValue: number = startValue + pixelValue; // + 15;
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
                     lineSvg.style.top = indicatorLineValue + 'px';
                 }
-             
+
             });
-            vRuler.addEventListener("mousedown", (e) => {
+            vRuler.addEventListener('mousedown', (e: MouseEvent) => {
                 if (resizerEnabled) {
                     isDragging = true;
-                    const divRect = vRuler.getBoundingClientRect();
+                    const divRect: DOMRect = vRuler.getBoundingClientRect() as DOMRect;
                     initialYValue = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
                     currentScrollTop = vRuler.scrollTop;
 
-                    let pixelValue: number = Math.round(e.clientY - divRect.top);
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
-                    let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.y * documentEditor.zoomFactor;
-                    let indicatorLineValue: number = (startValue + pixelValue); // + 15;
+                    const pixelValue: number = Math.round(e.clientY - divRect.top);
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
+                    const startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.y * documentEditor.zoomFactor;
+                    const indicatorLineValue: number = (startValue + pixelValue); // + 15;
                     lineSvg.style.top = indicatorLineValue + 'px';
                     lineSvg.style.display = 'block';
                 }
             });
 
-            document.addEventListener("mouseup", (e) => {
+            document.addEventListener('mouseup', (e: MouseEvent) => {
                 if (isDragging) {
-                    const divRect = vRuler.getBoundingClientRect();
-                    const mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
+                    const divRect: DOMRect = vRuler.getBoundingClientRect() as DOMRect;
+                    const mouseXRelativeToDiv: number = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
                     // const currentTopMargin = documentEditor.hRuler.startMargin * documentEditor.zoomFactor;
                     // const currentScrollTop = vRuler.scrollTop;
                     // const currentBottomMargin = (HelperMethods.convertPixelToPoint(divRect.height) - (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor));
@@ -762,14 +806,15 @@ export class RulerHelper {
                         documentEditor.vRuler.startMargin = (mouseXRelativeToDiv / documentEditor.zoomFactor);
                         documentEditor.selectionModule.sectionFormat.topMargin = mouseXRelativeToDiv / documentEditor.zoomFactor;
                     } else {
-                        const bottomtMargin = HelperMethods.convertPixelToPoint(rulerGeometry.height) - (mouseXRelativeToDiv / documentEditor.zoomFactor);
+                        const bottomtMargin: number = HelperMethods.convertPixelToPoint(
+                            rulerGeometry.height) - (mouseXRelativeToDiv / documentEditor.zoomFactor);
                         documentEditor.vRuler.endMargin = bottomtMargin;
                         documentEditor.selectionModule.sectionFormat.bottomMargin = bottomtMargin;
                     }
 
                     resizerEnabled = false;
                     isDragging = false;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
                     lineSvg.style.display = 'none';
                     isTopRulerMargin = undefined;
                 }
@@ -783,20 +828,21 @@ export class RulerHelper {
         isHorizontal ? documentEditor.hRuler.element = rulerObj : documentEditor.vRuler.element = rulerObj;
         if (rulerObj) {
             // Set the scrollLeft property to the desired value (e.g., 100 pixels)
-            rulerObj.scrollLeft = 2112 - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin);
+            rulerObj.scrollLeft = 2112 - HelperMethods.convertPointToPixel(
+                documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin);
         }
     }
 
     public updateIndicatorLines(documentEditor: DocumentEditor): void {
-        let hRulerSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
-        let hRulerLine: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator');
-        let vRulerSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
-        let vRulerLine: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_indicator');
+        const hRulerSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+        const hRulerLine: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator');
+        const vRulerSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
+        const vRulerLine: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_indicator');
 
-        let pageContainer = document.getElementById(documentEditor.element.id + '_pageContainer');
-        let pageData = pageContainer.getBoundingClientRect();
-        let pageHeight = pageData.height;
-        let pageWidth = pageData.width;
+        const pageContainer: HTMLElement = document.getElementById(documentEditor.element.id + '_pageContainer');
+        const pageData: DOMRect = pageContainer.getBoundingClientRect() as DOMRect;
+        const pageHeight: number = pageData.height;
+        const pageWidth: number = pageData.width;
 
         hRulerSvg.style.height = pageHeight + 'px';
         hRulerLine.setAttribute('y2', `${pageHeight}`);
@@ -808,36 +854,36 @@ export class RulerHelper {
         if (!documentEditor.enableSelection) {
             return;
         }
-        let viewerContainer = document.getElementById(documentEditor.element.id + '_viewerContainer');
-        let pageContainer = document.getElementById(documentEditor.element.id + '_pageContainer');
+        const viewerContainer: HTMLElement = document.getElementById(documentEditor.element.id + '_viewerContainer');
+        const pageContainer: HTMLElement = document.getElementById(documentEditor.element.id + '_pageContainer');
         // let container = document.getElementById(documentEditor.element.id);
-        let data = viewerContainer.getBoundingClientRect();
-        let pageData = pageContainer.getBoundingClientRect();
-        let pageHeight = pageData.height;
-        let pageWidth = pageData.width;
+        const data: DOMRect = viewerContainer.getBoundingClientRect() as DOMRect;
+        const pageData: DOMRect = pageContainer.getBoundingClientRect() as DOMRect;
+        const pageHeight: number = pageData.height;
+        const pageWidth: number = pageData.width;
 
-        let hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
+        const hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
         const hSvgAttr: Object = {
             id: documentEditor.element.id + '_hRuler_indicator_svg',
             width: 0.5 + 'px',
             height: pageHeight + 'px',
             style: 'position:absolute;z-index:1;display:none;'
         };
-        let hSvg: SVGElement = this.createSvgElement('svg', hSvgAttr);
+        const hSvg: SVGElement = this.createSvgElement('svg', hSvgAttr);
         const verticalLineAttr: Object = { 'x1': 0, 'y1': hRuler.getBoundingClientRect().height + 5, 'x2': 0, 'y2': pageHeight, 'stroke-width': 0.5, 'stroke': 'black' };
-        let vLine: SVGElement = this.createSvgElement('line', verticalLineAttr);
+        const vLine: SVGElement = this.createSvgElement('line', verticalLineAttr);
         vLine.setAttribute('id', documentEditor.element.id + '_hRuler_indicator');
         hSvg.appendChild(vLine);
         viewerContainer.insertBefore(hSvg, viewerContainer.firstChild);
 
-        let vRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler');
+        const vRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler');
         const vSvgAttr: Object = {
             id: documentEditor.element.id + '_vRuler_indicator_svg',
             width: pageWidth + 'px',
             height: 0.5 + 'px',
             style: 'position:absolute;z-index:1;display:none;'
         };
-        let vSvg: SVGElement = this.createSvgElement('svg', vSvgAttr);
+        const vSvg: SVGElement = this.createSvgElement('svg', vSvgAttr);
         const horizontalLineAttr: Object = { 'x1': vRuler.getBoundingClientRect().width + 5, 'y1': 0, 'x2': pageWidth, 'y2': 0, 'stroke-width': 0.5, 'stroke': 'black' };
         const hLine: SVGElement = this.createSvgElement('line', horizontalLineAttr);
         hLine.setAttribute('id', documentEditor.element.id + '_vRuler_indicator');
@@ -845,11 +891,13 @@ export class RulerHelper {
         viewerContainer.insertBefore(vSvg, viewerContainer.firstChild);
     }
     public updateIndentMarkers(documentEditor: DocumentEditor): void {
-        if (isNullOrUndefined(documentEditor) || isNullOrUndefined(documentEditor.element) || isNullOrUndefined(documentEditor.element.id) || isNullOrUndefined(documentEditor.hRuler) || isNullOrUndefined(documentEditor.hRuler.zeroPosition)) {
+        if (isNullOrUndefined(documentEditor) || isNullOrUndefined(documentEditor.element)
+            || isNullOrUndefined(documentEditor.element.id) || isNullOrUndefined(documentEditor.hRuler)
+            || isNullOrUndefined(documentEditor.hRuler.zeroPosition)) {
             return;
         }
         let indent: HTMLElement = undefined;
-        let ownerId: string = documentEditor.element.id;
+        const ownerId: string = documentEditor.element.id;
         let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin);
         let currentIndentValue: number;
         let finalValue: number;
@@ -921,20 +969,27 @@ export class RulerHelper {
         //     }
         // }
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
-        if (this.position.paragraph.paragraphFormat.bidi || (this.position.paragraph.isInsideTable && this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi)) {
-            const rulerMarginDivWidth = ((rulerGeometry.width / documentEditor.zoomFactor) - (HelperMethods.convertPointToPixel((this.position.paragraph.bodyWidget.sectionFormat.rightMargin) + (this.position.paragraph.bodyWidget.sectionFormat.leftMargin))));
+        if (this.position.paragraph.paragraphFormat.bidi || (this.position.paragraph.isInsideTable
+            && this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi)) {
+            const rulerMarginDivWidth: number = ((rulerGeometry.width / documentEditor.zoomFactor) -
+                (HelperMethods.convertPointToPixel((this.position.paragraph.bodyWidget.sectionFormat.rightMargin)
+                    + (this.position.paragraph.bodyWidget.sectionFormat.leftMargin))));
             rulerZeroPoint -= rulerMarginDivWidth;
         }
 
-        let paraStart: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['x'].toString()) : this.position.paragraph.x;
-        let paraWidth: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['width'].toString()) : this.position.paragraph.width;
+        const paraStart: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['x'].toString()) : this.position.paragraph.x;
+        const paraWidth: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['width'].toString()) : this.position.paragraph.width;
 
         let finalValueTemp: number;
         if (this.position.paragraph.paragraphFormat.bidi) {
-            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin));
+            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                (documentEditor.selectionModule.sectionFormat.pageWidth -
+                    documentEditor.selectionModule.sectionFormat.leftMargin -
+                    documentEditor.selectionModule.sectionFormat.rightMargin));
         }
-        let leftIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_leftIndent');
-        let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
+        const leftIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_leftIndent');
+        const rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
         if (this.position.paragraph.paragraphFormat.bidi) {
             leftIndent.setAttribute('title', this.locale.getConstant('Right Indent'));
             rightIndent.setAttribute('title', this.locale.getConstant('Left Indent'));
@@ -944,14 +999,15 @@ export class RulerHelper {
             rightIndent.setAttribute('title', this.locale.getConstant('Right Indent'));
             finalValueTemp = rulerZeroPoint + paraStart;
         }
-        let firstLineIndent: number = this.position.paragraph.paragraphFormat.firstLineIndent;
+        const firstLineIndent: number = this.position.paragraph.paragraphFormat.firstLineIndent;
         indent = document.getElementById(ownerId + '_leftIndent');
         if (!isNullOrUndefined(indent)) {
             if (documentEditor.layoutType === 'Pages') {
                 indent.style.left = ((finalValueTemp * documentEditor.zoomFactor) - 6) + 'px';
             } else if (documentEditor.layoutType === 'Continuous') {
                 if (this.position.paragraph.paragraphFormat.bidi) {
-                    rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - documentEditor.viewer.clientArea.width;
+                    rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                        20 - documentEditor.viewer.clientArea.width;
                     finalValueTemp = rulerZeroPoint + paraStart + paraWidth;
                     indent.style.left = finalValueTemp + 'px';
                 } else {
@@ -967,7 +1023,8 @@ export class RulerHelper {
                 indent.style.left = ((finalValueTemp * documentEditor.zoomFactor) - 6) + 'px';
             } else if (documentEditor.layoutType === 'Continuous') {
                 if (this.position.paragraph.paragraphFormat.bidi) {
-                    rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - documentEditor.viewer.clientArea.width;
+                    rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                        20 - documentEditor.viewer.clientArea.width;
                     finalValueTemp = rulerZeroPoint + paraStart + paraWidth;
                     indent.style.left = finalValueTemp + 'px';
                 } else {
@@ -988,11 +1045,14 @@ export class RulerHelper {
             }
         } else if (documentEditor.layoutType === 'Continuous') {
             if (this.position.paragraph.paragraphFormat.bidi) {
-                rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - documentEditor.viewer.clientArea.width;
-                finalValueTemp = rulerZeroPoint + paraStart + paraWidth - (HelperMethods.convertPointToPixel(firstLineIndent) * documentEditor.zoomFactor);
+                rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                    20 - documentEditor.viewer.clientArea.width;
+                finalValueTemp = rulerZeroPoint + paraStart + paraWidth - (HelperMethods.convertPointToPixel(
+                    firstLineIndent) * documentEditor.zoomFactor);
             } else {
                 rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
-                finalValueTemp = rulerZeroPoint + ((paraStart + HelperMethods.convertPointToPixel(firstLineIndent)) * documentEditor.zoomFactor);
+                finalValueTemp = rulerZeroPoint + ((paraStart + HelperMethods.convertPointToPixel(
+                    firstLineIndent)) * documentEditor.zoomFactor);
             }
             indent.style.left = finalValueTemp + 'px';
         }
@@ -1008,7 +1068,8 @@ export class RulerHelper {
             }
         } else if (documentEditor.layoutType === 'Continuous') {
             if (this.position.paragraph.paragraphFormat.bidi) {
-                rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
+                rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                    20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                 finalValueTemp = rulerZeroPoint + paraStart;
                 indent.style.left = finalValueTemp + 'px';
             } else {
@@ -1020,21 +1081,23 @@ export class RulerHelper {
     }
 
     public updateTabStopMarkers(documentEditor: DocumentEditor): void {
-        if (isNullOrUndefined(documentEditor) || isNullOrUndefined(documentEditor.element) || isNullOrUndefined(documentEditor.element.id) || isNullOrUndefined(documentEditor.hRuler) || isNullOrUndefined(documentEditor.hRuler.zeroPosition)) {
+        if (isNullOrUndefined(documentEditor) || isNullOrUndefined(documentEditor.element)
+            || isNullOrUndefined(documentEditor.element.id) || isNullOrUndefined(documentEditor.hRuler)
+            || isNullOrUndefined(documentEditor.hRuler.zeroPosition)) {
             return;
         }
         const locale: L10n = new L10n('documenteditor', documentEditor.defaultLocale);
         locale.setLocale(documentEditor.locale);
-        let ownerId: string = documentEditor.element.id;
-        let element: HTMLElement = document.getElementById(ownerId + '_markIndicator');
+        const ownerId: string = documentEditor.element.id;
+        const element: HTMLElement = document.getElementById(ownerId + '_markIndicator');
         element.style.display = documentEditor.layoutType === 'Pages' ? 'block' : 'none';
-        let paragarph: ParagraphWidget = this.position.paragraph;
-        let tabs: WTabStop[] = paragarph.paragraphFormat.tabs;
-        let zoomFactor: number = documentEditor.zoomFactor;
+        const paragarph: ParagraphWidget = this.position.paragraph;
+        const tabs: WTabStop[] = paragarph.paragraphFormat.tabs;
+        const zoomFactor: number = documentEditor.zoomFactor;
         const rulerSize: Size = this.getRulerSize(documentEditor);
         const RenderedTabElement: HTMLElement[] = HelperMethods.convertNodeListToArray(document.querySelectorAll('.e-de-ruler-tab'));
-        for (let i = 0; i < tabs.length; i++) {
-            let tabStop = tabs[parseInt(i.toString(), 10)];
+        for (let i: number = 0; i < tabs.length; i++) {
+            const tabStop: WTabStop = tabs[parseInt(i.toString(), 10)];
             const justification: TabJustification = tabStop.tabJustification;
             // const position: number = tabStop.position;
             const id: string = documentEditor.element.id + '_' + justification + 'Tab_' + i.toString();
@@ -1057,7 +1120,7 @@ export class RulerHelper {
                 }
             }
             else {
-                if (justification !== "List") {
+                if (justification !== 'List') {
                     this.renderTab(documentEditor, rulerSize, tabStop, justification, i, locale);
                 }
             }
@@ -1079,10 +1142,12 @@ export class RulerHelper {
         // const margin: string = isHorizontal ? ('margin-left:' + height + 'px;') : ('margin-top:' + height + 'px;');
 
         //const leftMarginValue = 2112 - (HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin));
-        const leftMarginValue = 2112 * documentEditor.zoomFactor;
+        const leftMarginValue: number = 2112 * documentEditor.zoomFactor;
         let rulerMarginDiv: HTMLElement;
         const rulerMargin: string = isHorizontal ? ('margin-left:' + leftMarginValue + 'px;') : ('margin-top:' + leftMarginValue + 'px;');
-        const rulerHeight = (isHorizontal ? rulerSize.height : (rulerGeometry.height - (HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin + documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin) * documentEditor.zoomFactor)));
+        const rulerHeight: number = (isHorizontal ? rulerSize.height : (rulerGeometry.height -
+            (HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin
+                + documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin) * documentEditor.zoomFactor)));
         // const rulerHeight =  (isHorizontal ? rulerSize.height : rulerGeometry.height);
         if (isHorizontal) {
             for (let i: number = 1; i <= 13; i++) {
@@ -1116,59 +1181,71 @@ export class RulerHelper {
     }
     private updateRulerMargins(documentEditor: DocumentEditor): void {
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
-        const leftMarginValue = (documentEditor.hRuler.zeroPosition) * documentEditor.zoomFactor;
+        const leftMarginValue: number = (documentEditor.hRuler.zeroPosition) * documentEditor.zoomFactor;
         this.updateHorizontalRulerMargin(documentEditor);
-        let verticalRulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_Margin');
-        const rulerMarginDivHeight = rulerGeometry.height - (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor) + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor)));
-        verticalRulerMarginDiv.style.marginTop = leftMarginValue + "px";
-        verticalRulerMarginDiv.style.height = rulerMarginDivHeight + "px";
+        const verticalRulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_Margin');
+        const rulerMarginDivHeight: number = rulerGeometry.height - (HelperMethods.convertPointToPixel(
+            (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin
+                * documentEditor.zoomFactor) + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin
+                    * documentEditor.zoomFactor)));
+        verticalRulerMarginDiv.style.marginTop = leftMarginValue + 'px';
+        verticalRulerMarginDiv.style.height = rulerMarginDivHeight + 'px';
     }
 
     private updateHorizontalRulerMargin(documentEditor: DocumentEditor): void {
-        let columns: WColumnFormat[] = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns;
+        const columns: WColumnFormat[] = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns;
         let leftMarginValue: number = (documentEditor.hRuler.zeroPosition) * documentEditor.zoomFactor;
         let skipLoop: boolean = false;
-        let paraBidi: boolean = this.position.paragraph.paragraphFormat.bidi;
+        const paraBidi: boolean = this.position.paragraph.paragraphFormat.bidi;
         let tableBidi: boolean = false;
-        let currnLefttMargin: number = HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin - 72);
-        let currentRightMargin: number = HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin - 72);
+        const currnLefttMargin: number = HelperMethods.convertPointToPixel(
+            documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin - 72);
+        const currentRightMargin: number = HelperMethods.convertPointToPixel(
+            documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin - 72);
         if (this.position.paragraph.isInsideTable) {
             tableBidi = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi;
         }
-        const rulerMarginDivWidth = (this.getRulerGeometry(documentEditor).width - (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor))));
+        const rulerMarginDivWidth: number = (this.getRulerGeometry(documentEditor).width -
+            (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin
+                * documentEditor.zoomFactor) + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin
+                    * documentEditor.zoomFactor))));
         if (paraBidi || tableBidi) {
             leftMarginValue = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - rulerMarginDivWidth;
         }
         for (let i: number = 0; i < 13; i++) {
-            let horizontalRulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_Margin' + (i + 1));
+            const horizontalRulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_Margin' + (i + 1));
             if (horizontalRulerMarginDiv) {
-                if ((columns.length === 0 && !skipLoop) || (documentEditor.layoutType === "Continuous" && !skipLoop)) {
+                if ((columns.length === 0 && !skipLoop) || (documentEditor.layoutType === 'Continuous' && !skipLoop)) {
                     if (paraBidi || tableBidi) {
-                        let startValue: number = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - rulerMarginDivWidth;
-                        horizontalRulerMarginDiv.style.marginLeft = startValue + "px";
+                        const startValue: number = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - rulerMarginDivWidth;
+                        horizontalRulerMarginDiv.style.marginLeft = startValue + 'px';
                     } else {
-                        horizontalRulerMarginDiv.style.marginLeft = leftMarginValue + "px";
+                        horizontalRulerMarginDiv.style.marginLeft = leftMarginValue + 'px';
                     }
                     horizontalRulerMarginDiv.style.display = 'block';
                     if (documentEditor.layoutType === 'Continuous') {
                         const paraWidth: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['width'].toString()) : this.position.paragraph.width;
-                        horizontalRulerMarginDiv.style.width = (paraWidth * documentEditor.zoomFactor) + "px";
+                        horizontalRulerMarginDiv.style.width = (paraWidth * documentEditor.zoomFactor) + 'px';
                     } else {
-                        horizontalRulerMarginDiv.style.width = rulerMarginDivWidth + "px";
+                        horizontalRulerMarginDiv.style.width = rulerMarginDivWidth + 'px';
                     }
                     skipLoop = true;
-                } else if ((columns.length >= i + 1) && documentEditor.layoutType === "Pages") {
+                } else if ((columns.length >= i + 1) && documentEditor.layoutType === 'Pages') {
                     if (paraBidi || tableBidi) {
                         horizontalRulerMarginDiv.style.marginLeft = leftMarginValue + 'px';
                         leftMarginValue -= ((currnLefttMargin + currentRightMargin) / (columns.length)) * documentEditor.zoomFactor;
-                        leftMarginValue = leftMarginValue + (columns[parseInt(i.toString(), 10)].width + columns[parseInt(i.toString(), 10)].space) * documentEditor.zoomFactor;
+                        leftMarginValue = leftMarginValue + (
+                            columns[parseInt(i.toString(), 10)].width +
+                            columns[parseInt(i.toString(), 10)].space) * documentEditor.zoomFactor;
                     } else {
                         horizontalRulerMarginDiv.style.marginLeft = leftMarginValue + 'px';
                         leftMarginValue -= ((currnLefttMargin + currentRightMargin) / (columns.length)) * documentEditor.zoomFactor;
-                        leftMarginValue = leftMarginValue + (columns[parseInt(i.toString(), 10)].width + columns[parseInt(i.toString(), 10)].space) * documentEditor.zoomFactor;
+                        leftMarginValue = leftMarginValue + (
+                            columns[parseInt(i.toString(), 10)].width +
+                            columns[parseInt(i.toString(), 10)].space) * documentEditor.zoomFactor;
                     }
                     horizontalRulerMarginDiv.style.display = 'block';
-                    horizontalRulerMarginDiv.style.width = (columns[parseInt(i.toString(), 10)].width - ((currnLefttMargin + currentRightMargin) / columns.length)) * documentEditor.zoomFactor + "px";
+                    horizontalRulerMarginDiv.style.width = (columns[parseInt(i.toString(), 10)].width - ((currnLefttMargin + currentRightMargin) / columns.length)) * documentEditor.zoomFactor + 'px';
                 } else {
                     horizontalRulerMarginDiv.style.display = 'none';
                 }
@@ -1176,11 +1253,12 @@ export class RulerHelper {
         }
     }
 
-    public resizeVRulerMargins(isRulerTopMargin: boolean, currentTopMargin: number, currentScrollTop: number, currentBottomMargin: number, ruler: HTMLElement, mousePosition: number, documentEditor: DocumentEditor) {
-        let rulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_Margin');
+    public resizeVRulerMargins(isRulerTopMargin: boolean, currentTopMargin: number, currentScrollTop: number, currentBottomMargin: number,
+                               ruler: HTMLElement, mousePosition: number, documentEditor: DocumentEditor): void {
+        const rulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_Margin');
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
         if (isRulerTopMargin) {
-            rulerMarginDiv.style.height = (rulerGeometry.height - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor) + mousePosition)).toString() + "px";
+            rulerMarginDiv.style.height = (rulerGeometry.height - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor) + mousePosition)).toString() + 'px';
 
             if (currentTopMargin < mousePosition) {
                 ruler.scrollTop = currentScrollTop - HelperMethods.convertPointToPixel(mousePosition - currentTopMargin);
@@ -1188,8 +1266,8 @@ export class RulerHelper {
                 ruler.scrollTop = currentScrollTop + HelperMethods.convertPointToPixel(currentTopMargin - mousePosition);
             }
         } else {
-            const bottomMargin = HelperMethods.convertPixelToPoint(rulerGeometry.height) - mousePosition;
-            rulerMarginDiv.style.height = (rulerGeometry.height - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor) + (bottomMargin))).toString() + "px";
+            const bottomMargin: number = HelperMethods.convertPixelToPoint(rulerGeometry.height) - mousePosition;
+            rulerMarginDiv.style.height = (rulerGeometry.height - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor) + (bottomMargin))).toString() + 'px';
 
             if (currentBottomMargin < mousePosition) {
                 //  ruler.scrollLeft = currentScrollLeft - HelperMethods.convertPointToPixel(mousePosition - currentRightMargin);
@@ -1199,11 +1277,12 @@ export class RulerHelper {
         }
     }
 
-    private resizeRulerMargins(isRulerLeftMargin: boolean, currentLeftMargin: number, currentScrollLeft: number, currentRightMargin: number, ruler: HTMLElement, mousePosition: number, isHorizontal: boolean, documentEditor: DocumentEditor) {
-        let rulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + (isHorizontal ? '_hRuler_Margin1' : '_vRuler_Margin'));
+    private resizeRulerMargins(isRulerLeftMargin: boolean, currentLeftMargin: number, currentScrollLeft: number, currentRightMargin: number,
+                               ruler: HTMLElement, mousePosition: number, isHorizontal: boolean, documentEditor: DocumentEditor): void {
+        const rulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + (isHorizontal ? '_hRuler_Margin1' : '_vRuler_Margin'));
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
         if (!isNullOrUndefined(isRulerLeftMargin) && isRulerLeftMargin) {
-            rulerMarginDiv.style.width = (rulerGeometry.width - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + mousePosition)).toString() + "px";
+            rulerMarginDiv.style.width = (rulerGeometry.width - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + mousePosition)).toString() + 'px';
 
             if (currentLeftMargin < mousePosition) {
                 ruler.scrollLeft = currentScrollLeft - HelperMethods.convertPointToPixel(mousePosition - currentLeftMargin);
@@ -1211,8 +1290,8 @@ export class RulerHelper {
                 ruler.scrollLeft = currentScrollLeft + HelperMethods.convertPointToPixel(currentLeftMargin - mousePosition);
             }
         } else {
-            const rightMargin = HelperMethods.convertPixelToPoint(rulerGeometry.width) - mousePosition;
-            rulerMarginDiv.style.width = (rulerGeometry.width - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor) + (rightMargin))).toString() + "px";
+            const rightMargin: number = HelperMethods.convertPixelToPoint(rulerGeometry.width) - mousePosition;
+            rulerMarginDiv.style.width = (rulerGeometry.width - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor) + (rightMargin))).toString() + 'px';
 
             if (currentRightMargin < mousePosition) {
                 //  ruler.scrollLeft = currentScrollLeft - HelperMethods.convertPointToPixel(mousePosition - currentRightMargin);
@@ -1222,16 +1301,16 @@ export class RulerHelper {
         }
     }
 
-    public getRulerOrigin() {
+    public getRulerOrigin(): void {
         const range: number = 1584;
-        let pixelValue: number = HelperMethods.convertPointToPixel(1584);
+        const pixelValue: number = HelperMethods.convertPointToPixel(1584);
         //console.log('PixelValue: ', pixelValue);
         //console.log('PointsValue: ', range);
     }
 
 
     public renderIndents(documentEditor: DocumentEditor, isHorizontal: boolean, rulerSize: Size, rulerGeometry: Size, locale: L10n): void {
-        let hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
+        const hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
         let firstLineIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_firstLineIndent');
         if (!firstLineIndent) {
             const margin: string = ('left:' + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) - 6) * documentEditor.zoomFactor + 'px;');
@@ -1244,7 +1323,7 @@ export class RulerHelper {
             };
             firstLineIndent = this.createHtmlElement('div', attributes);
             firstLineIndent.setAttribute('title', locale.getConstant('First Line Indent'));
-            let svg: SVGElement;
+            // let svg: SVGElement;
             // Create an SVG element
             const attr: Object = {
                 'id': documentEditor.element.id + '_firstLineIndent_svg',
@@ -1252,80 +1331,94 @@ export class RulerHelper {
                 height: ((rulerSize.height - 3) / 2) + 'px',
                 style: 'position:inherit;left:0px'
             };
-            svg = this.createSvgElement('svg', attr);
-            svg.setAttribute("fill", "none");
+            const svg: SVGElement = this.createSvgElement('svg', attr);
+            svg.setAttribute('fill', 'none');
             const pathattr: Object = {
                 style: 'position:inherit;left:0px'
             };
             // Create a path element inside the SVG
-            const pathElement = this.createSvgElement('path', pathattr);
-            pathElement.setAttribute("class", "e-de-ruler-indent-svg");
-            pathElement.setAttribute("d", "M 0.5 0.5 H 11.5 V 2.7128 L 6 5.4211 L 0.5 2.7128 V 0.5 Z");
-            pathElement.setAttribute("fill", "white");
-            pathElement.setAttribute("stroke", "#A1A1A1");
+            const pathElement: SVGElement = this.createSvgElement('path', pathattr);
+            pathElement.setAttribute('class', 'e-de-ruler-indent-svg');
+            pathElement.setAttribute('d', 'M 0.5 0.5 H 11.5 V 2.7128 L 6 5.4211 L 0.5 2.7128 V 0.5 Z');
+            pathElement.setAttribute('fill', 'white');
+            pathElement.setAttribute('stroke', '#A1A1A1');
             // Append the path element to the SVG element
             svg.appendChild(pathElement);
             firstLineIndent.appendChild(svg);
             hRuler.append(firstLineIndent);
-            firstLineIndent.addEventListener("dblclick", function (event) {
+            firstLineIndent.addEventListener('dblclick', function (event: MouseEvent): void {
                 documentEditor.showDialog('Paragraph');
                 event.stopPropagation();
             });
             //Draggable for first line Indent.
-            let isDragging = false;
+            let isDragging: boolean = false;
             let firstLineOffset: number;
             let initialValue: number = HelperMethods.getNumberFromString(firstLineIndent.style.left); // for mouse up event
-            let initialValue2: number = HelperMethods.getNumberFromString(firstLineIndent.style.left); // for mouse move event
-            firstLineIndent.addEventListener("mouseenter", (e) => {
+            const initialValue2: number = HelperMethods.getNumberFromString(firstLineIndent.style.left); // for mouse move event
+            firstLineIndent.addEventListener('mouseenter', (e: MouseEvent) => {
                 documentEditor.isOnIndent = true;
             });
-            firstLineIndent.addEventListener("mouseleave", (e) => {
+            firstLineIndent.addEventListener('mouseleave', (e: MouseEvent) => {
                 documentEditor.isOnIndent = false;
             });
-            firstLineIndent.addEventListener("mousedown", (e) => {
+            firstLineIndent.addEventListener('mousedown', (e: MouseEvent) => {
                 isDragging = true;
                 firstLineOffset = e.clientX - firstLineIndent.getBoundingClientRect().left;
                 initialValue = HelperMethods.getNumberFromString(firstLineIndent.style.left);
-                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(
+                    1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                 if (documentEditor.selectionModule.paragraphFormat.bidi) {
-                    rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                    rulerZeroPoint = HelperMethods.convertPointToPixel(
+                        1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                        (documentEditor.selectionModule.sectionFormat.pageWidth -
+                            documentEditor.selectionModule.sectionFormat.leftMargin -
+                            documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                 }
                 if (documentEditor.layoutType === 'Continuous') {
                     rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
-                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
+                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                        20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
                     }
                 }
-                let value: number = rulerZeroPoint + e.clientX - firstLineOffset - hRuler.getBoundingClientRect().left;
+                const value: number = rulerZeroPoint + e.clientX - firstLineOffset - hRuler.getBoundingClientRect().left;
                 let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                startValue = documentEditor.layoutType === 'Continuous'? 0 : startValue;
-                let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
+                const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                 lineSvg.style.left = indicatorLineValue + 'px';
                 lineSvg.style.display = 'block';
                 e.stopPropagation();
             });
 
-            document.addEventListener("mousemove", (e) => {
+            document.addEventListener('mousemove', (e: MouseEvent) => {
                 if (isDragging) {
                     let rulerZeroPoint: number;
                     let maxValue: number;
                     let minValue: number;
-                    let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
-                    let rightIndentValue: number = HelperMethods.getNumberFromString(rightIndent.style.left);
+                    const rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
+                    const rightIndentValue: number = HelperMethods.getNumberFromString(rightIndent.style.left);
                     if (documentEditor.layoutType === 'Pages') {
                         if (documentEditor.selectionModule.paragraphFormat.bidi) {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
-                            maxValue = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                                (documentEditor.selectionModule.sectionFormat.pageWidth -
+                                    documentEditor.selectionModule.sectionFormat.leftMargin -
+                                    documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                            maxValue = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(
+                                documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
                             minValue = rightIndentValue + HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor;
                         } else {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 - documentEditor.selectionModule.sectionFormat.leftMargin)
+                                * documentEditor.zoomFactor;
                             minValue = rulerZeroPoint - 6;
                             maxValue = rightIndentValue - HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor;
                         }
                     } else if (documentEditor.layoutType === 'Continuous') {
                         if (this.position.paragraph.paragraphFormat.bidi) {
-                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
+                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                                20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                             maxValue = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 + 40 - 6;
                             minValue = rightIndentValue + (HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
                         } else {
@@ -1340,20 +1433,20 @@ export class RulerHelper {
                     } else if (value > maxValue) {
                         value = maxValue;
                     }
-                    firstLineIndent.style.left = value + "px";
+                    firstLineIndent.style.left = value + 'px';
                     let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                    startValue = documentEditor.layoutType === 'Continuous'? 0 : startValue;
-                    let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
+                    const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.left = indicatorLineValue + 'px';
                 }
             });
 
-            document.addEventListener("mouseup", () => {
+            document.addEventListener('mouseup', () => {
                 if (isDragging) {
                     isDragging = false;
                     let finalValue: number = HelperMethods.getNumberFromString(firstLineIndent.style.left);
-                    if (parseInt(firstLineIndent.style.left.replace('px', '')) < 0) {
+                    if (parseInt(firstLineIndent.style.left.replace('px', ''), 10) < 0) {
                         finalValue *= -1;
                     }
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
@@ -1362,7 +1455,7 @@ export class RulerHelper {
                         documentEditor.editorModule.applyRulerMarkerValues('firstLineIndent', initialValue, finalValue);
                     }
                     initialValue = finalValue;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.display = 'none';
                 }
             });
@@ -1381,7 +1474,7 @@ export class RulerHelper {
             };
             hangingIndent = this.createHtmlElement('div', attributes);
             hangingIndent.setAttribute('title', locale.getConstant('Hanging Indent'));
-            let hangingIndentSvg: SVGElement;
+            // let hangingIndentSvg: SVGElement;
 
             // Create an SVG element
             const attr: Object = {
@@ -1390,59 +1483,66 @@ export class RulerHelper {
                 height: ((rulerSize.height - 3) / 2) + 'px',
                 style: 'position:inherit;left:0px'
             };
-            hangingIndentSvg = this.createSvgElement('svg', attr);
-            hangingIndentSvg.setAttribute("fill", "none");
+            const hangingIndentSvg: SVGElement = this.createSvgElement('svg', attr);
+            hangingIndentSvg.setAttribute('fill', 'none');
             const pathattr: Object = {
                 style: 'position:inherit;left:0px'
             };
             // Create a path element inside the SVG
-            const pathElement = this.createSvgElement('path', pathattr);
-            pathElement.setAttribute("class", "e-de-ruler-indent-svg");
-            pathElement.setAttribute("d", "M 0.5 5.3211 H 11.5 V 3.1083 L 6 0.4 L 0.5 3.1083 V 5.3211 Z");
-            pathElement.setAttribute("fill", "white");
-            pathElement.setAttribute("stroke", "#A1A1A1");
+            const pathElement: SVGElement = this.createSvgElement('path', pathattr);
+            pathElement.setAttribute('class', 'e-de-ruler-indent-svg');
+            pathElement.setAttribute('d', 'M 0.5 5.3211 H 11.5 V 3.1083 L 6 0.4 L 0.5 3.1083 V 5.3211 Z');
+            pathElement.setAttribute('fill', 'white');
+            pathElement.setAttribute('stroke', '#A1A1A1');
             // Append the path element to the SVG element
             hangingIndentSvg.appendChild(pathElement);
             hangingIndent.appendChild(hangingIndentSvg);
             hRuler.append(hangingIndent);
-            hangingIndent.addEventListener("dblclick", function (event) {
+            hangingIndent.addEventListener('dblclick', function (event: MouseEvent): void{
                 documentEditor.showDialog('Paragraph');
                 event.stopPropagation();
             });
             //Draggable for hanging line Indent.
-            let isDragging = false;
+            let isDragging: boolean = false;
             let hangingLineOffset: number;
             let initialValue: number = HelperMethods.getNumberFromString(hangingIndent.style.left); // for mouse up event
-            let initialValue2: number = HelperMethods.getNumberFromString(hangingIndent.style.left); // for mouse move event
+            const initialValue2: number = HelperMethods.getNumberFromString(hangingIndent.style.left); // for mouse move event
             let minLimit: number;
             let maxLimit: number;
             let leftIndent: HTMLElement;
-            hangingIndent.addEventListener("mouseenter", (e) => {
+            hangingIndent.addEventListener('mouseenter', (e: MouseEvent) => {
                 documentEditor.isOnIndent = true;
             });
-            hangingIndent.addEventListener("mouseleave", (e) => {
+            hangingIndent.addEventListener('mouseleave', (e: MouseEvent) => {
                 documentEditor.isOnIndent = false;
             });
-            hangingIndent.addEventListener("mousedown", (e) => {
+            hangingIndent.addEventListener('mousedown', (e: MouseEvent) => {
                 isDragging = true;
                 hangingLineOffset = e.clientX - hangingIndent.getBoundingClientRect().left;
                 initialValue = HelperMethods.getNumberFromString(hangingIndent.style.left);
-                let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
-                let rightPosition: number = HelperMethods.getNumberFromString(rightIndent.style.left);
+                const rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
+                const rightPosition: number = HelperMethods.getNumberFromString(rightIndent.style.left);
                 let rulerZeroPoint: number;
                 if (documentEditor.layoutType === 'Pages') {
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(
+                            1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                            (documentEditor.selectionModule.sectionFormat.pageWidth -
+                                documentEditor.selectionModule.sectionFormat.leftMargin -
+                                documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         minLimit = rightPosition + (HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
-                        maxLimit = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
+                        maxLimit = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(
+                            documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
                     } else {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(
+                            1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         minLimit = rulerZeroPoint - 6;
                         maxLimit = (rightPosition - HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
                     }
                 } else if (documentEditor.layoutType === 'Continuous') {
                     if (this.position.paragraph.paragraphFormat.bidi) {
-                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
+                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                        20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                         maxLimit = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 + 40 - 6;
                         minLimit = rightPosition + (HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
                     } else {
@@ -1452,28 +1552,34 @@ export class RulerHelper {
                     }
                 }
                 leftIndent = document.getElementById(documentEditor.element.id + '_leftIndent');
-                let value: number = rulerZeroPoint + e.clientX - hangingLineOffset - hRuler.getBoundingClientRect().left;
+                const value: number = rulerZeroPoint + e.clientX - hangingLineOffset - hRuler.getBoundingClientRect().left;
                 let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                startValue = documentEditor.layoutType === 'Continuous'? 0 : startValue;
-                let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
+                const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                 lineSvg.style.left = indicatorLineValue + 'px';
                 lineSvg.style.display = 'block';
                 e.stopPropagation();
             });
 
-            document.addEventListener("mousemove", (e) => {
+            document.addEventListener('mousemove', (e: MouseEvent) => {
                 if (isDragging) {
                     let rulerZeroPoint: number;
                     if (documentEditor.layoutType === 'Pages') {
                         if (documentEditor.selectionModule.paragraphFormat.bidi) {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                                (documentEditor.selectionModule.sectionFormat.pageWidth -
+                                    documentEditor.selectionModule.sectionFormat.leftMargin -
+                                    documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         } else {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         }
                     } else if (documentEditor.layoutType === 'Continuous') {
                         if (this.position.paragraph.paragraphFormat.bidi) {
-                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
+                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                                20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                         } else {
                             rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                         }
@@ -1484,21 +1590,21 @@ export class RulerHelper {
                     } else if (value < minLimit) {
                         value = minLimit;
                     }
-                    leftIndent.style.left = value + "px";
-                    hangingIndent.style.left = value + "px";
+                    leftIndent.style.left = value + 'px';
+                    hangingIndent.style.left = value + 'px';
                     let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                    startValue = documentEditor.layoutType === 'Continuous'? 0 : startValue;
-                    let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
+                    const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.left = indicatorLineValue + 'px';
                 }
             });
 
-            document.addEventListener("mouseup", () => {
+            document.addEventListener('mouseup', () => {
                 if (isDragging) {
                     isDragging = false;
                     let finalValue: number = HelperMethods.getNumberFromString(hangingIndent.style.left);
-                    if (parseInt(hangingIndent.style.left.replace('px', '')) < 0) {
+                    if (parseInt(hangingIndent.style.left.replace('px', ''), 10) < 0) {
                         finalValue *= -1;
                     }
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
@@ -1507,7 +1613,7 @@ export class RulerHelper {
                         documentEditor.editorModule.applyRulerMarkerValues('hangingIndent', initialValue, finalValue);
                     }
                     initialValue = finalValue;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.display = 'none';
                 }
             });
@@ -1525,7 +1631,7 @@ export class RulerHelper {
             };
             leftIndent = this.createHtmlElement('div', attributes);
             leftIndent.setAttribute('title', locale.getConstant('Left Indent'));
-            let leftIndentSvg: SVGElement;
+            // let leftIndentSvg: SVGElement;
 
             // Create an SVG element
             const attr: Object = {
@@ -1534,43 +1640,43 @@ export class RulerHelper {
                 height: '4px',
                 style: 'position:inherit;left:0px'
             };
-            leftIndentSvg = this.createSvgElement('svg', attr);
-            leftIndentSvg.setAttribute("fill", "none");
+            const leftIndentSvg: SVGElement = this.createSvgElement('svg', attr);
+            leftIndentSvg.setAttribute('fill', 'none');
             const pathattr: Object = {
                 style: 'position:inherit;left:0px'
             };
             // Create a path element inside the SVG
-            const pathElement = this.createSvgElement('path', pathattr);
-            pathElement.setAttribute("class", "e-de-ruler-indent-svg");
-            pathElement.setAttribute("d", "M 0.5 3.5 H 11.5 V 0.5 H 0.5 V 3.5 Z");
-            pathElement.setAttribute("fill", "white");
-            pathElement.setAttribute("stroke", "#A1A1A1");
+            const pathElement: SVGElement = this.createSvgElement('path', pathattr);
+            pathElement.setAttribute('class', 'e-de-ruler-indent-svg');
+            pathElement.setAttribute('d', 'M 0.5 3.5 H 11.5 V 0.5 H 0.5 V 3.5 Z');
+            pathElement.setAttribute('fill', 'white');
+            pathElement.setAttribute('stroke', '#A1A1A1');
             // Append the path element to the SVG element
             leftIndentSvg.appendChild(pathElement);
             leftIndent.appendChild(leftIndentSvg);
             hRuler.append(leftIndent);
-            leftIndent.addEventListener("dblclick", function (event) {
+            leftIndent.addEventListener('dblclick', function (event: MouseEvent): void {
                 documentEditor.showDialog('Paragraph');
                 event.stopPropagation();
             });
             //Draggable for left line Indent.
-            let isDragging = false;
+            let isDragging: boolean = false;
             let leftLineOffset: number;
             let initialValue: number = HelperMethods.getNumberFromString(leftIndent.style.left); // for mouse down event
-            let initialValue2: number = HelperMethods.getNumberFromString(leftIndent.style.left); // for mouse move event
+            const initialValue2: number = HelperMethods.getNumberFromString(leftIndent.style.left); // for mouse move event
             let firstIndentInitialValue: number;
 
             let diff: number;
             let minLimit: number;
             let maxLimit: number;
             let isHangingIndent: boolean;
-            leftIndent.addEventListener("mouseenter", (e) => {
+            leftIndent.addEventListener('mouseenter', (e: MouseEvent) => {
                 documentEditor.isOnIndent = true;
             });
-            leftIndent.addEventListener("mouseleave", (e) => {
+            leftIndent.addEventListener('mouseleave', (e: MouseEvent) => {
                 documentEditor.isOnIndent = false;
             });
-            leftIndent.addEventListener("mousedown", (e) => {
+            leftIndent.addEventListener('mousedown', (e: MouseEvent) => {
                 let rulerZeroPoint: number;
                 isDragging = true;
                 leftLineOffset = e.clientX - leftIndent.getBoundingClientRect().left;
@@ -1578,52 +1684,68 @@ export class RulerHelper {
                 firstIndentInitialValue = HelperMethods.getNumberFromString(firstLineIndent.style.left);
                 diff = firstIndentInitialValue - initialValue;
                 firstLineIndent = document.getElementById(documentEditor.element.id + '_firstLineIndent');
-                let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
-                let rightPosition: number = HelperMethods.getNumberFromString(rightIndent.style.left);
+                const rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
+                const rightPosition: number = HelperMethods.getNumberFromString(rightIndent.style.left);
                 if (documentEditor.layoutType === 'Pages') {
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(
+                            1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                            (documentEditor.selectionModule.sectionFormat.pageWidth -
+                                documentEditor.selectionModule.sectionFormat.leftMargin -
+                                documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         minLimit = (rightPosition + HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
-                        maxLimit = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
-                        isHangingIndent = (HelperMethods.getNumberFromString(hangingIndent.style.left) - rightPosition) <= (HelperMethods.getNumberFromString(firstLineIndent.style.left) - rightPosition);
+                        maxLimit = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(
+                            documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
+                        isHangingIndent = (HelperMethods.getNumberFromString(hangingIndent.style.left) - rightPosition)
+                        <= (HelperMethods.getNumberFromString(firstLineIndent.style.left) - rightPosition);
                     } else {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(
+                            1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         minLimit = rulerZeroPoint - 6;
                         maxLimit = (rightPosition - HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
-                        isHangingIndent = (rightPosition - HelperMethods.getNumberFromString(hangingIndent.style.left)) <= (rightPosition - HelperMethods.getNumberFromString(firstLineIndent.style.left));
+                        isHangingIndent = (rightPosition - HelperMethods.getNumberFromString(hangingIndent.style.left))
+                            <= (rightPosition - HelperMethods.getNumberFromString(firstLineIndent.style.left));
                     }
                 } else if (documentEditor.layoutType === 'Continuous') {
                     if (this.position.paragraph.paragraphFormat.bidi) {
-                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
+                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                            20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                         maxLimit = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 + 40 - 6;
                         minLimit = rightPosition + (HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
-                        isHangingIndent = (HelperMethods.getNumberFromString(hangingIndent.style.left) - rightPosition) <= (HelperMethods.getNumberFromString(firstLineIndent.style.left) - rightPosition);
+                        isHangingIndent = (HelperMethods.getNumberFromString(hangingIndent.style.left) - rightPosition)
+                            <= (HelperMethods.getNumberFromString(firstLineIndent.style.left) - rightPosition);
                     } else {
                         rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                         minLimit = rulerZeroPoint - 6;
                         maxLimit = (rightPosition - HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
-                        isHangingIndent = (rightPosition - HelperMethods.getNumberFromString(hangingIndent.style.left)) <= (rightPosition - HelperMethods.getNumberFromString(firstLineIndent.style.left));
+                        isHangingIndent = (rightPosition - HelperMethods.getNumberFromString(hangingIndent.style.left))
+                            <= (rightPosition - HelperMethods.getNumberFromString(firstLineIndent.style.left));
                     }
                 }
-                let value: number = rulerZeroPoint + e.clientX - leftLineOffset - hRuler.getBoundingClientRect().left;
+                const value: number = rulerZeroPoint + e.clientX - leftLineOffset - hRuler.getBoundingClientRect().left;
                 let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                startValue = documentEditor.layoutType === 'Continuous'? 0 : startValue;
-                let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
+                const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                 lineSvg.style.left = indicatorLineValue + 'px';
                 lineSvg.style.display = 'block';
                 e.stopPropagation();
             });
 
-            document.addEventListener("mousemove", (e) => {
+            document.addEventListener('mousemove', (e: MouseEvent) => {
                 if (isDragging) {
                     let rulerZeroPoint: number;
                     let value: number;
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
                         if (documentEditor.layoutType === 'Pages') {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                                (documentEditor.selectionModule.sectionFormat.pageWidth -
+                                    documentEditor.selectionModule.sectionFormat.leftMargin
+                                    - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         } else if (documentEditor.layoutType === 'Continuous') {
-                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
+                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                                20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                         }
                         value = rulerZeroPoint + e.clientX - leftLineOffset - hRuler.getBoundingClientRect().left;
                         if (isHangingIndent) {
@@ -1646,7 +1768,8 @@ export class RulerHelper {
                         }
                     } else {
                         if (documentEditor.layoutType === 'Pages') {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         } else if (documentEditor.layoutType === 'Continuous') {
                             rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                         }
@@ -1670,22 +1793,22 @@ export class RulerHelper {
                             }
                         }
                     }
-                    hangingIndent.style.left = value + "px";
-                    leftIndent.style.left = value + "px";
-                    firstLineIndent.style.left = (firstIndentInitialValue + (value - initialValue)) + "px";
+                    hangingIndent.style.left = value + 'px';
+                    leftIndent.style.left = value + 'px';
+                    firstLineIndent.style.left = (firstIndentInitialValue + (value - initialValue)) + 'px';
                     let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                    startValue = documentEditor.layoutType === 'Continuous'? 0 : startValue;
-                    let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
+                    const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.left = indicatorLineValue + 'px';
                 }
             });
 
-            document.addEventListener("mouseup", () => {
+            document.addEventListener('mouseup', () => {
                 if (isDragging) {
                     isDragging = false;
                     let finalValue: number = HelperMethods.getNumberFromString(leftIndent.style.left);
-                    if (parseInt(leftIndent.style.left.replace('px', '')) < 0) {
+                    if (parseInt(leftIndent.style.left.replace('px', ''), 10) < 0) {
                         finalValue *= -1;
                     }
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
@@ -1694,7 +1817,7 @@ export class RulerHelper {
                         documentEditor.editorModule.applyRulerMarkerValues('leftIndent', initialValue, finalValue);
                     }
                     initialValue = finalValue;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.display = 'none';
                 }
             });
@@ -1711,7 +1834,7 @@ export class RulerHelper {
             };
             rightIndent = this.createHtmlElement('div', attributes);
             rightIndent.setAttribute('title', locale.getConstant('Right Indent'));
-            let rightIndentSvg: SVGElement;
+            // let rightIndentSvg: SVGElement;
 
             // Create an SVG element
             const attr: Object = {
@@ -1720,89 +1843,104 @@ export class RulerHelper {
                 height: '7px',
                 style: 'position:inherit;left:0px'
             };
-            rightIndentSvg = this.createSvgElement('svg', attr);
-            rightIndentSvg.setAttribute("fill", "none");
+            const rightIndentSvg: SVGElement = this.createSvgElement('svg', attr);
+            rightIndentSvg.setAttribute('fill', 'none');
             const pathattr: Object = {
                 style: 'position:inherit;left:0px'
             };
             // Create a path element inside the SVG
-            const pathElement = this.createSvgElement('path', pathattr);
-            pathElement.setAttribute("class", "e-de-ruler-indent-svg");
-            pathElement.setAttribute("d", "M 0.5 6.5 H 11.5 V 4.2872 L 6 1.5789 L 0.5 4.2872 V 6.5 Z");
-            pathElement.setAttribute("fill", "white");
-            pathElement.setAttribute("stroke", "#A1A1A1");
+            const pathElement: SVGElement = this.createSvgElement('path', pathattr);
+            pathElement.setAttribute('class', 'e-de-ruler-indent-svg');
+            pathElement.setAttribute('d', 'M 0.5 6.5 H 11.5 V 4.2872 L 6 1.5789 L 0.5 4.2872 V 6.5 Z');
+            pathElement.setAttribute('fill', 'white');
+            pathElement.setAttribute('stroke', '#A1A1A1');
             // Append the path element to the SVG element
             rightIndentSvg.appendChild(pathElement);
             rightIndent.appendChild(rightIndentSvg);
             hRuler.append(rightIndent);
-            rightIndent.addEventListener("dblclick", function (event) {
+            rightIndent.addEventListener('dblclick', function (event: MouseEvent): void {
                 documentEditor.showDialog('Paragraph');
                 event.stopPropagation();
             });
             //Draggable for left line Indent.
-            let isDragging = false;
+            let isDragging: boolean = false;
             let rightLineOffset: number;
             let initialValue: number = HelperMethods.getNumberFromString(rightIndent.style.left); // for mouse down event
-            let initialValue2: number = HelperMethods.getNumberFromString(rightIndent.style.left); // for mouse move event
-            rightIndent.addEventListener("mouseenter", (e) => {
+            const initialValue2: number = HelperMethods.getNumberFromString(rightIndent.style.left); // for mouse move event
+            rightIndent.addEventListener('mouseenter', (e: MouseEvent) => {
                 documentEditor.isOnIndent = true;
             });
-            rightIndent.addEventListener("mouseleave", (e) => {
+            rightIndent.addEventListener('mouseleave', (e: MouseEvent) => {
                 documentEditor.isOnIndent = false;
             });
-            rightIndent.addEventListener("mousedown", (e) => {
+            rightIndent.addEventListener('mousedown', (e: MouseEvent) => {
                 isDragging = true;
                 rightLineOffset = e.clientX - rightIndent.getBoundingClientRect().left;
                 initialValue = HelperMethods.getNumberFromString(rightIndent.style.left);
-                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(
+                    1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                 if (documentEditor.selectionModule.paragraphFormat.bidi) {
-                    rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                    rulerZeroPoint = HelperMethods.convertPointToPixel(
+                        1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                        (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin -
+                            documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                 }
                 if (documentEditor.layoutType === 'Continuous') {
                     rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
-                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
+                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                            20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                     }
                 }
-                let value: number = rulerZeroPoint + e.clientX - rightLineOffset - hRuler.getBoundingClientRect().left;
+                const value: number = rulerZeroPoint + e.clientX - rightLineOffset - hRuler.getBoundingClientRect().left;
                 let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                startValue = documentEditor.layoutType === 'Continuous'? 0 : startValue;
-                let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
+                const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                 lineSvg.style.left = indicatorLineValue + 'px';
                 lineSvg.style.display = 'block';
                 e.stopPropagation();
             });
 
-            document.addEventListener("mousemove", (e) => {
+            document.addEventListener('mousemove', (e: MouseEvent) => {
                 if (isDragging) {
                     let rulerZeroPoint: number;
                     let value: number;
-                    let leftIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_leftIndent');
-                    let firstLineIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_firstLineIndent');
+                    const leftIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_leftIndent');
+                    const firstLineIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_firstLineIndent');
                     let maxValue: number;
                     let minValue: number;
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
                         if (documentEditor.layoutType === 'Pages') {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 - documentEditor.selectionModule.sectionFormat.leftMargin -
+                                (documentEditor.selectionModule.sectionFormat.pageWidth -
+                                    documentEditor.selectionModule.sectionFormat.leftMargin -
+                                    documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         } else if (documentEditor.layoutType === 'Continuous') {
-                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
+                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor)
+                                - 20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                         }
                         value = rulerZeroPoint + e.clientX - rightLineOffset - hRuler.getBoundingClientRect().left;
-                        let nearestElement: HTMLElement = (HelperMethods.getNumberFromString(leftIndent.style.left) - value) <= (HelperMethods.getNumberFromString(firstLineIndent.style.left) - value) ? leftIndent : firstLineIndent;
-                        let indentValue: number = HelperMethods.getNumberFromString(nearestElement.style.left);
+                        const nearestElement: HTMLElement = (HelperMethods.getNumberFromString(
+                            leftIndent.style.left) - value) <= (HelperMethods.getNumberFromString(
+                            firstLineIndent.style.left) - value) ? leftIndent : firstLineIndent;
+                        const indentValue: number = HelperMethods.getNumberFromString(nearestElement.style.left);
                         maxValue = indentValue - (HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
                         minValue = rulerZeroPoint - 6;
                     } else {
                         if (documentEditor.layoutType === 'Pages') {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         } else if (documentEditor.layoutType === 'Continuous') {
                             rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                         }
                         value = rulerZeroPoint + e.clientX - rightLineOffset - hRuler.getBoundingClientRect().left;
-                        let nearestElement: HTMLElement = (value - HelperMethods.getNumberFromString(leftIndent.style.left)) <= (value - HelperMethods.getNumberFromString(firstLineIndent.style.left)) ? leftIndent : firstLineIndent;
-                        let indentValue: number = HelperMethods.getNumberFromString(nearestElement.style.left);
-                        maxValue = rulerZeroPoint + (documentEditor.documentHelper.currentPage.boundingRectangle.width * documentEditor.zoomFactor) - 6;
+                        const nearestElement: HTMLElement = (value - HelperMethods.getNumberFromString(leftIndent.style.left))
+                            <= (value - HelperMethods.getNumberFromString(firstLineIndent.style.left)) ? leftIndent : firstLineIndent;
+                        const indentValue: number = HelperMethods.getNumberFromString(nearestElement.style.left);
+                        maxValue = rulerZeroPoint + (documentEditor.documentHelper.currentPage.boundingRectangle.width
+                            * documentEditor.zoomFactor) - 6;
                         minValue = indentValue + (HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
                     }
                     if (value < minValue) {
@@ -1810,26 +1948,26 @@ export class RulerHelper {
                     } else if (value > maxValue) {
                         value = maxValue;
                     }
-                    rightIndent.style.left = value + "px";
+                    rightIndent.style.left = value + 'px';
                     let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                    startValue = documentEditor.layoutType === 'Continuous'? 0 : startValue;
-                    let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
+                    const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.left = indicatorLineValue + 'px';
                 }
             });
 
-            document.addEventListener("mouseup", () => {
+            document.addEventListener('mouseup', () => {
                 if (isDragging) {
                     isDragging = false;
-                    let finalValue: number = HelperMethods.getNumberFromString(rightIndent.style.left);
+                    const finalValue: number = HelperMethods.getNumberFromString(rightIndent.style.left);
                     if (documentEditor.selectionModule.paragraphFormat.bidi) {
                         documentEditor.editorModule.applyRulerMarkerValues('rightIndent', initialValue, finalValue);
                     } else {
                         documentEditor.editorModule.applyRulerMarkerValues('rightIndent', finalValue, initialValue);
                     }
                     initialValue = finalValue;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.display = 'none';
                 }
             });
@@ -1841,7 +1979,8 @@ export class RulerHelper {
      * updateRuler method
      *
      * @returns {void} updateRuler method.
-     * @param { DocumentEditor} documentEditor - provide the documentEditor  value.
+     * @param {DocumentEditor} documentEditor - provide the documentEditor  value.
+     * @param {boolean} rerenderRuler - provide the rerenderRuler  value.
      * @private
      */
     public updateRuler(documentEditor: DocumentEditor, rerenderRuler: boolean): void {
@@ -1875,10 +2014,10 @@ export class RulerHelper {
     }
 
 
-    private removeTableMarkers(documentEditor: DocumentEditor, ruler: Ruler) {
+    private removeTableMarkers(documentEditor: DocumentEditor, ruler: Ruler): void {
         const renderedTableMarkers: HTMLElement[] = HelperMethods.convertNodeListToArray(document.querySelectorAll('.e-de-ruler-table-marker'));
         if (!isNullOrUndefined(renderedTableMarkers)) {
-            for (var i = 0; i < renderedTableMarkers.length; i++) {
+            for (let i: number = 0; i < renderedTableMarkers.length; i++) {
                 const elementToRemove: HTMLElement = renderedTableMarkers[parseInt(i.toString(), 10)];
                 if (!isNullOrUndefined(elementToRemove)) {
                     elementToRemove.parentNode.removeChild(elementToRemove);
@@ -1905,26 +2044,29 @@ export class RulerHelper {
     private renderTableMarkers(documentEditor: DocumentEditor, ruler: Ruler): void {
         this.removeTableMarkers(documentEditor, documentEditor.hRuler);
         let intialPosition: number;
-        let tablewidget = ((this.position.paragraph.containerWidget as TableCellWidget).ownerTable as TableWidget);
-        let tableRowWidget = ((this.position.paragraph.associatedCell as TableCellWidget).ownerRow as TableRowWidget).clone();
-        let cellWidgets = tableRowWidget.childWidgets;
+        const tablewidget: TableWidget = ((this.position.paragraph.containerWidget as TableCellWidget).ownerTable as TableWidget);
+        const tableRowWidget: TableRowWidget = (
+            (this.position.paragraph.associatedCell as TableCellWidget).ownerRow as TableRowWidget).clone();
+        const cellWidgets: IWidget[] = tableRowWidget.childWidgets;
         let value: number = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi ? cellWidgets.length : 0;
         if (this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi) {
             cellWidgets.reverse();
         }
         let tableXPos: number;
-        let hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
-        for (let i = 0; i <= cellWidgets.length; i++) {
+        const hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
+        for (let i: number = 0; i <= cellWidgets.length; i++) {
             let tableMarker: HTMLElement = document.getElementById(documentEditor.element.id + '_tableMarker_' + value);
-            //if (!tableMarker) {   
+            //if (!tableMarker) {
             let margin: string;
-            if (i == 0) {
-                tableXPos = ((cellWidgets[parseInt(i.toString(), 10)] as TableCellWidget).x - (cellWidgets[parseInt(i.toString(), 10)] as TableCellWidget).margin.left) * documentEditor.zoomFactor + hRuler.scrollLeft;
+            if (i === 0) {
+                tableXPos = ((cellWidgets[parseInt(i.toString(), 10)] as TableCellWidget).x
+                    - (cellWidgets[parseInt(i.toString(), 10)] as TableCellWidget).margin.left)
+                    * documentEditor.zoomFactor + hRuler.scrollLeft;
                 margin = ('left:' + (tableXPos - 4) + 'px;');
             }
             else {
-                tableXPos = tableXPos + (((cellWidgets[i - 1] as TableCellWidget).width 
-                + (cellWidgets[i - 1] as TableCellWidget).margin.left 
+                tableXPos = tableXPos + (((cellWidgets[i - 1] as TableCellWidget).width
+                + (cellWidgets[i - 1] as TableCellWidget).margin.left
                 + (cellWidgets[i - 1] as TableCellWidget).margin.right) * documentEditor.zoomFactor);
                 margin = 'left:' + (tableXPos - 4) + 'px;';
             }
@@ -1950,7 +2092,7 @@ export class RulerHelper {
                 style: 'position:inherit;left:0px;'
             };
             // Create a path element inside the SVG
-            const pathElement = this.createSvgElement('path', pathattr);
+            const pathElement: SVGElement = this.createSvgElement('path', pathattr);
             pathElement.setAttribute('class', 'e-de-ruler-table-svg');
             pathElement.setAttribute('d', 'M1 1V0H2V1H3V0H4V1H5V0H6V1H7V2H6V3H7V4H6V5H7V6H6V7H7V8H0V7H1V6H0V5H1V4H0V3H1V2H0V1H1ZM2 2V3H3V2H2ZM4 2V3H5V2H4ZM5 4H4V5H5V4ZM5 6H4V7H5V6ZM3 7V6H2V7H3ZM2 5H3V4H2V5Z');
             pathElement.setAttribute('fill', '#A1A1A1');
@@ -1979,11 +2121,12 @@ export class RulerHelper {
                 const touchPoint: Point = documentEditor.viewer.findFocusedPage(cursorPoint, true, true);
                 let currentMarkerPostion: number;
                 if (e.currentTarget instanceof HTMLElement) {
-                    const parts = e.currentTarget.id.split('_');
-                    const value = parts[parts.length - 1];
-                    currentMarkerPostion = parseInt(value);
+                    const parts: string[] = e.currentTarget.id.split('_');
+                    const value: string = parts[parts.length - 1];
+                    currentMarkerPostion = parseInt(value, 10);
                 }
-                const tableWidget: TableWidget = ((documentEditor.selectionModule.end.paragraph.containerWidget as TableCellWidget).ownerTable as TableWidget)
+                const tableWidget: TableWidget = (
+                    (documentEditor.selectionModule.end.paragraph.containerWidget as TableCellWidget).ownerTable as TableWidget);
                 documentEditor.editorModule.tableResize.currentResizingTable = tableWidget;
                 documentEditor.editorModule.tableResize.resizeNode = 0;
                 documentEditor.editorModule.tableResize.resizerPosition = currentMarkerPostion;
@@ -1991,48 +2134,56 @@ export class RulerHelper {
                 documentEditor.editorModule.tableResize.startingPoint.y = touchPoint.y;
                 documentEditor.editorHistoryModule.initResizingHistory(touchPoint, documentEditor.editorModule.tableResize);
 
-                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
-                let value: number = rulerZeroPoint + e.clientX - tableMarkerOffset - hRuler.getBoundingClientRect().left;
-                let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                const rulerZeroPoint: number = HelperMethods.convertPointToPixel(
+                    1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                const value: number = rulerZeroPoint + e.clientX - tableMarkerOffset - hRuler.getBoundingClientRect().left;
+                const startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
+                const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                 lineSvg.style.left = (indicatorLineValue - 6) + 'px';
                 lineSvg.style.display = 'block';
             });
-            document.addEventListener("mousemove", (e) => {
+            document.addEventListener('mousemove', (e: MouseEvent) => {
                 if (documentEditor.isDestroyed || !documentEditor.documentEditorSettings.showRuler) {
                     return;
                 }
                 if (documentEditor.isTableMarkerDragging) {
-                    let hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
-                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                    const hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
+                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(
+                        1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                     if (documentEditor.selectionModule.end.paragraph.associatedCell.ownerTable.tableFormat.bidi) {
                         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
-                        const rulerMarginDivWidth = (rulerGeometry.width - (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor))));
+                        const rulerMarginDivWidth: number = (rulerGeometry.width - (HelperMethods.convertPointToPixel(
+                            (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor)
+                            + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin
+                                * documentEditor.zoomFactor))));
                         rulerZeroPoint -= rulerMarginDivWidth;
                     }
-                    let value: number = rulerZeroPoint + e.clientX - tableMarkerOffset - hRuler.getBoundingClientRect().left;
-                    tableMarker.style.left = value + "px";
+                    const value: number = rulerZeroPoint + e.clientX - tableMarkerOffset - hRuler.getBoundingClientRect().left;
+                    tableMarker.style.left = value + 'px';
 
-                    let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
-                    let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
+                    const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.left = (indicatorLineValue - 6) + 'px';
                 }
             });
-            document.addEventListener("mouseup", (e) => {
+            document.addEventListener('mouseup', (e: MouseEvent) => {
                 if (documentEditor.isDestroyed || !documentEditor.documentEditorSettings.showRuler) {
                     return;
                 }
                 if (documentEditor.isTableMarkerDragging) {
                     const cursorPoint: Point = new Point(e.clientX, e.clientY);
-                    let dragValue: number = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi ? (documentEditor.startXPosition - HelperMethods.convertPixelToPoint(e.clientX)) : (HelperMethods.convertPixelToPoint(e.clientX) - documentEditor.startXPosition);
+                    const dragValue: number = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi ?
+                        (documentEditor.startXPosition - HelperMethods.convertPixelToPoint(e.clientX))
+                        : (HelperMethods.convertPixelToPoint(e.clientX) - documentEditor.startXPosition);
                     documentEditor.editorModule.tableResize.handleResizing(cursorPoint, true, (dragValue / documentEditor.zoomFactor));
-                    documentEditor.editorModule.tableResize.updateResizingHistory(documentEditor.viewer.findFocusedPage(cursorPoint, true, true));
+                    documentEditor.editorModule.tableResize.updateResizingHistory(
+                        documentEditor.viewer.findFocusedPage(cursorPoint, true, true));
                     documentEditor.isTableMarkerDragging = false;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.display = 'none';
-                }        
+                }
             });
         }
     }
@@ -2041,14 +2192,14 @@ export class RulerHelper {
      * updateRulerDimension method \
      *
      * @returns {void} updateRulerDimension method .\
-     * @param { Diagram} diagram - provide the content  value.
-     * @param { Ruler} ruler - provide the content  value.
-     * @param { number} offset - provide the content  value.
-     * @param { boolean} isHorizontal - provide the content  value.
+     * @param {DocumentEditor} documentEditor - provide the documentEditor  value.
+     * @param {Ruler} ruler - provide the content  value.
+     * @param {number} offset - provide the content  value.
+     * @param {boolean} rerenderRuler - provide the rerenderRuler  value.
      * @private
      */
     private updateRulerDimension(documentEditor: DocumentEditor, ruler: Ruler, offset: number, rerenderRuler: boolean): void {
-        let isHorizontal: boolean = ruler.orientation === "Horizontal" ? true : false;
+        const isHorizontal: boolean = ruler.orientation === 'Horizontal' ? true : false;
         const rulerSize: Size = this.getRulerSize(documentEditor);
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
         //const documentEditorRuler: DocumentEditorRulerModel = isHorizontal ? documentEditor.documentEditorSettings.rulerSettings.horizontalRuler : documentEditor.documentEditorSettings.rulerSettings.verticalRuler;
@@ -2057,7 +2208,9 @@ export class RulerHelper {
         this.updateMargin(ruler, documentEditor, isHorizontal);
         // ruler.pageWidth = documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.width * documentEditor.zoomFactor;
         // ruler.pageHeight = documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.height * documentEditor.zoomFactor;
-        ruler.length = documentEditor.zoomFactor < 1 ? ((ruler.zeroPosition * 2) / documentEditor.zoomFactor) : ((ruler.zeroPosition * 2) * documentEditor.zoomFactor);
+        ruler.length = documentEditor.zoomFactor < 1 ?
+            ((ruler.zeroPosition * 2) / documentEditor.zoomFactor)
+            : ((ruler.zeroPosition * 2) * documentEditor.zoomFactor);
         const rulerObj: HTMLElement = ruler.element;
         if (isHorizontal) {
             rulerObj.style.marginLeft = (documentEditor.layoutType === 'Pages' ? documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x : 0) + 'px';
@@ -2069,7 +2222,9 @@ export class RulerHelper {
             ruler.offset = offset;
             ruler.scale = documentEditor.zoomFactor;
             // if (documentEditor.layoutType === 'Pages') {
-                ruler.length = documentEditor.zoomFactor < 1 ? ((ruler.zeroPosition * 2) / documentEditor.zoomFactor) : ((ruler.zeroPosition * 2) * documentEditor.zoomFactor);
+            ruler.length = documentEditor.zoomFactor < 1 ?
+                ((ruler.zeroPosition * 2) / documentEditor.zoomFactor)
+                : ((ruler.zeroPosition * 2) * documentEditor.zoomFactor);
             // } else if (documentEditor.layoutType === 'Continuous') {
             //     ruler.length = (ruler.zeroPosition * 2) / documentEditor.zoomFactor;
             // }
@@ -2077,33 +2232,37 @@ export class RulerHelper {
         }
         if (isHorizontal) {
             if (documentEditor.layoutType === 'Pages') {
-                let paraBidi: boolean = this.position.paragraph.paragraphFormat.bidi;
+                const paraBidi: boolean = this.position.paragraph.paragraphFormat.bidi;
                 let tableBidi: boolean = false;
                 if (this.position.paragraph.isInsideTable) {
                     tableBidi = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi;
                 }
                 if (paraBidi || tableBidi) {
-                    const rulerMarginDivWidth = (rulerGeometry.width - (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor))));
+                    const rulerMarginDivWidth: number = (rulerGeometry.width - (HelperMethods.convertPointToPixel(
+                        (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor))));
                     rulerObj.scrollLeft = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - rulerMarginDivWidth;
                 } else {
-                    rulerObj.scrollLeft = (ruler.zeroPosition - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin)) * documentEditor.zoomFactor;
+                    rulerObj.scrollLeft = (ruler.zeroPosition - HelperMethods.convertPointToPixel(
+                        documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin)) * documentEditor.zoomFactor;
                 }
             } else {
-                let paraBidi: boolean = this.position.paragraph.paragraphFormat.bidi;
+                const paraBidi: boolean = this.position.paragraph.paragraphFormat.bidi;
                 let tableBidi: boolean = false;
                 if (this.position.paragraph.isInsideTable) {
                     tableBidi = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi;
                 }
                 if (paraBidi || tableBidi) {
                     // const rulerMarginDivWidth = (rulerGeometry.width - 40);
-                    rulerObj.scrollLeft = ((ruler.zeroPosition - documentEditor.viewer.clientActiveArea.width) * documentEditor.zoomFactor) - 20;
+                    rulerObj.scrollLeft = ((ruler.zeroPosition - documentEditor.viewer.clientActiveArea.width)
+                        * documentEditor.zoomFactor) - 20;
                 } else {
                     // 20 is set approximately to the web layout.
                     rulerObj.scrollLeft = (ruler.zeroPosition * documentEditor.zoomFactor) - 20;
                 }
             }
         } else {
-            rulerObj.scrollTop = (ruler.zeroPosition - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin)) * documentEditor.zoomFactor;
+            rulerObj.scrollTop = (ruler.zeroPosition - HelperMethods.convertPointToPixel(
+                documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin)) * documentEditor.zoomFactor;
         }
     }
 
@@ -2111,13 +2270,14 @@ export class RulerHelper {
     /**
      * updateRulerSpace method \
      *
-     * @returns {void} updateRulerSpace method .\
-     * @param { Diagram} diagram - provide the content  value.
-     * @param { Size} rulerGeometry - provide the content  value.
-     * @param { boolean} isHorizontal - provide the content  value.
+     * @returns {void} updateRulerDiv method .\
+     * @param {DocumentEditor} documentEditor - provide the documentEditor  value.
+     * @param {Size} rulerGeometry - provide the content  value.
+     * @param {boolean} isHorizontal - provide the content  value.
+     * @param {Ruler} ruler - provide the ruler  value.
      * @private
      */
-    private updateRulerSpace(documentEditor: DocumentEditor, rulerGeometry: Size, isHorizontal: Boolean, ruler: Ruler): void {
+    private updateRulerSpace(documentEditor: DocumentEditor, rulerGeometry: Size, isHorizontal: boolean, ruler: Ruler): void {
         const div: HTMLElement = document.getElementById(documentEditor.element.id + (isHorizontal ? '_hRuler_ruler_space' : '_vRuler_ruler_space'));
         if (div && documentEditor && rulerGeometry) {
             div.style.width = (isHorizontal ? (rulerGeometry.width + (ruler.segmentWidth * 2)) : ruler.thickness) + 'px';
@@ -2130,9 +2290,10 @@ export class RulerHelper {
      * updateRulerDiv method \
      *
      * @returns {void} updateRulerDiv method .\
-     * @param { Diagram} diagram - provide the content  value.
-     * @param { Size} rulerGeometry - provide the content  value.
-     * @param { boolean} isHorizontal - provide the content  value.
+     * @param {DocumentEditor} documentEditor - provide the documentEditor  value.
+     * @param {Size} rulerGeometry - provide the content  value.
+     * @param {boolean} isHorizontal - provide the content  value.
+     * @param {Ruler} ruler - provide the ruler  value.
      * @private
      */
     public updateRulerDiv(documentEditor: DocumentEditor, rulerGeometry: Size, isHorizontal: boolean, ruler: Ruler): void {
@@ -2156,7 +2317,7 @@ export class RulerHelper {
         // let vRulerDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler');
         // if (vRulerDiv) {
         //     vRulerDiv.style.width = ruler.thickness + 'px';
-        //     vRulerDiv.style.height =  rulerGeometry.height + 'px';                  
+        //     vRulerDiv.style.height =  rulerGeometry.height + 'px';
         // }
     }
 
@@ -2169,14 +2330,17 @@ export class RulerHelper {
      */
     private getRulerGeometry(documentEditor: DocumentEditor): Size {
         const rulerSize: Size = this.getRulerSize(documentEditor);
-        let height: number = (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.height * documentEditor.zoomFactor);
-        let width: number = (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.width * documentEditor.zoomFactor);
+        const height: number = (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.height
+            * documentEditor.zoomFactor);
+        const width: number = (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.width
+            * documentEditor.zoomFactor);
         return new Size(width, height);
     }
 
     private getVerticalHeight(documentEditor: DocumentEditor): number {
-        let pageheight: number = HelperMethods.convertPixelToPoint(documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.height);
-        let containerHeight: number = documentEditor.element.getBoundingClientRect().height;
+        const pageheight: number = HelperMethods.convertPixelToPoint(
+            documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.height);
+        const containerHeight: number = documentEditor.element.getBoundingClientRect().height;
         if (pageheight < containerHeight) {
             return pageheight;
         } else {
@@ -2184,254 +2348,272 @@ export class RulerHelper {
         }
     }
 
-    public renderTab(documentEditor: DocumentEditor, rulerSize: Size, tabStop: WTabStop, tabJustification: TabJustification, i: number, locale?: L10n): void {
-        let hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
-        let zoomFactor: number = documentEditor.documentHelper.zoomFactor;
+    public renderTab(documentEditor: DocumentEditor, rulerSize: Size, tabStop: WTabStop, tabJustification: TabJustification,
+                     i: number, locale?: L10n): void {
+        const hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
+        const zoomFactor: number = documentEditor.documentHelper.zoomFactor;
         let value: number;
         switch (tabJustification) {
-            case 'Left':
-                let leftTab: HTMLElement = document.getElementById(documentEditor.element.id + '_LeftTab' + '_' + i);
-                if (!leftTab) {
-                    let style: string = '';
-                    if (!isNullOrUndefined(tabStop)) {
-                        value = this.position.paragraph.paragraphFormat.bidi ? (HelperMethods.convertPointToPixel(1584 - tabStop.position)) : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
-                        const margin: string = ('left:' + ((value - 1.5) * zoomFactor) + 'px;');
-                        style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
-                    }
-                    const attributes: Object = {
-                        'id': documentEditor.element.id + '_LeftTab' + '_' + i,
-                        'class': 'e-de-ruler-tab e-de-ruler-tab-left',
-                        style: style,
-                        'data-name': 'LeftTab'
-                    };
-                    leftTab = this.createHtmlElement('div', attributes);
-                    leftTab.setAttribute('title', locale.getConstant('Left Tab'));
-                    let svg: SVGElement;
-                    // Create an SVG element
-                    const attr: Object = {
-                        'id': documentEditor.element.id + '_leftTab_svg',
-                        width: rulerSize.width / 2 + 'px',
-                        height: rulerSize.height / 2 + 'px',
-                        style: 'position:inherit;left:0px'
-                    };
-                    svg = this.createSvgElement('svg', attr);
-                    svg.setAttribute("fill", "none");
-                    const pathattr: Object = {
-                        style: 'position:inherit;left:0px'
-                    };
+        case 'Left': {
+            let leftTab: HTMLElement = document.getElementById(documentEditor.element.id + '_LeftTab' + '_' + i);
+            if (!leftTab) {
+                let style: string = '';
+                if (!isNullOrUndefined(tabStop)) {
+                    value = this.position.paragraph.paragraphFormat.bidi ?
+                        (HelperMethods.convertPointToPixel(1584 - tabStop.position))
+                        : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
+                    const margin: string = ('left:' + ((value - 1.5) * zoomFactor) + 'px;');
+                    style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
+                }
+                const attributes: Object = {
+                    'id': documentEditor.element.id + '_LeftTab' + '_' + i,
+                    'class': 'e-de-ruler-tab e-de-ruler-tab-left',
+                    style: style,
+                    'data-name': 'LeftTab'
+                };
+                leftTab = this.createHtmlElement('div', attributes);
+                leftTab.setAttribute('title', locale.getConstant('Left Tab'));
+                // let svg: SVGElement;
+                // Create an SVG element
+                const attr: Object = {
+                    'id': documentEditor.element.id + '_leftTab_svg',
+                    width: rulerSize.width / 2 + 'px',
+                    height: rulerSize.height / 2 + 'px',
+                    style: 'position:inherit;left:0px'
+                };
+                const svg: SVGElement = this.createSvgElement('svg', attr);
+                svg.setAttribute('fill', 'none');
+                const pathattr: Object = {
+                    style: 'position:inherit;left:0px'
+                };
                     // Create a path element inside the SVG
-                    const pathElement = this.createSvgElement('path', pathattr);
-                    pathElement.setAttribute("class", "e-de-ruler-tab-svg");
-                    pathElement.setAttribute("d", "M3 5H7V7H1V1H3V5Z");
-                    pathElement.setAttribute("fill", "#605E5C");
-                    pathElement.setAttribute("stroke", "#A1A1A1");
-                    // Append the path element to the SVG element
-                    svg.appendChild(pathElement);
-                    leftTab.appendChild(svg);
-                    hRuler.append(leftTab);
+                const pathElement: SVGElement = this.createSvgElement('path', pathattr);
+                pathElement.setAttribute('class', 'e-de-ruler-tab-svg');
+                pathElement.setAttribute('d', 'M3 5H7V7H1V1H3V5Z');
+                pathElement.setAttribute('fill', '#605E5C');
+                pathElement.setAttribute('stroke', '#A1A1A1');
+                // Append the path element to the SVG element
+                svg.appendChild(pathElement);
+                leftTab.appendChild(svg);
+                hRuler.append(leftTab);
+            }
+            break;
+        }
+        case 'Center': {
+            let centerTab: HTMLElement = document.getElementById(documentEditor.element.id + '_CenterTab' + '_' + i);
+            if (!centerTab) {
+                let style: string = '';
+                if (!isNullOrUndefined(tabStop)) {
+                    value = this.position.paragraph.paragraphFormat.bidi ?
+                        (HelperMethods.convertPointToPixel(1584 - tabStop.position))
+                        : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
+                    const margin: string = ('left:' + ((value - 4) * zoomFactor) + 'px;');
+                    style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
                 }
-                break;
-            case 'Center':
-                let centerTab: HTMLElement = document.getElementById(documentEditor.element.id + '_CenterTab' + '_' + i);
-                if (!centerTab) {
-                    let style: string = '';
-                    if (!isNullOrUndefined(tabStop)) {
-                        value = this.position.paragraph.paragraphFormat.bidi ? (HelperMethods.convertPointToPixel(1584 - tabStop.position)) : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
-                        const margin: string = ('left:' + ((value - 4) * zoomFactor) + 'px;');
-                        style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
-                    }
-                    const attributes: Object = {
-                        'id': documentEditor.element.id + '_CenterTab' + '_' + i,
-                        'class': 'e-de-ruler-tab e-de-ruler-tab-center',
-                        style: style,
-                        'data-name': 'CenterTab'
-                    };
-                    centerTab = this.createHtmlElement('div', attributes);
-                    centerTab.setAttribute('title', locale.getConstant('Center Tab'));
-                    let svg: SVGElement;
-                    // Create an SVG element
-                    const attr: Object = {
-                        'id': documentEditor.element.id + '_centerTab_svg',
-                        width: rulerSize.width / 2 + 'px',
-                        height: rulerSize.height / 2 + 'px',
-                        style: 'position:inherit;left:0px'
-                    };
-                    svg = this.createSvgElement('svg', attr);
-                    svg.setAttribute("fill", "none");
-                    const pathattr: Object = {
-                        style: 'position:inherit;left:0px'
-                    };
+                const attributes: Object = {
+                    'id': documentEditor.element.id + '_CenterTab' + '_' + i,
+                    'class': 'e-de-ruler-tab e-de-ruler-tab-center',
+                    style: style,
+                    'data-name': 'CenterTab'
+                };
+                centerTab = this.createHtmlElement('div', attributes);
+                centerTab.setAttribute('title', locale.getConstant('Center Tab'));
+                // let svg: SVGElement;
+                // Create an SVG element
+                const attr: Object = {
+                    'id': documentEditor.element.id + '_centerTab_svg',
+                    width: rulerSize.width / 2 + 'px',
+                    height: rulerSize.height / 2 + 'px',
+                    style: 'position:inherit;left:0px'
+                };
+                const svg: SVGElement = this.createSvgElement('svg', attr);
+                svg.setAttribute('fill', 'none');
+                const pathattr: Object = {
+                    style: 'position:inherit;left:0px'
+                };
                     // Create a path element inside the SVG
-                    const pathElement = this.createSvgElement('path', pathattr);
-                    pathElement.setAttribute("class", "e-de-ruler-tab-svg");
-                    pathElement.setAttribute("d", "M5 5H8V7H0V5H3V1H5V5Z");
-                    pathElement.setAttribute("fill", "#605E5C");
-                    pathElement.setAttribute("stroke", "#A1A1A1");
-                    // Append the path element to the SVG element
-                    svg.appendChild(pathElement);
-                    centerTab.appendChild(svg);
-                    hRuler.append(centerTab);
+                const pathElement: SVGElement = this.createSvgElement('path', pathattr);
+                pathElement.setAttribute('class', 'e-de-ruler-tab-svg');
+                pathElement.setAttribute('d', 'M5 5H8V7H0V5H3V1H5V5Z');
+                pathElement.setAttribute('fill', '#605E5C');
+                pathElement.setAttribute('stroke', '#A1A1A1');
+                // Append the path element to the SVG element
+                svg.appendChild(pathElement);
+                centerTab.appendChild(svg);
+                hRuler.append(centerTab);
+            }
+            break;
+        }
+        case 'Right': {
+            let rightTab: HTMLElement = document.getElementById(documentEditor.element.id + '_RightTab' + '_' + i);
+            if (!rightTab) {
+                let style: string = '';
+                if (!isNullOrUndefined(tabStop)) {
+                    value = this.position.paragraph.paragraphFormat.bidi ?
+                        (HelperMethods.convertPointToPixel(1584 - tabStop.position))
+                        : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
+                    const margin: string = ('left:' + ((value - 5.5) * zoomFactor) + 'px;');
+                    style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
                 }
-                break;
-            case 'Right':
-                let rightTab: HTMLElement = document.getElementById(documentEditor.element.id + '_RightTab' + '_' + i);
-                if (!rightTab) {
-                    let style: string = '';
-                    if (!isNullOrUndefined(tabStop)) {
-                        value = this.position.paragraph.paragraphFormat.bidi ? (HelperMethods.convertPointToPixel(1584 - tabStop.position)) : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
-                        const margin: string = ('left:' + ((value - 5.5) * zoomFactor) + 'px;');
-                        style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
-                    }
-                    const attributes: Object = {
-                        'id': documentEditor.element.id + '_RightTab' + '_' + i,
-                        'class': 'e-de-ruler-tab e-de-ruler-tab-right',
-                        style: style,
-                        'data-name': 'RightTab'
-                    };
-                    rightTab = this.createHtmlElement('div', attributes);
-                    rightTab.setAttribute('title', locale.getConstant('Right Tab'));
-                    let svg: SVGElement;
-                    // Create an SVG element
-                    const attr: Object = {
-                        'id': documentEditor.element.id + '_rightTab_svg',
-                        width: rulerSize.width / 2 + 'px',
-                        height: rulerSize.height / 2 + 'px',
-                        style: 'position:inherit;left:0px'
-                    };
-                    svg = this.createSvgElement('svg', attr);
-                    svg.setAttribute("fill", "none");
-                    const pathattr: Object = {
-                        style: 'position:inherit;left:0px'
-                    };
+                const attributes: Object = {
+                    'id': documentEditor.element.id + '_RightTab' + '_' + i,
+                    'class': 'e-de-ruler-tab e-de-ruler-tab-right',
+                    style: style,
+                    'data-name': 'RightTab'
+                };
+                rightTab = this.createHtmlElement('div', attributes);
+                rightTab.setAttribute('title', locale.getConstant('Right Tab'));
+                // let svg: SVGElement;
+                // Create an SVG element
+                const attr: Object = {
+                    'id': documentEditor.element.id + '_rightTab_svg',
+                    width: rulerSize.width / 2 + 'px',
+                    height: rulerSize.height / 2 + 'px',
+                    style: 'position:inherit;left:0px'
+                };
+                const svg: SVGElement = this.createSvgElement('svg', attr);
+                svg.setAttribute('fill', 'none');
+                const pathattr: Object = {
+                    style: 'position:inherit;left:0px'
+                };
                     // Create a path element inside the SVG
-                    const pathElement = this.createSvgElement('path', pathattr);
-                    pathElement.setAttribute("class", "e-de-ruler-tab-svg");
-                    pathElement.setAttribute("d", "M5 5V1H7V7H1V5H5Z");
-                    pathElement.setAttribute("fill", "#605E5C");
-                    pathElement.setAttribute("stroke", "#A1A1A1");
-                    // Append the path element to the SVG element
-                    svg.appendChild(pathElement);
-                    rightTab.appendChild(svg);
-                    hRuler.append(rightTab);
+                const pathElement: SVGElement = this.createSvgElement('path', pathattr);
+                pathElement.setAttribute('class', 'e-de-ruler-tab-svg');
+                pathElement.setAttribute('d', 'M5 5V1H7V7H1V5H5Z');
+                pathElement.setAttribute('fill', '#605E5C');
+                pathElement.setAttribute('stroke', '#A1A1A1');
+                // Append the path element to the SVG element
+                svg.appendChild(pathElement);
+                rightTab.appendChild(svg);
+                hRuler.append(rightTab);
+            }
+            break;
+        }
+        case 'Decimal': {
+            let decimalTab: HTMLElement = document.getElementById(documentEditor.element.id + '_DecimalTab' + '_' + i);
+            if (!decimalTab) {
+                let style: string = '';
+                if (!isNullOrUndefined(tabStop)) {
+                    value = this.position.paragraph.paragraphFormat.bidi ?
+                        (HelperMethods.convertPointToPixel(1584 - tabStop.position))
+                        : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
+                    const margin: string = ('left:' + ((value * zoomFactor) - 4) + 'px;');
+                    style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
                 }
-                break;
-            case 'Decimal':
-                let decimalTab: HTMLElement = document.getElementById(documentEditor.element.id + '_DecimalTab' + '_' + i);
-                if (!decimalTab) {
-                    let style: string = '';
-                    if (!isNullOrUndefined(tabStop)) {
-                        value = this.position.paragraph.paragraphFormat.bidi ? (HelperMethods.convertPointToPixel(1584 - tabStop.position)) : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
-                        const margin: string = ('left:' + ((value * zoomFactor) - 4) + 'px;');
-                        style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
-                    }
-                    const attributes: Object = {
-                        'id': documentEditor.element.id + '_DecimalTab' + '_' + i,
-                        'class': 'e-de-ruler-tab e-de-ruler-tab-decimal',
-                        style: style,
-                        'data-name': 'DecimalTab'
-                    };
-                    decimalTab = this.createHtmlElement('div', attributes);
-                    decimalTab.setAttribute('title', locale.getConstant('Decimal Tab'));
-                    let svg: SVGElement;
-                    // Create an SVG element
-                    const attr: Object = {
-                        'id': documentEditor.element.id + '_decimalTab_svg',
-                        width: rulerSize.width / 2 + 'px',
-                        height: rulerSize.height / 2 + 'px',
-                        style: 'position:inherit;left:0px'
-                    };
-                    svg = this.createSvgElement('svg', attr);
-                    svg.setAttribute("fill", "none");
-                    const pathattr: Object = {
-                        style: 'position:inherit;left:0px'
-                    };
+                const attributes: Object = {
+                    'id': documentEditor.element.id + '_DecimalTab' + '_' + i,
+                    'class': 'e-de-ruler-tab e-de-ruler-tab-decimal',
+                    style: style,
+                    'data-name': 'DecimalTab'
+                };
+                decimalTab = this.createHtmlElement('div', attributes);
+                decimalTab.setAttribute('title', locale.getConstant('Decimal Tab'));
+                // const svg: SVGElement;
+                // Create an SVG element
+                const attr: Object = {
+                    'id': documentEditor.element.id + '_decimalTab_svg',
+                    width: rulerSize.width / 2 + 'px',
+                    height: rulerSize.height / 2 + 'px',
+                    style: 'position:inherit;left:0px'
+                };
+                const svg: SVGElement = this.createSvgElement('svg', attr);
+                svg.setAttribute('fill', 'none');
+                const pathattr: Object = {
+                    style: 'position:inherit;left:0px'
+                };
                     // Create a path element inside the SVG
-                    const pathElement = this.createSvgElement('path', pathattr);
-                    pathElement.setAttribute("class", "e-de-ruler-tab-svg");
-                    pathElement.setAttribute("d", "M6 0H4V6H0V8H4H6H10V6H6V0Z");
-                    pathElement.setAttribute("fill", "#605E5C");
-                    pathElement.setAttribute("clip-rule", "evenodd");
-                    pathElement.setAttribute("fill-rule", "evenodd");
-                    pathElement.setAttribute("stroke", "#A1A1A1");
-                    // Append the path element to the SVG element
-                    svg.appendChild(pathElement);
-                    decimalTab.appendChild(svg);
-                    hRuler.append(decimalTab);
+                const pathElement: SVGElement = this.createSvgElement('path', pathattr);
+                pathElement.setAttribute('class', 'e-de-ruler-tab-svg');
+                pathElement.setAttribute('d', 'M6 0H4V6H0V8H4H6H10V6H6V0Z');
+                pathElement.setAttribute('fill', '#605E5C');
+                pathElement.setAttribute('clip-rule', 'evenodd');
+                pathElement.setAttribute('fill-rule', 'evenodd');
+                pathElement.setAttribute('stroke', '#A1A1A1');
+                // Append the path element to the SVG element
+                svg.appendChild(pathElement);
+                decimalTab.appendChild(svg);
+                hRuler.append(decimalTab);
+            }
+            break;
+        }
+        case 'Bar': {
+            let barTab: HTMLElement = document.getElementById(documentEditor.element.id + '_BarTab' + '_' + i);
+            if (!barTab) {
+                let style: string = '';
+                if (!isNullOrUndefined(tabStop)) {
+                    value = this.position.paragraph.paragraphFormat.bidi ?
+                        (HelperMethods.convertPointToPixel(1584 - tabStop.position))
+                        : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
+                    const margin: string = ('left:' + ((value - 1.5) * zoomFactor) + 'px;');
+                    style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
                 }
-                break;
-            case 'Bar':
-                let barTab: HTMLElement = document.getElementById(documentEditor.element.id + '_BarTab' + '_' + i);
-                if (!barTab) {
-                    let style: string = '';
-                    if (!isNullOrUndefined(tabStop)) {
-                        value = this.position.paragraph.paragraphFormat.bidi ? (HelperMethods.convertPointToPixel(1584 - tabStop.position)) : (HelperMethods.convertPointToPixel(1584 + tabStop.position));
-                        const margin: string = ('left:' + ((value - 1.5) * zoomFactor) + 'px;');
-                        style = 'height:9px;overflow:hidden;top:7px;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
-                    }
-                    const attributes: Object = {
-                        'id': documentEditor.element.id + '_BarTab' + '_' + i,
-                        'class': 'e-de-ruler-tab e-de-ruler-tab-bar',
-                        style: style,
-                        'data-name': 'BarTab'
-                    };
-                    barTab = this.createHtmlElement('div', attributes);
-                    barTab.setAttribute('title', locale.getConstant('Bar Tab'));
-                    let svg: SVGElement;
-                    // Create an SVG element
-                    const attr: Object = {
-                        'id': documentEditor.element.id + '_barTab_svg',
-                        width: rulerSize.width / 2 + 'px',
-                        height: rulerSize.height / 2 + 'px',
-                        style: 'position:inherit;left:0px'
-                    };
-                    svg = this.createSvgElement('svg', attr);
-                    svg.setAttribute("fill", "none");
-                    const rectAttr: Object = {
-                        style: 'position:inherit;left:0px'
-                    };
-                    const rect = this.createSvgElement('rect', rectAttr);
-                    rect.setAttribute("width", "2");
-                    rect.setAttribute("height", "8");
-                    rect.setAttribute("fill", "#605E5C");
-                    rect.setAttribute("stroke", "#A1A1A1");
-                    // Append the path element to the SVG element
-                    svg.appendChild(rect);
-                    barTab.appendChild(svg);
-                    hRuler.append(barTab);
-                }
-                break;
+                const attributes: Object = {
+                    'id': documentEditor.element.id + '_BarTab' + '_' + i,
+                    'class': 'e-de-ruler-tab e-de-ruler-tab-bar',
+                    style: style,
+                    'data-name': 'BarTab'
+                };
+                barTab = this.createHtmlElement('div', attributes);
+                barTab.setAttribute('title', locale.getConstant('Bar Tab'));
+                // const svg: SVGElement;
+                // Create an SVG element
+                const attr: Object = {
+                    'id': documentEditor.element.id + '_barTab_svg',
+                    width: rulerSize.width / 2 + 'px',
+                    height: rulerSize.height / 2 + 'px',
+                    style: 'position:inherit;left:0px'
+                };
+                const svg: SVGElement = this.createSvgElement('svg', attr);
+                svg.setAttribute('fill', 'none');
+                const rectAttr: Object = {
+                    style: 'position:inherit;left:0px'
+                };
+                const rect: SVGElement = this.createSvgElement('rect', rectAttr);
+                rect.setAttribute('width', '2');
+                rect.setAttribute('height', '8');
+                rect.setAttribute('fill', '#605E5C');
+                rect.setAttribute('stroke', '#A1A1A1');
+                // Append the path element to the SVG element
+                svg.appendChild(rect);
+                barTab.appendChild(svg);
+                hRuler.append(barTab);
+            }
+            break;
+        }
         }
         if (!isNullOrUndefined(tabStop)) {
-            let tabStopElement: HTMLElement = document.getElementById(documentEditor.element.id + '_' + tabJustification + 'Tab' + '_' + i);
+            const tabStopElement: HTMLElement = document.getElementById(documentEditor.element.id + '_' + tabJustification + 'Tab' + '_' + i);
             if (!isNullOrUndefined(tabStop)) {
-                tabStopElement.addEventListener("dblclick", function (event) {
+                tabStopElement.addEventListener('dblclick', function (event: MouseEvent): void {
                     documentEditor.showTabDialog();
                     event.stopPropagation();
                 });
             }
             //Draggable for tab stop.
-            let isDragging = false;
+            let isDragging: boolean = false;
             let tabStopOffset: number;
             let initialValue: number = HelperMethods.getNumberFromString(tabStopElement.style.left); // for mouse up event
-            let initialValue2: number = HelperMethods.getNumberFromString(tabStopElement.style.left); // for mouse move event
-            let justification: string = tabStopElement.getAttribute('data-name');
-            let currrentParagraph: ParagraphWidget = this.position.paragraph;
+            const initialValue2: number = HelperMethods.getNumberFromString(tabStopElement.style.left); // for mouse move event
+            const justification: string = tabStopElement.getAttribute('data-name');
+            const currrentParagraph: ParagraphWidget = this.position.paragraph;
             let tabIndex: number = 0;
             let currentTabStop: WTabStop = undefined;
-            tabStopElement.addEventListener("mousedown", (e) => {
+            tabStopElement.addEventListener('mousedown', (e: MouseEvent) => {
                 e.stopPropagation();
                 isDragging = true;
                 tabStopOffset = e.clientX - tabStopElement.getBoundingClientRect().left;
                 initialValue = HelperMethods.getNumberFromString(tabStopElement.style.left);
-                tabIndex = parseInt(tabStopElement.id.split('_')[tabStopElement.id.split('_').length - 1]);
+                tabIndex = parseInt(tabStopElement.id.split('_')[tabStopElement.id.split('_').length - 1], 10);
                 currentTabStop = currrentParagraph.paragraphFormat.tabs[parseInt(tabIndex.toString(), 10)];
                 this.currentTabStopElement = tabStopElement;
-                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin)
-                 * documentEditor.zoomFactor;
+                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(
+                    1584 - documentEditor.selectionModule.sectionFormat.leftMargin)
+                    * documentEditor.zoomFactor;
                 if (documentEditor.layoutType === 'Continuous') {
                     rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                     if (this.position.paragraph.paragraphFormat.bidi) {
-                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
+                        rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor)
+                            - 20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                     }
                 }
                 const value: number = rulerZeroPoint + e.clientX - tabStopOffset - hRuler.getBoundingClientRect().left;
@@ -2454,13 +2636,16 @@ export class RulerHelper {
                     if (documentEditor.layoutType === 'Continuous') {
                         rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                         if (this.position.paragraph.paragraphFormat.bidi) {
-                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
+                            rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) -
+                            20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                         }
                     } else if (documentEditor.layoutType === 'Pages') {
                         rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin)
                             * documentEditor.zoomFactor;
                         if (this.position.paragraph.bidi) {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 + documentEditor.selectionModule.sectionFormat.rightMargin - documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(
+                                1584 + documentEditor.selectionModule.sectionFormat.rightMargin
+                                - documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor;
                         }
                     }
                     let value: number = rulerZeroPoint + e.clientX - tabStopOffset - hRuler.getBoundingClientRect().left;
@@ -2492,15 +2677,15 @@ export class RulerHelper {
                     tabStopElement.style.left = value + 'px';
                     let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
                     startValue = documentEditor.layoutType === 'Continuous' ? 0 : startValue;
-                    let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.left = indicatorLineValue + 'px';
                 }
             });
 
-            document.addEventListener("mouseup", () => {
+            document.addEventListener('mouseup', () => {
                 if (isDragging && !isNullOrUndefined(currentTabStop)) {
-                    if (!isNullOrUndefined(this.currentTabStopElement) && this.currentTabStopElement.style.display == 'none') {
+                    if (!isNullOrUndefined(this.currentTabStopElement) && this.currentTabStopElement.style.display === 'none') {
                         documentEditor.editorModule.removeTabStops([currrentParagraph], [currentTabStop]);
                         this.currentTabStopElement.parentNode.removeChild(this.currentTabStopElement);
                     } else {
@@ -2508,13 +2693,13 @@ export class RulerHelper {
                         initialValue = finalValue;
                         documentEditor.editorModule.removeTabStops([currrentParagraph], [currentTabStop]);
                         finalValue = HelperMethods.convertPixelToPoint(finalValue / documentEditor.zoomFactor) - 1584;
-                        finalValue = currrentParagraph.paragraphFormat.bidi? finalValue * -1 : finalValue;
+                        finalValue = currrentParagraph.paragraphFormat.bidi ? finalValue * -1 : finalValue;
                         currentTabStop.position = finalValue;
                         documentEditor.editorModule.updateTabStopCollection(currrentParagraph, [currentTabStop]);
                     }
                     this.updateTabStopMarkers(documentEditor);
                     isDragging = false;
-                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    const lineSvg: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
                     lineSvg.style.display = 'none';
                     this.currentTabStopElement = undefined;
                 }
@@ -2536,27 +2721,27 @@ export class RulerHelper {
 
     public getTabJustification(dataNameValue: string): TabJustification {
         switch (dataNameValue) {
-            case 'LeftTab':
-                return 'Left';
-            case 'CenterTab':
-                return 'Center';
-            case 'RightTab':
-                return 'Right';
-            case 'DecimalTab':
-                return 'Decimal';
-            case 'BarTab':
-                return 'Bar';
+        case 'LeftTab':
+            return 'Left';
+        case 'CenterTab':
+            return 'Center';
+        case 'RightTab':
+            return 'Right';
+        case 'DecimalTab':
+            return 'Decimal';
+        case 'BarTab':
+            return 'Bar';
         }
         return 'Left';
     }
 
     /**
- * getRulerSize method \
- *
- * @returns {void} getRulerSize method .\
- * @param { DocumentEditor} documentEditor - provide the documentEditor  value.
- * @private
- */
+     * getRulerSize method \
+     *
+     * @returns {void} getRulerSize method .\
+     * @param { DocumentEditor} documentEditor - provide the documentEditor  value.
+     * @private
+     */
     public getRulerSize(documentEditor: DocumentEditor): Size {
         let top: number = 0;
         let left: number = 0;

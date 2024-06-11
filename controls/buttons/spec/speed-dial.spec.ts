@@ -2,16 +2,17 @@
 
 import { append, createElement, enableRipple, EventHandler, isNullOrUndefined, remove } from "@syncfusion/ej2-base";
 import { FabPosition } from "../src/floating-action-button/index";
-import { SpeedDial, SpeedDialItemModel, SpeedDialAnimationSettingsModel } from "../src/speed-dial/index";
+import { SpeedDial, SpeedDialItemModel, SpeedDialAnimationSettingsModel, LinearDirection, SpeedDialMode } from "../src/speed-dial/index";
 import { SpeedDialItemEventArgs, SpeedDialBeforeOpenCloseEventArgs,SpeedDialOpenCloseEventArgs  } from "../src/speed-dial/index";
 import { getMemoryProfile, inMB, profile } from "./common.spec";
+import { IconPosition } from "../src/button/index";
 
-describe('Floating Action Button', () => {
+describe('Speed Dial', () => {
     beforeAll(() => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -41,6 +42,231 @@ describe('Floating Action Button', () => {
     ];
     const NoAnimation: SpeedDialAnimationSettingsModel = { effect: 'None' };
 
+    describe('Null or Undefined value', () => {
+        let speedDial: SpeedDial;
+        let speedDialEle: HTMLElement;
+        let tarEle: HTMLElement;
+
+        beforeAll(() => {
+            SpeedDial.Inject(SpeedDial);
+        });
+
+        beforeEach(() => {
+            speedDialEle = createElement('button', { id: 'speedDial' });
+            document.body.appendChild(speedDialEle);
+            tarEle = createElement('div', { id: 'speedDialtarget', styles: "margin:10px;border:1px solid red; height:400px; width:400px; position: relative;" });
+            document.body.appendChild(tarEle);
+        });
+
+        afterEach(() => {
+            if (speedDial) {
+                speedDial.destroy();
+                speedDial = undefined;
+            }
+            remove(speedDialEle);
+            remove(tarEle);
+        });
+
+        it('in Close icon CSS', () => {
+            speedDial = new SpeedDial({ closeIconCss: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.closeIconCss).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ closeIconCss: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.closeIconCss).toBe('');
+        });
+
+        it('in Content', () => {
+            speedDial = new SpeedDial({ content: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.content).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ content: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.content).toBe('');
+        });
+
+        it('in CSS class', () => {
+            speedDial = new SpeedDial({ cssClass: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.cssClass).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ cssClass: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.cssClass).toBe('');
+        });
+
+        it('in Direction', () => {
+            speedDial = new SpeedDial({ direction: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.direction).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ direction: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.direction).toBe(LinearDirection.Auto);
+        });
+
+        it('in Disabled', () => {
+            speedDial = new SpeedDial({ disabled: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.disabled).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ disabled: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.disabled).toBe(false);
+        });
+
+        it('in Enable Persistence', () => {
+            speedDial = new SpeedDial({ enablePersistence: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.enablePersistence).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ enablePersistence: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.enablePersistence).toBe(false);
+        });
+
+        it('in Enable RTL', () => {
+            speedDial = new SpeedDial({ enableRtl: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.enableRtl).toBe(false);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ enableRtl: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.enableRtl).toBe(false);
+        });
+
+        it('in Icon Position', () => {
+            speedDial = new SpeedDial({ iconPosition: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.iconPosition).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ iconPosition: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.iconPosition).toBe(IconPosition.Left);
+        });
+
+        it('in Is Primary', () => {
+            speedDial = new SpeedDial({ isPrimary: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.isPrimary).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ isPrimary: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.isPrimary).toBe(true);
+        });
+
+        it('in Item template', () => {
+            speedDial = new SpeedDial({ itemTemplate: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.itemTemplate).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ itemTemplate: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.itemTemplate).toBe('');
+        });
+
+        it('in Items', () => {
+            speedDial = new SpeedDial({ items: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.items).toEqual([]);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ items: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.items).toEqual([]);
+        });
+
+        it('in Locale', () => {
+            speedDial = new SpeedDial({ locale: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.locale).toBe('en-US');
+            speedDial.destroy();
+            speedDial = new SpeedDial({ locale: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.locale).toBe('en-US');
+        });
+
+        it('in Modal', () => {
+            speedDial = new SpeedDial({ modal: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.modal).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ modal: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.modal).toBe(false);
+        });
+
+        it('in Mode', () => {
+            speedDial = new SpeedDial({ mode: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.mode).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ mode: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.mode).toBe(SpeedDialMode.Linear);
+        });
+
+        it('in Open Icon CSS', () => {
+            speedDial = new SpeedDial({ openIconCss: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.openIconCss).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ openIconCss: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.openIconCss).toBe('');
+        });
+
+        it('in Opens On Hover', () => {
+            speedDial = new SpeedDial({ opensOnHover: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.opensOnHover).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ opensOnHover: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.opensOnHover).toBe(false);
+        });
+
+        it('in Popup Template', () => {
+            speedDial = new SpeedDial({ popupTemplate: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.popupTemplate).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ popupTemplate: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.popupTemplate).toBe('');
+        });
+
+        it('in Position', () => {
+            speedDial = new SpeedDial({ position: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.position).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ position: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.position).toBe(FabPosition.BottomRight);
+        });
+
+        it('in Target', () => {
+            speedDial = new SpeedDial({ target: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.target).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ target: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.target).toBe('');
+        });
+
+        it('in Visible', () => {
+            speedDial = new SpeedDial({ visible: null});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.visible).toBe(null);
+            speedDial.destroy();
+            speedDial = new SpeedDial({ visible: undefined});
+            speedDial.appendTo('#speedDial');
+            expect(speedDial.visible).toBe(true);
+        });
+    });
     describe('SpeedDial button DOM', () => {
         function getCenterPos(btnEle: HTMLElement, tarEle: HTMLElement): string {
             return (tarEle.clientWidth - btnEle.offsetWidth) / 2 + "px";
@@ -49,7 +275,7 @@ describe('Floating Action Button', () => {
             return (tarEle.clientHeight - btnEle.offsetHeight) / 2 + "px";
         }
         let speedDial: SpeedDial;
-        let speedDialEle: HTMLElement
+        let speedDialEle: HTMLElement;
         let tarEle: HTMLElement
         beforeEach(() => {
             speedDialEle = createElement('button', { id: 'speedDial' });
@@ -266,23 +492,20 @@ describe('Floating Action Button', () => {
         it('MiddleCenter + resize', () => {
             speedDial = new SpeedDial({ position: "MiddleCenter", target: "#speedDialtarget" });
             speedDial.appendTo('#speedDial');
-            let leftPos = getCenterPos(speedDialEle, tarEle);
-            let middlePos = getMiddlePos(speedDialEle, tarEle);
-            expect(speedDialEle.style.getPropertyValue("--fabHorzDist")).toBe(leftPos);
-            expect(speedDialEle.style.getPropertyValue("--fabVertDist")).toBe(middlePos);
+            const speedDialElement = getComputedStyle(speedDialEle);
+            expect(speedDialElement.top).toBe(tarEle.clientHeight/2 + 'px');
+            expect(speedDialElement.left).toBe(tarEle.clientWidth/2 + 'px');
             expect(speedDialEle.classList.contains("e-fab-left")).toBe(true);
             expect(speedDialEle.classList.contains("e-fab-top")).toBe(true);
             expect(speedDialEle.classList.contains("e-fab-right")).toBe(false);
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             tarEle.style.width = "600px"
             tarEle.style.height = "600px"
-            leftPos = getCenterPos(speedDialEle, tarEle);
-            middlePos = getMiddlePos(speedDialEle, tarEle);
-            expect(speedDialEle.style.getPropertyValue("--fabHorzDist") !== leftPos).toBe(true);
-            expect(speedDialEle.style.getPropertyValue("--fabVertDist") !== middlePos).toBe(true);
+            expect(speedDialElement.top).toBe(tarEle.clientHeight/2 + 'px');
+            expect(speedDialElement.left).toBe(tarEle.clientWidth/2 + 'px');
             speedDial.refreshPosition();
-            expect(speedDialEle.style.getPropertyValue("--fabHorzDist")).toBe(leftPos);
-            expect(speedDialEle.style.getPropertyValue("--fabVertDist")).toBe(middlePos);
+            expect(speedDialElement.top).toBe(tarEle.clientHeight/2 + 'px');
+            expect(speedDialElement.left).toBe(tarEle.clientWidth/2 + 'px');
         });
     });
     describe('SpeedDial DOM', () => {
@@ -763,10 +986,8 @@ describe('Floating Action Button', () => {
             expect((speedDial as any).popupEle.classList.contains("e-speeddial-linear")).toBe(false);
             expect((speedDial as any).popupEle.classList.contains("e-speeddial-template")).toBe(true);
             expect(popupEle.querySelectorAll(".e-speeddial-li").length).toBe(0);
-            HorzDist = speedDialEle.style.getPropertyValue("--fabHorzDist")
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(HorzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             let tempContent = '<div class="e-speeddial-template-container">'+ template +'</div>';
             expect(document.querySelector(".e-speeddial-popup").innerHTML).toBe(tempContent); 
             speedDial.popupTemplate = '';
@@ -824,10 +1045,8 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(true);
-            let HorzDist = speedDialEle.style.getPropertyValue("--fabHorzDist")
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(HorzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             let tempContent = '<div class="e-speeddial-template-container">'+ template +'</div>';
             expect(document.querySelector(".e-speeddial-popup").innerHTML).toBe(tempContent); 
         });
@@ -2526,17 +2745,50 @@ describe('Floating Action Button', () => {
         function getTop(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
             return btnEle.offsetTop + (isVertical ? btnEle.offsetHeight : 0) + "px";
         }
+        function getMiddleTop(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetTop - btnEle.offsetHeight/2 + "px";
+        }
         function getBottom(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
             return tarEle.clientHeight - btnEle.offsetTop - (isVertical ? 0 : btnEle.offsetHeight) + "px";
+        }
+        function getMidddleCenterUp(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
+            return tarEle.clientHeight - btnEle.offsetTop - (isVertical ? 0 : btnEle.offsetHeight)+ btnEle.offsetHeight/2 + "px";
         }
         function getLeft(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
             return btnEle.offsetLeft + (isVertical ? 0 : btnEle.offsetWidth) + "px";
         }
+        function getHorizontalAlignCenter(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetLeft - btnEle.offsetWidth/2 + "px";
+        }
+        function getVerticalAlignCenter(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetTop +(isVertical ? btnEle.offsetHeight : 0) - btnEle.offsetHeight/2  + "px";
+        }
+        function getHorizontalRightPosition(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetLeft + btnEle.offsetWidth/2 + "px";
+        }
+        function getHorizontalLeftPosition(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
+            return tarEle.clientHeight - btnEle.offsetLeft - (isVertical ? btnEle.offsetWidth : 0) + btnEle.offsetWidth/2 + "px";
+        }
+        function getUpDirectionPos(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
+            return tarEle.clientHeight - btnEle.offsetTop - (isVertical ? 0 : btnEle.offsetHeight) + btnEle.offsetHeight/2 + "px";
+        }
         function getRight(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
             return tarEle.clientWidth - btnEle.offsetLeft - (isVertical ? btnEle.offsetWidth : 0) + "px"
         }
+        function getRightRtl(btnEle: HTMLElement, tarEle: HTMLElement, isVertical: boolean = true): string {
+            return tarEle.clientWidth - btnEle.offsetLeft - (isVertical ? btnEle.offsetWidth : 0) - btnEle.offsetWidth/2 + "px"
+        }
         function getWinTop(btnEle: HTMLElement, isVertical: boolean = true): string {
             return btnEle.offsetTop + (isVertical ? btnEle.offsetHeight : 0) + "px";
+        }
+        function getWinMiddleTop(btnEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetTop - btnEle.offsetHeight/2 + "px";
+        }
+        function getWinMiddleDown(btnEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetTop + (isVertical ? btnEle.offsetHeight : 0) - btnEle.offsetHeight/2 + "px";
+        }
+        function getWinMiddleBottom(btnEle: HTMLElement, isVertical: boolean = true): string {
+            return window.innerHeight - btnEle.offsetTop - (isVertical ? 0 : btnEle.offsetHeight) + btnEle.offsetHeight/2 + "px";
         }
         function getWinBottom(btnEle: HTMLElement, isVertical: boolean = true): string {
             return window.innerHeight - btnEle.offsetTop - (isVertical ? 0 : btnEle.offsetHeight) + "px";
@@ -2544,9 +2796,19 @@ describe('Floating Action Button', () => {
         function getWinLeft(btnEle: HTMLElement, isVertical: boolean = true): string {
             return btnEle.offsetLeft + (isVertical ? 0 : btnEle.offsetWidth) + "px";
         }
-        function getWinRight(btnEle: HTMLElement, isVertical: boolean = true): string {
-            return window.innerWidth - btnEle.offsetLeft - (isVertical ? btnEle.offsetWidth : 0) + "px"
+        function getWinMiddleLeft(btnEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetLeft + (isVertical ? 0 : btnEle.offsetWidth) + btnEle.offsetWidth/2 + "px";
         }
+        function getWinRight(btnEle: HTMLElement, isVertical: boolean = true): string {
+            return window.document.documentElement.scrollWidth - btnEle.offsetLeft - (isVertical ? btnEle.offsetWidth : 0) + "px"
+        }
+        function getWinHorizontalCenter(btnEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetLeft - btnEle.offsetWidth/2 + "px";
+        }
+        function getWinHorizontalCenterRight(btnEle: HTMLElement, isVertical: boolean = true): string {
+            return btnEle.offsetLeft + btnEle.offsetWidth/2 + "px";
+        }
+
         beforeAll(() => {
             SpeedDial.Inject(SpeedDial);
             let styleEle: HTMLElement = createElement("style");
@@ -2576,8 +2838,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, position: "MiddleCenter", target: "#speedDialtarget" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let leftPos = getLeft(speedDialEle, tarEle, true);
-            let BottomPos = getBottom(speedDialEle, tarEle, true);
+            let leftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
+            let BottomPos = getUpDirectionPos(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(leftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2587,8 +2849,8 @@ describe('Floating Action Button', () => {
             tarEle.style.width = "600px"
             tarEle.style.height = "600px"
             speedDial.refreshPosition();
-            leftPos = getLeft(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            leftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
+            BottomPos = getUpDirectionPos(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(leftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
         });
@@ -2674,7 +2936,7 @@ describe('Floating Action Button', () => {
             expect(speedDial.position).toEqual("TopCenter");
             expect(speedDial.direction).toEqual("Auto");
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             let TopPos = getTop(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -2684,7 +2946,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.direction = "Right";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, false);
+            LeftPos = getHorizontalRightPosition(speedDialEle, tarEle, false);
             TopPos = getTop(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -2694,7 +2956,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.direction = "Down";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, true);
+            LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             TopPos = getTop(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -2704,9 +2966,9 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.direction = "Left";
             speedDial.dataBind();
-            let RightPos = getRight(speedDialEle, tarEle, false);
+            LeftPos = getHorizontalRightPosition(speedDialEle, tarEle, false);
             TopPos = getTop(speedDialEle, tarEle, false);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -2714,7 +2976,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.direction = "Up";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, true);
+            LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             TopPos = getTop(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);;
@@ -2727,31 +2989,31 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, position: "TopCenter" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let LeftPos = getWinLeft(speedDialEle, true);
+            let LeftPos = getWinHorizontalCenter(speedDialEle, true);
             let TopPos = getWinTop(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Right";
             speedDial.dataBind();
-            LeftPos = getWinLeft(speedDialEle, false);
+            LeftPos = getWinHorizontalCenterRight(speedDialEle, false);
             TopPos = getWinTop(speedDialEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Down";
             speedDial.dataBind();
-            LeftPos = getWinLeft(speedDialEle, true);
+            LeftPos = getWinHorizontalCenter(speedDialEle, true);
             TopPos = getWinTop(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Left";
             speedDial.dataBind();
-            let RightPos = getWinRight(speedDialEle, false);
+            LeftPos = (window.document.documentElement.scrollWidth - speedDialEle.offsetLeft) + (speedDialEle.offsetWidth/2) + "px";
             TopPos = getWinTop(speedDialEle, false);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Up";
             speedDial.dataBind();
-            LeftPos = getWinLeft(speedDialEle, true);
+            LeftPos = getWinHorizontalCenter(speedDialEle, true);
             TopPos = getWinTop(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -2826,7 +3088,7 @@ describe('Floating Action Button', () => {
             expect(speedDial.position).toEqual("MiddleLeft");
             expect(speedDial.direction).toEqual("Auto");
             let LeftPos = getLeft(speedDialEle, tarEle, true);
-            let BottomPos = getBottom(speedDialEle, tarEle, true);
+            let BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2836,7 +3098,7 @@ describe('Floating Action Button', () => {
             speedDial.direction = "Right";
             speedDial.dataBind();
             LeftPos = getLeft(speedDialEle, tarEle, false);
-            let TopPos = getTop(speedDialEle, tarEle, false);
+            let TopPos = getUpDirectionPos(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2846,7 +3108,7 @@ describe('Floating Action Button', () => {
             speedDial.direction = "Down";
             speedDial.dataBind();
             LeftPos = getLeft(speedDialEle, tarEle, true);
-            TopPos = getTop(speedDialEle, tarEle, true);
+            TopPos = getVerticalAlignCenter(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2856,9 +3118,9 @@ describe('Floating Action Button', () => {
             speedDial.direction = "Left";
             speedDial.dataBind();
             LeftPos = getLeft(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            TopPos = getVerticalAlignCenter(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -2866,7 +3128,7 @@ describe('Floating Action Button', () => {
             speedDial.direction = "Up";
             speedDial.dataBind();
             LeftPos = getLeft(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2879,31 +3141,31 @@ describe('Floating Action Button', () => {
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
             let LeftPos = getWinLeft(speedDialEle, true);
-            let BottomPos = getWinBottom(speedDialEle, true);
+            let BottomPos = getWinMiddleBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Right";
             speedDial.dataBind();
             LeftPos = getWinLeft(speedDialEle, false);
-            let TopPos = getWinTop(speedDialEle, false);
+            let TopPos = getWinMiddleTop(speedDialEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Down";
             speedDial.dataBind();
             LeftPos = getWinLeft(speedDialEle, true);
-            TopPos = getWinTop(speedDialEle, true);
+            TopPos = getWinMiddleDown(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Left";
             speedDial.dataBind();
             LeftPos = getWinLeft(speedDialEle, true);
-            BottomPos = getWinBottom(speedDialEle, true);
+            BottomPos = getWinMiddleBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Up";
             speedDial.dataBind();
             LeftPos = getWinLeft(speedDialEle, true);
-            BottomPos = getWinBottom(speedDialEle, true);
+            BottomPos = getWinMiddleBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
         });
@@ -2913,8 +3175,8 @@ describe('Floating Action Button', () => {
             expect(speedDial.position).toEqual("MiddleCenter");
             expect(speedDial.direction).toEqual("Auto");
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
-            let BottomPos = getBottom(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
+            let BottomPos = getUpDirectionPos(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2923,8 +3185,8 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(true);
             speedDial.direction = "Right";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, false);
-            let TopPos = getTop(speedDialEle, tarEle, false);
+            LeftPos = getHorizontalRightPosition(speedDialEle, tarEle, false);
+            let TopPos = getMiddleTop(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2933,8 +3195,8 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.direction = "Down";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, true);
-            TopPos = getTop(speedDialEle, tarEle, true);
+            LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
+            TopPos = getVerticalAlignCenter(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2943,8 +3205,8 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.direction = "Left";
             speedDial.dataBind();
-            let RightPos = getRight(speedDialEle, tarEle, false);
-            TopPos = getTop(speedDialEle, tarEle, false);
+            let RightPos = getHorizontalRightPosition(speedDialEle, tarEle, false);
+            TopPos = getMiddleTop(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -2953,8 +3215,8 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.direction = "Up";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
+            BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -2966,32 +3228,32 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, position: "MiddleCenter" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let LeftPos = getWinLeft(speedDialEle, true);
-            let BottomPos = getWinBottom(speedDialEle, true);
+            let LeftPos = getWinHorizontalCenter(speedDialEle, true);
+            let BottomPos = getWinMiddleBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Right";
             speedDial.dataBind();
-            LeftPos = getWinLeft(speedDialEle, false);
-            let TopPos = getWinTop(speedDialEle, false);
+            LeftPos = getWinHorizontalCenterRight(speedDialEle, false);
+            let TopPos = getWinMiddleTop(speedDialEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Down";
             speedDial.dataBind();
-            LeftPos = getWinLeft(speedDialEle, true);
-            TopPos = getWinTop(speedDialEle, true);
+            LeftPos = getWinHorizontalCenter(speedDialEle, true);
+            TopPos = getWinMiddleDown(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Left";
             speedDial.dataBind();
-            let RightPos = getWinRight(speedDialEle, false);
-            TopPos = getTop(speedDialEle, tarEle, false);
+            let RightPos = (window.document.documentElement.scrollWidth - speedDialEle.offsetLeft) + (speedDialEle.offsetWidth/2) + "px";
+            TopPos = getWinMiddleTop(speedDialEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Up";
             speedDial.dataBind();
-            TopPos = getWinTop(speedDialEle, true);
-            BottomPos = getWinBottom(speedDialEle, true);
+            LeftPos = getWinHorizontalCenter(speedDialEle, true);
+            BottomPos = getWinMiddleBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
         });
@@ -3002,7 +3264,7 @@ describe('Floating Action Button', () => {
             expect(speedDial.position).toEqual("MiddleRight");
             expect(speedDial.direction).toEqual("Auto");
             let RightPos = getRight(speedDialEle, tarEle, true);
-            let BottomPos = getBottom(speedDialEle, tarEle, true);
+            let BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -3012,7 +3274,7 @@ describe('Floating Action Button', () => {
             speedDial.direction = "Right";
             speedDial.dataBind();
             RightPos = getRight(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            BottomPos = getVerticalAlignCenter(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -3022,7 +3284,7 @@ describe('Floating Action Button', () => {
             speedDial.direction = "Down";
             speedDial.dataBind();
             RightPos = getRight(speedDialEle, tarEle, true);
-            let TopPos = getTop(speedDialEle, tarEle, true);
+            let TopPos = getVerticalAlignCenter(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -3032,7 +3294,7 @@ describe('Floating Action Button', () => {
             speedDial.direction = "Left";
             speedDial.dataBind();
             RightPos = getRight(speedDialEle, tarEle, false);
-            TopPos = getTop(speedDialEle, tarEle, false);
+            TopPos = getMiddleTop(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -3042,7 +3304,7 @@ describe('Floating Action Button', () => {
             speedDial.direction = "Up";
             speedDial.dataBind();
             RightPos = getRight(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -3055,31 +3317,31 @@ describe('Floating Action Button', () => {
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
             let RightPos = getWinRight(speedDialEle, true);
-            let BottomPos = getWinBottom(speedDialEle, true);
+            let BottomPos = getWinMiddleBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Right";
             speedDial.dataBind();
             RightPos = getWinRight(speedDialEle, true);
-            BottomPos = getWinBottom(speedDialEle, true);
+            BottomPos = getWinMiddleBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Down";
             speedDial.dataBind();
             RightPos = getWinRight(speedDialEle, true);
-            let TopPos = getWinTop(speedDialEle, true);
+            let TopPos = getWinMiddleDown(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Left";
             speedDial.dataBind();
             RightPos = getWinRight(speedDialEle, false);
-            TopPos = getWinTop(speedDialEle, false);
+            TopPos = getWinMiddleTop(speedDialEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
             speedDial.direction = "Up";
             speedDial.dataBind();
             RightPos = getWinRight(speedDialEle, true);
-            BottomPos = getWinBottom(speedDialEle, true);
+            BottomPos = getWinMiddleBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
         });
@@ -3145,7 +3407,7 @@ describe('Floating Action Button', () => {
             expect(speedDial.position).toEqual("BottomCenter");
             expect(speedDial.direction).toEqual("Auto");
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             let BottomPos = getBottom(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
@@ -3155,7 +3417,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(true);
             speedDial.direction = "Right";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, false);
+            LeftPos = getHorizontalRightPosition(speedDialEle, tarEle, false);
             BottomPos = getBottom(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
@@ -3165,7 +3427,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(true);
             speedDial.direction = "Down";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, true);
+            LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             BottomPos = getBottom(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
@@ -3175,7 +3437,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(true);
             speedDial.direction = "Left";
             speedDial.dataBind();
-            let RightPos = getRight(speedDialEle, tarEle, false);
+            let RightPos = getHorizontalRightPosition(speedDialEle, tarEle, false);
             BottomPos = getBottom(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
@@ -3185,7 +3447,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(true);
             speedDial.direction = "Up";
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, true);
+            LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             BottomPos = getBottom(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
@@ -3200,31 +3462,31 @@ describe('Floating Action Button', () => {
             expect(speedDial.position).toEqual("BottomCenter");
             expect(speedDial.direction).toEqual("Auto");
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let LeftPos = getWinLeft(speedDialEle, true);
+            let LeftPos = getWinHorizontalCenter(speedDialEle, true);
             let BottomPos = getWinBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Right";
             speedDial.dataBind();
-            LeftPos = getWinLeft(speedDialEle, false);
+            LeftPos = getWinHorizontalCenterRight(speedDialEle, false);
             BottomPos = getWinBottom(speedDialEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Down";
             speedDial.dataBind();
-            LeftPos = getWinLeft(speedDialEle, true);
+            LeftPos = getWinHorizontalCenter(speedDialEle, true);
             BottomPos = getWinBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Left";
             speedDial.dataBind();
-            let RightPos = getWinRight(speedDialEle, false);
+            let RightPos = (window.document.documentElement.scrollWidth - speedDialEle.offsetLeft) + (speedDialEle.offsetWidth/2) + "px";
             BottomPos = getWinBottom(speedDialEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             speedDial.direction = "Up";
             speedDial.dataBind();
-            LeftPos = getWinLeft(speedDialEle, true);
+            LeftPos = getWinHorizontalCenter(speedDialEle, true);
             BottomPos = getWinBottom(speedDialEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
@@ -3310,7 +3572,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = "BottomCenter";
             speedDial.dataBind();
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             BottomPos = getBottom(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
@@ -3345,7 +3607,7 @@ describe('Floating Action Button', () => {
             speedDial.position = "MiddleRight";
             speedDial.dataBind();
             let RightPos = getRight(speedDialEle, tarEle, true);
-            let BottomPos = getBottom(speedDialEle, tarEle, true);
+            let BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -3358,8 +3620,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "MiddleCenter";
             speedDial.dataBind();
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
+            BottomPos = getUpDirectionPos(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -3373,7 +3635,7 @@ describe('Floating Action Button', () => {
             speedDial.position = "MiddleLeft";
             speedDial.dataBind();
             LeftPos = getLeft(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -3406,7 +3668,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopCenter";
             speedDial.dataBind();
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             TopPos = getTop(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -3453,7 +3715,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = FabPosition.BottomCenter;
             speedDial.dataBind();
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             BottomPos = getBottom(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
@@ -3488,7 +3750,7 @@ describe('Floating Action Button', () => {
             speedDial.position = FabPosition.MiddleRight;
             speedDial.dataBind();
             let RightPos = getRight(speedDialEle, tarEle, true);
-            let BottomPos = getBottom(speedDialEle, tarEle, true);
+            let BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -3501,8 +3763,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = FabPosition.MiddleCenter;
             speedDial.dataBind();
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
+            BottomPos = getUpDirectionPos(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -3516,7 +3778,7 @@ describe('Floating Action Button', () => {
             speedDial.position = FabPosition.MiddleLeft;
             speedDial.dataBind();
             LeftPos = getLeft(speedDialEle, tarEle, true);
-            BottomPos = getBottom(speedDialEle, tarEle, true);
+            BottomPos = getMidddleCenterUp(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(BottomPos);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -3549,7 +3811,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = FabPosition.TopCenter;
             speedDial.dataBind();
-            let LeftPos = getLeft(speedDialEle, tarEle, true);
+            let LeftPos = getHorizontalAlignCenter(speedDialEle, tarEle, true);
             TopPos = getTop(speedDialEle, tarEle, true);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -3581,7 +3843,7 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, target: "#speedDialtarget", position: "TopCenter", direction: "Right" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let LeftPos = getLeft(speedDialEle, tarEle, false);
+            let LeftPos = getHorizontalRightPosition(speedDialEle, tarEle, false);
             let TopPos = getTop(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -3591,7 +3853,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.enableRtl = true;
             speedDial.dataBind();
-            let RightPos = getRight(speedDialEle, tarEle, false);
+            let RightPos = getRightRtl(speedDialEle, tarEle, false);
             TopPos = getTop(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(RightPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -3601,7 +3863,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
             speedDial.enableRtl = false;
             speedDial.dataBind();
-            LeftPos = getLeft(speedDialEle, tarEle, false);
+            LeftPos = getHorizontalRightPosition(speedDialEle, tarEle, false);
             TopPos = getTop(speedDialEle, tarEle, false);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(LeftPos);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(TopPos);
@@ -3609,6 +3871,64 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-bottom")).toBe(false);
+        });
+        it('Custom position with target', () => {
+            speedDial = new SpeedDial({ items: data, position: "TopLeft", target: "#speedDialtarget" });
+            speedDial.appendTo('#speedDial');
+            speedDialEle.style.left = "100px";
+            speedDialEle.style.top = "100px";
+            speedDial.show();
+            let popupEle = (speedDial as any).popupEle as HTMLElement;
+            speedDial.hide();
+            let topPos = getTop(speedDialEle, tarEle);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(speedDialEle.offsetLeft + "px");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(topPos);
+            speedDial.position = "TopCenter";
+            speedDial.dataBind();
+            speedDialEle.style.left = "150px";
+            speedDialEle.style.top = "150px";
+            speedDial.show();
+            topPos = getTop(speedDialEle, tarEle);
+            let leftPos = getWinHorizontalCenter(speedDialEle);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(leftPos);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(topPos);
+            speedDial.position = "MiddleRight";
+            speedDial.dataBind();
+            speedDialEle.style.left = "unset";
+            speedDialEle.style.right = "150px";
+            speedDialEle.style.top = "150px";
+            speedDial.show();
+            let upPos = getUpDirectionPos(speedDialEle, tarEle);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(speedDialEle.style.right);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(upPos);
+        });
+        it('Custom position without target', () => {
+            speedDial = new SpeedDial({ items: data, position: "TopLeft" });
+            speedDial.appendTo('#speedDial');
+            speedDialEle.style.left = "100px";
+            speedDialEle.style.top = "100px";
+            speedDial.show();
+            let popupEle = (speedDial as any).popupEle as HTMLElement;
+            speedDial.hide();
+            let topPos = getTop(speedDialEle, tarEle);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(speedDialEle.offsetLeft + "px");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(topPos);
+            speedDial.position = "TopCenter";
+            speedDial.dataBind();
+            speedDialEle.style.left = "150px";
+            speedDialEle.style.top = "150px";
+            speedDial.show();
+            topPos = getTop(speedDialEle, tarEle);
+            let leftPos = getWinHorizontalCenter(speedDialEle);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(leftPos);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(topPos);
+            speedDial.position = "MiddleRight";
+            speedDial.dataBind();
+            speedDialEle.style.left = "unset";
+            speedDialEle.style.right = "150px";
+            speedDial.show();
+            let upPos = getUpDirectionPos(speedDialEle, tarEle);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(speedDialEle.style.right);
         });
     });
 
@@ -3666,10 +3986,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: "TopLeft" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -3680,8 +3998,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopCenter";
             speedDial.dataBind();
-            horzDist = getCenterPos(popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
+            let horzDist = getCenterPos(popupEle);
+            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -3694,10 +4012,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);
@@ -3712,10 +4028,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: FabPosition.TopLeft });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -3726,10 +4040,9 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = FabPosition.TopCenter;
             speedDial.dataBind();
-            horzDist = getCenterPos(popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
+            let horzDist = getCenterPos(popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -3740,10 +4053,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = FabPosition.TopRight;
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);
@@ -3759,10 +4070,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: "TopLeft", target: tarEle });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -3773,10 +4082,9 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopCenter";
             speedDial.dataBind();
-            horzDist = getTarCenterPos(tarEle, popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
+            let horzDist = getTarCenterPos(tarEle, popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -3787,10 +4095,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);
@@ -3805,9 +4111,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: "MiddleLeft" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
             let vertDist = getMiddlePos(popupEle);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -3819,7 +4124,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "MiddleCenter";
             speedDial.dataBind();
-            horzDist = getCenterPos(popupEle)
+            let horzDist = getCenterPos(popupEle)
             vertDist = getMiddlePos(popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
@@ -3833,9 +4138,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "MiddleRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
             vertDist = getMiddlePos(popupEle);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -3851,9 +4155,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: FabPosition.MiddleLeft });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
             let vertDist = getMiddlePos(popupEle);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -3865,7 +4168,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = FabPosition.MiddleCenter;
             speedDial.dataBind();
-            horzDist = getCenterPos(popupEle)
+            let horzDist = getCenterPos(popupEle)
             vertDist = getMiddlePos(popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
@@ -3879,9 +4182,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = FabPosition.MiddleRight;
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
             vertDist = getMiddlePos(popupEle);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -3897,9 +4199,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: "MiddleLeft", target: tarEle });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
             let vertDist = getTarMiddlePos(tarEle, popupEle);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -3911,7 +4212,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "MiddleCenter";
             speedDial.dataBind();
-            horzDist = getTarCenterPos(tarEle, popupEle)
+            let horzDist = getTarCenterPos(tarEle, popupEle)
             vertDist = getTarMiddlePos(tarEle, popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
@@ -3925,9 +4226,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "MiddleRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
             vertDist = getTarMiddlePos(tarEle, popupEle);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -3943,10 +4243,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: "BottomLeft" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -3957,10 +4255,9 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = "BottomCenter";
             speedDial.dataBind();
-            horzDist = getCenterPos(popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            let horzDist = getCenterPos(popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -3971,10 +4268,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = "BottomRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);
@@ -3988,8 +4283,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: FabPosition.BottomLeft });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            let horzDist = "";
+            let vertDist = "";
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -4003,7 +4298,7 @@ describe('Floating Action Button', () => {
             speedDial.position = FabPosition.BottomCenter;
             speedDial.dataBind();
             horzDist = getCenterPos(popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            vertDist = "";
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -4016,8 +4311,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = FabPosition.BottomRight;
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            horzDist = "";
+            vertDist = "";
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -4034,8 +4329,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ popupTemplate: "#speedDialPopupTemp", position: "BottomLeft", target: tarEle });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            let horzDist = "";
+            let vertDist = "";
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -4049,7 +4344,7 @@ describe('Floating Action Button', () => {
             speedDial.position = "BottomCenter";
             speedDial.dataBind();
             horzDist = getTarCenterPos(tarEle, popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            vertDist = "";
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
@@ -4062,8 +4357,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = "BottomRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            horzDist = "";
+            vertDist = "";
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
@@ -4122,10 +4417,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, mode: "Radial", position: "TopLeft" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -4136,10 +4429,9 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopCenter";
             speedDial.dataBind();
-            horzDist = getCenterPos(popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
+            var horzDist = getCenterPos(popupEle)
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -4150,10 +4442,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);
@@ -4168,10 +4458,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, mode: "Radial", position: "TopLeft", target: tarEle });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -4182,10 +4470,9 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopCenter";
             speedDial.dataBind();
-            horzDist = getTarCenterPos(tarEle, popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
+            var horzDist = getTarCenterPos(tarEle, popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -4196,10 +4483,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "TopRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist");
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);
@@ -4214,7 +4499,7 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, mode: "Radial", position: "MiddleLeft" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
+            let horzDist = "";
             let vertDist = getMiddlePos(popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
@@ -4242,7 +4527,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "MiddleRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
+            horzDist = "";
             vertDist = getMiddlePos(popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
@@ -4260,9 +4545,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, mode: "Radial", position: "MiddleLeft", target: tarEle });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
             let vertDist = getTarMiddlePos(tarEle, popupEle);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -4274,7 +4558,7 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "MiddleCenter";
             speedDial.dataBind();
-            horzDist = getTarCenterPos(tarEle, popupEle)
+            var horzDist = getTarCenterPos(tarEle, popupEle)
             vertDist = getTarMiddlePos(tarEle, popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
@@ -4288,9 +4572,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(false);
             speedDial.position = "MiddleRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
             vertDist = getTarMiddlePos(tarEle, popupEle);
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
             expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(true);
@@ -4306,10 +4589,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, mode: "Radial", position: "BottomLeft" });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -4320,10 +4601,9 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = "BottomCenter";
             speedDial.dataBind();
-            horzDist = getCenterPos(popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            var horzDist = getCenterPos(popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -4334,10 +4614,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = "BottomRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);
@@ -4352,10 +4630,8 @@ describe('Floating Action Button', () => {
             speedDial = new SpeedDial({ items: data, mode: "Radial", position: "BottomLeft", target: tarEle });
             speedDial.appendTo('#speedDial');
             let popupEle = (speedDial as any).popupEle as HTMLElement;
-            let horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            let vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -4366,10 +4642,9 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = "BottomCenter";
             speedDial.dataBind();
-            horzDist = getTarCenterPos(tarEle, popupEle);
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
+            let horzDist = getTarCenterPos(tarEle, popupEle);
             expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(false);
@@ -4380,10 +4655,8 @@ describe('Floating Action Button', () => {
             expect(speedDialEle.classList.contains("e-fab-bottom")).toBe(true);
             speedDial.position = "BottomRight";
             speedDial.dataBind();
-            horzDist = speedDialEle.style.getPropertyValue("--fabHorzDist");
-            vertDist = speedDialEle.style.getPropertyValue("--fabVertDist")
-            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe(horzDist);
-            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe(vertDist);
+            expect(popupEle.style.getPropertyValue("--speeddialHorzDist")).toBe("");
+            expect(popupEle.style.getPropertyValue("--speeddialVertDist")).toBe("");
             expect(popupEle.classList.contains("e-speeddial-left")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-top")).toBe(false);
             expect(popupEle.classList.contains("e-speeddial-right")).toBe(true);

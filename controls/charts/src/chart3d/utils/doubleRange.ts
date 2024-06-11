@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
 /**
  * Numeric Range.
  *
@@ -10,16 +9,30 @@ export class DoubleRange {
 
     private mEnd: number;
 
-    /** @private */
+    /**
+     * The start value.
+     *
+     * @private
+     * @returns {number} - The start value.
+     */
     get start(): number {
         return this.mStart;
     }
-    /** @private */
+    /**
+     * The end value.
+     *
+     * @private
+     * @returns {number} - The end value.
+     */
     get end(): number {
         return this.mEnd;
     }
-
-    /** @private */
+    /**
+     * The delta between the start and end values.
+     *
+     * @private
+     * @returns {number} - The delta value.
+     */
     get delta(): number {
         return (this.mEnd - this.mStart);
     }

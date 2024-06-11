@@ -1,6 +1,6 @@
 import { isNullOrUndefined, isUndefined, Internationalization, L10n } from '@syncfusion/ej2-base';
 import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getSheet, isFilterHidden } from '../base/index';
-import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress, workbookLocale } from './../common/index';
+import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress, workbookLocale, workbookReadonlyAlert } from './../common/index';
 import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel, isCustomDateTime } from './../index';
 import { updateCell, intToDate, dateToInt, applyCF, ApplyCFArgs, CellUpdateArgs, ConditionalFormat } from './../common/index';
 import { DateFormatCheckArgs, checkDateFormat, parseFormulaArgument } from '../common/index';
@@ -60,7 +60,7 @@ export class WorkbookAutoFill {
     }
 
     private autoFill(options: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType,
-        isFillOptClick?: boolean, isLockedCell ?: boolean }): void {
+        isFillOptClick?: boolean, isLockedCell?: boolean }): void {
         if (!options.dataRange || !options.fillRange || !options.direction || !this.parent.allowEditing ||
             (this.parent.getActiveSheet().isProtected && options.isLockedCell)) {
             return;
@@ -121,6 +121,12 @@ export class WorkbookAutoFill {
             patterns = this.getPattern(patrnRange, { isReverseFill: isReverseFill, isVFill: isVFill });
             data = this.getRangeData({ range: patrnRange, sheetIdx: sheetIndex });
             dlen = data.length;
+            for (let l: number = 0; l < dlen; l++) {
+                if (data[l as number] && data[l as number].isReadOnly) {
+                    this.parent.notify(workbookReadonlyAlert, null);
+                    return;
+                }
+            }
             if (!patterns || !patterns.length) {
                 return;
             }
@@ -178,7 +184,8 @@ export class WorkbookAutoFill {
                             }
                         }
                         val = patrn.copy ? (data[l as number] && !isNullOrUndefined(data[l as number].value) ? data[l as number].value : '') :
-                            (patrn.start ? Math.abs(Number(val)) + patrn.dataVal : (match ? patrn.dataVal + nextStringValue : patrn.dataVal + Math.abs(Number(val)))); 
+                            (patrn.start ? Math.abs(Number(val)) + patrn.dataVal :
+                                (match ? patrn.dataVal + nextStringValue : patrn.dataVal + Math.abs(Number(val))));
                     }
                     if (isReverseFill) {
                         patrn['i']--;
@@ -234,6 +241,10 @@ export class WorkbookAutoFill {
                     break;
                 }
                 prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, false, true);
+                if (prevCellData && prevCellData.isReadOnly) {
+                    this.parent.notify(workbookReadonlyAlert, null);
+                    return;
+                }
                 if (withFrmt) {
                     Object.assign(cellProps, data[l as number], null, true);
                 } else {
@@ -246,6 +257,9 @@ export class WorkbookAutoFill {
                 cellProps.value = val;
                 if (checkIsFormula(val)) {
                     cellProps.formula = val;
+                }
+                if (!isNullOrUndefined(cellProps.notes)) {
+                    delete cellProps.notes;
                 }
                 prop = { cell: cellProps, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
                     uiRefresh: true, pvtExtend: true, skipFormatCheck: true };
@@ -305,6 +319,12 @@ export class WorkbookAutoFill {
             fillRange = pRanges.fillRange;
             data = this.getRangeData({ range: patrnRange, sheetIdx: sheetIndex });
             dlen = data.length;
+            for (let m: number = 0; m < dlen; m++) {
+                if (data[m as number] && data[m as number].isReadOnly) {
+                    this.parent.notify(workbookReadonlyAlert, null);
+                    return;
+                }
+            }
             cells = this.getSelectedRange(sheet, { rowIndex: fillRange[0], colIndex: fillRange[1] },
                                           { rowIndex: fillRange[2], colIndex: fillRange[3] });
             clen = cells.length;
@@ -322,6 +342,10 @@ export class WorkbookAutoFill {
                 if (formatOnly) {
                     cellProperty.value = prevCellData.value;
                     cellProperty.formula = prevCellData.formula;
+                }
+                if (cellProperty && cellProperty.isReadOnly) {
+                    this.parent.notify(workbookReadonlyAlert, null);
+                    return;
                 }
                 prop = { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true, uiRefresh: true,
                     pvtExtend: true };
@@ -511,7 +535,7 @@ export class WorkbookAutoFill {
                             (patrn.val as string[]).push(this.getNextFormattedValue((patrn.val[0] as string), newVal));
                         } else {
                             (patrn.val as number[]).push(newVal);
-                        }   
+                        }
                     }
                     regVal = this.getPredictionValue(patrn.dataVal ? (patrn.val as number[]).slice(0, 2) : patrn.val as number[]);
                     temp = { regVal: regVal, type: patrn.type, i: diff, isStartWithMonth: patrn.isStartWithMonth };
@@ -589,7 +613,7 @@ export class WorkbookAutoFill {
     }
 
     private getNextFormattedValue(value: string, numValue: number): string {
-        return new Internationalization().formatNumber(Math.abs(numValue), { minimumIntegerDigits: value.length, useGrouping: false });   
+        return new Internationalization().formatNumber(Math.abs(numValue), { minimumIntegerDigits: value.length, useGrouping: false });
     }
 
     private isCellReference(text: string): string | boolean {
@@ -686,7 +710,7 @@ export class WorkbookAutoFill {
         let dollarPosition: number = null;
         const arr: number[] = [temp];
         let isColAbslt: boolean = text[0] === '$';
-        if(!isColAbslt && text.includes('$') && text.trim()[0] === '$') {
+        if (!isColAbslt && text.includes('$') && text.trim()[0] === '$') {
             for (let idx: number = 1; idx < text.length; idx++) {
                 if (text[idx as number] === '$') {
                     dollarPosition = idx;

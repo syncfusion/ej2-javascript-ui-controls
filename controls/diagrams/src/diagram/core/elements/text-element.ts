@@ -3,7 +3,7 @@ import { Size } from '../../primitives/size';
 import { DiagramElement } from './diagram-element';
 import { measureText } from './../../utility/dom-util';
 import { HyperlinkModel } from './../../objects/annotation-model';
-import { AnnotationConstraints } from '../../enum/enum';
+import { AnnotationConstraints, RotationReference } from '../../enum/enum';
 import { SubTextElement, TextBounds } from '../../rendering/canvas-interface';
 
 /**
@@ -25,6 +25,10 @@ export class TextElement extends DiagramElement {
 
     /** @private */
     public canMeasure: boolean = true;
+
+    /**Gets or sets the reference mode for annotation rotation. */
+    /** @private */
+    public rotationReference: RotationReference = 'Parent';
 
     /** @private */
     public isLaneOrientation: boolean = false;

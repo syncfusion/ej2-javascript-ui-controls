@@ -17,7 +17,13 @@ export function getRequiredModules(context: Spreadsheet): ModuleDeclaration[] {
     return modules;
 }
 
-// eslint-disable-next-line
+/**
+ * To push basic modules to the spreadsheet.
+ *
+ * @param {Spreadsheet} context - Specifies the Spreadsheet instances.
+ * @param {ModuleDeclaration[]} modules - Specifies the modules declaration.
+ * @returns {void} - To push basic modules to the spreadsheet.
+ */
 function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): void {
     if (context.showRibbon) {
         modules.push({
@@ -128,6 +134,12 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     if (context.allowHyperlink) {
         modules.push({
             member: 'spreadsheetHyperlink',
+            args: [context]
+        });
+    }
+    if (context.enableNotes) {
+        modules.push({
+            member: 'spreadsheetNote',
             args: [context]
         });
     }

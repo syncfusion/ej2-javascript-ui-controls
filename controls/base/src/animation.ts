@@ -131,7 +131,7 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
      *
      * @param {HTMLElement} element - Element which needs to be stop the animation.
      * @param {AnimationOptions} model - Handling the animation model at stop function.
-     * @return {void}
+     * @returns {void}
      */
 
     public static stop(element: HTMLElement, model?: AnimationOptions): void {
@@ -264,7 +264,6 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {AnimationModel} oldProp ?
      * @returns {void} ?
      */
-    // eslint-disable-next-line
     public onPropertyChanged(newProp: AnimationModel, oldProp: AnimationModel): void {
         // no code needed
     }
@@ -475,7 +474,7 @@ function removeRipple(e: MouseEvent, eventArgs: RippleArgs): void {
     if (eventArgs.parent !== element) {
         EventHandler.remove(element, 'mouseleave', rippleLeaveHandler);
     }
-    /* tslint:disable:align */
+
     setTimeout(() => {
         if (rippleElement && rippleElement.parentNode) {
             rippleElement.parentNode.removeChild(rippleElement);

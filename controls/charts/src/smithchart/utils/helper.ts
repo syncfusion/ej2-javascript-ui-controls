@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { createElement, compile as templateComplier, remove } from '@syncfusion/ej2-base';
 import { Smithchart } from '../../smithchart/smithchart';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -35,10 +34,11 @@ export function getElement(id: string): Element {
 /**
  * To trim the text by given width.
  *
- * @param {number} maximumWidth max width of the text
- * @param {string} text text
- * @param {SmithchartFontModel} font text style
- * @returns {string} It returns trimmed text
+ * @param {number} maximumWidth - max width of the text
+ * @param {string} text - text
+ * @param {SmithchartFontModel} font - text style
+ * @param {SmithchartFontModel} themeFontStyle - theme font style
+ * @returns {string} - It returns trimmed text
  */
 export function textTrim(maximumWidth: number, text: string, font: SmithchartFontModel, themeFontStyle: SmithchartFontModel): string {
     let label: string = text;
@@ -61,8 +61,8 @@ export function textTrim(maximumWidth: number, text: string, font: SmithchartFon
 /**
  * Function to compile the template function for maps.
  *
- * @param {string | Function} templateString template with string format
- * @returns {Function} return template function
+ * @param {string | Function} templateString - template with string format.
+ * @returns {Function} - return template function.
  * @private
  */
 export function getTemplateFunction(templateString: string | Function): Function {
@@ -80,34 +80,34 @@ export function getTemplateFunction(templateString: string | Function): Function
 }
 
 /**
- * Get element from label
+ * Get element from label.
  *
- * @param {Element} element element
- * @param {string} labelId label id
- * @param {object} data chart data
- * @returns {HTMLElement} html element
+ * @param {Element} element - element
+ * @param {string} labelId - label id
+ * @param {object} data - chart data
+ * @returns {HTMLElement} - html element
  */
 export function convertElementFromLabel(
     element: Element, labelId: string, data: object): HTMLElement {
     const labelEle: Element = element[0];
     let templateHtml: string = labelEle.outerHTML;
     const properties: Object[] = Object.keys(data);
+    const regExp: RegExpConstructor = RegExp;
     for (let i: number = 0; i < properties.length; i++) {
-        // eslint-disable-next-line security/detect-non-literal-regexp
-        templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
+        templateHtml = templateHtml.replace(new regExp('{{:' + <string>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
     }
-    let templateElement : HTMLElement = createElement('div', {
+    const templateElement : HTMLElement = createElement('div', {
         id: labelId,
         styles: 'position: absolute'
     });
-    templateElement.innerText = templateHtml; 
+    templateElement.innerText = templateHtml;
     return templateElement;
 }
 
 /**
- * Get epsilon value
+ * Get epsilon value.
  *
- * @returns {number} return epsilon value
+ * @returns {number} - return epsilon value.
  */
 export function _getEpsilonValue(): number {
     let e: number = 1.0;
@@ -119,9 +119,9 @@ export function _getEpsilonValue(): number {
 
 
 /**
- * Method to calculate the width and height of the smithchart
+ * Method to calculate the width and height of the smithchart.
  *
- * @param {Smithchart} smithchart smithchart instance
+ * @param {Smithchart} smithchart - smithchart instance.
  * @returns {void}
  */
 export function calculateSize(smithchart: Smithchart): void {
@@ -136,13 +136,13 @@ export function calculateSize(smithchart: Smithchart): void {
 }
 
 /**
- * Method for template animation
+ * Method for template animation.
  *
- * @param {Smithchart} smithchart smithchart
- * @param {Element} element html element
- * @param {number} delay animation delay
- * @param {number} duration animation duration
- * @param {Effect} name animation name
+ * @param {Smithchart} smithchart - smithchart
+ * @param {Element} element - html element
+ * @param {number} delay - animation delay
+ * @param {number} duration - animation duration
+ * @param {Effect} name - animation name
  * @returns {void}
  */
 export function templateAnimate(smithchart: Smithchart, element: Element, delay: number, duration: number, name: Effect
@@ -168,11 +168,11 @@ export function templateAnimate(smithchart: Smithchart, element: Element, delay:
 }
 
 /**
- * Convert string to number
+ * Convert string to number.
  *
- * @param {string} value string type value
- * @param {number} containerSize size of the container
- * @returns {number} returns converted number
+ * @param {string} value - string type value.
+ * @param {number} containerSize - size of the container.
+ * @returns {number} - returns converted number.
  */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {
@@ -183,7 +183,7 @@ export function stringToNumber(value: string, containerSize: number): number {
 
 
 /**
- * Internal use of path options
+ * Internal use of path options.
  *
  * @private
  */
@@ -210,7 +210,7 @@ export class PathOption {
 }
 
 /**
- * Internal use of rectangle options
+ * Internal use of rectangle options.
  *
  * @private
  */
@@ -235,7 +235,7 @@ export class RectOption extends PathOption {
 
 
 /**
- * Internal use of circle options
+ * Internal use of circle options.
  *
  * @private
  */
@@ -257,18 +257,17 @@ export class CircleOption extends PathOption {
 /**
  * Method for calculate width and height of given string.
  *
- * @param {string} text text value
- * @param {SmithchartFontModel} font text font style
- * @returns {SmithchartSize} size of the text
+ * @param {string} text - text value
+ * @param {SmithchartFontModel} font - text font style
+ * @param {SmithchartFontModel} themeFontStyle - theme font style
+ * @returns {SmithchartSize} - size of the text
  */
 export function measureText(text: string, font: SmithchartFontModel, themeFontStyle?: SmithchartFontModel): SmithchartSize {
     let htmlObject: HTMLElement = document.getElementById('smithchartmeasuretext');
-
     if (htmlObject === null) {
         htmlObject = createElement('text', { id: 'smithchartmeasuretext' });
         document.body.appendChild(htmlObject);
     }
-
     htmlObject.innerText = text;
     htmlObject.style.position = 'absolute';
     htmlObject.style.visibility = 'hidden';
@@ -306,9 +305,9 @@ export class TextOption {
 }
 
 /**
- * Remove html element from DOM
+ * Remove html element from DOM.
  *
- * @param {string} id element id
+ * @param {string} id - element id
  * @returns {void}
  */
 export function removeElement(id: string): void {
@@ -317,13 +316,13 @@ export function removeElement(id: string): void {
 }
 
 /**
- * Animation Effect Calculation Started Here
+ * Animation Effect Calculation Started Here.
  *
- * @param {number} currentTime current time
- * @param {number} startValue start value of the animation
- * @param {number} endValue end value of the animation
- * @param {number} duration animation duration
- * @returns {number} number
+ * @param {number} currentTime - current time
+ * @param {number} startValue - start value of the animation
+ * @param {number} endValue - end value of the animation
+ * @param {number} duration - animation duration
+ * @returns {number} - number
  * @private
  */
 export function linear(currentTime: number, startValue: number, endValue: number, duration: number): number {
@@ -331,23 +330,23 @@ export function linear(currentTime: number, startValue: number, endValue: number
 }
 
 /**
- * Reverse linear calculation
+ * Reverse linear calculation.
  *
- * @param {number} currentTime current time
- * @param {number} startValue start value of the animation
- * @param {number} endValue end value of the animation
- * @param {number} duration animation duration
- * @returns {number} number
+ * @param {number} currentTime - current time
+ * @param {number} startValue - start value of the animation
+ * @param {number} endValue - end value of the animation
+ * @param {number} duration - animation duration
+ * @returns {number} - number
  */
 export function reverselinear(currentTime: number, startValue: number, endValue: number, duration: number): number {
     return -startValue * Math.sin(currentTime / duration * (Math.PI / 2)) + endValue + startValue;
 }
 
 /**
- * Get animation function name
+ * Get animation function name.
  *
- * @param {string} effect animation effect name
- * @returns {Function} animation function
+ * @param {string} effect - animation effect name
+ * @returns {Function} - animation function
  * @private
  */
 export function getAnimationFunction(effect: string): Function {
@@ -364,13 +363,14 @@ export function getAnimationFunction(effect: string): Function {
 }
 
 /**
- * Internal rendering of text
+ * Internal rendering of text.
  *
- * @param {TextOption} options text element options
- * @param {SmithchartFontModel} font text font style
- * @param {string} color color of the text
- * @param {HTMLElement} parent parent element of the text
- * @returns {Element} text element
+ * @param {TextOption} options - text element options.
+ * @param {SmithchartFontModel} font - text font style.
+ * @param {string} color - color of the text.
+ * @param {HTMLElement | Element} parent - parent element of the text.
+ * @param {SmithchartFontModel} themeFontStyle - theme font style.
+ * @returns {Element} - text element.
  * @private
  */
 export function renderTextElement(

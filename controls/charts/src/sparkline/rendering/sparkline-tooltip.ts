@@ -1,7 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { Sparkline, ITooltipRenderingEventArgs } from '../index';
 import { SparkValues, PathOption, drawPath, getIdElement, Rect, withInBounds } from '../utils/helper';
 import { Browser, extend, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
@@ -32,6 +28,7 @@ export class SparklineTooltip {
 
     /**
      * @hidden
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.sparkline.isDestroyed) { return; }
@@ -60,6 +57,7 @@ export class SparklineTooltip {
      * To remove tooltip and tracker elements.
      *
      * @private
+     * @returns {void}
      */
     public removeTooltipElements(): void {
         this.removeTooltip();
@@ -103,10 +101,13 @@ export class SparklineTooltip {
     }
 
     /**
-     * To render tracker line
+     * To render tracker line.
+     *
+     * @param {SparkValues} points - The data points for rendering the tracker line.
+     * @returns {void}
      */
     private renderTrackerLine(points: SparkValues): void {
-        const spark: Sparkline = this.sparkline; const theme: string = spark.theme.toLowerCase();
+        const spark: Sparkline = this.sparkline;
         const tracker: TrackLineSettingsModel = spark.tooltipSettings.trackLineSettings;
         const color: string = spark.sparkTheme.trackerLineColor ? spark.sparkTheme.trackerLineColor : tracker.color;
         if (!tracker.visible || spark.type === 'Pie') {
@@ -133,7 +134,10 @@ export class SparklineTooltip {
     }
 
     /**
-     * To render line series
+     * To render tooltip.
+     *
+     * @param {SparkValues} points - The data points for rendering the tooltip.
+     * @returns {void}
      */
     public renderTooltip(points: SparkValues): void {
         const spark: Sparkline = this.sparkline;
@@ -198,7 +202,7 @@ export class SparklineTooltip {
         const element: Tooltip = new Tooltip({
             content: tootipArgs.text,
             border: tooltip.border,
-            template: tooltip.template as any,
+            template: tooltip.template as string | Function,
             data: spark.dataSource[this.pointIndex],
             fill: backgroundColor,
             textStyle: tootipArgs.textStyle,
@@ -214,6 +218,12 @@ export class SparklineTooltip {
     }
     /**
      * To get tooltip format.
+     *
+     * @param {string} format - The format string for tooltip.
+     * @param {Sparkline} spark - The Sparkline instance.
+     * @param {string} x - The x-coordinate of the data point.
+     * @param {string} y - The y-coordinate of the data point.
+     * @returns {string[]} - The formatted tooltip text.
      */
     private getFormat(format: string, spark: Sparkline, x: string, y: string): string[] {
         if (isNullOrUndefined(format) || format === '') {
@@ -236,6 +246,8 @@ export class SparklineTooltip {
     }
     /**
      * To remove tracker line.
+     *
+     * @returns {void}
      */
     private removeTracker(): void {
         const tracker: Element = this.sparkline.element.querySelector('#' + this.sparkline.element.id + '_sparkline_tracker_g');
@@ -243,6 +255,8 @@ export class SparklineTooltip {
     }
     /**
      * To remove tooltip element.
+     *
+     * @returns {void}
      */
     private removeTooltip(): void {
         this.pointIndex = null;
@@ -251,14 +265,18 @@ export class SparklineTooltip {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - To get the module name.
      */
     protected getModuleName(): string {
         return 'SparklineTooltip';
     }
     /**
      * To destroy the tooltip.
+     *
+     * @returns {void}
      */
-    public destroy(sparkline: Sparkline): void {
+    public destroy(): void {
         // To remove tooltip module
     }
 }

@@ -1,6 +1,4 @@
 @include export-module('field-list-icons') {
-  
-  /*! field-list component icons */
   .e-pivotfieldlist {
     .e-select-table::before {
       content: '\e751';
@@ -328,8 +326,8 @@
     .e-field-list-search-icon::before {
       content: '\e754' !important;
     }
-    /* stylelint-enable */
 
+    /* stylelint-enable */
     .e-pivot-calc-outer-div .e-pivot-accord .e-edited.e-icons::before {
       content: '\e740';
     }

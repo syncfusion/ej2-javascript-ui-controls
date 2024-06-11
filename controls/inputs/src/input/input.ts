@@ -90,12 +90,11 @@ export namespace Input {
         validateInputType(inputObject.container, args.element);
         inputObject = setPropertyValue(args, inputObject);
         createSpanElement(inputObject.container, makeElement);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         privateInputObj = inputObject;
         return inputObject;
     }
 
-    function bindFocusEventHandler(args: InputArgs): any {
+    function bindFocusEventHandler(args: InputArgs): void {
         const parent: HTMLElement = getParentNode(args.element);
         if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline') || parent.classList.contains('e-filled')) {
             parent.classList.add('e-input-focus');
@@ -106,8 +105,8 @@ export namespace Input {
             }, 80);
         }
     }
-    
-    function bindBlurEventHandler (args: InputArgs): any {
+
+    function bindBlurEventHandler (args: InputArgs): void {
         const parent: HTMLElement = getParentNode(args.element);
         if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline') || parent.classList.contains('e-filled')) {
             parent.classList.remove('e-input-focus');
@@ -118,52 +117,51 @@ export namespace Input {
             }, 80);
         }
     }
-    
-    function bindInputEventHandler (args: InputArgs): any {
+
+    function bindInputEventHandler (args: InputArgs): void {
         checkInputValue(args.floatLabelType, args.element as HTMLInputElement);
     }
-    
-     export function bindInitialEvent(args: InputArgs): void {
+
+    export function bindInitialEvent(args: InputArgs): void {
         checkInputValue(args.floatLabelType, args.element as HTMLInputElement);
-        const focusHandler = () => bindFocusEventHandler(args);
-        const blurHandler = () => bindBlurEventHandler(args);
-        const inputHandler = () => bindInputEventHandler(args);
+        const focusHandler: () => void = () => bindFocusEventHandler(args);
+        const blurHandler: () => void = () => bindBlurEventHandler(args);
+        const inputHandler: () => void = () => bindInputEventHandler(args);
 
         args.element.addEventListener('focus', focusHandler);
         args.element.addEventListener('blur', blurHandler);
         args.element.addEventListener('input', inputHandler);
 
-        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputFocusHandler"] = { focusHandler};
-        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputBlurHandler"] = { blurHandler};
-        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputHandler"] = { inputHandler};
+        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputFocusHandler'] = { focusHandler };
+        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputBlurHandler'] = { blurHandler };
+        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputHandler'] = { inputHandler };
     }
 
     function unbindInitialEvent(args: InputArgs): void {
         if (!isNullOrUndefined(args.element)) {
             if (!isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers)) {
-                if (!isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputFocusHandler"])
-                && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputBlurHandler"])
-                && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputHandler"])) {
-                    const focusHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputFocusHandler"].focusHandler;
-                    const blurHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputBlurHandler"].blurHandler;
-                    const inputHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputHandler"].inputHandler;
-
+                if (!isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputFocusHandler'])
+                    && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputBlurHandler'])
+                    && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputHandler'])) {
+                    const focusHandler: any = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputFocusHandler'].focusHandler;
+                    const blurHandler: any = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputBlurHandler'].blurHandler;
+                    const inputHandler: any = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputHandler'].inputHandler;
                     args.element.removeEventListener('focus', focusHandler);
                     args.element.removeEventListener('blur', blurHandler);
                     args.element.removeEventListener('input', inputHandler);
 
                     // Clean up stored bound functions
-                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputFocusHandler"];
-                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputBlurHandler"];
-                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputHandler"];
+                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputFocusHandler'];
+                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputBlurHandler'];
+                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['inputHandler'];
                 }
             }
         }
     }
     function checkInputValue(floatLabelType: string, inputElement: HTMLInputElement): void {
         const inputValue: string = inputElement.value;
-        const inputParent = inputElement.parentElement;
-        const grandParent = inputParent.parentElement;
+        const inputParent: HTMLElement = inputElement.parentElement;
+        const grandParent: HTMLElement = inputParent.parentElement;
         if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
             if (inputParent && inputParent.classList.contains('e-input-group')) {
                 inputParent.classList.add('e-valid-input');
@@ -215,10 +213,10 @@ export namespace Input {
             element.removeEventListener('blur', _blurFn);
         }
     }
-    function inputEventHandler (args: InputArgs): any { 
+    function inputEventHandler (args: InputArgs): void {
         validateLabel(args.element, args.floatLabelType);
     }
-    function blurEventHandler (args: InputArgs): any {
+    function blurEventHandler (args: InputArgs): void {
         validateLabel(args.element, args.floatLabelType);
     }
     function createFloatingInput(args: InputArgs, inputObject: InputObject, internalCreateElement ?: createElementParams): void {
@@ -239,7 +237,7 @@ export namespace Input {
             inputObject.container.classList.add(CLASSNAMES.FLOATINPUT);
         }
         const floatLinelement: HTMLElement = makeElement('span', { className: CLASSNAMES.FLOATLINE });
-        const floatLabelElement = makeElement('label', { className: CLASSNAMES.FLOATTEXT });
+        const floatLabelElement: HTMLElement = makeElement('label', { className: CLASSNAMES.FLOATTEXT });
         if (!isNullOrUndefined(args.element.id) && args.element.id !== '') {
             floatLabelElement.id = 'label_' + args.element.id.replace(/ /g, '_');
             attributes(args.element, { 'aria-labelledby': floatLabelElement.id });
@@ -273,16 +271,16 @@ export namespace Input {
             addClass([floatLabelElement], CLASSNAMES.LABELTOP);
         }
         if (args.floatLabelType === 'Auto') {
-            const inputFloatHandler = () => inputEventHandler(args);
-            const blurFloatHandler = () => blurEventHandler(args);
+            const inputFloatHandler: () => void = () => inputEventHandler(args);
+            const blurFloatHandler: () => void = () => blurEventHandler(args);
 
             // Add event listeners using the defined functions
             args.element.addEventListener('input', inputFloatHandler);
             args.element.addEventListener('blur', blurFloatHandler);
 
             // Store the event handler functions to remove them later
-            (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatInputHandler"] = { inputFloatHandler };
-            (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatBlurHandler"] = { blurFloatHandler };
+            (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['floatInputHandler'] = { inputFloatHandler };
+            (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['floatBlurHandler'] = { blurFloatHandler };
         } else {
             unWireFloatLabelEvents(args);
         }
@@ -290,21 +288,23 @@ export namespace Input {
             floatLabelElement.setAttribute('for', args.element.getAttribute('id'));
         }
     }
-    function unWireFloatLabelEvents(args: InputArgs){
-        if (!isNullOrUndefined(args.element) && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers)
-            && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatInputHandler"])
-            && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatBlurHandler"])) {
-                const inputFloatHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatInputHandler"].inputFloatHandler;
-                const blurFloatHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatBlurHandler"].blurFloatHandler;
-            
-                // Remove the event listeners using the defined functions
-                args.element.removeEventListener('input', inputFloatHandler);
-                args.element.removeEventListener('blur', blurFloatHandler);
-            
-                // Clean up stored event handler functions
-                delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatInputHandler"];
-                delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatBlurHandler"];
-            
+    function unWireFloatLabelEvents(args: InputArgs): void {
+        if (!isNullOrUndefined(args.element) &&
+            !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers)
+            && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['floatInputHandler'])
+            && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['floatBlurHandler'])) {
+            const inputFloatHandler: any =
+                (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['floatInputHandler'].inputFloatHandler;
+            const blurFloatHandler: any =
+                (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['floatBlurHandler'].blurFloatHandler;
+
+            // Remove the event listeners using the defined functions
+            args.element.removeEventListener('input', inputFloatHandler);
+            args.element.removeEventListener('blur', blurFloatHandler);
+
+            // Clean up stored event handler functions
+            delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['floatInputHandler'];
+            delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['floatBlurHandler'];
         }
     }
 
@@ -342,14 +342,14 @@ export namespace Input {
 
     function updateIconState(value: string | number, button: HTMLElement, readonly?: boolean): void {
         if (!isNullOrUndefined(button)){
-            if(value && !readonly) {
+            if (value && !readonly) {
                 removeClass([button], CLASSNAMES.CLEARICONHIDE);
             }
             else{
                 addClass([button], CLASSNAMES.CLEARICONHIDE);
             }
         }
-        
+
     }
 
     function updateLabelState(value: string | number, label: HTMLElement, element: HTMLElement = null): void {
@@ -419,7 +419,7 @@ export namespace Input {
 
     function blurHandler (element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement): any {
         setTimeout (() => {
-            if(!isNullOrUndefined(button)){
+            if (!isNullOrUndefined(button)){
                 addClass([button], CLASSNAMES.CLEARICONHIDE);
                 button = !isNullOrUndefined(element) && element.classList.contains('e-combobox') ? null : button ;
             }
@@ -428,54 +428,55 @@ export namespace Input {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
         if (isBindClearAction === undefined || isBindClearAction) {
-            const clickHandlerEvent = (e: MouseEvent): void => clickHandler(e, element, button);
+            const clickHandlerEvent: (e: MouseEvent) => void = (e: MouseEvent): void => clickHandler(e, element, button);
             button.addEventListener('click', clickHandlerEvent);
-            (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearClickHandler"] = { clickHandlerEvent };
+            (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearClickHandler'] = { clickHandlerEvent };
         }
-        
-        const inputHandlerEvent = (): void => inputHandler(element, button);
-        const focusHandlerEvent = (): void => focusHandler(element, button);
-        const blurHandlerEvent = (): void => blurHandler(element, button);
+
+        const inputHandlerEvent: () => void = (): void => inputHandler(element, button);
+        const focusHandlerEvent: () => void = (): void => focusHandler(element, button);
+        const blurHandlerEvent: () => void = (): void => blurHandler(element, button);
 
         element.addEventListener('input', inputHandlerEvent);
         element.addEventListener('focus', focusHandlerEvent);
         element.addEventListener('blur', blurHandlerEvent);
-    
+
         // Store the bound functions to remove them later
-        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearInputHandler"] = { inputHandlerEvent };
-        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearFocusHandler"] = { focusHandlerEvent };
-        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearBlurHandler"] = { blurHandlerEvent };
+        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearInputHandler'] = { inputHandlerEvent };
+        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearFocusHandler'] = { focusHandlerEvent };
+        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearBlurHandler'] = { blurHandlerEvent };
     }
     function unWireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement): void {
-            if (!isNullOrUndefined(element) && !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers)) {
-                if (!isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearClickHandler"])) {
-                    const clickHandlerEvent = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearClickHandler"].clickHandlerEvent;
-                    if (isBindClearAction === undefined || isBindClearAction) {
-                        if (!isNullOrUndefined(button)) {
-                            button.removeEventListener('click', clickHandlerEvent);
-                        }
+        if (!isNullOrUndefined(element) &&
+            !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers)) {
+            if (!isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearClickHandler'])) {
+                const clickHandlerEvent: any = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearClickHandler'].clickHandlerEvent;
+                if (isBindClearAction === undefined || isBindClearAction) {
+                    if (!isNullOrUndefined(button)) {
+                        button.removeEventListener('click', clickHandlerEvent);
                     }
-                    delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearClickHandler"];
                 }
-                if (!isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearInputHandler"])
-                    && !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearFocusHandler"])
-                    && !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearBlurHandler"])) {
-                    const inputHandlerEvent = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearInputHandler"].inputHandlerEvent;
-                    const focusHandlerEvent = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearFocusHandler"].focusHandlerEvent;
-                    const blurHandlerEvent = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearBlurHandler"].blurHandlerEvent;
-
-                    
-                    element.removeEventListener('input', inputHandlerEvent);
-                    element.removeEventListener('focus', focusHandlerEvent);
-                    element.removeEventListener('blur', blurHandlerEvent);
-
-                    // Clean up stored Event functions
-                    
-                    delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearInputHandler"];
-                    delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearFocusHandler"];
-                    delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearBlurHandler"];
-                }
+                delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearClickHandler'];
             }
+            if (!isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearInputHandler'])
+                && !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearFocusHandler'])
+                && !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearBlurHandler'])) {
+                const inputHandlerEvent: any = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearInputHandler'].inputHandlerEvent;
+                const focusHandlerEvent: any = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearFocusHandler'].focusHandlerEvent;
+                const blurHandlerEvent: any = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearBlurHandler'].blurHandlerEvent;
+
+
+                element.removeEventListener('input', inputHandlerEvent);
+                element.removeEventListener('focus', focusHandlerEvent);
+                element.removeEventListener('blur', blurHandlerEvent);
+
+                // Clean up stored Event functions
+
+                delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearInputHandler'];
+                delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearFocusHandler'];
+                delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers['clearBlurHandler'];
+            }
+        }
     }
     export function destroy(args: InputArgs, button: HTMLElement = null): void {
         unbindInitialEvent(args);
@@ -483,14 +484,14 @@ export namespace Input {
             unWireFloatLabelEvents(args);
         }
         if (args.properties.showClearButton) {
-            unWireClearBtnEvents(args.element, button)
+            unWireClearBtnEvents(args.element, button);
         }
         if (!isNullOrUndefined(args.buttons)) {
             _internalRipple(false, null, args.buttons as any);
         }
         unwireFloatingEvents(args.element);
         if (!isNullOrUndefined(args.element)) {
-            delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers
+            delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers;
         }
         privateInputObj = null;
     }
@@ -545,7 +546,7 @@ export namespace Input {
                              floatLabelType ?: string, clearButton?: boolean): void {
         element.value = value;
         if (floatLabelType !== 'Never') {
-        	calculateWidth(element, element.parentElement);
+            calculateWidth(element, element.parentElement);
         }
         if ((!isNullOrUndefined(floatLabelType)) && floatLabelType === 'Auto') {
             validateLabel(element, floatLabelType);
@@ -598,12 +599,12 @@ export namespace Input {
         if (moduleName !== 'multiselect' && !_isElementVisible(element)) {
             return;
         }
-        const elementWidth : number = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10);
+        const elementWidth : number | Element = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10);
         if (!isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');
             }
-            if (elementWidth < container.getElementsByClassName('e-float-text-content')[0].clientWidth || elementWidth === container.getElementsByClassName('e-float-text-content')[0].clientWidth) {
+            if (elementWidth as number < container.getElementsByClassName('e-float-text-content')[0].clientWidth || elementWidth === container.getElementsByClassName('e-float-text-content')[0].clientWidth) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.add('e-float-text-overflow');
             }
         }
@@ -624,7 +625,7 @@ export namespace Input {
         } else if (typeof width === 'string') {
             container.style.width = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
         }
-        calculateWidth(container.firstChild, container);
+        calculateWidth(container.firstChild as HTMLElement, container);
     }
 
     /**
@@ -641,12 +642,22 @@ export namespace Input {
         const parentElement: HTMLElement = getParentNode(element);
         if (parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
             if (!isNullOrUndefined(placeholder) && placeholder !== '') {
-                parentElement.getElementsByClassName('e-float-text-content')[0] ? parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].children[0].textContent = placeholder : parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;
+                const floatTextContent: Element = parentElement.getElementsByClassName('e-float-text-content')[0];
+                if (floatTextContent) {
+                    floatTextContent.children[0].textContent = placeholder;
+                } else {
+                    parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;
+                }
                 parentElement.classList.remove(CLASSNAMES.NOFLOATLABEL);
                 element.removeAttribute('placeholder');
             } else {
                 parentElement.classList.add(CLASSNAMES.NOFLOATLABEL);
-                parentElement.getElementsByClassName('e-float-text-content')[0] ? parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].children[0].textContent = '' : parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = '';
+                const floatTextContent: Element = parentElement.getElementsByClassName('e-float-text-content')[0];
+                if (floatTextContent) {
+                    floatTextContent.children[0].textContent = '';
+                } else {
+                    parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = '';
+                }
             }
         } else {
             if (!isNullOrUndefined(placeholder) && placeholder !== '') {
@@ -858,12 +869,12 @@ export namespace Input {
      * E.g : Input.createSpanElement(inputObject, makeElement);
      * ```
      *
-     * @param {InputObject} inputObject
+     * @param {Element} inputObject
      * - Element which is need to get the label
      * @param {createElementParams} makeElement
      * - Element which is need to create the span
      */
-    export function createSpanElement(inputObject: any, makeElement: createElementParams): void {
+    export function createSpanElement(inputObject: Element, makeElement: createElementParams): void {
         if (inputObject.classList.contains('e-outline') && inputObject.getElementsByClassName('e-float-text')[0]) {
             const labelSpanElement: HTMLElement = makeElement('span', { className: CLASSNAMES.FLOATTEXTCONTENT });
             labelSpanElement.innerHTML = inputObject.getElementsByClassName('e-float-text')[0].innerHTML;
@@ -885,7 +896,7 @@ export namespace Input {
      */
     export function setRipple (isRipple: boolean, inputObj: InputObject[]): void {
         for (let i: number = 0 ; i < inputObj.length ; i++ ) {
-            _internalRipple(isRipple, inputObj[parseInt(i.toString())].container);
+            _internalRipple(isRipple, inputObj[parseInt(i.toString(), 10)].container);
         }
     }
 
@@ -896,13 +907,13 @@ export namespace Input {
         <NodeListOf<Element> & Element[]>container.querySelectorAll('.e-input-group-icon') : argsButton;
         if ( isRipple && buttons.length > 0) {
             for ( let index: number = 0 ; index < buttons.length; index++ ) {
-                buttons[parseInt(index.toString())].addEventListener('mousedown', _onMouseDownRipple, false);
-                buttons[parseInt(index.toString())].addEventListener('mouseup', _onMouseUpRipple, false);
+                buttons[parseInt(index.toString(), 10)].addEventListener('mousedown', _onMouseDownRipple , false);
+                buttons[parseInt(index.toString(), 10)].addEventListener('mouseup', _onMouseUpRipple , false);
             }
         } else if (buttons.length > 0) {
             for ( let index: number = 0 ; index < buttons.length; index++ ) {
-                buttons[parseInt(index.toString())].removeEventListener('mousedown', _onMouseDownRipple);
-                buttons[parseInt(index.toString())].removeEventListener('mouseup', _onMouseUpRipple);
+                buttons[parseInt(index.toString(), 10)].removeEventListener('mousedown', _onMouseDownRipple, this);
+                buttons[parseInt(index.toString(), 10)].removeEventListener('mouseup', _onMouseUpRipple, this);
             }
         }
     }
@@ -931,8 +942,7 @@ export namespace Input {
     }
 
     function _onMouseDownRipple(): void {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const ele: HTMLElement = this;
+        const ele: HTMLElement = null || this;
         let parentEle: HTMLElement = this.parentElement;
         while (!parentEle.classList.contains('e-input-group')) {
             parentEle = parentEle.parentElement;
@@ -941,8 +951,7 @@ export namespace Input {
     }
 
     function _onMouseUpRipple (): void {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const ele: HTMLElement = this;
+        const ele: HTMLElement = null || this;
         setTimeout(
             () => {
                 ele.classList.remove('e-input-btn-ripple');
@@ -967,10 +976,8 @@ export namespace Input {
      * @param {HTMLElement} container - The container on which created span element is going to append.
      * @param {HTMLElement} input - The inputElement on which created span element is going to prepend.
      */
-    /* eslint-disable @typescript-eslint/indent */
     export function addIcon(position: string, icons: string | string[], container: HTMLElement,
-        input: HTMLElement, internalCreate?: createElementParams): void {
-    /* eslint-enable @typescript-eslint/indent */
+                            input: HTMLElement, internalCreate?: createElementParams): void {
         const result: string[] = typeof(icons) === 'string' ? icons.split(',')
             : icons;
         if (position.toLowerCase() === 'append') {
@@ -983,7 +990,7 @@ export namespace Input {
             }
         }
         if (container.getElementsByClassName('e-input-group-icon')[0] && container.getElementsByClassName('e-float-text-overflow')[0]) {
-            container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');   
+            container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
         }
     }
 
@@ -998,10 +1005,8 @@ export namespace Input {
      * @param {HTMLElement} container - The container on which created span element is going to append.
      * @param {HTMLElement} inputElement - The inputElement on which created span element is going to prepend.
      */
-    /* eslint-disable @typescript-eslint/indent */
     export function prependSpan(iconClass: string, container: HTMLElement,
-        inputElement: HTMLElement, internalCreateElement?: createElementParams): HTMLElement {
-    /* eslint-enable @typescript-eslint/indent */
+                                inputElement: HTMLElement, internalCreateElement?: createElementParams): HTMLElement {
         const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         const button: HTMLElement = createIconEle(iconClass, makeElement);
         container.classList.add('e-float-icon-left');
@@ -1012,8 +1017,8 @@ export namespace Input {
             const result: NodeListOf<Element> = container.querySelectorAll(inputElement.tagName + ' ~ *');
             innerWrapper.appendChild(inputElement);
             for (let i: number = 0; i < result.length; i++) {
-                const element = result[parseInt(i.toString())];
-                const parentElement = innerWrapper.parentElement;
+                const element: Element = result[parseInt(i.toString(), 10)];
+                const parentElement: HTMLElement = innerWrapper.parentElement;
                 if (!(element.classList.contains('e-float-line')) || (!(parentElement && parentElement.classList.contains('e-filled')) && parentElement)) {
                     innerWrapper.appendChild(element);
                 }
@@ -1052,7 +1057,8 @@ export namespace Input {
         }
     }
 
-    export function updateHTMLAttributesToElement (htmlAttributes : {[key: string]: string}, element: HTMLInputElement | HTMLTextAreaElement): void {
+    export function updateHTMLAttributesToElement
+    (htmlAttributes : {[key: string]: string}, element: HTMLInputElement | HTMLTextAreaElement): void {
         if ( !isNullOrUndefined(htmlAttributes)) {
             for (const key of Object.keys(htmlAttributes)) {
                 if (containerAttributes.indexOf(key) < 0 ) {
@@ -1062,7 +1068,7 @@ export namespace Input {
         }
     }
 
-    export function updateCssClass (newClass : string, oldClass : string, container: HTMLElement)
+    export function updateCssClass (newClass : string, oldClass : string, container: HTMLElement): void
     {
         setCssClass(getInputValidClassList(newClass), [container], getInputValidClassList(oldClass));
     }

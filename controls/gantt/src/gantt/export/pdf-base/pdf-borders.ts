@@ -4,6 +4,7 @@
 import { PdfPen, PdfDashStyle, PdfColor } from '@syncfusion/ej2-pdf-export';
 /**
  * `PdfBorders` class used represents the cell border of the PDF grid.
+ *
  * @hidden
  */
 export class PdfBorders {

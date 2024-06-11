@@ -14,7 +14,7 @@ describe('DropDownButton', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -380,6 +380,16 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton();
             drpButton.appendTo('#drp-button');
             drpButton.focusIn();
+        });
+        it('window resize method', () => {
+            drpButton = new DropDownButton();
+            drpButton.appendTo('#drp-button');
+            drpButton.windowResize();
+        });
+        it('focusoutHandler method', () => {
+            drpButton = new DropDownButton();
+            drpButton.appendTo('#drp-button');
+            drpButton.focusoutHandler();
         });
     });
 
@@ -777,5 +787,121 @@ describe('DropDownButton', () => {
         const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    describe('Null or undefined Property testing', () => {
+        afterEach(() => {
+            drpButton.destroy();
+        });
+
+        it('DropDownButton with items', () => {
+            drpButton = new DropDownButton({ items: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.items).toEqual([]);
+            drpButton = new DropDownButton({ items: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.items).toEqual([]);
+        });
+
+        it('DropDownButton with locale', () => {
+            drpButton = new DropDownButton({ locale: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.locale).toEqual('en-US');
+            drpButton = new DropDownButton({ locale: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.locale).toEqual('en-US');
+        });
+
+        it('DropDownButton with iconCss', () => {
+            drpButton = new DropDownButton({ iconCss: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.iconCss).toEqual(null);
+            drpButton = new DropDownButton({ iconCss: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.iconCss).toEqual('');
+        });
+
+        it('DropDownButton with iconPosition', () => {
+            drpButton = new DropDownButton({ iconPosition: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.iconPosition).toEqual(null);
+            drpButton = new DropDownButton({ iconPosition: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.iconPosition).toEqual('Left');
+        });
+
+        it('DropDownButton with disabled', () => {
+            drpButton = new DropDownButton({ disabled: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.disabled).toEqual(null);
+            drpButton = new DropDownButton({ disabled: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.disabled).toEqual(false);
+        });
+
+        it('DropDownButton with target', () => {
+            drpButton = new DropDownButton({ target: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.target).toEqual(null);
+            drpButton = new DropDownButton({ target: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.target).toEqual('');
+        });
+
+        it('DropDownButton with content', () => {
+            drpButton = new DropDownButton({ content: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.content).toEqual(null);
+            drpButton = new DropDownButton({ content: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.content).toEqual('');
+        });
+
+        it('DropDownButton with createPopupOnClick', () => {
+            drpButton = new DropDownButton({ createPopupOnClick: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.createPopupOnClick).toEqual(null);
+            drpButton = new DropDownButton({ createPopupOnClick: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.createPopupOnClick).toEqual(false);
+        });
+
+        it('DropDownButton with closeActionEvents', () => {
+            drpButton = new DropDownButton({ closeActionEvents: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.closeActionEvents).toEqual(null);
+            drpButton = new DropDownButton({ closeActionEvents: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.closeActionEvents).toEqual('');
+        });
+
+        it('DropDownButton with enableHtmlSanitizer', () => {
+            drpButton = new DropDownButton({ enableHtmlSanitizer: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.enableHtmlSanitizer).toEqual(null);
+            drpButton = new DropDownButton({ enableHtmlSanitizer: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.enableHtmlSanitizer).toEqual(true);
+        });
+
+        it('DropDownButton with enablePersistence', () => {
+            drpButton = new DropDownButton({ enablePersistence: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.enablePersistence).toEqual(null);
+            drpButton = new DropDownButton({ enablePersistence: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.enablePersistence).toEqual(false);
+        });
+
+        it('DropDownButton with enableRtl', () => {
+            drpButton = new DropDownButton({ enableRtl: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.enableRtl).toEqual(false);
+            drpButton = new DropDownButton({ enableRtl: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.enableRtl).toEqual(false);
+        });
+
+
     });
 });

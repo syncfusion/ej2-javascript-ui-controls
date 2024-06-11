@@ -51,10 +51,11 @@ export class ViewBase {
                 }
             });
         });
-        if (!isNullOrUndefined(this.parent.resourceBase.renderedResources) && this.parent.resourceBase.renderedResources.length > 0) {
+        const rendereData: TdData[]= this.parent.resourceBase.renderedResources;
+        if (!isNullOrUndefined(rendereData) && rendereData.length > 0) {
             for (let i: number = 0; i < resourceTd.length; i++) {
                 const element: HTMLElement = resourceTd[parseInt(i.toString(), 10)];
-                const data: TdData = this.parent.resourceBase.renderedResources[parseInt(i.toString(), 10)];
+                const data: TdData = rendereData[parseInt(i.toString(), 10)];
                 if (this.parent.activeView && !isNullOrUndefined(element) && !isNullOrUndefined(data)
                     && parseInt(element.getAttribute('data-group-index'), 10) === data.groupIndex) {
                     this.parent.activeView.setResourceHeaderContent(element, data, cls.RESOURCE_TEXT_CLASS);
@@ -129,6 +130,9 @@ export class ViewBase {
     }
 
     public createColGroup(table: Element, lastRow: TdData[]): void {
+        if (isNullOrUndefined(lastRow)) {
+            return;
+        }
         let length: number = lastRow.length;
         if (lastRow[0] && lastRow[0].colSpan) {
             length = lastRow.map((value: TdData) => value.colSpan).reduce((prev: number, next: number) => prev + next);
@@ -283,7 +287,7 @@ export class ViewBase {
     }
 
     public isWorkDay(date: Date, workDays: number[] = this.parent.activeViewOptions.workDays): boolean {
-        if (workDays.indexOf(date.getDay()) >= 0) {
+        if (!isNullOrUndefined(workDays) && workDays.indexOf(date.getDay()) >= 0) {
             return true;
         }
         return false;
@@ -414,7 +418,7 @@ export class ViewBase {
         }
         let formattedStr: string;
         let longDateFormat: string;
-        if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
+        if (isNullOrUndefined(this.parent.locale) || this.parent.locale === 'en' || this.parent.locale === 'en-US') {
             longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
         } else {
             longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);

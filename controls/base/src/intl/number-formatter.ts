@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isUndefined, throwError, isNullOrUndefined, extend, isBlazor, getValue } from '../util';
 import { NumberFormatOptions, defaultCurrencyCode } from '../internationalization';
 import { IntlBase as base } from './intl-base';
@@ -25,7 +26,7 @@ export interface CommonOptions {
     minusSymbol?: string;
     isCustomFormat?: boolean;
 }
-/* eslint-disable */
+
 /**
  * Interface for currency processing
  */
@@ -34,7 +35,7 @@ interface CurrencyOptions {
     symbol?: string;
     currencySpace?: boolean;
 }
-/* eslint-enable */
+
 /**
  * Interface for grouping process
  */
@@ -76,7 +77,6 @@ export class NumberFormat {
             parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
         dOptions.currencySymbol = isBlazor() ? getValue('currencySymbol', numObject) : base.getCurrencySymbol(
             dependable.numericObject, fOptions.currency || defaultCurrencyCode, option.altSymbol);
-        /* eslint-disable  @typescript-eslint/no-explicit-any */
         dOptions.percentSymbol = isBlazor() ? getValue('numberSymbols.percentSign', numObject) :
             (<any>dOptions).numberMapper.numberSymbols[`${percentSign}`];
         dOptions.minusSymbol = isBlazor() ? getValue('numberSymbols.minusSign', numObject) :
@@ -84,6 +84,9 @@ export class NumberFormat {
         const symbols: any = dOptions.numberMapper.numberSymbols;
         if ((option.format) && !(base.formatRegex.test(option.format))) {
             cOptions = base.customFormat(option.format, dOptions, dependable.numericObject);
+            if (!isUndefined(fOptions.useGrouping) && fOptions.useGrouping) {
+                fOptions.useGrouping = cOptions.pData.useGrouping;
+            }
         } else {
             extend(fOptions, base.getProperNumericSkeleton(option.format || 'N'));
             fOptions.isCurrency = fOptions.type === 'currency';
@@ -181,8 +184,7 @@ export class NumberFormat {
         const decide: string = isFraction ? 'f' : 's';
         let dint: number = 0;
         const str1: string = (<any>errorText)['l' + decide];
-        // eslint-disable-next-line
-        let str2: string = (<any>errorText)['m' + decide];
+        const str2: string = (<any>errorText)['m' + decide];
         if (!isUndefined(val1)) {
             this.checkRange(val1, str1, isFraction);
             dint++;
@@ -256,7 +258,7 @@ export class NumberFormat {
                     let decimalPart: string = temp[1];
                     const len: number = decimalPart.length;
                     for (let i: number = len - 1; i >= 0; i--) {
-                        if (decimalPart[`${i}`] === '0' && i >= curData.minimumFractionDigits) {
+                        if (decimalPart[parseInt(i.toString(), 10)] === '0' && i >= curData.minimumFractionDigits) {
                             decimalPart = decimalPart.slice(0, i);
                         } else {
                             break;
@@ -272,7 +274,6 @@ export class NumberFormat {
             fValue = fValue.replace('.', (<any>dOptions).numberMapper.numberSymbols[mapper[3]]);
             fValue = curData.format === '#,###,,;(#,###,,)' ? this.customPivotFormat(parseInt(fValue, 10)) : fValue;
             if (curData.useGrouping) {
-                /* eslint-disable  @typescript-eslint/no-explicit-any */
                 fValue = this.groupNumbers(
                     fValue, curData.groupData.primary, curData.groupSeparator || ',',
                     (<any>dOptions).numberMapper.numberSymbols[mapper[3]] || '.', curData.groupData.secondary);
@@ -399,7 +400,6 @@ export class NumberFormat {
     private static customPivotFormat(value: number): string {
         if (value >= 500000) {
             value /= 1000000;
-            // eslint-disable-next-line
             const [integer, decimal] = value.toString().split('.');
             return decimal && +decimal.substring(0, 1) >= 5
                 ? Math.ceil(value).toString()

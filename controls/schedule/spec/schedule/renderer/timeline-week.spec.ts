@@ -4959,6 +4959,42 @@ describe('Schedule Timeline Week view', () => {
         });
     });
 
+    describe('ES-886455 - Overlap with same event duration', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Workflow Analysis',
+            StartTime: new Date(2023, 1, 4, 9, 30),
+            EndTime: new Date(2023, 1, 4, 9, 30)
+        }, {
+            Id: 2,
+            Subject: 'New Analysis',
+            StartTime: new Date(2023, 1, 4, 9, 30),
+            EndTime: new Date(2023, 1, 4, 9, 30)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '250px',
+                selectedDate: new Date(2023, 1, 4),
+                currentView: 'TimelineDay',
+                views: [{ option: 'TimelineDay' }]
+            };
+            schObj = util.createSchedule(model, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking overlapping events when events having same duration', () => {
+            const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(2);
+            expect((eventElementList[0] as HTMLElement).style.top).toEqual('2px');
+            expect((eventElementList[0] as HTMLElement).style.width).toEqual('50px');
+            expect((eventElementList[1] as HTMLElement).style.top).toEqual('42px');
+            expect((eventElementList[1] as HTMLElement).style.width).toEqual('50px');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

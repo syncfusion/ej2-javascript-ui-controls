@@ -6,7 +6,7 @@ import { ColumnModel } from './index';
 export const columnArray: ColumnModel[] = [
     {
         field: 'name', headerText: 'Name', minWidth: 120,
-        template: '<span class=\"e-fe-text\">${name}</span>',
+        template: '<span class="e-fe-text">${name}</span>',
         customAttributes: { class: 'e-fe-grid-name'}
     },
     {
@@ -15,9 +15,11 @@ export const columnArray: ColumnModel[] = [
     },
     {
         field: 'size', headerText: 'Size', minWidth: 90, width: '110',
-        template: initializeCSPTemplate(function(data: any) {
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        template: initializeCSPTemplate(function(data: any): string | Function  {
             return `<span class="e-fe-size">${data.size}</span>`;
-        }) as any, format: 'n2'
+        }) as string | Function, format: 'n2'
     }
 ];
 /**

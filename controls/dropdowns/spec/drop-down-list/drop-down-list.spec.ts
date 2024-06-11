@@ -4,7 +4,7 @@
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n } from '@syncfusion/ej2-base';
 import { DropDownBase, FilteringEventArgs, dropDownBaseClasses, PopupEventArgs, SelectEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DropDownList } from '../../src/drop-down-list/drop-down-list';
-import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, Query, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
@@ -494,7 +494,11 @@ describe('DDList', () => {
         let listObj: any;
         let popupObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
+         });
         beforeEach(() => {
             document.body.appendChild(element);
         });
@@ -512,8 +516,8 @@ describe('DDList', () => {
             listObj.appendTo(element);
             setTimeout(() => {
                 expect(listObj.index).toBe(2);
-                expect(listObj.text).toBe('Leverling');
-                expect(listObj.value).toBe(1003);
+                expect(listObj.text).toBe('Janet Leverling');
+                expect(listObj.value).toBe(3);
                 expect(isNullOrUndefined(listObj.popupObj)).toBe(true);
                 done();
             }, 800);
@@ -522,12 +526,12 @@ describe('DDList', () => {
          * remoteData binding with text
          */
         it('value at initialize time ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, value: 1004, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, value: 5, fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             setTimeout(() => {
-                expect(listObj.value).toBe(1004);
-                expect(listObj.index).toBe(3);
-                expect(listObj.text).toBe('Peacock');
+                expect(listObj.value).toBe(5);
+                expect(listObj.index).toBe(4);
+                expect(listObj.text).toBe('Margaret Peacock');
                 expect(isNullOrUndefined(listObj.popupObj)).toBe(true);
                 done();
             }, 800);
@@ -536,12 +540,12 @@ describe('DDList', () => {
          * remoteData binding with value
          */
         it('text at initialize time ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, text: 'King', fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, text: 'Robert King', fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             setTimeout(() => {
-                expect(listObj.text).toBe('King');
-                expect(listObj.value).toBe(1007);
-                expect(listObj.index).toBe(6);
+                expect(listObj.text).toBe('Robert King');
+                expect(listObj.value).toBe(8);
+                expect(listObj.index).toBe(7);
                 expect(isNullOrUndefined(listObj.popupObj)).toBe(true);
                 done();
             }, 800);
@@ -552,12 +556,12 @@ describe('DDList', () => {
         it('index at dynamic changes ', (done) => {
             listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
-            listObj.index = 3;
+            listObj.index = 4;
             listObj.dataBind();
             setTimeout(() => {
-                expect(listObj.index).toBe(3);
-                expect(listObj.text).toBe('Peacock');
-                expect(listObj.value).toBe(1004);
+                expect(listObj.index).toBe(4);
+                expect(listObj.text).toBe('Margaret Peacock');
+                expect(listObj.value).toBe(5);
                 expect(isNullOrUndefined(listObj.popupObj)).toBe(true);
                 done();
             }, 800);
@@ -568,12 +572,12 @@ describe('DDList', () => {
         it('text at dynamic changes ', (done) => {
             listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
-            listObj.text = 'Fuller';
+            listObj.text = 'Andrew Fuller';
             listObj.dataBind();
             setTimeout(() => {
-                expect(listObj.index).toBe(1);
-                expect(listObj.text).toBe('Fuller');
-                expect(listObj.value).toBe(1002);
+                expect(listObj.index).toBe(0);
+                expect(listObj.text).toBe('Andrew Fuller');
+                expect(listObj.value).toBe(1);
                 expect(isNullOrUndefined(listObj.popupObj)).toBe(true);
                 done();
             }, 800);
@@ -584,11 +588,11 @@ describe('DDList', () => {
         it('value at dynamic changes ', (done) => {
             listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
-            listObj.value = 1003;
+            listObj.value = 3;
             listObj.dataBind();
             setTimeout(() => {
-                expect(listObj.value).toBe(1003);
-                expect(listObj.text).toBe('Leverling');
+                expect(listObj.value).toBe(3);
+                expect(listObj.text).toBe('Janet Leverling');
                 expect(listObj.index).toBe(2);
                 expect(isNullOrUndefined(listObj.popupObj)).toBe(true);
                 done();
@@ -3172,8 +3176,9 @@ describe('DDList', () => {
             document.body.appendChild(element);
             ddlObj = new DropDownList({
                 dataSource: new DataManager({
-                    url: '/api/Employees',
-                    adaptor: new ODataV4Adaptor
+                    url: 'https://services.syncfusion.com/js/production/api/Employees',
+                    adaptor: new WebApiAdaptor,
+                    crossDomain: true
                 }),
                 fields: { value: 'EmployeeID', text: 'FirstName' }
             });
@@ -3529,7 +3534,11 @@ describe('DDList', () => {
         let popupObj: any;
         let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, charCode: 76, metaKey: false };
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true 
+        });
         beforeEach(() => {
             document.body.appendChild(element);
         });
@@ -3547,7 +3556,7 @@ describe('DDList', () => {
             listObj.appendTo(element);
             listObj.onSearch(keyEventArgs)
             setTimeout(() => {
-                expect(listObj.text).toBe('Leverling');
+                expect(listObj.text).toBe('Laura Callahan');
                 done();
             }, 800);
         });
@@ -4044,7 +4053,11 @@ describe('DDList', () => {
             }, 450);
         });
         it(' trigger on remote data', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({ 
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true 
+            });
             let isDataBound: boolean = false;
             dropDowns = new DropDownList({
                 dataSource: remoteData,
@@ -4110,7 +4123,11 @@ describe('DDList', () => {
         });
 
         it(' actionComplete event', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
             dropDowns = new DropDownList({
                 dataSource: remoteData,
                 allowFiltering: true,
@@ -4141,7 +4158,11 @@ describe('DDList', () => {
             element.remove();
         });
         it(' actionBegin event', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({ 
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
             dropDowns = new DropDownList({
                 dataSource: remoteData,
                 allowFiltering: true,
@@ -5487,7 +5508,11 @@ describe('DDList', () => {
         let listObj: any;
         let popupObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true 
+        });
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeEach(() => {
             document.body.appendChild(element);
@@ -5797,6 +5822,536 @@ describe('DDList', () => {
                 expect(!isNullOrUndefined(eventDetails)).toBe(true);
                 done();
                 }, 250);
+            });
+        });
+        describe('Disable items', () => {       
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": false, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": false, "Game": "Golf", "Id" : 'Game6' },
+                { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+                { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+                { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            /**
+           * Mouse click
+           */
+            it('checked with disableItem method', (done) => {             
+                listObj.showPopup();
+                setTimeout(() => {
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                    listObj.disableItem("Game4");
+                    expect(listObj.liCollections[3].classList.contains('e-disabled')).toBe(true);
+                    expect(listObj.liCollections[3].getAttribute('aria-selected')).toBe('false');
+                    expect(listObj.liCollections[3].getAttribute('aria-disabled')).toBe('true');
+                    expect(listObj.liCollections[6].classList.contains('e-disabled')).toBe(true);
+                    expect(listObj.liCollections[6].getAttribute('aria-selected')).toBe('false');
+                    expect(listObj.liCollections[6].getAttribute('aria-disabled')).toBe('true');
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                    listObj.disableItem({ "State": true, "Game": "Hockey", "Id" : 'Game7' });
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                    listObj.disableItem(0);
+                    expect(listObj.liCollections[0].classList.contains('e-disabled')).toBe(true);
+                    expect(listObj.liCollections[0].getAttribute('aria-selected')).toBe('false');
+                    expect(listObj.liCollections[0].getAttribute('aria-disabled')).toBe('true');
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(7);
+                    listObj.disableItem("Game8");
+                    expect(listObj.liCollections[7].classList.contains('e-disabled')).toBe(true);
+                    expect(listObj.liCollections[7].getAttribute('aria-selected')).toBe('false');
+                    expect(listObj.liCollections[7].getAttribute('aria-disabled')).toBe('true');
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(6);
+                    listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                    expect(listObj.liCollections[9].classList.contains('e-disabled')).toBe(true);
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                    listObj.disableItem(0);
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                    listObj.disableItem("Game8");
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                    listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                    listObj.disableItem(listObj.liCollections[8]);
+                    expect(listObj.liCollections[8].classList.contains('e-disabled')).toBe(true);
+                    expect(listObj.liCollections[8].getAttribute('aria-selected')).toBe('false');
+                    expect(listObj.liCollections[8].getAttribute('aria-disabled')).toBe('true');
+                    expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(4);
+                    done();
+                }, 450);
+            });
+        }); 
+        describe('Disable items', function () {
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": false, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": false, "Game": "Golf", "Id" : 'Game6' },
+                { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+                { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+                { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                    value: 'Game7',
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            it('checked with value binding', function (done) { 
+                setTimeout(function () {
+                    expect(listObj.value).toBe(null);
+                    listObj.value = "Game4";
+                    listObj.dataBind();
+                    expect(listObj.value === null).toBe(true);
+                    listObj.value = "Game1";
+                    listObj.dataBind();
+                    listObj.disableItem(0);
+                    expect(listObj.value === null).toBe(true);
+                    done();
+                }, 450);
+            });
+        }); 
+        describe('Disable items with incremental search', function () {
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, charCode: 70 };
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": true, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": false, "Game": "Golf", "Id" : 'Game6' },
+                { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+                { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+                { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            it('"C" key pressing ', (done) => {
+                keyEventArgs.charCode = 67;                
+                setTimeout(() => {
+                    listObj.onSearch(keyEventArgs);
+                    expect(listObj.value).toBe(null);
+                    done();
+                }, 500);
+            });
+            it('"A" key pressing ', (done) => {
+                keyEventArgs.charCode = 66;                
+                setTimeout(() => {
+                    listObj.onSearch(keyEventArgs);
+                    expect(listObj.value).toBe(null);
+                    done();
+                }, 700);
+            });
+            it('"B" key pressing ', (done) => {
+                keyEventArgs.charCode = 66;               
+                setTimeout(() => {
+                    listObj.onSearch(keyEventArgs); 
+                    expect(listObj.value).toBe('Game2');
+                    listObj.disableItem(1);
+                    done();
+                }, 700);
+            });
+            it('"B" key pressing ', (done) => {               
+                setTimeout(() => {
+                    listObj.onSearch(keyEventArgs);
+                    expect(listObj.value).toBe('Game3');
+                    done();
+                }, 500);
+            });
+            it('"C" key pressing ', (done) => {
+                keyEventArgs.charCode = 66;                
+                setTimeout(() => {
+                    listObj.onSearch(keyEventArgs);
+                    expect(listObj.value).toBe('Game3');
+                    done();
+                }, 500);
+            });
+        });  
+        describe('Disable items with allowfiltering', function () {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'escape' };
+            let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": false, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": false, "Game": "Golf", "Id" : 'Game6' },
+                { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+                { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+                { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                    allowFiltering: true
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            it('to check the mouse click action', function (done) { 
+                setTimeout(function () {
+                    listObj.showPopup();
+                    listObj.filterInput.value = "r";
+                    listObj.onInput()
+                    listObj.onFilterUp(keyEventArgs);
+                    mouseEventArgs.target = listObj.popupObj.element.querySelectorAll('li')[0];
+                    listObj.onMouseClick(mouseEventArgs);
+                    expect(listObj.liCollections[0].classList.contains('e-active')).toBe(true);
+                    listObj.showPopup();
+                    listObj.filterInput.value = "c";
+                    listObj.onInput()
+                    listObj.onFilterUp(keyEventArgs);
+                    mouseEventArgs.target = listObj.liCollections[0];
+                    listObj.onMouseClick(mouseEventArgs);
+                    expect(listObj.liCollections[0].classList.contains('e-active')).toBe(false);
+                    expect(listObj.liCollections[0].classList.contains('e-disabled')).toBe(true);
+                    done();
+                }, 450);
+            });
+        });
+        describe('Disable items with allowfiltering', function () {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'escape' };
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": false, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": false, "Game": "Golf", "Id" : 'Game6' },
+                { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+                { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+                { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                    allowFiltering: true
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            it('to check the enabled value with enter key action', function (done) { 
+                listObj.showPopup();
+                setTimeout(function () {
+                    listObj.filterInput.value = "s";
+                    listObj.onInput()
+                    listObj.onFilterUp(keyEventArgs); 
+                    keyEventArgs.action = 'enter';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.liCollections[0].classList.contains('e-active')).toBe(true);
+                    done();
+                }, 200);
+            });
+            it('to check the diabled value with enter key action', function (done) { 
+                setTimeout(function () {
+                    listObj.showPopup();
+                    listObj.filterInput.value = "c";
+                    listObj.onInput()
+                    listObj.onFilterUp(keyEventArgs); 
+                    keyEventArgs.action = 'enter';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.liCollections[0].classList.contains('e-active')).toBe(false);
+                    expect(listObj.liCollections[0].classList.contains('e-disabled')).toBe(true);
+                    done();
+                }, 400);
+            });
+        });   
+        describe('Disable Items', function () {      
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": false, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": false, "Game": "Golf", "Id" : 'Game6' },
+                { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+                { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+                { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                    value: { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                    allowObjectBinding: true,
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            it('checked with object value binding', function (done) {   
+                setTimeout(function () {
+                    expect(listObj.value).toBe(null);
+                    listObj.value = { "State": true, "Game": "Cricket", "Id" : 'Game4' };
+                    listObj.dataBind();
+                    expect(listObj.value === null).toBe(true);
+                    listObj.value = { "State": false, "Game": "American Football", "Id" : 'Game1' };
+                    listObj.dataBind();
+                    listObj.disableItem(0);
+                    expect(listObj.value === null).toBe(true);
+                    done();
+                }, 450);
+            });
+        });
+        describe('Disable items', function () {        
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": false, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": false, "Game": "Golf", "Id" : 'Game6' },
+                { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+                { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+                { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                    text: "Hockey",
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            it('checked with text binding', function (done) {
+                setTimeout(function () {
+                    expect(listObj.value).toBe(null);
+                    listObj.text = "Cricket";
+                    listObj.dataBind();
+                    expect(listObj.value === null).toBe(true);
+                    listObj.text = "American Football";
+                    listObj.dataBind();
+                    listObj.disableItem("Game1");
+                    expect(listObj.value === null).toBe(true);
+                    done();
+                }, 450);
+            });
+        });
+        describe('Disable items', function () {         
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": false, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": false, "Game": "Golf", "Id" : 'Game6' },
+                { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+                { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+                { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                    index: 6,
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            it('checked with index binding', function (done) {
+                setTimeout(function () {
+                    expect(listObj.value).toBe(null);
+                    listObj.index = 3;
+                    listObj.dataBind();
+                    expect(listObj.value === null).toBe(true);
+                    listObj.index = 0;
+                    listObj.dataBind();
+                    listObj.disableItem({ "State": false, "Game": "American Football", "Id" : 'Game1' });
+                    expect(listObj.value === null).toBe(true);
+                    done();
+                }, 450);
+            });
+        });
+        describe('keyboard interaction with disabled items', () => {     
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up' };
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            let listObj: any;
+            let sportsData: { [key: string]: Object }[] = [ 
+                { "State": true, "Game": "American Football", "Id" : 'Game1' },
+                { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+                { "State": true, "Game": "Basketball", "Id" : 'Game3' },
+                { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+                { "State": false, "Game": "Football", "Id" : 'Game5' },
+                { "State": true, "Game": "Golf", "Id" : 'Game6' },
+            
+            ]; 
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({
+                    dataSource: sportsData,
+                    fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                });
+                listObj.appendTo(element);
+            });
+            afterAll((done) => {
+                listObj.hidePopup();
+                setTimeout(() => {
+                    listObj.destroy();
+                    element.remove();
+                    done();
+                }, 450)
+            });
+            /**
+           * Mouse click
+           */
+            it('up and down action', (done) => {            
+                listObj.showPopup();
+                setTimeout(() => {
+                    expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game2").toBe(true);
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game2").toBe(true);
+                    keyEventArgs.action = 'down';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game5").toBe(true);
+                    keyEventArgs.action = 'down';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game5").toBe(true);
+                    keyEventArgs.action = 'up';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game2").toBe(true);
+                    done();
+                }, 450);
+            });
+            it('all disabled items', (done) => {         
+                listObj.showPopup();
+                setTimeout(() => {
+                    listObj.disableItem('Game2');
+                    listObj.disableItem('Game5');
+                    expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                    keyEventArgs.action = 'down';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                    keyEventArgs.action = 'up';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                    keyEventArgs.action = 'down';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                    keyEventArgs.action = 'up';
+                    listObj.keyActionHandler(keyEventArgs);
+                    expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                    done();
+                }, 450);
             });
         });
     });

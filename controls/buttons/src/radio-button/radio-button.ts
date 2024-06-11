@@ -16,7 +16,7 @@ const LABEL: string = 'e-label';
 const RIPPLE: string = 'e-ripple-container';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-radio-wrapper';
-const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'id', 'tabindex'];
+const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'id'];
 
 /**
  * The RadioButton is a graphical user interface element that allows you to select one option from the choices.
@@ -36,7 +36,6 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     private formElement: HTMLFormElement;
     private initialCheckedValue: boolean;
     private angularValue: string;
-    private isVue: boolean;
     private wrapper: Element;
 
     /**
@@ -125,7 +124,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      *
      * @default true
      */
-     @Property(true)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
 
     /**
@@ -428,6 +427,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 this.element.setAttribute('name', newProp.name as string);
                 break;
             case 'value':
+                // eslint-disable-next-line no-case-declarations
                 const type: string | undefined = typeof this.htmlAttributes.value;
                 if (!isNullOrUndefined(this.htmlAttributes) && (this.htmlAttributes.value || type === 'boolean' && !this.htmlAttributes.value)) { break; }
                 this.element.setAttribute('value', newProp.value as string);
@@ -483,8 +483,6 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     private setDisabled(): void {
         this.element.disabled = true;
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
     private setText(text: string): void {
         const label: Element = this.getLabel() as Element;

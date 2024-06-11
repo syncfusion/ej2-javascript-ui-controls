@@ -14,7 +14,7 @@ export interface NodeBaseModel {
 
     /**
      * Defines the visual order of the node/connector in DOM
-     * 
+     *
      * @aspDefaultValue 5e-324
      * @default Number.MIN_VALUE
      */

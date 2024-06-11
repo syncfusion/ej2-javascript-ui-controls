@@ -2,44 +2,6 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
-
-### DatePicker
-
-#### Bug Fixes
-
-- `#I594041` -  Fixed an issue where the `tab` key and `escape` key were not functioning correctly.
-
-### DateTimePicker
-
-#### Bug Fixes
-
-- `#I594041` -  Fixed an issue where the `tab` key and `escape` key were not functioning correctly.
-
-## 25.2.5 (2024-05-21)
-
-### TimePicker
-
-#### Bug Fixes
-
-- `#I587516` - Fixed an issue where the timepicker `prevValue` property was holding the current selected value instead of the previous value.
-
-## 25.1.40 (2024-04-16)
-
-### DatePicker
-
-#### Bug Fixes
-
-- `#I572913` -  Resolved the console error that occurred when dynamically showing the popup on focus out.
-
-## 25.1.37 (2024-03-26)
-
-### DateTimePicker
-
-#### Bug Fixes
-
-- `#I15615` -  Fixed console error that occurred when using the format property while opening the time popup.
-
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

@@ -1,7 +1,7 @@
-import { ChildProperty, Collection, EmitType, Property, Event } from "@syncfusion/ej2-base";
-import { RibbonGalleryGroupModel } from "./ribbon-gallery-group-model";
-import { RibbonGalleryGroup } from "./ribbon-gallery-group";
-import { GalleryHoverEventArgs, GalleryItemEventArgs, GalleryPopupEventArgs, GallerySelectEventArgs, GalleryBeforeSelectEventArgs } from "../base/interface";
+import { ChildProperty, Collection, EmitType, Property, Event } from '@syncfusion/ej2-base';
+import { RibbonGalleryGroupModel } from './ribbon-gallery-group-model';
+import { RibbonGalleryGroup } from './ribbon-gallery-group';
+import { GalleryHoverEventArgs, GalleryItemEventArgs, GalleryPopupEventArgs, GallerySelectEventArgs, GalleryBeforeSelectEventArgs } from '../base/interface';
 
 /**
  * Defines the ribbon gallery settings.

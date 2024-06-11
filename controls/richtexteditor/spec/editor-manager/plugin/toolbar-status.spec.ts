@@ -478,3 +478,26 @@ describe('861659 - Format toolbar name is blank in overview/Online HTML editor t
     });
 });
 
+describe('888232 - Blockquote toolbar icon and Format dropdown status checking', () => {
+    let innervalue = '<blockquote><ol><li><h1 class="focusNode1">Welcome to the Syncfusion Rich Text Editor</h1></li><li class="focusNode2">The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</li></ol></blockquote>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('divElement') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('- Blockquote toolbar icon and Format dropdown status checking', () => {
+        let node: Node = document.querySelector('.focusNode1');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 2, 2);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p', 'h1', 'h2', 'h3', 'pre'], ['8pt'], ['arial,sans-serif']);
+        expect(format.blockquote).toBe(true);
+        expect(format.formats).toBe('h1');
+    });
+});

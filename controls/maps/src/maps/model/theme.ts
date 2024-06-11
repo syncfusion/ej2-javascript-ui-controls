@@ -51,7 +51,7 @@ export namespace Theme {
     };
     /** @private */
     export const dataLabelFont: IFontMapping = {
-        size: '12px',
+        size: null,
         fontWeight: 'Medium',
         color: '#000000',
         fontStyle: 'Medium',
@@ -203,6 +203,15 @@ export function getShapeColor(theme: MapsTheme): string[] {
         themePalette = ['#4EAAFF', '#FA4EAB', '#FFF500', '#17EA58', '#38FFE7',
             '#FF9E45', '#B3F32F', '#B93CE4', '#FC5664', '#9B55FF'];
         break;
+    case 'fluent2':
+        themePalette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F',
+            '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
+        break;
+    case 'fluent2dark':
+    case 'fluent2highcontrast':
+        themePalette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
     default:
         themePalette = ['#B5E485', '#7BC1E8', '#DF819C', '#EC9B79', '#78D0D3',
             '#D6D572', '#9178E3', '#A1E5B4', '#87A4B4', '#E4C16C'];
@@ -257,7 +266,7 @@ export namespace HighContrastTheme {
     };
     /** @private */
     export const dataLabelFont: IFontMapping = {
-        size: '12px',
+        size: null,
         fontWeight: 'Medium',
         color: '#000000',
         fontStyle: 'Medium',
@@ -352,13 +361,19 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             labelFontFamily: 'Roboto, Noto, Sans-serif',
             fontFamily: 'Roboto, Noto, Sans-serif',
             fontSize: '12px',
+            legendFontSize: '12px',
             fontWeight: 'Medium',
             titleFontWeight: 'Medium',
             zoomSelectionColor: '#e61576',
             shapeFill: '#A6A6A6',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'highcontrast':
@@ -376,14 +391,20 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             zoomFillColor: '#FFFFFF',
             fontFamily: 'Roboto, Noto, Sans-serif',
             fontSize: '12px',
+            legendFontSize: '12px',
             fontWeight: 'Medium',
             labelFontFamily: 'Roboto, Noto, Sans-serif',
             titleFontWeight: 'Medium',
             zoomSelectionColor: '#e61576',
             shapeFill: '#A6A6A6',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'bootstrap4':
@@ -409,9 +430,14 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: 'Medium',
             zoomSelectionColor: '#e61576',
             shapeFill: '#A6A6A6',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'tailwind':
@@ -437,9 +463,14 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: '500',
             zoomSelectionColor: '#374151',
             shapeFill: '#E5E7EB',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'tailwinddark':
@@ -465,9 +496,14 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: '500',
             zoomSelectionColor: '#F3F4F6',
             shapeFill: '#374151',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'bootstrap5':
@@ -493,9 +529,14 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: 'normal',
             zoomSelectionColor: '#343A40',
             shapeFill: '#E9ECEF',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'bootstrap5dark':
@@ -521,9 +562,14 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: 'normal',
             zoomSelectionColor: '#DEE2E6',
             shapeFill: '#495057',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'fluent':
@@ -549,9 +595,14 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: '600',
             zoomSelectionColor: '#323130',
             shapeFill: '#F3F2F1',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'fluentdark':
@@ -577,9 +628,14 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: '600',
             zoomSelectionColor: '#F3F2F1',
             shapeFill: '#252423',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'material3':
@@ -606,9 +662,14 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             fontWeight: '400',
             zoomSelectionColor: '#49454E',
             shapeFill: '#E7E0EC',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#6750A4',
             rectangleZoomFillOpacity: 0.24,
-            rectangleZoomBorderColor: '#6750A4'
+            rectangleZoomBorderColor: '#6750A4',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     case 'material3dark':
@@ -635,9 +696,117 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             fontWeight: '400',
             zoomSelectionColor: '#E6E1E5',
             shapeFill: '#49454F',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#D0BCFF',
             rectangleZoomFillOpacity: 0.24,
-            rectangleZoomBorderColor: '#D0BCFF'
+            rectangleZoomBorderColor: '#D0BCFF',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
+        };
+        break;
+    case 'fluent2':
+        style = {
+            backgroundColor: 'transparent',
+            areaBackgroundColor: 'transparent',
+            titleFontColor: '#242424',
+            subTitleFontColor: '#242424',
+            legendTitleFontColor: '#242424',
+            legendTextColor: '#242424',
+            dataLabelFontColor: '#242424',
+            tooltipFontColor: '#242424',
+            tooltipFillColor: '#FFFFFF',
+            zoomFillColor: '#D1D1D1',
+            fontFamily: 'Segoe UI',
+            fontSize: '10px',
+            fontWeight: '400',
+            titleFontSize: '14px',
+            subTitleFontSize: '12px',
+            legendFontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Segoe UI',
+            titleFontWeight: '600',
+            zoomSelectionColor: '#242424',
+            shapeFill: '#E6E6E6',
+            shapeBorderColor: '#EBEBEB',
+            rectangleZoomFillColor: '#B4D6FA',
+            rectangleZoomFillOpacity: 0.25,
+            rectangleZoomBorderColor: '#0F6CBD',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 32
+        };
+        break;
+    case 'fluent2dark':
+        style = {
+            backgroundColor: 'transparent',
+            areaBackgroundColor: 'transparent',
+            titleFontColor: '#FFFFFF',
+            subTitleFontColor: '#FFFFFF',
+            legendTitleFontColor: '#FFFFFF',
+            legendTextColor: '#FFFFFF',
+            dataLabelFontColor: '#FFFFFF',
+            tooltipFontColor: '#FFFFFF',
+            tooltipFillColor: '#292929',
+            zoomFillColor: '#666',
+            fontFamily: 'Segoe UI',
+            fontSize: '10px',
+            fontWeight: '400',
+            titleFontSize: '14px',
+            subTitleFontSize: '12px',
+            legendFontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Segoe UI',
+            titleFontWeight: '600',
+            zoomSelectionColor: '#FFFFFF',
+            shapeFill: '#333333',
+            shapeBorderColor: '#000000',
+            rectangleZoomFillColor: '#0E4775',
+            rectangleZoomFillOpacity: 0.25,
+            rectangleZoomBorderColor: '#0E4775',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 32
+        };
+        break;
+    case 'fluent2highcontrast':
+        style = {
+            backgroundColor: 'transparent',
+            areaBackgroundColor: 'transparent',
+            titleFontColor: '#FFFFFF',
+            subTitleFontColor: '#FFFFFF',
+            legendTitleFontColor: '#FFFFFF',
+            legendTextColor: '#FFFFFF',
+            dataLabelFontColor: '#FFFFFF',
+            tooltipFontColor: '#FFFFFF',
+            tooltipFillColor: '#000000',
+            zoomFillColor: '#3FF23F',
+            fontFamily: 'Segoe UI',
+            fontSize: '10px',
+            fontWeight: '400',
+            titleFontSize: '14px',
+            subTitleFontSize: '12px',
+            legendFontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Segoe UI',
+            titleFontWeight: '600',
+            zoomSelectionColor: '#FFFFFF',
+            zoomBorderColor: '#FFFFFF',
+            shapeFill: '#292827',
+            shapeBorderColor: '#292827',
+            rectangleZoomFillColor: '#1AEBFF',
+            rectangleZoomFillOpacity: 0.25,
+            rectangleZoomBorderColor: '#1AEBFF',
+            legendBorderColor: '#FFFFFF',
+            legendBorderWidth: 1,
+            tooltipBorderColor: '#FFF',
+            zoomButtonRadius: 32
         };
         break;
     default:
@@ -656,13 +825,19 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             labelFontFamily: 'Roboto, Noto, Sans-serif',
             fontFamily: 'Roboto, Noto, Sans-serif',
             fontSize: '12px',
+            legendFontSize: '12px',
             fontWeight: 'Medium',
             titleFontWeight: 'Medium',
             zoomSelectionColor: '#e61576',
             shapeFill: '#A6A6A6',
+            shapeBorderColor: '#000000',
             rectangleZoomFillColor: '#d3d3d3',
             rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900'
+            rectangleZoomBorderColor: '#009900',
+            legendBorderColor: '#000000',
+            legendBorderWidth: 0,
+            tooltipBorderColor: 'transparent',
+            zoomButtonRadius: 30
         };
         break;
     }

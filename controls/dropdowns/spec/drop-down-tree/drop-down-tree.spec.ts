@@ -850,3 +850,448 @@ describe('Footer Template', () => {
         ddtreeObj.hidePopup();
     });
 });
+
+describe('DropdownTree Null or undefined value testing ', () => {
+    let ddtreeObj: DropDownTree;
+
+    beforeEach((): void => {
+        ddtreeObj = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        document.body.innerHTML = '';
+    });
+    it('allowFiltering', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowFiltering: null
+        }, '#ddtree');
+        expect(ddtreeObj.allowFiltering).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowFiltering: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.allowFiltering).toBe(false);
+        ddtreeObj.destroy();
+    });
+    // allowMultiSelection
+    it('allowMultiSelection', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowMultiSelection: null
+        }, '#ddtree');
+        expect(ddtreeObj.allowMultiSelection).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowMultiSelection: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.allowMultiSelection).toBe(false);
+        ddtreeObj.destroy();
+    });
+    // changeOnBlur
+    it('changeOnBlur', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            changeOnBlur: null
+        }, '#ddtree');
+        expect(ddtreeObj.changeOnBlur).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            changeOnBlur: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.changeOnBlur).toBe(true);
+        ddtreeObj.destroy();
+    });
+    // cssClass
+    it('cssClass', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            cssClass: null
+        }, '#ddtree');
+        expect(ddtreeObj.cssClass).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            cssClass: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.cssClass).toBe('');
+        ddtreeObj.destroy();
+    });
+    // dataSource
+    it('dataSource', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: null,  }
+        }, '#ddtree');
+        expect(ddtreeObj.fields.dataSource).toEqual([]);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: undefined }
+        }, '#ddtree');
+        expect(ddtreeObj.fields.dataSource).toEqual([]);
+        ddtreeObj.destroy();
+    });
+    // enablePersistence
+    it('enablePersistence', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            enablePersistence: null
+        }, '#ddtree');
+        expect(ddtreeObj.enablePersistence).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            enablePersistence: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.enablePersistence).toBe(false);
+        ddtreeObj.destroy();
+    });
+    // enableRtl
+    it('enableRtl', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            enableRtl: null
+        }, '#ddtree');
+        expect(ddtreeObj.enableRtl).toBe(false);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            enableRtl: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.enableRtl).toBe(false);
+        ddtreeObj.destroy();
+    });
+    // footerTemplate
+    it('footerTemplate', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            footerTemplate: null
+        }, '#ddtree');
+        expect(ddtreeObj.footerTemplate).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            footerTemplate: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.footerTemplate).toBe(null);
+        ddtreeObj.destroy();
+    });
+    // headerTemplate
+    it('headerTemplate', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            headerTemplate: null
+        }, '#ddtree');
+        expect(ddtreeObj.headerTemplate).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            headerTemplate: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.headerTemplate).toBe(null);
+        ddtreeObj.destroy();
+    });
+    // htmlAttributes
+    it('htmlAttributes', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            htmlAttributes: null
+        }, '#ddtree');
+        expect(ddtreeObj.htmlAttributes.role).toBe('combobox');
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            htmlAttributes: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.htmlAttributes.role).toBe('combobox');
+        ddtreeObj.destroy();
+    });
+    // locale
+    it('locale', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            locale: null
+        }, '#ddtree');
+        expect(ddtreeObj.locale).toBe('es');
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            locale: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.locale).toBe('es');
+        ddtreeObj.destroy();
+    });
+    // mode
+    it('mode', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            mode: null
+        }, '#ddtree');
+        expect(ddtreeObj.mode).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            mode: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.mode).toBe('Default');
+        ddtreeObj.destroy();
+    });
+    // placeholder
+    it('placeholder', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            placeholder: null
+        }, '#ddtree');
+        expect(ddtreeObj.placeholder).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            placeholder: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.placeholder).toBe(null);
+        ddtreeObj.destroy();
+    });
+    // popupHeight
+    it('popupHeight', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            popupHeight: null
+        }, '#ddtree');
+        expect(ddtreeObj.popupHeight).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            popupHeight: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.popupHeight).toBe('300px');
+        ddtreeObj.destroy();
+    });
+    // popupWidth
+    it('popupWidth', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            popupWidth: null
+        }, '#ddtree');
+        expect(ddtreeObj.popupWidth).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            popupWidth: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.popupWidth).toBe('100%');
+        ddtreeObj.destroy();
+    });
+    // readonly
+    it('readonly', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            readonly: null
+        }, '#ddtree');
+        expect(ddtreeObj.readonly).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            readonly: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.readonly).toBe(false);
+        ddtreeObj.destroy();
+    });
+    // showCheckBox
+    it('showCheckBox', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            showCheckBox: null
+        }, '#ddtree');
+        expect(ddtreeObj.showCheckBox).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            showCheckBox: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.showCheckBox).toBe(false);
+        ddtreeObj.destroy();
+    });
+    // showClearButton
+    it('showClearButton', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            showClearButton: null
+        }, '#ddtree');
+        expect(ddtreeObj.showClearButton).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            showClearButton: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.showClearButton).toBe(true);
+        ddtreeObj.destroy();
+    });
+    // showDropDownIcon
+    it('showDropDownIcon', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            showDropDownIcon: null
+        }, '#ddtree');
+        expect(ddtreeObj.showDropDownIcon).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            showDropDownIcon: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.showDropDownIcon).toBe(true);
+        ddtreeObj.destroy();
+    });
+    // value
+    it('value', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            value: null
+        }, '#ddtree');
+        expect(ddtreeObj.value).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            value: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.value).toBe(null);
+        ddtreeObj.destroy();
+    });
+    // width
+    it('width', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            width: null
+        }, '#ddtree');
+        expect(ddtreeObj.width).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            width: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.width).toBe('100%');
+        ddtreeObj.destroy();
+    });
+    // zindex
+    it('zIndex', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            zIndex: null
+        }, '#ddtree');
+        expect(ddtreeObj.zIndex).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            zIndex: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.zIndex).toBe(1000);
+        ddtreeObj.destroy();
+    });
+
+    it('delimiterChar', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            delimiterChar: null
+        }, '#ddtree');
+        expect(ddtreeObj.delimiterChar).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            delimiterChar: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.delimiterChar).toBe(',');
+        ddtreeObj.destroy();
+    });
+    // filterBarPlaceholder
+    it('filterBarPlaceholder', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            filterBarPlaceholder: null
+        }, '#ddtree');
+        expect(ddtreeObj.filterBarPlaceholder).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            filterBarPlaceholder: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.filterBarPlaceholder).toBe(null);
+        ddtreeObj.destroy();
+    });
+    // filterType
+    it('filterType', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            filterType: null
+        }, '#ddtree');
+        expect(ddtreeObj.filterType).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            filterType: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.filterType).toBe('StartsWith');
+        ddtreeObj.destroy();
+    });
+    // sortOrder
+    it('sortOrder', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            sortOrder: null
+        }, '#ddtree');
+        expect(ddtreeObj.sortOrder).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            sortOrder: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.sortOrder).toBe('None');
+        ddtreeObj.destroy();
+    });
+    // treeSettings
+    it('treeSettings', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            treeSettings: null
+        }, '#ddtree');
+        expect(ddtreeObj.treeSettings.loadOnDemand).toBe(false);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            treeSettings: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.treeSettings.loadOnDemand).toBe(false);
+        ddtreeObj.destroy();
+    });
+    // showSelectAll
+    it('showSelectAll', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            showSelectAll: null
+        }, '#ddtree');
+        expect(ddtreeObj.showSelectAll).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            showSelectAll: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.showSelectAll).toBe(false);
+        ddtreeObj.destroy();
+    });
+    // selectAllText
+    it('selectAllText', () => {
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            selectAllText: null
+        }, '#ddtree');
+        expect(ddtreeObj.selectAllText).toBe(null);
+        ddtreeObj.destroy();
+        ddtreeObj = new DropDownTree({ 
+            fields: { dataSource: listData, value: "id", text: "name" },
+            selectAllText: undefined
+        }, '#ddtree');
+        expect(ddtreeObj.selectAllText).toBe('Select All');
+        ddtreeObj.destroy();
+    });
+});

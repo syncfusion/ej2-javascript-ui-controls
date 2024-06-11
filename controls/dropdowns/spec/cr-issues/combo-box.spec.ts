@@ -6,7 +6,7 @@ import { ComboBox, CustomValueSpecifierEventArgs } from '../../src/combo-box/com
 import { SelectEventArgs } from './../../src/drop-down-base/index';
 import { ChangeEventArgs } from '../../src/drop-down-list/index'; 
 import { FilteringEventArgs } from '../../src/drop-down-base';
-import { DataManager, Query, ODataV4Adaptor, ODataAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, Query, WebApiAdaptor, ODataAdaptor } from '@syncfusion/ej2-data';
 
 let data: JSON[] = ([
     { OrderID: 10248, CustomerID: 'VINET', EmployeeID: 5, Freight: 32.38 },
@@ -22,7 +22,9 @@ let mockAjax: Function = (d: { data: { [o: string]: Object | Object[] } | Object
     MockAjaxReturn => {
     jasmine.Ajax.install();
     let dataManager = d.dm || new DataManager({
-        url: '/api/Employees',
+        url: 'https://services.syncfusion.com/js/production/api/Employees',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
     });
     let prom: Promise<Object> = dataManager.executeQuery(query);
     let request: JasmineAjaxRequest;

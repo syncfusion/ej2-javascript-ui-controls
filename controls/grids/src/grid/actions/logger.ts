@@ -213,7 +213,8 @@ export const detailLists: {[key: string]: ItemDetails} = {
         logType: 'warn',
         check(args: Object, parent: IGrid): CheckOptions {
             return { success: !(parent.columns.length ||
-                (parent.dataSource instanceof DataManager) || (<object[]>parent.dataSource).length) };
+                (parent.dataSource instanceof DataManager) ||
+                (!isNullOrUndefined(parent.dataSource) && (<object[]>parent.dataSource).length)) };
         },
         generateMessage(): string {
             return WARNING + ': GRID CONFIG MISSING\n' + 'dataSource and columns are not provided in the grid. ' +

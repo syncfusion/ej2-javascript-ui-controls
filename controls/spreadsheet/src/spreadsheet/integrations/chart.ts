@@ -171,11 +171,11 @@ export class SpreadsheetChart {
         currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[]
     }): void {
         for (let i: number = 0, len: number = args.prevChartIndexes.length; i < len; i++) {
-            let chart: ChartModel = args.prevChartIndexes[i as number].chart;
-            let prevRowIdx: number = args.prevChartIndexes[i as number].chartRowIdx;
-            let prevColIdx: number = args.prevChartIndexes[i as number].chartColIdx;
-            let currentRowIdx: number = args.currentChartIndexes[i as number].chartRowIdx;
-            let currentColIdx: number = args.currentChartIndexes[i as number].chartColIdx;
+            const chart: ChartModel = args.prevChartIndexes[i as number].chart;
+            const prevRowIdx: number = args.prevChartIndexes[i as number].chartRowIdx;
+            const prevColIdx: number = args.prevChartIndexes[i as number].chartColIdx;
+            const currentRowIdx: number = args.currentChartIndexes[i as number].chartRowIdx;
+            const currentColIdx: number = args.currentChartIndexes[i as number].chartColIdx;
             const eventArgs: BeforeImageRefreshData = {
                 prevTop: chart.top, prevLeft: chart.left, prevRowIdx: prevRowIdx, prevColIdx: prevColIdx,
                 prevHeight: chart.height, prevWidth: chart.width, currentTop: chart.top, currentLeft: chart.left,
@@ -238,8 +238,8 @@ export class SpreadsheetChart {
         }
     }
 
-    private processChartRange(
-        range: number[], dataSheetIdx: number, opt: ChartModel): { xRange: number[], yRange: number[], lRange: number[], isStringSeries: boolean } {
+    private processChartRange(range: number[], dataSheetIdx: number, opt: ChartModel): {
+        xRange: number[], yRange: number[], lRange: number[], isStringSeries: boolean } {
         let xRange: number[];
         let yRange: number[];
         let lRange: number[];
@@ -393,6 +393,7 @@ export class SpreadsheetChart {
         let pObj: object = {};
         let j: number;
         let i: number = 0; let yInc: number = 0;
+        const isPrint: boolean = this.parent.isPrintingProcessing;
         const sArr: SeriesModel[] = [];
         sheetIndex = isNullOrUndefined(sheetIndex) ? this.parent.getActiveSheet().index : sheetIndex;
         const sheet: SheetModel = this.parent.sheets[sheetIndex as number];
@@ -434,7 +435,7 @@ export class SpreadsheetChart {
                     if (isNumber(val)) {
                         val = Number(val);
                     } else {
-                        const dateCheck: DateFormatCheckArgs ={value: isNullOrUndefined(val) ? '' : val.toString(), sheetIndex: sheetIndex, updatedVal: ''};
+                        const dateCheck: DateFormatCheckArgs = { value: isNullOrUndefined(val) ? '' : val.toString(), sheetIndex: sheetIndex, updatedVal: '' };
                         this.parent.notify(checkDateFormat, dateCheck);
                         if (dateCheck.isDate || dateCheck.isTime) {
                             val = dateCheck.updatedVal;
@@ -462,14 +463,14 @@ export class SpreadsheetChart {
                 const type: ChartType = options.type;
                 if (type === 'Line' || type === 'StackingLine' || type === 'StackingLine100') {
                     pObj = {
-                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(),
+                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(), animation: { enable: !isPrint },
                         marker: options.markerSettings ? { visible: options.markerSettings.visible, width: options.markerSettings.size,
                             height: options.markerSettings.size, shape: options.markerSettings.shape, dataLabel: dataLabel,
                             isFilled: options.markerSettings.isFilled, border: options.markerSettings.border,
                             fill: options.markerSettings.isFilled ? options.markerSettings.fill : null } : { dataLabel: dataLabel }
                     };
                 } else if (type === 'Scatter') {
-                    pObj = { dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(),
+                    pObj = { dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(), animation: { enable: !isPrint },
                         marker: { visible: false, width: 12, height: 12, shape: 'Circle', dataLabel: dataLabel } };
                 } else if (type === 'Pie' || type === 'Doughnut') {
                     const innerRadius: string = options.type === 'Pie' ? '0%' : '40%';
@@ -479,12 +480,12 @@ export class SpreadsheetChart {
                         dataSource: pArr,
                         dataLabel: {
                             visible: !isNullOrUndefined(visible) ? visible : false, position: position, name: 'text', font: { fontWeight: '600' }
-                        },
+                        }, animation: { enable: !isPrint },
                         radius: '100%', xName: 'x', yName: 'y', innerRadius: innerRadius
                     };
                 } else {
                     pObj = {
-                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y',
+                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', animation: { enable: !isPrint },
                         name: seriesName.toString(), marker: { dataLabel: dataLabel }
                     };
                 }
@@ -628,9 +629,11 @@ export class SpreadsheetChart {
             this.focusChartRange(xRange, yRange, lRange);
         }
         if (argsOpt.triggerEvent && !argsOpt.isRefresh) {
-            eventArgs = { type: chart.type, theme: chart.theme, isSeriesInRows: chart.isSeriesInRows, range: chart.range,
+            eventArgs = {
+                type: chart.type, theme: chart.theme, isSeriesInRows: chart.isSeriesInRows, range: chart.range,
                 markerSettings: options.markerSettings, id: chart.id, height: chart.height, width: chart.width, posRange: argsOpt.range,
-                isInitCell: argsOpt.isInitCell, cancel: false, top: chart.top, left:chart.left };
+                isInitCell: argsOpt.isInitCell, cancel: false, top: chart.top, left: chart.left
+            };
             this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
             if (eventArgs.cancel) { return []; }
             chart.type = eventArgs.type;
@@ -678,7 +681,7 @@ export class SpreadsheetChart {
             if (argsOpt.isSwitchRowColumn && chart.type === 'Scatter' ) {
                 const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
                 if (chartObj) {
-                    let chartComp: Chart = getComponent(chartObj, 'chart');
+                    const chartComp: Chart = getComponent(chartObj, 'chart');
                     chartComp.primaryXAxis.valueType = !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Double' : 'Category';
                 }
             }
@@ -687,7 +690,8 @@ export class SpreadsheetChart {
         const id: string = chart.id + '_overlay';
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
-        const overlayProps: { element: HTMLElement, top: number, left: number } = overlayObj.insertOverlayElement(id, eleRange, getSheetIndexFromAddress(this.parent, eleRange));
+        const overlayProps: { element: HTMLElement, top: number, left: number } =
+            overlayObj.insertOverlayElement(id, eleRange, getSheetIndexFromAddress(this.parent, eleRange));
         overlayProps.element.classList.add('e-datavisualization-chart');
         overlayProps.element.style.width = chart.width + 'px';
         overlayProps.element.style.height = chart.height + 'px';
@@ -781,7 +785,7 @@ export class SpreadsheetChart {
             this.chart.appendTo(chartContent);
         }
         overlayProps.element.appendChild(chartContent);
-        if (overlayProps.element.classList.contains('e-ss-overlay-active')) {
+        if (overlayProps.element.classList.contains('e-ss-overlay-active') && !this.parent.isPrintingProcessing) {
             this.parent.notify(insertDesignChart, { id: overlayProps.element.id });
         }
         if (argsOpt.triggerEvent) {
@@ -817,9 +821,9 @@ export class SpreadsheetChart {
             }
         }
         const eventArgs: BeforeChartEventArgs = {
-            id: chartObj.id, range: chartObj.range, type: chartObj.type, markerSettings: chartObj.markerSettings, theme: chartObj.theme, height: chartObj.height,
-            width: chartObj.width, isSeriesInRows: chartObj.isSeriesInRows, isInitCell: true, posRange: null,
-            top: chartObj.top, left: chartObj.left, cancel: false
+            id: chartObj.id, range: chartObj.range, type: chartObj.type, markerSettings: chartObj.markerSettings,
+            theme: chartObj.theme, height: chartObj.height, width: chartObj.width, isSeriesInRows: chartObj.isSeriesInRows,
+            isInitCell: true, posRange: null, top: chartObj.top, left: chartObj.left, cancel: false
         };
         if (chartElements) {
             let chartTop: { clientY: number, isImage?: boolean, target?: Element };
@@ -856,10 +860,11 @@ export class SpreadsheetChart {
         if (cellObj) {
             prevCellChart = cellObj.chart;
         }
-        const chartLength: number = prevCellChart ? prevCellChart.length : null;
+        let chartLength: number = prevCellChart ? prevCellChart.length : null;
         for (let i: number = 0; i < chartLength; i++) {
             if (args.id === prevCellChart[i as number].id + '_overlay') {
                 prevCellChart.splice(i, 1);
+                chartLength = prevCellChart.length;
             }
         }
         if (isRemoveEle) {
@@ -908,11 +913,13 @@ export class SpreadsheetChart {
                         this.parent.chartColl[chartCollId as number].primaryYAxis.title = chartComp.primaryYAxis.title;
                     } break;
                 case 'ChartTitleNone': case 'ChartTitleAbove':
-                    currCellObj.chart[idx as number].title = chartComp.title; this.parent.chartColl[chartCollId as number].title = chartComp.title;
+                    currCellObj.chart[idx as number].title = chartComp.title;
+                    this.parent.chartColl[chartCollId as number].title = chartComp.title;
                     break;
                 case 'DLNone': case 'DLCenter': case 'DLInsideend': case 'DLInsidebase': case 'DLOutsideend':
                     if (isNullOrUndefined(currCellObj.chart[idx as number].dataLabelSettings)) {
-                        currCellObj.chart[idx as number].dataLabelSettings = {}; this.parent.chartColl[chartCollId as number].dataLabelSettings = {};
+                        currCellObj.chart[idx as number].dataLabelSettings = {};
+                        this.parent.chartColl[chartCollId as number].dataLabelSettings = {};
                     }
                     if (eleId === 'DLNone') {
                         currCellObj.chart[idx as number].dataLabelSettings.visible = false;
@@ -938,7 +945,8 @@ export class SpreadsheetChart {
                         this.parent.chartColl[chartCollId as number].primaryYAxis.majorGridLines = {};
                     }
                     currCellObj.chart[idx as number].primaryYAxis.majorGridLines.width = chartComp.primaryYAxis.majorGridLines.width;
-                    this.parent.chartColl[chartCollId as number].primaryYAxis.majorGridLines.width = chartComp.primaryYAxis.majorGridLines.width;
+                    this.parent.chartColl[chartCollId as number].primaryYAxis.majorGridLines.width =
+                        chartComp.primaryYAxis.majorGridLines.width;
                     break;
                 case 'GLMajorVertical':
                     if (isNullOrUndefined(currCellObj.chart[idx as number].primaryXAxis)) {
@@ -1090,7 +1098,9 @@ export class SpreadsheetChart {
         }
         this.updateChartModel(value, chartComp, currCellObj, chartCollId, isAccumulationChart);
         if (triggerEvent) {
-            const eventArgs = { addChartEle: value, id: chartComp.element.id + '_overlay', title: title, address: address };
+            const eventArgs: {
+                addChartEle: string, id: string, title: string, address: string;
+            } = { addChartEle: value, id: chartComp.element.id + '_overlay', title: title, address: address };
             this.parent.notify(completeAction, { action: 'chartDesign', eventArgs: eventArgs });
         }
     }
@@ -1119,7 +1129,7 @@ export class SpreadsheetChart {
                 break;
             }
         }
-        let isMarkerEnabled: boolean = isNullOrUndefined(chart.markerSettings) ? false : chart.markerSettings.visible;
+        const isMarkerEnabled: boolean = isNullOrUndefined(chart.markerSettings) ? false : chart.markerSettings.visible;
         if (args.switchRowColumn) {
             this.switchRowColumn(chartCollectionId, chartElem.id, chartComp, cell);
         } else if (args.chartTheme) {
@@ -1130,38 +1140,38 @@ export class SpreadsheetChart {
             if (args.isUndo) {
                 let position: string;
                 switch (property) {
-                    case 'DLNone':
-                    case 'DLCenter':
-                    case 'DLInsideend':
-                    case 'DLInsidebase':
-                    case 'DLOutsideend':
-                        position = chart.dataLabelSettings && chart.dataLabelSettings.position;
-                        property = position === 'Middle' ? 'DLCenter' : position === 'Top' ? 'DLInsideend' : position === 'Bottom' ?
-                            'DLInsidebase' : position === 'Outer' ? 'DLOutsideend' : 'DLNone';
-                        break;
-                    case 'LegendNone':
-                    case 'LegendsRight':
-                    case 'LegendsLeft':
-                    case 'LegendsBottom':
-                    case 'LegendsTop':
-                        if (chart.legendSettings && !chart.legendSettings.visible) {
-                            position = 'LegendNone';
-                        } else {
-                            position = chart.legendSettings && chart.legendSettings.position;
-                            property = position === 'Right' ? 'LegendsRight' : position === 'Left' ? 'LegendsLeft' : position ===
-                                'Bottom' ? 'LegendsBottom' : position === 'Top' ? 'LegendsTop' : 'LegendsBottom';
-                        }
-                        break;
-                    case 'PVAxisTitle':
-                        title = chart.primaryYAxis && chart.primaryYAxis.title;
-                        break;
-                    case 'PHAxisTitle':
-                        title = chart.primaryXAxis && chart.primaryXAxis.title;
-                        break;
-                    case 'ChartTitleNone':
-                    case 'ChartTitleAbove':
-                        title = chart.title;
-                        break;
+                case 'DLNone':
+                case 'DLCenter':
+                case 'DLInsideend':
+                case 'DLInsidebase':
+                case 'DLOutsideend':
+                    position = chart.dataLabelSettings && chart.dataLabelSettings.position;
+                    property = position === 'Middle' ? 'DLCenter' : position === 'Top' ? 'DLInsideend' : position === 'Bottom' ?
+                        'DLInsidebase' : position === 'Outer' ? 'DLOutsideend' : 'DLNone';
+                    break;
+                case 'LegendNone':
+                case 'LegendsRight':
+                case 'LegendsLeft':
+                case 'LegendsBottom':
+                case 'LegendsTop':
+                    if (chart.legendSettings && !chart.legendSettings.visible) {
+                        position = 'LegendNone';
+                    } else {
+                        position = chart.legendSettings && chart.legendSettings.position;
+                        property = position === 'Right' ? 'LegendsRight' : position === 'Left' ? 'LegendsLeft' : position ===
+                            'Bottom' ? 'LegendsBottom' : position === 'Top' ? 'LegendsTop' : 'LegendsBottom';
+                    }
+                    break;
+                case 'PVAxisTitle':
+                    title = chart.primaryYAxis && chart.primaryYAxis.title;
+                    break;
+                case 'PHAxisTitle':
+                    title = chart.primaryXAxis && chart.primaryXAxis.title;
+                    break;
+                case 'ChartTitleNone':
+                case 'ChartTitleAbove':
+                    title = chart.title;
+                    break;
                 }
             }
             this.updateChartElement(property, chartComp, cell, chartCollectionId, title, null, args.address);
@@ -1169,8 +1179,10 @@ export class SpreadsheetChart {
     }
 
     private chartDesignTabHandler(
-        args: { switchRowColumn?: boolean, chartType?: ChartType, chartTheme?: ChartTheme, addChartEle?: string, id?:string, title?:string,
-            triggerEvent?: boolean, markerVisible?: boolean  }): void {
+        args: {
+            switchRowColumn?: boolean, chartType?: ChartType, chartTheme?: ChartTheme, addChartEle?: string,
+            id?: string, title?: string, triggerEvent?: boolean, markerVisible?: boolean
+        }): void {
         let isAccumulationChart: boolean = false;
         const sheet: SheetModel = this.parent.sheets[this.parent.activeSheetIndex];
         const switchRowColumn: boolean = args.switchRowColumn;
@@ -1203,8 +1215,13 @@ export class SpreadsheetChart {
         const currCellObj: CellModel = getCell(chartTop.clientY, chartleft.clientX, sheet);
         const address: string = sheet.name + '!' + getCellAddress(chartTop.clientY, chartleft.clientX);
         if (args.triggerEvent) {
-            const eventArgs = { switchRowColumn: args.switchRowColumn, chartType: args.chartType, chartTheme: args.chartTheme,
-                addChartEle: args.addChartEle, id: overlayElem.id, address: address, cancel: false };
+            const eventArgs: {
+                switchRowColumn: boolean, chartType: ChartType, chartTheme: ChartTheme,
+                addChartEle: string, id: string, address: string, cancel: boolean
+            } = {
+                switchRowColumn: args.switchRowColumn, chartType: args.chartType, chartTheme: args.chartTheme,
+                addChartEle: args.addChartEle, id: overlayElem.id, address: address, cancel: false
+            };
             this.parent.notify(beginAction, { action: 'chartDesign', eventArgs: eventArgs });
             if (eventArgs.cancel) {
                 return;
@@ -1243,8 +1260,13 @@ export class SpreadsheetChart {
             }
         }
         if (args.triggerEvent && !opensTitleDialog) {
-            const eventArgs = { switchRowColumn: args.switchRowColumn, chartType: args.chartType, chartMarker: args.markerVisible, chartTheme: args.chartTheme,
-                addChartEle: args.addChartEle, id: overlayElem.id, address: address };
+            const eventArgs: {
+                switchRowColumn: boolean, chartType: ChartType, chartMarker: boolean, chartTheme: ChartTheme,
+                addChartEle: string, id: string, address: string;
+            } = {
+                switchRowColumn: args.switchRowColumn, chartType: args.chartType, chartMarker: args.markerVisible,
+                chartTheme: args.chartTheme, addChartEle: args.addChartEle, id: overlayElem.id, address: address
+            };
             this.parent.notify(completeAction, { action: 'chartDesign', eventArgs: eventArgs });
         }
     }
@@ -1259,7 +1281,8 @@ export class SpreadsheetChart {
             }
         }
         const chartSeries: SeriesModel[] =
-            this.initiateChartHandler({ option: this.parent.chartColl[chartCollId as number], isRefresh: true, isSwitchRowColumn: true }) as SeriesModel[];
+            this.initiateChartHandler({ option: this.parent.chartColl[chartCollId as number],
+                isRefresh: true, isSwitchRowColumn: true }) as SeriesModel[];
         chartComp.series = chartSeries;
     }
 
@@ -1279,27 +1302,30 @@ export class SpreadsheetChart {
         let bg: string;
         if (theme.includes('Dark')) {
             switch (theme) {
-                case 'MaterialDark':
-                    bg = '#383838';
-                    break;
-                case 'FabricDark':
-                    bg = '#242424';
-                    break;
-                case 'BootstrapDark':
-                    bg = '#1b1b1b';
-                    break;
-                case 'Bootstrap5Dark':
-                    bg = '#212529';
-                    break;
-                case 'TailwindDark':
-                    bg = '#1f2937';
-                    break;
-                case 'FluentDark':
-                    bg = '#1b1a19';
-                    break;
-                case 'Material3Dark':
-                    bg = '#1C1B1F';
-                    break;
+            case 'MaterialDark':
+                bg = '#383838';
+                break;
+            case 'FabricDark':
+                bg = '#242424';
+                break;
+            case 'BootstrapDark':
+                bg = '#1b1b1b';
+                break;
+            case 'Bootstrap5Dark':
+                bg = '#212529';
+                break;
+            case 'TailwindDark':
+                bg = '#1f2937';
+                break;
+            case 'FluentDark':
+                bg = '#1b1a19';
+                break;
+            case 'Fluent2Dark':
+                bg = '#292929';
+                break;
+            case 'Material3Dark':
+                bg = '#1C1B1F';
+                break;
             }
         } else if (theme.includes('HighContrast')) {
             bg = '#000000';
@@ -1310,7 +1336,8 @@ export class SpreadsheetChart {
     }
 
     private switchChartType(
-        chartCollId: number, chartId: string, chartType: ChartType, chartComp: Chart | AccumulationChart, cell: CellModel, markerVisible?: boolean, enableMarker?: boolean, action?: string): void {
+        chartCollId: number, chartId: string, chartType: ChartType, chartComp: Chart | AccumulationChart, cell: CellModel,
+        markerVisible?: boolean, enableMarker?: boolean, action?: string): void {
         const type: ChartType = this.parent.chartColl[chartCollId as number].type;
         this.parent.chartColl[chartCollId as number].type = chartType;
         for (let idx: number = 0, chartCount: number = cell.chart.length; idx < chartCount; idx++) {

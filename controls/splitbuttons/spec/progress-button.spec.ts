@@ -9,7 +9,7 @@ describe('Progress Button', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -316,4 +316,121 @@ describe('Progress Button', () => {
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    describe('Null or undefined Property testing', () => {
+
+        it('ProgressButton with content', () => {
+            const ele: any = createElement('button', { id: 'progressbtn19' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ content: null }, '#progressbtn9');
+            expect(button.content).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ content: undefined }, '#progressbtn9');
+            expect(button.content).toEqual('');
+            button.destroy();
+        });
+
+        it('ProgressButton with cssClass', () => {
+            const ele: any = createElement('button', { id: 'progressbtn19' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ cssClass: null }, '#progressbtn19');
+            expect(button.cssClass).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ cssClass: undefined }, '#progressbtn19');
+            expect(button.cssClass).toEqual('');
+            button.destroy();
+        });
+
+        it('ProgressButton with iconCss', () => {
+            const ele: any = createElement('button', { id: 'progressbtn20' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ iconCss: null }, '#progressbtn20');
+            expect(button.iconCss).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ iconCss: undefined }, '#progressbtn20');
+            expect(button.iconCss).toEqual('');
+            button.destroy();
+        });
+
+        it('ProgressButton with Toggle', () => {
+            const ele: any = createElement('button', { id: 'progressbtn20' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ isToggle: null }, '#progressbtn20');
+            expect(button.isToggle).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ isToggle: undefined }, '#progressbtn20');
+            expect(button.isToggle).toEqual(false);
+            button.destroy();
+        });
+
+        it('ProgressButton with disabled', () => {
+            const ele: any = createElement('button', { id: 'progressbtn20' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ disabled: null }, '#progressbtn20');
+            expect(button.disabled).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ disabled: undefined }, '#progressbtn20');
+            expect(button.disabled).toEqual(false);
+            button.destroy();
+        });
+
+        it('ProgressButton with animationSettings', () => {
+            const ele: any = createElement('button', { id: 'progressbtn21' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ animationSettings: { duration: null, effect: null } }, '#progressbtn21');
+            expect(button.animationSettings.duration).toEqual(null);
+            expect(button.animationSettings.effect).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ animationSettings: { duration: undefined, effect: undefined } }, '#progressbtn21');
+            expect(button.animationSettings.duration).toEqual(400);
+            expect(button.animationSettings.effect).toEqual('None');
+            button.destroy();
+        });
+
+        it('ProgressButton with isPrimary', () => {
+            const ele: any = createElement('button', { id: 'progressbtn22' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ isPrimary: null }, '#progressbtn22');
+            expect(button.isPrimary).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ isPrimary: undefined }, '#progressbtn22');
+            expect(button.isPrimary).toEqual(false);
+            button.destroy();
+        });
+
+        it('ProgressButton with enableProgress', () => {
+            const ele: any = createElement('button', { id: 'progressbtn22' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ enableProgress: null }, '#progressbtn22');
+            expect(button.enableProgress).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ enableProgress: undefined }, '#progressbtn22');
+            expect(button.enableProgress).toEqual(false);
+            button.destroy();
+        });
+
+        it('ProgressButton with duration', () => {
+            const ele: any = createElement('button', { id: 'progressbtn23' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ duration: null }, '#progressbtn23');
+            expect(button.duration).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ duration: undefined }, '#progressbtn23');
+            expect(button.duration).toEqual(2000);
+            button.destroy();
+        });
+
+        it('ProgressButton with enableHtmlSanitizer', () => {
+            const ele: any = createElement('button', { id: 'progressbtn24' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ enableHtmlSanitizer: null }, '#progressbtn24');
+            expect(button.enableHtmlSanitizer).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ enableHtmlSanitizer: undefined }, '#progressbtn24');
+            expect(button.enableHtmlSanitizer).toEqual(true);
+            button.destroy();
+        });
+
+    });
+
 });

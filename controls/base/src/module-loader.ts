@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Module loading operations
  */
@@ -26,12 +27,10 @@ export interface ModuleDeclaration {
     isProperty?: boolean;
 }
 export interface IParent {
-    // eslint-disable-next-line
     [key: string]: any;
 }
 
 export class ModuleLoader {
-    // eslint-disable-next-line
     private parent: any;
     private loadedModules: ModuleDeclaration[] = [];
     constructor(parent: IParent) {

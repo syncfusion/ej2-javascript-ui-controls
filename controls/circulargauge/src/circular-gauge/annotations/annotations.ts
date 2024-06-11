@@ -73,6 +73,7 @@ export class Annotations {
      *
      * @param {Element} element - Specifies the element.
      * @param {CircularGauge} gauge - Specifies the instance of gauge.
+     * @param {number} axisIndex - Specifies the axis index.
      * @returns {void}
      */
     private annotationAnimate(element: Element, gauge: CircularGauge, axisIndex: number): void {

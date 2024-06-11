@@ -94,7 +94,8 @@ describe('Formats plugin', () => {
             editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
             editorObj.execCommand("Formats", 'blockquote', null);
             let changeNode: HTMLElement = elem.querySelector('.first-p-node');
-            expect(changeNode.tagName.toLowerCase() === 'blockquote').toBe(true);
+            expect(changeNode.tagName.toLowerCase() === 'p').toBe(true);
+            expect(changeNode.parentElement.tagName.toLowerCase() === 'blockquote').toBe(true);
 
             // Should be apply the format from 'blockquote' to h1
             start = elem.querySelector('blockquote');
@@ -103,6 +104,7 @@ describe('Formats plugin', () => {
             editorObj.execCommand("Formats", 'h1', null);
             changeNode = elem.querySelector('.first-p-node');
             expect(changeNode.tagName.toLowerCase() === 'h1').toBe(true);
+            expect(changeNode.parentElement.tagName.toLowerCase() === 'blockquote').toBe(true);
 
             // should be apply the format from 'h1' and 'h2' to 'blockquote'.
             start = elem.querySelector('.h1-tag-node');
@@ -111,8 +113,10 @@ describe('Formats plugin', () => {
             editorObj.execCommand("Formats", 'blockquote', null);
             start = elem.querySelector('.h1-tag-node');
             end = elem.querySelector('.h2-tag-node');
-            expect(start.tagName.toLowerCase() === 'blockquote').toBe(true);
-            expect(end.tagName.toLowerCase() === 'blockquote').toBe(true);
+            expect(start.parentElement.tagName.toLowerCase() === 'blockquote').toBe(true);
+            expect(end.parentElement.tagName.toLowerCase() === 'blockquote').toBe(true);
+            expect(start.tagName.toLowerCase() === 'h1').toBe(true);
+            expect(end.tagName.toLowerCase() === 'h2').toBe(true);
 
             
             // should be apply the blockquote format to parent node of 'OL''.
@@ -120,8 +124,9 @@ describe('Formats plugin', () => {
             end = elem.querySelector('.li-second');
             editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 0);
             editorObj.execCommand("Formats", 'blockquote', null);
-            start = elem.querySelector('.ol-first');        
-            expect((start as Element).tagName.toLowerCase() === 'blockquote').toBe(true);
+            start = elem.querySelector('.ol-first');
+            expect((start as Element).parentElement.tagName.toLowerCase() === 'blockquote').toBe(true);
+            expect((start as Element).tagName.toLowerCase() === 'ol').toBe(true);
 
             editorObj.nodeSelection.Clear(document);
         });
@@ -783,6 +788,155 @@ describe('Formats plugin', () => {
             expect(elem.querySelector('#lastPara').tagName === 'H1').toBe(true);
             editorObj.nodeSelection.Clear(document);
         });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Apply blockquotes after improvement', () => {
+        let editorObj: EditorManager;
+        let rteContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p id="startNode">Content 1</p><p>Content 2</p><p>Content 3</p><p>Content 4</p><p id="endNode">Content 5</p></div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: rteContent
+        });
+        let keyBoardEvent: any = { callBack: () => { }, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it(' - select all content and applying blockquote', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            let end: HTMLElement = elem.querySelector('#endNode');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 7);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.querySelector('#startNode').tagName === 'P').toBe(true);
+            expect(elem.querySelector('#endNode').tagName === 'P').toBe(true);
+            expect(elem.querySelector('#startNode').parentElement.tagName === 'BLOCKQUOTE').toBe(true);
+            expect(elem.querySelector('#endNode').parentElement.tagName === 'BLOCKQUOTE').toBe(true);
+            expect(elem.querySelectorAll('BLOCKQUOTE').length === 1).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - few lines(middle) of selection and then applying blockquotes to the content that already blockquotes', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<blockquote><p>Content 1</p><p id="startNode">Content 2</p><p id="endNode">Content 3</p><p>Content 4</p><p>Content 5</p></blockquote>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            let end: HTMLElement = elem.querySelector('#endNode');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 7);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.querySelector('#startNode').tagName === 'P').toBe(true);
+            expect(elem.querySelector('#endNode').tagName === 'P').toBe(true);
+            expect(elem.innerHTML === `<blockquote><p>Content 1</p></blockquote><p id="startNode">Content 2</p><p id="endNode">Content 3</p><blockquote><p>Content 4</p><p>Content 5</p></blockquote>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - applying blockquotes for selection start as normal text and end has blockquotes content ', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<blockquote><p>Content 1</p></blockquote><p>Content 2</p><p id="startNode">Content 3</p><blockquote><p id="endNode">Content 4</p><p>Content 5</p></blockquote>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            let end: HTMLElement = elem.querySelector('#endNode');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 7);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.querySelector('#startNode').parentElement.tagName === 'BLOCKQUOTE').toBe(true);
+            expect(elem.innerHTML === `<blockquote><p>Content 1</p></blockquote><p>Content 2</p><blockquote><p id="startNode">Content 3</p><p id="endNode">Content 4</p><p>Content 5</p></blockquote>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - applying blockquotes for selection start as blockquote text and end has normal text ', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<blockquote><p id="startNode">Content 1</p></blockquote><p id="endNode">Content 2</p><p>Content 3</p><blockquote><p>Content 4</p><p>Content 5</p></blockquote>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            let end: HTMLElement = elem.querySelector('#endNode');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 7);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.querySelector('#endNode').parentElement.tagName === 'BLOCKQUOTE').toBe(true);
+            expect(elem.innerHTML === `<blockquote><p id="startNode">Content 1</p><p id="endNode">Content 2</p></blockquote><p>Content 3</p><blockquote><p>Content 4</p><p>Content 5</p></blockquote>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - applying blockquotes for selection start as blockquote text and end has blockquote text with text content as middle', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<blockquote><p>Content 1</p><p id="startNode">Content 2</p></blockquote><p>Content 3</p><blockquote><p id="endNode">Content 4</p><p>Content 5</p></blockquote>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            let end: HTMLElement = elem.querySelector('#endNode');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 7);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.innerHTML === `<blockquote><p>Content 1</p></blockquote><p id="startNode">Content 2</p><p>Content 3</p><p id="endNode">Content 4</p><blockquote><p>Content 5</p></blockquote>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - applying blockquotes for selection start as normal text and end has normal text with blockquote content as middle', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<p>Content 1</p><p id="startNode">Content 2</p><blockquote><p>Content 3</p><p id="endNode">Content 4</p></blockquote><p>Content 5</p><p>Content 6</p>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            let end: HTMLElement = elem.querySelector('#endNode');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 7);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.innerHTML === `<p>Content 1</p><blockquote><p id="startNode">Content 2</p><p>Content 3</p><p id="endNode">Content 4</p></blockquote><p>Content 5</p><p>Content 6</p>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - applying blockquotes for selection start as normal text and end has list text', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<p id="startNode">Content 1</p><p>Content 2</p><p>Content 3</p><ol><li>List 1</li><li>List 2</li><li id="endNode">List 3</li></ol>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            let end: HTMLElement = elem.querySelector('#endNode');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 3);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.innerHTML === `<blockquote><p id="startNode">Content 1</p><p>Content 2</p><p>Content 3</p><ol><li>List 1</li><li>List 2</li><li id="endNode">List 3</li></ol></blockquote>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - applying blockquotes for selection start as normal text and end has normal text with enter action as BR', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `Content 1<br>Content 2<br>Content 3<br>Content 4<br>Content 5`;
+            editorObj.nodeSelection.setSelectionText(document, elem.childNodes[0], elem.childNodes[8], 0, 3);
+            editorObj.execCommand("Formats", 'blockquote', null, null, null, null, null, 'BR');
+            expect(elem.innerHTML === `<blockquote>Content 1<br>Content 2<br>Content 3<br>Content 4<br>Content 5</blockquote>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - applying blockquotes to the empty cotenteditable DIV with enter action as BR', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = ``;
+            editorObj.nodeSelection.setSelectionText(document, elem, elem, 0, 0);
+            editorObj.execCommand("Formats", 'blockquote', null, null, null, null, null, 'BR');
+            expect(elem.innerHTML === `<blockquote><br></blockquote>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - applying blockquotes for by focusing the first table TD cell', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;" id="startNode"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            editorObj.nodeSelection.setSelectionText(document, start, start, 0, 0);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.innerHTML === `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;" id="startNode"><blockquote><p><br></p></blockquote></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - enter key press inside list when blockquote is applied to the list', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<blockquote><ol><li>List 1</li><li>List 2</li><li>List 3</li><li id="startNode"><br></li></ol></blockquote>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[0] as Element, 0);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(elem.innerHTML === `<blockquote><ol><li>List 1</li><li>List 2</li><li>List 3</li></ol><br></blockquote>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' - reverting the blockquotes for the list with blockquotes', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            elem.innerHTML = `<blockquote><ol><li id="startNode">List 1</li><li>List 2</li><li>List 3</li></ol></blockquote>`;
+            let start: HTMLElement = elem.querySelector('#startNode');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], start.childNodes[0], 2, 2);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.innerHTML === `<ol><li id="startNode">List 1</li><li>List 2</li><li>List 3</li></ol>`).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+
         afterAll(() => {
             detach(elem);
         });

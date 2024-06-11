@@ -76,22 +76,24 @@ export class Tooltip {
      */
 
     public showHideTooltip(isShow: boolean, isFadeout?: boolean): void {
-        const ele: HTMLElement = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
-        if (!isShow) {
-            if (ele && ele.style.visibility !== 'hidden') {
-                if (this.tooltipObject && isFadeout && this.heatMap.isRectBoundary) {
-                    this.tooltipObject.fadeOut();
-                } else {
-                    if (this.tooltipObject && this.tooltipObject.element) {
-                        const tooltipElement: HTMLElement = this.tooltipObject.element.firstChild as HTMLElement;
-                        tooltipElement.setAttribute('opacity', '0');
+        if (!isNullOrUndefined(this.heatMap)) {
+            const ele: HTMLElement = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
+            if (!isShow) {
+                if (!isNullOrUndefined(ele) && ele.style.visibility !== 'hidden') {
+                    if (!isNullOrUndefined(this.tooltipObject) && isFadeout && this.heatMap.isRectBoundary) {
+                        this.tooltipObject.fadeOut();
+                    } else {
+                        if (!isNullOrUndefined(this.tooltipObject) && !isNullOrUndefined(this.tooltipObject.element)) {
+                            const tooltipElement: HTMLElement = this.tooltipObject.element.firstChild as HTMLElement;
+                            tooltipElement.setAttribute('opacity', '0');
+                        }
                     }
+                    ele.style.visibility = 'hidden';
                 }
-                ele.style.visibility = 'hidden';
+                this.isFadeout = true;
+            } else {
+                ele.style.visibility = 'visible';
             }
-            this.isFadeout = true;
-        } else {
-            ele.style.visibility = 'visible';
         }
     }
 
@@ -102,10 +104,12 @@ export class Tooltip {
      * @private
      */
 
-    public destroy(): void {
-        /**
-         * Destroy method performed here
-         */
+    protected destroy(): void {
+        if (!isNullOrUndefined(this.tooltipObject)) {
+            this.tooltipObject.destroy();
+        }
+        this.tooltipObject = null;
+        this.heatMap = null;
     }
 
     /**
@@ -146,9 +150,24 @@ export class Tooltip {
         if (this.heatMap.theme === 'Material3Dark') {
             this.heatMap.setProperties({ tooltipSettings : { fill : '#E6E1E5', textStyle : { size: '14px', fontFamily : 'Roboto', fontWeight : '400', color : '#313033' }}}, true);
         }
+        if (this.heatMap.theme === 'Fluent2') {
+            this.heatMap.setProperties({ tooltipSettings : { fill: '#FFFFFF', textStyle : { size: '12px', fontFamily : 'Segoe UI', fontWeight : '400', color: '#242424' }}}, true);
+        }
+        if (this.heatMap.theme === 'Fluent2Dark') {
+            this.heatMap.setProperties({ tooltipSettings : { fill: '#292929', textStyle : { size: '12px', fontFamily : 'Segoe UI', fontWeight : '400', color: '#FFFFFF' }}}, true);
+        }
+        if (this.heatMap.theme === 'Fluent2HighContrast') {
+            this.heatMap.setProperties({
+                tooltipSettings: {
+                    fill: '#000000', textStyle: { size: '12px', fontFamily: 'Segoe UI', fontWeight: '400', color: '#FFFFFF' },
+                    border: { width: 1, color: '#FFF' }
+                }
+            }, true);
+        }
         this.tooltipObject = new tool(
             {
-                opacity: (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark' || this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark' || this.heatMap.theme === 'Fluent' || this.heatMap.theme === 'FluentDark') ? 1 : 0.75,
+                opacity: (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark' || this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark' || this.heatMap.theme === 'Fluent' || this.heatMap.theme === 'FluentDark'
+                    || this.heatMap.theme === 'Fluent2' || this.heatMap.theme === 'Fluent2Dark' || this.heatMap.theme === 'Fluent2HighContrast') ? 1 : 0.75,
                 enableAnimation: false,
                 offset: offset,
                 location: { x: x, y: y },
@@ -306,7 +325,7 @@ export class Tooltip {
      * To render tooltip.
      */
 
-    private tooltipCallback(currentRect: CurrentRect, tempTooltipText: string[]): void {        
+    private tooltipCallback(currentRect: CurrentRect, tempTooltipText: string[]): void {
         if (!this.tooltipObject) {
             this.createTooltip(
                 currentRect,
@@ -325,6 +344,7 @@ export class Tooltip {
                 value: currentRect.value
             };
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.heatMap as any).isVue || (this.heatMap as any).isVue3) {
             this.tooltipObject.controlInstance = this.heatMap;
         }

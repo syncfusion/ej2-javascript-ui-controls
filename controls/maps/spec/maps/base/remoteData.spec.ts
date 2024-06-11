@@ -109,7 +109,7 @@ describe('Remote Data testing', () => {
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
             };
             map.layers = [{
-                layerType: 'OSM',
+                urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
                 markerSettings: [{
                     visible: true,
                     template: '<div><img src="http://js.syncfusion.com/demos/web/Images/map/pin.png" style="height:30px;width:30px;"></img></div>',
@@ -158,7 +158,7 @@ describe('Remote Data testing', () => {
                 map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
             };
             map.layers = [{
-                layerType: 'OSM',
+                urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
                 markerSettings: [{
                     visible: true,
                     template: '<div><img src="http://js.syncfusion.com/demos/web/Images/map/pin.png" style="height:30px;width:30px;"></img></div>',

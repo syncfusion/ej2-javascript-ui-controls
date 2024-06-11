@@ -121,9 +121,8 @@ export class OlapEngine {
     private measureReportItems: string[];
     private locale: string;
     private olapRowValueIndex: number;
-    private mappingFields: { [key: string]: IFieldOptions } = {};   /* eslint-disable security/detect-unsafe-regex */
-    private customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
-    private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;   /* eslint-enable security/detect-unsafe-regex */
+    private mappingFields: { [key: string]: IFieldOptions } = {};
+    private formatRegex: RegExp = /^(?:[ncpae])(?:([0-9]|1[0-9]|20))?$/i;
     private clonedValTuple: Element[] = [];
     private clonedColumnTuple: Element[] = [];
     private clonedRowTuple: Element[] = [];
@@ -157,7 +156,8 @@ export class OlapEngine {
     public namedSetsPosition: { [key: string]: { [key: number]: string } } = {};
     /** @hidden */
     public errorInfo: string | Error;
-    private colDepth: number = 0;
+    /** @hidden */
+    public colDepth: number = 0;
     private totalCollection: ITotCollection[] = [];
     private parentObjCollection: IParentObjCollection = {};
     private colMeasures: { [key: string]: Element };
@@ -202,8 +202,8 @@ export class OlapEngine {
         this.rowFirstLvl = 0;
         this.pageColStartPos = 0;
         this.sortObject = {};
-        this.globalize = new Internationalization();    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.locale = (this.globalize as any).getCulture();
+        this.globalize = new Internationalization();
+        this.locale = this.globalize.culture ? this.globalize.culture : 'en-US';
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
         if (dataSourceSettings.url) {
@@ -575,12 +575,12 @@ export class OlapEngine {
         if (this.drilledMembers.length > 0) {
             // let st1: number = new Date().getTime();
             let orderedInfo: IOrderedInfo;
-            orderedInfo = this.frameMeasureOrder(measureInfo, 'column', columnTuples, valCollection,
-                columnTuples.length, columnTuples.length * rowTuples.length);
+            orderedInfo = this.frameMeasureOrder(
+                measureInfo, 'column', columnTuples, valCollection, columnTuples.length, columnTuples.length * rowTuples.length);
             columnTuples = orderedInfo.orderedHeaderTuples;
             valCollection = orderedInfo.orderedValueTuples;
-            orderedInfo = this.frameMeasureOrder(measureInfo, 'row', rowTuples, valCollection,
-                columnTuples.length, columnTuples.length * rowTuples.length);
+            orderedInfo = this.frameMeasureOrder(
+                measureInfo, 'row', rowTuples, valCollection, columnTuples.length, columnTuples.length * rowTuples.length);
             rowTuples = orderedInfo.orderedHeaderTuples;
             valCollection = orderedInfo.orderedValueTuples;
             // let st2: number = (new Date().getTime() - st1) / 1000;
@@ -1221,13 +1221,13 @@ export class OlapEngine {
         while (memPos < members.length) {
             const member: Element = members[memPos as number];
             const memberlevel: number = Number(member.querySelector('LNum').textContent);
-            const memberUName: string = member.querySelector('UName').textContent;  /* eslint-disable @typescript-eslint/no-explicit-any */
+            const memberUName: string = member.querySelector('UName').textContent;
             if (Number(member.querySelector('MEMBER_TYPE').textContent) > 3) {
-                member.querySelector('MEMBER_TYPE').textContent = (memberUName as any).indexOf('[Measures]') === 0 ? '3' : '1';
+                member.querySelector('MEMBER_TYPE').textContent = memberUName.indexOf('[Measures]') === 0 ? '3' : '1';
             }
-            const memberType: string = (memberUName as any).indexOf('[Measures]') === 0 ? '3' :
+            const memberType: string = memberUName.indexOf('[Measures]') === 0 ? '3' :
                 (Number(member.querySelector('MEMBER_TYPE').textContent) > 3 ? '1' : member.querySelector('MEMBER_TYPE').textContent);
-            let memberCaption: string = member.querySelector('Caption').textContent;    /* eslint-enable @typescript-eslint/no-explicit-any */
+            let memberCaption: string = member.querySelector('Caption').textContent;
             if (this.fieldList[memberCaption as string] && this.fieldList[memberCaption as string].type === 'CalculatedField') {
                 memberCaption = this.fieldList[memberCaption as string].caption;
                 member.querySelector('Caption').textContent = memberCaption;
@@ -1285,29 +1285,29 @@ export class OlapEngine {
                         currUName = this.drilledSets[currUName as string].querySelector('PARENT_UNIQUE_NAME') === null ? '' :
                             this.drilledSets[currUName as string].querySelector('PARENT_UNIQUE_NAME').textContent;
                     }
-                }   /* eslint-disable @typescript-eslint/no-explicit-any */
+                }
                 let uNames: string = '';
-                const uNamesKeys: any = Object.keys(this.headerGrouping[memPos as number].UName);
+                const uNamesKeys: string[] = Object.keys(this.headerGrouping[memPos as number].UName);
                 for (let i: number = 0; i < uNamesKeys.length; i++) {
-                    const j: any = uNamesKeys[i as number];
+                    const j: string = uNamesKeys[i as number];
                     if (i === 0) {
-                        uNames = this.headerGrouping[memPos as number].UName[j as number];
+                        uNames = this.headerGrouping[memPos as number].UName[Number(j)];
                     }
                     else {
-                        uNames = uNames + '~~' + this.headerGrouping[memPos as number].UName[j as number];
+                        uNames = uNames + '~~' + this.headerGrouping[memPos as number].UName[Number(j)];
                     }
                 }
                 uNameCollection = uNameCollection === '' ? uNames :
                     (uNameCollection + '::' + uNames);
                 let captions: string = '';
-                const captionsKeys: any = Object.keys(this.headerGrouping[memPos as number].Caption);
+                const captionsKeys: string[] = Object.keys(this.headerGrouping[memPos as number].Caption);
                 for (let i: number = 0; i < captionsKeys.length; i++) {
-                    const j: any = captionsKeys[i as number];   /* eslint-enable @typescript-eslint/no-explicit-any */
+                    const j: string = captionsKeys[i as number];
                     if (i === 0) {
-                        captions = this.headerGrouping[memPos as number].Caption[j as number];
+                        captions = this.headerGrouping[memPos as number].Caption[Number(j)];
                     }
                     else {
-                        captions = captions + '~~' + this.headerGrouping[memPos as number].Caption[j as number];
+                        captions = captions + '~~' + this.headerGrouping[memPos as number].Caption[Number(j)];
                     }
                 }
                 if (memPos !== measurePosition) {
@@ -1908,21 +1908,20 @@ export class OlapEngine {
                     } else if (memberType === '2' && memberLevel === '0' && isGrandTotal) {
                         colMembers[uName as string] = 'Grand Total';
                         isGrandTotal = false;
-                    }   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    const levelNameKeys: any = Object.keys(colMembers);
+                    }
+                    const levelNameKeys: string[] = Object.keys(colMembers);
                     let levelName: string = memPos >= this.measurePosition && Number(
                         member.getElementsByTagName('LNum')[0].textContent
                     ) === 0 && levelNameKeys.length === 1 ? 'Grand Total' + this.valueSortSettings.headerDelimiter : '';
-                    /* eslint-disable @typescript-eslint/no-explicit-any */
                     for (let i: number = 0; i < levelNameKeys.length; i++) {
-                        const j: any = levelNameKeys[i as number];
+                        const j: string = levelNameKeys[i as number];
                         if (i === 0) {
-                            levelName = levelName + colMembers[j as any];
+                            levelName = levelName + colMembers[j as string];
                         }
                         else {
-                            levelName = levelName + this.valueSortSettings.headerDelimiter + colMembers[j as any];
+                            levelName = levelName + this.valueSortSettings.headerDelimiter + colMembers[j as string];
                         }
-                    }   /* eslint-enable @typescript-eslint/no-explicit-any */
+                    }
                     const isNamedSet: boolean = this.namedSetsPosition['column'][memPos as number] ? true : false;
                     const depth: number = this.getDepth(this.tupColumnInfo[tupPos as number], uName, Number(memberType));
                     if (!(this.isPaging && this.pivotValues[spanMemPos - 1] && this.pivotValues[spanMemPos - 1][position as number] &&
@@ -2062,7 +2061,7 @@ export class OlapEngine {
     }
 
     private performRowSorting(valCollection: { [key: string]: Element }, valueSortData: ValueSortInfo): void {
-        if ((this.enableSort || this.enableValueSorting) && this.tupRowInfo.length > 0) {
+        if (this.enableSort && this.tupRowInfo.length > 0) {
             const rowCount: number = this.pivotValues.length;
             const lvlGrouping: { [key: number]: { [key: string]: IAxisSet[] } } = {};
             const measureObjects: { [key: string]: IAxisSet[] } = {};
@@ -2284,14 +2283,12 @@ export class OlapEngine {
                                     }
                                     arrange[header[k as number].formattedText][header[k as number].colIndex] = header[k as number];
                                 } else if (arrange[header[k as number].formattedText] && this.pivotValues[j - 1]) {
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const prevRowCell: any = this.pivotValues[j - 1][header[k as number].colIndex];
+                                    const prevRowCell: IAxisSet = this.pivotValues[j - 1][header[k as number].colIndex];
                                     const prevColValue: number = Number(Object.keys(arrange[header[k as number].formattedText])[0]);
                                     const prevColIndex: number = ((
                                         arrange[header[k as number].formattedText]
                                     )[prevColValue as number]).colIndex;
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const prevColRowCell: any = this.pivotValues[j - 1][prevColIndex as number];
+                                    const prevColRowCell: IAxisSet = this.pivotValues[j - 1][prevColIndex as number];
                                     if (prevRowCell.formattedText !== prevColRowCell.formattedText) {
                                         keys = this.sortColumnHeaders(
                                             arrange, arrangeHeaders, this.sortObject[header[k - 1].levelUniqueName] ||
@@ -2895,11 +2892,6 @@ export class OlapEngine {
                 formattedValue = this.globalize.formatDate(new Date(value.toString()), formatObj);
             } else {
                 delete formatObj.type;
-                if ((formatObj.format) && !(this.formatRegex.test(formatObj.format))) {
-                    const pattern: string[] = formatObj.format.match(this.customRegex);
-                    const integerPart: string = pattern[6];
-                    formatObj.useGrouping = integerPart.indexOf(',') !== -1;
-                }
                 formattedValue = this.globalize.formatNumber(value, formatObj);
             }
         }
@@ -2954,8 +2946,8 @@ export class OlapEngine {
         }
     }
 
-    private frameMeasureOrder(measureInfo: IMeasureInfo, axis: string, tuples: Element[], vTuples: Element[],
-        cLen: number, valuesCount: number): IOrderedInfo {
+    private frameMeasureOrder(
+        measureInfo: IMeasureInfo, axis: string, tuples: Element[], vTuples: Element[], cLen: number, valuesCount: number): IOrderedInfo {
         const orderedTuples: Element[] = [];
         const orderedVTuples: Element[] = [];
         const orderedIndex: number[] = [];
@@ -3044,7 +3036,7 @@ export class OlapEngine {
                     }
                     let vTupleOrdinal: number;
                     if (vTuples[vOrdinalIndexPos as number]) {
-                        vTupleOrdinal = this.olapVirtualization ? 
+                        vTupleOrdinal = this.olapVirtualization ?
                             j : Number(vTuples[vOrdinalIndexPos as number].getAttribute('CellOrdinal'));
                     } else {
                         vOrdinalIndexPos++;
@@ -3346,8 +3338,8 @@ export class OlapEngine {
     private getCubes(dataSourceSettings: IDataOptions): void {
         const connectionString: ConnectionInfo = this.getConnectionInfo(
             dataSourceSettings.url, dataSourceSettings.localeIdentifier.toString()
-        ); // eslint-disable-next-line no-useless-escape
-        const soapMessage: string = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Header/><Body>' +
+        );
+        const soapMessage: string = '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Header/><Body>' +
                     '<Discover xmlns="urn:schemas-microsoft-com:xml-analysis"><RequestType>MDSCHEMA_CUBES</RequestType>' +
                         '<Restrictions><RestrictionList><CATALOG_NAME>' + dataSourceSettings.catalog +
             '</CATALOG_NAME></RestrictionList></Restrictions><Properties><PropertyList><Catalog>' + dataSourceSettings.catalog +
@@ -3384,8 +3376,8 @@ export class OlapEngine {
         this.getTreeData(args, this.getFieldListItems.bind(this), { dataSourceSettings: dataSourceSettings, action: 'loadFieldElements' });
     }
     public getTreeData(args: ConnectionInfo, successMethod: Function, customArgs: object): void {
-        const connectionString: ConnectionInfo = this.getConnectionInfo(args.url, args.LCID); // eslint-disable-next-line no-useless-escape
-        const soapMessage: string = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Header/><Body><Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"><RequestType>' +
+        const connectionString: ConnectionInfo = this.getConnectionInfo(args.url, args.LCID);
+        const soapMessage: string = '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Header/><Body><Discover xmlns="urn:schemas-microsoft-com:xml-analysis"><RequestType>' +
             args.request + '</RequestType><Restrictions><RestrictionList><CATALOG_NAME>' + args.catalog +
             '</CATALOG_NAME><CUBE_NAME>' + args.cube + '</CUBE_NAME></RestrictionList></Restrictions><Properties><PropertyList><Catalog>' + args.catalog +
             '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier>' + (args.roles ? '<Roles>' + args.roles + '</Roles>' : '') + '</PropertyList></Properties></Discover></Body></Envelope>';
@@ -3635,7 +3627,7 @@ export class OlapEngine {
             (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from ' +
             (filterQuery === '' ? '[' + this.dataSourceSettings.cube + ']' : '(SELECT (' + filterQuery + ') ON COLUMNS FROM [' +
                 this.dataSourceSettings.cube + '])');
-        drillQuery = drillQuery.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;'); /* eslint-disable-line no-useless-escape */
+        drillQuery = drillQuery.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
         const xmla: string = this.getSoapMsg(this.dataSourceSettings, drillQuery);
         const connectionString: ConnectionInfo =
             this.getConnectionInfo(this.dataSourceSettings.url, this.dataSourceSettings.localeIdentifier);
@@ -3709,13 +3701,13 @@ export class OlapEngine {
         const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         let mdxQuery: string;
         const hasAllMember: boolean = this.fieldList[fieldName as string].hasAllMember;
-        const hierarchy: string = (hasAllMember ? fieldName : fieldName + '.LEVELS(0)').replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');  /* eslint-disable-line no-useless-escape */
+        const hierarchy: string = (hasAllMember ? fieldName : fieldName + '.LEVELS(0)').replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
         if (!isAllFilterData && !filterItemName) {
             mdxQuery = 'SELECT ({' + (filterParentQuery ?
                 filterParentQuery : (hasAllMember ? hierarchy + ', ' + hierarchy + '.CHILDREN' : hierarchy + '.ALLMEMBERS')) + '})' +
                 dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
         } else if (filterItemName) {
-            filterItemName = filterItemName.replace(/\&/g, '&amp;'); /* eslint-disable-line no-useless-escape */
+            filterItemName = filterItemName.replace(/&/g, '&amp;');
             mdxQuery = 'SELECT {' + filterItemName + '} ON 0 FROM [' + dataSourceSettings.cube + '] WHERE {}';
         } else {
             mdxQuery = 'SELECT ({' + hierarchy + '.ALLMEMBERS})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
@@ -3746,7 +3738,7 @@ export class OlapEngine {
         // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
         const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         // var mdxQuery = 'SELECT SUBSET({' + memberUQName + '.CHILDREN}, 0, 5000)' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
-        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;') + '.CHILDREN})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';   /* eslint-disable-line no-useless-escape */
+        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;') + '.CHILDREN})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
         const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
         const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, action: 'fetchChildMembers' });
@@ -3757,7 +3749,7 @@ export class OlapEngine {
     public getCalcChildMembers(dataSourceSettings: IDataOptions, memberUQName: string): void {
         this.calcChildMembers = [];
         const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
-        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;') + '.MEMBERS})' +   /* eslint-disable-line no-useless-escape */
+        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;') + '.MEMBERS})' +
             dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
         const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
@@ -3773,7 +3765,7 @@ export class OlapEngine {
         if (searchString !== '') {
             // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
             const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
-            const hierarchy: string = fieldName.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line no-useless-escape */
+            const hierarchy: string = fieldName.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
             const mdxQuery: string = 'WITH SET [SearchMembersSet] AS &#39;FILTER(' + (isAllFilterData ? hierarchy + '.ALLMEMBERS, ' :
                 '{' + (levelCount > 1 ? this.getFilterMembers(dataSourceSettings, fieldName, levelCount, true) :
                     hierarchy + ', ' + hierarchy + '.CHILDREN') + '},') +
@@ -4551,7 +4543,7 @@ export class OlapEngine {
     }
     private beforeSend(args: string | Object): void {
         if (this.dataSourceSettings.authentication.userName && this.dataSourceSettings.authentication.password) {
-            (args as any).httpRequest.setRequestHeader('Authorization', 'Basic ' + btoa(this.dataSourceSettings.authentication.userName +   // eslint-disable-line @typescript-eslint/no-explicit-any
+            (args as { httpRequest: XMLHttpRequest }).httpRequest.setRequestHeader('Authorization', 'Basic ' + btoa(this.dataSourceSettings.authentication.userName +
                 ':' + this.dataSourceSettings.authentication.password));
         }
     }
@@ -4560,12 +4552,12 @@ export class OlapEngine {
         let sourceInfo: string = '';
         const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         if (this.isMondrian) {
-            sourceInfo = ''; // eslint-disable-next-line no-useless-escape
-            xmlMsg = '<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><SOAP-ENV:Body><Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\"><Command><Statement><![CDATA[' +
+            sourceInfo = '';
+            xmlMsg = '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><Execute xmlns="urn:schemas-microsoft-com:xml-analysis"><Command><Statement><![CDATA[' +
                 query + ']]></Statement></Command><Properties><PropertyList><DataSourceInfo>' + sourceInfo +
                 '</DataSourceInfo><Catalog>' + dataSourceSettings.catalog + '</Catalog><AxisFormat>TupleFormat</AxisFormat><Content>Data</Content><Format>Multidimensional</Format></PropertyList></Properties></Execute></SOAP-ENV:Body></SOAP-ENV:Envelope>';
-        } else {    // eslint-disable-next-line no-useless-escape
-            xmlMsg = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"> <Header></Header> <Body> <Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\"> <Command> <Statement> ' +
+        } else {
+            xmlMsg = '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"> <Header></Header> <Body> <Execute xmlns="urn:schemas-microsoft-com:xml-analysis"> <Command> <Statement> ' +
                 query + ' </Statement> </Command> <Properties> <PropertyList> <Catalog>' + dataSourceSettings.catalog +
                 '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier>' + (dataSourceSettings.roles ? '<Roles>' + dataSourceSettings.roles + '</Roles>' : '') + '</PropertyList> </Properties> </Execute> </Body> </Envelope>';
         }
@@ -4642,7 +4634,7 @@ export interface ConnectionInfo {
 export interface FieldData {
     hierarchy?: IOlapField[];
     hierarchySuccess?: Document;
-    measures?: any;     // eslint-disable-line @typescript-eslint/no-explicit-any
+    measures?: IFieldOptions[];
     dataSourceSettings?: IDataOptions;
     action?: string;
     reportElement?: string[];

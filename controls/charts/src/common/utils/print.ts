@@ -8,7 +8,7 @@ import { RangeNavigator } from '../../range-navigator/range-navigator';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { Chart3D } from '../../chart3d/chart3D';
-import { CircularChart3D } from '../../circularchart3d/circularchart3d';
+import { CircularChart3D } from '../../circularchart3d';
 
 
 export class PrintUtils {
@@ -68,8 +68,8 @@ export class PrintUtils {
             div.appendChild(this.control.element.cloneNode(true) as Element);
         }
         for (let index: number = 0; index < div.children.length; index++) {
-            let backgroundColor: string = (this.control.theme.indexOf('Dark') > -1 || this.control.theme === 'HighContrast') ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
-            let svg: Element = div.children[index as number];
+            const backgroundColor: string = (this.control.theme.indexOf('Dark') > -1 || this.control.theme.indexOf('HighContrast') > -1) ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+            const svg: Element = div.children[index as number];
             for (let childIndex: number = 0; childIndex < svg.children.length; childIndex++) {
                 let actualBackgroundColor: string;
                 let isSVG: boolean = false;

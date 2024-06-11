@@ -79,7 +79,8 @@ export class HeaderRenderer {
     }
 
     private renderToolbar(): void {
-        const items: ItemModel[] = (this.parent.toolbarItems && this.parent.toolbarItems.length > 0) ? this.getToolbarItems() : this.getItems();
+        const items: ItemModel[] = (this.parent.toolbarItems && this.parent.toolbarItems.length > 0) ?
+            this.getToolbarItems() : this.getItems();
         this.parent.trigger(events.actionBegin, { requestType: 'toolbarItemRendering', items: items }, (args: ActionEventArgs) => {
             this.toolbarObj = new Toolbar({
                 items: args.items,
@@ -178,6 +179,7 @@ export class HeaderRenderer {
         if (!selEle) {
             return;
         }
+        selEle.firstElementChild.setAttribute('aria-haspopup', 'true');
         const textEle: Element = selEle.querySelector('.e-tbar-btn-text');
         if (this.parent.activeViewOptions.dateRangeTemplate) {
             textEle.textContent = '';
@@ -286,59 +288,59 @@ export class HeaderRenderer {
             let tbItem: ItemModel;
             if (item.name) {
                 switch (item.name) {
-                    case 'Today':
-                        tbItem = {
-                            showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-today',
-                            text: this.l10n.getConstant('today'), cssClass: 'e-today', overflow: 'Show'
-                        };
-                        tbItem.align = propItem.align ? propItem.align : item.align;
-                        items.push({...tbItem, ...propItem});
-                        break;
-                    case 'Previous':
-                        tbItem = {
-                            prefixIcon: 'e-icon-prev', tooltipText: 'Previous', overflow: 'Show',
-                            cssClass: 'e-prev', htmlAttributes: { 'role': 'navigation' }
-                        };
-                        tbItem.align = propItem.align ? propItem.align : item.align;
-                        items.push({...tbItem, ...propItem});
-                        break;
-                    case 'Next':
-                        tbItem = {
-                            prefixIcon: 'e-icon-next', tooltipText: 'Next', overflow: 'Show',
-                            cssClass: 'e-next', htmlAttributes: { 'role': 'navigation' }
-                        };
-                        tbItem.align = propItem.align ? propItem.align : item.align;
-                        items.push({...tbItem, ...propItem});
-                        break;
-                    case 'DateRangeText':
-                        tbItem = {
-                            text: this.getDateRangeText(), suffixIcon: 'e-icon-down-arrow', cssClass: 'e-date-range',
-                            overflow: 'Show',
-                            htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'role': 'navigation' }
-                        };
-                        tbItem.align = propItem.align ? propItem.align : item.align;
-                        items.push({...tbItem, ...propItem});
-                        break;
-                    case 'NewEvent':
-                        tbItem = {
-                            showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-add',
-                            text: this.l10n.getConstant('newEvent'), cssClass: 'e-add', overflow: 'Show'
-                        };
-                        tbItem.align = propItem.align ? propItem.align : item.align;
-                        items.push({...tbItem, ...propItem});
-                        break;
-                    case 'Views':
-                        if (this.parent.views.length > 1) {
-                            for (const view of this.parent.views) {
-                                tbItem = this.getItemObject(view);
-                                tbItem.align = propItem.align ? propItem.align : item.align;
-                                items.push({...tbItem, ...propItem});
-                            }
+                case 'Today':
+                    tbItem = {
+                        showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-today',
+                        text: this.l10n.getConstant('today'), cssClass: 'e-today', overflow: 'Show'
+                    };
+                    tbItem.align = propItem.align ? propItem.align : item.align;
+                    items.push({...tbItem, ...propItem});
+                    break;
+                case 'Previous':
+                    tbItem = {
+                        prefixIcon: 'e-icon-prev', tooltipText: 'Previous', overflow: 'Show',
+                        cssClass: 'e-prev', htmlAttributes: { 'role': 'navigation' }
+                    };
+                    tbItem.align = propItem.align ? propItem.align : item.align;
+                    items.push({...tbItem, ...propItem});
+                    break;
+                case 'Next':
+                    tbItem = {
+                        prefixIcon: 'e-icon-next', tooltipText: 'Next', overflow: 'Show',
+                        cssClass: 'e-next', htmlAttributes: { 'role': 'navigation' }
+                    };
+                    tbItem.align = propItem.align ? propItem.align : item.align;
+                    items.push({...tbItem, ...propItem});
+                    break;
+                case 'DateRangeText':
+                    tbItem = {
+                        text: this.getDateRangeText(), suffixIcon: 'e-icon-down-arrow', cssClass: 'e-date-range',
+                        overflow: 'Show',
+                        htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'role': 'navigation' }
+                    };
+                    tbItem.align = propItem.align ? propItem.align : item.align;
+                    items.push({...tbItem, ...propItem});
+                    break;
+                case 'NewEvent':
+                    tbItem = {
+                        showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-add',
+                        text: this.l10n.getConstant('newEvent'), cssClass: 'e-add', overflow: 'Show'
+                    };
+                    tbItem.align = propItem.align ? propItem.align : item.align;
+                    items.push({...tbItem, ...propItem});
+                    break;
+                case 'Views':
+                    if (!isNullOrUndefined(this.parent.views) && this.parent.views.length > 1) {
+                        for (const view of this.parent.views) {
+                            tbItem = this.getItemObject(view);
+                            tbItem.align = propItem.align ? propItem.align : item.align;
+                            items.push({...tbItem, ...propItem});
                         }
-                        break;
-                    case 'Custom':
-                        items.push(item);
-                        break;
+                    }
+                    break;
+                case 'Custom':
+                    items.push(item);
+                    break;
                 }
             } else {
                 items.push(item);
@@ -376,11 +378,11 @@ export class HeaderRenderer {
                 align: 'Right', showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-today',
                 text: this.l10n.getConstant('today'), cssClass: 'e-today', overflow: 'Show'
             });
-            if (this.parent.views.length > 1) {
+            if (!isNullOrUndefined(this.parent.views) && this.parent.views.length > 1) {
                 items.push({ align: 'Right', type: 'Separator', cssClass: 'e-schedule-seperator' });
             }
         }
-        if (this.parent.views.length > 1) {
+        if (!isNullOrUndefined(this.parent.views) && this.parent.views.length > 1) {
             for (const item of this.parent.views) {
                 items.push(this.getItemObject(item));
             }

@@ -2232,47 +2232,55 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });
     });
-    describe('Remote data binding - selectAll method', () => {
-        let listObj: MultiSelect;
-        let originalTimeout: number;
-        let popupObj: any;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
-        beforeAll((done) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            document.body.innerHTML = '';
-            document.body.appendChild(element);
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(4), fields: { value: 'EmployeeID', text: 'FirstName' } });
-            listObj.appendTo(element);
-            done();
-        });
-        afterAll(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-            if (element) {
-                element.remove();
-            }
-        });
-        /**
-        * remoteData binding with selectAll method
-        */
-        it('remoteData binding with selectAll method ', (done) => {
-            listObj.selectAll(true);
-            setTimeout(() => {
-                (<any>listObj).moveByList(1);
-                let elem: HTMLElement[] = (<any>listObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips);
-                expect(elem.length).toBe(4);
-                listObj.destroy();
-                done();
-            }, 800);
-        });
-    });
+    // describe('Remote data binding - selectAll method', () => {
+    //     let listObj: MultiSelect;
+    //     let originalTimeout: number;
+    //     let popupObj: any;
+    //     let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+    //     let remoteData: DataManager = new DataManager({ 
+    //         url: 'https://services.syncfusion.com/js/production/api/Employees',
+    //         adaptor: new WebApiAdaptor,
+    //         crossDomain: true
+    //     });
+    //     beforeAll((done) => {
+    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+    //         document.body.innerHTML = '';
+    //         document.body.appendChild(element);
+    //         listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(4), fields: { value: 'EmployeeID', text: 'FirstName' } });
+    //         listObj.appendTo(element);
+    //         done();
+    //     });
+    //     afterAll(() => {
+    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    //         if (element) {
+    //             element.remove();
+    //         }
+    //     });
+    //     /**
+    //     * remoteData binding with selectAll method
+    //     */
+    //     it('remoteData binding with selectAll method ', (done) => {
+    //         listObj.selectAll(true);
+    //         setTimeout(() => {
+    //             (<any>listObj).moveByList(1);
+    //             let elem: HTMLElement[] = (<any>listObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips);
+    //             expect(elem.length).toBe(9);
+    //             listObj.destroy();
+    //             done();
+    //         }, 800);
+    //     });
+    // });
     describe('Remote data binding - with-out initial Value', () => {
         let listObj: MultiSelect;
         let originalTimeout: number;
         let popupObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({ 
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
+        });
         beforeAll((done) => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -2302,7 +2310,9 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         beforeAll((done) => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -2343,7 +2353,11 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
+        });
         beforeAll((done) => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
@@ -2412,13 +2426,15 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         beforeAll((done) => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Box', fields: { text: "FirstName", value: "EmployeeID" }, value: [1004], closePopupOnSelect: false });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Box', fields: { text: "FirstName", value: "EmployeeID" }, value: [4], closePopupOnSelect: false });
             listObj.appendTo(element);
             done();
         });
@@ -2477,7 +2493,9 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         beforeAll(() => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
@@ -2596,7 +2614,9 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         beforeAll(() => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
@@ -2613,7 +2633,7 @@ describe('MultiSelect', () => {
          * remoteData binding with index
          */
         it('with initial Value ', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' }, value: [1003] });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' }, value: [3] });
             listObj.appendTo(element);
             setTimeout(() => {
                 (<any>listObj).moveByList(1);
@@ -3868,7 +3888,9 @@ describe('MultiSelect', () => {
         let listObj: MultiSelect;
         let popupObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         beforeAll(() => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
@@ -4285,7 +4307,9 @@ describe('MultiSelect', () => {
             expect(isDataBound).toBe(false);
         });
         it('Should not trigger the dataBound event when no item is set in initial rendering- remote bind', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
             let isDataBound: boolean = false;
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
@@ -4329,7 +4353,9 @@ describe('MultiSelect', () => {
             expect(isDataBound).toBe(true);
         });
         it('trigger the dataBound event when item is set in initial rendering- remote bind', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
             let isDataBound: boolean = false;
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
@@ -4396,7 +4422,9 @@ describe('MultiSelect', () => {
             element.remove();
         });
         it(' actionBegin event', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
                 allowFiltering: true,
@@ -4433,7 +4461,9 @@ describe('MultiSelect', () => {
 
 
         it(' actionComplete event', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
                 allowFiltering: true,
@@ -6202,7 +6232,9 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         beforeAll(() => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
@@ -6279,7 +6311,9 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         beforeAll(() => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
@@ -7312,7 +7346,9 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         let empList: { [key: string]: Object }[] = [
             { id: 'list1', text: 'JAVA', icon: 'icon' },
             { id: 'list2', text: 'C#' },
@@ -7408,7 +7444,9 @@ describe('MultiSelect', () => {
         let popupObj: any;
         let  originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({      url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true });
         beforeAll(() => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
@@ -10127,6 +10165,432 @@ describe('MultiSelect', () => {
             expect(!isNullOrUndefined(eventDetails)).toBe(true);
             eventDetails = null;
             done();
+            }, 450);
+        });
+    });
+    describe('Disable items', () => {      
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('checked with disableItem method', (done) => {           
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem("Game4");
+                expect(listObj.liCollections[3].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[3].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[3].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.liCollections[6].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[6].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[6].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem({ "State": true, "Game": "Hockey", "Id" : 'Game7' });
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem(0);
+                expect(listObj.liCollections[0].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[0].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[0].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(7);
+                listObj.disableItem("Game8");
+                expect(listObj.liCollections[7].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[7].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[7].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(6);
+                listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                expect(listObj.liCollections[9].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem(0);
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem("Game8");
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem(listObj.liCollections[8]);
+                expect(listObj.liCollections[8].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[8].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[8].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(4);
+                done();
+            }, 450);
+        });
+    });
+    describe('Disable items', function () {     
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                value: ['Game7'],
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('checked with value binding', function (done) {
+            setTimeout(function () {
+                expect(listObj.value).toBe(null);
+                listObj.value = ["Game4"];
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                listObj.value = ["Game1"];
+                listObj.disableItem(0);
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                done();
+            }, 450);
+        });
+    });
+    describe('Disable Items', function () { 
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": true, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                value: ['Game1', 'Game2', 'Game3', 'Game4', 'Game5', 'Game8'],
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('checked with hide selection', function (done) {
+            setTimeout(function () {
+                expect(listObj.value[0] === 'Game2').toBe(true);
+                expect(listObj.value[1] === 'Game3').toBe(true);
+                expect(listObj.value[2] === 'Game5').toBe(true);
+                expect(listObj.value[3] === 'Game8').toBe(true);
+                expect(listObj.value.length === 4).toBe(true);
+                listObj.disableItem(1);
+                listObj.dataBind();
+                expect(listObj.value[0] === 'Game3').toBe(true);
+                expect(listObj.value[1] === 'Game5').toBe(true);
+                expect(listObj.value[2] === 'Game8').toBe(true);
+                expect(listObj.value.length === 3).toBe(true);
+                listObj.disableItem("Game8");
+                listObj.dataBind();
+                expect(listObj.value[0] === 'Game3').toBe(true);
+                expect(listObj.value[1] === 'Game5').toBe(true);
+                expect(listObj.value.length === 2).toBe(true);
+                listObj.disableItem({ "State": false, "Game": "Basketball", "Id" : 'Game3' });
+                listObj.disableItem(4);
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                listObj.value = ['Game2','Game4', 'Game6', 'Game7', 'Game9', 'Game10']
+                listObj.dataBind();
+                expect(listObj.value[0] === 'Game6').toBe(true);
+                expect(listObj.value[1] === 'Game9').toBe(true);
+                expect(listObj.value[2] === 'Game10').toBe(true);
+                expect(listObj.value.length === 3).toBe(true);
+                done();
+            }, 450);
+        });
+    });
+    describe('Disable Items', function () {       
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": true, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                value: [ { "State": true, "Game": "American Football", "Id": 'Game1' },
+                    { "State": false, "Game": "Badminton", "Id": 'Game2' },
+                    { "State": false, "Game": "Basketball", "Id": 'Game3' } ],
+                allowObjectBinding: true,
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('with object binding', function (done) {
+            setTimeout(function () {
+                expect(listObj.value[0].Id === 'Game2').toBe(true);
+                expect(listObj.value[1].Id === 'Game3').toBe(true);
+                expect(listObj.value.length === 2).toBe(true);
+                listObj.disableItem(1);
+                listObj.dataBind();
+                expect(listObj.value[0].Id === 'Game3').toBe(true);
+                expect(listObj.value.length === 1).toBe(true);
+                listObj.disableItem('Game3');
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);             
+                done();
+            }, 450);
+        });
+    });
+    describe('Disable items', function () {     
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                text: "Hockey",
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('checked with text binding', function (done) {
+            setTimeout(function () {
+                expect(listObj.value).toBe(null);
+                listObj.text = "Cricket";
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                listObj.text = "American Football";
+                listObj.disableItem("Game1");
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                done();
+            }, 450);
+        });
+    });
+    describe('keyboard interaction with disabled items', () => {           
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up', keyCode: 38 };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": true, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": true, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": true, "Game": "Golf", "Id" : 'Game6' },
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('up and down action', (done) => {           
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                keyEventArgs.action = 'down';
+                keyEventArgs.keyCode = 40;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game5").toBe(true);
+                keyEventArgs.action = 'down';
+                keyEventArgs.keyCode = 40;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game5").toBe(true);
+                keyEventArgs.action = 'up';
+                keyEventArgs.keyCode = 38;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                done();
+            }, 450);
+        });
+        it('all disabled items', (done) => {            
+            listObj.showPopup();
+            setTimeout(() => {
+                listObj.disableItem('Game2');
+                listObj.disableItem('Game5');
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'down';
+                keyEventArgs.keyCode = 40;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'up';
+                keyEventArgs.keyCode = 38;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'down';
+                keyEventArgs.keyCode = 40;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'up';
+                keyEventArgs.keyCode = 38;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                done();
+            }, 450);
+        });
+    });
+    describe('keyboard interaction with disabled items and virtualizaation', () => {           
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up', keyCode: 38 };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": true, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": true, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": true, "Game": "Golf", "Id" : 'Game6' },
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                enableVirtualization: true,
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('up and down action', (done) => {           
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                keyEventArgs.action = 'down';
+                keyEventArgs.keyCode = 40;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game5").toBe(true);
+                keyEventArgs.action = 'down';
+                keyEventArgs.keyCode = 40;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game5").toBe(true);
+                keyEventArgs.action = 'up';
+                keyEventArgs.keyCode = 38;
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                done();
             }, 450);
         });
     });

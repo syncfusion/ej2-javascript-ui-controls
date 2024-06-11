@@ -12,6 +12,14 @@ import { getSheet } from './sheet';
  * Represents the cell.
  */
 export class Cell extends ChildProperty<RowModel> {
+
+    /**
+     * Specifies the note of the cell.
+     *
+     * @default ''
+     */
+    @Property('')
+    public notes: string;
     /**
      * Specifies the image of the cell.
      *
@@ -134,6 +142,23 @@ export class Cell extends ChildProperty<RowModel> {
      */
     @Property(1)
     public rowSpan: number;
+
+    /**
+     * Specifies the Specifies the note is editable or not, for the current cell when scroll the spreadsheet.
+     *
+     * @default false
+     * @hidden
+     */
+    // @Property(false)
+    public isNoteEditable: boolean;
+
+    /**
+     * Represents whether a cell in the sheet is read-only or not. If set to true, it prevents editing the specified cell in the sheet.
+     *
+     * @default false
+     */
+    @Property(false)
+    public isReadOnly : boolean;
 }
 
 /**
@@ -254,12 +279,18 @@ export function getCustomColors(): string[] {
     return ['Black', 'Blue', 'Cyan', 'Green', 'Magenta', 'Red', 'White', 'Yellow'];
 }
 /**
+ * @param {string} format - Specify the format.
+ * @param {boolean} checkTime - Specify the checktime.
+ * @param {Object} option - Specify rhe option value.
+ * @param {string} option.type - Specify the type.
+ * @param {boolean} checkBoth - Specify check both values.
+ * @returns {boolean} - This function is used to return is custom Data time or not.
  * @hidden
  */
 export function isCustomDateTime(format: string, checkTime?: boolean, option?: { type?: string }, checkBoth?: boolean): boolean {
     let isCustom: boolean;
     if ((format.includes('d') || format.includes('y')) && !format.includes('#') && !getColorCode(format) &&
-        /^[dyMhHmsaAP0,\:[\]\-. \/]*$/.test(format)) {
+        /^[dyMhHmsaAP0,:[\]\-. /]*$/.test(format)) {
         if (option) {
             option.type = 'date';
         }
@@ -271,7 +302,7 @@ export function isCustomDateTime(format: string, checkTime?: boolean, option?: {
         isCustom = true;
     }
     if (checkTime && (format.includes('h') || format.includes('m') || format.includes('s')) && !format.includes('#') &&
-        !getColorCode(format) && /^[dyMhHmsaAP0,\:[\]\-. \/]*$/.test(format)) {
+        !getColorCode(format) && /^[dyMhHmsaAP0,:[\]\-. /]*$/.test(format)) {
         if (option) {
             option.type = option.type || '';
             option.type += 'time';

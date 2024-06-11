@@ -3740,13 +3740,14 @@ describe('883422: To validate and fix the Table content pasted copied from New O
 describe('878049 - The indent is not working properly in the Rich Text Editor.', () => {
     let editor: RichTextEditor;
     let editorObj: EditorManager;
-    beforeAll(() => {
+    beforeAll((done: DoneFn) => {
         editor = renderRTE({
             pasteCleanupSettings : {
                 keepFormat : true
             }
         });
-        editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });    
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+        done();
     });
     afterAll((done: DoneFn) => {
         destroy(editor);
@@ -3790,8 +3791,9 @@ describe('876585 - List marker items has merged after paste the content.', () =>
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(editor);
+        done();
     });
     it ('Checking the list after paste the content', (done: DoneFn) => {
         editor.focusIn();
@@ -3836,6 +3838,60 @@ describe('882743: Pasting only table should add a new paragraph set the cursor f
             expect((editor.inputElement.querySelector('table') as HTMLElement).nextElementSibling.nodeName === 'P').toBe(true);
             expect(window.getSelection().getRangeAt(0).startContainer.parentElement === (editor.inputElement.querySelector('table') as HTMLElement).nextElementSibling).toBe(true);
             done();
+        }, 100);
+    });
+});
+
+describe('282270 - Need to prevent paste action, when edit image dialog open case', () => {
+    let isdialogopen: boolean;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: true,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    }
+    let rteObj: RichTextEditor;
+    let controlId: string;
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            value: '<p><img id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/co3ntent/images/accordion/baked-chicken-and-cheese.png" style="width: 300px; height: 50px;">',
+            pasteCleanupSettings: {
+                prompt: true
+            }
+        });
+        controlId = rteObj.element.id;
+        done();
+    });
+    afterAll((done: Function) => {
+        destroy(rteObj);
+        done();
+    });
+    it(' - prevent the notify action to trigger paste-clean-up dialog', (done: DoneFn) => {
+        let localString: string = '<p>Hello</p>'
+        keyBoardEvent.clipboardData = {
+            getData: () => {
+                return localString;
+            },
+            items: []
+        };
+        let image: HTMLElement = rteObj.element.querySelector("#image");
+        setCursorPoint(image, 0);
+        dispatchEvent(image, 'mousedown');
+        image.click();
+        dispatchEvent(image, 'mouseup');
+        setTimeout(() => {
+            let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_Replace");
+            imageBtn.parentElement.click();
+            rteObj.onPaste(keyBoardEvent);
+            setTimeout(() => {
+                const isPromptOpen: HTMLElement = (rteObj as any).element.querySelector("#defaultRTE_pasteCleanupDialog");
+                expect(isNullOrUndefined(isPromptOpen)).toBe(true);
+                done();
+            }, 100);
         }, 100);
     });
 });

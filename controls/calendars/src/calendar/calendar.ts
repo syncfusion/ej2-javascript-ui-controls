@@ -101,9 +101,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected previousIconClicked: boolean;
     protected tabIndex: string;
     protected todayDate: Date;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    protected islamicPreviousHeader: any;
-    //this.element clone
+    protected islamicPreviousHeader: string;
     protected calendarElement: HTMLElement;
     protected isPopupClicked: boolean = false;
     protected isDateSelected: boolean = true;
@@ -114,7 +112,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected isTodayClicked: boolean = false;
     protected todayButtonEvent: MouseEvent | KeyboardEvent;
     protected preventChange: boolean = false;
-    protected isAngular: boolean = false;
     protected previousDates: boolean = false;
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
@@ -618,7 +615,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (this.showTodayButton) {
             this.createContentFooter();
         }
-        if(this.getModuleName() != 'daterangepicker') {
+        if (this.getModuleName() !== 'daterangepicker') {
             EventHandler.add(this.table, 'focus', this.addContentFocus, this);
             EventHandler.add(this.table, 'blur', this.removeContentFocus, this);
         }
@@ -686,8 +683,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 addClass([this.calendarElement], '' + WEEKNUMBER);
             }
         }
-        // eslint-disable-next-line max-len
-        const shortNames: string[] = this.getCultureValues().length > 0 && this.getCultureValues() ? this.shiftArray(((this.getCultureValues().length > 0 && this.getCultureValues())), this.firstDayOfWeek) : null;
+        const shortNames: string[] = this.getCultureValues().length > 0 &&
+            this.getCultureValues() ? this.shiftArray(((this.getCultureValues().length > 0 &&
+                this.getCultureValues())), this.firstDayOfWeek) : null;
         if (!isNullOrUndefined(shortNames)) {
             for (let days: number = 0; days <= daysCount; days++) {
                 html += '<th  class="">' + this.toCapitalize(shortNames[days as number]) + '</th>';
@@ -828,19 +826,22 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.effect = '';
         switch (e.action) {
         case 'moveLeft':
-            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
+            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any)) &&
+               (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
                 this.keyboardNavigate(-1, view, e, this.max, this.min);
                 e.preventDefault();
             }
             break;
         case 'moveRight':
-            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
+            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any)) &&
+               (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
                 this.keyboardNavigate(1, view, e, this.max, this.min);
                 e.preventDefault();
             }
             break;
         case 'moveUp':
-            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
+            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any)) &&
+               (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
                 if (view === 0) {
                     this.keyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
                 } else {
@@ -850,7 +851,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             break;
         case 'moveDown':
-            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
+            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any)) &&
+               (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
                 if (view === 0) {
                     this.keyboardNavigate(7, view, e, this.max, this.min);
                 } else {
@@ -860,16 +862,16 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             break;
         case 'select':
-            if(e.target === this.headerTitleElement){
+            if (e.target === this.headerTitleElement){
                 this.navigateTitle(e);
             }
-            else if (e.target === this.previousIcon) {
+            else if (e.target === this.previousIcon && !(e.target as HTMLElement).className.includes(DISABLED)) {
                 this.navigatePrevious(e);
             }
-            else if (e.target === this.nextIcon) {
+            else if (e.target === this.nextIcon && !(e.target as HTMLElement).className.includes(DISABLED)) {
                 this.navigateNext(e);
             }
-            else if (e.target === this.todayElement) {
+            else if (e.target === this.todayElement && !(e.target as HTMLElement).className.includes(DISABLED)) {
                 this.todayButtonClick(e, value);
                 if (this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') {
                     this.element.focus();
@@ -881,11 +883,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                         // eslint-disable-next-line radix
                         const d: Date = new Date(parseInt('' + (element).id, 0));
                         this.selectDate(e, d, (element));
+                        if (this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') {
+                            this.element.focus();
+                        }
                     } else {
-                        this.contentClick(null, --view, (element), value);
-                    }
-                    if (this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') {
-                        this.element.focus();
+                        if( !(e.target as HTMLElement).className.includes(DISABLED)){
+                            this.contentClick(null, --view, (element), value);
+                        }
                     }
                 }
             }
@@ -955,7 +959,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         case 'tab':
             if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && e.target === this.todayElement) {
                 e.preventDefault();
-                if (this.isAngular) {
+                if ((this as any).isAngular) {
                     (this as any).inputElement.focus();
                 } else {
                     (this as any).element.focus();
@@ -970,11 +974,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 (this as any).hide();
             }
             break;
-        case 'escape':
-                if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && (e.target === this.headerTitleElement || e.target === this.previousIcon || e.target === this.nextIcon || e.target === this.todayElement)) {
-                    (this as any).hide();
-                }
-                break;
+        case 'escape': 
+            if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && (e.target === this.headerTitleElement || e.target === this.previousIcon || e.target === this.nextIcon || e.target === this.todayElement)) {
+                (this as any).hide();
+            }
+            break;
         }
     }
 
@@ -1159,7 +1163,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             // if (args.isDisabled && +this.value === +args.date) {
             //     this.setProperties({ value: null }, true);
             // }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let currentTarget: any;
             if ( !isNullOrUndefined(e) && e.type === 'click') {
                 currentTarget = e.currentTarget; }
@@ -1333,7 +1336,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         const dateFormatOptions: object = { skeleton: 'full', type: 'dateTime', calendar: type };
         const date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
         let value: number ;
-        if(!isNullOrUndefined(date)){
+        if (!isNullOrUndefined(date)){
             value = date.valueOf();
         }
         const attrs: Object = {
@@ -1475,7 +1478,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (this.getModuleName() === 'calendar') {
             this.table.focus();
         }
-
     }
     // Content click event handler required for extended components
     protected clickEventEmitter(e: MouseEvent): void {
@@ -1879,9 +1881,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected navigateTitle(e?: Event): void {
         e.preventDefault();
         this.title(e);
-        if (this.getModuleName() === 'calendar') {
-            this.table.focus();
-        }
     }
     protected previous(): void {
         this.effect = '';
@@ -1910,9 +1909,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
 
         this.triggerNavigate(e);
-        if (this.getModuleName() === 'calendar') {
-            this.table.focus();
-        }
     }
     protected next(): void {
         this.effect = '';
@@ -1940,9 +1936,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.islamicModule.islamicNext();
         }
         this.triggerNavigate(eve);
-        if (this.getModuleName() === 'calendar') {
-            this.table.focus();
-        }
     }
     /**
      * This method is used to navigate to the month/year/decade view of the Calendar.
@@ -2911,7 +2904,6 @@ export class Calendar extends CalendarBase {
         if (!isNullOrUndefined(this.value)) {
             this.setProperties({ value: this.value }, true);
         }
-        // eslint-disable-next-line use-isnan
         if (!this.isMultiSelection && +this.value !== Number.NaN && (!isNullOrUndefined(this.value) &&
          !isNullOrUndefined(this.previousDate) || this.previousDate === null
             && !isNaN(+this.value))) {

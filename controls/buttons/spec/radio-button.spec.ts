@@ -2,6 +2,7 @@
 import { RadioButton } from './../src/radio-button/radio-button';
 import { createElement } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
+import { enableRipple } from '@syncfusion/ej2-base';
 
 /**
  * RadioButton Spec document
@@ -11,7 +12,7 @@ describe('RadioButton', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -391,5 +392,115 @@ describe('RadioButton', () => {
         const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    describe('Null or undefined value testing', () => {
+        afterEach(() => {
+            radio.destroy();
+        });
+
+        it('RadioButton with Label', () => {
+            radio = new RadioButton({ label: null }, '#radio');
+            expect(radio.label).toEqual(null);
+            radio = new RadioButton({ label: undefined }, '#radio');
+            expect(radio.label).toEqual('');
+        });
+
+        it('RadioButton with checked state', () => {
+            radio = new RadioButton({ checked: null }, '#radio');
+            expect(radio.checked).toEqual(null);
+            radio = new RadioButton({ checked: undefined }, '#radio');
+            expect(radio.checked).toEqual(false);
+        });
+
+        it('RadioButton with disabled state', () => {
+            radio = new RadioButton({ disabled: null }, '#radio');
+            expect(radio.disabled).toEqual(null);
+            radio = new RadioButton({ checked: undefined }, '#radio');
+            expect(radio.checked).toEqual(false);
+        });
+
+        it('RadioButton with RTL', () => {
+            radio = new RadioButton({ enableRtl: null }, '#radio');
+            expect(radio.enableRtl).toEqual(false);
+            radio = new RadioButton({ enableRtl: undefined }, '#radio');
+            expect(radio.enableRtl).toEqual(false);
+        });
+
+        it('RadioButton with label position', () => {
+            radio = new RadioButton({ labelPosition: null }, '#radio');
+            expect(radio.labelPosition).toEqual(null);
+            radio = new RadioButton({ labelPosition: undefined }, '#radio');
+            expect(radio.labelPosition).toEqual('After');
+        });
+
+        it('RadioButton with name', () => {
+            radio = new RadioButton({ name: null }, '#radio');
+            expect(radio.name).toEqual(null);
+            radio = new RadioButton({ name: undefined }, '#radio');
+            expect(radio.name).toEqual('');
+        });
+
+        it('RadioButton with value', () => {
+            radio = new RadioButton({ value: null }, '#radio');
+            expect(radio.value).toEqual(null);
+            radio = new RadioButton({ value: undefined }, '#radio');
+            expect(radio.value).toEqual('');
+        });
+
+        it('RadioButton with cssClass', () => {
+            radio = new RadioButton({ cssClass: null }, '#radio');
+            expect(radio.cssClass).toEqual(null);
+            radio = new RadioButton({ cssClass: undefined }, '#radio');
+            expect(radio.cssClass).toEqual('');
+        });
+
+        it('RadioButton with persistence', () => {
+            radio = new RadioButton({ enablePersistence: null }, '#radio');
+            expect(radio.enablePersistence).toEqual(null);
+            radio = new RadioButton({ enablePersistence: undefined }, '#radio');
+            expect(radio.enablePersistence).toEqual(false);
+        });
+
+        it('RadioButton with Html Sanitizer', () => {
+            radio = new RadioButton({ enableHtmlSanitizer: null }, '#radio');
+            expect(radio.enableHtmlSanitizer).toEqual(null);
+            radio = new RadioButton({ enableHtmlSanitizer: undefined }, '#radio');
+            expect(radio.enableHtmlSanitizer).toEqual(true);
+        });
+
+        it('RadioButton with Html Attributes', () => {
+            radio = new RadioButton({ htmlAttributes: null }, '#radio');
+            expect(radio.htmlAttributes).toEqual(null);
+            radio = new RadioButton({ htmlAttributes: undefined }, '#radio');
+            expect(radio.htmlAttributes).toEqual({});
+        });
+
+        it('RadioButton with Locale', () => {
+            radio = new RadioButton({ locale: null }, '#radio');
+            expect(radio.locale).toEqual('en-US');
+            radio = new RadioButton({ locale: undefined }, '#radio');
+            expect(radio.locale).toEqual('en-US');
+        });
+    });
+
+    describe('Coverage Improvement', function () {
+        it('Mouse Handler', () => {
+            enableRipple(true);
+            radio = new RadioButton({}, '#radio');
+            radio.focusHandler();
+            expect(element.nextElementSibling.classList.contains('e-focus')).toEqual(false);
+            radio.focusOutHandler();
+            radio.focusHandler();
+            const event: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                type: 'mousedown'
+            };
+            radio.labelMouseDownHandler(event);
+            radio.labelMouseLeaveHandler(event);
+            radio.labelMouseUpHandler(event);
+            expect(element.parentElement.children[0].classList.contains('e-ripple-container')).toEqual(false);
+            enableRipple(false);
+        });
     });
 });

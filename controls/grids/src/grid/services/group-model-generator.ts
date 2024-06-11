@@ -109,7 +109,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         while (i--) {
             if (rowObj[parseInt(i.toString(), 10)].isCaptionRow && rowObj[parseInt(i.toString(), 10)].indent === indent) {
                 const groupKey: string | Date = (<{ key?: string | Date }>rowObj[parseInt(i.toString(), 10)].data).key;
-                if ((groupKey instanceof Date && groupKey.toString() === key.toString()) || groupKey === key) {
+                if ((groupKey.toString() === key.toString() && groupKey instanceof Date) || groupKey === key) {
                     preCap = rowObj[parseInt(i.toString(), 10)];
                 }
             }

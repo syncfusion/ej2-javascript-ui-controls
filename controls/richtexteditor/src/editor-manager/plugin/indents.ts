@@ -75,8 +75,7 @@ export class Indents {
                     shiftKey: (e.subCommand === 'Indent' ? false : true),
                     which: 9,
                     action: 'indent'
-                },
-                ignoreDefault: true
+                }
             });
         }
         for (let i: number = 0; i < indentsNodes.length; i++) {

@@ -122,11 +122,11 @@ export class TableProperties {
     private onTabSelection(args: SelectingEventArgs): void {
         args.preventFocus = true;
         this.documentEditor.resize();
-        if(this.documentEditor.enableAutoFocus)
-        {   
+        if (this.documentEditor.enableAutoFocus)
+        {
             this.documentEditor.focusIn();
         }
-        
+
     }
     private wireEvent(): void {
         this.shadingBtn.addEventListener('change', this.changeBackgroundColor.bind(this));
@@ -154,10 +154,10 @@ export class TableProperties {
         this.alignTop.element.addEventListener('click', this.applyAlignTop.bind(this));
         this.alignBottom.element.addEventListener('click', this.applyAlignBottom.bind(this));
         this.alignCenterHorizontal.element.addEventListener('click', this.applyAlignCenterHorizontal.bind(this));
-        this.topMargin.htmlAttributes={'aria-label':'top-margin'};
-        this.bottomMargin.htmlAttributes={'aria-label':'bottom-margin'};
-        this.leftMargin.htmlAttributes={'aria-label':'left-margin'};
-        this.rightMargin.htmlAttributes={'aria-label':'right-Margin'};
+        this.topMargin.htmlAttributes = {'aria-label': 'top-margin'};
+        this.bottomMargin.htmlAttributes = {'aria-label': 'bottom-margin'};
+        this.leftMargin.htmlAttributes = {'aria-label': 'left-margin'};
+        this.rightMargin.htmlAttributes = {'aria-label': 'right-Margin'};
         this.topMargin.element.addEventListener('click', (): void => {
             this.isTopMarginApply = true;
         });
@@ -500,7 +500,7 @@ export class TableProperties {
     /* eslint-disable-next-line max-len */
     private createCellMarginTextBox(textboxLabel: string, textboxId: string, parentDiv: HTMLElement, styles: string, parentStyle: string, maxValue: number, toolTipText: string, isRight?: boolean): NumericTextBox {
         const cellMarginParentDiv: HTMLElement = createElement('div', { styles: parentStyle });
-        if(!isRight) {
+        if (!isRight) {
             cellMarginParentDiv.classList.add('e-de-cell-text-box');
         }
         const cellMarginLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label' });
@@ -524,7 +524,7 @@ export class TableProperties {
         noneOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('No Border');
         });
-        let pixel: string = this.localObj.getConstant('px');
+        const pixel: string = this.localObj.getConstant('px');
         const quaterOption: HTMLElement = this.createDropdownOption(ulTag, '.25' + pixel);
         quaterOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('.25px');
@@ -645,7 +645,8 @@ export class TableProperties {
         return btn;
     }
     private createColorPickerTemplate(id: string, divElement: HTMLElement, toolTipText: string, isBorderWidth: boolean): ColorPicker {
-        const {columns , createPopupOnClick , disabled , enablePersistence , inline , mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
+        const {columns , createPopupOnClick , disabled , enablePersistence , inline ,
+            mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
         const inputElement: HTMLInputElement = createElement('input', { id: id }) as HTMLInputElement;
         divElement.appendChild(inputElement);
         let cssClass: string = 'e-de-prop-font-button e-de-prop-font-colorpicker';
@@ -653,10 +654,12 @@ export class TableProperties {
             cssClass = cssClass + ' e-de-border-clr-picker';
         }
         /* eslint-disable-next-line max-len */
-        const colorPicker: ColorPicker = new ColorPicker({ cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false , 
-            mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors}, inputElement);
+        const colorPicker: ColorPicker = new ColorPicker({ cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false ,
+            mode: mode , modeSwitcher: modeSwitcher , showButtons: showButtons , columns: columns ,
+            createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline ,
+            noColor : noColor , presetColors : presetColors}, inputElement);
         inputElement.parentElement.setAttribute('title', toolTipText);
-        inputElement.parentElement.setAttribute('aria-label',toolTipText);
+        inputElement.parentElement.setAttribute('aria-label', toolTipText);
         return colorPicker;
     }
     public showTableProperties(isShow: boolean, propertyType: string): void {
@@ -685,6 +688,7 @@ export class TableProperties {
     }
     /**
      * @private
+     * @returns {void} - Update tab container height.
      */
     public updateTabContainerHeight(): void {
         if (this.parentElement && this.parentElement.style.display === 'block') {

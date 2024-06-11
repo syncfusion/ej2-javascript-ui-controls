@@ -202,16 +202,16 @@ export class CollaborativeEditingHandler {
         }
     }
     private dataReceived(action: ActionInfo): void {
-        if ((action.connectionId === this.connectionId && !this.documentEditor.editorModule.isIncrementalSave ) || this.isSyncServerChanges) {
+        if ((action.connectionId === this.connectionId && !this.documentEditor.editor.isIncrementalSave) || this.isSyncServerChanges) {
             this.logMessage(this.isSyncServerChanges ? 'SignalR Server sync' + action.version : 'SignalR Same user sync:' + action.version);
             return
         }
         let versionDiff = this.getVersionDifference(action);
-        if (versionDiff <= 0 && !this.documentEditor.editorModule.isIncrementalSave) {
+        if (versionDiff <= 0 && !this.documentEditor.editor.isIncrementalSave) {
             this.logMessage('SignalR return diff:<=0' + action.version);
             return;
         }
-        if (versionDiff > 1 && !this.documentEditor.editorModule.isIncrementalSave) {
+        if (versionDiff > 1 && !this.documentEditor.editor.isIncrementalSave) {
             this.logMessage('SignalR return diff:>=1' + action.version);
             this.checkAndRetriveChangesFromServer();
             return;
@@ -296,7 +296,7 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.currentUser = markerData.author;
             }
             if (!isNullOrUndefined(markerData) && !isNullOrUndefined(markerData.isSkipTracking) && markerData.isSkipTracking && this.documentEditor.enableTrackChanges) {
-                this.documentEditor.skipSettingsOps  = true;
+                this.documentEditor.skipSettingsOps = true;
                 this.documentEditor.enableTrackChanges = false;
             }
             if (action.operations[i].skipOperation || (!isNullOrUndefined(action.operations[i].markerData) && action.operations[i].markerData.skipOperation)) {
@@ -344,7 +344,7 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.selectionModule.select(startOffset, endOffset);
             }
             if (!isNullOrUndefined(op2.markerData)) {
-                if(!isNullOrUndefined(op2.markerData.revisionForFootnoteEndnoteContent) || !isNullOrUndefined(op2.markerData.revisionId)) {
+                if (!isNullOrUndefined(op2.markerData.revisionForFootnoteEndnoteContent) || !isNullOrUndefined(op2.markerData.revisionId)) {
                     this.documentEditor.editorModule.revisionData = [];
                 }
                 if (!isNullOrUndefined(op2.markerData.revisionForFootnoteEndnoteContent)) {
@@ -431,7 +431,7 @@ export class CollaborativeEditingHandler {
                         if (!isNullOrUndefined(type) && isNullOrUndefined(markerData.checkBoxValue)) {
                             var field = new FieldElementBox(type);
                             if (type === 0 && !isNullOrUndefined(markerData.formFieldData)) {
-                                let formFieldData: FormField = this.documentEditor.editorModule.getFormFieldData(op2.type as FormFieldType);
+                                let formFieldData: FormField = this.documentEditor.editor.getFormFieldData(op2.type as FormFieldType);
                                 this.documentEditor.parser.parseFormFieldData(0, JSON.parse(markerData.formFieldData), formFieldData);
                                 field.formFieldData = formFieldData;
                             }
@@ -653,9 +653,9 @@ export class CollaborativeEditingHandler {
                     this.insertCellFormat(op2.format);
                 }
             }
-            this.documentEditor.editorModule.revisionData = undefined;
-            if(this.documentEditor.enableTrackChanges != trackingCurrentValue) {
-                this.documentEditor.skipSettingsOps  = true;
+            this.documentEditor.editor.revisionData = undefined;
+            if (this.documentEditor.enableTrackChanges != trackingCurrentValue) {
+                this.documentEditor.skipSettingsOps = true;
                 this.documentEditor.enableTrackChanges = trackingCurrentValue;
             }
             this.documentEditor.currentUser = currentUser;
@@ -1150,7 +1150,6 @@ export class CollaborativeEditingHandler {
                         }
                     }
                     length += element.length;
-                    // this element is present in the widget. so for select insermenting the lenth to offset
                     offset += element.skipformFieldLength ? element.length : 0;
                     if (currentLength + childBlockLength + length + paragraphStartLength >= offset) {
                         completed.done = true;
@@ -1266,7 +1265,7 @@ export class CollaborativeEditingHandler {
         for (let i: number = 0; i < operations.length; i++) {
             if (operations[i].text === CONTROL_CHARACTERS.Row) {
                 if (!isNullOrUndefined(operations[i].markerData)) {
-                    if(isNullOrUndefined(this.documentEditor.editorModule.revisionData)) {
+                    if (isNullOrUndefined(this.documentEditor.editorModule.revisionData)) {
                         this.documentEditor.editorModule.revisionData = [];
                     }
                     this.documentEditor.editorModule.revisionData.push(operations[i].markerData);
@@ -1321,7 +1320,7 @@ export class CollaborativeEditingHandler {
         for (let i: number = 0; i < operations.length; i++) {
             if (operations[i].text === CONTROL_CHARACTERS.Row) {
                 if (!isNullOrUndefined(operations[i].markerData)) {
-                    if(isNullOrUndefined(this.documentEditor.editorModule.revisionData)) {
+                    if (isNullOrUndefined(this.documentEditor.editorModule.revisionData)) {
                         this.documentEditor.editorModule.revisionData = [];
                     }
                     this.documentEditor.editorModule.revisionData.push(operations[i].markerData);
@@ -1373,7 +1372,7 @@ export class CollaborativeEditingHandler {
         }
     }
     private transformSelectionOperation(operation: Operation, conflictingOperation: Operation): void {
-        if (operation.action === 'Delete' && conflictingOperation.action === 'Delete') {
+        if (operation.action === 'Delete'  && (conflictingOperation.action === 'Delete' || conflictingOperation.action == 'Format')) {
             let previousStart: number = conflictingOperation.offset;
             let conflictingSelection: Operation = conflictingOperation;
             // Case 1: No overlap, no conflict

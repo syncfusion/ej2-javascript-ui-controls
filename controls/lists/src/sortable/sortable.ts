@@ -3,6 +3,7 @@ import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElemen
 import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { SortableModel } from './sortable-model';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Sortable Module provides support to enable sortable functionality in Dom Elements.
  * ```html
@@ -134,7 +135,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
     }
     private keyDownHandler(e: KeyboardEvent): void {
         if (e.keyCode === 27) {
-            let dragStop: Draggable = getComponent(this.element, 'draggable');
+            const dragStop: Draggable = getComponent(this.element, 'draggable');
             if (dragStop) {
                 dragStop.intDestroy(null);
             }
@@ -160,8 +161,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
     }
 
     private getHelper: Function = (e: { sender: MouseEventArgs, element: HTMLElement }) => {
-        // eslint-disable-next-line prefer-const
-        let target: HTMLElement = this.getSortableElement(e.sender.target as HTMLElement);
+        const target: HTMLElement = this.getSortableElement(e.sender.target as HTMLElement);
         if (!this.isValidTarget(target as Element, this)) {
             return false;
         }
@@ -180,7 +180,6 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         return target && compareElementParent(target, instance.element) && target.classList.contains(instance.itemClass) &&
             !target.classList.contains('e-disabled');
     }
-    // eslint-disable-next-line
     private onDrag: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
         if (!e.target) { return; }
         this.trigger('drag', { event: e.event, element: this.element, target: e.target });
@@ -202,7 +201,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
                 if (isPlaceHolderPresent && oldIdx === newIdx) { return; }
                 if (isPlaceHolderPresent) { remove(newInst.placeHolderElement); }
                 newInst.placeHolderElement = placeHolder;
-                if (e.target.className.indexOf('e-list-group-item') > -1) {
+                if (e.target && typeof e.target.className === 'string' && e.target.className.indexOf('e-list-group-item') > -1) {
                     newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx as number]);
                 } else if (newInst.element !== this.element && newIdx === newInst.element.childElementCount) {
                     newInst.element.appendChild(newInst.placeHolderElement);
@@ -295,7 +294,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
     private getSortableElement(element: HTMLElement, instance: Sortable = this): HTMLElement {
         return closest(element, `.${instance.itemClass}`) as HTMLElement;
     }
-    // eslint-disable-next-line
+
     private onDragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element } & BlazorDragEventArgs) => {
         this.target = this.getSortableElement(e.target);
         let cancelDrag: boolean = false;
@@ -329,9 +328,9 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
     private isPlaceHolderPresent(instance: Sortable): boolean {
         return instance.placeHolderElement && !!closest(instance.placeHolderElement, `#${instance.element.id}`);
     }
-    // eslint-disable-next-line
+
     private onDragStop: Function = (e: { target: HTMLElement, event: MouseEvent & TouchEvent, helper: Element }) => {
-        let dropInst: Sortable = this.getSortableInstance(this.curTarget); let prevIdx: number; let curIdx: number; let handled: boolean;
+        let dropInst: Sortable = this.getSortableInstance(this.curTarget); let curIdx: number; let prevIdx: number; let handled: boolean;
         prevIdx = this.getIndex(this.target);
         const isPlaceHolderPresent: boolean = this.isPlaceHolderPresent(dropInst);
         if (isPlaceHolderPresent) {
@@ -361,12 +360,17 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
             });
         }
         dropInst = this.getSortableInstance(e.target);
-        // eslint-disable-next-line prefer-const
         curIdx = dropInst.element.childElementCount;
         prevIdx = this.getIndex(this.target);
+        if (dropInst.element.querySelector('.e-list-nrt')) {
+            curIdx = curIdx - 1;
+        }
+        if (this.curTarget === this.target && e.target === this.curTarget) {
+            curIdx = prevIdx;
+        }
         if (dropInst.element === e.target || (!isPlaceHolderPresent && this.curTarget === this.target)) {
             const beforeDropArgs: DropEventArgs = {
-                previousIndex: prevIdx, currentIndex: this.curTarget === this.target ? prevIdx : curIdx,
+                previousIndex: prevIdx, currentIndex: curIdx,
                 target: e.target, droppedElement: this.target, helper: e.helper, cancel: false
             };
             this.trigger('beforeDrop', beforeDropArgs, (observedArgs: DropEventArgs) => {
@@ -438,9 +442,13 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
 /**
  * It is used to sort array of elements from source element to destination element.
  *
+ * @param {HTMLElement} from - The source element from which to move elements.
+ * @param {HTMLElement} [to=from] - The destination element to which to move elements. Defaults to the source element.
+ * @param {number[]} [targetIndexes] - The indexes of elements to move. If not provided, all children of the source element will be moved.
+ * @param {number} [insertBefore] - The index before which to insert the moved elements in the destination element. If not provided, elements will be appended to the end of the destination element.
+ * @returns {void}
  * @private
  */
-
 export function moveTo(from: HTMLElement, to?: HTMLElement, targetIndexes?: number[], insertBefore?: number): void {
     let targetElements: Element[] = [];
     if (!to) { to = from; }

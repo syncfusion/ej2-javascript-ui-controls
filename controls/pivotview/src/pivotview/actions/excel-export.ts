@@ -57,7 +57,6 @@ export class ExcelExport {
                     });
                     spanCount = spanCount + cells[j as number].colSpan;
                 }
-                /* eslint-enable @typescript-eslint/no-explicit-any */
                 this.actualrCnt++;
                 this.rows.push({ index: this.actualrCnt, cells: cells });
             }
@@ -133,8 +132,7 @@ export class ExcelExport {
             this.addHeaderAndFooter(args.excelExportProperties.header, '', 'header', args.excelExportProperties.header.headerRows);
         }
         /** Fill data and export */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const workSheets: any = [];
+        const workSheets: { [key: string]: Object }[] = [];
         for (let dataColl: number = 0; dataColl < dataCollections.length; dataColl++) {
             const pivotValues: IAxisSet[][] = dataCollections[dataColl as number] as IAxisSet[][]; let colLen: number = 0;
             const rowLen: number = pivotValues.length;
@@ -147,8 +145,7 @@ export class ExcelExport {
                         if (pivotValues[rCnt as number][cCnt as number]) {
                             const pivotCell: IAxisSet = (pivotValues[rCnt as number][cCnt as number] as IAxisSet);
                             if (pivotCell && pivotCell.axis === 'value' && pivotCell.formattedText === '') {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                pivotCell.value = pivotCell.formattedText as any;
+                                pivotCell.value = Number(pivotCell.formattedText);
                             }
                             const field: string = (this.parent.dataSourceSettings.valueAxis === 'row' &&
                                 this.parent.dataType === 'olap' && pivotCell.rowOrdinal &&
@@ -175,8 +172,7 @@ export class ExcelExport {
                                         index: cCnt + 1, value: cellValue,
                                         colSpan: pivotCell.colSpan, rowSpan: (pivotCell.rowSpan === -1 ? 1 : pivotCell.rowSpan)
                                     });
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const lastCell: any = cells[cells.length - 1];
+                                    const lastCell: ExcelCell = cells[cells.length - 1];
                                     if (pivotCell.axis === 'value') {
                                         if (isNaN(pivotCell.value) || pivotCell.formattedText === '' ||
                                             pivotCell.formattedText === undefined || isNullOrUndefined(pivotCell.value)) {
@@ -206,9 +202,9 @@ export class ExcelExport {
                                             }
                                         }
                                     }
-                                    if (pivotCell.style || lastCell.style.backColor || lastCell.style.backgroundColor ||
-                                        lastCell.style.fontColor || lastCell.style.fontName || lastCell.style.fontSize) {
-                                        lastCell.style.backColor = lastCell.style.backgroundColor ? lastCell.style.backgroundColor
+                                    if (pivotCell.style || lastCell.style.backColor || lastCell.style.fontColor ||
+                                        lastCell.style.fontName || lastCell.style.fontSize) {
+                                        lastCell.style.backColor = lastCell.style.backColor ? lastCell.style.backColor
                                             : pivotCell.style.backgroundColor;
                                         lastCell.style.fontColor = lastCell.style.fontColor ? lastCell.style.fontColor
                                             : pivotCell.style.color;
@@ -218,7 +214,7 @@ export class ExcelExport {
                                             lastCell.style.fontSize = !isNullOrUndefined(lastCell.style.fontSize) ? Number(lastCell.style.fontSize) : Number(pivotCell.style.fontSize.split('px')[0]);
                                         }
                                     }
-                                    lastCell.style.borders = { color: '#000000', lineStyle: 'Thin' };
+                                    lastCell.style.borders = { color: '#000000', lineStyle: 'thin' };
                                     let excelHeaderQueryCellInfoArgs: ExcelHeaderQueryCellInfoEventArgs;
                                     let excelQueryCellInfoArgs: ExcelQueryCellInfoEventArgs;
                                     if (pivotCell.axis === 'column') {

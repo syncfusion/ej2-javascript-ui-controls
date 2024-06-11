@@ -60,7 +60,7 @@ describe('Calendar',() => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -2754,6 +2754,7 @@ describe('Calendar', () => {
                 keyEventArgs.action = 'moveRight';
                 calendar.keyActionHandle(keyEventArgs);
                 keyEventArgs.action = 'select';
+                keyEventArgs.target = calendar.table;
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.tableBodyElement.querySelector('tr td.e-focused-date').textContent).toBe('3');
                 expect(calendar.value.valueOf()).toBe(new Date('3/3/2017').valueOf());
@@ -2840,6 +2841,7 @@ describe('Calendar', () => {
                 calendar.appendTo('#calendar');
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('Mar');
                 keyEventArgs.action = 'select';
+                keyEventArgs.target = calendar.table;
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('3');
                 expect(calendar.value.valueOf()).toBe(new Date('3/3/2017').valueOf());

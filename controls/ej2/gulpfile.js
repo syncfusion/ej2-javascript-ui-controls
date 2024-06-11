@@ -5,7 +5,7 @@ var gulp = require('gulp');
 /**
  * Build ts and scss files
  */
-gulp.task('build', ['scripts', 'styles']);
+gulp.task('build', gulp.series('scripts', 'styles'));
 
 /**
  * Compile ts files

@@ -1,6 +1,6 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';
-import { EventHandler, detach, EmitType, Event, addClass, getElement } from '@syncfusion/ej2-base';
+import { EventHandler, detach, EmitType, Event, addClass} from '@syncfusion/ej2-base';
 import { ChipListModel } from './chip-list-model';
 import { ChipModel } from './chip';
 
@@ -284,8 +284,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @default {}
      */
-     @Property('')
-     public htmlAttributes: { [key: string]: string };
+    @Property('')
+    public htmlAttributes: { [key: string]: string };
 
     /**
      * Specifies the leading icon CSS class for the chip.
@@ -372,7 +372,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when the component is created successfully.
      * {% codeBlock src='chips/created/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event created
      */
     @Event()
     public created: EmitType<Event>;
@@ -381,7 +381,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when a chip is clicked.
      * {% codeBlock src='chips/click/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event click
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -392,7 +392,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      *
      * {% codeBlock src='chips/beforeClick/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event beforeClick
      */
     @Event()
     public beforeClick: EmitType<ClickEventArgs>;
@@ -401,7 +401,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * Fires before removing the chip element.
      * {% codeBlock src='chips/delete/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event delete
      */
     @Event()
     public delete: EmitType<DeleteEventArgs>;
@@ -410,7 +410,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when the chip item is removed.
      * {% codeBlock src='chips/deleted/index.md' %}{% endcodeBlock %}
      *
-     * @event
+     * @event deleted
      */
     @Event()
     public deleted: EmitType<ChipDeletedEventArgs>;
@@ -419,7 +419,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         super(options, element);
     }
 
-    // eslint-disable-next-line
     private rippleFunction: Function;
     private type: string;
     private innerText: string;
@@ -454,8 +453,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      */
 
     protected render(): void {
-        let property: selectionType;
-        this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
+        this.type = (!isNullOrUndefined(this.chips) && this.chips.length) ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
         this.setAttributes();
         this.createChip();
         this.setRtl();
@@ -476,7 +474,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private setAttributes(): void {
         if (this.type === 'chip') {
-            if(this.enabled) this.element.tabIndex = 0;
+            if (this.enabled)  {this.element.tabIndex = 0; }
             this.element.setAttribute('role', 'button');
         } else {
             this.element.classList.add(classNames.chipSet);
@@ -498,11 +496,12 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private chipCreation(data: string[] | number[] | ChipModel[]): void {
+        if (isNullOrUndefined(data)) { return; }
         let chipListArray: HTMLElement[] = [];
-        let attributeArray = [];
+        const attributeArray: { [key: string]: string; }[] = [];
         for (let i: number = 0; i < data.length; i++) {
             const fieldsData: ChipFields = this.getFieldValues(data[i as number]);
-            let attributesValue = fieldsData.htmlAttributes;
+            const attributesValue: { [key: string]: string; } = fieldsData.htmlAttributes;
             attributeArray.push(attributesValue);
             const chipArray: HTMLElement[] = this.elementCreation(fieldsData);
             const className: string[] = (classNames.chip + ' ' + (fieldsData.enabled ? ' ' : classNames.disabled) + ' ' +
@@ -532,11 +531,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                     wrapper.setAttribute('aria-disabled', 'true');
                 }
                 if (!isNullOrUndefined(attributeArray[i as number])) {
-                    if(attributeArray.length > i && Object.keys(attributeArray[i as number]).length) {
-                        let htmlAttr = [];
+                    if (attributeArray.length > i && Object.keys(attributeArray[i as number]).length) {
+                        let htmlAttr: string[] = [];
                         htmlAttr = (Object.keys(attributeArray[i as number]));
-                        for (var j=0; j < htmlAttr.length; j++) {
-                            wrapper.setAttribute(htmlAttr[j as number],attributeArray[i as number][htmlAttr[j as number]]);
+                        for (let j: number = 0; j < htmlAttr.length; j++) {
+                            wrapper.setAttribute(htmlAttr[j as number], attributeArray[i as number][htmlAttr[j as number]]);
                         }
                     }
                 }
@@ -562,7 +561,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 (this.avatarText.toString()),
             trailingIconCss: typeof data === 'object' ? (data.trailingIconCss ? data.trailingIconCss.toString() :
                 this.trailingIconCss.toString()) : (this.trailingIconCss.toString()),
-            enabled: typeof data === 'object' ? (data.enabled !== undefined? (data.enabled.toString() === 'false' ? false : true) :
+            enabled: typeof data === 'object' ? (data.enabled !== undefined ? (data.enabled.toString() === 'false' ? false : true) :
                 chipEnabled) : (chipEnabled),
             value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null,
             leadingIconUrl:  typeof data === 'object' ? (data.leadingIconUrl ? data.leadingIconUrl.toString() : this.leadingIconUrl) :
@@ -613,19 +612,19 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param  {number | HTMLElement } fields - We can pass index number or element of chip.
      * {% codeBlock src='chips/find/index.md' %}{% endcodeBlock %}
-     * 
+     *
      *  @returns {void}
      */
 
     public find(fields: number | HTMLElement): ChipDataArgs {
-        let chipData : ChipDataArgs = {text: '', index: -1, element: this.element, data: ''};
+        const chipData : ChipDataArgs = {text: '', index: -1, element: this.element, data: ''};
         const chipElement: HTMLElement = fields instanceof HTMLElement ?
             fields as HTMLElement : this.element.querySelectorAll('.' + classNames.chip)[fields as number] as HTMLElement;
         if (chipElement && this.chipType()) {
             chipData.index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipElement);
-            let chip = this.chips[chipData.index as number];
+            const chip: string | number | ChipModel = this.chips[chipData.index as number];
             if (typeof chip === 'object' && chip !== null) {
-                let chipModel = chip as ChipModel;
+                const chipModel: ChipModel = chip as ChipModel;
                 if (chipModel.text !== undefined) {
                     chipData.text = chipModel.text.toString();
                 }
@@ -644,7 +643,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
      * {% codeBlock src='chips/add/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @returns {void}
      * @deprecated
      */
@@ -664,7 +663,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
      * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
-     * 
+     *
      *  @returns {void}
      */
 
@@ -737,7 +736,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
      * {% codeBlock src='chips/remove/index.md' %}{% endcodeBlock %}
-     * 
+     *
      *  @returns {void}
      */
 
@@ -764,7 +763,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Returns the selected chip(s) data.
      * {% codeBlock src='chips/getSelectedChips/index.md' %}{% endcodeBlock %}
-     * 
+     *
      *  @returns {void}
      */
 
@@ -829,7 +828,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private focusOutHandler(e: MouseEventArgs): void {
         const chipWrapper: HTMLElement = <HTMLElement>closest((e.target as HTMLElement), '.' + classNames.chip);
-        const focusedElement: HTMLElement | null= !this.chipType() ? (this.element.classList.contains(classNames.focused) ?
+        const focusedElement: HTMLElement | null = !this.chipType() ? (this.element.classList.contains(classNames.focused) ?
             this.element : null) : this.element.querySelector('.' + classNames.focused);
         if (chipWrapper && focusedElement) {
             focusedElement.classList.remove(classNames.focused);
@@ -839,7 +838,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     private clickHandler(e: MouseEventArgs | KeyboardEventArgs, del: boolean = false): void {
         const chipWrapper: HTMLElement = <HTMLElement>closest((e.target as HTMLElement), '.' + classNames.chip);
         if (chipWrapper) {
-            // eslint-disable-next-line
             let chipDataArgs: object;
             if (this.chipType()) {
                 chipDataArgs = this.find(chipWrapper);
@@ -905,7 +903,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private selectionHandler(chipWrapper: HTMLElement): void {
         if (this.selection === 'Single') {
-            const activeElement = this.element.querySelector('.' + classNames.active) as HTMLElement;
+            const activeElement: HTMLElement = this.element.querySelector('.' + classNames.active) as HTMLElement;
             if (activeElement && activeElement !== chipWrapper) {
                 activeElement.classList.remove(classNames.active);
                 activeElement.setAttribute('aria-selected', 'false');
@@ -957,14 +955,14 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
      * {% codeBlock src='chips/destroy/index.md' %}{% endcodeBlock %}
-     * 
+     *
      *  @returns {void}
      */
 
     public destroy(): void {
         removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,
             classNames.multiSelection, classNames.singleSelection, classNames.disabled, classNames.chipWrapper, classNames.iconWrapper,
-            classNames.active, classNames.focused].concat(this.cssClass.toString().split(' ').filter((css: string) => css)));
+            classNames.active, classNames.focused].concat(this.cssClass ? this.cssClass.toString().split(' ').filter((css: string) => css) : []));
         this.removeMultipleAttributes(['tabindex', 'role', 'aria-label', 'aria-multiselectable'], this.element);
         this.wireEvent(true);
         this.rippleFunction();
@@ -994,7 +992,6 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      */
 
     public onPropertyChanged(newProp: ChipList, oldProp: ChipList): void {
-        let property: selectionType;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'chips':

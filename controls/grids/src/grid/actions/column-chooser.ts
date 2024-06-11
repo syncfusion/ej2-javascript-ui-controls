@@ -507,7 +507,7 @@ export class ColumnChooser implements IAction {
         this.hideColumn = [];
         this.changedColumns = [];
         this.filterColumns = [];
-        this.searchValue = '';
+        this.searchValue = "";
         this.hideDialog();
     }
 
@@ -823,6 +823,9 @@ export class ColumnChooser implements IAction {
 
     private createCheckBox(label: string, checked: boolean, uid: string): Element {
         const cbox: Element = checked ? this.cBoxTrue.cloneNode(true) as Element : this.cBoxFalse.cloneNode(true) as Element;
+        if (!this.parent.enableAdaptiveUI && this.parent.enableRtl && !cbox.classList.contains('e-rtl')) {
+            cbox.classList.add('e-rtl');
+        }
         const cboxLabel: HTMLElement = cbox.querySelector('.e-label');
         const inputcbox: HTMLInputElement = cbox.querySelector('input');
         setChecked(inputcbox, checked);

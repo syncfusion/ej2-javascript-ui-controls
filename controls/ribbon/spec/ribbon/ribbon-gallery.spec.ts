@@ -2,7 +2,7 @@
 
 import { createElement, getComponent, remove } from "@syncfusion/ej2-base";
 import { ItemModel } from "@syncfusion/ej2-splitbuttons";
-import { Ribbon, RibbonItemSize, RibbonItemType, ItemOrientation, GalleryBeforeSelectEventArgs, GalleryPopupEventArgs } from "../../src/ribbon/base/index";
+import { Ribbon, RibbonItemSize, RibbonItemType, ItemOrientation, GalleryBeforeSelectEventArgs, GalleryPopupEventArgs, GallerySelectEventArgs } from "../../src/ribbon/base/index";
 import { RibbonContextualTabSettingsModel, RibbonItemModel } from "../../src/ribbon/models/index";
 import { RibbonColorPicker, RibbonFileMenu, RibbonContextualTab, DisplayMode } from "../../src/index";
 import { RibbonGallery } from "../../src/ribbon/items/ribbon-gallery";
@@ -34,7 +34,7 @@ describe('Ribbon', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -220,7 +220,7 @@ describe('Ribbon', () => {
                     }]
                 }]
             }, ribbonEle);
-            expect(ribbon.element.querySelector('#item1_container').querySelectorAll('.e-ribbon-gallery-item').length).toBe(4);
+            expect(ribbon.element.querySelector('#item1_container').querySelectorAll('.e-ribbon-gallery-item').length).toBe(8);
             expect(ribbon.element.querySelector('#item1_container').querySelectorAll('.e-ribbon-gallery-item')[3].classList.contains('e-ribbon-gallery-selected')).toBe(true);
             expect(ribbon.element.querySelector('#item1_container').querySelectorAll('.e-ribbon-gallery-item')[1].classList.contains('e-disabled')).toBe(true);
             expect(ribbon.element.querySelector('#item1_container').querySelector('#item1_galleryContainer0').classList.contains('e-custom-gallery-group')).toBe(true);
@@ -299,6 +299,75 @@ describe('Ribbon', () => {
             ribbon.activeLayout = 'Classic';
             ribbon.dataBind();
             expect(ribbon.element.querySelector('#item1_container').querySelector('.e-ribbon-gallery-icons').classList.contains('e-hidden')).toBe(false);
+        });
+        it('aria-label attribute', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Gallery,
+                                gallerySettings: {
+                                    groups: [{
+                                        header: 'Group 1',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    },{
+                                        header: 'Group 2',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    }]
+                                }
+                            }]
+                        }]
+                    }, {
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.element.querySelector('.e-ribbon-gallery-button').hasAttribute('aria-label')).toBe(true);
+            expect(ribbon.element.querySelector('.e-ribbon-gallery-button').getAttribute('aria-label')).toBe('gallerydropdownbutton');
         });
         it('in simplified mode', () => {
             ribbon = new Ribbon({
@@ -1444,42 +1513,49 @@ describe('Ribbon', () => {
             keyboardEventArgs.target = document.activeElement;
             keyboardEventArgs.key = 'ArrowDown';
             (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (document.querySelector('#popup_itemKeyboard_galleryContainer0_gallery1') as HTMLElement).dispatchEvent((new KeyboardEvent('keydown', { 'key': 'Enter' })));
             keyboardEventArgs.key = 'Enter';
-            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            let popup: Popup = getComponent((document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), Popup);
+            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false, 'itemKeyboard', popup, ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings);
             expect(document.querySelector('#itemKeyboard_galleryPopup').querySelectorAll('.e-ribbon-gallery-item')[1].classList.contains('e-ribbon-gallery-selected')).toBe(true);
             expect(document.querySelector('#itemKeyboard_galleryPopup').classList.contains('e-popup-open')).toBe(false);
             (ribbon.element.querySelector('#itemKeyboard_container').querySelector('#itemKeyboard_popupButton') as HTMLElement).click();
             keyboardEventArgs.target = document.activeElement;
             keyboardEventArgs.key = 'ArrowRight';
             (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (document.querySelector('#popup_itemKeyboard_galleryContainer0_gallery1') as HTMLElement).dispatchEvent((new KeyboardEvent('keydown', { 'key': 'Enter' })));
             keyboardEventArgs.key = 'Enter';
-            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false, 'itemKeyboard', popup, ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings);
             (ribbon.element.querySelector('#itemKeyboard_container').querySelector('#itemKeyboard_popupButton') as HTMLElement).click();
             keyboardEventArgs.target = document.activeElement;
             keyboardEventArgs.key = 'ArrowLeft';
             (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (document.querySelector('#popup_itemKeyboard_galleryContainer1_gallery3') as HTMLElement).dispatchEvent((new KeyboardEvent('keydown', { 'key': 'Enter' })));
             keyboardEventArgs.key = 'Enter';
-            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false, 'itemKeyboard', popup, ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings);
             expect(document.querySelector('#itemKeyboard_galleryPopup').querySelectorAll('.e-ribbon-gallery-item')[7].classList.contains('e-ribbon-gallery-selected')).toBe(true);
             (ribbon.element.querySelector('#itemKeyboard_container').querySelector('#itemKeyboard_popupButton') as HTMLElement).click();
             keyboardEventArgs.target = document.activeElement;
             keyboardEventArgs.key = 'ArrowUp';
             (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (document.querySelector('#popup_itemKeyboard_galleryContainer1_gallery3') as HTMLElement).dispatchEvent((new KeyboardEvent('keydown', { 'key': 'Enter' })));
             keyboardEventArgs.key = 'Enter';
-            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false, 'itemKeyboard', popup, ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings);
             (ribbon.element.querySelector('#itemKeyboard_container').querySelector('#itemKeyboard_popupButton') as HTMLElement).click();
             keyboardEventArgs.target = document.activeElement;
             keyboardEventArgs.key = 'End';
             (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (document.querySelector('#popup_itemKeyboard_galleryContainer1_gallery3') as HTMLElement).dispatchEvent((new KeyboardEvent('keydown', { 'key': 'Enter' })));
             keyboardEventArgs.key = 'Enter';
-            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false, 'itemKeyboard', popup, ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings);
             expect(document.querySelector('#itemKeyboard_galleryPopup').querySelectorAll('.e-ribbon-gallery-item')[7].classList.contains('e-ribbon-gallery-selected')).toBe(true);
             (ribbon.element.querySelector('#itemKeyboard_container').querySelector('#itemKeyboard_popupButton') as HTMLElement).click();
             keyboardEventArgs.target = document.activeElement;
             keyboardEventArgs.key = 'Home';
             (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (document.querySelector('#popup_itemKeyboard_galleryContainer0_gallery0') as HTMLElement).dispatchEvent((new KeyboardEvent('keydown', { 'key': 'Enter' })));
             keyboardEventArgs.key = 'Enter';
-            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
+            (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false, 'itemKeyboard', popup, ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings);
             expect(document.querySelector('#itemKeyboard_galleryPopup').querySelectorAll('.e-ribbon-gallery-item')[0].classList.contains('e-ribbon-gallery-selected')).toBe(true);
             (ribbon.element.querySelector('#itemKeyboard_container').querySelector('#itemKeyboard_popupButton') as HTMLElement).click();
             keyboardEventArgs.key = 'ArrowRight';
@@ -1491,9 +1567,83 @@ describe('Ribbon', () => {
             keyboardEventArgs.key = 'ArrowRight';
             (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false);
             keyboardEventArgs.key = 'Escape';
-            let popup: Popup = getComponent((document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), Popup);
             (ribbon.ribbonGalleryModule as any).handleGalleryPopupNavigation(keyboardEventArgs, (document.querySelector('#itemKeyboard_galleryPopup') as HTMLElement), false, 'itemKeyboard', popup, ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings);
             expect(document.querySelector('#itemKeyboard_galleryPopup').classList.contains('e-popup-open')).toBe(false);
+        });
+        it('should prevent twice select event triggers', () => {
+            let selectCount = 0;
+            let collectionItems: RibbonItemModel = ({
+                id: "itemKeyboard",
+                type: RibbonItemType.Gallery,
+                gallerySettings: {
+                    select: function (args: GallerySelectEventArgs) { selectCount++; },
+                    groups: [{
+                        header: 'Group 1',
+                        items: [{
+                            content: 'Cut',
+                            iconCss: 'e-icons e-cut'
+                        },{
+                            content: 'Copy',
+                            iconCss: 'e-icons e-copy'
+                        },{
+                            content: 'Paste',
+                            iconCss: 'e-icons e-paste'
+                        },{
+                            content: 'Format Painter',
+                            iconCss: 'e-icons e-format-painter'
+                        }]
+                    },{
+                        header: 'Group 2',
+                        items: [{
+                            content: 'Cut',
+                            iconCss: 'e-icons e-cut'
+                        },{
+                            content: 'Copy',
+                            iconCss: 'e-icons e-copy'
+                        },{
+                            content: 'Paste',
+                            iconCss: 'e-icons e-paste'
+                        },{
+                            content: 'Format Painter',
+                            iconCss: 'e-icons e-format-painter'
+                        }]
+                    }]
+                }
+            });
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        collections: [{
+                            id: "collection1",
+                            items: [collectionItems]
+                        }]
+                    }, {
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            (ribbon.element.querySelector('#itemKeyboard_container').querySelector('#itemKeyboard_popupButton') as HTMLElement).click();
+            expect(document.querySelector('#itemKeyboard_galleryPopup').classList.contains('e-popup-open')).toBe(true);
+            document.querySelector('#itemKeyboard_galleryContainer0_gallery0').dispatchEvent((new KeyboardEvent('keydown', { 'key': 'Enter' })));
+            expect(document.querySelector('#itemKeyboard_galleryPopup').querySelectorAll('.e-ribbon-gallery-item')[0].classList.contains('e-ribbon-gallery-selected')).toBe(true);
+            expect(selectCount).toEqual(1);
         });
         it('show/hide popup method', () => {
             ribbon = new Ribbon({
@@ -1678,6 +1828,20 @@ describe('Ribbon', () => {
                     id: "tab1",
                     header: "tab1",
                     groups: [{
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    },{
                         id: "group1",
                         header: "group1Header",
                         orientation: 'Row',
@@ -1727,20 +1891,6 @@ describe('Ribbon', () => {
                                 }
                             }]
                         }]
-                    }, {
-                        id: "group2",
-                        header: "group2Header",
-                        collections: [{
-                            id: "collection2",
-                            items: [{
-                                id: "item2",
-                                type: RibbonItemType.Button,
-                                buttonSettings: {
-                                    iconCss: 'e-print e-icons',
-                                    content: 'Read Mode'
-                                }
-                            }]
-                        }]
                     }]
                 }]
             }, ribbonEle);
@@ -1766,6 +1916,168 @@ describe('Ribbon', () => {
             (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
             ribbon.activeLayout = 'Classic';
             ribbon.dataBind();
+        });
+        it('popup responsive', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Gallery,
+                                gallerySettings: {
+                                    groups: [{
+                                        header: 'Group 1',
+                                        itemHeight: '40',
+                                        itemWidth: '100',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    },{
+                                        header: 'Group 2',
+                                        itemHeight: '40',
+                                        itemWidth: '100',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    }]
+                                }
+                            }]
+                        }]
+                    },{
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            (ribbon.element.querySelector('#item1_container').querySelector('#item1_popupButton') as HTMLElement).click();
+            expect((document.querySelector('#item1_galleryPopup') as HTMLElement).style.width).toBe('232px');
+            (ribbon.element.querySelector('#item1_container').querySelector('#item1_popupButton') as HTMLElement).click();
+        });
+        it('in second tab', (done) => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    }]
+                }, {
+                    id: "tab2",
+                    header: "tab2",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Gallery,
+                                gallerySettings: {
+                                    popupHeight: '200',
+                                    popupWidth: '400',
+                                    groups: [{
+                                        header: 'Group 1',
+                                        itemHeight: '40',
+                                        itemWidth: '100',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    },{
+                                        header: 'Group 2',
+                                        itemHeight: '40',
+                                        itemWidth: '100',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    }]
+                                }
+                            }]
+                        }]
+                    }]
+                }],
+                activeLayout: 'Simplified'
+            }, ribbonEle);
+            ribbon.setProperties({ selectedTab: 1 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect((document.querySelector('#item1_galleryWrapper') as HTMLElement).style.width).toBe('300px');
+                    // For coverage 
+                    ribbon.activeLayout = 'Classic';
+                    ribbon.dataBind();
+                    done();
+                }, 450);
+            }, 450);
         });
     });
 });

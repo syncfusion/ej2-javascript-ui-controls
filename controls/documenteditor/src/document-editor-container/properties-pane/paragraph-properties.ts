@@ -1,6 +1,6 @@
 import { createElement, isNullOrUndefined, classList, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { DocumentEditor, ParagraphWidget, WAbstractList, WListLevel, WStyle } from '../../document-editor/index';
-import { ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
+import { DocumentEditor, ParagraphWidget, WAbstractList, WList, WListLevel, WStyle } from '../../document-editor/index';
+import { ComboBox} from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Query } from '@syncfusion/ej2-data';
@@ -121,7 +121,7 @@ export class Paragraph {
         this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
 
         const listDropDown: HTMLElement = this.createDivElement(element + '_listDropDiv', listDiv);
-        classList(listDropDown,['de-split-button', 'e-de-ctnr-segment-list'],[]);
+        classList(listDropDown, ['de-split-button', 'e-de-ctnr-segment-list'], []);
         if (isRtl) {
             classList(listDropDown, ['e-de-ctnr-segment-list-rtl'], []);
         }
@@ -168,7 +168,7 @@ export class Paragraph {
         btn.appendTo(buttonElement);
         buttonElement.setAttribute('title', this.localObj.getConstant(toolTipText));
         buttonElement.setAttribute('aria-label', this.localObj.getConstant(toolTipText));
-        if (this.localObj.getConstant(toolTipText) != 'Decrease indent' && this.localObj.getConstant(toolTipText) != 'Increase indent' && this.localObj.getConstant(toolTipText) != 'Borders') {
+        if (this.localObj.getConstant(toolTipText) !== 'Decrease indent' && this.localObj.getConstant(toolTipText) !== 'Increase indent' && this.localObj.getConstant(toolTipText) !== 'Borders') {
             buttonElement.setAttribute('aria-pressed', 'false');
         }
         switch (toolTipText) {
@@ -258,15 +258,18 @@ export class Paragraph {
             beforeOpen: (): void => {
                 div.style.display = 'block';
                 let levelPattern: string = 'None';
-                if(!isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat)) {
-                    if (isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat.listId) || this.documentEditor.selectionModule.paragraphFormat.listId == -1) {
+                if (!isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat)) {
+                    if (isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat.listId)
+                        || this.documentEditor.selectionModule.paragraphFormat.listId === -1) {
                         levelPattern = 'None';
                     }
                     else {
-                        let list = this.documentEditor.documentHelper.getListById(this.documentEditor.selectionModule.paragraphFormat.listId);
-                        let abstractList: WAbstractList = this.documentEditor.documentHelper.getAbstractListById(list.abstractListId);
-                        let startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ? this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
-                        let level: WListLevel = abstractList.levels[startParagraph.paragraphFormat.listFormat.listLevelNumber];
+                        const list: WList = this.documentEditor.documentHelper.getListById(
+                            this.documentEditor.selectionModule.paragraphFormat.listId);
+                        const abstractList: WAbstractList = this.documentEditor.documentHelper.getAbstractListById(list.abstractListId);
+                        const startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ?
+                            this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
+                        const level: WListLevel = abstractList.levels[startParagraph.paragraphFormat.listFormat.listLevelNumber];
                         levelPattern = level.listLevelPattern;
                     }
                 }
@@ -287,49 +290,49 @@ export class Paragraph {
     }
     private updateSelectedBulletListType(listText: string): void {
         switch (listText) {
-            case String.fromCharCode(61623):
-                this.dotBullet.classList.add('de-list-item-selected');
-                break;
-            case String.fromCharCode(61551) + String.fromCharCode(32):
-                this.circleBullet.classList.add('de-list-item-selected');
-                break;
-            case String.fromCharCode(61607):
-                this.squareBullet.classList.add('de-list-item-selected');
-                break;
-            case String.fromCharCode(61558):
-                this.flowerBullet.classList.add('de-list-item-selected');
-                break;
-            case String.fromCharCode(61656):
-                this.arrowBullet.classList.add('de-list-item-selected');
-                break;
-            case String.fromCharCode(61692):
-                this.tickBullet.classList.add('de-list-item-selected');
-                break;
-            default:
-                this.noneBulletTag.classList.add('de-list-item-selected');
-                break;
+        case String.fromCharCode(61623):
+            this.dotBullet.classList.add('de-list-item-selected');
+            break;
+        case String.fromCharCode(61551) + String.fromCharCode(32):
+            this.circleBullet.classList.add('de-list-item-selected');
+            break;
+        case String.fromCharCode(61607):
+            this.squareBullet.classList.add('de-list-item-selected');
+            break;
+        case String.fromCharCode(61558):
+            this.flowerBullet.classList.add('de-list-item-selected');
+            break;
+        case String.fromCharCode(61656):
+            this.arrowBullet.classList.add('de-list-item-selected');
+            break;
+        case String.fromCharCode(61692):
+            this.tickBullet.classList.add('de-list-item-selected');
+            break;
+        default:
+            this.noneBulletTag.classList.add('de-list-item-selected');
+            break;
         }
     }
     private updateSelectedNumberedListType(listText: string): void {
         switch (listText) {
-            case 'Arabic':
-                this.numberList.classList.add('de-list-item-selected');
-                break;
-            case 'UpRoman':
-                this.upRoman.classList.add('de-list-item-selected');
-                break;
-            case 'UpLetter':
-                this.upLetter.classList.add('de-list-item-selected');
-                break;
-            case 'LowLetter':
-                this.lowLetter.classList.add('de-list-item-selected');
-                break;
-            case 'LowRoman':
-                this.lowRoman.classList.add('de-list-item-selected');
-                break;
-            default:
-                this.noneNumberTag.classList.add('de-list-item-selected');
-                break;
+        case 'Arabic':
+            this.numberList.classList.add('de-list-item-selected');
+            break;
+        case 'UpRoman':
+            this.upRoman.classList.add('de-list-item-selected');
+            break;
+        case 'UpLetter':
+            this.upLetter.classList.add('de-list-item-selected');
+            break;
+        case 'LowLetter':
+            this.lowLetter.classList.add('de-list-item-selected');
+            break;
+        case 'LowRoman':
+            this.lowRoman.classList.add('de-list-item-selected');
+            break;
+        default:
+            this.noneNumberTag.classList.add('de-list-item-selected');
+            break;
         }
     }
     private removeSelectedList(): void {
@@ -350,26 +353,27 @@ export class Paragraph {
         this.tickBullet.classList.remove(className);
 
     }
-    /** 
+    /**
      * @private
+     * @returns {void}
      */
     public applyLastAppliedNumbering(): void {
         switch (this.appliedNumberingStyle) {
-            case 'arabic': this.numberedNumberDotClick(); break;
-            case 'lowletter': this.numberedLowLetterClick(); break;
-            case 'upletter': this.numberedUpLetterClick(); break;
-            case 'lowroman': this.numberedLowRomanClick(); break;
-            case 'uproman': this.numberedUpRomanClick(); break;
+        case 'arabic': this.numberedNumberDotClick(); break;
+        case 'lowletter': this.numberedLowLetterClick(); break;
+        case 'upletter': this.numberedUpLetterClick(); break;
+        case 'lowroman': this.numberedLowRomanClick(); break;
+        case 'uproman': this.numberedUpRomanClick(); break;
         }
     }
     private applyLastAppliedBullet(): void {
         switch (this.appliedBulletStyle) {
-            case 'dot': this.bulletDotClick(); break;
-            case 'circle': this.bulletCircleClick(); break;
-            case 'square': this.bulletSquareClick(); break;
-            case 'arrow': this.bulletArrowClick(); break;
-            case 'tick': this.bulletTickClick(); break;
-            case 'flower': this.bulletFlowerClick(); break;
+        case 'dot': this.bulletDotClick(); break;
+        case 'circle': this.bulletCircleClick(); break;
+        case 'square': this.bulletSquareClick(); break;
+        case 'arrow': this.bulletArrowClick(); break;
+        case 'tick': this.bulletTickClick(); break;
+        case 'flower': this.bulletFlowerClick(); break;
         }
     }
     private createBulletListDropButton(iconcss: string, button: HTMLElement): void {
@@ -399,8 +403,14 @@ export class Paragraph {
             cssClass: this.splitButtonClass,
             beforeOpen: (): void => {
                 div.style.display = 'block';
-                let startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ? this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
-                this.updateSelectedBulletListType(startParagraph.paragraphFormat.listFormat.listLevel.numberFormat);
+                if (isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat.listId) ||
+                    this.documentEditor.selectionModule.paragraphFormat.listId === -1) {
+                    this.updateSelectedBulletListType(this.documentEditor.selectionModule.paragraphFormat.listText);
+                } else {
+                    const startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ?
+                        this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
+                    this.updateSelectedBulletListType(startParagraph.paragraphFormat.listFormat.listLevel.numberFormat);
+                }
             },
             beforeClose: (): void => {
                 div.style.display = 'none';
@@ -475,7 +485,7 @@ export class Paragraph {
             change: this.selectStyleValue.bind(this)
         });
         let itemTemplate: string | Function = '';
-        let instance: Paragraph = this;
+        // const instance: Paragraph = this;
         this.style.open = this.updateOptions.bind(this);
         if (!this.container.enableCsp) {
             if (this.isRtl) {
@@ -495,9 +505,9 @@ export class Paragraph {
             this.style.isStringTemplate = true;
         }
         this.style.footerTemplate = initializeCSPTemplate(
-            function (data: any): string {
+            (data: any): string => {
                 return `<span class="e-de-ctnr-dropdown-ftr">
-                ${instance.localObj.getConstant('Manage Styles')}...</span>`;
+                ${this.localObj.getConstant('Manage Styles')}...</span>`;
             }
         );
         this.style.appendTo(selectElement);

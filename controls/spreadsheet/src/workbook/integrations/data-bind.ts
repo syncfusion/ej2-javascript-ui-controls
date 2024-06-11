@@ -104,6 +104,10 @@ export class DataBind {
                 }
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k as number] = sRange; requestedRange[k as number] = false;
+                    let fieldsOrder: string[];
+                    if (range.fieldsOrder) {
+                        fieldsOrder = [].slice.call(range.fieldsOrder);
+                    }
                     const query: Query = (range.query ? range.query : new Query()).clone();
                     dataManager.executeQuery(query.range(sRange, eRange >= count ? eRange : eRange + 1)
                         .requiresCount()).then((e: ReturnOption) => {
@@ -113,7 +117,7 @@ export class DataBind {
                         sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];
                         if (result && result.length) {
                             if (!range.info.count) { count = e.count; range.info.count = e.count; }
-                            flds = range.info.flds || Object.keys(result[0]);
+                            flds = range.info.flds || fieldsOrder || Object.keys(result[0]);
                             if (!range.info.fldLen) { range.info.fldLen = flds.length; range.info.flds = flds; }
                             if (range.info.insertColumnRange) {
                                 let insertCount: number = 0;
@@ -143,22 +147,21 @@ export class DataBind {
                             }
                             result.forEach((item: { [key: string]: string }, i: number) => {
                                 rowIdx = sRowIdx + sRanges[k as number] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
-                                for (let j: number = 0; j < flds.length; j++) {
-                                    colIdx = sColIdx + j;
+                                flds.forEach((field: string, idx: number) => {
+                                    colIdx = sColIdx + idx;
                                     cell = getCell(rowIdx, colIdx, args.sheet, true);
                                     if (cell) {
-                                        if (!flds[j as number].includes('emptyCell')) {
-                                            setCell(
-                                                rowIdx, colIdx, args.sheet, this.getCellDataFromProp(item[flds[j as number]]), true);
+                                        if (!field.includes('emptyCell')) {
+                                            setCell(rowIdx, colIdx, args.sheet, this.getCellDataFromProp(item[field as string]), true);
                                         }
                                     } else {
                                         cell = args.sheet.rows[rowIdx as number].cells[colIdx as number] =
-                                            flds[j as number].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j as number]]);
+                                            field.includes('emptyCell') ? {} : this.getCellDataFromProp(item[field as string]);
                                     }
                                     if (autoDetectFormat) {
                                         autoDetectFormatFn(cell);
                                     }
-                                }
+                                });
                             });
                         } else {
                             flds = [];
@@ -206,8 +209,7 @@ export class DataBind {
                                     rangeSettingCount?: number[], isFinite?: boolean, resolveAfterFullDataLoaded?: boolean,
                                     loadComplete?: Function, autoDetectFormat?: boolean } = {
                                     sheet: args.sheet, indexes: [0, 0, totalRows, totalCols],
-                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                    promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); }),
+                                    promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); }),
                                     rangeSettingCount: args.rangeSettingCount, isFinite: args.isFinite, loadComplete: args.loadComplete,
                                     autoDetectFormat: args.autoDetectFormat, resolveAfterFullDataLoaded: args.resolveAfterFullDataLoaded
                                 };
@@ -353,15 +355,12 @@ export class DataBind {
      * Remove old data from sheet.
      *
      * @param {Object} args - Specify the args.
-     * @param {Workbook} args.oldProp - Specify the oldProp.
-     * @param {string} args.sheetIdx - Specify the sheetIdx.
-     * @param {string} args.rangeIdx - Specify the rangeIdx.
-     * @param {boolean} args.isLastRange - Specify the isLastRange.
+     * @param {number} args.sheetIdx - Specify the sheetIdx.
+     * @param {number} args.rangeIdx - Specify the rangeIdx.
      * @param {Object[]} args.changedData - Specify the changedData.
      * @returns {void} - Remove old data from sheet.
      */
-    private dataSourceChangedHandler(
-        args: { oldProp: Workbook, sheetIdx: string, rangeIdx: string, isLastRange: boolean, changedData: Object[] }): void {
+    private dataSourceChangedHandler(args: { sheetIdx: number, rangeIdx: number, changedData: Object[] }): void {
         let row: RowModel;
         const sheet: SheetModel = this.parent.sheets[args.sheetIdx];
         const range: ExtendedRange = sheet.ranges[args.rangeIdx];
@@ -388,23 +387,21 @@ export class DataBind {
             const refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
             const eventArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, dataSourceChange?: boolean } = {
                 sheet: sheet as ExtendedSheet, indexes: refreshRange, dataSourceChange: true, promise:
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
+                    new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
             };
             this.updateSheetFromDataSourceHandler(eventArgs);
             eventArgs.promise.then(() => {
                 this.parent.trigger(
-                    'dataSourceChanged',
-                    { data: args.changedData, action: 'dataSourceChanged', rangeIndex: Number(args.rangeIdx), sheetIndex:
-                    Number(args.sheetIdx) });
+                    'dataSourceChanged', { data: args.changedData, action: 'dataSourceChanged', rangeIndex: args.rangeIdx,
+                        sheetIndex: args.sheetIdx });
                 this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true, checkCF: true });
             });
         }
     }
 
-    private checkRangeHasChanges(sheet: SheetModel, rangeIdx: string): boolean {
-        if ((this.parent as unknown as { isAngular: boolean }).isAngular) {
-            if (sheet['changedRangeIdx'] === parseInt(rangeIdx, 10)) {
+    private checkRangeHasChanges(sheet: SheetModel, rangeIdx: number): boolean {
+        if (this.parent.isAngular) {
+            if (sheet['changedRangeIdx'] === rangeIdx) {
                 delete sheet['changedRangeIdx'];
                 return true;
             }
@@ -429,12 +426,14 @@ export class DataBind {
      * @param {string} args.insertType - Specify the insertType.
      * @param {number} args.index - Specify the index.
      * @param {string} args.type - Specify the type.
-     * @param {string} args.pastedRange - Specify the pasted range.
+     * @param {boolean} args.isMethod - Specify the isMethod.
+     * @param {string} args.fillRange - Specify the fill range.
      * @param {string} args.range - Specify the range.
      * @param {string} args.requestType - Specify the requestType.
      * @param {Object[]} args.data - Specify the data.
      * @param {boolean}  args.isDataRequest - Specify the isDataRequest.
-     * @param {boolean} args.isMethod - Specify the isMethod.
+     * @param {string} args.pastedRange - Specify the pasted range.
+     * @param {boolean} args.skipFilterCheck - Specify the skip filter check.
      * @returns {void} - Triggers dataSourceChange event when cell data changes
      */
     private dataChangedHandler(args: {

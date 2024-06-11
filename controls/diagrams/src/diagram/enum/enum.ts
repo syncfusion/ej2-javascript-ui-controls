@@ -197,8 +197,8 @@ export type LayoutOrientation =
      */
     'Horizontal' |
     /**
-    * vertical - Renders only the mindmap layout from top to bottom
-    */
+     * vertical - Renders only the mindmap layout from top to bottom
+     */
     'vertical';
 
 /**
@@ -443,7 +443,7 @@ export type ExportModes =
  *
  * @IgnoreSingular
  */
- export type UmlClassChildType =
+export type UmlClassChildType =
     /** Methods - Specified the UML class/interface child type as Method. */
     'Method' |
     /** Attributes -Specified the UML class/interface child type as Method */
@@ -502,6 +502,29 @@ export enum PortVisibility {
     /** Shows the port when a connection end point is dragged over a node */
     Connect = 1 << 3
 }
+
+/**
+ * Define the allowed direction for connections to the port
+ * Auto - Maintains the default behavior of automatic direction calculation.
+ * Left - Restricts connections to only connect to the left side of the port.
+ * Top - Restricts connections to only connect to the top side of the port.
+ * Right - Restricts connections to only connect to the right side of the port.
+ * Bottom - Restricts connections to only connect to the bottom side of the port.
+ *
+ * @IgnoreSingular
+ */
+export type PortConnectionDirection =
+    /** Maintains the default behavior of automatic direction calculation.*/
+    'Auto' |
+    /** Restricts connections to only connect to the left side of the port. */
+    'Left' |
+    /** Restricts connections to only connect to the top side of the port */
+    'Top' |
+    /** Restricts connections to only connect to the right side of the port  */
+    'Right' |
+    /** Restricts connections to only connect to the bottom side of the port */
+    'Bottom';
+
 /**
  * Defines the constraints to Enables / Disables some features of Snapping.
  * None - Snapping does not happen
@@ -2613,7 +2636,8 @@ export enum DiagramEvent {
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
     'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
-    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick', 'elementDraw', 'mouseWheel', 'segmentChange'
+    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick', 'elementDraw', 'mouseWheel', 'segmentChange',
+    'onFixedUserHandleMouseDown', 'onFixedUserHandleMouseUp', 'onFixedUserHandleMouseEnter', 'onFixedUserHandleMouseLeave'
 }
 /**
  * @private
@@ -2772,8 +2796,8 @@ export type SegmentEditing =
     'Add' |
     /** Remove - Specifies to remove the intermediate segment at the specified point. */
     'Remove' |
-    /** 
-     * Toggle - Specifies to either add or remove the intermediate segment at the specified point. 
+    /**
+     * Toggle - Specifies to either add or remove the intermediate segment at the specified point.
      * Note: If there is a segment in the specified point then the existing segment will be removed. Otherwise, it will add a new segment.  */
     'Toggle';
 /**
@@ -2934,3 +2958,14 @@ export type TextAnnotationDirection =
     'Top' |
     /** Bottom - Specifies the direction as bottom when the absolute angle as 90 degree. */
     'Bottom';
+
+/**
+ * Defines the rotating mode of the annotation.
+ * * Page - Annotation remains fixed relative to the entire page, regardless of parent node rotation.
+ * * Parent - Annotation maintains its relative angle to the parent node during rotation.
+ */
+export type RotationReference =
+    /**Page - Annotation remains fixed relative to the entire page, regardless of parent node rotation.  */
+    'Page' |
+    /**parent - Annotation maintains its relative angle to the parent node during rotation. */
+    'Parent';

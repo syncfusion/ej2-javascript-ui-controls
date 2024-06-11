@@ -56,6 +56,16 @@ export class Range extends ChildProperty<Sheet> {
     public query: Query;
 
     /**
+     * By default, when a sheet is bound to a data source, columns are assigned to data source fields sequentially.
+     * This means that the first data field is assigned to Column A, the second to Column B, and so on.
+     * You can customize these assignments by specifying the field names in the desired column order using the 'fieldsOrder' property.
+     *
+     * @default null
+     */
+    @Property(null)
+    public fieldsOrder: string[];
+
+    /**
      * Show/Hide the field of the datasource as header.
      *
      * @default true
@@ -365,6 +375,9 @@ export class Sheet extends ChildProperty<WorkbookModel> {
  */
 export function getSheetIndex(context: Workbook, name: string): number {
     let idx: number;
+    if (name.startsWith('\'') && name.endsWith('\'')) {
+        name = name.replace(/''/g, '\'').replace(/^'|'$/g, '');
+    }
     for (let i: number = 0; i < context.sheets.length; i++) {
         if (context.sheets[i as number].name.toLowerCase() === name.toLowerCase()) {
             idx = i;
@@ -401,8 +414,7 @@ export function getSheetIndexFromId(context: Workbook, id: number): number {
  * @returns {address} - To get Sheet Name From Address.
  */
 export function getSheetNameFromAddress(address: string): string {
-    // eslint-disable-next-line no-useless-escape
-    return address.split('!')[0].replace(/\'/gi, '');
+    return address.split('!')[0].replace(/'/gi, '');
 }
 
 /**
@@ -507,6 +519,7 @@ export function getMaxSheetId(sheets: SheetModel[]): number {
  * @hidden
  * @param {Workbook} context - Specifies the context.
  * @param {SheetModel[]} sheet - Specifies the sheet.
+ * @param {boolean} isImport - Specifies is Import or not.
  * @returns {void} - To initiate sheet.
  */
 export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: boolean): void {
@@ -516,16 +529,16 @@ export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: bo
         sheet.name = sheet.name || '';
         sheet.rowCount = isUndefined(sheet.rowCount) ? 100 : sheet.rowCount;
         sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
-        sheet.topLeftCell = sheet.topLeftCell || 'A1';
-        sheet.activeCell = sheet.activeCell || 'A1';
-        sheet.selectedRange = sheet.selectedRange || sheet.activeCell + ':' + sheet.activeCell;
+        context.setSheetPropertyOnMute(sheet, 'topLeftCell', sheet.topLeftCell || 'A1');
+        context.setSheetPropertyOnMute(sheet, 'activeCell', sheet.activeCell || 'A1');
+        context.setSheetPropertyOnMute(sheet, 'selectedRange', sheet.selectedRange || sheet.activeCell + ':' + sheet.activeCell);
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
         context.setSheetPropertyOnMute(sheet, 'rows', (sheet.rows && extend([], sheet.rows, null, true)) || []);
         context.setSheetPropertyOnMute(sheet, 'columns', sheet.columns || []);
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
         sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
-        sheet.state = sheet.state || 'Visible';
+        context.setSheetPropertyOnMute(sheet, 'state', sheet.state || 'Visible');
         sheet.maxHgts = sheet.maxHgts || [];
         sheet.isImportProtected = sheet.isProtected && isImport;
         sheet.protectSettings = sheet.protectSettings || { selectCells: false, formatCells: false, formatRows: false, formatColumns: false,
@@ -585,6 +598,7 @@ export function getSheetName(context: Workbook, idx: number = context.activeShee
  * @param {number} position - position to move a sheet in the list of sheets
  * @param {number[]} sheetIndexes - Specifies the sheet indexes of the sheets which is to be moved
  * @param {boolean} action - Specifies to trigger events
+ * @param {boolean} isFromUpdateAction - Specifies is from UpdateAction or not.
  * @returns {void}
  * @hidden
  */
@@ -619,6 +633,7 @@ export function moveSheet(
  * @param {Workbook} context - Specifies context
  * @param {number} sheetIndex - Specifies sheetIndex to be duplicated
  * @param {boolean} action - Specifies to trigger events
+ * @param {boolean} isFromUpdateAction - Specifies is from updateAction.
  * @returns {void}
  * @hidden
  */

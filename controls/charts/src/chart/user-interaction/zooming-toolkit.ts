@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { EventHandler } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { Chart } from '../chart';
@@ -38,21 +35,27 @@ export class Toolkit {
     /** @private */
     public zoomCompleteEvtCollection: IZoomCompleteEventArgs[] = [];
 
-    /** @private */
+    /**
+     * Constructor for the chart touch module.
+     *
+     * @param {Chart} chart - Specifies the chart instance.
+     */
     constructor(chart: Chart) {
         this.chart = chart;
         this.elementId = chart.element.id;
         this.chart.svgRenderer = new SvgRenderer(this.elementId);
     }
     /**
-     * To create the pan button.
+     * Creates a pan button.
      *
+     * @param {Element} childElement - Specifies the child element.
+     * @param {Element} parentElement - Specifies the parent element.
      * @returns {void}
-     * @private
      */
     public createPanButton(childElement: Element, parentElement: Element): void {
         const render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
-        const fillColor: string = this.chart.zoomModule.isPanning ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill;
+        const fillColor: string = this.chart.zoomModule.isPanning ? this.chart.themeStyle.toolkitSelectionColor :
+            this.chart.themeStyle.toolkitFill;
         let direction: string = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
         direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
         //This is for setting low opacity to PAN Button
@@ -63,7 +66,7 @@ export class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Pan'));
         this.panElements = childElement;
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect)
+            new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(
             new PathOption(
@@ -73,10 +76,11 @@ export class Toolkit {
         this.wireEvents(childElement, this.pan);
     }
     /**
-     * To create the zoom button.
+     * Creates a zoom button.
      *
+     * @param {Element} childElement - The child element to create.
+     * @param {Element} parentElement - The parent element to append the child element.
      * @returns {void}
-     * @private
      */
     public createZoomButton(childElement: Element, parentElement: Element): void {
         const render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
@@ -95,7 +99,7 @@ export class Toolkit {
         this.zoomElements = childElement;
         this.selectedID = this.chart.zoomModule.isPanning ? this.chart.element.id + '_Zooming_Pan_1' : this.elementId + '_Zooming_Zoom_1';
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_Zoom_1', rectColor, {}, 1, this.chart.themeStyle.toolkitIconRect)
+            new RectOption(this.elementId + '_Zooming_Zoom_1', rectColor, {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(new PathOption(
             this.elementId + '_Zooming_Zoom_3', fillColor, null, null, 1, null,
@@ -105,10 +109,12 @@ export class Toolkit {
         this.wireEvents(childElement, this.zoom);
     }
     /**
-     * To create the ZoomIn button.
+     * Creates a zoom in button.
      *
+     * @param {Element} childElement - The child element to create.
+     * @param {Element} parentElement - The parent element to append the child element.
+     * @param {Chart} chart - The chart instance.
      * @returns {void}
-     * @private
      */
     public createZoomInButton(childElement: Element, parentElement: Element, chart: Chart): void {
         const render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
@@ -121,7 +127,7 @@ export class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomIn'));
         const polygonDirection: string = '12.749,5.466 10.749,5.466 10.749,3.466 9.749,3.466 9.749,5.466 7.749,5.466 7.749,6.466';
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect)
+            new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(
             new PathOption(
@@ -140,10 +146,12 @@ export class Toolkit {
         this.wireEvents(childElement, this.zoomIn);
     }
     /**
-     * To create the ZoomOut button.
+     * Creates a zoom out button.
      *
+     * @param {Element} childElement - The child element to create.
+     * @param {Element} parentElement - The parent element to append the child element.
+     * @param {Chart} chart - The chart instance.
      * @returns {void}
-     * @private
      */
     public createZoomOutButton(childElement: Element, parentElement: Element, chart: Chart): void {
         const render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
@@ -155,7 +163,7 @@ export class Toolkit {
         childElement.setAttribute('role', 'button');
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomOut'));
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect)
+            new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(
             new PathOption(
@@ -169,12 +177,15 @@ export class Toolkit {
         this.wireEvents(childElement, this.zoomOut);
     }
     /**
-     * To create the Reset button.
+     * Creates a reset button.
      *
+     * @param {Element} childElement - The child element to create.
+     * @param {Element} parentElement - The parent element to append the child element.
+     * @param {Chart} chart - The chart instance.
+     * @param {boolean} isDevice - Specifies whether the device is mobile or not.
      * @returns {void}
-     * @private
      */
-    public createResetButton(childElement: Element, parentElement: Element, chart: Chart, isDevice: Boolean): void {
+    public createResetButton(childElement: Element, parentElement: Element, chart: Chart, isDevice: boolean): void {
         const render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
         const fillColor: string = this.chart.themeStyle.toolkitFill;
         let size: Size;
@@ -189,7 +200,7 @@ export class Toolkit {
         childElement.setAttribute('opacity', this.elementOpacity);
         if (!isDevice) {
             childElement.appendChild(render.drawRectangle(
-                new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect)
+                new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
             ) as HTMLElement);
             childElement.appendChild(render.drawPath(
                 new PathOption(
@@ -207,7 +218,7 @@ export class Toolkit {
                     0 + size.width / 2, 0 + size.height * 3 / 4,
                     'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'
                 ),
-                { size: '12px' }, this.chart.theme === 'Material3Dark' ? 'White' : 'black', childElement, null, null, null, null, null, null, null, null, chart.enableCanvas, null, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}
+                { size: '12px' }, this.chart.theme === 'Material3Dark' || this.chart.theme === 'Fluent2Dark'  ? 'White' : 'black', childElement, null, null, null, null, null, null, null, null, chart.enableCanvas, null, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}
             );
         }
 
@@ -215,10 +226,11 @@ export class Toolkit {
         this.wireEvents(childElement, this.reset);
     }
     /**
-     * To bind events.
+     * Wires events to the specified element.
      *
+     * @param {Element} element - The element to wire the events to.
+     * @param {Function} process - The function to be executed when the event occurs.
      * @returns {void}
-     * @private
      */
     public wireEvents(element: Element, process: Function): void {
         EventHandler.add(element, 'mousedown touchstart', process, this);
@@ -226,10 +238,10 @@ export class Toolkit {
         EventHandler.add(element, 'mouseout', this.removeTooltip, this);
     }
     /**
-     * To show tooltip.
+     * Displays the tooltip on mouse event.
      *
+     * @param {MouseEvent} event - The mouse event.
      * @returns {void}
-     * @private
      */
     private showTooltip(event: MouseEvent): void {
         const text: string = (<HTMLElement>event.currentTarget).id.split('_Zooming_')[1];
@@ -257,47 +269,54 @@ export class Toolkit {
             createTooltip('EJ2_Chart_ZoomTip', this.chart.getLocalizedLabel(text), (event.pageY + 10), left, '10px');
         }
     }
-    /** @private */
-    /* eslint-disable */
+    /**
+     * Removes the tooltip.
+     *
+     * @returns {void}
+     */
     public removeTooltip(): void {
-        if(this.hoveredID && getElement(this.hoveredID)) {
-            let rectColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent';
+        if (this.hoveredID && getElement(this.hoveredID)) {
+            const rectColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent';
             getElement(this.hoveredID).setAttribute('fill', rectColor);
         }
-        let icon2: Element = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_2')) : null;
-        let icon3: Element = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_3')) : null;
-        if(icon2) {            
-            let iconColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill;
+        const icon2: Element = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_2')) : null;
+        const icon3: Element = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_3')) : null;
+        if (icon2) {
+            const iconColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill;
             icon2.setAttribute('fill', iconColor);
         }
-        if(icon3) {
+        if (icon3) {
             //This is used for change color while hover on ZOOM button
-            let iconColor: string = this.chart.zoomModule.isPanning || (!this.chart.isZoomed && this.chart.zoomSettings.showToolbar) ? this.chart.themeStyle.toolkitFill : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill;
+            const iconColor: string = this.chart.zoomModule.isPanning || (!this.chart.isZoomed && this.chart.zoomSettings.showToolbar) ? this.chart.themeStyle.toolkitFill : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill;
             icon3.setAttribute('fill', iconColor);
         }
         removeElement('EJ2_Chart_ZoomTip');
     }
 
     // Toolkit events function calculation here.
-    /** @private */
+    /**
+     * Resets the chart.
+     *
+     * @param {PointerEvent | TouchEvent | KeyboardEvent} event - The event object.
+     * @returns {boolean} - Returns false.
+     */
     public reset(event: PointerEvent | TouchEvent | KeyboardEvent): boolean {
         if (!this.chart.zoomModule.isZoomed) {
             return false;
         }
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         this.enableZoomButton = false;
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
-        } else if (event.type == 'touchstart') {
+        } else if (event.type === 'touchstart') {
             event.stopPropagation();
         }
         let argsData: IZoomCompleteEventArgs;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
-        let zoomingEventArgs: IZoomingEventArgs;
-        let zoomedAxisCollection: IAxisData[] = [];
+        const zoomedAxisCollection: IAxisData[] = [];
         this.zoomCompleteEvtCollection = [];
-        for (let axis of (chart.axisCollections as Axis[])) {
+        for (const axis of (chart.axisCollections as Axis[])) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                 previousZoomPosition: axis.zoomPosition, currentZoomFactor: 1, currentZoomPosition: 0,
@@ -321,14 +340,14 @@ export class Toolkit {
                 chart.trigger(zoomComplete, argsData);
             }
         }
-        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        const zoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                this.setDefferedZoom(chart)
+                this.setDefferedZoom(chart);
             });
             return false;
         } else {
-            return (this.setDefferedZoom(chart))
+            return (this.setDefferedZoom(chart));
         }
     }
 
@@ -344,20 +363,20 @@ export class Toolkit {
         return false;
     }
 
-    private zoomIn(e: PointerEvent): boolean {
+    private zoomIn(): boolean {
         this.zoomInOutCalculation(1, this.chart, this.chart.axisCollections, this.chart.zoomSettings.mode);
         return false;
     }
 
-    private zoomOut(e: PointerEvent): boolean {
+    private zoomOut(): boolean {
         this.enableZoomButton = false;
         this.zoomInOutCalculation(-1, this.chart, this.chart.axisCollections, this.chart.zoomSettings.mode);
         return false;
     }
 
-    private zoom(e: PointerEvent): boolean {
+    private zoom(): boolean {
         this.chart.zoomModule.isPanning = false;
-        let zoomModule: Zoom = this.chart.zoomModule;
+        // const zoomModule: Zoom = this.chart.zoomModule;
         this.elementOpacity = '1';
         this.chart.svgObject.setAttribute('cursor', 'auto');
         this.zoomInElements.setAttribute('opacity', this.elementOpacity);
@@ -365,14 +384,18 @@ export class Toolkit {
         this.zoomOutElements.setAttribute('opacity', this.elementOpacity);
         this.applySelection(this.zoomElements.childNodes, this.chart.themeStyle.toolkitSelectionColor);
         this.applySelection(this.panElements.childNodes, '#737373');
-        if(getElement(this.selectedID)) {
+        if (getElement(this.selectedID)) {
             getElement(this.selectedID).setAttribute('fill', 'transparent');
         }
         this.selectedID = this.chart.element.id + '_Zooming_Zoom_1';
         getElement(this.selectedID).setAttribute('fill', this.chart.themeStyle.toolkitIconRectSelectionFill);
         return false;
     }
-    /** @private */
+    /**
+     * Enables panning for the chart.
+     *
+     * @returns {boolean} - Returns false.
+     */
     public pan(): boolean {
         if (!this.chart.zoomModule.isZoomed) {
             return false;
@@ -401,7 +424,7 @@ export class Toolkit {
         if (!chart.zoomModule.isPanning && this.elementOpacity !== '0.2') {
             if ((chart.zoomSettings.showToolbar && !chart.isZoomed)) {
                 chart.zoomModule.isZoomed = true;
-            }  
+            }
             let zoomFactor: number;
             let zoomPosition: number;
             let cumulative: number;
@@ -410,7 +433,7 @@ export class Toolkit {
             let argsData: IZoomCompleteEventArgs;
             this.zoomCompleteEvtCollection = [];
             const zoomedAxisCollection: IAxisData[] = [];
-            for (let axis of (axes as Axis[])) {
+            for (const axis of (axes as Axis[])) {
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition,
@@ -440,8 +463,8 @@ export class Toolkit {
             const zoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
             this.chart.trigger(onZooming, zoomingEventArgs, () => {
                 if (zoomingEventArgs.cancel) {
-                    let zoom= new Zoom(chart);
-                    zoom.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                    const zoom: Zoom = new Zoom(chart);
+                    zoom.zoomCancel(axes, this.zoomCompleteEvtCollection);
                 }
             });
         }
@@ -449,7 +472,7 @@ export class Toolkit {
 
     private applySelection(elements: NodeList, color: string): void {
         for (let i: number = 1, length: number = elements.length; i < length; i++) {
-            (elements[i] as HTMLElement).setAttribute('fill', color);
+            (elements[i as number] as HTMLElement).setAttribute('fill', color);
         }
     }
 }

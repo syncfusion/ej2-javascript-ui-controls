@@ -1,3 +1,14 @@
+@mixin btn-icon-layout {
+  @if $skin-name == 'bootstrap4' {
+    padding: $cpicker-split-btn-padding;
+  }
+  @else if $skin-name == 'bootstrap5' {
+    background-color: $cpicker-tile-active-border-color;
+    border: $cpicker-split-btn-border;
+    color: $cpicker-split-btn-icon-color;
+  }
+}
+
 @include export-module('color-picker-layout') {
   .e-colorpicker-wrapper,
   .e-colorpicker-container {
@@ -26,14 +37,7 @@
     }
 
     & .e-btn.e-icon-btn {
-      @if $skin-name == 'bootstrap4' {
-        padding: $cpicker-split-btn-padding;
-      }
-      @else if $skin-name == 'bootstrap5' {
-        background-color: $cpicker-tile-active-border-color;
-        border: $cpicker-split-btn-border;
-        color: $cpicker-split-btn-icon-color;
-      }
+      @include btn-icon-layout;
     }
 
     & .e-split-btn-wrapper {
@@ -75,14 +79,7 @@
         }
 
         & .e-btn.e-icon-btn {
-          @if $skin-name == 'bootstrap4' {
-            padding: $cpicker-split-btn-padding;
-          }
-          @else if $skin-name == 'bootstrap5' {
-            background-color: $cpicker-tile-active-border-color;
-            border: $cpicker-split-btn-border;
-            color: $cpicker-split-btn-icon-color;
-          }
+          @include btn-icon-layout;
         }
       }
 
@@ -103,18 +100,11 @@
         }
 
         & .e-btn.e-icon-btn {
-          @if $skin-name == 'bootstrap4' {
-            padding: $cpicker-split-btn-padding;
-          }
-          @else if $skin-name == 'Material3' {
+          @include btn-icon-layout;
+          @if $skin-name == 'Material3' {
             background: $cpicker-split-btn-background-color;
             border-radius: $cpicker-split-btn-border-radius;
             border-left-color: transparent;
-          }
-          @else if $skin-name == 'bootstrap5' {
-            background-color: $cpicker-tile-active-border-color;
-            border: $cpicker-split-btn-border;
-            color: $cpicker-split-btn-icon-color;
           }
         }
       }
@@ -266,6 +256,9 @@
         background-color: $content-bg;
         border: 1px solid $cpicker-shadow;
       }
+      @if $skin-name == 'fluent2' {
+        border: 1px solid $cpicker-shadow;
+      }
 
       & .e-mode-switch-btn {
         background: $cpicker-mode-palette-icon;
@@ -388,7 +381,7 @@
           }
 
           & .e-slider-track {
-            height: $cpicker-slider-height;
+            height: $cpicker-slider-height !important; /* stylelint-disable-line declaration-no-important */
             top: $cpicker-slider-track-top;
 
             @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
@@ -465,7 +458,7 @@
         border: $cpicker-preview-container-border;
         cursor: pointer;
         display: inline-block;
-        @if $skin-name == 'FluentUI' {
+        @if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
           height: 50px;
         }
         @else if $skin-name == 'Material3' {
@@ -588,7 +581,9 @@
         }
 
         & .e-float-text {
-          text-align: center;
+          @if $skin-name != 'fluent2' {
+            text-align: center;
+          }
           @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
             text-align: left;
           }
@@ -606,15 +601,15 @@
         float: right;
         text-align: right;
         white-space: nowrap;
-        @if $skin-name == 'bootstrap4' or $skin-name == 'Material3' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'Material3' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
           width: 86.913%;
+        }
+        @else if $skin-name == 'fluent2' {
+          width: 88%;
+          margin: 4px 0;
         }
         @else {
           width: 89.913%;
-        }
-
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          width: 86.913%;
         }
 
         & .e-btn {
@@ -679,6 +674,16 @@
       }
       @else {
         height: $cpicker-switch-btn-height;
+      }
+    }
+
+    & .e-value-switch-btn {
+      @if $skin-name == 'fluent2' {
+        border-radius: 4px;
+
+        &:focus-visible {
+          box-shadow: $secondary-shadow-focus !important; /* stylelint-disable-line declaration-no-important */
+        }
       }
     }
 
@@ -907,6 +912,11 @@
         border-radius: $cpicker-bigger-popup-border-radius;
         box-shadow: $cpicker-bigger-box-shadow;
       }
+
+      & .e-switch-ctrl-btn .e-ctrl-btn {
+        margin: 2px 0;
+      }
+
       &.e-color-picker {
         @if $skin-name == 'Material3' {
           height: $cpicker-bigger-popup-container-height;
@@ -925,6 +935,9 @@
         & .e-switch-ctrl-btn {
           @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
             padding: $cpicker-bigger-ctrl-btn-padding;
+          }
+          @if $skin-name == 'fluent2' {
+            padding: 13px 12px;
           }
         }
 
@@ -1133,7 +1146,7 @@
         @if $skin-name == 'Material3' {
           border: none;
         }
-        @if $skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'fluent2' {
           height: $cpicker-bigger-switch-btn-width;
         }
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
@@ -1335,6 +1348,28 @@
         height: $cpicker-bigger-tooltip-preview-size;
         width: $cpicker-bigger-tooltip-preview-size;
       }
+    }
+  }
+
+  @if $skin-name == 'fluent2' {
+    .e-bigger .e-container .e-switch-ctrl-btn .e-ctrl-btn {
+      width: 87%;
+    }
+  
+    .e-container.e-color-picker .e-colorpicker-slider:first-child .e-hue-slider {
+      top: calc(50% - 25px) !important; /* stylelint-disable-line declaration-no-important */
+    }
+  
+    .e-bigger .e-container.e-color-picker .e-colorpicker-slider .e-slider-container:first-child {
+      margin-bottom: 4px !important; /* stylelint-disable-line declaration-no-important */
+    }
+  
+    .e-bigger .e-container .e-slider-preview .e-colorpicker-slider .e-slider-container .e-slider {
+      top: calc(50% - 25px) !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-container.e-color-picker .e-float-input {
+      margin-top: 22px;
     }
   }
 }

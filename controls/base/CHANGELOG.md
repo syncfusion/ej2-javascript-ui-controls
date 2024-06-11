@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 25.2.5 (2024-05-21)
-
-### Common
-
-#### Bug Fixes
-
-- `#I570682` - Changed deprecated event `unload` to `pagehide`.
-
 ## 23.2.6 (2023-11-28)
 
 ### Common

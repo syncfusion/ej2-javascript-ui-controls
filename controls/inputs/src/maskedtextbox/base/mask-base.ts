@@ -177,8 +177,8 @@ export function unwireEvents(): void {
     EventHandler.remove(this.element, 'focus', maskInputFocusHandler);
     EventHandler.remove(this.element, 'blur', maskInputBlurHandler);
     EventHandler.remove(this.element, 'paste', maskInputPasteHandler);
-    EventHandler.remove(this.element, 'drop', maskInputDropHandler);
     EventHandler.remove(this.element, 'cut', maskInputCutHandler);
+    EventHandler.remove(this.element, 'drop', maskInputDropHandler);
     EventHandler.remove(this.element, 'mousedown', maskInputMouseDownHandler);
     EventHandler.remove(this.element, 'mouseup', maskInputMouseUpHandler);
     if (this.formElement) {
@@ -391,9 +391,9 @@ export function triggerFocus(eventArgs: MaskFocusEventArgs, inputElement: HTMLIn
     });
 }
 
-export function escapeRegExp(text: any): string {
-   return !isNullOrUndefined(text) ? text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') : text;
-}  
+export function escapeRegExp(text: string): string {
+    return !isNullOrUndefined(text) ? text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') : text;
+}
 
 export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
     this.blurEventArgs = {

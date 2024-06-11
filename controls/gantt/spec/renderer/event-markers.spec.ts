@@ -156,4 +156,133 @@ describe('Gantt spec for Event-Marker', () => {
         });
 
     });
+    describe('Gantt base module', () => {
+        let ganttObj: Gantt;
+        let style: string = 'style';
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate'
+                },
+                workWeek: ['Tuesday'],
+                enableHtmlSanitizer: false,
+                renderBaseline: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 2
+                    },
+                    timelineUnitSize: 60,
+                    weekStartDay: 2
+                },
+                holidays: [{
+                    from: '10/15/2017',
+                    to: '10/20/2017',
+                    label: 'public holiday',
+                },
+                {
+                    from: '10/29/2017',
+                    label: 'public holiday',
+                },
+                {
+                    to: '11/05/2017',
+                    label: 'public holiday',
+                    cssClass: 'holidays'
+                }],
+                rowHeight: 40,
+                taskbarHeight: 30,
+                height: 500,
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('11/30/2017'),
+                eventMarkers: [{ day: '10/30/2017', label: 'project start', cssClass: 'stripLine' }],
+            }, done);
+        });
+
+        it('Holiday Testing ', () => {
+            expect(ganttObj.element.querySelector('.e-holiday-container').children[0][style].width).toBe('180px');
+            expect(ganttObj.element.querySelector('.e-holiday-container').children[0].children[0].textContent).toBe('public holiday');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Gantt event marker as null', () => {
+        let ganttObj: Gantt;
+        let style: string = 'style';
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate'
+                },
+                workWeek: ['Tuesday'],
+                enableHtmlSanitizer: false,
+                renderBaseline: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 2
+                    },
+                    timelineUnitSize: 60,
+                    weekStartDay: 2
+                },
+                holidays: [{
+                    from: '10/15/2017',
+                    to: '10/20/2017',
+                    label: 'public holiday',
+                },
+                {
+                    from: '10/29/2017',
+                    label: 'public holiday',
+                },
+                {
+                    to: '11/05/2017',
+                    label: 'public holiday',
+                    cssClass: 'holidays'
+                }],
+                rowHeight: 40,
+                taskbarHeight: 30,
+                height: 500,
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('11/30/2017'),
+                eventMarkers: [{ day: null , label: 'project start', cssClass: 'stripLine' }],
+            }, done);
+        });
+
+        it('Event Marker as null ', () => {
+            expect(ganttObj.eventMarkerColloction.length).toBe(0);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
 });

@@ -20,8 +20,12 @@ function setStyles(element: HTMLElement) {
 
 
 function triggerTouchEvent(node: HTMLElement, eventType: string, x?: number, y?: number) {
-    let touchEvent: UIEvent = document.createEvent('UIEvent');
-    touchEvent.initUIEvent(eventType, true, true, window, null);
+    let touchEvent = new UIEvent(eventType, {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        detail: null,
+      });
     node.dispatchEvent(touchEvent);
 }
 
@@ -34,7 +38,7 @@ describe('ColorPicker', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -1542,5 +1546,122 @@ describe('ColorPicker', () => {
         let memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    describe('Null or undefined Property testing', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            colorPicker.destroy();
+            document.body.innerHTML = '';
+        });
+
+        it('ColorPicker with mode', () => {
+            colorPicker = new ColorPicker({ mode: null}, '#color-picker');
+            expect(colorPicker.mode).toEqual(null);
+            colorPicker = new ColorPicker({ mode: undefined}, '#color-picker');
+            expect(colorPicker.mode).toEqual('Picker');
+        });
+
+        it('ColorPicker with columns', () => {
+            colorPicker = new ColorPicker({ columns: null}, '#color-picker');
+            expect(colorPicker.columns).toEqual(null);
+            colorPicker = new ColorPicker({ columns: undefined}, '#color-picker');
+            expect(colorPicker.columns).toEqual(10);
+        });
+
+        it('ColorPicker with createPopupOnClick', () => {
+            colorPicker = new ColorPicker({ createPopupOnClick: null}, '#color-picker');
+            expect(colorPicker.createPopupOnClick).toEqual(null);
+            colorPicker = new ColorPicker({ createPopupOnClick: undefined}, '#color-picker');
+            expect(colorPicker.createPopupOnClick).toEqual(false);
+        });
+
+        it('ColorPicker with cssClass', () => {
+            colorPicker = new ColorPicker({ cssClass: null}, '#color-picker');
+            expect(colorPicker.cssClass).toEqual(null);
+            colorPicker = new ColorPicker({ cssClass: undefined}, '#color-picker');
+            expect(colorPicker.cssClass).toEqual('');
+        });
+
+        it('ColorPicker with disabled', () => {
+            colorPicker = new ColorPicker({ disabled: null}, '#color-picker');
+            expect(colorPicker.disabled).toEqual(null);
+            colorPicker = new ColorPicker({ disabled: undefined}, '#color-picker');
+            expect(colorPicker.disabled).toEqual(false);
+        });
+
+        it('ColorPicker with enableOpacity', () => {
+            colorPicker = new ColorPicker({ enableOpacity: null}, '#color-picker');
+            expect(colorPicker.enableOpacity).toEqual(null);
+            colorPicker = new ColorPicker({ enableOpacity: undefined}, '#color-picker');
+            expect(colorPicker.enableOpacity).toEqual(true);
+        });
+
+        it('ColorPicker with enablePersistence', () => {
+            colorPicker = new ColorPicker({ enablePersistence: null}, '#color-picker');
+            expect(colorPicker.enablePersistence).toEqual(null);
+            colorPicker = new ColorPicker({ enablePersistence: undefined}, '#color-picker');
+            expect(colorPicker.enablePersistence).toEqual(false);
+        });
+
+        it('ColorPicker with enableRtl', () => {
+            colorPicker = new ColorPicker({ enableRtl: null}, '#color-picker');
+            expect(colorPicker.enableRtl).toEqual(false);
+            colorPicker = new ColorPicker({ enableRtl: undefined}, '#color-picker');
+            expect(colorPicker.enableRtl).toEqual(false);
+        });
+
+        it('ColorPicker with inline', () => {
+            colorPicker = new ColorPicker({ inline: null}, '#color-picker');
+            expect(colorPicker.inline).toEqual(null);
+            colorPicker = new ColorPicker({ inline: undefined}, '#color-picker');
+            expect(colorPicker.inline).toEqual(false);
+        });
+
+        it('ColorPicker with modeSwitcher', () => {
+            colorPicker = new ColorPicker({ modeSwitcher: null}, '#color-picker');
+            expect(colorPicker.modeSwitcher).toEqual(null);
+            colorPicker = new ColorPicker({ modeSwitcher: undefined}, '#color-picker');
+            expect(colorPicker.modeSwitcher).toEqual(true);
+        });
+
+        it('ColorPicker with locale', () => {
+            colorPicker = new ColorPicker({ locale: null}, '#color-picker');
+            expect(colorPicker.locale).toEqual('ar-AR');
+            colorPicker = new ColorPicker({ locale: undefined}, '#color-picker');
+            expect(colorPicker.locale).toEqual('ar-AR');
+        });
+
+        it('ColorPicker with noColor', () => {
+            colorPicker = new ColorPicker({ noColor: null}, '#color-picker');
+            expect(colorPicker.noColor).toEqual(null);
+            colorPicker = new ColorPicker({ noColor: undefined}, '#color-picker');
+            expect(colorPicker.noColor).toEqual(false);
+        });
+
+        it('ColorPicker with presetColors', () => {
+            colorPicker = new ColorPicker({ presetColors: null}, '#color-picker');
+            expect(colorPicker.presetColors).toEqual(null);
+            colorPicker = new ColorPicker({ presetColors: undefined }, '#color-picker');
+            expect(colorPicker.presetColors).toEqual(null);
+        });
+
+        it('ColorPicker with showButtons', () => {
+            colorPicker = new ColorPicker({ showButtons: null}, '#color-picker');
+            expect(colorPicker.showButtons).toEqual(null);
+            colorPicker = new ColorPicker({ showButtons: undefined }, '#color-picker');
+            expect(colorPicker.showButtons).toEqual(true);
+        });
+
+        it('ColorPicker with value', () => {
+            colorPicker = new ColorPicker({ value: null}, '#color-picker');
+            expect(colorPicker.value).toEqual('#008000ff');
+            colorPicker = new ColorPicker({ value: undefined }, '#color-picker');
+            expect(colorPicker.value).toEqual('#008000ff');
+        });
+
+
     });
 });

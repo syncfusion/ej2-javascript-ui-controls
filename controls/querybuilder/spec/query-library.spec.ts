@@ -2,7 +2,7 @@
  *  QueryBuilder spec document
  */
 import { QueryBuilder, QueryLibrary,  RuleModel, ColumnsModel, ParameterizedSql, ParameterizedNamedSql } from '../src/query-builder/index';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove, Browser } from '@syncfusion/ej2-base';
 
 describe('Parameter SQL Query', () => {
     let queryBuilder: any;
@@ -138,6 +138,8 @@ describe('Parameter SQL Query', () => {
     };
 
     beforeEach((): void => {
+	let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
         document.body.appendChild(createElement('div', { id: 'querybuilder' }));
     });
     afterEach(() => {
@@ -146,6 +148,7 @@ describe('Parameter SQL Query', () => {
         queryBuilder.destroy();
         (QueryBuilder as any).injectedModules = [];
     });
+	
     it('Export Parameter SQL', () => {
         QueryBuilder.Inject(QueryLibrary);
         queryBuilder = new QueryBuilder({
@@ -305,6 +308,18 @@ describe('Parameter SQL Query', () => {
             rule: importRules
         }, '#querybuilder');
         let sqlString: string = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City":"Kirkland"},{"HireDate":"12/12/2019"}]}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        const mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        expect(mongoQuery).toEqual(sqlString);
+    });
+
+    it('Import Mongo Testing', () => {
+        QueryBuilder.Inject(QueryLibrary);
+        queryBuilder = new QueryBuilder({
+            dataSource: employeeData,
+            rule: importRules
+        }, '#querybuilder');
+        let sqlString: string = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{ "$and":[{"City":"Kirkland"},{"HireDate":"12/12/2019"}]}]}]}';
         queryBuilder.setMongoQuery(sqlString);
         const mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
         expect(mongoQuery).toEqual(sqlString);

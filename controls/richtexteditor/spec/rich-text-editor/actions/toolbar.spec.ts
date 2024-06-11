@@ -221,8 +221,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
         items[0].click();
-        expect(pEle.style.listStyleType === '').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'P').toBe(true);
+        expect(pEle.style.listStyleType === 'none').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
         done();
     });
     it(' Check the numberFormatList items 7', (done) => {
@@ -307,8 +307,8 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         bulletFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
         items[0].click();
-        expect(pEle.style.listStyleType === '').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'P').toBe(true);
+        expect(pEle.style.listStyleType === 'none').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
         done();
     });
     afterEach((done: DoneFn) => {
@@ -687,7 +687,7 @@ describe("Toolbar - Actions Module", () => {
 
         it("toolbarSettings property default value testing", () => {
             expect(rteObj.toolbarSettings.enable).toBe(true);
-            expect(rteObj.toolbarSettings.items.length).toBe(15);
+            expect(rteObj.toolbarSettings.items.length).toBe(16);
             expect(rteObj.toolbarSettings.type).toBe(ToolbarType.Expand);
         });
 
@@ -698,15 +698,16 @@ describe("Toolbar - Actions Module", () => {
             expect(rteObj.toolbarSettings.items[3]).toBe("|");
             expect(rteObj.toolbarSettings.items[4]).toBe("Formats");
             expect(rteObj.toolbarSettings.items[5]).toBe("Alignments");
-            expect(rteObj.toolbarSettings.items[6]).toBe("OrderedList");
-            expect(rteObj.toolbarSettings.items[7]).toBe("UnorderedList");
-            expect(rteObj.toolbarSettings.items[8]).toBe("|");
-            expect(rteObj.toolbarSettings.items[9]).toBe("CreateLink");
-            expect(rteObj.toolbarSettings.items[10]).toBe("Image");
-            expect(rteObj.toolbarSettings.items[11]).toBe("|");
-            expect(rteObj.toolbarSettings.items[12]).toBe("SourceCode");
-            expect(rteObj.toolbarSettings.items[13]).toBe("Undo");
-            expect(rteObj.toolbarSettings.items[14]).toBe("Redo");
+            expect(rteObj.toolbarSettings.items[6]).toBe("Blockquote");
+            expect(rteObj.toolbarSettings.items[7]).toBe("OrderedList");
+            expect(rteObj.toolbarSettings.items[8]).toBe("UnorderedList");
+            expect(rteObj.toolbarSettings.items[9]).toBe("|");
+            expect(rteObj.toolbarSettings.items[10]).toBe("CreateLink");
+            expect(rteObj.toolbarSettings.items[11]).toBe("Image");
+            expect(rteObj.toolbarSettings.items[12]).toBe("|");
+            expect(rteObj.toolbarSettings.items[13]).toBe("SourceCode");
+            expect(rteObj.toolbarSettings.items[14]).toBe("Undo");
+            expect(rteObj.toolbarSettings.items[15]).toBe("Redo");
         });
 
         it("toolbarSettings - 'items' property default value element testing", () => {
@@ -717,15 +718,16 @@ describe("Toolbar - Actions Module", () => {
             expect((<HTMLElement>tbItems.item(3)).classList.contains("e-separator")).toBe(true);
             expect((<HTMLElement>tbItems.item(4)).firstElementChild.id.indexOf("Formats") > 0).toBe(true);
             expect((<HTMLElement>tbItems.item(5)).firstElementChild.id.indexOf("Alignments") > 0).toBe(true);
-            expect((<HTMLElement>tbItems.item(6)).firstElementChild.id.indexOf("OrderedList") > 0).toBe(true);
-            expect((<HTMLElement>tbItems.item(7)).firstElementChild.id.indexOf("UnorderedList") > 0).toBe(true);
-            expect((<HTMLElement>tbItems.item(8)).classList.contains("e-separator")).toBe(true);
-            expect((<HTMLElement>tbItems.item(9)).firstElementChild.id.indexOf("CreateLink") > 0).toBe(true);
-            expect((<HTMLElement>tbItems.item(10)).firstElementChild.id.indexOf("Image") > 0).toBe(true);
-            expect((<HTMLElement>tbItems.item(11)).classList.contains("e-separator")).toBe(true);
-            expect((<HTMLElement>tbItems.item(12)).firstElementChild.id.indexOf("SourceCode") > 0).toBe(true);
-            expect((<HTMLElement>tbItems.item(13)).firstElementChild.id.indexOf("Undo") > 0).toBe(true);
-            expect((<HTMLElement>tbItems.item(14)).firstElementChild.id.indexOf("Redo") > 0).toBe(true);
+            expect((<HTMLElement>tbItems.item(6)).firstElementChild.id.indexOf("Blockquote") > 0).toBe(true);
+            expect((<HTMLElement>tbItems.item(7)).firstElementChild.id.indexOf("OrderedList") > 0).toBe(true);
+            expect((<HTMLElement>tbItems.item(8)).firstElementChild.id.indexOf("UnorderedList") > 0).toBe(true);
+            expect((<HTMLElement>tbItems.item(9)).classList.contains("e-separator")).toBe(true);
+            expect((<HTMLElement>tbItems.item(10)).firstElementChild.id.indexOf("CreateLink") > 0).toBe(true);
+            expect((<HTMLElement>tbItems.item(11)).firstElementChild.id.indexOf("Image") > 0).toBe(true);
+            expect((<HTMLElement>tbItems.item(12)).classList.contains("e-separator")).toBe(true);
+            expect((<HTMLElement>tbItems.item(13)).firstElementChild.id.indexOf("SourceCode") > 0).toBe(true);
+            expect((<HTMLElement>tbItems.item(14)).firstElementChild.id.indexOf("Undo") > 0).toBe(true);
+            expect((<HTMLElement>tbItems.item(15 )).firstElementChild.id.indexOf("Redo") > 0).toBe(true);
         });
     });
 
@@ -793,7 +795,7 @@ describe("Toolbar - Actions Module", () => {
             rteEle = rteObj.element;
             expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(0);
             //hidden textarea, so count will be 2
-            expect(rteEle.children.length).toBe(2);
+            expect(rteObj.rootContainer.children.length).toBe(2);
         });
     });
 
@@ -1461,13 +1463,13 @@ describe("Toolbar - Actions Module", () => {
             expect(document.querySelector(".e-source-code").parentElement.attributes[6].value).toBe("false");
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
             item.click();
-            expect((document.querySelector(".e-rte-srctextarea")as HTMLElement).style.display).toBe("block");            
+            expect(rteObj.rootContainer.classList.contains('e-source-code-enabled')).toBe(true)
             rteObj.toolbarSettings.enableFloating = true;
             rteObj.dataBind();
             expect(document.querySelector(".e-bold").parentElement.attributes[6].value).toBe("true");
             expect(document.querySelector(".e-italic").parentElement.attributes[6].value).toBe("true");
             expect(document.querySelector(".e-preview").parentElement.attributes[6].value).toBe("false");
-            expect((document.querySelector(".e-rte-srctextarea")as HTMLElement).style.display).toBe("block");            
+            expect(rteObj.rootContainer.classList.contains('e-source-code-enabled')).toBe(true)
         });
     });
 
@@ -1507,7 +1509,7 @@ describe("Toolbar - Actions Module", () => {
             });
             rteEle = rteObj.element;
             expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(1);
-            expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(15);
+            expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(16);
             rteObj.toolbarSettings.enable = false;
             rteObj.dataBind();
             setTimeout(() => {
@@ -1715,8 +1717,8 @@ describe("Toolbar - Actions Module", () => {
             expect(tbItemsEle[7].classList.contains('e-active')).not.toBe(true);
             expect(tbItemsEle[8].classList.contains('e-active')).not.toBe(true);
             expect((<HTMLElement>tbItemsEle[9].firstElementChild).innerText.trim()).toBe('Paragraph');
-            expect((<HTMLElement>tbItemsEle[10].firstElementChild).innerText.trim()).toBe('Segoe UI');
-            expect((<HTMLElement>tbItemsEle[11].firstElementChild).innerText.trim()).toBe('10 pt');
+            expect((<HTMLElement>tbItemsEle[10].firstElementChild).innerText.trim()).toBe('Font Name');
+            expect((<HTMLElement>tbItemsEle[11].firstElementChild).innerText.trim()).toBe('Font Size');
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-justify-left')).toBe(true);
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-icons')).toBe(true);
             expect(tbItemsEle[13].classList.contains('e-active')).not.toBe(true);
@@ -2153,11 +2155,10 @@ describe("Toolbar - Actions Module", () => {
                 let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Formats-popup .e-item');
                 expect(items[0].textContent === 'Absatz').toBe(true);
                 expect(items[1].textContent === 'Kodex').toBe(true);
-                expect(items[2].textContent === 'Zitat').toBe(true);
-                expect(items[3].textContent === 'Überschrift 1').toBe(true);
-                expect(items[4].textContent === 'Überschrift 2').toBe(true);
-                expect(items[5].textContent === 'Überschrift 3').toBe(true);
-                expect(items[6].textContent === 'Überschrift 4').toBe(true);
+                expect(items[2].textContent === 'Überschrift 1').toBe(true);
+                expect(items[3].textContent === 'Überschrift 2').toBe(true);
+                expect(items[4].textContent === 'Überschrift 3').toBe(true);
+                expect(items[5].textContent === 'Überschrift 4').toBe(true);
                 done();
             }, 200)
         });
@@ -2168,13 +2169,14 @@ describe("Toolbar - Actions Module", () => {
             item.click();
             setTimeout(() => {
                 let items: any = document.querySelectorAll('#' + controlId + '_toolbar_FontName-popup .e-item');
-                expect(items[0].textContent === 'Segoe UI').toBe(true);
-                expect(items[1].textContent === 'Arial').toBe(true);
-                expect(items[2].textContent === 'Georgia').toBe(true);
-                expect(items[3].textContent === 'Einschlag').toBe(true);
-                expect(items[4].textContent === 'Tahoma').toBe(true);
-                expect(items[5].textContent === 'Mal neu römisch').toBe(true);
-                expect(items[6].textContent === 'Verdana').toBe(true);
+                expect(items[0].textContent === 'Default').toBe(true);
+                expect(items[1].textContent === 'Segoe UI').toBe(true);
+                expect(items[2].textContent === 'Arial').toBe(true);
+                expect(items[3].textContent === 'Georgia').toBe(true);
+                expect(items[4].textContent === 'Einschlag').toBe(true);
+                expect(items[5].textContent === 'Tahoma').toBe(true);
+                expect(items[6].textContent === 'Mal neu römisch').toBe(true);
+                expect(items[7].textContent === 'Verdana').toBe(true);
                 done();
             }, 200)
         });
@@ -2207,7 +2209,7 @@ describe("Toolbar - Actions Module", () => {
             dispatchEvent(fontname, 'mouseup');
             fontname.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_FontName-popup .e-item');
-            items[1].click();
+            items[2].click();
             let span: HTMLSpanElement = pEle.querySelector('span');
             expect(span.style.fontFamily === 'Arial, Helvetica, sans-serif').toBe(true);
             done();
@@ -2219,7 +2221,7 @@ describe("Toolbar - Actions Module", () => {
             dispatchEvent(format, 'mouseup');
             format.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Formats-popup .e-item');
-            items[3].click();
+            items[2].click();
             expect(rteObj.element.querySelector('#rte').tagName === 'H1').toBe(true);
             done();
         });

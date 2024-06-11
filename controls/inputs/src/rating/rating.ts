@@ -407,9 +407,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     private emptyTemplateFunction: Function;
     private fullTemplateFunction: Function;
     private tooltipOpen: boolean;
-    private isReact?: boolean;
     private isTouchSelected: boolean;
-    private isAngular: boolean;
 
     /**
      * Constructor for creating the widget
@@ -502,10 +500,10 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     private touchMoveHandler(e: Event): void {
         if (!this.isTouchSelected) {
-            this.wrapper.classList.add("e-rating-touch");
+            this.wrapper.classList.add('e-rating-touch');
             this.isTouchSelected = true;
         }
-        this.wrapper.classList.add("e-touch-select");
+        this.wrapper.classList.add('e-touch-select');
         const rect: DOMRect = this.ratingItemList.getBoundingClientRect() as DOMRect;
         const x: number = (e as TouchEvent).touches[0].clientX - rect.x;
         let currValue: number = (x / rect.width) * this.itemsCount;
@@ -534,7 +532,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     private touchEndHandler(): void {
         this.closeRatingTooltip();
-        this.wrapper.classList.remove("e-touch-select");
+        this.wrapper.classList.remove('e-touch-select');
     }
 
     private updateTemplateFunction(): void {
@@ -682,14 +680,14 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
                 this.tooltipObj.setProperties({ content: content }, isChange);
                 if (this.isAngular) {
                     setTimeout(() => {
-                        let ratingSpan: NodeListOf<HTMLElement> = this.ratingItemList.querySelectorAll('.' +ITEMCONTAINER+ '.' +SELECTED);
-                        this.tooltipObj.refresh(ratingSpan[ratingSpan.length -1]);
+                        const ratingSpan: NodeListOf<HTMLElement> = this.ratingItemList.querySelectorAll('.' + ITEMCONTAINER + '.' + SELECTED);
+                        this.tooltipObj.refresh(ratingSpan[ratingSpan.length - 1]);
                     });
                 }
             }
             else {
                 content = this.currentValue.toString();
-                this.tooltipObj.setProperties({ content: initializeCSPTemplate(function() {return content}) }, isChange);
+                this.tooltipObj.setProperties({ content: initializeCSPTemplate( () => { return content; }) }, isChange);
             }
             this.renderReactTemplates();
         }
@@ -706,7 +704,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
                 } else {
                     stringContent = template;
                 }
-             } else {
+            } else {
                 stringContent = template;
             }
         } catch (e) {
@@ -813,9 +811,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     private mouseMoveHandler(index: number, e: Event): void {
         if (this.isTouchSelected) {
-            this.wrapper.classList.remove("e-rating-touch");
+            this.wrapper.classList.remove('e-rating-touch');
             this.isTouchSelected = false;
-        } 
+        }
         let currValue: number = this.calculateCurrentValue(index, e as MouseEventArgs);
         currValue = this.validateValue(currValue);
         const element: HTMLElement = this.itemElements[parseInt((index - 1).toString(), 10)];

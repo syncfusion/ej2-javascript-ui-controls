@@ -9,8 +9,9 @@ import {
     IWidget, BlockWidget,
     ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
     FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
-    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField, TextElementBox, HeaderFooters, CommentEditInfo, FormField, FootnoteElementBox, ImageElementBox, Widget,
-    ListTextElementBox
+    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField,
+    TextElementBox, HeaderFooters, CommentEditInfo, FormField, FootnoteElementBox, ImageElementBox,
+    Widget, ListTextElementBox 
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -105,7 +106,7 @@ export class BaseHistoryInfo {
      * @private
      */
     public markerData: MarkerInfo[] = [];
-	/**
+    /**
      * @private
      */
     public formFieldType: string;
@@ -135,7 +136,7 @@ export class BaseHistoryInfo {
     }
     public set action(value: Action) {
         this.actionIn = value;
-        if (this.owner.enableCollaborativeEditing && !this.editorHistory.isUndoing && this.cellOperation.length == 0) {
+        if (this.owner.enableCollaborativeEditing && !this.editorHistory.isUndoing && this.cellOperation.length === 0) {
             if (value === 'DeleteColumn' || value === 'DeleteCells' || value === 'ClearCells' || value === 'MergeCells') {
                 if (!(this.owner.selectionModule.isTableSelected(true) || this.owner.selectionModule.isRowSelect()) || value === 'ClearCells' || value === 'MergeCells') {
                     this.insertedText = CONTROL_CHARACTERS.Cell;
@@ -145,10 +146,10 @@ export class BaseHistoryInfo {
                 this.createAcceptRejectOperation(this.action);
             } else if (value === 'SectionBreak') {
                 this.insertedText = CONTROL_CHARACTERS.Section_Break;
-                this.type = "NewPage";
+                this.type = 'NewPage';
             } else if (value === 'SectionBreakContinuous') {
                 this.insertedText = CONTROL_CHARACTERS.Section_Break;
-                this.type = "Continuous";
+                this.type = 'Continuous';
             }
         }
     }
@@ -182,7 +183,7 @@ export class BaseHistoryInfo {
         if (this.owner.enableCollaborativeEditing && !this.owner.editorModule.isRemoteAction && value !== '' && !isNullOrUndefined(value) && value.indexOf('C') === -1) {
             //TODO: Insert position not needed in all the cases. Need to optimize it.
             this.insertIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(value);
-            
+
             // Code for Comparing the offset calculated using old approach and optimized approach
             // this.owner.selection.isNewApproach = true;
             // this.newInsertIndex = this.owner.selection.getAbsolutePositionFromRelativePosition(value);
@@ -219,46 +220,47 @@ export class BaseHistoryInfo {
     private updateCollaborativeSelection(start: TextPosition, end: TextPosition): void {
         if (this.owner.enableCollaborativeEditing && !this.owner.editorModule.isRemoteAction) {
             //TODO: Need to consider formard and backward selection
-            if (this.action == 'RemoveEditRange') {
-                let startEdit: EditRangeStartElementBox = this.owner.selectionModule.getEditRangeStartElement();
-                let position: PositionInfo = this.owner.selectionModule.getPosition(startEdit);
+            if (this.action === 'RemoveEditRange') {
+                const startEdit: EditRangeStartElementBox = this.owner.selectionModule.getEditRangeStartElement();
+                const position: PositionInfo = this.owner.selectionModule.getPosition(startEdit);
                 start = position.startPosition;
                 end = position.endPosition;
             } else {
                 this.updateTableSelection(start, end);
             }
             this.startIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(start);
-            
+
             // Code for Comparing the offset calculated using old approach and optimized approach
             // this.owner.selection.isNewApproach = true;
             // this.newStartIndex = this.owner.selection.getAbsolutePositionFromRelativePosition(start);
             // this.owner.selection.isNewApproach = false;
-            
+
             this.owner.selectionModule.isEndOffset = true;
             this.endIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(end);
-            
+
             // Code for Comparing the offset calculated using old approach and optimized approach
             // this.owner.selection.isNewApproach = true;
             // this.newEndIndex = this.owner.selection.getAbsolutePositionFromRelativePosition(end);
             // this.owner.selection.isNewApproach = false;
             this.owner.selectionModule.isEndOffset = false;
-            let isForward: boolean = this.owner.selectionModule.isForward;
+            const isForward: boolean = this.owner.selectionModule.isForward;
             if (isForward) {
                 this.startIndex -= this.owner.selectionModule.getTableRelativeValue(start, end);
             } else {
                 this.endIndex -= this.owner.selectionModule.getTableRelativeValue(end, start);
             }
             // if (this.action === 'BackSpace' || this.action === 'Delete') {
-                let isParagraphStart: boolean = isForward ? (start.paragraph.equals(end.paragraph) && start.isAtParagraphStart) : (start.paragraph.equals(end.paragraph) && end.isAtParagraphStart);
-                if ((isParagraphStart || !start.paragraph.equals(end.paragraph))) {
-                    if (isForward) {
-                        this.endIndex += this.paraInclude(end);
-                    } else {
-                        this.startIndex += this.paraInclude(start);
-                    }
+            const isParagraphStart: boolean = isForward ? (start.paragraph.equals(end.paragraph)
+            && start.isAtParagraphStart) : (start.paragraph.equals(end.paragraph) && end.isAtParagraphStart);
+            if ((isParagraphStart || !start.paragraph.equals(end.paragraph))) {
+                if (isForward) {
+                    this.endIndex += this.paraInclude(end);
+                } else {
+                    this.startIndex += this.paraInclude(start);
                 }
+            }
             // }
-            if(!this.owner.enableTrackChanges) {
+            if (!this.owner.enableTrackChanges) {
                 this.splitOperationForDelete(start, end);
             }
             // Code for Comparing the offset calculated using old approach and optimized approach
@@ -267,20 +269,26 @@ export class BaseHistoryInfo {
         }
     }
     private paraInclude(position: TextPosition): number {
-        let paragrapthInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(position);
+        const paragrapthInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(position);
         if (position.paragraph.getTotalLength() < paragrapthInfo.offset) {
-            if (!(position.paragraph.isInsideTable && position.paragraph.equals(position.paragraph.associatedCell.lastChild as ParagraphWidget))) {
+            if (!(position.paragraph.isInsideTable
+                && position.paragraph.equals(position.paragraph.associatedCell.lastChild as ParagraphWidget))) {
                 return 1;
             }
         }
         return 0;
     }
     /**
-     * This method will set position when the multple cell selected. 
+     * This method will set position when the multple cell selected.
+     *
+     * @param {TextPosition} startPosition - Specifies the start position.
+     * @param {TextPosition} endPosition - Specifies the end position.
+     * @private
+     * @returns {void}
      */
     private updateTableSelection(startPosition: TextPosition, endPosition: TextPosition): void {
-        let start = startPosition;
-        let end = endPosition;
+        let start: TextPosition = startPosition;
+        let end: TextPosition = endPosition;
         if (!this.owner.selectionModule.isForward) {
             start = endPosition;
             end = startPosition;
@@ -302,13 +310,18 @@ export class BaseHistoryInfo {
         }
     }
     /**
-     * start is para and end is in row. 
+     * start is para and end is in row.
+     *
+     * @param {TextPosition} startPosition - Specifies the start position.
+     * @param {TextPosition} endPosition - Specifies the end position.
+     * @private
+     * @returns {void}
      */
-    private splitOperationForDelete(startPosition: TextPosition, endPosition: TextPosition) {
-        // when start is para and end is row. we are building the operation like: 
+    private splitOperationForDelete(startPosition: TextPosition, endPosition: TextPosition): void {
+        // when start is para and end is row. we are building the operation like:
         // fisrt delete the end table from table start to selection end.
         // second need to paste the content from the start para and need to paste it in the next row.
-        // third delete the start paragraph to before wiget of end table. 
+        // third delete the start paragraph to before wiget of end table.
         let start: TextPosition = startPosition;
         let end: TextPosition = endPosition;
         if (!this.owner.selectionModule.isForward) {
@@ -316,24 +329,28 @@ export class BaseHistoryInfo {
             end = startPosition;
         }
         if (!start.paragraph.isInsideTable && end.paragraph.isInsideTable && (this.action === 'BackSpace' || this.action === 'Delete')) {
-            let lastParagraph: ParagraphWidget = this.owner.selectionModule.getLastBlockInLastCell(end.paragraph.associatedCell.ownerTable) as ParagraphWidget;
+            const lastParagraph: ParagraphWidget = this.owner.selectionModule.getLastBlockInLastCell(
+                end.paragraph.associatedCell.ownerTable) as ParagraphWidget;
             if (!lastParagraph.associatedCell.equals(end.paragraph.associatedCell)) {
-                let PasteLength = this.startIndex;
-                let endLineWidget: LineWidget = start.currentWidget;
-                let endOffset: number = start.offset;
+                const PasteLength: number = this.startIndex;
+                const endLineWidget: LineWidget = start.currentWidget;
+                const endOffset: number = start.offset;
                 start.setPosition(start.paragraph.firstChild as LineWidget, true);
                 this.startIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(start);
-                let startIndex: number = this.startIndex;
-                let table: TableWidget = this.owner.documentHelper.layout.getParentTable(end.paragraph.associatedCell.ownerTable);
-                let paragraphInfo: ParagraphInfo = { 'paragraph': null, 'offset': 0 };
-                let tableStart: number = this.owner.selectionModule.getPositionInfoForHeaderFooter(paragraphInfo, { position: 0, done: false }, table).position;
+                const startIndex: number = this.startIndex;
+                const table: TableWidget = this.owner.documentHelper.layout.getParentTable(end.paragraph.associatedCell.ownerTable);
+                const paragraphInfo: ParagraphInfo = { 'paragraph': null, 'offset': 0 };
+                const tableStart: number = this.owner.selectionModule.getPositionInfoForHeaderFooter(
+                    paragraphInfo, { position: 0, done: false }, table).position;
                 // Table start will get the offset for table. So adding plus one to row offset.
                 this.startIndex = tableStart + 1;
                 this.cellOperation.push(this.getDeleteOperation(this.action));
-                // This will add the paste content in first and first cell so adding plus 3. 
+                // This will add the paste content in first and first cell so adding plus 3.
                 this.startIndex = tableStart + 3;
                 if (endOffset !== 0) {
-                    this.pasteContent = this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), start.currentWidget, start.offset, endLineWidget, endOffset, false, true);
+                    this.pasteContent = this.owner.sfdtExportModule.write(
+                        (this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), start.currentWidget,
+                        start.offset, endLineWidget, endOffset, false, true);
                     this.cellOperation.push(this.getPasteOpertion(this.pasteContent, PasteLength - startIndex));
                 }
                 this.endIndex = tableStart;
@@ -341,12 +358,14 @@ export class BaseHistoryInfo {
                 this.cellOperation.push(this.getDeleteOperation(this.action));
             }
         }
-        if(this.action === 'PasteColumn' || this.action === 'PasteOverwrite' || this.action === 'PasteRow') {
+        if (this.action === 'PasteColumn' || this.action === 'PasteOverwrite' || this.action === 'PasteRow') {
             //when inserting new colomn in paste. first deleting the table and inserting the whole table.
-            let table: TableWidget = startPosition.paragraph.associatedCell.ownerTable
-            let paragraphInfo: ParagraphInfo = { 'paragraph': null, 'offset': 0 };
-            this.startIndex = this.owner.selectionModule.getPositionInfoForHeaderFooter(paragraphInfo, { position: 0, done: false }, table).position;
-            this.endIndex = this.startIndex + this.owner.selectionModule.getBlockLength(undefined, table, 0, { done: false }, true, undefined, undefined);
+            const table: TableWidget = startPosition.paragraph.associatedCell.ownerTable;
+            const paragraphInfo: ParagraphInfo = { 'paragraph': null, 'offset': 0 };
+            this.startIndex = this.owner.selectionModule.getPositionInfoForHeaderFooter(
+                paragraphInfo, { position: 0, done: false }, table).position;
+            this.endIndex = this.startIndex + this.owner.selectionModule.getBlockLength(
+                undefined, table, 0, { done: false }, true, undefined, undefined);
         }
     }
     public setBookmarkInfo(bookmark: BookmarkElementBox): void {
@@ -388,7 +407,7 @@ export class BaseHistoryInfo {
         const bookmarkInfo: BookmarkInfo = this.removedNodes[0] as BookmarkInfo;
         const bookmark: BookmarkElementBox = bookmarkInfo.bookmark;
         if (this.editorHistory.isUndoing) {
-            let markerData: MarkerInfo = this.owner.editorModule.getMarkerData(bookmark);
+            const markerData: MarkerInfo = this.owner.editorModule.getMarkerData(bookmark);
             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
             this.markerData.push(markerData);
             bookmark.line.children.splice(bookmarkInfo.startIndex, 0, bookmark);
@@ -400,7 +419,7 @@ export class BaseHistoryInfo {
             bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
 
             this.editorHistory.recordChanges(this);
-            if (this.owner.documentEditorSettings.showBookmarks == true) {
+            if (this.owner.documentEditorSettings.showBookmarks === true) {
                 this.viewer.updateScrollBars();
             }
             this.owner.editorModule.fireContentChange();
@@ -419,9 +438,9 @@ export class BaseHistoryInfo {
             return;
         }
         if (this.action === 'EditComment') {
-            let modifiedCommentObject: CommentEditInfo = this.modifiedProperties[0] as CommentEditInfo;
+            const modifiedCommentObject: CommentEditInfo = this.modifiedProperties[0] as CommentEditInfo;
             this.editorHistory.currentBaseHistoryInfo = this;
-            let commentView: CommentView = this.owner.commentReviewPane.commentPane.comments.get(comment);
+            const commentView: CommentView = this.owner.commentReviewPane.commentPane.comments.get(comment);
             commentView.commentText.innerText = modifiedCommentObject.text;
             modifiedCommentObject.text = comment.text;
             comment.text = commentView.commentText.innerText;
@@ -545,7 +564,8 @@ export class BaseHistoryInfo {
             // Set the endRevisionLogicalIndex based on undo stack value when the selection contains a table with the above paragraph (undoing).
             if (this.action === 'RemoveRowTrack' && this.editorHistory.isUndoing) {
                 this.owner.selectionModule.select(this.selectionEnd, this.selectionEnd);
-                if (this.owner.selectionModule.start.paragraph.isInsideTable) {
+                const isLastChild = (this.owner.selectionModule.start.paragraph === this.owner.editor.getLastParaForBodywidgetCollection(this.owner.selectionModule.start.paragraph));
+                if (this.owner.selectionModule.start.paragraph.isInsideTable || isLastChild && this.owner.selectionModule.end.paragraph.isEmpty() && deletedNodes.length > 0 && deletedNodes[0] instanceof TableWidget) {
                     this.endRevisionLogicalIndex = this.selectionEnd;
                 }
             }
@@ -576,6 +596,7 @@ export class BaseHistoryInfo {
                     endTextPosition.setPositionParagraph(fieldEnd.line, fieldEnd.line.getOffset(fieldEnd, 1));
                     this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1] as string);
                 } else {
+                    this.owner.selectionModule.select(this.selectionEnd, this.selectionEnd);
                     this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1] as string);
                 }
                 this.removedNodes.push(deletedNodes[deletedNodes.length - 1] as string);
@@ -641,9 +662,8 @@ export class BaseHistoryInfo {
             this.endPosition = undefined;
             // Use this property to skip deletion if already selected content deleted case.
             let isRemoveContent: boolean = false;
-            // Use this property to delete table or cell based on history action.
             let isDeletecell: boolean = false;
-            if (this.action === 'DeleteCells') {
+            if (this.action === 'DeleteCells' || this.action === 'RemoveRowTrack') {
                 isDeletecell = true;
             }
             if (this.endRevisionLogicalIndex && deletedNodes.length > 0) {
@@ -719,6 +739,7 @@ export class BaseHistoryInfo {
             let isRedoAction: boolean = (this.editorHistory.isRedoing && !isRemoveContent);
             isRemoveContent = this.lastElementRevision ? false : isRemoveContent;
             this.revertModifiedNodes(deletedNodes, isRedoAction, isForwardSelection ? start : end, start === end, isForwardSelection ? end : start);
+            // Use this property to delete table or cell based on history action.
             if (isRemoveContent) {
                 this.removeContent(insertTextPosition, endTextPosition, isDeletecell);
             }
@@ -967,6 +988,15 @@ export class BaseHistoryInfo {
                         this.removedNodes.push(block);
                     } else {
                         deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
+                        // Call the insertRemovedNodes API to insert remining elements that are present in the removed nodes collection.
+
+                        if (deletedNodes.length > 0) {
+                            if (!isNullOrUndefined(deletedNodes[deletedNodes.length - 1]) && !isNullOrUndefined(lastNode.nextRenderedWidget) && lastNode.nextRenderedWidget instanceof ParagraphWidget) {
+                                this.owner.selectionModule.start.setPositionParagraph(lastNode.nextRenderedWidget.firstChild as LineWidget, 0);
+                                this.owner.selectionModule.end.setPositionParagraph(lastNode.nextRenderedWidget.firstChild as LineWidget, 0);
+                            }
+                            this.insertRemovedNodes(deletedNodes, deletedNodes[deletedNodes.length - 1] as BlockWidget);
+                        }
                     }
                 } else if (lastNode instanceof TableWidget && !(this.action === 'RemoveRowTrack')) {
                     this.owner.editorModule.insertBlock(lastNode as TableWidget);
@@ -1977,7 +2007,7 @@ export class BaseHistoryInfo {
                 if (revision.revisionType === 'Insertion' && revision.author !== currentUser) {
                     this.revisionOperation.push(this.getFormatOperation());
                 } else if (revision.revisionType === 'Insertion') {
-                    let operation: Operation = this.getDeleteOperation('Delete', undefined, undefined)
+                    let operation: Operation = this.getDeleteOperation('Delete', undefined, undefined);
                     this.revisionOperation.push(operation);
                     endIndex -= operation.length;
                 } else if (revision.revisionType === 'Deletion') {
@@ -2038,7 +2068,6 @@ export class BaseHistoryInfo {
     }
 
 
-
     /**
      * @private
      */
@@ -2087,7 +2116,7 @@ export class BaseHistoryInfo {
                     operation.markerData.isAcceptOrReject = this.isAcceptOrReject;
                     operations.push(operation);
                     let position: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.insertPosition);
-                    if (!position.isAtParagraphStart) {
+                    if(!position.isAtParagraphStart) {
                         //When accept the delete revision if paragraph is not start then paragraph is combining.
                         let endIndex: number = this.endIndex;
                         this.endIndex = this.startIndex;
@@ -2102,7 +2131,7 @@ export class BaseHistoryInfo {
                             if (isNullOrUndefined(operation.markerData.splittedRevisions)) {
                                 operation.markerData.splittedRevisions = [];
                             }
-                            if (this.checkValidRevision(this.markerData[j].revisionId)) {
+                            if(this.checkValidRevision(this.markerData[j].revisionId)) {
                                 operation.markerData.splittedRevisions.push(this.markerData[j]);
                             }
                             this.markerData.splice(j, 1);
@@ -2753,9 +2782,6 @@ export class BaseHistoryInfo {
         }
         return undefined;
     }
-    /**
-     * @private
-     */
     private getElementAbsolutePosition(element: ElementBox): number {
         if (element) {
             let position: PositionInfo= this.owner.selectionModule.getElementPosition(element);
@@ -3776,7 +3802,9 @@ export class BaseHistoryInfo {
             }
             operation.length = 1;
             operation.action = 'Format';
-            operation.offset = undefined;
+            operation.offset = this.startIndex < this.endIndex ? this.endIndex : this.startIndex;
+            // To get the offset of end comment element box we are seperating minus one to it.
+            operation.offset -= 1;           
             operation.text = CONTROL_CHARACTERS.Marker_Start + CONTROL_CHARACTERS.Marker_End;
             operation.markerData = {
                 type: 'Comment',
@@ -3848,6 +3876,7 @@ export class BaseHistoryInfo {
             }
         }
     }
+
 
     /**
      * @private
@@ -3922,8 +3951,7 @@ export class BaseHistoryInfo {
         } else {
             let operation: Operation;
             if (action === 'ListFormat') {
-                operation = this.getFormatOperation(undefined, undefined, true);
-                operation.type = 'ListFormat';
+                operation = this.getFormatOperation(undefined, action);
                 this.createListFormat(action, operation);
             } else {
                 if (start.paragraph.isInsideTable && isCell) {

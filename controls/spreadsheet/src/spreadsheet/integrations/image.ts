@@ -6,7 +6,7 @@ import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosi
 import { insertImage, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
 import { Overlay, Dialog } from '../services/index';
 import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData, addDPRValue } from '../common/index';
-import { removeClass, L10n, isUndefined, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, isUndefined, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
@@ -130,9 +130,10 @@ export class SpreadsheetImage {
         const imgData: ImageModel = {
             src: args.options.src, id: id, height: parseFloat(overlayProps.element.style.height.replace('px', '')),
             width: parseFloat(overlayProps.element.style.width.replace('px', '')), top: sheet.frozenRows || sheet.frozenColumns ?
-                (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : (isNullOrUndefined(args.options.top) ? overlayProps.top : args.options.top),
-            left: sheet.frozenRows || sheet.frozenColumns ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) :
-                (isNullOrUndefined(args.options.left) ? overlayProps.left : args.options.left)
+                (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : (isNullOrUndefined(args.options.top) ?
+                    overlayProps.top : args.options.top), left: sheet.frozenRows || sheet.frozenColumns ?
+                (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) : (isNullOrUndefined(args.options.left) ?
+                    overlayProps.left : args.options.left)
         };
         this.parent.setUsedRange(indexes[0], indexes[1]);
         if (args.isPublic || args.isUndoRedo) {
@@ -265,7 +266,7 @@ export class SpreadsheetImage {
             sheet = this.parent.sheets[sheetIndex as number];
         }
         const cellObj: CellModel = getCell(rowIdx, colIdx, sheet);
-        const prevCellImg: ImageModel[] = cellObj.image;
+        const prevCellImg: ImageModel[] = (cellObj && cellObj.image) ? cellObj.image : [];
         const imgLength: number = prevCellImg.length;
         let image: ImageModel = {};
         for (let i: number = imgLength - 1; i >= 0; i--) {

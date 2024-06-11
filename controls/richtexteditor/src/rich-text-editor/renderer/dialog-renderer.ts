@@ -80,7 +80,7 @@ export class DialogRenderer {
     private open(args: Object): void {
         this.parent.trigger(events.dialogOpen, args);
     }
-    private documentClickClosedBy(args: any): void {
+    private documentClickClosedBy(args: { closedBy: string; }): void {
         this.outsideClickClosedBy = args.closedBy;
     }
     private beforeClose(args: BeforeCloseEventArgs): void {
@@ -95,17 +95,17 @@ export class DialogRenderer {
                 }
             }
         });
-        this.outsideClickClosedBy = "";
+        this.outsideClickClosedBy = '';
     }
-    
+
     private getDialogPosition(): string {
         let distanceFromVisibleTop: number = this.parent.element.getBoundingClientRect().top;
         if (distanceFromVisibleTop < 0) {
             let topHeight: number = 0;
             let parentElement: HTMLElement = this.parent.element;
-            while(parentElement.nodeName !== 'BODY') {
+            while (parentElement.nodeName !== 'BODY') {
                 const top: number = parentElement.getBoundingClientRect().top;
-                if(top > 0 ) {
+                if (top > 0 ) {
                     topHeight = top;
                 }
                 parentElement = parentElement.parentElement as HTMLElement;

@@ -129,7 +129,6 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
      * @returns {void} ?
      * @private
      */
-    // eslint-disable-next-line
     public onPropertyChanged(newProp: KeyboardEventsModel, oldProp?: KeyboardEventsModel): void {
         // No code are needed
     }

@@ -79,7 +79,7 @@ export class ProtectSheet {
     }
     private protect(args: { isActive: boolean, sheetIndex: number }): void {
         if (args.isActive) {
-            let sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
+            const sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
             if (sheet.isImportProtected) {
                 sheet.isImportProtected = false;
             }
@@ -715,7 +715,8 @@ export class ProtectSheet {
         this.parent.setSheetPropertyOnMute(sheet, 'password', '');
         const isActive: boolean = sheet.isProtected ? false : true;
         this.parent.notify(applyProtect, { isActive: isActive, id: this.parent.element.id + '_protect', sheetIndex: sheetIdx, triggerEvent: true });
-        if (this.parent.allowOpen && this.parent.openModule.isImportedFile && this.parent.openModule.unProtectSheetIdx.indexOf(sheetIdx) === -1 ) {
+        if (this.parent.allowOpen && this.parent.openModule.isImportedFile &&
+            this.parent.openModule.unProtectSheetIdx.indexOf(sheetIdx) === -1) {
             this.parent.openModule.unProtectSheetIdx.push(sheetIdx);
         }
     }
@@ -778,7 +779,7 @@ export class ProtectSheet {
         this.parent.open(impArgs);
     }
 
-    private toggleProtect(args: OpenOptions): void {
+    private toggleProtect(): void {
         let isActive: boolean;
         const parentId: string = this.parent.element.id;
         const sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;

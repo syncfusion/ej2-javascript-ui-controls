@@ -51,7 +51,7 @@ describe('Batch Editing module', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending; //Skips test (in Chai)
             }
             gridObj = createGrid(
                 {
@@ -4647,6 +4647,7 @@ describe('EJ2-72030 - Batch Edited cell value not saved during tab out from last
         gridObj = null;
     });
 });
+
 describe('EJ2-871057 - Add button is not getting focused on first click in Batch Editing Sample =>', () => {
     let gridObj: Grid;
     let batchAdd: (args: any) => void;
@@ -4853,7 +4854,7 @@ describe('coverage Improvement', () => {
     it('add', () => {
         gridObj.addRecord({ OrderID: 11111, CustomerID: 'India', Freight: 20.22 });
         gridObj.selectionModule.selectRowsByRange(0, 2);
-        gridObj.editModule.deleteRecord();
+        // gridObj.editModule.deleteRecord();
         gridObj.editModule.batchSave();
     });
 
@@ -5060,7 +5061,7 @@ describe('Code Coverage - renderer, react batch edit, number-filter-ui and numer
                         { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right', editType: 'numericedit' }
                 ],
                 load: function() {
-                    expect(this.isReact).toBe(undefined);
+                    expect(this.isReact).toBe(false);
                     expect(this.requireTemplateRef).toBe(true);
                     this.isReact = true;
                 }

@@ -1,6 +1,6 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
 import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select, SanitizeHtmlHelper, setValue } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs, PivotActionInfo } from '../base/interface';
@@ -87,11 +87,11 @@ export class Toolbar {
         this.toolbar.isStringTemplate = true;
         const viewStr: string = 'viewContainerRef';
         const registerTemp: string = 'registeredTemplate';
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        if ((this.parent as any)[viewStr as string]) {
-            (this.toolbar as any)[registerTemp as string] = {};
-            (this.toolbar as any)[viewStr as string] = (this.parent as any)[viewStr as string];
-        } /* eslint-enable @typescript-eslint/no-explicit-any */
+        const registeredTemplate: Object = {};
+        if ((this.parent)[viewStr as keyof PivotView]) {
+            setValue(registerTemp, registeredTemplate, this.toolbar);
+            (this.toolbar)[viewStr as keyof Object] = (this.parent)[viewStr as keyof PivotView];
+        }
         if (this.parent.toolbarTemplate && typeof (this.parent.toolbarTemplate) === 'string') {
             this.toolbar.appendTo(this.parent.toolbarTemplate);
             this.parent.element.replaceChild(this.toolbar.element, this.parent.element.querySelector('.' + cls.GRID_TOOLBAR));
@@ -99,7 +99,7 @@ export class Toolbar {
         } else {
             this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
         }
-        this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+        this.toolbar.width = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber();
         if (this.parent.chart) {
             this.parent.chart.setProperties(
                 { width: this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString() },
@@ -112,7 +112,7 @@ export class Toolbar {
     }
 
     private fetchReports(): FetchReportArgs {
-        const reports: any = { reportName: [] }; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const reports: { [key: string]: Object } = { reportName: [] };
         this.parent.trigger(events.fetchReport, reports);
         return reports;
     }
@@ -553,8 +553,7 @@ export class Toolbar {
             this.action = 'Save';
             this.currentReport = reportInput.value;
             let isExist: boolean = false;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias
-            const _this: any = this;
+            const _this: Toolbar = this as Toolbar;
             const reports: FetchReportArgs = { reportName: [] };
             this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
                 for (let i: number = 0; i < observedArgs.reportName.length; i++) {
@@ -588,8 +587,7 @@ export class Toolbar {
             this.action = 'New';
             this.currentReport = reportInput.value;
             let isExist: boolean = false;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias
-            const _this: any = this;
+            const _this: Toolbar = this as Toolbar;
             const reports: FetchReportArgs = { reportName: [] };
             this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
                 for (let i: number = 0; i < observedArgs.reportName.length; i++) {
@@ -1202,8 +1200,7 @@ export class Toolbar {
     }
 
     private getLableState(): boolean {
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const chartSettings: ChartSettingsModel = JSON.parse((this.parent as any).getChartSettings()).chartSettings;
+        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getChartSettings()).chartSettings;
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
             this.showLableState = chartSettings.legendSettings.visible;
         } else {
@@ -1384,15 +1381,9 @@ export class Toolbar {
                     workbook: undefined
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    if (this.parent.dataSourceSettings.mode === 'Server') {
-                        this.parent.getEngine(
-                            'onExcelExport', null, null, null, null, null, null, null, null, observedArgs.excelExportProperties
-                        );
-                    } else {
-                        this.parent.excelExport(
-                            observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
-                        );
-                    }
+                    this.parent.excelExport(
+                        observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
+                    );
                 });
                 break;
             case (this.parent.element.id + 'csv'):
@@ -1712,8 +1703,7 @@ export class Toolbar {
         return mainWrapper;
     }
     private changeDropDown(args: ChangeEventArgs): void {
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const chartSettings: ChartSettingsModel = JSON.parse((this.parent as any).getChartSettings()).chartSettings;
+        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getChartSettings()).chartSettings;
         if (!(chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined)) {
             (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked = true;
         }
@@ -1756,8 +1746,7 @@ export class Toolbar {
             checkbox.disabled = true;
             (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = false;
         }
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const chartSettings: ChartSettingsModel = JSON.parse((this.parent as any).getChartSettings()).chartSettings;
+        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getChartSettings()).chartSettings;
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
             this.chartLableState = true;
         } else {

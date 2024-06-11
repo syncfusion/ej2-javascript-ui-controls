@@ -6,7 +6,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
 import { IFileManager, ReadArgs, FileLoadEventArgs, NotifyArgs, FileOpenEventArgs, FileSelectEventArgs } from '../base/interface';
-import { read, Download, GetDetails, Delete } from '../common/operations';
+import { read, Download, GetDetails, Delete, isFileSystemData } from '../common/operations';
 import { createDialog } from '../pop-up/dialog';
 import { updatePath, getPath, getDirectories } from '../common/utility';
 import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getDirectoryPath, getModule, getPathId } from '../common/index';
@@ -49,7 +49,7 @@ export class NavigationPane {
      * @param {IFileManager} parent - specifies the parent element.
      * @hidden
      */
-     /* istanbul ignore next */
+    /* istanbul ignore next */
     constructor(parent?: IFileManager) {
         this.parent = parent;
         this.addEventListener();
@@ -68,10 +68,8 @@ export class NavigationPane {
 
     private onInit(): void {
         if (!isNOU(this.treeObj)) { return; }
-        // eslint-disable-next-line
         const rootData: { [key: string]: Object; } = getValue(this.parent.pathId[0], this.parent.feParent);
         setValue('_fm_icon', 'e-fe-folder', rootData);
-        // eslint-disable-next-line
         const attr: Object = {};
         const id: string = getValue('id', rootData);
         if (!isNOU(id)) {
@@ -139,7 +137,6 @@ export class NavigationPane {
         this.parent.activeElements = [dragLi];
         this.parent.dragNodes = [];
         getModule(this.parent, dragLi);
-        // eslint-disable-next-line
         this.parent.dragData = <{ [key: string]: Object; }[]>this.getTreeData(dragLi);
         this.parent.dragPath = this.getDragPath(dragLi, <string>this.parent.dragData[0].name);
         this.parent.dragNodes.push(<string>this.parent.dragData[0].name);
@@ -167,20 +164,21 @@ export class NavigationPane {
         this.parent.trigger('fileLoad', eventArgs);
     }
 
-    // eslint-disable-next-line
     private addChild(files: { [key: string]: Object; }[], target: string, prevent: boolean): void {
-        // eslint-disable-next-line
         const directories: Object[] = getDirectories(files);
-        if ( directories.length > 0 &&
-            ((directories[0] as any).filterPath == null || (this.getTreeData(target)[0] as any).filterPath == null || (directories[0] as any).filterPath !== (this.getTreeData(target)[0] as any).filterPath)
-          ) {
+        const targetDirectory: object[] = this.getTreeData(target);
+        if ( directories.length > 0 && targetDirectory.length > 0 &&
+            ((directories[0] as { [key: string]: Object }).filterPath == null ||
+            isNOU(targetDirectory[0])
+            && (targetDirectory[0] as { [key: string]: Object }).filterPath == null
+            || (directories[0] as { [key: string]: Object }).filterPath !==
+            (targetDirectory[0] as { [key: string]: Object }).filterPath)
+        ) {
             let length: number = 0;
-            // eslint-disable-next-line
             const folders: { [key: string]: Object; }[] = <{ [key: string]: Object; }[]>directories;
             while (length < directories.length) {
-                // eslint-disable-next-line
-                folders[length]._fm_icon = 'e-fe-folder';
-                // eslint-disable-next-line
+                // eslint-disable-next-line camelcase
+                folders[parseInt(length.toString(), 10)]._fm_icon = 'e-fe-folder';
                 const attr: Object = {};
                 const id: string = getValue('id', folders[length as number]);
                 if (!isNOU(id)) {
@@ -197,7 +195,6 @@ export class NavigationPane {
             const element: Element = select('[data-uid="' + target + '"]', this.treeObj.element);
             const childElements: Element = select('ul', element);
             if (isNOU(childElements)) {
-                // eslint-disable-next-line
                 this.treeObj.addNodes(directories as { [key: string]: Object; }[], target, null, prevent);
             }
         }
@@ -205,21 +202,22 @@ export class NavigationPane {
 
     // Node Selecting event handler
     private onNodeSelecting(args: NodeSelectEventArgs): void {
-        if (!args.isInteracted && !this.isRightClick && !this.isSameNodeClicked && !this.isPathDragged && !this.isRenameParent || this.restrictSelecting) {
+        if (!args.isInteracted && !this.isRightClick &&
+            !this.isSameNodeClicked && !this.isPathDragged && !this.isRenameParent || this.restrictSelecting) {
             this.restrictSelecting = false;
             this.isNodeClickCalled = false;
             return;
         }
         if (!this.renameParent) {
             this.parent.activeModule = 'navigationpane';
-            // eslint-disable-next-line
             const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
-            if (args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length-1] && !this.isRightClick && !this.isNodeClickCalled || this.isSameNodeClicked) {
+            if (args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length - 1] && !this.isRightClick && !this.isNodeClickCalled || this.isSameNodeClicked) {
                 this.isNodeClickCalled = false;
                 if (!this.isSameNodeClicked)
                 {
-                    this.isSameNodeClicked=true;
-                    const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
+                    this.isSameNodeClicked = true;
+                    const selecEventArgs: FileSelectEventArgs =
+                    { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
                     this.parent.trigger('fileSelect', selecEventArgs);
                 }
                 if (!this.isRightClick)
@@ -230,14 +228,15 @@ export class NavigationPane {
                 }
                 if (args.cancel) {
                     this.restrictSelecting = this.isNodeClickCalled ? this.previousSelected[0] !== args.node.getAttribute('data-uid') : false;
-                    this.isNodeClickCalled=true;
-                    this.isSameNodeClicked=false;
+                    this.isNodeClickCalled = true;
+                    this.isSameNodeClicked = false;
                     this.previousSelected = this.treeObj.selectedNodes;
-                    this.treeObj.selectedNodes = [args.node.getAttribute("data-uid")];
+                    this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
                 }
             }
             else if (this.previousSelected[0] !== args.node.getAttribute('data-uid')){
-                const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: this.isNodeClickCalled };
+                const selecEventArgs: FileSelectEventArgs =
+                { action: args.action, fileDetails: nodeData[0], isInteracted: this.isNodeClickCalled };
                 this.parent.trigger('fileSelect', selecEventArgs);
             }
         }
@@ -246,13 +245,12 @@ export class NavigationPane {
     // Opens the folder while clicking open context menu item in the treeview.
     public openFileOnContextMenuClick(node: HTMLLIElement): void {
         const data: object[] = this.treeObj.getTreeData(node);
-        // eslint-disable-next-line
         this.parent.selectedItems = [];
         this.parent.itemData = data;
         this.activeNode = node;
         this.parent.activeModule = 'navigationpane';
         const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data[0], module: 'NavigationPane' };
-        this.parent.trigger('fileOpen',eventArgs);
+        this.parent.trigger('fileOpen', eventArgs);
         this.isNodeClickCalled = true;
         if (!eventArgs.cancel){
             updatePath(node, this.parent.itemData[0], this.parent);
@@ -270,13 +268,12 @@ export class NavigationPane {
             this.isNodeClickCalled = false;
         }
         this.parent.searchedItems = [];
-        if (!args.isInteracted && !this.isRightClick && !this.isSameNodeClicked && !this.isPathDragged && !this.isRenameParent) { 
+        if (!args.isInteracted && !this.isRightClick && !this.isSameNodeClicked && !this.isPathDragged && !this.isRenameParent) {
             this.parent.pathId = getPathId(args.node);
             return;
         }
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
-        // eslint-disable-next-line
         const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
         this.parent.selectedItems = [];
         this.parent.itemData = nodeData;
@@ -284,7 +281,7 @@ export class NavigationPane {
         if (!this.isRightClick && this.isSameNodeClicked ) {
             updatePath(args.node, this.parent.itemData[0], this.parent);
         }
-        else { 
+        else {
             this.parent.pathId = getPathId(args.node);
             this.parent.visitedItem = args.node;
         }
@@ -301,7 +298,6 @@ export class NavigationPane {
         this.isPathDragged = this.isRenameParent = this.isRightClick = this.isSameNodeClicked = false;
     }
     /* istanbul ignore next */
-    // eslint-disable-next-line
     private onPathDrag(args: object[]): void {
         this.isPathDragged = true;
         this.selectResultNode(args[0]);
@@ -310,6 +306,7 @@ export class NavigationPane {
     private onNodeExpand(args: NodeExpandEventArgs): void {
         if (!args.isInteracted && !this.isDrag) { return; }
         if (args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
+            this.isNodeExpandCalled = true;
             const text: string = getValue('text', args.nodeData);
             const id: string = args.node.getAttribute('data-id');
             const isId: boolean = isNOU(id) ? false : true;
@@ -320,7 +317,6 @@ export class NavigationPane {
             this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
             this.parent.pathId.push(getValue('id', args.nodeData));
             read(this.parent, events.nodeExpand, path);
-            this.isNodeExpandCalled = true;
         }
     }
 
@@ -363,11 +359,10 @@ export class NavigationPane {
 
     private onPathChanged(args: ReadArgs): void {
         this.parent.isCut = false;
-        // eslint-disable-next-line
         const currFiles: { [key: string]: Object; }[] = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feFiles);
         if (this.expandNodeTarget === 'add') {
             const sNode: Element = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
-            const ul: Element = (!isNOU(sNode))? select('.' + CLS.LIST_PARENT, sNode) : null;
+            const ul: Element = (!isNOU(sNode)) ? select('.' + CLS.LIST_PARENT, sNode) : null;
             if (isNOU(ul)) {
                 this.addChild(args.files, this.treeObj.selectedNodes[0], !this.expandTree);
             }
@@ -478,13 +473,11 @@ export class NavigationPane {
         if (this.renameParent) {
             this.renameParent = null;
         } else {
-            // eslint-disable-next-line
             let resultData: Object[] = [];
             if (this.parent.hasId) {
                 resultData = new DataManager(this.treeObj.getTreeData()).
                     executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
             } else {
-                // eslint-disable-next-line
                 const nData: Object[] = new DataManager(this.treeObj.getTreeData()).
                     executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.renameText, false));
                 if (nData.length > 0) {
@@ -505,15 +498,12 @@ export class NavigationPane {
         if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
             this.updateTree(args);
         } else {
-            // eslint-disable-next-line
             const data: { [key: string]: Object; }[] = this.treeObj.getTreeData();
-            // eslint-disable-next-line
             let resultData: Object[] = [];
             if (this.parent.hasId) {
                 resultData = new DataManager(data).
                     executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
             } else {
-                // eslint-disable-next-line
                 const nData: Object[] = new DataManager(data).
                     executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.currentItemText, false));
                 if (nData.length > 0) {
@@ -572,7 +562,6 @@ export class NavigationPane {
         }
         this.treeObj.removeNodes(moveNames);
     }
-    // eslint-disable-next-line
     private getMoveNames(files: { [key: string]: Object; }[], flag: boolean, path: string): string[] {
         const moveNames: string[] = [];
         for (let i: number = 0; i < files.length; i++) {
@@ -585,7 +574,6 @@ export class NavigationPane {
                         name = path.substring(index + 1);
                         path = path.substring(0, index + 1);
                     }
-                    // eslint-disable-next-line
                     const resultData: Object[] = new DataManager(this.treeObj.getTreeData()).
                         executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
                     for (let j: number = 0; j < resultData.length; j++) {
@@ -612,16 +600,13 @@ export class NavigationPane {
         this.treeObj.removeNodes(moveNames);
     }
     /* istanbul ignore next */
-    // eslint-disable-next-line
     private selectResultNode(resultObj: object): void {
         if (!this.parent.hasId) {
             const path: string = getValue('filterPath', resultObj);
             const itemname: string = getValue('name', resultObj);
-            // eslint-disable-next-line
             const data: Object[] = new DataManager(this.treeObj.getTreeData()).
                 executeLocal(new Query().where(this.treeObj.fields.text, 'equal', itemname, false));
             if (data.length > 0) {
-                // eslint-disable-next-line
                 const resultData: Object[] = new DataManager(data).
                     executeLocal(new Query().where('filterPath', 'equal', path, false));
                 if (resultData.length > 0) {
@@ -631,7 +616,8 @@ export class NavigationPane {
                 }
             }
         } else {
-            const selectedNode: { [key: string]: Object; } = this.treeObj.getTreeData().filter((obj: {name: string}) => obj.name === (resultObj as {name: string}).name)[0];
+            const selectedNode: { [key: string]: Object; } =
+            this.treeObj.getTreeData().filter((obj: {name: string}) => obj.name === (resultObj as {name: string}).name)[0];
             this.treeObj.selectedNodes = [getValue('_fm_id', selectedNode)];
             this.treeObj.dataBind();
         }
@@ -643,13 +629,11 @@ export class NavigationPane {
     }
 
     private onpasteEnd(args: ReadArgs): void {
-        // eslint-disable-next-line
         let resultData: Object[] = [];
         if (this.parent.hasId) {
             resultData = new DataManager(this.treeObj.getTreeData()).
                 executeLocal(new Query().where('id', 'equal', getValue('id', args.cwd), false));
         } else {
-            // eslint-disable-next-line
             const nData: Object[] = new DataManager(this.treeObj.getTreeData()).
                 executeLocal(new Query().where(this.treeObj.fields.text, 'equal', getValue('name', args.cwd), false));
             if (nData.length > 0) {
@@ -669,6 +653,9 @@ export class NavigationPane {
     }
     /* istanbul ignore next */
     private checkDropPath(args: ReadArgs): void {
+        if (isFileSystemData(this.parent) && this.parent.path === this.parent.dropPath || this.parent.targetModule === 'navigationpane') {
+            return;
+        }
         if (this.parent.hasId) {
             this.parent.isDropEnd = !this.parent.isPasteError;
             readDropPath(this.parent);
@@ -687,8 +674,7 @@ export class NavigationPane {
             this.updateItemData();
         }
         this.moveNames = [];
-        // eslint-disable-next-line
-        const obj: object[] = this.parent.isDragDrop ? this.parent.dragData : this.parent.actionRecords;
+        const obj: object[] = this.parent.isDragDrop || isFileSystemData(this.parent) ? this.parent.dragData : this.parent.actionRecords;
         for (let i: number = 0; i < obj.length; i++) {
             if (getValue('isFile', obj[i as number]) === false) {
                 this.moveNames.push(getValue('_fm_id', obj[i as number]));
@@ -771,13 +757,11 @@ export class NavigationPane {
     /* istanbul ignore next */
     private onDetailsInit(): void {
         if (this.parent.activeModule === this.getModuleName()) {
-            // eslint-disable-next-line
             const dataobj: Object[] = this.getTreeData(this.treeObj.selectedNodes[0]);
             this.parent.itemData = dataobj;
         }
     }
 
-    // eslint-disable-next-line
     private onMenuItemData(args: { [key: string]: Object; }): void {
         if (this.parent.activeModule === this.getModuleName()) {
             const liEle: Element = closest(<Element>args.target, 'li');
@@ -881,7 +865,6 @@ export class NavigationPane {
             break;
         case 'f2':
             if (this.parent.selectedItems.length === 0) {
-                // eslint-disable-next-line
                 const data: Object = this.getTreeData(this.treeObj.selectedNodes[0])[0];
                 if (!hasEditAccess(data)) {
                     createDeniedDialog(this.parent, data, events.permissionEdit);
@@ -894,9 +877,7 @@ export class NavigationPane {
         }
     }
 
-    // eslint-disable-next-line
     private getTreeData(args: string | Element): object[] {
-        // eslint-disable-next-line
         const data: object[] = this.treeObj.getTreeData(args);
         for (let i: number = 0; i < data.length; i++) {
             if (isNOU(getValue('hasChild', data[i as number]))) { setValue('hasChild', false, data[i as number]); }
@@ -910,7 +891,6 @@ export class NavigationPane {
     }
 
     private updateItemData(): void {
-        // eslint-disable-next-line
         const data: Object = this.getTreeData(this.treeObj.selectedNodes[0])[0];
         this.parent.itemData = [data];
         this.parent.isFile = false;

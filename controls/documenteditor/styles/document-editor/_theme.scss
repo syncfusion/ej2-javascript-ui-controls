@@ -23,6 +23,12 @@
         padding-left: 50px;
         padding-right: 50px;
     }
+
+    .e-de-font-dlg-display {
+        display: inline-flex;
+    }
+   
+    
     .e-de-ff-sub-header {
         display: block;
         font-size: 12px;
@@ -36,7 +42,6 @@
 
     .e-de-ff-dlg-heading {
         display: block;
-        // font-size: $de-para-dlg-heading-font-size;
         font-weight: $de-para-dlg-heading-font-weight;
         margin-bottom: $de-ff-dlg-heading-mrgn-btm;
         @if $skin-name=='Material3' {
@@ -48,7 +53,6 @@
     }
     .e-de-ff-dlg-heading-small {
         display: block;
-        // font-size: $de-para-dlg-small-heading-font-size;
         font-weight: $de-para-dlg-heading-font-weight;
         margin-bottom: $de-ff-dlg-hdg-small-mrgn-btm;
     }
@@ -206,8 +210,8 @@
         }
     }
     .e-de-toc-dlg-heading {
-        color: $de-dlg-heading-main-header;
         display: block;
+        color: $de-dlg-heading-main-header;
         font-size: $de-toc-dlg-heading-font-size;
         font-weight: $de-toc-dlg-heading-font-weight;
         margin-bottom: $de-toc-title-bottom-margin; 
@@ -441,9 +445,15 @@
         padding-right: $de-op-padding-left;
     }
     .e-de-op-header {
-        color: $de-op-title-clr;
+        @if $skin-name=='fluent2' {
+            color: $de-sub-header-color;
+            font-size: 14px;
+        }
+        @else {
+            color: $de-op-title-clr;
+            font-size: 15px;
+        }  
         font-family: $de-op-header-font-family;
-        font-size: 15px;
         font-weight: $de-op-header-font-weight;
         margin-bottom: $de-op-header-bottm-margin;
         padding-top: $de-op-header-padding-top;
@@ -537,14 +547,18 @@
         width: $de-cell-margin-dia-common-width;
     }
     .e-de-cell-dia-options-label {
-        //font-size: $de-cell-margin-dia-options-font;
         font-weight: $de-para-dlg-heading-font-weight;
         @if $skin-name=='tailwind' {
             color: $de-dlg-heading-main-header;
         }
     }
     .e-de-table-border-heading {
-        font-size: $de-border-dlg-border-label-fontsize;
+        @if $skin-name=='fluent2' {
+            font-size: $de-border-dlg-border-sub-heading-fontsize;
+        }
+        @else {
+            font-size: $de-border-dlg-border-label-fontsize;
+        }
         font-weight: $de-border-dlg-border-label-font-weight;
         padding-bottom: $de-border-dlg-border-label-paddingbottom;
         @if $skin-name=='tailwind' {
@@ -620,9 +634,6 @@
             font-weight: $de-table-options-font-weight;
             padding-bottom: $de-table-options-padding-bottom;
         }
-        // @if $skin-name=='tailwind' {
-        //     color: $de-dlg-heading-main-header;
-        // }
     }
     .e-de-table-dialog-size-label {
         padding-top: $de-table-options-padding-top !important;
@@ -681,7 +692,6 @@
     }
     .e-de-tbl-dlg-border-btn {
         float: right;
-        //margin-bottom: $de-tbl-dlg-border-btn-margin-bottom;
         margin-top: $de-tbl-dlg-border-btn-margin-top;
     }
     .e-de-tbl-dlg-border-btn.e-de-rtl {
@@ -963,7 +973,6 @@
         .e-de-restrict-pane {
             color: $content-text-color;
         }
-        //Hyperlink dialog
         .e-bigger {
           .e-de-hyperlink-dlg-input,
           .e-de-insert-table-dlg-input,
@@ -973,7 +982,6 @@
             margin-bottom: $de-bigger-padding !important;
           }
           @if $skin-name != 'FluentUI' {
-            // Font dialog
             .e-de-font-dlg-cb-right,
             .e-bookmark-list.e-de-rtl,
             .e-styles-list.e-de-rtl,
@@ -988,7 +996,6 @@
             }
           }
           @else {
-            // Font dialog
             .e-de-font-dlg-cb-right,
             .e-bookmark-list.e-de-rtl,
             .e-styles-list.e-de-rtl,
@@ -1015,9 +1022,6 @@
                 right: 240px;
             }
           }
-        //   .e-de-enforce .e-de-enforce-dlg-input:not(.e-de-enforce .e-de-enforce-dlg-input:last-child) {
-        //     margin-bottom: $de-bigger-padding;
-        //   }
           .e-de-track-date {
               font-size: 12px;
           }
@@ -1029,9 +1033,6 @@
               margin-top: 34px;
             }
           }
-        //   .e-de-table-ppty-dlg-left-indent-container {
-        //     bottom: 12px;
-        //   }
           .e-de-table-container-div {
             margin-top: 13px;
           }
@@ -1066,25 +1067,12 @@
             .e-de-restrict-pane {
                 width: 295px;
             }
-            // .e-de-rp-sub-div,
-            // .e-de-rp-whole-header {
-            //     padding: 16px;
-            // }
             .e-de-rp-stop-div1 {
                 padding: 12px 16px 12px 16px;
             }
             .e-de-rp-stop-div2 {
                 padding: 16px 16px 24px;
             }
-            // .e-de-rp-stop-div3 {
-            //     padding: 0 0 16px 16px;
-            // }
-            // .e-de-rp-nav-btn {
-            //     margin: 0px 25px;
-            // }
-            // .e-de-rp-enforce {
-            //     padding: 16px;
-            // }
             .e-de-cmt-sub-container,
             .e-de-font-dlg-header,
             .e-de-font-dlg-header-effects,
@@ -1180,9 +1168,6 @@
             }
             .e-de-font-clr-div,
             .e-de-toc-dlg-styles,
-            // .e-de-tbl-dlg-border-btn {
-            //     margin-top: 20px;
-            // }
             .e-de-font-dlg-padding,
             .e-de-page-setup-dlg-sub-title-header,
             .e-de-op-result-container .e-de-list-ddl-subheaderbottom,
@@ -1191,15 +1176,6 @@
             .e-de-op-dlg-footer {
                 margin-top: 16px;
             }
-            // .e-de-table-ppty-dlg-left-indent-container {
-            //     bottom: 14px;
-            // }
-            // .e-de-table-ppty-dlg-left-indent-container {
-            //     left: 50px;
-            // }
-            // .e-de-table-ppty-dlg-left-indent-container.e-de-rtl {
-            //     right: 50px;
-            // }
             .e-de-ff-drpdwn-mvdn,
             .e-de-ff-drpdwn-mvup {
                 width: 46px !important;
@@ -1249,6 +1225,12 @@
             .e-de-user-dlg-user,
             .e-de-page-setup-dlg-sub-label {
                 margin-bottom: 12px !important;
+            }
+            .e-de-rp-format{
+                @if $skin-name=='fluent2' { 
+                    color: $de-op-title-clr;
+                    font-size: 16px;
+                }
             }
             .e-de-row-ht-top,
             .e-de-cell-ht-top {
@@ -1375,9 +1357,6 @@
         .e-de-enforce {
             font-weight: 500;
         }
-        // .e-bigger .e-de-enforce .e-de-enforce-dlg-input:not(.e-de-enforce .e-de-enforce-dlg-input:last-child) {
-        //     margin-bottom: 16px;
-        // }
         .e-de-page-setup-dlg-first-page-prop {
             margin-bottom: 8px;
         }
@@ -1429,9 +1408,6 @@
                 padding: 0;
             }
         }
-        // .e-de-enforce .e-de-enforce-dlg-input:last-child {
-        //     margin-bottom: 0;
-        // }
         .e-de-table-cell-margin-dlg .e-input-group {
             width: 188px !important;
         }
@@ -1480,7 +1456,6 @@
     }
     .e-documenteditor {
         .e-input {
-            //color: $de-input-color;
             font-size: 14px;
         }
     }
@@ -1717,9 +1692,6 @@
         left: $de-cell-margin-header-left;
         top: $de-cell-margin-header-top;
     }
-    .e-de-font-dlg-display {
-        display: inline-flex;
-    }
     .e-de-tbl-margin-sub-header {
         margin-top: $de-tbl-margin-sub-header;
     }
@@ -1740,7 +1712,6 @@
         padding-top: $de-save-dlg-format-type-padding;
     }
     .e-de-search-tab-content {
-        //margin-right: $de-op-search-tab-content-margin-top;
         margin-top: $de-op-search-tab-content-margin-top;
         width: $de-op-search-text-box-container-width;
     }
@@ -1819,7 +1790,6 @@
         display: flex;
     }
     .e-de-spellcheck-suggestion-container {
-       // height: 140px;
         height: $de-spellcheck-container-height;
         margin-bottom: $de-spellcheck-container-gap;
         display: flex;
@@ -1827,12 +1797,6 @@
     .e-dlg-spellcheck-listitem {
         font-size: 15px !important;
     }
-    //  .e-de-dlg-suggestListView {
-    //   position:absolute;
-    //   width: 343px;
-    //   height: 124px !important;
-    //   margin-top: 8px;
-    // }
     .e-de-spellcheck-btncontainer {
         margin-top: 8px;
         position: relative;
@@ -1843,7 +1807,6 @@
         float: left;
     }
     .e-de-spellcheck-btn {
-        //height: 36px;
         margin-bottom:$de-padding-half-bigger;
         width:$de-spellcheck-btn-width;
     }
@@ -1874,7 +1837,6 @@
         width: $de-save-dlg-width;
     }
     .e-de-table-properties-dlg {
-        //height: $de-table-ppty-dlg-height;
         @if $skin-name =='Material3' {
             padding: 0px 8px;
         }
@@ -1916,9 +1878,6 @@
     .e-de-table-shading-preview {
         top: $de-table-shading-preview-top;
     }
-    // .e-de-font-content-label span.e-label {
-    //     color: $de-checkbox-wrapper-color;
-    // }
     .e-de-font-label span.e-label {
         color: $de-checkbox-wrapper-color;
     }
@@ -1930,24 +1889,10 @@
     .e-css.e-de-font-label:hover .e-label {
         color: $de-checkbox-wrapper-color;
     }
-    // @if $skin-name !='tailwind' and  $skin-name !='bootstrap5' {
-    //     .e-documenteditor {
-    //         // .e-checkbox-wrapper .e-label {
-    //         //     color: $de-checkbox-wrapper-color;
-    //         //     font-size: 14px;
-    //         // }
-    //         // .e-checkbox-wrapper .e-frame {
-    //         //     height: $de-checkbox-height;
-    //         //     line-height: $de-checkbox-line-height;
-    //         //     width: $de-checkbox-width;
-    //         // }
-    //     }
-    // }
     .e-de-op-dlg-footer {
         margin-top: $de-op-dlg-footer-margin-top;
     }
     .e-de-op-dlg-footer .e-btn {
-        // height: $de-dlg-btn-height;
         padding-left: 6px;
         padding-right: 6px;
     }
@@ -1960,50 +1905,6 @@
     .e-de-table-ppty-tab {
         border: $de-table-ppty-tab-border;
     }
-    // @if $skin-name !='tailwind' {
-    //     .e-de-table-container-div .e-checkbox-wrapper .e-label {
-    //         color: $de-checkbox-wrapper-color;
-    //     }
-    //     .e-de-table-header-div .e-checkbox-wrapper .e-label {
-    //         color: $de-checkbox-wrapper-color;
-    //     }
-    //     .e-de-table-ppty-options-break .e-checkbox-wrapper .e-label {
-    //         color: $de-checkbox-wrapper-color;
-    //     }
-    //     .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-label {
-    //         color: $de-checkbox-wrapper-color;
-    //     }
-    //     .e-de-table-cell-header-div .e-checkbox-wrapper .e-label {
-    //         color: $de-checkbox-wrapper-color;
-    //     }
-    //     .e-de-tbl-margin-sub-header .e-label {
-    //         color: $de-checkbox-wrapper-color;
-    //     }
-    //     .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label {
-    //         color: $de-checkbox-wrapper-color;
-    //     }
-    // }
-    // .e-de-table-container-div .e-checkbox-wrapper .e-label {
-    //     color: $de-checkbox-wrapper-color;
-    // }
-    // .e-de-table-header-div .e-checkbox-wrapper .e-label {
-    //     color: $de-checkbox-wrapper-color;
-    // }
-    // .e-de-table-ppty-options-break .e-checkbox-wrapper .e-label {
-    //     color: $de-checkbox-wrapper-color;
-    // }
-    // .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-label {
-    //     color: $de-checkbox-wrapper-color;
-    // }
-    // .e-de-table-cell-header-div .e-checkbox-wrapper .e-label {
-    //     color: $de-checkbox-wrapper-color;
-    // }
-    // .e-de-tbl-margin-sub-header .e-label {
-    //     color: $de-checkbox-wrapper-color;
-    // }
-    // .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label {
-    //     color: $de-checkbox-wrapper-color;
-    // }
     .e-de-list-format-info {
         border-radius: 50% !important;
         cursor: default;
@@ -2155,10 +2056,19 @@
                 }
             }
             .e-de-style-bold-button-size {
-                margin-left: $de-style-dialog-label-bottom-margin;
-                @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' and $skin-name != 'Material3' {
+                @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' and $skin-name != 'Material3'{
                     margin-right: 8px;
+                    height: 31px;
+                }
+                @if $skin-name=='fluent2' {
+                    margin-left: 0;
+                    border-left: 0;
+                    border-right: 0px;
                     height: 35px;
+                    margin-right: 0;
+                }
+                @else {
+                    margin-left: $de-style-dialog-label-bottom-margin;
                 }
             }
         }
@@ -2224,12 +2134,22 @@
                 background: $de-style-dlg-btn-bg-color;
             }
         }
-        .e-de-style-bold-button-size {
-            margin-left: $de-style-dialog-label-bottom-margin;
-            @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' {
+        
+        .e-de-style-bold-button-size {          
+            @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'Fluent' and $skin-name != 'Material3' {
                 margin-right: 8px;
-                height: 31px;
+                height: 35px;
             }
+            @if $skin-name=='fluent2' {
+                margin-left: 0;
+                border-left: 0;
+                border-right: 0;
+                height: 31px;
+                margin-right: 0px;
+            }
+            @else {
+                margin-left: $de-style-dialog-label-bottom-margin;
+            }   
         }
         .e-de-style-format-dropdwn .e-btn-icon {
             margin-left: 8px;
@@ -2237,13 +2157,24 @@
         @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI'  {
             .e-de-style-font-color-picker,
             .e-de-style-icon-button-size {
-                margin-right: $de-style-dialog-label-bottom-margin;
+                @if $skin-name=='fluent2' {
+                    margin-right: 0;
+                }
+                @else {
+                    margin-right: $de-style-dialog-label-bottom-margin;
+                }
             }
         }
         .e-de-style-icon-button-first-size {
-            margin-left: $de-style-dialog-label-bottom-margin;
             @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' {
                 margin-right: 3px;
+            }
+            @if $skin-name=='fluent2' {
+                margin-right: 0;
+                margin-left: 0;
+            }
+            @else{
+                margin-left: $de-style-dialog-label-bottom-margin;
             }
         }
         .e-de-style-icon-button-last-size {
@@ -2289,6 +2220,10 @@
             @if $skin-name !='Material3' {
                 border-right: 2px solid $de-style-toggle-btn-color;
             }
+            @if $skin-name=='fluent2' {
+                border-right: 0;
+                border-left: 0;
+            }
         }
         .e-de-style-font-group-button {
             @if $skin-name !='Material3' {
@@ -2297,6 +2232,11 @@
             }
             @if $skin-name=='bootstrap5' or $skin-name == 'FluentUI' {
                 padding-right: $de-style-dialog-option-div-bottom-margin;
+            }
+            @if $skin-name=='fluent2' {
+                margin-right: 10px;
+                border-left: 0;
+                border-right: 0;
             }
         }
         .e-de-op-replace-messagediv {
@@ -2459,7 +2399,13 @@
             padding-bottom: 15px;
         }
         .e-styles-listview .e-list-item {
-            font-size: 13px;
+            @if $skin-name=='fluent2' {
+                font-size: 14px;
+                color: $de-sub-header-color;
+            }
+            @else {
+                font-size: 13px;
+            }
             height: 30px;
             line-height: 27px;
         }
@@ -2662,7 +2608,6 @@
         .e-de-tbl-rtl-btn-div {
             font-size: 12px;
             margin-right: 14px;
-            //width: 140px;
         }
         .e-de-tbl-rtl-btn-div.e-de-rtl {
             margin-left: 14px;
@@ -2670,7 +2615,6 @@
         }
         .e-de-tbl-ltr-btn-div {
             font-size: 12px;
-            //width: 140px;
         }
         
         .e-de-disabledbutton {
@@ -2729,6 +2673,10 @@
               opacity: 0.65;
             }
             font-weight: $de-header-font-weight;
+            @if $skin-name=='fluent2' { 
+                color: $de-op-title-clr;
+                font-size: 16px;
+            }
         }
         .e-de-rp-checkbox {
             font-size: 12px;
@@ -2743,21 +2691,12 @@
             opacity: 0.87;
             color: $de-op-title-clr;
             width: 75%;
+            @if $skin-name=='fluent2' { 
+                color:$de-sub-header-color;
+                font-size: 14px;
+            }
         }
         @if $skin-name !='tailwind' {
-            // .e-de-restrict-pane {
-            //     .e-checkbox-wrapper .e-label {
-            //         color: $de-checkbox-wrapper-color;
-            //         font-size: 12px;
-            //     }
-            //     .e-checkbox-wrapper .e-frame {
-            //         height: 16px;
-            //         width: 16px;
-            //     }
-            //     .e-checkbox-wrapper {
-            //         margin-bottom: 8px;
-            //     }
-            // }
             .e-de-rp-user .e-checkbox-wrapper {
                 width: auto;
             }
@@ -2771,9 +2710,6 @@
             opacity: 0.87;
             border-radius: 2px;
             box-shadow: $de-rp-btn-enforce-bx-shadow;
-            // @if $skin-name !='FluentUI' {
-            //     height: 36px;
-            // }
             @if $skin-name=='bootstrap4' {
                 border-color: $de-cmt-separator;
                 box-shadow: none;
@@ -2785,8 +2721,7 @@
             padding-left: $de-rp-btn-enforce-padding-big;
             padding-right: $de-rp-btn-enforce-padding-big;
         }
-        .e-de-rp-nav-btn {
-          //margin: $de-rp-nav-btn-mrgn;    
+        .e-de-rp-nav-btn { 
           width: auto;
         }
         .e-de-rp-btn-stop-enforce {
@@ -2797,10 +2732,6 @@
             }
             border-radius: 2px;
             box-shadow: $de-rp-btn-enforce-bx-shadow;
-            // @if $skin-name !='FluentUI' {
-            //     height: 36px;
-            // }
-            //margin: $de-rp-btn-enforce-prtct-margin;
             @if $skin-name=='bootstrap4' {
                 border-color: $de-cmt-separator;
                 box-shadow: none;
@@ -2826,13 +2757,9 @@
             border-radius: 2px;
             font-size: 12px;
             height: 110px;
-            //width: 238px;
         }
         .e-de-rp-enforce {
             padding: $de-rp-enforce-padding;
-            // @if $skin-name=='bootstrap4' {
-            //     text-align: center;
-            // }
         }
         .e-de-rp-enforce-nav {
             margin: 0 12px 12px 12px;
@@ -2844,8 +2771,14 @@
         }
         .e-de-enforce .e-de-enforce-dlg-input {
             height: $de-hyperlink-dlg-input-height;
-            //margin-bottom: $de-enforce-btn-mrng-btm;
             width: 300px;
+        }
+        .e-de-enforce-dlg-input .e-input:focus {
+            @if $skin-name =='fluent2'  {
+                border-color: $content-bg-color-alt1;
+                border-radius: 5px;
+                box-shadow: $border;
+            }
         }
         .e-de-user-add-btn {
             @if ($skin-name !='bootstrap4' and $skin-name !='tailwind' and $skin-name !='bootstrap5') {
@@ -2896,9 +2829,6 @@
         .e-de-rp-stop-div2 {
             padding: 12px 12px 24px;
         }
-        // .e-de-rp-stop-div3 {
-        //     padding: 0 0 12px 12px;
-        // }
         .e-de-rp-close-icon {
             float: right;
             position: relative;
@@ -2918,7 +2848,6 @@
         .e-documenteditor-optionspane {
             height: 100%;
         }
-        //Comment Implementation
         .e-de-cmt-pane {
             background-color: inherit;
             color: $de-cmt-pant-content-font;
@@ -2945,6 +2874,9 @@
                 border: 1px solid $de-cmt-separator;
                 border-radius: 2px;
             }
+            @if $skin-name=='fluent2' {
+                background-color: $de-ctnr-prop-bg-clr;
+            } 
             margin: $de-cmt-sub-container-margin;
             padding: $de-cmt-sub-container-padding;
         }
@@ -3004,6 +2936,9 @@
             display: inline-flex;
             overflow: hidden;
             width: 110px;
+            @if $skin-name=='fluent2' {
+                padding-left: $de-changes-padding-left;
+            }
         }
         .e-de-track-span-view {
             display: inline-flex;
@@ -3211,6 +3146,21 @@
         .e-bigger .e-de-cmt-textarea.e-input {
             padding-top: $e-de-cmt-textarea-padding-top-big;
         }
+        .e-de-cmt-textarea.e-input:focus {
+            @if $skin-name == 'fluent2' {
+                border-color: $content-bg-color-alt1;
+                border-radius: 5px;
+                box-shadow: $border;
+            }
+        }
+
+        .e-bigger .e-de-cmt-textarea.e-input:focus {
+            @if $skin-name == 'fluent2' {
+                border-color: $content-bg-color-alt1;
+                border-radius: 5px;
+                box-shadow: $border;
+            }
+        }
         .e-de-cmt-textarea:empty::before {
             content: attr(placeholder);
             opacity: 0.5;
@@ -3242,6 +3192,10 @@
                 display: block;
                 margin-top: 8px;
                 text-align: right;
+                @if ($skin-name=='fluent2') {
+                    font-size: 12px;
+                    color: $de-sub-header-color;
+                }
             }
         }
         .e-de-cmt-sub-container.e-de-cmt-resolved.e-de-cmt-selection {
@@ -3385,8 +3339,6 @@
             border-color: $dialog-btn-border-color !important;
             border-radius: $dialog-headericon-border-radius;
             color: $dialog-btn-clr;
-            //height: 26px;
-            //width: 26px;
             border: none;
             #{if(&, '&', '*')}:active {
                 background-color: $dialog-closeicon-btn-active-color !important;
@@ -3405,7 +3357,6 @@
             cursor: pointer;
             color: $dialog-active-icon-color;
         }
-        // Blazor
         .e-de-para-dlg-right-sub-container-blazor {
             top: $de-para-dlg-right-sub-container-top-margin;
         }
@@ -3509,13 +3460,16 @@
         }
         .e-bigger {
             .e-de-cmt-author-name {
-                padding-left: $de-cmt-author-nme-padding-left-big ;
+                padding-left: $de-cmt-author-nme-padding-left-big;
             }
             .e-de-cmt-rply-view{
                 margin-top: $de-cmt-textbox-top-margin-big;
             }
             .e-de-cmt-sub-container{
                 padding: $de-cmt-sub-container-padding-big;
+                @if $skin-name=='fluent2' {
+                    background-color: $de-ctnr-prop-bg-clr;
+                } 
             }
             .e-de-cmt-sub-container.e-de-cmt-selection {
                 padding-left: $de-cmt-sub-container-padding-left-big;
@@ -3560,6 +3514,19 @@
                     float: left;
                     right: $de-rp-close-icon-right-bigger-rtl;
                 }
+            }
+        }
+        .e-de-style-paragraph-indent-group-button .e-btn.e-active,
+        .e-de-style-paragraph-group-button .e-btn.e-active,
+        .e-de-style-font-group-button .e-btn.e-active {
+            @if $skin-name =='fluent2' {
+            background-color: var(--color-sf-secondary-bg-color);
+            }
+        }
+        .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-frame {
+            @if $skin-name == 'fluent2' {
+               margin-left: 0px;
+               margin-right: 0px;
             }
         }
         .e-de-user-info.e-de-user-name-collapse span {

@@ -1,7 +1,18 @@
-@import 'button/tailwind.scss';
-@import 'check-box/tailwind.scss';
-@import 'radio-button/tailwind.scss';
-@import 'switch/tailwind.scss';
-@import 'chips/tailwind.scss';
-@import 'floating-action-button/tailwind.scss';
-@import 'speed-dial/tailwind.scss';
+@import 'ej2-base/styles/definition/tailwind.scss';
+@import 'button/tailwind-definition.scss';
+@import 'button/all.scss';
+
+@import 'check-box/tailwind-definition.scss';
+@import 'check-box/icons/tailwind.scss';
+@import 'check-box/all.scss';
+@import 'radio-button/tailwind-definition.scss';
+@import 'radio-button/all.scss';
+@import 'switch/tailwind-definition.scss';
+@import 'switch/all.scss';
+@import 'chips/tailwind-definition.scss';
+@import 'chips/icons/tailwind.scss';
+@import 'chips/all.scss';
+@import 'floating-action-button/tailwind-definition.scss';
+@import 'floating-action-button/all.scss';
+@import 'speed-dial/tailwind-definition.scss';
+@import 'speed-dial/all.scss';

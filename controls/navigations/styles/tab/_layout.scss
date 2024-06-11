@@ -1,7 +1,14 @@
+@mixin tab-mob-last-item-margin {
+  @media screen and (max-width: 480px) {
+    margin: $tab-mob-last-item-margin;
+  }
+}
+@mixin tab-mob-close-icon-margin {
+  @media screen and (max-width: 480px) {
+    margin: $tab-mob-close-icon-margin;
+  }
+}
 @include export-module('tab-layout') {
-
-  /*! tab layout */
-
   .e-bigger .e-tab,
   .e-tab.e-bigger {
 
@@ -24,10 +31,7 @@
 
         &:not(.e-tbar-pos) .e-toolbar-item:last-child {
           padding-bottom: $tab-big-boot-active-item-padding-bottom;
-
-          @media screen and (max-width: 480px) {
-            margin: $tab-mob-last-item-margin;
-          }
+          @include tab-mob-last-item-margin;
         }
 
         .e-indicator + .e-toolbar-item:last-child.e-active {
@@ -39,10 +43,7 @@
 
         &:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-big-scroll-last-item-margin;
-
-          @media screen and (max-width: 480px) {
-            margin: $tab-mob-last-item-margin;
-          }
+          @include tab-mob-last-item-margin;
 
           &.e-active {
             margin: $tab-big-active-last-item-margin;
@@ -124,10 +125,7 @@
         .e-icons.e-close-icon {
           cursor: pointer;
           margin: $tab-big-close-icon-margin;
-
-          @media screen and (max-width: 480px) {
-            margin: $tab-mob-close-icon-margin;
-          }
+          @include tab-mob-close-icon-margin;
         }
 
         .e-icons.e-close-icon,
@@ -221,6 +219,12 @@
         .e-toolbar-item {
           height: $tab-big-pop-item-height;
           min-height: $tab-big-pop-item-height;
+
+          @if ($skin-name == 'fluent2') {
+            &:not(.e-separator) {
+              margin: 1px 6px;
+            }
+          }
 
           .e-tab-wrap {
             height: $tab-big-pop-item-height;
@@ -1189,10 +1193,7 @@
         &:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-nrml-last-item-margin;
           padding-bottom: $tab-big-boot-active-item-padding-bottom;
-
-          @media screen and (max-width: 480px) {
-            margin: $tab-mob-last-item-margin;
-          }
+          @include tab-mob-last-item-margin;
         }
 
         .e-toolbar-item.e-active {
@@ -1247,10 +1248,7 @@
 
         &:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-nrml-scroll-last-item-margin;
-
-          @media screen and (max-width: 480px) {
-            margin: $tab-mob-last-item-margin;
-          }
+          @include tab-mob-last-item-margin;
 
           &.e-active {
             margin: $tab-nrml-active-scroll-last-item-margin;
@@ -1388,10 +1386,7 @@
           display: none;
           margin: $tab-nrml-close-icon-margin;
           min-width: $tab-close-icon-minwidth;
-
-          @media screen and (max-width: 480px) {
-            margin: $tab-mob-close-icon-margin;
-          }
+          @include tab-mob-close-icon-margin;
         }
 
         .e-close-icon,
@@ -2066,6 +2061,9 @@
             @if ($skin-name == 'Material3') {
               border-radius: 3px 0 0 3px;
             }
+            @else if ($skin-name == 'fluent2') {
+              border-radius: $tab-nrml-vertical-indicator-bdr-radius;
+            }
           }
 
           .e-toolbar-items .e-toolbar-item.e-active {
@@ -2111,6 +2109,9 @@
             right: auto;
             @if ($skin-name == 'Material3') {
               border-radius: 0 3px 3px 0;
+            }
+            @else if ($skin-name == 'fluent2') {
+              border-radius: $tab-nrml-vertical-indicator-bdr-radius;
             }
           }
 
@@ -3347,10 +3348,7 @@
     .e-icons.e-close-icon {
       cursor: pointer;
       margin: $tab-big-close-icon-margin;
-
-      @media screen and (max-width: 480px) {
-        margin: $tab-mob-close-icon-margin;
-      }
+      @include tab-mob-close-icon-margin;
     }
 
     .e-icons.e-close-icon,

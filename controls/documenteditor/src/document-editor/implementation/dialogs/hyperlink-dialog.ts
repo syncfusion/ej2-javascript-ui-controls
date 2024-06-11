@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
-import { HelperMethods,HyperlinkTextInfo } from '../editor/editor-helper';
+import { HelperMethods, HyperlinkTextInfo } from '../editor/editor-helper';
 import { FieldElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -266,9 +266,9 @@ export class HyperlinkDialog {
         let displayText: string = SanitizeHtmlHelper.sanitize(this.displayTextBox.value.trim());
         let address: string = this.urlTextBox.value.trim();
         if (HelperMethods.startsWith(address, 'http://') || HelperMethods.startsWith(address, 'https://')) {
-            address = SanitizeHtmlHelper.sanitize(address.replace(/\s/g, ""));
+            address = SanitizeHtmlHelper.sanitize(address.replace(/\s/g, ''));
         }
-        let screenTipText: string = SanitizeHtmlHelper.sanitize(this.screenTipTextBox.value.trim());
+        const screenTipText: string = SanitizeHtmlHelper.sanitize(this.screenTipTextBox.value.trim());
         let isBookmark: boolean = false;
         if (!isNullOrUndefined(this.bookmarkDropdown.value) &&  this.bookmarkDropdown.value !== '' && this.bookmarkCheckbox.checked === true) {
             address = this.bookmarkDropdown.value as string;
@@ -278,8 +278,8 @@ export class HyperlinkDialog {
             this.documentHelper.hideDialog();
             return;
         }
-        if(screenTipText !== ''){
-            address = address + '\" \\o \"' + screenTipText;
+        if (screenTipText !== ''){
+            address = address + '\' \\o \'' + screenTipText;
         }
         if (displayText === '' && address !== '') {
             displayText = address;

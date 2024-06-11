@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Template Engine
  */
@@ -33,8 +34,6 @@ export function expression(value?: RegExp): RegExp {
     if (value) { exp = value; }
     return exp;
 }
-
-
 // /**
 //  * To render the template string from the given data.
 //  * @param  {string} template - String Template.
@@ -67,16 +66,15 @@ export function compile(template: string | Function, helper?: Object, ignorePref
     } else {
         const argName: string = 'data';
         const evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
-        /* eslint-disable */
-        const condtion = `var valueRegEx = (/value=\\'([A-Za-z0-9 _]*)((.)([\\w)(!-;?-■\\s]+)['])/g);
+        const condtion: string = `var valueRegEx = (/value=\\'([A-Za-z0-9 _]*)((.)([\\w)(!-;?-■\\s]+)['])/g);
         var hrefRegex = (/(?:href)([\\s='"./]+)([\\w-./?=&\\\\#"]+)((.)([\\w)(!-;/?-■\\s]+)['])/g);
         if(str.match(valueRegEx)){
             var check = str.match(valueRegEx);
             var str1 = str;
             for (var i=0; i < check.length; i++) {
                 var check1 = str.match(valueRegEx)[i].split('value=')[1];
-                var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
-                change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
+                var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '"') : check1;
+                change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'"') : change;
                 str1 = str1.replace(check1, change);
             }
             str = str.replace(str, str1);
@@ -88,8 +86,8 @@ export function compile(template: string | Function, helper?: Object, ignorePref
                 for (var i=0; i < check.length; i++) {
                     var check1 = str.match(hrefRegex)[i].split('href=')[1];
                     if (check1) {
-                        var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
-                        change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
+                        var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '"') : check1;
+                        change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'"') : change;
                         str1 = str1.replace(check1, change);
                     }
                 }
@@ -97,8 +95,7 @@ export function compile(template: string | Function, helper?: Object, ignorePref
             }
         }
         `;
-        const fnCode: string = 'var str=\"' + evalExpResult + '\";' + condtion + ' return str;';
-        /* eslint-enable */
+        const fnCode: string = 'var str="' + evalExpResult + '";' + condtion + ' return str;';
         const fn: Function = new Function(argName, fnCode);
         return fn.bind(helper);
     }
@@ -144,7 +141,6 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
     return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(
 
         exp,
-        // eslint-disable-next-line
         (match: string, cnt: string, offset: number, matchStr: string): string => {
 
             const SPECIAL_CHAR: RegExp = /@|#|\$/gm;
@@ -171,12 +167,10 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
                     const rlStr: string[] = matches[1].split(' of ');
 
                     // replace for each into actual JavaScript
-                    // eslint-disable-next-line
                     cnt = '"; ' + cnt.replace(matches[1], (mtc: string): string => {
                         localKeys.push(rlStr[0]);
                         localKeys.push(rlStr[0] + 'Index');
                         varCOunt = varCOunt + 1;
-                        // tslint:disable-next-line
                         return 'var i' + varCOunt + '=0; i' + varCOunt + ' < ' + addNameSpace(rlStr[1], true, nameSpace, localKeys, ignorePrefix) + '.length; i' + varCOunt + '++';
                     }) + '{ \n ' + rlStr[0] + '= ' + addNameSpace(rlStr[1], true, nameSpace, localKeys, ignorePrefix)
                         + '[i' + varCOunt + ']; \n var ' + rlStr[0] + 'Index=i' + varCOunt + '; \n str = str + "';
@@ -184,8 +178,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
                 } else {
                     //helper function handling
                     const fnStr: string[] = cnt.split('(');
-                    // eslint-disable-next-line
-                    let fNameSpace: string = (helper && helper.hasOwnProperty(fnStr[0]) ? 'this.' : 'global');
+                    let fNameSpace: string = (helper && Object.prototype.hasOwnProperty.call(helper, fnStr[0]) ? 'this.' : 'global');
                     fNameSpace = (/\./.test(fnStr[0]) ? '' : fNameSpace);
                     const ftArray: string[] = matches[1].split(',');
                     if (matches[1].length !== 0 && !(/data/).test(ftArray[0]) && !(/window./).test(ftArray[0])) {
@@ -196,7 +189,6 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
                     if (WINDOWFUNC.test(cnt) && arrObj.test(cnt) || splRegexp.test(cnt)) {
                         const splArrRegexp: RegExp =  /@|\$|#|\]\./gm;
                         if (splArrRegexp.test(cnt)) {
-                            // tslint:disable-next-line
                             cnt = '"+ ' + (fNameSpace === 'global' ? '' : fNameSpace) + cnt.replace(matches[1], rlStr.replace(WORDFUNC, (strs: string): string => {
                                 return HandleSpecialCharArrObj(strs, nameSpace, localKeys, ignorePrefix);
                             })) + '+ "';
@@ -219,8 +211,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
             } else if (ELSE_STMT.test(cnt)) {
                 // handling else condition
                 cnt = '"; ' + cnt.replace(ELSE_STMT, '} else { \n str = str + "');
-            // eslint-disable-next-line
-            } else if (!!cnt.match(IF_OR_FOR)) {
+            } else if (cnt.match(IF_OR_FOR)) {
                 // close condition
                 cnt = cnt.replace(IF_OR_FOR, '"; \n } \n str = str + "');
             } else if (SPECIAL_CHAR.test(cnt)) {
@@ -289,16 +280,19 @@ function NameSpaceForspecialChar(str: string, addNS: boolean, nameSpace: string,
     return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '["' + str : str);
 }
 
-// eslint-disable-next-line
+/**
+ * Replace double slashes to single slash.
+ *
+ * @param {string} tempStr ?
+ * @returns {any} ?
+ */
 function SlashReplace(tempStr: string): any {
     const double: string = '\\\\';
     if (tempStr.match(DOUBLE_SLASH)) {
-        // eslint-disable-next-line
-        tempStr = tempStr;
+        return tempStr;
     } else {
-        tempStr = tempStr.replace(SINGLE_SLASH, double as string);
+        return tempStr.replace(SINGLE_SLASH, double as string);
     }
-    return tempStr;
 }
 
 /**

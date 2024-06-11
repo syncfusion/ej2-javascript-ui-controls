@@ -244,7 +244,7 @@ export class Group implements IAction {
         }
     }
 
-    /** 
+    /**
      * @returns {void}
      * @hidden
      */
@@ -735,7 +735,7 @@ export class Group implements IAction {
                         row.className = 'e-recordpluscollapse';
                         row.firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
                         row.setAttribute('aria-expanded', 'false');
-                        row.firstElementChild.setAttribute('title',  this.l10n.getConstant('Collapsed'));
+                        row.firstElementChild.setAttribute('title', this.l10n.getConstant('Collapsed'));
                     }
                 }
                 if (!(rowNodes[parseInt(i.toString(), 10)].firstElementChild.classList.contains('e-recordplusexpand') ||

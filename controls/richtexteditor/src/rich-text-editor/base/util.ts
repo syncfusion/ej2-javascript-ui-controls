@@ -209,7 +209,8 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         result = value === 'empty' ? '' : getDropDownValue(fontNameItems, value, 'value', 'text');
                         const fontNameContent: string = isNOU(e.parent.fontFamily.default) ? fontNameItems[0].text :
                             e.parent.fontFamily.default;
-                        const name: string = (isNOU(result) ? fontNameContent : result);
+                        const name: string = (isNOU(result) ? fontNameContent : result) === 'Default' ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName')
+                            : (isNOU(result) ? fontNameContent : result);
                         dropDown.fontNameDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontFamily.width + '" >' +
                             '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
@@ -222,10 +223,10 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             break;
                         }
                         const fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
-                        const fontSizeContent: string = isNOU(e.parent.fontSize.default) ? fontSizeItems[1].text :
+                        const fontSizeContent: string = isNOU(e.parent.fontSize.default) ? fontSizeItems[0].text :
                             e.parent.fontSize.default;
-                        result = value === 'empty' ? '' : getDropDownValue(
-                            fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
+                        const fontSizeToolbarText: string = getDropDownValue(fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), (fontSizeContent.replace(/\s/g, '') === fontSizeItems[0].text && value === '') ? 'text' : 'value', 'text');
+                        result = value === 'empty' ? '' : (fontSizeToolbarText === 'Default') ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontSize') : fontSizeToolbarText;
                         dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontSize.width + '" >' +
                             '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
@@ -279,6 +280,9 @@ export function getTBarItemsIndex(items: string[], toolbarItems: IToolbarItemMod
                     itemsIndex.push(j);
                     break;
                 } else if (items[i as number] === 'InsertCode' && toolbarItems[j as number].subCommand === 'Pre') {
+                    itemsIndex.push(j);
+                    break;
+                } else if (items[i as number] === 'Blockquote' && toolbarItems[j as number].subCommand === 'blockquote') {
                     itemsIndex.push(j);
                     break;
                 } else if (items[i as number] === 'FileManager' && toolbarItems[j as number].subCommand === 'File') {

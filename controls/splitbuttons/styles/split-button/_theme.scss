@@ -1,6 +1,4 @@
 @include export-module('split-button-theme') {
-
-  /*! splitbutton theme */
   .e-split-btn-wrapper {
     .e-split-btn {
       @if $skin-name == 'Material3' {

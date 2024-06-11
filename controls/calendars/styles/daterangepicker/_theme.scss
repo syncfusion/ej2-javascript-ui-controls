@@ -1,6 +1,4 @@
 @include export-module('daterangepicker-theme') {
-
-  /*! daterangepicker theme */
   .e-date-range-wrapper {
     #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
       @if $skin-name == 'bootstrap4' {
@@ -33,6 +31,9 @@
         #{if(&, '&', '*')} .e-header .e-title:hover {
           color: $range-calendar-header-dark-color;
           text-decoration: none;
+          @if $skin-name == 'fluent2' {
+            width: 72%;
+          }
         }
         #{if(&, '&', '*')} .e-content .e-range-hover {
           @if $skin-name != 'Material3' {
@@ -161,11 +162,15 @@
         }
         #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover span.e-day,
         #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover span.e-day {
-          @if $skin-name != 'Material3' {
+          @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
             background-color: $range-selection-bg;
           }
           @if $skin-name == 'Material3' {
             background: $range-selection-bg;
+          }
+          @if $skin-name == 'fluent2' {
+            background: $range-selection-bg;
+            border-radius: $range-selected-hover-radius;
           }
           color: $range-active-font-color;
           @if ($skin-name == 'FluentUI') {
@@ -179,6 +184,11 @@
             background-color: $range-selection-bg;
             border-radius: $range-selected-hover-radius;
             box-shadow: $range-value-none;
+            color: $range-active-font-color;
+          }
+          @if ($skin-name == 'fluent2') {
+            background: $range-selection-bg;
+            border-radius: $range-selected-hover-radius;
             color: $range-active-font-color;
           }
         }
@@ -247,6 +257,9 @@
         @if $skin-name == 'Material3' {
           background: $range-separator-color;
         }
+        @if $skin-name == 'fluent2' {
+          display: none;
+        }
       }
       #{if(&, '&', '*')} .e-footer {
         @if $skin-name != 'Material3' {
@@ -281,7 +294,6 @@
     }
   }
 
-  //bigger style
   .e-bigger #{&}.e-daterangepicker,
   #{if(&, '&', '*')}.e-bigger#{&}.e-daterangepicker,
   #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker {
@@ -323,7 +335,6 @@
     }
   }
 
-  // apply button override style changes
   .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary {
     @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
@@ -364,7 +375,6 @@
     }
   }
 
-  // cancel button override style changes
   .e-daterangepicker.e-popup .e-footer .e-btn.e-flat,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat {
     @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
@@ -440,9 +450,7 @@
 }
 
 .e-daterangepick-mob-popup-wrap {
-
   #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
-
     #{if(&, '&', '*')} .e-model-header {
       background-color: $modal-range-header-bg-color;
       color: $modal-range-header-text-color;

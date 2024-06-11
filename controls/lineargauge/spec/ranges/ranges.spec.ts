@@ -18,7 +18,7 @@ describe('Linear gauge control', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
         });
@@ -339,10 +339,7 @@ describe('Linear gauge control', () => {
                         ],
                         }
                     },
-                
-                
                 ],
-
                     majorTicks: {
                         color: '#9E9E9E',
                         interval: 10
@@ -419,7 +416,6 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
 
-
         it('checking the stroke dasharray of the range element', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_AxisIndex_0_Range_0');
@@ -427,8 +423,64 @@ describe('Linear gauge control', () => {
             };
             gauge.refresh();
         });
-
-
+        it('checking the rangePalettes as null', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_1');
+                expect(svg.getAttribute('fill')).toBe("#ffb133");
+            };
+            gauge.axes[0].ranges = [{
+                    start: 0,
+                    end: 30,
+                    startWidth: 50,
+                    endWidth: 50,
+                },
+                {
+                    start: 35,
+                    end: 70,
+                    startWidth: 50,
+                    endWidth: 50,
+                },
+            ]
+            gauge.rangePalettes = null;
+            gauge.refresh();
+        });
+        it('checking the linearGradient as null', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe("#ff5985");
+            };
+            gauge.axes[0].ranges = [{
+                    start: 0,
+                    end: 30,
+                    startWidth: 50,
+                    endWidth: 50,
+                    linearGradient: null
+                },
+            ]
+            gauge.rangePalettes = null;
+            gauge.refresh();
+        });
+        it('checking the radialGradient as null', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe("url(#_container_svg_0_radialGradient)");
+            };
+            gauge.axes[0].ranges = [{
+                    start: 0,
+                    end: 30,
+                    startWidth: 50,
+                    endWidth: 50,
+                    radialGradient:{
+                        radius: null,
+                        outerPosition: null,
+                        innerPosition: null,                
+                       colorStop: null,
+                    }
+                },
+            ]
+            gauge.rangePalettes = null;
+            gauge.refresh();
+        });
      });
 
 

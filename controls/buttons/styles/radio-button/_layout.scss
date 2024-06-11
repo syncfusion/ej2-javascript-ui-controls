@@ -1,7 +1,16 @@
+@mixin fluent-focus-border {
+  @if $skin-name == 'FluentUI' {
+    border: 1px solid transparent;
+  }
+}
+
+@mixin fluent-label-border {
+  @if $skin-name == 'FluentUI' {
+    border: 1px solid $radio-btn-border-color;
+  }
+}
+
 @include export-module('radiobutton-layout') {
-
-  /*! radiobutton layout */
-
   .e-radio-wrapper {
     display: inline-block;
     line-height: 1;
@@ -46,6 +55,15 @@
       }
     }
 
+    &:focus-visible {
+      +label {
+        @if $skin-name == 'fluent2' {
+          box-shadow: $switch-box-shadow;
+          border-radius: 1px;
+        }
+      }
+    }
+
     +label {
       -webkit-tap-highlight-color: transparent;
       cursor: pointer;
@@ -58,6 +76,9 @@
       @if $skin-name == 'FluentUI' {
         border: 1px solid transparent;
         height: 24px;
+      }
+      @if $skin-name == 'fluent2' {
+        margin: 7.6px;
       }
 
       & .e-label {
@@ -73,9 +94,7 @@
 
       &:focus,
       &.e-focus {
-        @if $skin-name == 'FluentUI' {
-          border: 1px solid transparent;
-        }
+        @include fluent-focus-border;
       }
 
       &::before {
@@ -86,17 +105,12 @@
         height: $radio-btn-height;
         @if $skin-name == 'FluentUI' {
           left: 1px;
-        }
-        @else {
-          left: 0;
-        }
-        position: absolute;
-        @if $skin-name == 'FluentUI' {
           top: 1px;
         }
         @else {
           left: 0;
         }
+        position: absolute;
         width: $radio-btn-width;
       }
 
@@ -249,27 +263,21 @@
     .e-focus {
       +label,
       & .e-label {
-        @if $skin-name == 'FluentUI' {
-          border: 1px solid $radio-btn-border-color;
-        }
+        @include fluent-label-border;
       }
     }
 
     &:focus:not(:focus-visible) {
       +label,
       & .e-label {
-        @if $skin-name == 'FluentUI' {
-          border: 1px solid transparent;
-        }
+        @include fluent-focus-border;
       }
     }
 
     &:focus-visible {
       +label,
       & .e-label {
-        @if $skin-name == 'FluentUI' {
-          border: 1px solid $radio-btn-border-color;
-        }
+        @include fluent-label-border;
       }
     }
 
@@ -285,10 +293,15 @@
 
   .e-small .e-radio + label,
   .e-radio + label.e-small {
-
+    @if $skin-name == 'fluent2' {
+      margin: 5.6px;
+    }
     & .e-label {
       line-height: $radio-btn-small-line-height;
       padding-left: $radio-btn-small-padding;
+      @if $skin-name == 'fluent2' {
+        font-size: 12px;
+      }
     }
 
     &::before {
@@ -348,7 +361,9 @@
 
   .e-bigger.e-small .e-radio + label,
   .e-radio + label.e-bigger.e-small {
-
+    @if $skin-name == 'fluent2' {
+      margin: 8.4px;
+    }
     & .e-label {
       line-height: $radio-btn-bigger-small-line-height;
       padding-left: $radio-btn-bigger-small-padding;
@@ -412,7 +427,6 @@
   }
 
   .e-bigger .e-radio {
-
     &:not(:checked):hover {
       +label,
       +label.e-rtl,
@@ -447,27 +461,21 @@
     .e-focus {
       +label,
       & .e-label {
-        @if $skin-name == 'FluentUI' {
-          border: 1px solid transparent;
-        }
+        @include fluent-focus-border;
       }
     }
 
     &:focus:not(:focus-visible) {
       +label,
       & .e-label {
-        @if $skin-name == 'FluentUI' {
-          border: 1px solid transparent;
-        }
+        @include fluent-focus-border;
       }
     }
 
     &:focus-visible {
       +label,
       & .e-label {
-        @if $skin-name == 'FluentUI' {
-          border: 1px solid $radio-btn-border-color;
-        }
+        @include fluent-label-border;
       }
     }
   }
@@ -481,6 +489,9 @@
 
   .e-bigger .e-radio + label,
   .e-radio + label.e-bigger {
+    @if $skin-name == 'fluent2' {
+      margin: 10.4px;
+    }
 
     & .e-label {
       font-size: $radio-btn-bigger-font-size;
@@ -545,7 +556,6 @@
     }
 
     &.e-small {
-
       & .e-label {
         line-height: $radio-btn-bigger-small-line-height;
         padding-left: $radio-btn-bigger-small-padding;

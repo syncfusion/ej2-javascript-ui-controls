@@ -16,3 +16,7 @@ export type RefreshType = 'All' | 'Row' | 'Column' | 'RowPart' | 'ColumnPart';
  */
 export type FindModeType = 'Sheet' | 'Workbook';
 
+/**
+ * Defines the print modes.
+ */
+export type PrintType = 'ActiveSheet' | 'Workbook';

@@ -76,7 +76,7 @@ const FILTERINPUT: string = 'e-input-filter';
  */
 
 @NotifyPropertyChanges
-export class MultiSelect extends DropDownBase implements IInput {
+export class MultiSelect extends DropDownBase implements IInput { 
     private spinnerElement: HTMLElement;
     private selectAllAction: Function;
     private setInitialValue: Function;
@@ -125,7 +125,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      *
      * @default {text: null, value: null, iconCss: null, groupBy: null}
      */
-    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
+    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null, disabled: null }, FieldSettings)
     public fields: FieldSettingsModel;
     /**
      * Enable or disable persisting MultiSelect component's state between page reloads.
@@ -965,13 +965,26 @@ export class MultiSelect extends DropDownBase implements IInput {
                 return;
             } else {
                 if (this.enableVirtualization) {
-                    element = <HTMLElement>this.ulElement.querySelector('li.'
+                    if (this.fields.disabled) {
+                        element = <HTMLElement>this.ulElement.querySelector('li.'
+                        + dropDownBaseClasses.li + ':not(.e-virtual-list)' + ':not(.e-hide-listitem)' + ':not(.' + DISABLED + ')');
+                    }
+                    else {
+                        element = <HTMLElement>this.ulElement.querySelector('li.'
                         + dropDownBaseClasses.li + ':not(.e-virtual-list)' + ':not(.e-hide-listitem)');
+                    }
                 }
                 else {
-                    element = <HTMLElement>this.ulElement.querySelector('li.'
+                    if (this.fields.disabled) {
+                        element = <HTMLElement>this.ulElement.querySelector('li.'
+                        + dropDownBaseClasses.li + ':not(.'
+                        + HIDE_LIST + ')' + ':not(.' + DISABLED + ')');
+                    }
+                    else {
+                        element = <HTMLElement>this.ulElement.querySelector('li.'
                         + dropDownBaseClasses.li + ':not(.'
                         + HIDE_LIST + ')');
+                    }
                 }
             }
             if (element !== null) {
@@ -2714,6 +2727,21 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
         }
+        const focusedLi: HTMLElement  = this.list ? this.list.querySelector('.e-item-focus') : null;
+        if (this.isDisabledElement(focusedLi)) {
+            if (this.list.querySelectorAll('.e-list-item:not(.e-hide-listitem):not(.e-disabled)').length === 0) {
+                this.removeFocus();
+                return;
+            }
+            const index: number = this.getIndexByValue(focusedLi.getAttribute('data-value'));
+            if (index === 0 && this.mode !== 'CheckBox') {
+                position = 1;
+            }
+            if (index === (this.list.querySelectorAll('.e-list-item:not(.e-hide-listitem)').length - 1)) {
+                position = -1;
+            }
+            this.moveByList(position);
+        }
     }
 
     private getElementByValue(value: string | number | boolean): Element {
@@ -4284,7 +4312,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private addListFocus(element: HTMLElement): void {
-        if (this.enabled && this.isValidLI(element)) {
+        if (this.enabled && (this.isValidLI(element) || (this.fields.disabled && this.isDisabledElement(element)))) {
             this.removeFocus();
             addClass([element], dropDownBaseClasses.focus);
             this.updateAriaActiveDescendant();
@@ -4873,14 +4901,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         let li: HTMLElement[] & NodeListOf<Element>;
         if (!isNullOrUndefined(this.list)) {
             li = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll(state ?
-                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide):not(.e-virtual-list)' :
-                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide):not(.e-virtual-list)');
+                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide):not(.e-disabled):not(.e-virtual-list)' :
+                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide):not(.e-disabled):not(.e-virtual-list)');
         }
         if (this.value && this.value.length && event && event.target
         && closest(event.target as Element, '.e-close-hooker') && this.allowFiltering) {
             li = <HTMLElement[] & NodeListOf<Element>>this.mainList.querySelectorAll(state ?
-                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide):not(.e-virtual-list)' :
-                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide):not(.e-virtual-list)');
+                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide):not(.e-disabled):not(.e-virtual-list)' :
+                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide):not(.e-disabled):not(.e-virtual-list)');
         }
         if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
             let target: Element = <Element>(event ? (this.groupTemplate ? closest(event.target as Element, '.e-list-group-item') : event.target ) : null);
@@ -5320,9 +5348,16 @@ export class MultiSelect extends DropDownBase implements IInput {
                 break;
             case 'showClearButton': this.updateClearButton(newProp.showClearButton);
                 break;
-            case 'text': this.updateVal(this.value, this.value, 'text');
+            case 'text': if (this.fields.disabled) {
+                this.text =
+                this.text && !this.isDisabledItemByIndex(this.getIndexByValue(this.getValueByText(this.text))) ? this.text : null;
+            }
+                this.updateVal(this.value, this.value, 'text');
                 break;
             case 'value':
+                if (this.fields.disabled) {
+                    this.removeDisabledItemsValue(this.value);
+                }
                 this.updateVal(this.value, oldProp.value, 'value');
                 this.addValidInputClass();
                 if (!this.closePopupOnSelect && this.isPopupOpen()) {
@@ -5897,8 +5932,33 @@ export class MultiSelect extends DropDownBase implements IInput {
         listParent.remove();
         return listItemHeight;
     }
+    /**
+     * Removes disabled values from the given array.
+     *
+     * @param { number[] | string[] | boolean[] | object[] } value - The array to check.
+     * @returns {void}
+     */
+    private removeDisabledItemsValue(value: number[] | string[] | boolean[] | object[]) : void {
+        if (value) {
+            const data: string[] | number[] | boolean[] | object[] = [];
+            let dataIndex: number = 0;
+            for (let index: number = 0; index < value.length; index++) {
+                let indexValue: number | string | boolean | object = value[index as number];
+                if (typeof(indexValue) === 'object') {
+                    indexValue = JSON.parse(JSON.stringify(indexValue))[this.fields.value];
+                }
+                if ((indexValue != null) && !(this.isDisabledItemByIndex(this.getIndexByValue(indexValue)))) {
+                    data[dataIndex++] = value[index as number];
+                }
+            }
+            this.value = data.length > 0 ? data : null;
+        }
+    }
 
     private checkInitialValue(): void {
+        if (this.fields.disabled) {
+            this.removeDisabledItemsValue(this.value);
+        }
         const isData: boolean = this.dataSource instanceof Array ? (this.dataSource.length > 0)
             : !isNullOrUndefined(this.dataSource);
         if (!(this.value && this.value.length) &&
@@ -5934,6 +5994,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!this.list) {
                 super.render();
             }
+        }
+        if (this.fields.disabled) {
+            this.text = this.text && !this.isDisabledItemByIndex(this.getIndexByValue(this.getValueByText(this.text))) ? this.text : null;
         }
         if (!isNullOrUndefined(this.text) && (isNullOrUndefined(this.value) || this.value.length === 0)) {
             this.initialTextUpdate();
@@ -6080,6 +6143,67 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.refreshInputHight();
         this.checkPlaceholderSize();
     }
+    /**
+     * Method to disable specific item in the popup.
+     *
+     * @param {string | number | object | HTMLLIElement} item - Specifies the item to be disabled.
+     * @returns {void}
+     * @deprecated
+     */
+    public disableItem(item: string | number | object | HTMLLIElement): void {
+        if (this.fields.disabled) {
+            if (!this.list) {
+                this.renderList();
+            }
+            let itemIndex: number = -1;
+            if (this.liCollections && this.liCollections.length > 0 && this.listData && this.fields.disabled) {
+                if (typeof (item) === 'string') {
+                    itemIndex = this.getIndexByValue(item);
+                }
+                else if (typeof item === 'object') {
+                    if (item instanceof HTMLLIElement) {
+                        for (let index: number = 0; index < this.liCollections.length; index++) {
+                            if (this.liCollections[index as number] as HTMLLIElement === item) {
+                                itemIndex = this.getIndexByValue(item.getAttribute('data-value'));
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        const value: string = JSON.parse(JSON.stringify(item))[this.fields.value];
+                        for (let index: number = 0; index < this.listData.length; index++) {
+                            if (JSON.parse(JSON.stringify(this.listData[index as number]))[this.fields.value] === value) {
+                                itemIndex = this.getIndexByValue(value);
+                                break;
+                            }
+                        }
+                    }
+                }
+                else {
+                    itemIndex = item;
+                }
+                const isValidIndex: boolean = itemIndex < this.liCollections.length && itemIndex > -1;
+                if (isValidIndex && !(JSON.parse(JSON.stringify(this.listData[itemIndex as number]))[this.fields.disabled])) {
+                    const li: HTMLLIElement = this.liCollections[itemIndex as number] as HTMLLIElement;
+                    if (li) {
+                        this.disableListItem(li);
+                        const parsedData: { [key: string]: Object } = JSON.parse(JSON.stringify(this.listData[itemIndex as number]));
+                        parsedData[this.fields.disabled] = true;
+                        this.listData[itemIndex as number] = parsedData;
+                        if (li.classList.contains(dropDownBaseClasses.focus)) {
+                            this.removeFocus();
+                        }
+                        if (li.classList.contains(HIDE_LIST) || li.classList.contains(dropDownBaseClasses.selected)) {
+                            const oldValue: string[] | number[] | boolean[] | object[] = this.value;
+                            this.removeDisabledItemsValue(this.value);
+                            this.updateVal(this.value, oldValue, 'value');
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
      *

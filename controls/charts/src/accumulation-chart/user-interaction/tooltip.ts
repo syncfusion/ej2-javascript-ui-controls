@@ -1,9 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
- * AccumulationChart Tooltip file
+ * AccumulationChart Tooltip file.
  */
 import { Browser, remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -30,7 +26,10 @@ export class AccumulationTooltip extends BaseTooltip {
         this.template = this.accumulation.tooltip.template;
     }
     /**
+     * Adds an event listener.
+     *
      * @hidden
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.accumulation.isDestroyed) { return; }
@@ -39,7 +38,7 @@ export class AccumulationTooltip extends BaseTooltip {
         this.accumulation.on(Browser.touchEndEvent, this.mouseUpHandler, this);
     }
 
-    private mouseLeaveHandler(e: PointerEvent): void {
+    private mouseLeaveHandler(): void {
         this.removeTooltip(this.accumulation.tooltip.fadeOutDuration);
     }
 
@@ -65,12 +64,12 @@ export class AccumulationTooltip extends BaseTooltip {
     /**
      * Renders the tooltip.
      *
-     * @param  {PointerEvent} event - Mouse move event.
-     * @return {void}
+     * @param {PointerEvent | TouchEvent} event - The mouse move event or touch event.
+     * @returns {void}
      */
     public tooltip(event: PointerEvent | TouchEvent): void {
         this.renderSeriesTooltip(this.accumulation,
-                                 this.getPieData(event, this.accumulation, this.accumulation.mouseX, this.accumulation.mouseY));
+                                 this.getPieData(event, this.accumulation));
     }
 
     /**
@@ -100,9 +99,9 @@ export class AccumulationTooltip extends BaseTooltip {
     }
 
     private triggerTooltipRender(point: AccPointData, isFirst: boolean, textCollection: string,
-                                 headerText: string, firstText: boolean = true): void {
+                                 headerText: string): void {
         //let template: string;
-        const tooltip: TooltipSettingsModel = this.chart.tooltip
+        const tooltip: TooltipSettingsModel = this.chart.tooltip;
         const argsData: ITooltipRenderEventArgs = {
             cancel: false, name: tooltipRender, text: textCollection, point: point.point, textStyle: this.textStyle,
             series: this.accumulation.isBlazor ? {} as AccumulationSeries : point.series, headerText: headerText,
@@ -116,7 +115,8 @@ export class AccumulationTooltip extends BaseTooltip {
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
                 this.headerText = argsData.headerText;
-                this.createTooltip(this.chart, isFirst, { x: (tooltip.location.x !== null) ? tooltip.location.x : point.point.symbolLocation.x, y: (tooltip.location.y !== null) ? tooltip.location.y : point.point.symbolLocation.y },
+                this.createTooltip(this.chart, isFirst, { x: (tooltip.location.x !== null) ? tooltip.location.x :
+                    point.point.symbolLocation.x, y: (tooltip.location.y !== null) ? tooltip.location.y : point.point.symbolLocation.y },
                                    point.series.clipRect, point.point, !tooltip.enableMarker ? [] : ['Circle'], 0, this.chart.initialClipRect, false,
                                    null, point.point, this.template ? argsData.template : '');
             } else {
@@ -128,7 +128,7 @@ export class AccumulationTooltip extends BaseTooltip {
         tooltipSuccess.bind(this, point);
         this.chart.trigger(tooltipRender, argsData, tooltipSuccess);
     }
-    private getPieData(e: PointerEvent | TouchEvent, chart: AccumulationChart, x: number, y: number): AccPointData {
+    private getPieData(e: PointerEvent | TouchEvent, chart: AccumulationChart): AccPointData {
         const target: Element = e.target as Element;
         const id: Index = indexFinder(target.id, true);
         if (!isNaN(id.series)) {
@@ -144,7 +144,11 @@ export class AccumulationTooltip extends BaseTooltip {
         return new AccPointData(null, null);
     }
     /**
-     * To get series from index
+     * To get series from index.
+     *
+     * @param {number} index - The index of the series to retrieve.
+     * @param {AccumulationSeries[]} visibleSeries - The array of visible series in the accumulation chart.
+     * @returns {AccumulationSeries} - The series retrieved from the specified index.
      */
     private getSeriesFromIndex(index: number, visibleSeries: AccumulationSeries[]): AccumulationSeries {
         return <AccumulationSeries>visibleSeries[0];
@@ -153,7 +157,7 @@ export class AccumulationTooltip extends BaseTooltip {
     private getTooltipText(data: AccPointData, tooltip: TooltipSettingsModel): string {
         const series: AccumulationSeries = data.series;
         let format: string = tooltip.format ? tooltip.format : '${point.x} : <b>${point.y}</b>';
-        format = this.accumulation.useGroupingSeparator ? format.replace('${point.y}', '${point.separatorY}') : format;  
+        format = this.accumulation.useGroupingSeparator ? format.replace('${point.y}', '${point.separatorY}') : format;
         return this.parseTemplate(data.point, series, format);
     }
 
@@ -171,15 +175,14 @@ export class AccumulationTooltip extends BaseTooltip {
     private parseTemplate(point: AccPoints, series: AccumulationSeries, format: string): string {
         let value: RegExp;
         let textValue: string;
+        const regExp: RegExpConstructor = RegExp;
         for (const dataValue of Object.keys(point)) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            value = new RegExp('${point' + '.' + dataValue + '}', 'gm');
+            value = new regExp('${point' + '.' + dataValue + '}', 'gm');
             format = format.replace(value.source, point[dataValue as string]);
         }
 
         for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            value = new RegExp('${series' + '.' + dataValue + '}', 'gm');
+            value = new regExp('${series' + '.' + dataValue + '}', 'gm');
             textValue = series[dataValue as string];
             format = format.replace(value.source, textValue);
         }
@@ -187,7 +190,9 @@ export class AccumulationTooltip extends BaseTooltip {
     }
 
     /**
-     * Get module name
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'AccumulationTooltip';
@@ -195,10 +200,10 @@ export class AccumulationTooltip extends BaseTooltip {
     /**
      * To destroy the Tooltip.
      *
-     * @return {void}
+     * @returns {void}
      * @private
      */
-    public destroy(chart: AccumulationChart): void {
+    public destroy(): void {
         /**
          * Destroy method calling here
          */

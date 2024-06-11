@@ -37,6 +37,7 @@ export class PdfTemplate {
     _g: PdfGraphics;
     _crossReference: _PdfCrossReference;
     _isExported: boolean = false;
+    _isResourceExport : boolean = false;
     _appearance: string;
     _pendingResources: string;
     /**
@@ -168,19 +169,36 @@ export class PdfTemplate {
         this._appearance = jsonDocument._convertToJson(resourceTable);
         jsonDocument._dispose();
     }
-    _importStream(hasCrossReference: boolean): void {
+    _exportResources(dictionary: _PdfDictionary, crossReference: _PdfCrossReference): void {
+        const jsonDocument: _JsonDocument = new _JsonDocument();
+        jsonDocument._crossReference = crossReference;
+        jsonDocument._isAnnotationExport = true;
+        const resourceTable: Map<string, string> = new Map<string, string>();
+        jsonDocument._writeObject(resourceTable, dictionary.get('Resources'), dictionary, 'resources');
+        this._appearance = jsonDocument._convertToJson(resourceTable);
+        jsonDocument._dispose();
+    }
+    _importStream(hasCrossReference: boolean, isResourceExport?: boolean): void {
         const jsonDocument: _JsonDocument = new _JsonDocument();
         if (hasCrossReference) {
             jsonDocument._crossReference = this._crossReference;
         }
-        const json: any = JSON.parse(this._appearance); // eslint-disable-line
+        const json: any = JSON.parse(this._appearance); // eslint-disable-line    
         if (json) {
-            const entry: any = json['normal']; // eslint-disable-line
+            const entryKey = isResourceExport ? 'resources' : 'normal'; // eslint-disable-line
+            const entry = json[entryKey]; // eslint-disable-line    
             if (entry) {
-                this._content = jsonDocument._parseStream(entry['stream']);
-                if (hasCrossReference) {
-                    this._content.dictionary._crossReference = this._crossReference;
-                    this._content.dictionary._updated = true;
+                if (isResourceExport) {
+                    const resourceDictionary: _PdfDictionary = jsonDocument._parseDictionary(entry['dict']);
+                    if (hasCrossReference) {
+                        this._content.dictionary.update('Resources', resourceDictionary);
+                    }
+                } else {
+                    this._content = jsonDocument._parseStream(entry['stream']);
+                    if (hasCrossReference) {
+                        this._content.dictionary._crossReference = this._crossReference;
+                        this._content.dictionary._updated = true;
+                    }
                 }
             }
         }

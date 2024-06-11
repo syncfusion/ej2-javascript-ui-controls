@@ -1331,6 +1331,82 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('Event Navigation in resource grouping through ctrl plus shift keys', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                currentView: 'Month',
+                selectedDate: new Date(2018, 4, 1),
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+                dataBound: () => {
+                    keyModule = schObj.keyboardInteractionModule;
+                    done();
+                }
+            };
+            schObj = util.createSchedule(schOptions, timelineResourceData);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Ctrl plus Shift plus Right arrow', () => {
+            const targetEvent: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement;
+            targetEvent.click();
+            keyModule.initialTarget = targetEvent;
+            expect(schObj.element.querySelector('.e-appointment-border').getAttribute('data-group-index')).toBe('0');
+            keyModule.keyActionHandler({ action: 'ctrlShiftRightArrow', shiftKey: true, target: targetEvent });
+            expect(schObj.element.querySelector('.e-appointment-border').getAttribute('data-group-index')).toBe('1');
+            schObj.removeSelectedClass();
+        });
+        it('Ctrl plus Shift plus Left arrow', () => {
+            const targetEvent: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
+            targetEvent.click();
+            keyModule.initialTarget = targetEvent;
+            expect(schObj.element.querySelector('.e-appointment-border').getAttribute('data-group-index')).toBe('1');
+            keyModule.keyActionHandler({ action: 'ctrlShiftLeftArrow', shiftKey: true, target: targetEvent });
+            expect(schObj.element.querySelector('.e-appointment-border').getAttribute('data-group-index')).toBe('0');
+            schObj.removeSelectedClass();
+        });
+        it('Ctrl plus Shift plus Down arrow', () => {
+            const targetEvent: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement;
+            targetEvent.click();
+            keyModule.initialTarget = targetEvent;
+            expect(schObj.element.querySelector('.e-appointment-border').getAttribute('data-group-index')).toBe('0');
+            keyModule.keyActionHandler({ action: 'ctrlShiftDownArrow', shiftKey: true, target: targetEvent });
+            expect(schObj.element.querySelector('.e-appointment-border').getAttribute('data-group-index')).toBe('1');
+            schObj.removeSelectedClass();
+        });
+        it('Ctrl plus Shift plus Up arrow', () => {
+            const targetEvent: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
+            targetEvent.click();
+            keyModule.initialTarget = targetEvent;
+            expect(schObj.element.querySelector('.e-appointment-border').getAttribute('data-group-index')).toBe('1');
+            keyModule.keyActionHandler({ action: 'ctrlShiftUpArrow', shiftKey: true, target: targetEvent });
+            expect(schObj.element.querySelector('.e-appointment-border').getAttribute('data-group-index')).toBe('0');
+            schObj.removeSelectedClass();
+        });
+    });
+
     describe('Cell selection with Resource', () => {
         let schObj: Schedule;
         let keyModule: any;
@@ -3620,6 +3696,16 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(29);
         });
+        it('Checking popup open on enter key pressing on other month date', () => {
+            const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
+            firstWorkCell.click();
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toBe(true);
+            keyModule.keyActionHandler({ action: 'escape' });
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-close')).toBe(true);
+            keyModule.keyActionHandler({ action: 'rightArrow', target: firstWorkCell });
+            keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-selected-cell') });
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-close')).toBe(true);
+        });
     });
 
     describe('Vertical year view with resource', () => {
@@ -3981,6 +4067,7 @@ describe('Keyboard interaction', () => {
             const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
             const schOptions: ScheduleModel = { width: '100%', height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 10, 2) };
             schObj = util.createSchedule(schOptions, defaultData, done, elem);
+            schObj.isAdaptive = true;
             keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
@@ -4001,6 +4088,62 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
+        });
+    });
+
+    describe('Appointment Navigation through tab key in timeline vertical year view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                currentView: 'TimelineYear',
+                views: [{ option: 'TimelineYear', orientation: 'Vertical', displayName: 'VerticalYear' }],
+                selectedDate: new Date(2018, 4, 1),
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+                dataBound: () => {
+                    keyModule = schObj.keyboardInteractionModule;
+                    done();
+                }
+            };
+            schObj = util.createSchedule(schOptions, timelineResourceData);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Tab key', function () {
+            schObj.element.focus();
+            var workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells')) as HTMLElement[];
+            var workCell = workCells[0];
+            workCell.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            var eventCell: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
+            keyModule.keyActionHandler({ action: 'tab', target: eventCell, shiftKey: false, preventDefault: function () { } });
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(1);
+            let target: HTMLElement = schObj.element.querySelector('.e-appointment-border');
+            keyModule.keyActionHandler({ action: 'tab', target: target, shiftKey: false, preventDefault: function () { } });
+            expect(document.activeElement.classList.contains('e-resource-cells')).toBe(true);
+            keyModule.keyActionHandler({ action: 'tab', target: document.activeElement, shiftKey: false, preventDefault: function () { } });
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(1);
         });
     });
 

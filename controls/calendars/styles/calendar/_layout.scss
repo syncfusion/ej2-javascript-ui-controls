@@ -111,7 +111,7 @@
         touch-action: $calendar-none-style;
       }
       #{if(&,'&','*')} td.e-disabled.e-today {
-        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'highcontrast' or $skin-name == 'Material3' {
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'highcontrast' or $skin-name == 'Material3' or $skin-name == 'fluent2' {
           opacity: 1;
           #{if(&,'&','*')} span.e-day {
             box-shadow: $calendar-disabled-today-box-shadow;
@@ -132,10 +132,19 @@
             background-color: $calendar-week-number-bg-color;
             border-right: $calendar-week-number-border;
           }
+          @if $skin-name == 'fluent2' {
+            border-right: $calendar-week-number-border;
+          }
         }
         #{if(&, '&', '*')}.e-overlay {
           background: $calendar-none-style;
           width: initial;
+        }
+      }
+      #{if(&, '&', '*')} td:hover {
+        @if skin-name == 'fluent2' {
+          border-radius: 2px;
+          background: $calendar-hover-border-color;
         }
       }
 
@@ -173,10 +182,10 @@
       }
       #{if(&, '&', '*')} td.e-week-number:hover span.e-day,
       #{if(&, '&', '*')} td.e-week-number:hover {
-        @if $skin-name != 'Material3' {
+        @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
           background-color: $calendar-bg-color;
         }
-        @if $skin-name == 'Material3' {
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
           background: $calendar-bg-color;
         }
         cursor: $calendar-cursor-default-style;
@@ -233,10 +242,18 @@
     }
   }
 
+  .e-calendar .e-content td.e-today:hover,
+  .e-bigger.e-small .e-calendar .e-content td.e-today:hover {
+    @if $skin-name == 'fluent2' {
+      background: $calendar-hover-border-color;
+      border-radius: 2px;
+    }
+  }
+
   //normal style
   #{&}.e-calendar,
   .e-bigger.e-small #{&}.e-calendar {
-    @if $skin-name != 'Material3' {
+    @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
       border-spacing: 0;
       max-width: $calendar-normal-max-width;
       min-width: $calendar-normal-min-width;
@@ -325,7 +342,7 @@
     }
     #{if(&, '&', '*')} .e-content.e-year td,
     #{if(&, '&', '*')} .e-content.e-decade td {
-      @if $skin-name != 'Material3' {
+      @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
         height: $calendar-normal-year-decade-height;
         padding: $calendar-normal-year-decade-padding;
       }
@@ -337,7 +354,7 @@
     }
     #{if(&, '&', '*')} .e-content.e-year td > span.e-day,
     #{if(&, '&', '*')} .e-content.e-decade td > span.e-day {
-      @if $skin-name != 'Material3' {
+      @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
         font-weight: $calendar-yeardecade-font-weight;
         height: $calendar-normal-year-decade-height;
         line-height: $calendar-normal-year-decade-height;
@@ -372,10 +389,10 @@
       }
     }
     #{if(&, '&', '*')} .e-footer-container {
-      @if $skin-name != 'Material3' {
+      @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
         background-color: $calendar-footer-background;
       }
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
         background: $calendar-footer-background;
       }
       border-top: $calendar-footer-border;
@@ -480,7 +497,6 @@
     }
   }
 
-  //bigger style
   .e-bigger#{&}.e-calendar,
   #{if(&, '&', '*')}.e-bigger #{&}.e-calendar {
     max-width: $calendar-bigger-max-width;
@@ -501,7 +517,12 @@
     #{if(&, '&', '*')} .e-header .e-title {
       font-size: $calendar-bigger-header-font-size;
       line-height: $calendar-bigger-header-height;
-      width: 60%;
+      @if $skin-name == 'fluent2' {
+        width: auto;
+      }
+      @else {
+        width: 60%;
+      }
     }
     #{if(&, '&', '*')}.e-rtl .e-header .e-title {
       line-height: $calendar-bigger-header-height;
@@ -572,7 +593,7 @@
     }
     #{if(&, '&', '*')} .e-content.e-year td,
     #{if(&, '&', '*')} .e-content.e-decade td {
-      @if $skin-name != 'Material3' {
+      @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
         height: $calendar-bigger-year-decade-height;
         padding: $calendar-bigger-year-decade-padding;
       }
@@ -584,7 +605,7 @@
     }
     #{if(&, '&', '*')} .e-content.e-year td > span.e-day,
     #{if(&, '&', '*')} .e-content.e-decade td > span.e-day {
-      @if $skin-name != 'Material3' {
+      @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
         height: $calendar-bigger-year-decade-height;
         line-height: $calendar-bigger-year-decade-height;
         width: $calendar-bigger-year-decade-width;
@@ -625,10 +646,9 @@
     }
   }
 
-  // Mouse small style
   .e-small#{&}.e-calendar,
   .e-small #{&}.e-calendar {
-    @if $skin-name != 'Material3' or $skin-name != 'Material3-dark' {
+    @if ($skin-name != 'Material3' and $skin-name != 'Material3-dark' and $skin-name != 'fluent2') {
       max-width: $calendar-small-max-width;
       min-width: $calendar-small-min-width;
       padding: $calendar-small-popup-padding;

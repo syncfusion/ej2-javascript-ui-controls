@@ -966,6 +966,77 @@ describe('UI virtualization', () => {
         });
     });
 
+    describe('isVueFunctionTemplate method', () => {
+        let listObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'ListView' });
+        ele.style.overflow = 'auto';
+        setStyle(ele, 45);
+        let data: { [key: string]: Object }[] = [
+            {
+                text: 'Audi A4',
+                id: '9bdb'
+            },
+            {
+                text: 'Audi A5',
+                id: '4589'
+            },
+            {
+                text: 'Audi A6',
+                id: 'e807'
+            },
+            {
+                text: 'Audi A7',
+                id: 'a0cc'
+            },
+            {
+                text: 'Audi A8',
+                id: '5e26'
+            },
+            {
+                text: 'BMW 501',
+                id: 'f849'
+            },
+            {
+                text: 'BMW 502',
+                id: '7aff'
+            },
+            {
+                text: 'BMW 503',
+                id: 'b1da'
+            },
+            {
+                text: 'BMW 507',
+                id: 'de2f'
+            },
+            {
+                text: 'BMW 3200',
+                id: 'b2b1'
+            }
+        ];
+        
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            listObj = new ListView({
+                dataSource: data, enableVirtualization: true,
+                height: 550,
+                template: (item: any) => {
+                    return `<div>${item.text}</div>`;
+                },
+            });
+            listObj.isVue = true;
+            listObj.appendTo(ele);
+        });
+    
+        it('should return true when template is a function and isVue is true', () => {
+            expect(listObj.virtualizationModule.isVueFunctionTemplate()).toBe(true);
+        });
+    
+        afterAll(() => {
+            listObj.destroy();
+            ele.remove();
+        });
+    });
+
     describe('Add item should inject new item if data count is less than expected', () => {
         let listObj: any;
         let ele: HTMLElement = createElement('div', { id: 'ListView' });

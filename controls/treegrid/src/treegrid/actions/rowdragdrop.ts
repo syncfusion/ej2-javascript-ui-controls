@@ -315,15 +315,17 @@ export class RowDD {
                 !Object.prototype.hasOwnProperty.call(draggedRecord.taskData, tObj.childMapping)) {
                     draggedRecord.taskData[tObj.childMapping] = [];
                 }
-                if (Object.prototype.hasOwnProperty.call(draggedRecord, tObj.childMapping) &&
-                    ((draggedRecord[tObj.childMapping]) as ITreeData[]).length && !this.isDraggedWithChild &&
-                    !isNullOrUndefined(tObj.parentIdMapping)) {
-                    const childData: ITreeData[] = (draggedRecord[tObj.childMapping]) as ITreeData[];
-                    for (let j: number = 0; j < childData.length; j++) {
-                        if (dragRecords.indexOf(childData[parseInt(j.toString(), 10)]) === -1) {
-                            dragRecords.splice(j, 0, childData[parseInt(j.toString(), 10)]);
-                            childData[parseInt(j.toString(), 10)].taskData = extend({}, childData[parseInt(j.toString(), 10)]);
-                            i += 1;
+                if (!isNullOrUndefined(draggedRecord[tObj.childMapping])) {
+                    if (Object.prototype.hasOwnProperty.call(draggedRecord, tObj.childMapping) &&
+                        ((draggedRecord[tObj.childMapping]) as ITreeData[]).length && !this.isDraggedWithChild &&
+                        !isNullOrUndefined(tObj.parentIdMapping)) {
+                        const childData: ITreeData[] = (draggedRecord[tObj.childMapping]) as ITreeData[];
+                        for (let j: number = 0; j < childData.length; j++) {
+                            if (dragRecords.indexOf(childData[parseInt(j.toString(), 10)]) === -1) {
+                                dragRecords.splice(j, 0, childData[parseInt(j.toString(), 10)]);
+                                childData[parseInt(j.toString(), 10)].taskData = extend({}, childData[parseInt(j.toString(), 10)]);
+                                i += 1;
+                            }
                         }
                     }
                 }
@@ -395,8 +397,8 @@ export class RowDD {
         } else {
             tempDataSource = proxy.dataSource;
         }
-        // eslint-disable-next-line max-len
-        if (tempDataSource && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem) && !isNullOrUndefined(droppedRecord.taskData)) {
+        if (tempDataSource && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem)
+        && !isNullOrUndefined(droppedRecord.taskData)) {
             const keys: string[] = Object.keys(tempDataSource);
             for (let i: number = 0; i < keys.length; i++) {
                 if (tempDataSource[parseInt(i.toString(), 10)][this.parent.childMapping] ===

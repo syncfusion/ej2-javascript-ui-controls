@@ -1,6 +1,5 @@
 @include export-module('splitter-layout') {
   .e-splitter {
-
     &.e-splitter-horizontal,
     &.e-splitter-vertical {
       border-width: 1px;
@@ -111,7 +110,6 @@
     }
 
     .e-split-bar {
-
       &.e-split-bar-horizontal {
         align-items: center;
         display: flex;
@@ -151,7 +149,6 @@
           }
         }
 
-        // icons hovering and avtive state effect for horizontal mode of orientation
         .e-navigate-arrow:not(.e-arrow-right)::before,
         .e-navigate-arrow:not(.e-arrow-right)::after {
           left: 8px;
@@ -251,7 +248,6 @@
           }
         }
 
-        // icons hovering and avtive state effect for vertical mode of orientation
         .e-navigate-arrow:not(.e-arrow-down)::before,
         .e-navigate-arrow:not(.e-arrow-down)::after {
           left: 10px;

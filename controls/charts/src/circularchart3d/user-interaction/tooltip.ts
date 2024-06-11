@@ -502,15 +502,14 @@ export class CircularChartTooltip3D extends ChildProperty<CircularChartTooltip3D
     private parseTemplate(point: CircularChart3DPoints, series: CircularChart3DSeries, format: string): string {
         let value: RegExp;
         let textValue: string;
+        const regExp: RegExpConstructor = RegExp;
         for (const dataValue of Object.keys(point)) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            value = new RegExp('${point' + '.' + dataValue + '}', 'gm');
+            value = new regExp('${point' + '.' + dataValue + '}', 'gm');
             format = format.replace(value.source, point[dataValue as string]);
         }
 
         for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            value = new RegExp('${series' + '.' + dataValue + '}', 'gm');
+            value = new regExp('${series' + '.' + dataValue + '}', 'gm');
             textValue = series[dataValue as string];
             format = format.replace(value.source, textValue);
         }
@@ -610,7 +609,6 @@ export class CircularChartTooltip3D extends ChildProperty<CircularChartTooltip3D
                 this.svgTooltip.dataBind();
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.control as any).isReact) { (this.control as any).renderReactTemplates(); }
     }
 

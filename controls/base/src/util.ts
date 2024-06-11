@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
 /**
  * Common utility methods
  */
 export interface IKeyValue extends CSSStyleDeclaration {
-    // eslint-disable-next-line
     [key: string]: any;
 }
 const instances: string = 'ej2_instances';
@@ -30,7 +30,6 @@ export function disableBlazorMode(): void {
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function createInstance(classFunction: Function, params: any[]): any {
     const arrayParam: Object[] = params;
     arrayParam.unshift(undefined);
@@ -46,12 +45,10 @@ export function createInstance(classFunction: Function, params: any[]): any {
  */
 export function setImmediate(handler: Function): Function {
     let unbind: Function;
-    // eslint-disable-next-line
     const num: any = new Uint16Array(5);
     const intCrypto: Crypto = window.msCrypto || window.crypto;
     intCrypto.getRandomValues(num);
     let secret: string = 'ej2' + combineArray(num);
-    // eslint-disable-next-line
     let messageHandler: Function = (event: any): void => {
         if (event.source === window && typeof event.data === 'string' && event.data.length <= 32 && event.data === secret) {
             handler();
@@ -73,9 +70,7 @@ export function setImmediate(handler: Function): Function {
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function getValue(nameSpace: string, obj: any): any {
-    // eslint-disable-next-line
     let value: any = obj;
     const splits: string[] =  nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
 
@@ -93,12 +88,9 @@ export function getValue(nameSpace: string, obj: any): any {
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function setValue(nameSpace: string, value: any, obj: any): any {
     const keys: string[] =  nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
-    // eslint-disable-next-line
     const start: any = obj || {};
-    // eslint-disable-next-line
     let fromObj: any = start;
     let i: number;
     const length: number = keys.length;
@@ -126,14 +118,12 @@ export function setValue(nameSpace: string, value: any, obj: any): any {
  * @returns {void} ?
  * @private
  */
-// eslint-disable-next-line
 export function deleteObject(obj: any, key: string): void {
     delete obj[`${key}`];
 }
 /**
  *@private
  */
-// eslint-disable-next-line
 export const containerObject: any = typeof window !== 'undefined' ? window : {};
 /**
  * Check weather the given argument is only object.
@@ -142,7 +132,6 @@ export const containerObject: any = typeof window !== 'undefined' ? window : {};
  * @returns {boolean} ?
  * @private
  */
-// eslint-disable-next-line
 export function isObject(obj: any): boolean {
     const objCon: {} = {};
     return (!isNullOrUndefined(obj) && obj.constructor === objCon.constructor);
@@ -155,10 +144,8 @@ export function isObject(obj: any): boolean {
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function getEnumValue(enumObject: any, enumValue: string | number): any {
-    // eslint-disable-next-line
-    return (<any>enumObject[enumValue]);
+    return (<any>enumObject[`${enumValue}`]);
 }
 /**
  * Merge the source object into destination object.
@@ -197,28 +184,25 @@ export function merge(source: Object, destination: Object): void {
 export function extend(copied: Object, first: Object, second?: Object, deep?: boolean): Object {
     const result: IKeyValue = copied && typeof copied === 'object' ? copied as IKeyValue : {} as IKeyValue;
     let length: number = arguments.length;
+    const args: Object = [copied, first, second, deep];
     if (deep) {
         length = length - 1;
     }
     for (let i: number = 1; i < length; i++) {
-        // eslint-disable-next-line
-        if (!arguments[i]) {
+        if (!args[parseInt(i.toString(), 10)]) {
             continue;
         }
-        // eslint-disable-next-line
-        let obj1: { [key: string]: Object } = arguments[i];
+        const obj1: { [key: string]: Object } = args[parseInt(i.toString(), 10)];
         Object.keys(obj1).forEach((key: string) => {
             const src: Object = result[`${key}`];
             const copy: Object = obj1[`${key}`];
             let clone: Object;
             const isArrayChanged: boolean = Array.isArray(copy) && Array.isArray(src) && (copy.length !== src.length);
-            // eslint-disable-next-line
             const blazorEventExtend: any = isBlazor() ? (!(src instanceof Event) && !isArrayChanged) : true;
             if (deep && blazorEventExtend && (isObject(copy) || Array.isArray(copy))) {
                 if (isObject(copy)) {
                     clone = src ? src : {};
-                    // eslint-disable-next-line
-                    if (Array.isArray(clone) && clone.hasOwnProperty('isComplexArray')) {
+                    if (Array.isArray(clone) && Object.prototype.hasOwnProperty.call(clone, 'isComplexArray')) {
                         extend(clone, {}, copy, deep);
                     } else {
                         result[`${key}`] = extend(clone, {}, copy, deep);
@@ -226,7 +210,6 @@ export function extend(copied: Object, first: Object, second?: Object, deep?: bo
                 } else {
                     /* istanbul ignore next */
                     clone = isBlazor() ? src && Object.keys(copy).length : src ? src : [];
-                    // eslint-disable-next-line
                     result[`${key}`] = extend([], clone, copy, (clone && (clone as any).length) || (copy && (copy as any).length));
                 }
             } else {
@@ -239,21 +222,21 @@ export function extend(copied: Object, first: Object, second?: Object, deep?: bo
 /**
  * To check whether the object is null or undefined.
  *
- * @param {Object} value - To check the object is null or undefined
+ * @param {any} value - To check the object is null or undefined
  * @returns {boolean} ?
  * @private
  */
-export function isNullOrUndefined(value: Object): boolean {
+export function isNullOrUndefined<T>(value: T): boolean {
     return value === undefined || value === null;
 }
 /**
  * To check whether the object is undefined.
  *
- * @param {Object} value - To check the object is undefined
+ * @param {any} value - To check the object is undefined
  * @returns {boolean} ?
  * @private
  */
-export function isUndefined(value: Object): boolean {
+export function isUndefined<T>(value: T): boolean {
     return ('undefined' === typeof value);
 }
 /**
@@ -275,11 +258,8 @@ export function getUniqueID(definedName?: string): string {
  * @private
  */
 export function debounce(eventFunction: Function, delay: number): Function {
-    // eslint-disable-next-line
     let out: any;
-    return function (): void {
-        // eslint-disable-next-line
-        const args: Object = arguments;
+    return function (...args: any): void {
         const later: TimeoutHandler = () => {
             out = null;
             return eventFunction.apply(this, args);
@@ -296,7 +276,6 @@ export function debounce(eventFunction: Function, delay: number): Function {
  * @returns {string} ?
  * @private
  */
-// eslint-disable-next-line
 export function queryParams(data: any): string {
     const array: string[] = [];
     const keys: string[] = Object.keys(data);
@@ -350,8 +329,7 @@ export function throwError(message: string): void {
     try {
         throw new Error(message);
     } catch (e) {
-        // eslint-disable-next-line
-        throw e.message + '\n' + e.stack;
+        throw new Error(e.message + '\n' + e.stack);
     }
 }
 /**
@@ -383,7 +361,6 @@ export function print(element: Element, printWindow?: Window): Window {
         '<script> (function() { window.ready = true; })(); </script>' + '</body></html>');
     printWindow.document.close();
     printWindow.focus();
-    // eslint-disable-next-line
     const interval: any = setInterval(
         () => {
             if ((<{ ready: Function } & Window>printWindow).ready) {
@@ -446,8 +423,6 @@ export function getElement(element: object): HTMLElement {
     }
     return element as HTMLElement;
 }
-
-
 /**
  * Function to fetch the Instances of a HTML element for the given component.
  *
@@ -456,10 +431,8 @@ export function getElement(element: object): HTMLElement {
  * @returns {Object} ?
  * @private
  */
-// eslint-disable-next-line
 export function getInstance(element: string | HTMLElement, component: any): Object {
-    // eslint-disable-next-line
-    let elem: any = (typeof (element) === 'string') ? document.querySelector(element) : element;
+    const elem: any = (typeof (element) === 'string') ? document.querySelector(element) : element;
     if (elem[`${instances}`]) {
         for (const inst of elem[`${instances}`]) {
             if (inst instanceof component) {
@@ -479,8 +452,7 @@ export function getInstance(element: string | HTMLElement, component: any): Obje
  * @private
  */
 export function addInstance(element: string | HTMLElement, instance: Object): void {
-    // eslint-disable-next-line
-    let elem: any = (typeof (element) === 'string') ? document.querySelector(element) : element;
+    const elem: any = (typeof (element) === 'string') ? document.querySelector(element) : element;
     if (elem[`${instances}`]) {
         elem[`${instances}`].push(instance);
     } else {
@@ -494,13 +466,11 @@ export function addInstance(element: string | HTMLElement, instance: Object): vo
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function uniqueID(): any {
     if ((typeof window) === 'undefined') {
         return;
     }
-    // eslint-disable-next-line
-    let num: any = new Uint16Array(5);
+    const num: any = new Uint16Array(5);
     const intCrypto: Crypto = window.msCrypto || window.crypto;
     return intCrypto.getRandomValues(num);
 }

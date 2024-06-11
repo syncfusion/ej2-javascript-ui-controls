@@ -1,8 +1,5 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable security/detect-unsafe-regex */
-
-import { PathAttributes, Size, measureText } from '@syncfusion/ej2-svg-base';
-import { Chart3DPathOptions , Chart3DColorFormat, Chart3DStringBuilder, Chart3DVector, Chart3DLocation, Chart3DPolygon, Chart3DTickElement, Chart3DPolyAttributes, Chart3DPolyCollections, Chart3DLabelElement, Chart3DTextOption, Chart3DDataElement, Chart3DBasicTransform } from '../model/chart3d-Interface';
+import { PathAttributes, SVGCanvasAttributes, Size, measureText } from '@syncfusion/ej2-svg-base';
+import { Chart3DPathOptions , Chart3DColorFormat, Chart3DStringBuilder, Chart3DVector, Chart3DLocation, Chart3DPolygon, Chart3DTickElement, Chart3DPolyAttributes, Chart3DPolyCollections, Chart3DLabelElement, Chart3DTextOption, Chart3DDataElement, Chart3DBasicTransform, Chart3DLineAttributes } from '../model/chart3d-Interface';
 import { appendChildElement, colorNameToHex } from '../../common/utils/helper';
 import { Chart3DPoint, Chart3DSeries } from '../series/chart-series';
 import { FontModel, MarginModel } from '../../common/model/base-model';
@@ -117,7 +114,7 @@ export class Vector3D {
      * @param {Chart3DVector} v2 - The second vector.
      * @returns {Chart3DVector} - The resulting vector.
      */
-    public vector3DMultiply(v1: Chart3DVector, v2: Chart3DVector):Chart3DVector {
+    public vector3DMultiply(v1: Chart3DVector, v2: Chart3DVector): Chart3DVector {
         const x: number = v1.y * v2.z - v2.y * v1.z;
         const y: number = v1.z * v2.x - v2.z * v1.x;
         const z: number = v1.x * v2.y - v2.x * v1.y;
@@ -138,9 +135,9 @@ export class Vector3D {
     /**
      * Multiplies a vector by a scalar value.
      *
-     * @param {Vector} v1 - The vector to multiply.
+     * @param {Chart3DVector} v1 - The vector to multiply.
      * @param {number} value - The scalar value.
-     * @returns {Vector} - The resulting vector.
+     * @returns {Chart3DVector} - The resulting vector.
      */
     public vector3DStarMultiply(v1: Chart3DVector, value: number): Chart3DVector {
         const x: number = v1.x * value;
@@ -206,6 +203,7 @@ export class Matrix3D {
      * @param {number} size - The size of the matrix.
      * @returns {number[][]} - The created 3D matrix.
      */
+
     public matrix3D(size: number): number[][] {
         const matrixData: number[][] = [];
         for (let i: number = 0; i < size; i++) {
@@ -220,6 +218,7 @@ export class Matrix3D {
      * @param {number[][]} matrixData - The matrix to check.
      * @returns {boolean} - True if the matrix is an affine matrix, false otherwise.
      */
+
     public isAffine(matrixData: number[][]): boolean {
         return matrixData[0][3] === 0 && matrixData[1][3] === 0 && matrixData[2][3] === 0 && matrixData[3][3] === 1;
     }
@@ -243,6 +242,7 @@ export class Matrix3D {
      *
      * @returns {number[][]} -The identity matrix.
      */
+
     public getIdentity(): number[][] {
         const matrixData: number[][] = this.matrix3D(this.matrixSize);
         for (let i: number = 0; i < this.matrixSize; i++) {
@@ -257,6 +257,7 @@ export class Matrix3D {
      * @param {number[][]} matrix - The matrix to get the interval for.
      * @returns {number[][]} - The interval matrix.
      */
+
     public getInterval(matrix: number[][]): number[][] {
         let matrixData: number[][] = this.getIdentity();
         for (let i: number = 0; i < this.matrixSize; i++) {
@@ -276,6 +277,7 @@ export class Matrix3D {
      * @param {number[][]} matrix - The matrix to multiply.
      * @returns {number[][]} - The resulting matrix.
      */
+
     public getMatrixMultiple(factor: number, matrix: number[][]): number[][] {
         for (let i: number = 0; i < matrix.length; i++) {
             for (let j: number = 0; j < matrix[i as number].length; j++) {
@@ -292,6 +294,7 @@ export class Matrix3D {
      * @param {Chart3DVector} point - The vector to multiply with.
      * @returns {Chart3DVector} - The resulting vector.
      */
+
     public getMatrixVectorMultiple(matrix: number[][], point: Chart3DVector): Chart3DVector {
         let x: number =
             matrix[0][0] * point.x +
@@ -324,6 +327,7 @@ export class Matrix3D {
      * @param {Chart3DVector} vector - The vector to multiply with.
      * @returns {Vector3D} - The resulting vector.
      */
+
     public getMatrixVectorAnd(matrix: number[][], vector?: Chart3DVector): { x: number; y: number; z: number } {
         const x: number =
             matrix[0][0] * vector.x +
@@ -347,6 +351,7 @@ export class Matrix3D {
      * @param {number[][]} matrix2 - The second matrix.
      * @returns {number[][]} - The resulting matrix.
      */
+
     public getMatrixMultiplication(matrix1: number[][], matrix2: number[][]): number[][] {
         const result: number[][] = this.getIdentity();
         for (let i: number = 0; i < this.matrixSize; i++) {
@@ -372,6 +377,7 @@ export class Matrix3D {
      * @returns {number} - The minor of the matrix.
      * @private
      */
+
     public getMinor(matrix: number[][], columnIndex: number, rowIndex: number): number {
         return ((columnIndex + rowIndex) % 2 === 0 ? 1 : -1) * this.getDeterminant(this.getMatrix(matrix, columnIndex, rowIndex));
     }
@@ -384,6 +390,7 @@ export class Matrix3D {
      * @param {number} rowIndex - The row index.
      * @returns {number[][]} - The submatrix.
      */
+
     public getMatrix(matrix: number[][], columnIndex: number, rowIndex: number): number[][] {
         const count: number = matrix.length - 1;
         const subMatrix: any = this.createArray(count);
@@ -404,6 +411,7 @@ export class Matrix3D {
      * @param {number[][]} matrix - The matrix.
      * @returns {number} - The determinant of the matrix.
      */
+
     public getDeterminant(matrix: number[][]): number {
         const count: number = matrix.length;
         let determinant: number = 0;
@@ -428,6 +436,7 @@ export class Matrix3D {
      * @param {number} z - The z-coordinate of the translation.
      * @returns {number[][]} - The transformed matrix.
      */
+
     public transform(x: number, y: number, z: number): number[][] {
         const transformedMatrix: number[][] = this.getIdentity();
         transformedMatrix[3][0] = x;
@@ -442,6 +451,7 @@ export class Matrix3D {
      * @param {number} angle - The angle of rotation.
      * @returns {number[][]} - The rotation matrix.
      */
+
     public turn(angle: number): number[][] {
         const rotatedMatrix: number[][] = this.getIdentity();
         rotatedMatrix[0][0] = Math.cos(angle);
@@ -457,6 +467,7 @@ export class Matrix3D {
      * @param {number} angle - The angle of rotation.
      * @returns {number[][]} - The rotation matrix.
      */
+
     public tilt(angle: number): number[][] {
         const rotatedMatrix: number[][] = this.getIdentity();
         rotatedMatrix[1][1] = Math.cos(angle);
@@ -472,6 +483,7 @@ export class Matrix3D {
      * @param {number[][]} matrix3D - The matrix to transpose.
      * @returns {number[][]} - The transposed matrix.
      */
+
     public transposed(matrix3D: number[][]): number[][] {
         const transposedMatrix: number[][] = this.getIdentity();
         for (let i: number = 0; i < this.matrixSize; i++) {
@@ -596,6 +608,7 @@ export class ChartTransform3D {
      * @param {Chart3DBasicTransform} transform - The 3D transformation.
      * @returns {void}
      */
+
     private setViewMatrix(matrix: number[][], transform: Chart3DBasicTransform): void {
         if (transform.viewMatrix === matrix) {
             return;
@@ -611,6 +624,7 @@ export class ChartTransform3D {
      * @param {Matrix3D} matrixobj - Optional custom matrix object for transformation.
      * @returns {number[][]} - The final result matrix.
      */
+
     public result(transform: Chart3DBasicTransform, matrixobj?: Matrix3D): number[][] {
         let chartObj: Matrix3D = transform.chartObj ? transform.chartObj : this.matrixObj;
         if (!chartObj) {
@@ -643,7 +657,6 @@ export class ChartTransform3D {
 /**
  * Represents a 3D graphics rendering utility for drawing and managing 3D elements in a chart.
  *
- * @class
  */
 export class Graphics3D {
     /** The vector class. */
@@ -652,7 +665,7 @@ export class Graphics3D {
     /**
      * Adds a visual polygon to the 3D chart and returns its identifier.
      *
-     * @param {Polygon} polygon - The polygon to add.
+     * @param {Chart3DPolygon} polygon - The polygon to add.
      * @param {Chart3D} chart - The 3D chart.
      * @returns {number} - The identifier of the added polygon.
      */
@@ -771,7 +784,8 @@ export class Graphics3D {
         if (bspElement === null || chart3DRender.transform == null) {
             return;
         }
-        while (true) {
+        const isVector: boolean = true;
+        while (isVector) {
             const r: number = vector.vector3DAdd(
                 polygonObj.getNormal(chart.transform3D.result(chart3DRender.transform), bspElement.plane.vectorPoints),
                 eyeVector
@@ -816,7 +830,7 @@ export class BinaryTreeBuilder {
     /**
      * Adds a polygon to the binary tree and returns its index.
      *
-     * @param {Polygon} polygon - The polygon to add.
+     * @param {Chart3DPolygon} polygon - The polygon to add.
      * @param {Chart3D} chart - The 3D chart.
      * @returns {number} - The index of the added polygon.
      */
@@ -846,7 +860,7 @@ export class BinaryTreeBuilder {
     /**
      * Creates a PolyAttributes object based on the vector, index, and result.
      *
-     * @param {Vector} point - The vector representing the point.
+     * @param {Chart3DVector} point - The vector representing the point.
      * @param {number} index - The index of the point.
      * @param {string} result - The result classification.
      * @returns {Chart3DPolyAttributes} - The created PolyAttributes object.
@@ -935,7 +949,7 @@ export class BinaryTreeBuilder {
      *
      * @param {Chart3DPolygon} splitPolygon - The polygon to split.
      * @param {Chart3DPolygon} refPolygon - The reference polygon for splitting.
-     * @returns {PolyCollections} - The resulting back and front parts.
+     * @returns {Chart3DPolyCollections} - The resulting back and front parts.
      */
     private splitPolygon(splitPolygon: Chart3DPolygon, refPolygon: Chart3DPolygon): Chart3DPolyCollections {
         const backPoint: Chart3DPolygon[] = [];
@@ -952,14 +966,15 @@ export class BinaryTreeBuilder {
             const count: number = splitPolygon.points.length;
             for (let i: number = 0; i < count; i++) {
                 const pointB: Chart3DVector = splitPolygon.points[i as number];
-                const pointC: Chart3DVector= splitPolygon.points[this.getNext(i + 1, count)];
+                const pointC: Chart3DVector = splitPolygon.points[this.getNext(i + 1, count)];
                 const sideB: string = this.classifyPoint(pointB, refPolygon);
                 const sideC: string = this.classifyPoint(pointC, refPolygon);
-                const attributeB: Chart3DPolyAttributes= this.vector3DIndexClassification(pointB, polyPoints.length, sideB);
+                const attributeB: Chart3DPolyAttributes = this.vector3DIndexClassification(pointB, polyPoints.length, sideB);
                 polyPoints.push(attributeB);
                 if (sideB !== sideC && sideB !== 'OnPlane' && sideC !== 'OnPlane') {
                     const vectorValue: Chart3DVector = vector.vector3DMinus(pointB, pointC);
-                    const direction: Chart3DVector= vector.vector3DMinus(vector.vector3DStarMultiply(refPolygon.normal, -refPolygon.d), pointC);
+                    const direction: Chart3DVector = vector.vector3DMinus(vector.vector3DStarMultiply(refPolygon.normal,
+                                                                                                      -refPolygon.d), pointC);
 
                     const signedDistance: number = vector.vector3DAdd(direction, refPolygon.normal);
                     const intersectionParameter: number = signedDistance / vector.vector3DAdd(refPolygon.normal, vectorValue);
@@ -1063,8 +1078,8 @@ export class BinaryTreeBuilder {
     private cutOutFrontPolygon(polyPoints: Chart3DPolyAttributes[], initialVertex: Chart3DPolyAttributes): Chart3DVector[] {
         const points: Chart3DVector[] = [];
         let currentVertex: Chart3DPolyAttributes = initialVertex;
-
-        while (true) {
+        const isVector: boolean = true;
+        while (isVector) {
             currentVertex.alreadyCutFront = true;
             points.push(currentVertex.vector);
 
@@ -1074,7 +1089,8 @@ export class BinaryTreeBuilder {
                 if (!currentVertexPair.alreadyCutFront) {
                     currentVertex = currentVertexPair;
                 } else {
-                    const previousVertexOnBack: Chart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1, polyPoints.length)];
+                    const previousVertexOnBack: Chart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1,
+                                                                                                polyPoints.length)];
                     const nextVertexOnBack: Chart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1, polyPoints.length)];
 
                     if (previousVertexOnBack.result === 'OnFront' && !previousVertexOnBack.alreadyCutFront) {
@@ -1097,21 +1113,21 @@ export class BinaryTreeBuilder {
                     return points;
                 }
             }
-        }
+        } return null;
     }
 
     /**
      * Cuts out the back part of a polygon based on the PolyAttributes.
      *
      * @param {Chart3DPolyAttributes[]} polyPoints - The PolyAttributes array of the polygon.
-     * @param {PChart3DPolyAttributes} initialVertex - The PolyAttributes representing the cutting point.
+     * @param {Chart3DPolyAttributes} initialVertex - The PolyAttributes representing the cutting point.
      * @returns {Chart3DVector[]} - The resulting points of the back part.
      */
-    private cutOutBackPolygon(polyPoints: Chart3DPolyAttributes[], initialVertex: Chart3DPolyAttributes):Chart3DVector[] {
+    private cutOutBackPolygon(polyPoints: Chart3DPolyAttributes[], initialVertex: Chart3DPolyAttributes): Chart3DVector[] {
         const points: Chart3DVector[] = [];
         let currentVertex: Chart3DPolyAttributes = initialVertex;
-
-        while (true) {
+        const isVector: boolean = true;
+        while (isVector) {
             currentVertex.alreadyCutBack = true;
             points.push(currentVertex.vector);
 
@@ -1121,7 +1137,8 @@ export class BinaryTreeBuilder {
                 if (!currentVertexPair.alreadyCutBack) {
                     currentVertex = currentVertexPair;
                 } else {
-                    const previousVertexOnBack: Chart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1, polyPoints.length)];
+                    const previousVertexOnBack: Chart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1,
+                                                                                                polyPoints.length)];
                     const nextVertexOnBack: Chart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1, polyPoints.length)];
 
                     if (previousVertexOnBack.result === 'OnBack' && !previousVertexOnBack.alreadyCutBack) {
@@ -1133,7 +1150,7 @@ export class BinaryTreeBuilder {
                     }
                 }
             } else {
-                const previousVertexOnBack: Chart3DPolyAttributes= polyPoints[this.getNext(currentVertex.index - 1, polyPoints.length)];
+                const previousVertexOnBack: Chart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1, polyPoints.length)];
                 const nextVertexOnBack: Chart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1, polyPoints.length)];
 
                 if (previousVertexOnBack.result !== 'OnFront' && !previousVertexOnBack.alreadyCutBack) {
@@ -1144,7 +1161,7 @@ export class BinaryTreeBuilder {
                     return points;
                 }
             }
-        }
+        } return null;
     }
 
     /**
@@ -1154,10 +1171,10 @@ export class BinaryTreeBuilder {
      * @returns {Chart3DBspNode} - The root node of the Binary Space Partitioning tree.
      */
     public build(points?: Chart3DPolygon[]): Chart3DBspNode {
-        if (!arguments[0]) {
+        if (!points) {
             return this.build(this.chart.polygons);
         } else {
-            const inputPolygons: Chart3DPolygon[] = arguments[0];
+            const inputPolygons: Chart3DPolygon[] = points;
             if (inputPolygons.length < 1) {
                 return null;
             }
@@ -1258,19 +1275,23 @@ export class Svg3DRenderer {
      * @returns {Chart3DColorFormat | null} - The parsed color format (Red green Blue) or null if parsing fails.
      */
     public hexToValue(hexColorCode: string): Chart3DColorFormat | null {
-        const rgbRegex: boolean = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/.test(hexColorCode);
         let result: RegExpExecArray | null;
-
-        if (rgbRegex === true) {
-            result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/.exec(hexColorCode);
-            return result
-                ? {
-                    red: parseInt(result[1], 10),
-                    green: parseInt(result[2], 10),
-                    blue: parseInt(result[3], 10),
-                    alpha: result[4]
-                }
-                : null;
+        let values: string[];
+        if (hexColorCode.indexOf('rgba(') === 0) {
+            values = hexColorCode.slice(5, -1).split(',');
+            return values ? {
+                red: parseInt(values[0], 10),
+                green: parseInt(values[1], 10),
+                blue: parseInt(values[2], 10),
+                alpha: parseFloat(values[3])
+            } : null;
+        } else if (hexColorCode.indexOf('rgb(') === 0) {
+            values = hexColorCode.slice(4, -1).split(',');
+            return values ? {
+                red: parseInt(values[0], 10),
+                green: parseInt(values[1], 10),
+                blue: parseInt(values[2], 10)
+            } : null;
         } else {
             result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexColorCode);
             return result
@@ -1314,8 +1335,19 @@ export class Svg3DRenderer {
      * @returns {boolean} - True if the color string is valid, otherwise false.
      */
     public checkColorFormat(color: string): boolean {
-        const regex: boolean = /(rgba?\((?:\d{1,3}[,\)]){3}(?:\d+\.\d+\))?)|(^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$)/gmi.test(color);
-        return regex;
+        if (color.indexOf('rgba(') === 0 || color.indexOf('rgb(') === 0) {
+            const rgbaValues: string[] = color.substring(color.indexOf('(') + 1, color.lastIndexOf(')')).split(',');
+            if (rgbaValues.length === 3 || rgbaValues.length === 4) {
+                return rgbaValues.every((val: string) => {
+                    const num: number = parseFloat(val);
+                    return !isNaN(num) && num >= 0 && num <= 255;
+                });
+            }
+        } else if (color.indexOf('#') === 0) {
+            const hex: string = color.substring(1);
+            return (hex.length === 3 || hex.length === 6) && /^[0-9A-Fa-f]{3,6}$/.test(hex);
+        }
+        return false;
     }
 
     /**
@@ -1327,7 +1359,7 @@ export class Svg3DRenderer {
      * @param {Chart3D} chart - The 3D chart instance.
      * @returns {Element} - The created SVG text element.
      */
-    public drawText(options: any, label: string | string[], font: FontModel, chart: Chart3D): Element {
+    public drawText(options: Chart3DTextOption | SVGCanvasAttributes, label: string | string[], font: FontModel, chart: Chart3D): Element {
         let text: Element = document.getElementById(options.id);
         if (text === null) {
             text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -1345,7 +1377,7 @@ export class Svg3DRenderer {
         } else {
             text.textContent = label as string;
         }
-        text = chart.svgRenderer.setElementAttributes(options, text);
+        text = chart.svgRenderer.setElementAttributes(options as SVGCanvasAttributes, text);
         return text;
     }
 
@@ -1433,14 +1465,14 @@ export class Polygon3D {
     public polygon3D(points?: Chart3DVector[], tag?: any, index?: number, stroke?: string, strokeThickness?: number,
                      opacity?: number, fill?: string, name?: string, parent?: Element, text?: string ): Chart3DPolygon {
         if (arguments.length === 3) {
-            this.calculateNormal(arguments[0], arguments[1], arguments[2]);
+            this.calculateNormal(points, tag, index);
             return null;
         } else if (arguments.length === 2) {
-            points = arguments[0];
+            //points = arguments[0];
             this.calculateNormal(points[0], points[1], points[2]);
             this.vectorPoints = points;
             this.calculateNormal(this.vectorPoints);
-            const polygon: Chart3DPolygon = arguments[1];
+            const polygon: Chart3DPolygon = tag;
             polygon.normal = this.normal;
             polygon.points = points;
             polygon.vectorPoints = this.vectorPoints;
@@ -1511,7 +1543,7 @@ export class Polygon3D {
      *
      * @param {Chart3DLabelElement} element - The label element associated with the text.
      * @param {Chart3DVector[]} points - The array of 3D vector points defining the position of the text in 3D space.
-     * @returns {Polygon} - Returns the created 3D text polygon.
+     * @returns {Chart3DPolygon} - Returns the created 3D text polygon.
      */
     public text3D(element: Chart3DLabelElement, points: Chart3DVector[]): Chart3DPolygon {
         const plane: Chart3DPolygon = this.polygon3D(points);
@@ -1533,7 +1565,7 @@ export class Polygon3D {
      * @param {number} opacity - The opacity of the cylinder.
      * @param {string} name - The name of the cylinder.
      * @param {Element} parent - The parent element of the cylinder.
-     * @returns {Polygon[]} - Returns an array of polygons representing the 3D cylinder.
+     * @returns {Chart3DPolygon[]} - Returns an array of polygons representing the 3D cylinder.
      */
     public createCylinder(
         v1: Chart3DVector, //top left front vecotr.
@@ -1626,8 +1658,8 @@ export class Polygon3D {
     /**
      * Creates a 3D box based on the given vectors, chart, and styling parameters.
      *
-     * @param {Vector} v1 - The start vector of the box.
-     * @param {Vector} v2 - The end vector of the box.
+     * @param {Chart3DVector} v1 - The start vector of the box.
+     * @param {Chart3DVector} v2 - The end vector of the box.
      * @param {Chart3D} chart - The 3D chart to which the box belongs.
      * @param {number} index - The index of the box.
      * @param {string} stroke - The stroke color of the box.
@@ -1737,7 +1769,7 @@ export class Polygon3D {
     /**
      * Calculates the normal vector for a 3D polygon based on the provided points.
      *
-     * @param {...Vector} args - Variable number of vector3d arguments representing points of the polygon.
+     * @param {...Chart3DVector} args - Variable number of vector3d arguments representing points of the polygon.
      * @returns {void}
      */
     public calculateNormal(...args: any[]): void {
@@ -1745,7 +1777,7 @@ export class Polygon3D {
             // Relative information of the points
             const vector1: Chart3DVector = args[0];
             const vector2: Chart3DVector = args[1];
-            const vector3: Chart3DVector= args[2];
+            const vector3: Chart3DVector = args[2];
             const vector4: Chart3DVector = this.vector.vector3DMinus(vector1, vector2);
             const vector5: Chart3DVector = this.vector.vector3DMinus(vector3, vector2);
             const normal: Chart3DVector = this.vector.vector3DMultiply(vector4, vector5);
@@ -1765,7 +1797,7 @@ export class Polygon3D {
             }
         } else {
             const Points: Chart3DVector[] = args[0];
-            this.calculateNormal(Points[0], Points[1], Points[2], arguments[1]);
+            this.calculateNormal(Points[0], Points[1], Points[2], args[1]);
             for (let i: number = 3; (i < Points.length) && (this.test()); i++) {
                 this.calculateNormal(Points[i as number], Points[0], Points[i / 2]);
             }
@@ -1788,6 +1820,7 @@ export class Polygon3D {
      * @param {Chart3DPolygon} polygon - The polygon to transform.
      * @returns {void}
      */
+
     public transform(matrix: number[][], polygon: Chart3DPolygon): void {
         if (polygon.points != null) {
             for (let i: number = 0; i < polygon.points.length; i++) {
@@ -1806,7 +1839,8 @@ export class Polygon3D {
      * @returns {Chart3DVector} - Returns the normal vector.
      * @private
      */
-    public getNormal(transform: number[][], vectorPoints?:Chart3DVector[]): Chart3DVector {
+
+    public getNormal(transform: number[][], vectorPoints?: Chart3DVector[]): Chart3DVector {
         let normal: Chart3DVector;
         if (vectorPoints != null) {
             normal = this.vector.getNormal(this.matrixObj.getMatrixVectorMultiple(transform, vectorPoints[0]),
@@ -1829,7 +1863,7 @@ export class Polygon3D {
     /**
      * A method for creating text element.
      *
-     * @param {Vector} position - text position.
+     * @param {Chart3DVector} position - text position.
      * @param {Chart3DLabelElement} element - text element.
      * @param {number} xLength - text element x value.
      * @param {number} yLength - text element y value.
@@ -1850,7 +1884,7 @@ export class Polygon3D {
     /**
      * Draws a template on the specified 3D chart panel.
      *
-     * @param {PChart3DPolygon} panel - The 3D polygon representing the panel on which the template will be drawn.
+     * @param {Chart3DPolygon} panel - The 3D polygon representing the panel on which the template will be drawn.
      * @param {Chart3D} chart - The 3D chart to which the panel belongs.
      * @returns {void}
      */
@@ -1861,7 +1895,7 @@ export class Polygon3D {
         }
         const actual3DPosition1: Chart3DLocation = chart.transform3D.toScreen(panel.vectorPoints[0], transform);
         const actual3DPosition2: Chart3DLocation = chart.transform3D.toScreen(panel.vectorPoints[2], transform);
-        const optionsLine = {
+        const optionsLine: Chart3DLineAttributes = {
             'id': panel.element.id,
             'x1': actual3DPosition1.x,
             'y1': actual3DPosition1.y,
@@ -1874,8 +1908,8 @@ export class Polygon3D {
         };
         chart.chart3D.appendChild(chart.svgRenderer.drawLine(optionsLine));
         if (chart.previousID && chart.isTouch) {
-            const previousElement = document.getElementById(chart.previousID);
-            const currentElement = document.getElementById(optionsLine.id);
+            const previousElement: HTMLElement = document.getElementById(chart.previousID);
+            const currentElement: HTMLElement = document.getElementById(optionsLine.id);
 
             if (previousElement && currentElement) {
                 currentElement.parentNode.insertBefore(currentElement, previousElement.nextSibling);
@@ -1997,7 +2031,7 @@ export class Polygon3D {
     /**
      * Draws a three-dimensional polygon on the specified chart.
      *
-     * @param {PChart3DPolygon} panel - The polygon to be drawn.
+     * @param {Chart3DPolygon} panel - The polygon to be drawn.
      * @param {Chart3D} chart - The three-dimensional chart on which the polygon is to be drawn.
      * @returns {void}
      */
@@ -2067,7 +2101,7 @@ export class Polygon3D {
             if (this.tabIndex) {
                 element.setAttribute('tabindex', '0');
             } else {
-                let elements = panel.polygonElement.parent.querySelectorAll('[id*="0-region-series-0-point-0"]');
+                const elements: NodeListOf<Element> = panel.polygonElement.parent.querySelectorAll('[id*="0-region-series-0-point-0"]');
                 if (elements.length > 0) {
                     elements[elements.length - 1].removeAttribute('tabindex');
                 }
@@ -2077,8 +2111,8 @@ export class Polygon3D {
         }
         appendChildElement(false, panel.polygonElement.parent, element, chart.redraw, true, 'x', 'y', null, direction);
         if (chart.previousID && chart.isTouch) {
-            const previousElement = document.getElementById(chart.previousID);
-            const currentElement = document.getElementById(options.id);
+            const previousElement: HTMLElement = document.getElementById(chart.previousID);
+            const currentElement: HTMLElement = document.getElementById(options.id);
 
             if (previousElement && currentElement) {
                 currentElement.parentNode.insertBefore(currentElement, previousElement.nextSibling);

@@ -32,8 +32,7 @@ export class KeyboardInteraction {
         ctrlShiftF: 'ctrl+shift+f'
     };
     private pivotViewKeyboardModule: KeyboardEvents;
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    private timeOutObj: any;
+    private timeOutObj: ReturnType<typeof setTimeout>;
     /**
      * Constructor.
      *
@@ -362,7 +361,7 @@ export class KeyboardInteraction {
                     colIndex = Number(ele.getAttribute('data-colindex'));
                     rowIndex = Number(ele.getAttribute('index'));
                     const colSpan: number = Number(ele.getAttribute('aria-colspan'));
-                    control.clearSelection(ele, e, colIndex, rowIndex);
+                    control.clearSelection(ele, e);
                     const selectArgs: PivotCellSelectedEventArgs = {
                         cancel: false,
                         isCellClick: true,
@@ -375,7 +374,7 @@ export class KeyboardInteraction {
                         }
                     });
                 } else {
-                    control.clearSelection(ele, e, colIndex, rowIndex);
+                    control.clearSelection(ele, e);
                 }
             } else {
                 if (e.action === 'upArrow') {
@@ -387,7 +386,7 @@ export class KeyboardInteraction {
                     rowIndex++;
                 }
                 if (!isNullOrUndefined(ele)) {
-                    control.clearSelection(ele, e, colIndex, rowIndex);
+                    control.clearSelection(ele, e);
                 }
             }
         }

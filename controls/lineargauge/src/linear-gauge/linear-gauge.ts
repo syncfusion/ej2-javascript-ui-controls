@@ -804,7 +804,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.mouseLeave
         );
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-        this.resizeEvent);
+                                   this.resizeEvent);
     }
 
     /*
@@ -823,6 +823,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         );
         this.resizeEvent = this.gaugeResize.bind(this);
         EventHandler.add(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             window as any,
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.resizeEvent
@@ -920,7 +921,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const extraPadding: number = 30;
         let path: string = '';
         const fill: string = (this.container.backgroundColor !== 'transparent'
-            || (this.theme !== 'Bootstrap4' && this.theme !== 'Material' && this.theme !== 'Material3' && this.theme !== 'Material3Dark'))
+            || (this.theme !== 'Bootstrap4' && this.theme !== 'Material' && this.theme !== 'Material3' && this.theme !== 'Material3Dark'
+                && this.theme !== 'Fluent2' && this.theme !== 'Fluent2Dark'))
             ? this.container.backgroundColor : this.themeStyle.containerBackground;
         let rect: RectOption;
         const radius: number = this.container.width;

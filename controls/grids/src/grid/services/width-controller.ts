@@ -56,7 +56,7 @@ export class ColumnWidthService {
         if (collection.length) {
             if (!isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto' &&
                 typeof (this.parent.width) === 'string' && this.parent.width.indexOf('%') === -1) {
-                difference = (typeof this.parent.width === 'string' ? parseInt(this.parent.width, 10) : this.parent.width) - tWidth;
+                difference = parseInt(this.parent.width, 10) - tWidth;
             } else {
                 difference = this.parent.element.getBoundingClientRect().width - tWidth;
             }

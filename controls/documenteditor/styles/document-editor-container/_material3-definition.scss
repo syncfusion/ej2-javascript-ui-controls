@@ -24,12 +24,8 @@ $e-de-ctnr-break-listview-margin-right-big: 16px !default;
 $e-de-ctnr-break-listview-margin-left: 12px !default;
 $e-de-ctnr-break-listview-margin-left-big: 16px !default;
 $de-tlbr-btn-height: calc(100% - 10px) !default;
-
-// Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 117px) !default;
 $de-tool-ctnr-editor-height-big: calc(100% - 128px) !default;
-
-// Subtract statusbar height
 $de-ctnr-editor-height: calc(100% - 42px) !default;
 $de-ctnr-editor-height-big: calc(100% - 46px) !default;
 $de-ctrnr-tblr-item-padding: 0 !default;
@@ -116,8 +112,6 @@ $de-page-number-margin-top: 3px;
 $de-page-number-margin-top-big: 4px;
 $de-hlt-clr-height: 20px;
 $de-hlt-clr-height-bigger: 24px;
-
-// Color variable
 $de-pageweb-toggle-outline: rgba($white) 0 solid !default;
 $de-title-bar-bg-clr: rgba($primary) !default;
 $de-title-bar-font-clr: rgba($primary-text-color) !default;
@@ -158,8 +152,6 @@ $de-ruler-indent-hover: $content-bg-color-alt5 !default;
 $de-ruler-indent-active: rgba($primary) !default;
 $de-custom-treeview-text-size: 13px !default;
 $de-custom-treeview-text-size-bg: 13px !default;
-
-//Blazor
 $e-de-bzr-button-border-color: rgba($white) !default;
 $e-de-bzr-button-active-font-color: rgba($content-text-color) !default;
 $de-white-color: rgba($white) !default;

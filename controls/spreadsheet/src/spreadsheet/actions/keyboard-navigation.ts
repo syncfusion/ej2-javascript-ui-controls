@@ -2,8 +2,8 @@ import { Spreadsheet } from '../base/index';
 import { keyDown, cellNavigate, filterCellKeyDown, getUpdateUsingRaf, isLockedCells, focus, dialog, getRightIdx, addressHandle, initiateCur, rangeSelectionByKeydown, editOperation, isNavigationKey } from '../common/index';
 import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, isHiddenCol, checkIsFormula } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, isHiddenRow, isColumnSelected, isRowSelected, skipHiddenIdx, getCell } from '../../workbook/index';
-import { getRowsHeight, getColumnsWidth, isLocked, getColumn, ColumnModel } from '../../workbook/index';
-import { getBottomOffset } from '../common/index';
+import { getRowsHeight, getColumnsWidth, isLocked, getColumn, ColumnModel, updateCell, getSheetName, Workbook } from '../../workbook/index';
+import { getBottomOffset, removeNoteContainer, setActionData, NoteSaveEventArgs, completeAction } from '../common/index';
 import { Dialog } from '../services/index';
 import { Browser, closest, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -44,6 +44,34 @@ export class KeyboardNavigation {
             this.parent.notify(filterCellKeyDown, { closePopup: true });
             return;
         }
+        if (e.ctrlKey && e.keyCode === 80 && this.parent.allowPrint) {
+            e.preventDefault();
+            this.parent.print();
+            return;
+        }
+        const textarea: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
+        if (!isNullOrUndefined(textarea) && textarea.classList.contains('e-addNoteContainer')) {
+            if (e.key === 'Escape') {
+                const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+                const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], this.parent.getActiveSheet());
+                const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
+                const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + this.parent.getActiveSheet().activeCell;
+                if (!isNullOrUndefined(textarea) && !isNullOrUndefined(textarea.value)
+                    && ((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) || (cell.notes !== textarea.value))
+                    && document.activeElement.className.indexOf('e-addNoteContainer') > -1) {
+                    this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
+                    updateCell(
+                        this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
+                            cell: { notes: textarea.value, isNoteEditable: false }});
+                    const eventArgs : NoteSaveEventArgs =  { notes: textarea.value, address: address, element: targetElement};
+                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
+                }
+                this.parent.spreadsheetNoteModule.isShowNote = null;
+                this.parent.notify(removeNoteContainer, '');
+                focus(targetElement);
+            }
+            return;
+        }
         const dlgInst: { element: Element } = this.parent.serviceLocator.getService<Dialog>(dialog).dialogInstance;
         const isNameBox: boolean = target.id === `${this.parent.element.id}_name_box`;
         if (this.parent.selectionSettings.mode === 'None' || dlgInst || this.parent.isEdit || (target.classList.contains('e-ss-ddb') &&
@@ -79,7 +107,7 @@ export class KeyboardNavigation {
                         }
                     } else if (dlgInst.element.classList.contains('e-protect-dlg')) {
                         if (e.shiftKey ? document.activeElement.classList.contains('e-primary') :
-                         document.activeElement.id === `${this.parent.element.id}_protect_check`) {
+                            document.activeElement.id === `${this.parent.element.id}_protect_check`) {
                             const listWrapper: HTMLElement = dlgInst.element.querySelector('.e-protect-option-list');
                             if (listWrapper && !listWrapper.querySelector('.e-list-item.e-focused')) {
                                 const listEle: HTMLElement = listWrapper.querySelector('.e-list-item');
@@ -133,7 +161,7 @@ export class KeyboardNavigation {
                                 }
                             }
                         } else if (document.activeElement.className.includes('e-btn-goto-ok')) {
-                            focus(dlgInst.element as HTMLElement)
+                            focus(dlgInst.element as HTMLElement);
                         }
                     }
                 }
@@ -208,7 +236,7 @@ export class KeyboardNavigation {
                     hCont.scrollLeft = 0;
                 }
             } else if (e.shiftKey) { /* shift+home */
-                let startCol: number = skipHiddenIdx(sheet, frozenCol, true, 'columns');
+                const startCol: number = skipHiddenIdx(sheet, frozenCol, true, 'columns');
                 if (sheet.frozenColumns && skipHiddenIdx(sheet, actIdxes[1], true, 'columns') === startCol) {
                     selectIdxes = [selectIdx[0], actIdxes[1], selectIdx[2], skipHiddenIdx(sheet, 0, true, 'columns')];
                 } else {
@@ -484,6 +512,10 @@ export class KeyboardNavigation {
             const range: string = getRangeAddress(actIdxes);
             const navigateFn: Function = (preventAnimation?: boolean) => {
                 if (range === sheet.selectedRange) { return; }
+                this.parent.selectionModule.previousActiveCell = sheet.activeCell;
+                if (document.getElementsByClassName('e-addNoteContainer') && document.getElementsByClassName('e-addNoteContainer').length > 0){
+                    this.parent.notify(removeNoteContainer, '');
+                }
                 this.parent.setSheetPropertyOnMute(sheet, 'activeCell', range);
                 this.parent.notify(cellNavigate, { range: actIdxes, preventAnimation: preventAnimation });
                 let ele: HTMLElement;
@@ -583,6 +615,7 @@ export class KeyboardNavigation {
             }
         }
     }
+
 
     private setFocus(layout: string, e: KeyboardEvent, isSheetArea?: boolean): void {
         if (layout === 'Sheet') {
@@ -770,7 +803,7 @@ export class KeyboardNavigation {
 
     private getNextUnlockedCell(position: string, actCellIdx: number[]): number[] {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        let index: number[]; let cell: CellModel; let col: ColumnModel;
+        let cell: CellModel; let col: ColumnModel;
         if (position === 'right') {
             let rowIdx: number = actCellIdx[0]; let colIdx: number; let secIteration: boolean;
             let rowLen: number = sheet.usedRange.rowIndex; let colLen: number = sheet.usedRange.colIndex;
@@ -991,7 +1024,7 @@ export class KeyboardNavigation {
             }
             this.scrollNavigation(
                 [isColumnSelected(sheet, selectedRange) ? activeIdxes[0] : selectedRange[2],
-                isRowSelected(sheet, selectedRange) ? activeIdxes[1] : selectedRange[3]]);
+                    isRowSelected(sheet, selectedRange) ? activeIdxes[1] : selectedRange[3]]);
         }
     }
 

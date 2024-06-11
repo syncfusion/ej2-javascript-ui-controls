@@ -6,13 +6,13 @@ import { PdfBoundsModel, PdfAnnotationBaseModel, PdfFontModel } from './pdf-anno
 import { Container } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationType, FormFieldAnnotationType } from './enum';
 import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel, Visibility } from '../index';
+
 /**
  * The `PdfBounds` is base for annotation bounds.
  *
  * @hidden
  */
 export abstract class PdfBounds extends ChildProperty<PdfBounds> {
-
     /**
      * Represents the the x value of the annotation.
      *
@@ -100,7 +100,6 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
  * @hidden
  */
 export abstract class PdfFont extends ChildProperty<PdfFont> {
-
     /**
      * Represents the the font Bold style of annotation text content.
      *
@@ -140,7 +139,6 @@ export abstract class PdfFont extends ChildProperty<PdfFont> {
  * @hidden
  */
 export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
-
     /**
      * Represents the unique id of annotation
      *
@@ -421,6 +419,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Property(false)
     public isDynamicStamp: boolean;
+
     /**
      * Represents the dynamic text.
      *
@@ -508,6 +507,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Property('#ffffff00')
     public labelFillColor: string;
+
     /**
      * Represents the shape annotation label content max-length
      *
@@ -521,13 +521,13 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Property('')
     public template: any;
- 
+
     /**
-      * specifies the custom stamp template size of the annotation.
-      */
+     * specifies the custom stamp template size of the annotation.
+     */
     @Property('')
     public templateSize: any;
- 
+
     /**
      * Represents the opecity value of the annotation
      *
@@ -647,16 +647,18 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Complex<PdfBoundsModel>({ x: 0, y: 0 }, PdfBounds)
     public labelBounds: PdfBoundsModel;
+
     /**
      * specifies the custom data of the annotation.
      */
     @Property(null)
     public customData: object;
+
     /**
      * specifies the allowed interactions of the locked annotation.
      */
     @Property(['None'])
-    public allowedInteractions: AllowedInteraction;
+    public allowedInteractions: AllowedInteraction[];
 
     /**
      * specifies whether the annotations are included or not in print actions.
@@ -672,22 +674,25 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the page rotation angle
+     *
      * @private
      *
      */
     @Property(0)
     public pageRotation: number;
 
-      /**
+    /**
      * Represents the stamp icon name
+     *
      * @private
      *
      */
-      @Property('')
-      public icon: string;
+    @Property('')
+    public icon: string;
 
     /**
      * Represents the annotation is added programmatically.
+     *
      * @private
      *
      */
@@ -696,13 +701,12 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the annotation is transparent.
+     *
      * @private
      *
      */
     @Property(false)
     public isTransparentSet: boolean;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
@@ -715,7 +719,6 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
  * @hidden
  */
 export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
-
     /**
      * Represents the unique id of formField
      *
@@ -964,7 +967,7 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
      */
     @Property(false)
     public isMultiline: boolean;
-    
+
     /**
      * Enable or disable the isTransparent state.
      */
@@ -972,9 +975,9 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
     private isTransparent: boolean;
 
     /**
-     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false. 
+     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false.
      * If set, the field is automatically divided into as many equally spaced position, or  combs, as the value of MaxLength, and the text is laid out into the combs.
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -1005,7 +1008,11 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
      */
     @Property()
     public selectedIndex: number[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /**
+     * specifies the custom data of the form field.
+     */
+    @Property(null)
+    public customData: object;
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
@@ -1015,7 +1022,6 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
  * @hidden
  */
 export class ZOrderPageTable {
-
     private pageIdTemp: number = 0;
 
     /**

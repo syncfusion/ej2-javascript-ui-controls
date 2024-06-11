@@ -386,5 +386,141 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             }
             sparkline.appendTo('#' + id);
         })
+        
+    });
+
+    describe('Sparkline bootstrap4 theme Spec', () => {
+        let trigger: MouseEvents = new MouseEvents();
+        let element: Element;
+        let sparkline: Sparkline;
+        let id: string = 'sparks';
+        let ele: Element;
+        let rect: Rect;
+        let d: string[];
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            document.body.appendChild(element);
+            sparkline = new Sparkline({
+                theme: 'Fluent2',
+                width: '400', height: '100',
+                type: 'Column',
+                containerArea: {
+                    border: {                
+                        width: 4
+                    }
+                },
+                dataSource: [
+                    { id: 10, value: 50 },
+                    { id: 20, value: 30 },
+                    { id: 30, value: -40 },
+                    { id: 40, value: 10 },
+                    { id: 50, value: -60 },
+                    { id: 60, value: 20 },
+                    { id: 70, value: 70 },
+                    { id: 80, value: -55 },
+                    { id: 90, value: 80 },
+                    { id: 100, value: 45 }
+                ], yName: 'value', xName: 'id',
+                axisSettings:{
+                    lineSettings:{
+                        visible: true
+                    }
+                },
+                rangeBandSettings: [
+                    {
+                        startRange: 1, endRange: 3, 
+                    }
+                ],
+                dataLabelSettings:{
+                    visible: ['All']
+                },
+                tooltipSettings: {
+                    visible: true,
+                    trackLineSettings: {
+                        visible: true,
+                        width: 2
+                    }
+                }
+            });
+        });
+        afterAll(() => {
+            sparkline.destroy();
+            removeElement(id);
+        });
+        it('checking the rangeBandColor fluent2 theme',() =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                sparkline.theme = 'Fluent2';
+                ele = getIdElement(id + '_rangeBand_0');
+                expect(ele.getAttribute('fill')).toBe('#A19F9D');
+            }
+            sparkline.appendTo('#' + id);
+        })
+    });
+    describe('Sparkline bootstrap4 theme Spec', () => {
+        let trigger: MouseEvents = new MouseEvents();
+        let element: Element;
+        let sparkline: Sparkline;
+        let id: string = 'sparks';
+        let ele: Element;
+        let rect: Rect;
+        let d: string[];
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            document.body.appendChild(element);
+            sparkline = new Sparkline({
+                theme: 'Fluent2Dark',
+                width: '400', height: '100',
+                type: 'Column',
+                containerArea: {
+                    border: {                
+                        width: 4
+                    }
+                },
+                dataSource: [
+                    { id: 10, value: 50 },
+                    { id: 20, value: 30 },
+                    { id: 30, value: -40 },
+                    { id: 40, value: 10 },
+                    { id: 50, value: -60 },
+                    { id: 60, value: 20 },
+                    { id: 70, value: 70 },
+                    { id: 80, value: -55 },
+                    { id: 90, value: 80 },
+                    { id: 100, value: 45 }
+                ], yName: 'value', xName: 'id',
+                axisSettings:{
+                    lineSettings:{
+                        visible: true
+                    }
+                },
+                rangeBandSettings: [
+                    {
+                        startRange: 1, endRange: 3, 
+                    }
+                ],
+                dataLabelSettings:{
+                    visible: ['All']
+                },
+                tooltipSettings: {
+                    visible: true,
+                    trackLineSettings: {
+                        visible: true,
+                        width: 2
+                    }
+                }
+            });
+        });
+        afterAll(() => {
+            sparkline.destroy();
+            removeElement(id);
+        });
+        it('checking the rangeBandColor for fluent2Dark theme',() =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                sparkline.theme = 'Fluent2Dark';
+                ele = getIdElement(id + '_rangeBand_0');
+                expect(ele.getAttribute('fill')).toBe('#8A8886');
+            }
+            sparkline.appendTo('#' + id);
+        })
     });
 });

@@ -12,7 +12,7 @@ describe('Sidebar', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -1971,6 +1971,184 @@ describe("Sidebar DOM class Testing ", () => {
         });
     });
 });
+
+describe('Null or undefined value testing', () => {
+        let sidebar: any;
+        beforeEach((): void => {
+            const ele: HTMLElement = document.createElement('div');
+            const sibin: HTMLElement = document.createElement('div');
+            ele.innerHTML = '<h3>Testing of Sidebar</h3>';
+            sibin.innerHTML = 'Side bar';
+            sibin.className = 'e-content-section';
+            ele.id = 'sidebar';
+            ele.style.width = '300px';
+            ele.style.height = '100%';
+            document.body.style.margin = '0px';
+            const div: any = document.createElement('div');
+            const span: any = document.createElement('span');
+            div.className = 'e-context-element';
+            div.appendChild(span);
+            document.body.appendChild(div);
+            document.body.appendChild(ele);
+            document.body.appendChild(sibin);
+        });
+        afterEach((): void => {
+            if (sidebar) {
+                sidebar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('dockSize', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ dockSize: null }, ele);
+            expect(sidebar.dockSize).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ dockSize: undefined }, ele);
+            expect(sidebar.dockSize).toBe('auto');
+            sidebar.destroy();
+        });
+        it('enableDock', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: null }, ele);
+            expect(sidebar.enableDock).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ enableDock: undefined }, ele);
+            expect(sidebar.enableDock).toBe(false);
+            sidebar.destroy();
+        });
+        it('isOpen', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: null }, ele);
+            expect(sidebar.isOpen).toBe(true);
+            sidebar.destroy();
+            sidebar = new Sidebar({ isOpen: undefined }, ele);
+            expect(sidebar.isOpen).toBe(true);
+            sidebar.destroy();
+        });
+        it('type', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ type: null }, ele);
+            expect(sidebar.type).toBe('Auto');
+            sidebar.destroy();
+            sidebar = new Sidebar({ type: undefined }, ele);
+            expect(sidebar.type).toBe('Auto');
+            sidebar.destroy();
+        });
+        it('position', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ position: null }, ele);
+            expect(sidebar.position).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ position: undefined }, ele);
+            expect(sidebar.position).toBe('Left');
+            sidebar.destroy();
+        });
+        it('showBackdrop', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ showBackdrop: null }, ele);
+            expect(sidebar.showBackdrop).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ showBackdrop: undefined }, ele);
+            expect(sidebar.showBackdrop).toBe(false);
+            sidebar.destroy();
+        });
+        it('width', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ width: null }, ele);
+            expect(sidebar.width).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ width: undefined }, ele);
+            expect(sidebar.width).toBe('auto');
+            sidebar.destroy();
+        });
+        it('target', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ target: null }, ele);
+            expect(sidebar.target).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ target: undefined }, ele);
+            expect(sidebar.target).toBe(null);
+            sidebar.destroy();
+        });
+        it('height', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ height: null }, ele);
+            expect(sidebar.height).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ height: undefined }, ele);
+            expect(sidebar.height).toBe('auto');
+            sidebar.destroy();
+        });
+        it('zIndex', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ zIndex: null }, ele);
+            expect(sidebar.zIndex).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ zIndex: undefined }, ele);
+            expect(sidebar.zIndex).toBe(1000);
+            sidebar.destroy();
+        });
+        it('closeOnDocumentClick', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ closeOnDocumentClick: null }, ele);
+            expect(sidebar.closeOnDocumentClick).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ closeOnDocumentClick: undefined }, ele);
+            expect(sidebar.closeOnDocumentClick).toBe(false);
+            sidebar.destroy();
+        });
+        it('mediaQuery', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ mediaQuery: null }, ele);
+            expect(sidebar.mediaQuery).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ mediaQuery: undefined }, ele);
+            expect(sidebar.mediaQuery).toBe(null);
+            sidebar.destroy();
+        });
+        it('enableGestures', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableGestures: null }, ele);
+            expect(sidebar.enableGestures).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ enableGestures: undefined }, ele);
+            expect(sidebar.enableGestures).toBe(true);
+            sidebar.destroy();
+        });
+        it('enablePersistence', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enablePersistence: null }, ele);
+            expect(sidebar.enablePersistence).toBe(null);
+            sidebar.destroy();
+            sidebar = new Sidebar({ enablePersistence: undefined }, ele);
+            expect(sidebar.enablePersistence).toBe(false);
+            sidebar.destroy();
+        });
+        it('enableRtl', () => {
+            const ele: HTMLElement = document.getElementById('sidebar');
+            const sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableRtl: null }, ele);
+            expect(sidebar.enableRtl).toBe(false);
+            sidebar.destroy();
+            sidebar = new Sidebar({ enableRtl: undefined }, ele);
+            expect(sidebar.enableRtl).toBe(false);
+            sidebar.destroy();
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

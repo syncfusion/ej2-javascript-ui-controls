@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { withInRange, getPoint } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from './chart-series';
@@ -13,12 +11,17 @@ import { ChartSegmentModel } from './chart-series-model';
 
 export class MultiColoredLineSeries extends MultiColoredSeries {
     /**
-     * Render Line Series.
+     * Render the multi colored line series on the chart.
      *
+     * @param {Series} series - The series to be rendered.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
+     * @param {boolean} isInverted - Indicates whether the chart is inverted.
+     * @param {boolean} pointAnimate - Specifies whether the point has to be animated or not.
+     * @param {boolean} pointUpdate - Specifies whether the point has to be updated or not.
      * @returns {void}
-     * @private
      */
-    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate?: boolean, pointUpdate?: boolean): void {
         let previous: Points = null;
         let startPoint: string = 'M';
         const visiblePoints: Points[] = this.enableComplexProperty(series);
@@ -47,12 +50,12 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
                 } else {
                     if (this.setPointColor(point, segmentPoint, series, series.segmentAxis === 'X', segments) && direction !== '') {
                         options.push(new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + segmentPoint.index,
-                            'none', series.width, series.setPointColor(segmentPoint, series.interior), series.opacity, series.dashArray, direction));
+                                                    'none', series.width, series.setPointColor(segmentPoint, series.interior), series.opacity, series.dashArray, direction));
                         startPoint = 'M';
                         direction = '';
                     }
                 }
-                previous = point; 
+                previous = point;
                 segmentPoint = point;
                 this.storePointLocation(point, series, isInverted, getPoint);
             } else {
@@ -68,28 +71,53 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
                 series.opacity, series.dashArray, direction
             ));
         }
-        this.applySegmentAxis(series, options, segments);
-        this.renderMarker(series);
+        this.applySegmentAxis(series, options, segments, pointAnimate);
+        if (!pointUpdate) { this.renderMarker(series); }
     }
 
+    /**
+     * To animate point for multicolored line series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
+        for (let i: number = 0; i < point.length; i++) {
+            if (series.marker && series.marker.visible) {
+                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
+                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
+    }
     /**
      * Animates the series.
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
      */
-
     public doAnimation(series: Series): void {
         this.doLinearAnimation(series, series.animation);
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'MultiColoredLineSeries';
     }
@@ -100,10 +128,9 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroy method performed here
+         * Destroy method performed here.
          */
     }
 }

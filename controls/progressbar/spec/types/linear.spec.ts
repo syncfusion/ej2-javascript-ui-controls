@@ -9,7 +9,7 @@ describe('ProgressBar Control', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -653,6 +653,24 @@ describe('linear progress bar databind', () => {
         };
         progress.value += 60;
         progress.dataBind();
+        progress.loaded = loaded;
+        progress.refresh();
+    });
+    it('checking the Fluent2 theme', () => {
+        loaded = (args: Object): void => {
+            let color: string = document.getElementById('container_Linearprogress').getAttribute('stroke');
+            expect(color === '#0F6CBD' ).toBe(true);
+        };
+        progress.theme = 'Fluent2';
+        progress.loaded = loaded;
+        progress.refresh();
+    });
+    it('checking the Fluent2 dark theme', () => {
+        loaded = (args: Object): void => {
+            let color: string = document.getElementById('container_Linearprogress').getAttribute('stroke');
+            expect(color === '#115EA3' ).toBe(true);
+        };
+        progress.theme = 'Fluent2Dark';
         progress.loaded = loaded;
         progress.refresh();
     });

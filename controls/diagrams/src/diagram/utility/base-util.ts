@@ -444,7 +444,8 @@ export function extendArray(sourceArray: Object[], childArray: Object[]): Object
     for (let i: number = 0; i < sourceArray.length; i++) {
         if (sourceArray[parseInt(i.toString(), 10)] instanceof Array) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const extendedArray: Object[] = extendArray(sourceArray[parseInt(i.toString(), 10)] as Object[], childArray[parseInt(i.toString(), 10)] as Object[]);
+            const extendedArray: Object[] = extendArray(sourceArray[parseInt(i.toString(), 10)] as Object[],
+                                                        childArray[parseInt(i.toString(), 10)] as Object[]);
             if (reset) {
                 clonedArray.push(extendArray);
             }

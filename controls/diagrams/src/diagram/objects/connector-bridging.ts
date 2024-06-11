@@ -68,7 +68,8 @@ export class ConnectorBridging {
                                         let insertAt: number = -1; count = -1;
                                         for (let k: number = 0; k < lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.length; k++) {
                                             count++;
-                                            const arcSeg: Bridge = lastBridge[parseInt(segmentIndex.toString(), 10)].bridges[parseInt(k.toString(), 10)];
+                                            const arcSeg: Bridge =
+                                                lastBridge[parseInt(segmentIndex.toString(), 10)].bridges[parseInt(k.toString(), 10)];
                                             var1 = Math.abs(this.lengthCalculation(fixedPoint, arcSeg.endPoint));
                                             if (fix < var1) {
                                                 insertAt = count; break;
@@ -78,16 +79,19 @@ export class ConnectorBridging {
                                             //let paths: ArcSegment;
                                             // eslint-disable-next-line max-len
                                             const paths: ArcSegment = this.createSegment(stBridge, enBridge, angle, bgedir, pointIndex, conn, diagram);
-                                            paths.target = connector1.id; lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.splice(insertAt, 0, paths);
+                                            paths.target = connector1.id;
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.splice(insertAt, 0, paths);
                                             lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.join();
-                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint.splice(insertAt, 0, stBridge);
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint.splice(insertAt,
+                                                                                                                      0, stBridge);
                                             lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint.join();
                                             lastBridge[parseInt(segmentIndex.toString(), 10)].segmentIndex = segmentIndex;
                                         } else {
                                             //let paths: ArcSegment;
                                             // eslint-disable-next-line max-len
                                             const paths: ArcSegment = this.createSegment(stBridge, enBridge, angle, bgedir, pointIndex, conn, diagram);
-                                            paths.target = connector1.id; lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.push(paths);
+                                            paths.target = connector1.id;
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.push(paths);
                                             lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint.push(stBridge);
                                             lastBridge[parseInt(segmentIndex.toString(), 10)].segmentIndex = segmentIndex;
                                         }
@@ -103,7 +107,8 @@ export class ConnectorBridging {
                                             arcs.target = connector1.id;
                                             const stPoints: PointModel[] = []; const edPoints: PointModel[] = [];
                                             stPoints.push(stBridge); edPoints.push(enBridge);
-                                            lastBridge[parseInt(segmentIndex.toString(), 10)] = bgseg; lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.push(arcs);
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)] = bgseg;
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.push(arcs);
                                             lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint = stPoints;
                                             lastBridge[parseInt(segmentIndex.toString(), 10)].segmentIndex = segmentIndex;
                                         }

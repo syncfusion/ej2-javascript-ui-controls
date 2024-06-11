@@ -8,7 +8,7 @@ import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor
 import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
 import { SelectionCommands } from '../../src/editor-manager/plugin/selection-commands';
 import { NodeSelection } from '../../src/selection/selection';
-import { HtmlEditor, IRenderer, QuickToolbar } from '../../src/index';
+import { IRenderer, QuickToolbar } from '../../src/index';
 import { Dialog } from '@syncfusion/ej2-popups';
 
 let keyboardEventArgs = {
@@ -613,8 +613,8 @@ describe('RTE CR issues ', () => {
             let fontSize: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontSize');
             let fontName: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontName');
             let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
-            expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === '10 pt').toBe(true);
-            expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Segoe UI').toBe(true);
+            expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === 'Font Size').toBe(true);
+            expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Font Name').toBe(true);
             expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Paragraph').toBe(true);
             expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '').toBe(true);
             expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === '').toBe(true);
@@ -1682,7 +1682,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             (dropButton[0] as HTMLElement).click(); // Font size
             const dropItems : NodeList= document.body.querySelectorAll('.e-item');
-            (dropItems[6] as HTMLElement).click(); // Apply 34 pt
+            (dropItems[7] as HTMLElement).click(); // Apply 34 pt
             const correctElementString : string = `<p><span style="font-size: 36pt;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></em></strong></span></p>`;
             expect(rteObject.inputElement.innerHTML === correctElementString).toBe(true);
             ( toolbarButtons[3] as HTMLElement ).click(); // Bold
@@ -1701,7 +1701,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn');
             (dropButton[0] as HTMLElement).click();
             const dropItems : NodeList= document.body.querySelectorAll('.e-item');
-            (dropItems[6] as HTMLElement).click();
+            (dropItems[7] as HTMLElement).click();
             const correctElementString : string = `<p><span style="font-size: 36pt;">Testing</span></p>`;
             expect( rteObject.inputElement.innerHTML === correctElementString ).toBe( true );
             done();
@@ -1735,7 +1735,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[0] as HTMLElement ).click(); // Font 
             const dropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( dropItems[1] as HTMLElement ).click(); // Apply font
+            ( dropItems[2] as HTMLElement ).click(); // Apply font
             ( dropButton[2] as HTMLElement ).click(); // Font color
             const row : NodeList= document.body.querySelectorAll('.e-row');
             const tileItems: NodeList = ( row[0] as HTMLElement ).querySelectorAll('.e-tile');
@@ -1744,7 +1744,7 @@ describe('RTE CR issues ', () => {
             (rteObject.element.querySelector('.e-background-color') as HTMLElement).click();
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             const correctElementString : string = `<p><span style="font-size: 36pt;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="background-color: rgb(255, 255, 0);"><span style="font-family: Arial, Helvetica, sans-serif;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></em></strong></span></span></span></span></p>`;
             expect(rteObject.inputElement.innerHTML === correctElementString).toBe(true);
             ( toolbarButtons[3] as HTMLElement ).click(); // Bold
@@ -1780,7 +1780,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         });
@@ -1809,7 +1809,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         });
@@ -1838,7 +1838,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         });
@@ -1867,7 +1867,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         } );
@@ -1880,7 +1880,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         } );
@@ -1893,7 +1893,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         } );
@@ -1906,7 +1906,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         } );
@@ -1936,7 +1936,7 @@ describe('RTE CR issues ', () => {
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
             expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         });
@@ -2104,7 +2104,7 @@ describe('RTE CR issues ', () => {
             });
             rteObj.value = 'Initial Content';
             rteEle = rteObj.element;
-            controlId = rteEle.id;           
+            controlId = rteEle.id;
             rteObj.dataBind();
             done();
         });
@@ -2121,7 +2121,7 @@ describe('RTE CR issues ', () => {
                 expect(item.value === '<p>rich text editor</p>').toBe(true);
                 done();
             }, 100);
-        }, 1000 );
+        });
         afterAll((done: Function) => {
             destroy(rteObj);
             done();
@@ -3083,6 +3083,11 @@ describe('RTE CR issues ', () => {
             setTimeout(function () {
                 (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
                 (document.querySelector(".e-dropdown-popup .e-item.e-dashed-borders") as any).click();
+                detach(div);
+                setCursorPoint(tbElement, 0);
+                (rteObj as any).mouseDownHandler(eventsArg);
+                (rteObj as any).mouseUp(eventsArg);
+                div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
                 (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
                 expect(document.querySelector(".e-dropdown-popup .e-item.e-dashed-borders").classList.contains('e-active')).toBe(true);
                 detach(div);
@@ -3100,6 +3105,11 @@ describe('RTE CR issues ', () => {
             setTimeout(function () {
                 (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
                 (document.querySelector(".e-dropdown-popup .e-item.e-alternate-rows") as any).click();
+                detach(div);
+                setCursorPoint(tbElement, 0);
+                (rteObj as any).mouseDownHandler(eventsArg);
+                (rteObj as any).mouseUp(eventsArg);
+                div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
                 (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
                 expect(document.querySelector(".e-dropdown-popup .e-item.e-alternate-rows").classList.contains('e-active')).toBe(true);
                 detach(div);
@@ -3323,7 +3333,7 @@ describe('RTE CR issues ', () => {
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelectorAll('li')[0].firstChild, rteObj.element.querySelectorAll('li')[3].firstChild, 3, 3);
             let node: HTMLElement = (rteObj.element.querySelectorAll('.e-toolbar-item')[2] as HTMLElement);
             (node.firstChild  as HTMLElement).click();
-            (document.querySelectorAll('.e-dropdown-popup.e-rte-elements li')[3] as HTMLElement).click();
+            (document.querySelectorAll('.e-dropdown-popup.e-rte-elements li')[4] as HTMLElement).click();
             expect((document.querySelectorAll('.e-content li')[2] as HTMLElement).style.fontFamily === 'Impact, Charcoal, sans-serif').toBe(true);
         });
     });
@@ -3682,12 +3692,52 @@ describe('RTE CR issues ', () => {
                 expect(tdEle.querySelectorAll('ol').length === 1).toBe(true);
                 done();
             }, 400);
-        });
+          });
         afterAll(() => {
             destroy(rteObj);
         });
     });
-    describe('878730: Bullet format list not removed properly when we replace the content in RichTextEditor', () => {
+
+    describe('878765 - Title attribute not added properly for the Audio element in RichTextEditor', function () {
+        let rteObj: RichTextEditor;
+        beforeEach(function (done) {
+            rteObj = renderRTE({
+                value: "<div><div id='videoElement'>Video Element</div><div id='audioElement'>Audio Element</div></div>"
+            });
+            done();
+        });
+        afterEach(function (done) {
+            destroy(rteObj);
+            done();
+        });
+        it('Use the executeCommand method to insert the video title attributes.', function (done) {
+            (<any>rteObj).focusIn();
+            setTimeout(function () {
+                (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('#videoElement'), 0);
+                (<any>rteObj).executeCommand('insertVideo', {
+                    url: 'https://www.w3schools.com/tags/movie.mp4',
+                    cssClass: 'e-rte-video',
+                    title: 'newVideo',
+                });
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap').getAttribute("title") === "newVideo").toBe(true);
+                done();
+            }, 100);
+        });
+        it('Use the executeCommand method to insert the audio title attributes.', function (done) {
+            (<any>rteObj).focusIn();
+            setTimeout(function () {
+                (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('#audioElement'), 0);
+                (<any>rteObj).executeCommand('insertAudio', {
+                    url: 'https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3',
+                    cssClass: 'e-rte-audio',
+                    title: 'newAudio',
+                });
+                expect((<any>rteObj).inputElement.querySelector('.e-audio-wrap').getAttribute("title") === "newAudio").toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('878730: Bullet format list not  removed properly when we replace the content in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = {
             preventDefault: () => { },
@@ -3765,49 +3815,10 @@ describe('RTE CR issues ', () => {
             (rteObj as any).formatter.editorManager.formatObj.onKeyUp({ event: keyboardEventArgs, enterAction : rteObj.enterKey });
             expect(focusElement.childNodes[0].nodeName.toLocaleLowerCase() === 'p').toBe(true);
             done();
-        });
+          });
         afterAll((done: DoneFn) => {
             destroy(rteObj);
             done();
-        });
-    });
-    describe('878765 - Title attribute not added properly for the Audio element in RichTextEditor', function () {
-        let rteObj: RichTextEditor;
-        beforeEach(function (done) {
-            rteObj = renderRTE({
-                value: "<div><div id='videoElement'>Video Element</div><div id='audioElement'>Audio Element</div></div>"
-            });
-            done();
-        });
-        afterEach(function (done) {
-            destroy(rteObj);
-            done();
-        });
-        it('Use the executeCommand method to insert the video title attributes.', function (done) {
-            (<any>rteObj).focusIn();
-            setTimeout(function () {
-                (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('#videoElement'), 0);
-                (<any>rteObj).executeCommand('insertVideo', {
-                    url: 'https://www.w3schools.com/tags/movie.mp4',
-                    cssClass: 'e-rte-video',
-                    title: 'newVideo',
-                });
-                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap').getAttribute("title") === "newVideo").toBe(true);
-                done();
-            }, 100);
-        });
-        it('Use the executeCommand method to insert the audio title attributes.', function (done) {
-            (<any>rteObj).focusIn();
-            setTimeout(function () {
-                (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('#audioElement'), 0);
-                (<any>rteObj).executeCommand('insertAudio', {
-                    url: 'https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3',
-                    cssClass: 'e-rte-audio',
-                    title: 'newAudio',
-                });
-                expect((<any>rteObj).inputElement.querySelector('.e-audio-wrap').getAttribute("title") === "newAudio").toBe(true);
-                done();
-            }, 100);
         });
     });
     describe('878525: Content Editable div gets deleted when we copy and paste a text into the RichTextEditor when using Enterkey as', () => {
@@ -3860,55 +3871,52 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
-  
-    describe('877787 - InsertHtml executeCommand deletes the entire content when we insert html by selection in RichTextEditor', () => {
+    describe("881308: Script error throws when inserting table into the RichTextEditor", () => {
         let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
         beforeEach(() => {
             rteObj = renderRTE({
-                value:'testing the rich text editor',
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: '<p>test<a class="e-rte-anchor" href="http://link" title="http://link" target="_blank" aria-label="Open in new window">link</a></p><p>test</p><p><br></p>'
             });
-        });
-        it('insert html to selection', () => {
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 12, 16)
-            rteObj.executeCommand('insertHTML', '<span>Test</span>');
-            expect(rteObj.inputElement.innerHTML === '<p>testing the <span>Test</span> text editor</p>').toBe(true);
+            rteEle = rteObj.element;
         });
         afterEach((done) => {
             destroy(rteObj);
             done();
         });
-    });
-    describe('875856 - Using indents on Numbered or Bulleted list turns into nested list in RichTextEditor', () => {
-        let rteObj: RichTextEditor;
-        let rteEle: Element;
-        let controlId: string;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                value: '<ol style="list-style-image: none; list-style-type: upper-alpha;"><li>test1</li><li>test2</li><li>test3</li></ol>',
-                toolbarSettings: {
-                    items: ["Outdent",
-                        "Indent"]
-                }
-            });
-            rteEle = rteObj.element;
-            controlId = rteEle.id;
-        });
-        it('indent and outdent', () => {
+        it(' insert table ', (done) => {
             rteObj.focusIn();
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement, rteObj.inputElement, 0, 1);
-            const item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Indent');
-            item.click();
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement, rteObj.inputElement, 0, 1);
-            const item1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Outdent');
-            item1.click();
-            expect(rteObj.inputElement.innerHTML === '<ol style="list-style-image: none; list-style-type: upper-alpha; margin-left: 20px;"><li>test1</li><li>test2</li><li>test3</li></ol>').toBe(true);
-        });
-        afterAll((done) => {
-            destroy(rteObj);
-            done();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            let node: Element[] = (rteObj as any).inputElement.querySelectorAll("p");
+            setCursorPoint(node[2], 0);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(function () {
+                let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", false, true);
+                target.dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
+                    target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+                    target.dispatchEvent(clickEvent);
+                    setTimeout(() => {
+                        let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                        expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                        expect(table.querySelectorAll('td').length === 9).toBe(true);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
         });
     });
-  
+
     describe('879054: InsertHtml executeCommand not inserts into the cursor position after inserting table in RichTextEditor ', () => {
         const selection: NodeSelection = new NodeSelection();
         let range: Range;
@@ -3943,7 +3951,6 @@ describe('RTE CR issues ', () => {
                     saveSelection.restore();
                 }
                 rteObj.executeCommand('insertHTML', activeEle.textContent);
-                console.log(window.getSelection().getRangeAt(0));
                 rteObj.formatter.saveData();
                 rteObj.formatter.enableUndo(rteObj);
             }
@@ -4051,52 +4058,23 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
-    describe("881308: Script error throws when inserting table into the RichTextEditor", () => {
+    describe('877787 - InsertHtml executeCommand deletes the entire content when we insert html by selection in RichTextEditor', () => {
         let rteObj: RichTextEditor;
-        let rteEle: HTMLElement;
         beforeEach(() => {
             rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['CreateTable']
-                },
-                value: '<p>test<a class="e-rte-anchor" href="http://link" title="http://link" target="_blank" aria-label="Open in new window">link</a></p><p>test</p><p><br></p>'
+                value:'testing the rich text editor',
             });
-            rteEle = rteObj.element;
+        });
+        it('insert html to selection', () => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 12, 16)
+            rteObj.executeCommand('insertHTML', '<span>Test</span>');
+            expect(rteObj.inputElement.innerHTML === '<p>testing the <span>Test</span> text editor</p>').toBe(true);
         });
         afterEach((done) => {
             destroy(rteObj);
             done();
         });
-        it(' insert table ', (done) => {
-            rteObj.focusIn();
-            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
-            let node: Element[] = (rteObj as any).inputElement.querySelectorAll("p");
-            setCursorPoint(node[2], 0);
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            setTimeout(function () {
-                let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
-                clickEvent = document.createEvent("MouseEvents");
-                clickEvent.initEvent("click", false, true);
-                target.dispatchEvent(clickEvent);
-                setTimeout(() => {
-                    expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
-                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
-                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
-                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
-                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
-                    target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
-                    target.dispatchEvent(clickEvent);
-                    setTimeout(() => {
-                        let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
-                        expect(table.querySelectorAll('tr').length === 3).toBe(true);
-                        expect(table.querySelectorAll('td').length === 9).toBe(true);
-                        done();
-                    }, 500);
-                }, 500);
-            }, 500);
-        });
     });
-
     describe('883844: When using the Refresh method, RichTextEditor doesnot get refreshed to initial rendering', () => {
         let editor: RichTextEditor;
         beforeAll(() => {
@@ -4124,7 +4102,37 @@ describe('RTE CR issues ', () => {
             expect(editor.element.classList.contains('e-rte-full-screen')).not.toBe(true);
         });
     });
-  
+    describe('875856 - Using indents on Numbered or Bulleted list turns into nested list in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: Element;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<ol style="list-style-image: none; list-style-type: upper-alpha;"><li>test1</li><li>test2</li><li>test3</li></ol>',
+                toolbarSettings: {
+                    items: ["Outdent",
+                        "Indent"]
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        it('indent and outdent', () => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement, rteObj.inputElement, 0, 1);
+            const item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Indent');
+            item.click();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement, rteObj.inputElement, 0, 1);
+            const item1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Outdent');
+            item1.click();
+            expect(rteObj.inputElement.innerHTML === '<ol style="list-style-image: none; list-style-type: upper-alpha; margin-left: 20px;"><li>test1</li><li>test2</li><li>test3</li></ol>').toBe(true);
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
     describe('882579 - Pasted Blob images are not uploaded to the server in RichTextEditor', () => {
         let editor: RichTextEditor;
         beforeAll(() => {
@@ -4133,8 +4141,8 @@ describe('RTE CR issues ', () => {
                     keepFormat: true
                 },
                 insertImageSettings: {
-                    saveUrl: "https://services.syncfusion.com/js/production/api/FileUploader/Save",
-                    path: "../Images/"
+                    saveUrl: "https://ej2services.syncfusion.com/js/development/",
+                    path: "https://ej2services.syncfusion.com/js/development/RichTextEditor"
                 },
             });
         });
@@ -4175,9 +4183,10 @@ describe('RTE CR issues ', () => {
                     expect(editor.inputElement.querySelector('img').src.includes("base64")).toBe(true);
                     done();
                 }, 100);
-            }, 300);
+            }, 500);
         });
     });
+
     describe('885141: RichTextEditor creates P tag after pressing enter key on UL element on selection of DIV as enteraction in EnterKey Configuration', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -4189,7 +4198,7 @@ describe('RTE CR issues ', () => {
                 }
             });
         });
-        it('Deselect the "Bulleted List" and add the DIV to the Deselected list item', () => {
+        it(' Deselect the "Bulleted List" and add the DIV to the Deselected list item', () => {
             rteObj.dataBind();
             let divElement: HTMLElement = rteObj.inputElement.querySelector('.test');
            setCursorPoint(divElement, 0);
@@ -4199,11 +4208,44 @@ describe('RTE CR issues ', () => {
            expect(rteObj.inputElement.innerHTML === '<ul><li><div>one</div></li><li><div>two</div></li></ul><div class="test test">three</div><div><br></div>').toBe(true); 
         });
         afterAll((done: DoneFn) => {
-            destroy(rteObj);
+           destroy(rteObj);
             done();
         });
     });
-    describe('883222 - Tab key press on selected paragraph deletes the entire line in RichTextEditor', () => {
+    describe('Bug 884738: Auto numbering or bulletin list not working with enterKey as BR in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, action:'space', key: 'Space', stopPropagation: () => { }, shiftKey: false, which: 32};
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: 'test<br>1. ',
+                enterKey: 'BR',
+                toolbarSettings: {
+                    items: [
+                      'Alignments',
+                      '|',
+                      'NumberFormatList',
+                      'BulletFormatList',
+                      '|',
+                      'Outdent',
+                      'Indent',
+                    ],
+                  },
+            });
+        });
+        it(' to create list when using br', () => {
+            rteObj.dataBind();
+           setCursorPoint(rteObj.inputElement.querySelector('br').nextSibling as Element, 2);
+           keyBoardEvent.keyCode = 32;
+           keyBoardEvent.code = 'Space';
+           (rteObj as any).keyDown(keyBoardEvent);
+           expect(rteObj.inputElement.innerHTML === 'test<br><ol><li></li></ol>').toBe(true); 
+        });
+        afterAll((done: DoneFn) => {
+           destroy(rteObj);
+            done();
+        });
+    });
+      describe('883222 - Tab key press on selected paragraph deletes the entire line in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9, target: document.body };
         let ShiftTab: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9, key: 'Tab', keyCode: 9, target: document.body };
@@ -4317,7 +4359,7 @@ describe('RTE CR issues ', () => {
         domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 6, 1);
         (rteObj as any).keyDown(keyBoardEvent);
         let value=rteObj.inputElement.querySelector('#ol');
-        expect(value.innerHTML===`<li><p>Provide\n        the tool bar support, it’s also customizable.</p><ol><li><p id="one">Options\n        to get the HTML elements with styles.</p></li><li><p>Support\n        to insert image from a defined path.</p></li><li id="two"><p>Footer\n        elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol></li>`).toBe(true)
+        expect(value.innerHTML===`<li><p>Provide\n        the tool bar support, it’s also customizable.</p><ol><li><p id="one">Options\n        to get the HTML elements with styles.</p></li><li><p>Support\n        to insert image from a defined path.</p></li><li id="two"><p>Footer\n        elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol></li>`).toBe(true);
         rteObj.value=`<p id='one'><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li><p id='two'>Options to get the HTML elements with styles.</p></li></ol>`;
         rteObj.dataBind();
         startElement = rteObj.inputElement.querySelector('#one');
@@ -4331,40 +4373,6 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
-    describe('Bug 884738: Auto numbering or bulletin list not working with enterKey as BR in RichTextEditor', () => {
-        let rteObj: RichTextEditor;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, action:'space', key: 'Space', stopPropagation: () => { }, shiftKey: false, which: 32};
-        beforeAll(() => {
-            rteObj = renderRTE({
-                value: 'test<br>1. ',
-                enterKey: 'BR',
-                toolbarSettings: {
-                    items: [
-                      'Alignments',
-                      '|',
-                      'NumberFormatList',
-                      'BulletFormatList',
-                      '|',
-                      'Outdent',
-                      'Indent',
-                    ],
-                  },
-            });
-        });
-        it(' to create list when using br', () => {
-            rteObj.dataBind();
-           setCursorPoint(rteObj.inputElement.querySelector('br').nextSibling as Element, 2);
-           keyBoardEvent.keyCode = 32;
-           keyBoardEvent.code = 'Space';
-           (rteObj as any).keyDown(keyBoardEvent);
-           expect(rteObj.inputElement.innerHTML === 'test<br><ol><li></li></ol>').toBe(true); 
-        });
-        afterAll((done: DoneFn) => {
-           destroy(rteObj);
-            done();
-        });
-    });
-
     describe('887277 - Br tag added along with the image tag while pasting images into the RichTextEditor', () => {
         let rteObject : RichTextEditor ;
         let innerHTML: string =`<img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style=" border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 100%; position: relative; padding: 1px; color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); width: 300px;">`; 
@@ -4409,6 +4417,35 @@ describe('RTE CR issues ', () => {
                 expect(rteObject.inputElement.innerHTML === `<p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style=" border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 100%; position: relative; padding: 1px; color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); width: 300px;"> </p>`).toEqual(true);
                 done();
             }, 400);
+        });
+    });
+    describe('887954: Strikethrough toolbar item does not recognise the s tag in the RichTextEditor', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                },
+                toolbarSettings: {
+                    items: ['StrikeThrough']
+                },
+            });
+        });
+        afterAll((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('toolbar recogins the s tag', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = `<html xmlns:o="urn:schemas-microsoft-com:office:office"\r\nxmlns:w="urn:schemas-microsoft-com:office:word"\r\nxmlns:m="http://schemas.microsoft.com/office/2004/12/omml"\r\nxmlns="http://www.w3.org/TR/REC-html40">\r\n\r\n<head>\r\n<meta http-equiv=Content-Type content="text/html; charset=utf-8">\r\n<meta name=ProgId content=Word.Document>\r\n<meta name=Generator content="Microsoft Word 15">\r\n<meta name=Originator content="Microsoft Word 15">\r\n<link rel=File-List\r\nhref="file:///C:/Users/VENKAT~1/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">\r\n<link rel=themeData\r\nhref="file:///C:/Users/VENKAT~1/AppData/Local/Temp/msohtmlclip1/01/clip_themedata.thmx">\r\n<link rel=colorSchemeMapping\r\nhref="file:///C:/Users/VENKAT~1/AppData/Local/Temp/msohtmlclip1/01/clip_colorschememapping.xml">\r\n\x3C!--[if gte mso 9]><xml>\r\n <w:WordDocument>\r\n  <w:View>Normal</w:View>\r\n  <w:Zoom>0</w:Zoom>\r\n  <w:TrackMoves/>\r\n  <w:TrackFormatting/>\r\n  <w:PunctuationKerning/>\r\n  <w:ValidateAgainstSchemas/>\r\n  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>\r\n  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>\r\n  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>\r\n  <w:DoNotPromoteQF/>\r\n  <w:LidThemeOther>EN-IN</w:LidThemeOther>\r\n  <w:LidThemeAsian>X-NONE</w:LidThemeAsian>\r\n  <w:LidThemeComplexScript>X-NONE</w:LidThemeComplexScript>\r\n  <w:Compatibility>\r\n   <w:BreakWrappedTables/>\r\n   <w:SnapToGridInCell/>\r\n   <w:WrapTextWithPunct/>\r\n   <w:UseAsianBreakRules/>\r\n   <w:DontGrowAutofit/>\r\n   <w:SplitPgBreakAndParaMark/>\r\n   <w:EnableOpenTypeKerning/>\r\n   <w:DontFlipMirrorIndents/>\r\n   <w:OverrideTableStyleHps/>\r\n  </w:Compatibility>\r\n  <m:mathPr>\r\n   <m:mathFont m:val="Cambria Math"/>\r\n   <m:brkBin m:val="before"/>\r\n   <m:brkBinSub m:val="&#45;-"/>\r\n   <m:smallFrac m:val="off"/>\r\n   <m:dispDef/>\r\n   <m:lMargin m:val="0"/>\r\n   <m:rMargin m:val="0"/>\r\n   <m:defJc m:val="centerGroup"/>\r\n   <m:wrapIndent m:val="1440"/>\r\n   <m:intLim m:val="subSup"/>\r\n   <m:naryLim m:val="undOvr"/>\r\n  </m:mathPr></w:WordDocument>\r\n</xml><![endif]-->\x3C!--[if gte mso 9]><xml>\r\n <w:LatentStyles DefLockedState="false" DefUnhideWhenUsed="false"\r\n  DefSemiHidden="false" DefQFormat="false" DefPriority="99"\r\n  LatentStyleCount="376">\r\n  <w:LsdException Locked="false" Priority="0" QFormat="true" Name="Normal"/>\r\n  <w:LsdException Locked="false" Priority="9" QFormat="true" Name="heading 1"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 2"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 3"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 4"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 5"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 6"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 7"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 8"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 9"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 6"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 7"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 8"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 9"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 1"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 2"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 3"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 4"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 5"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 6"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 7"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 8"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 9"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Normal Indent"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="footnote text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="annotation text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="header"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="footer"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index heading"/>\r\n  <w:LsdException Locked="false" Priority="35" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="caption"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="table of figures"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="envelope address"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="envelope return"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="footnote reference"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="annotation reference"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="line number"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="page number"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="endnote reference"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="endnote text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="table of authorities"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="macro"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="toa heading"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number 5"/>\r\n  <w:LsdException Locked="false" Priority="10" QFormat="true" Name="Title"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Closing"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Signature"/>\r\n  <w:LsdException Locked="false" Priority="1" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="Default Paragraph Font"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text Indent"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Message Header"/>\r\n  <w:LsdException Locked="false" Priority="11" QFormat="true" Name="Subtitle"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Salutation"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Date"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text First Indent"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text First Indent 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Note Heading"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text Indent 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text Indent 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Block Text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Hyperlink"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="FollowedHyperlink"/>\r\n  <w:LsdException Locked="false" Priority="22" QFormat="true" Name="Strong"/>\r\n  <w:LsdException Locked="false" Priority="20" QFormat="true" Name="Emphasis"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Document Map"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Plain Text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="E-mail Signature"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Top of Form"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Bottom of Form"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Normal (Web)"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Acronym"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Address"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Cite"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Code"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Definition"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Keyboard"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Preformatted"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Sample"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Typewriter"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Variable"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Normal Table"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="annotation subject"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="No List"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Outline List 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Outline List 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Outline List 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Simple 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Simple 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Simple 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Classic 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Classic 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Classic 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Classic 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Colorful 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Colorful 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Colorful 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 6"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 7"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 8"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 6"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 7"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 8"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table 3D effects 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table 3D effects 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table 3D effects 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Contemporary"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Elegant"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Professional"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Subtle 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Subtle 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Web 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Web 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Web 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Balloon Text"/>\r\n  <w:LsdException Locked="false" Priority="39" Name="Table Grid"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Theme"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" Name="Placeholder Text"/>\r\n  <w:LsdException Locked="false" Priority="1" QFormat="true" Name="No Spacing"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" Name="Revision"/>\r\n  <w:LsdException Locked="false" Priority="34" QFormat="true"\r\n   Name="List Paragraph"/>\r\n  <w:LsdException Locked="false" Priority="29" QFormat="true" Name="Quote"/>\r\n  <w:LsdException Locked="false" Priority="30" QFormat="true"\r\n   Name="Intense Quote"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="19" QFormat="true"\r\n   Name="Subtle Emphasis"/>\r\n  <w:LsdException Locked="false" Priority="21" QFormat="true"\r\n   Name="Intense Emphasis"/>\r\n  <w:LsdException Locked="false" Priority="31" QFormat="true"\r\n   Name="Subtle Reference"/>\r\n  <w:LsdException Locked="false" Priority="32" QFormat="true"\r\n   Name="Intense Reference"/>\r\n  <w:LsdException Locked="false" Priority="33" QFormat="true" Name="Book Title"/>\r\n  <w:LsdException Locked="false" Priority="37" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="Bibliography"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="TOC Heading"/>\r\n  <w:LsdException Locked="false" Priority="41" Name="Plain Table 1"/>\r\n  <w:LsdException Locked="false" Priority="42" Name="Plain Table 2"/>\r\n  <w:LsdException Locked="false" Priority="43" Name="Plain Table 3"/>\r\n  <w:LsdException Locked="false" Priority="44" Name="Plain Table 4"/>\r\n  <w:LsdException Locked="false" Priority="45" Name="Plain Table 5"/>\r\n  <w:LsdException Locked="false" Priority="40" Name="Grid Table Light"/>\r\n  <w:LsdException Locked="false" Priority="46" Name="Grid Table 1 Light"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark"/>\r\n  <w:LsdException Locked="false" Priority="51" Name="Grid Table 6 Colorful"/>\r\n  <w:LsdException Locked="false" Priority="52" Name="Grid Table 7 Colorful"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="46" Name="List Table 1 Light"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark"/>\r\n  <w:LsdException Locked="false" Priority="51" Name="List Table 6 Colorful"/>\r\n  <w:LsdException Locked="false" Priority="52" Name="List Table 7 Colorful"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 6"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Mention"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Smart Hyperlink"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Hashtag"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Unresolved Mention"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Smart Link"/>\r\n </w:LatentStyles>\r\n</xml><![endif]-->\r\n<style>\r\n\x3C!--\r\n /* Font Definitions */\r\n @font-face\r\n\t{font-family:"Cambria Math";\r\n\tpanose-1:2 4 5 3 5 4 6 3 2 4;\r\n\tmso-font-charset:0;\r\n\tmso-generic-font-family:roman;\r\n\tmso-font-pitch:variable;\r\n\tmso-font-signature:-536869121 1107305727 33554432 0 415 0;}\r\n@font-face\r\n\t{font-family:Calibri;\r\n\tpanose-1:2 15 5 2 2 2 4 3 2 4;\r\n\tmso-font-charset:0;\r\n\tmso-generic-font-family:swiss;\r\n\tmso-font-pitch:variable;\r\n\tmso-font-signature:-469750017 -1073732485 9 0 511 0;}\r\n /* Style Definitions */\r\n p.MsoNormal, li.MsoNormal, div.MsoNormal\r\n\t{mso-style-unhide:no;\r\n\tmso-style-qformat:yes;\r\n\tmso-style-parent:"";\r\n\tmargin-top:0in;\r\n\tmargin-right:0in;\r\n\tmargin-bottom:8.0pt;\r\n\tmargin-left:0in;\r\n\tline-height:107%;\r\n\tmso-pagination:widow-orphan;\r\n\tfont-size:11.0pt;\r\n\tfont-family:"Calibri",sans-serif;\r\n\tmso-ascii-font-family:Calibri;\r\n\tmso-ascii-theme-font:minor-latin;\r\n\tmso-fareast-font-family:Calibri;\r\n\tmso-fareast-theme-font:minor-latin;\r\n\tmso-hansi-font-family:Calibri;\r\n\tmso-hansi-theme-font:minor-latin;\r\n\tmso-bidi-font-family:"Times New Roman";\r\n\tmso-bidi-theme-font:minor-bidi;\r\n\tmso-font-kerning:1.0pt;\r\n\tmso-ligatures:standardcontextual;\r\n\tmso-ansi-language:EN-IN;}\r\n.MsoChpDefault\r\n\t{mso-style-type:export-only;\r\n\tmso-default-props:yes;\r\n\tfont-family:"Calibri",sans-serif;\r\n\tmso-ascii-font-family:Calibri;\r\n\tmso-ascii-theme-font:minor-latin;\r\n\tmso-fareast-font-family:Calibri;\r\n\tmso-fareast-theme-font:minor-latin;\r\n\tmso-hansi-font-family:Calibri;\r\n\tmso-hansi-theme-font:minor-latin;\r\n\tmso-bidi-font-family:"Times New Roman";\r\n\tmso-bidi-theme-font:minor-bidi;\r\n\tmso-ansi-language:EN-IN;}\r\n.MsoPapDefault\r\n\t{mso-style-type:export-only;\r\n\tmargin-bottom:8.0pt;\r\n\tline-height:107%;}\r\n@page WordSection1\r\n\t{size:595.3pt 841.9pt;\r\n\tmargin:1.0in 1.0in 1.0in 1.0in;\r\n\tmso-header-margin:35.4pt;\r\n\tmso-footer-margin:35.4pt;\r\n\tmso-paper-source:0;}\r\ndiv.WordSection1\r\n\t{page:WordSection1;}\r\n-->\r\n</style>\r\n\x3C!--[if gte mso 10]>\r\n<style>\r\n /* Style Definitions */\r\n table.MsoNormalTable\r\n\t{mso-style-name:"Table Normal";\r\n\tmso-tstyle-rowband-size:0;\r\n\tmso-tstyle-colband-size:0;\r\n\tmso-style-noshow:yes;\r\n\tmso-style-priority:99;\r\n\tmso-style-parent:"";\r\n\tmso-padding-alt:0in 5.4pt 0in 5.4pt;\r\n\tmso-para-margin-top:0in;\r\n\tmso-para-margin-right:0in;\r\n\tmso-para-margin-bottom:8.0pt;\r\n\tmso-para-margin-left:0in;\r\n\tline-height:107%;\r\n\tmso-pagination:widow-orphan;\r\n\tfont-size:11.0pt;\r\n\tfont-family:"Calibri",sans-serif;\r\n\tmso-ascii-font-family:Calibri;\r\n\tmso-ascii-theme-font:minor-latin;\r\n\tmso-hansi-font-family:Calibri;\r\n\tmso-hansi-theme-font:minor-latin;\r\n\tmso-bidi-font-family:"Times New Roman";\r\n\tmso-bidi-theme-font:minor-bidi;\r\n\tmso-font-kerning:1.0pt;\r\n\tmso-ligatures:standardcontextual;\r\n\tmso-ansi-language:EN-IN;}\r\n</style>\r\n<![endif]-->\r\n</head>\r\n\r\n<body lang=EN-US style='tab-interval:.5in;word-wrap:break-word'>\r\n\x3C!--StartFragment-->\r\n\r\n<p class=MsoNormal><s><span lang=EN-IN>Text<o:p></o:p></span></s></p>\r\n\r\n\x3C!--EndFragment-->\r\n</body>\r\n\r\n</html>\r\n`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.contentModule.getEditPanel().dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                expect(document.querySelector('.e-toolbar-item').classList.contains('e-active')).toBe(true);
+                done();
+            }, 100);
         });
     });
 });

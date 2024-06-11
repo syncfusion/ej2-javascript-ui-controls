@@ -1,21 +1,21 @@
-import { Spreadsheet } from '../index';
-import { getUpdateUsingRaf } from '../common/index'
-import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach } from '@syncfusion/ej2-base';
+import { Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
+import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach, getComponent } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, completeAction } from '../common/event';
-import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells, isNavigationKey } from '../common/index';
+import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells, isNavigationKey, isReadOnlyCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart } from '../../workbook/common/event';
-import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, skipDefaultValue } from '../../workbook/base/index';
-import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs, setVisibleMergeIndex } from '../../workbook/index';
+import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, getRow } from '../../workbook/base/index';
+import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs, setVisibleMergeIndex, isReadOnly } from '../../workbook/index';
 import { beginAction, updateCell, checkCellValid, NumberFormatArgs, parseLocaleNumber, getViewportIndexes } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
-import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
+import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth, readonlyAlert } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference, workbookFormulaOperation } from '../../workbook/index';
 import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange, dialog, locale } from '../common/index';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged } from '../common/event';
 import { checkFormulaRef, getData, VisibleMergeIndexArgs } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
+import { BeforeOpenEventArgs, Dialog as DialogComponent } from '@syncfusion/ej2-popups';
 
 /**
  * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
@@ -115,6 +115,7 @@ export class Edit {
         this.parent.on(checkUniqueRange, this.checkUniqueRange, this);
         this.parent.on(reApplyFormula, this.reApplyFormula, this);
         this.parent.on(activeSheetChanged, this.sheetChangeHandler, this);
+        this.parent.on(readonlyAlert, this.readOnlyAlertHandler, this);
     }
 
     private removeEventListener(): void {
@@ -136,6 +137,7 @@ export class Edit {
             this.parent.off(checkUniqueRange, this.checkUniqueRange);
             this.parent.off(reApplyFormula, this.reApplyFormula);
             this.parent.off(activeSheetChanged, this.sheetChangeHandler);
+            this.parent.off(readonlyAlert, this.readOnlyAlertHandler);
         }
     }
 
@@ -340,28 +342,37 @@ export class Edit {
                     const isF2Edit: boolean = (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2);
                     const isBackSpace: boolean = keyCode === this.keyCodes.BACKSPACE;
                     const isMacDelete: boolean = /(Macintosh|MacIntel|MacPPC|Mac68K|Mac|Mac OS|iPod|iPad)/i.test(navigator.userAgent) && isBackSpace;
+                    const readonlyDialog: Element = this.parent.element.querySelector('.e-readonly-alert-dlg');
                     if ((!e.ctrlKey && !e.metaKey && !e.altKey && (
                         (!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
                         isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
                     )) || isF2Edit || isBackSpace) {
                         if (isF2Edit) { this.isNewValueEdit = false; }
                         const overlayElements: HTMLCollection = this.parent.element.getElementsByClassName('e-ss-overlay-active');
-                        if (overlayElements.length) {
-                            if (isBackSpace && !isMacDelete) {
-                                this.editingHandler('delete');
+                        if (!readonlyDialog) {
+                            if (isReadOnlyCells(this.parent)) {
+                                this.parent.notify(readonlyAlert, null);
+                            } else if (overlayElements.length) {
+                                if (isBackSpace && !isMacDelete) {
+                                    this.editingHandler('delete');
+                                }
+                            } else {
+                                this.startEdit(null, null, true, true);
+                                focus(this.getEditElement(sheet));
                             }
-                        } else {
-                            this.startEdit(null, null, true, true);
-                            focus(this.getEditElement(sheet));
                         }
                     }
                     if (keyCode === this.keyCodes.DELETE || isMacDelete) {
                         const islockcell: boolean = sheet.isProtected && isLockedCells(this.parent);
-                        if (!islockcell) {
-                            this.editingHandler('delete');
-                            this.parent.notify(activeCellChanged, null);
-                        } else {
-                            this.parent.notify(editAlert, null);
+                        if (!readonlyDialog) {
+                            if (islockcell) {
+                                this.parent.notify(editAlert, null);
+                            } else if (isReadOnlyCells(this.parent)) {
+                                this.parent.notify(readonlyAlert, null);
+                            } else {
+                                this.editingHandler('delete');
+                                this.parent.notify(activeCellChanged, null);
+                            }
                         }
                     }
                 }
@@ -407,7 +418,7 @@ export class Edit {
 
     private refreshEditor(
         value: string, refreshFormulaBar?: boolean, refreshEditorElem?: boolean, isAppend?: boolean,
-        trigEvent: boolean = true, prevCellValue?:string): void {
+        trigEvent: boolean = true, prevCellValue?: string): void {
         if (isAppend) {
             value = this.editCellData.value = this.editCellData.value + value;
         } else {
@@ -704,7 +715,6 @@ export class Edit {
     private tapHandler(e: TouchEvent): void {
         if (!this.tapedTwice) {
             this.tapedTwice = true;
-            /* eslint-disable */
             setTimeout((): void => {
                 this.tapedTwice = false;
                 if (!this.parent.isEdit && (e.target as Element).classList.contains('e-cell')) {
@@ -714,7 +724,6 @@ export class Edit {
                     }
                 }
             }, 300);
-            /* eslint-enable */
             return;
         }
         e.preventDefault();
@@ -729,7 +738,9 @@ export class Edit {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const actCell: number[] = getCellIndexes(sheet.activeCell);
             const cell: CellModel = getCell(actCell[0], actCell[1], sheet, false, true);
-            if (!sheet.isProtected || !isLocked(cell, getColumn(sheet, actCell[1]))) {
+            if (isReadOnly(cell, getColumn(sheet, actCell[1]), getRow(sheet, actCell[0]))) {
+                this.parent.notify(readonlyAlert, null);
+            } else if (!sheet.isProtected || !isLocked(cell, getColumn(sheet, actCell[1]))) {
                 if (this.isEdit) {
                     if (!trgt.classList.contains('e-spreadsheet-edit')) {
                         if (checkIsFormula(this.editCellData.value)) {
@@ -880,7 +891,8 @@ export class Edit {
                     if (getTextWidth(cell.value, cell.style, this.parent.cellStyle) > editWidth) { addWrap = true; }
                 }
             } else {
-                editWidth = (mainContElement.offsetWidth - (left - cont.scrollLeft) - 28) - this.parent.sheetModule.getRowHeaderWidth(sheet);
+                editWidth = (mainContElement.offsetWidth - (left - cont.scrollLeft) - 28) -
+                    this.parent.sheetModule.getRowHeaderWidth(sheet);
                 const tdEleInf: ClientRect = tdElem.getBoundingClientRect();
                 const mainContEleInf: ClientRect = mainContElement.getBoundingClientRect();
                 const getCellRight: number = this.parent.enableRtl ? tdEleInf.left : tdEleInf.right;
@@ -1043,7 +1055,7 @@ export class Edit {
                     const target: Element = e.target as Element;
                     const ribbonCls: string[] = ['e-toolbar-item', 'e-tab-wrap', 'e-text-wrap', 'e-tab-text', 'e-caret'];
                     const skipAlertCls: string[] = ['e-scroller', 'e-main-panel', 'e-autofill'];
-                    if ((!ribbonCls.some((cls: string) => target.classList.contains(cls)) || !closest(target, '.e-ribbon')) && 
+                    if ((!ribbonCls.some((cls: string) => target.classList.contains(cls)) || !closest(target, '.e-ribbon')) &&
                         !skipAlertCls.some((cls: string) => target.classList.contains(cls))) {
                         this.showFormulaAlertDlg(cellValue);
                     }
@@ -1226,8 +1238,9 @@ export class Edit {
             return;
         }
         if (triggerEventArgs.value && triggerEventArgs.value.toString().indexOf('\n') > -1) {
-            let cell : CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
-            wrapText(this.parent.getActiveSheet().selectedRange, cell ? (cell.wrap === false ? false : true) : true, this.parent as Workbook);
+            const cell: CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
+            wrapText(this.parent.getActiveSheet().selectedRange, cell ? (cell.wrap === false ? false : true) :
+                true, this.parent as Workbook);
             this.refreshEditor(triggerEventArgs.value, this.isCellEdit, false, false, false);
         }
         this.updateEditedValue(true, triggerEventArgs.value, event, isPublic);
@@ -1569,7 +1582,7 @@ export class Edit {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const alertDialog: Dialog = this.parent.serviceLocator.getService('dialog') as Dialog;
         let cursorPosition: number;
-        let errorKey: string = this.getFormulaErrorKey(errorString);
+        const errorKey: string = this.getFormulaErrorKey(errorString);
         alertDialog.show({
             width: 400, isModal: true, showCloseIcon: true, target: this.parent.element, cssClass: 'e-validation-error-dlg',
             content: l10n.getConstant(errorKey),
@@ -1595,41 +1608,79 @@ export class Edit {
                 selection.addRange(range);
                 elem.focus();
             }
-        },false);
+        }, false);
     }
 
     private getFormulaErrorKey(errorString: string): string {
         let errorKey: string;
-        switch(errorString) {
-            case 'invalid arguments':
-                errorKey = 'InvalidArguments';
-                break;
-            case 'improper formula':
-                errorKey = 'ImproperFormula';
-                break;
-            case 'empty expression':
-                errorKey = 'EmptyExpression';
-                break;
-            case 'mismatched parentheses':
-                errorKey = 'MismatchedParenthesis';
-                break;
-            case 'mismatched string quotes':
-                errorKey = 'MismatchedStringQuotes'
-                break;
-            case 'wrong number of arguments':
-                errorKey = 'WrongNumberOfArguments';
-                break;
-            case 'requires 3 arguments':
-                errorKey = 'Requires3Arguments';
-                break;
-            default:
-                if (errorString.includes('circular reference')) {
-                    errorKey = 'FormulaCircularRef'
-                } else {
-                    errorKey = 'InvalidFormulaError';
-                }
+        switch (errorString) {
+        case 'invalid arguments':
+            errorKey = 'InvalidArguments';
+            break;
+        case 'improper formula':
+            errorKey = 'ImproperFormula';
+            break;
+        case 'empty expression':
+            errorKey = 'EmptyExpression';
+            break;
+        case 'mismatched parentheses':
+            errorKey = 'MismatchedParenthesis';
+            break;
+        case 'mismatched string quotes':
+            errorKey = 'MismatchedStringQuotes';
+            break;
+        case 'wrong number of arguments':
+            errorKey = 'WrongNumberOfArguments';
+            break;
+        case 'requires 3 arguments':
+            errorKey = 'Requires3Arguments';
+            break;
+        default:
+            if (errorString.includes('circular reference')) {
+                errorKey = 'FormulaCircularRef';
+            } else {
+                errorKey = 'InvalidFormulaError';
+            }
         }
         return errorKey;
+    }
+
+    private readOnlyAlertHandler(): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const dialog: Dialog = this.parent.serviceLocator.getService('dialog');
+        const findDialog: HTMLElement = this.parent.element.querySelector('.e-find-dlg') as HTMLElement;
+        let findDlgInst: DialogComponent;
+        if (!isNullOrUndefined(findDialog)) {
+            findDlgInst = getComponent(findDialog, 'dialog') as DialogComponent;
+        }
+        dialog.show({
+            content: l10n.getConstant('ReadonlyAlert'),
+            isModal: true,
+            closeOnEscape: true,
+            showCloseIcon: true,
+            width: '400px',
+            cssClass: 'e-readonly-alert-dlg',
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'ReadOnlyAlertDialog',
+                    content: l10n.getConstant('ReadonlyAlert'),
+                    element: args.element, target: args.target, cancel: args.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    args.cancel = true;
+                    getUpdateUsingRaf((): void => dialog.destroyDialog());
+                }
+                dialog.dialogInstance.content = dlgArgs.content;
+                focus(this.parent.element);
+            },
+            close: (): void => {
+                if (!isNullOrUndefined(findDialog)) {
+                    dialog.dialogInstance = findDlgInst;
+                }
+                focus(this.parent.element);
+            }
+        });
     }
 }
 

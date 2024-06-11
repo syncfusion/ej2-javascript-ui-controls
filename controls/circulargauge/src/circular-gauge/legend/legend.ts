@@ -1,12 +1,12 @@
 import { CircularGauge } from '../circular-gauge';
-import { removeElement, getElement, stringToNumber, measureText, textElement, appendPath, calculateShapes, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption } from '../utils/helper-common';
+import { getElement, stringToNumber, measureText, textElement, appendPath, calculateShapes, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption } from '../utils/helper-common';
 import { textTrim } from '../utils/helper-legend';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Border } from '../model/base';
 import { LegendPosition, Alignment, GaugeShape } from '../utils/enum';
 import { Axis } from '../axes/axis';
 import { ILegendRenderEventArgs } from '../model/interface';
-import { LocationModel, LegendSettingsModel } from '../model/base-model';
+import { BorderModel, LegendSettingsModel } from '../model/base-model';
 import { LegendSettings } from '../model/base';
 import { ILegendRegions } from '../model/interface';
 import { RangeModel } from '../axes/axis-model';
@@ -585,7 +585,11 @@ export class Legend {
         legendBounds: Rect, legendGroup: Element, legend: LegendSettingsModel, id: string
     ): Element {
         const padding: number = legend.padding;
-        const options: RectOption = new RectOption(id + '_element', legend.background, legend.border, legend.opacity, legendBounds);
+        const borderStyle: BorderModel = {
+            color: legend.border.color || this.gauge.themeStyle.legendBorderColor || '',
+            width: legend.border.width || this.gauge.themeStyle.legendBorderWidth || 1, dashArray: legend.border.dashArray
+        };
+        const options: RectOption = new RectOption(id + '_element', legend.background, borderStyle, legend.opacity, legendBounds);
         options.width = this.isVertical ? this.maxWidth : legendBounds.width;
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         legendGroup ? legendGroup.appendChild(this.gauge.renderer.drawRectangle(options)) : this.gauge.renderer.drawRectangle(options);

@@ -28,6 +28,15 @@ export interface RangeModel {
     query?: Query;
 
     /**
+     * By default, when a sheet is bound to a data source, columns are assigned to data source fields sequentially.
+     * This means that the first data field is assigned to Column A, the second to Column B, and so on.
+     * You can customize these assignments by specifying the field names in the desired column order using the 'fieldsOrder' property.
+     *
+     * @default null
+     */
+    fieldsOrder?: string[];
+
+    /**
      * Show/Hide the field of the datasource as header.
      *
      * @default true

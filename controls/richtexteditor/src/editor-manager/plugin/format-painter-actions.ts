@@ -380,7 +380,7 @@ export class FormatPainterActions implements IFormatPainterEditor{
             element: inlineElement as HTMLElement,
             lastChild: lastChild
         };
-        SelectionCommands.applyFormat(docElement, null , endNode, 'P', 'formatPainter', null, formatValues);
+        SelectionCommands.applyFormat(docElement, null , endNode, 'P', null, 'formatPainter', null, formatValues);
         const range: Range = this.parent.nodeSelection.getRange(docElement);
         const isCollapsed: boolean = range.collapsed;
         const blockNodes: Node[] = this.parent.domNode.blockNodes();
@@ -486,7 +486,7 @@ export class FormatPainterActions implements IFormatPainterEditor{
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         !isNOU(listElement) ? detach(listElement) : false;
         this.cleanEmptyLists();
-        const save : NodeSelection = this.parent.domNode.saveMarker(saveSelection, null);
+        const save : NodeSelection = this.parent.domNode.saveMarker(saveSelection);
         save.restore();
     }
 

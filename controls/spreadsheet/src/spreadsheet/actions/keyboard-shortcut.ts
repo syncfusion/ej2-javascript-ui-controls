@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, HideShowEventArgs, renderInsertDlg, getRightIdx, getBottomOffset, keyUp } from '../common/index';
-import { findDlg, gotoDlg, initiateFilterUI, getFilterRange, FilterInfoArgs, FillRangeInfo, performAutoFill, focus } from '../common/index';
+import { findDlg, gotoDlg, initiateFilterUI, getFilterRange, FilterInfoArgs, FillRangeInfo, performAutoFill, focus, addNote } from '../common/index';
 import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, findToolDlg, getRangeIndexes, InsertDeleteModelArgs, hideShow, applyNumberFormatting, insertModel, getSwapRange, getRangeAddress } from '../../workbook/common/index';
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked, exportDialog, getFormatFromType } from '../../workbook/index';
 import { setCell, getCell, skipHiddenIdx, selectionComplete, refreshRibbonIcons } from '../../workbook/index';
@@ -132,6 +132,10 @@ export class KeyboardShortcut {
         this.ribbonShortCuts(e);
         const sheet: SheetModel = this.parent.getActiveSheet();
         const target: Element = e.target as Element;
+        const textarea: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
+        if (!isNullOrUndefined(textarea) && textarea.classList.contains('e-addNoteContainer')) {
+            return;
+        }
         if ((e.ctrlKey || e.metaKey) && this.isTrgtNotInput(e)) {
             if (!closest(target, '.e-find-dlg') && !isSelectionNone) {
                 if ([79, 83].indexOf(e.keyCode) > -1) {
@@ -199,9 +203,12 @@ export class KeyboardShortcut {
                     return;
                 }
                 this.parent.notify(performAutoFill, {
-                        fillType: getCell(startCell.rowIndex, startCell.colIndex, sheet, false, true).formula ? 'FillSeries' : 'CopyCells',
-                        dAutoFillCell: dataRange, rangeInfo: <FillRangeInfo>{ direction: direction, startCell: startCell,
-                            endCell: { rowIndex: selectRange[2], colIndex: selectRange[3] }, fillRange: selectRange } });
+                    fillType: getCell(startCell.rowIndex, startCell.colIndex, sheet, false, true).formula ? 'FillSeries' : 'CopyCells',
+                    dAutoFillCell: dataRange, rangeInfo: <FillRangeInfo>{
+                        direction: direction, startCell: startCell,
+                        endCell: { rowIndex: selectRange[2], colIndex: selectRange[3] }, fillRange: selectRange
+                    }
+                });
                 this.parent.notify(selectionComplete, { type: 'mousedown' });
                 this.parent.notify(refreshRibbonIcons, null);
             }
@@ -279,7 +286,10 @@ export class KeyboardShortcut {
         }
 
         if (e.shiftKey && !isSelectionNone) {
-            if (e.keyCode === 114) { /*shift + F3(insert-function dialog)*/
+            if (e.keyCode === 113) { /*shift + F2(Add note)*/
+                e.preventDefault();
+                this.parent.notify(addNote, null);
+            } else if (e.keyCode === 114) { /*shift + F3(insert-function dialog)*/
                 e.preventDefault();
                 this.parent.notify(renderInsertDlg, null);
             } else if (e.keyCode === 116 && this.parent.allowFindAndReplace) { /* shift + F5 */
@@ -400,7 +410,7 @@ export class KeyboardShortcut {
             target = this.parent.getCell(indexes[0], indexes[1]);
             const frozenRow: number = this.parent.frozenRowCount(sheet);
             const frozenCol: number = this.parent.frozenColCount(sheet);
-            if(indexes[0] < frozenRow && indexes[1] < frozenCol) {
+            if (indexes[0] < frozenRow && indexes[1] < frozenCol) {
                 target = this.parent.getCell(indexes[0], indexes[1]);
             } else if (indexes[0] < frozenRow) {
                 const leftIdx: number = getRangeIndexes(sheet.paneTopLeftCell)[1];

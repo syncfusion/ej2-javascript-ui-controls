@@ -32,8 +32,8 @@
         @else {
           -webkit-text-stroke: $rating-border-width $rating-unrated-bg-color;
         }
+        background: $rating-unrated-icon-bg-color;
         @if ($skin-name == 'Material3' or $skin-name =='tailwind') {
-          background: $rating-unrated-bg-color;
           background-clip: text;
           /* stylelint-disable property-no-vendor-prefix */
           -webkit-background-clip: text;

@@ -675,11 +675,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
             svgObject.appendChild(groupElement);
             const pathElement: Element = this.renderer.drawPath({
-                'id': this.element.id + '_path', 'stroke-width': ((this.theme === 'Fabric' || this.theme === 'Fluent') && ! this.border.width) ? 1: this.border.width,
+                'id': this.element.id + '_path', 'stroke-width': ((this.theme === 'Fabric' || this.theme === 'Fluent' || this.theme === 'Fluent2') && ! this.border.width) ? 1: this.border.width,
                 'fill': this.fill || this.themeStyle.tooltipFill, 'opacity':
-                    ((this.theme === 'TailwindDark' || this.theme === 'Tailwind' || this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') && this.opacity === 0.75) ?
+                    ((this.theme === 'TailwindDark' || this.theme === 'Tailwind' || this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark' || this.theme.indexOf('Fluent2') > -1) && this.opacity === 0.75) ?
                         1 : this.opacity,
-                'stroke': this.border.color || (this.theme === 'Fabric' || this.theme === 'Fluent' ? '#D2D0CE' : this.border.color )
+                'stroke': this.border.color || (this.theme === 'Fabric' || this.theme === 'Fluent' || this.theme === 'Fluent2' ? '#D2D0CE' : this.border.color )
             });
             groupElement.appendChild(pathElement);
         }
@@ -805,7 +805,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.rx, this.ry, pointRect, arrowLocation,
                 this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.controlName
             ));
-            if (this.enableShadow && this.theme !== 'Bootstrap4') {
+            if ((this.enableShadow && this.theme !== 'Bootstrap4') || this.theme.indexOf('Fluent2') > -1) {
                 // To fix next chart initial tooltip opacity issue in tab control
                 const shadowId: string = this.element.id + '_shadow';
                 if (this.theme === 'Tailwind' || this.theme === 'TailwindDark'
@@ -815,7 +815,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
                 }
                 let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
-                shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
+                if (this.theme.indexOf('Fluent2') > -1) {
+                    shadow += '<feOffset dx="-1" dy="3.6" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.2"/>';
+                } else {
+                    shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
+                }
                 shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
 
                 const defElement: Element = this.renderer.createDefs();
@@ -825,7 +829,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 defElement.innerHTML = shadow;
             }
 
-            const borderColor: string = ((this.theme === 'Fabric' || this.theme === 'Fluent') && ! this.border.color ) ? '#D2D0CE' : this.border.color ;
+            const borderColor: string = ((this.theme === 'Fabric' || this.theme === 'Fluent' || this.theme === 'Fluent2') && ! this.border.color ) ? '#D2D0CE' : this.border.color ;
             pathElement.setAttribute('stroke', borderColor);
             if (!isNullOrUndefined(this.border.dashArray)) {
                 pathElement.setAttribute('stroke-dasharray', this.border.dashArray);
@@ -1263,7 +1267,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                  (location.x + arrowLocation.x) < this.areaMargin + this.arrowPadding) {
                     this.outOfBounds = true;
                 }
-
+                if (this.template && (location.y < 0)) {
+                    location.y = symbolLocation.y + clipY + markerHeight;
+                }
                 if (!withInAreaBounds(location.x, location.y, bounds) || this.outOfBounds ) {
                     this.inverted = !this.inverted;
                     this.revert = true;

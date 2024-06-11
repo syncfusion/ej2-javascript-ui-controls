@@ -43,6 +43,13 @@ export interface FieldSettingsModel {
      */
     htmlAttributes?: string;
 
+    /**
+     * Defines whether the particular field value is disabled or not.
+     *
+     * @default null
+     */
+    disabled?: string;
+
 }
 
 /**
@@ -69,7 +76,7 @@ export interface DropDownBaseModel extends ComponentModel{
      *   customers.appendTo("#list");
      * ```
      *
-     * @default {text: null, value: null, iconCss: null, groupBy: null}
+     * @default {text: null, value: null, iconCss: null, groupBy: null, disabled: null}
      * @deprecated
      */
     fields?: FieldSettingsModel;

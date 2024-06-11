@@ -37,3 +37,29 @@ export const ENTERKEY_EVENT_INIT: KeyboardEventInit = {
     shiftKey: false,
     repeat: false
 } as EventInit;
+
+export const BACKSPACE_EVENT_INIT: KeyboardEventInit = {
+    key: "Backspace",
+    keyCode: 8,
+    which: 8,
+    code: "Backspace",
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    repeat: false,
+} as EventInit;
+
+export const SPACE_EVENT_INIT: KeyboardEventInit = {
+    key: " ",
+    keyCode: 32,
+    which: 32,
+    code: "Space",
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    repeat: false,
+} as EventInit;

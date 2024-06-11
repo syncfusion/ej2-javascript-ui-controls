@@ -1,5 +1,4 @@
 // color
-
 $gantt-header-bg-color: rgba($content-bg-color) !default;
 $gantt-header-border-color: rgba($border-light) !default;
 $gantt-header-color: rgba($content-text-color) !default;
@@ -91,6 +90,7 @@ $gantt-clone-dragdrop-bg-color: $gantt-table-background-color !default;
 $error-elem-color: rgba($danger) !default;
 $gantt-active-container-border: rgba($border) !default;
 $rangecontainer-border-color: rgba($border-warning) !default;
+$gantt-chartrow-hover-bg-color: $table-bg-color-hover !default;
 
 // Layout
 $holiday-label-font-size: 13px !default;

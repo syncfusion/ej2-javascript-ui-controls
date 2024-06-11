@@ -1,5 +1,5 @@
-import { isNullOrUndefined } from "@syncfusion/ej2-base";
-import { Dictionary, FontSchemeStruct } from "../../index";
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Dictionary, FontSchemeStruct } from '../../index';
 
 /**
  * @private

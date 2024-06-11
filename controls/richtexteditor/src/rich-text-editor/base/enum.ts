@@ -79,7 +79,7 @@ export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'jus
 | 'openImageLink' | 'editImageLink' | 'removeImageLink' | 'insertLink'
 | 'display' | 'altText' | 'dimension' | 'fullScreen' | 'maximize'
 | 'minimize' | 'lowerCase' | 'upperCase' | 'print' | 'formats'
-| 'sourceCode' | 'preview' | 'viewSide' | 'insertCode' | 'tableHeader'
+| 'sourceCode' | 'preview' | 'viewSide' | 'insertCode' | 'blockquote' | 'tableHeader'
 | 'tableRemove' | 'tableRows' | 'tableColumns' | 'tableCellBackground'
 | 'tableCellHorizontalAlign' | 'tableCellVerticalAlign' | 'tableEditProperties'
 | 'styles' | 'removeLink'| 'merge';
@@ -94,7 +94,7 @@ export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft'| 'JustifyCenter' |
 | 'Undo' | 'Redo' | 'SuperScript' | 'SubScript'
 | 'CreateLink'| 'Image' | 'CreateTable' |'InsertLink' |'FullScreen' | 'LowerCase'
 | 'UpperCase' | 'Print' | 'Formats'|'FormatPainter'|'EmojiPicker'|'UnderLine'|'ZoomOut'|'ZoomIn'
-| 'SourceCode' | 'Preview' | 'ViewSide' | 'InsertCode' |'Audio'|'Video'|'NumberFormatList'
+| 'SourceCode' | 'Preview' | 'ViewSide' | 'InsertCode' | 'Blockquote' |'Audio'|'Video'|'NumberFormatList'
 |'BulletFormatList'|'FileManager'| '|'|'-';
 
 /**

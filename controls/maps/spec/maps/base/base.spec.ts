@@ -807,7 +807,8 @@ describe('Maps Component Base Spec', () => {
                 maps['mapsOnClick'](<PointerEvent>ele);
                 done();
             };
-            maps.layers[0].layerType = 'OSM';
+            maps.layers[0].shapeData = null;
+            maps.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             maps.refresh();
         });
     });
@@ -979,7 +980,7 @@ describe('Maps Component Base Spec', () => {
                 },
                 layers: [
                     {
-                        layerType: "OSM",
+                        urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
                         dataSource: [
                             { name: 'Angola' },
                             { name: 'Australia' },

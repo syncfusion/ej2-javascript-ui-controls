@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex, Sheet, moveSheet, duplicateSheet } from './sheet';import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';import { getWorkbookRequiredModules } from '../common/module';import { SheetModel, CellModel, ColumnModel, RowModel, getData, RangeModel } from './index';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, BorderType, getSheetIndexFromAddress, inRange } from '../common/index';import * as events from '../common/event';import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange } from '../common/interface';import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType, dateToInt } from '../common/index';import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';import { DataBind, setRow, setColumn, InsertDeleteEventArgs, NumberFormatArgs } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';import { WorkbookChart } from '../integrations/index';import { WorkbookNumberFormat, getFormatFromType } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet, WorkbookAutoFill } from '../actions/index';import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel, setImage, setChart, activeCellChanged, setAutoFill, BeforeCellUpdateArgs, updateCell, isNumber } from '../common/index';import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event';import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';import { WorkbookConditionalFormat } from '../actions/conditional-formatting';import { AutoFillSettingsModel } from '../..';import { checkCellValid, VisibleMergeIndexArgs, setVisibleMergeIndex } from '../common/index';import { IFormulaColl } from '../../calculate/common/interface';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex, Sheet, moveSheet, duplicateSheet } from './sheet';import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';import { getWorkbookRequiredModules } from '../common/module';import { SheetModel, CellModel, ColumnModel, RowModel, getData, RangeModel } from './index';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, BorderType, getSheetIndexFromAddress, inRange } from '../common/index';import * as events from '../common/event';import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange, SerializationOptions } from '../common/interface';import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType, dateToInt } from '../common/index';import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';import { DataBind, setRow, setColumn, InsertDeleteEventArgs, NumberFormatArgs } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';import { WorkbookChart } from '../integrations/index';import { WorkbookNumberFormat, getFormatFromType } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet, WorkbookAutoFill } from '../actions/index';import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel, setImage, setChart, activeCellChanged, setAutoFill, BeforeCellUpdateArgs, updateCell, isNumber } from '../common/index';import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event';import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';import { WorkbookConditionalFormat } from '../actions/conditional-formatting';import { AutoFillSettingsModel } from '../..';import { checkCellValid, VisibleMergeIndexArgs, setVisibleMergeIndex } from '../common/index';import { IFormulaColl } from '../../calculate/common/interface';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -8,7 +8,7 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * Configures sheets and its options.
-     * 
+     *
      * {% codeBlock src='spreadsheet/sheets/index.md' %}{% endcodeBlock %}
      *
      * @default []
@@ -58,7 +58,7 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * Defines the width of the Spreadsheet. It accepts width as pixels, number, and percentage.
-     * 
+     *
      * {% codeBlock src='spreadsheet/width/index.md' %}{% endcodeBlock %}
      *
      * @default '100%'
@@ -144,6 +144,13 @@ export interface WorkbookModel extends ComponentModel{
     allowHyperlink?: boolean;
 
     /**
+     * Enables or disables the ability to add or show notes in the Spreadsheet. If the property is set to false, the Spreadsheet will not add notes in the cells and the notes in the existing cells will not be visible.
+     *
+     * @default true
+     */
+    enableNotes?: boolean;
+
+    /**
      * It allows you to insert rows, columns, and sheets into the spreadsheet.
      *
      * @default true
@@ -193,19 +200,26 @@ export interface WorkbookModel extends ComponentModel{
     allowAutoFill?: boolean;
 
     /**
+     * Enables or disables the printing functionality in the spreadsheet.
+     *
+     * @default true
+     */
+    allowPrint?: boolean;
+
+    /**
      * Configures the auto fill settings.
-     * 
+     *
      * The autoFillSettings `fillType` property has FOUR types and it is described below:
      *
      * * CopyCells: To update the copied cells for the selected range.
      * * FillSeries: To update the filled series for the selected range.
      * * FillFormattingOnly: To fill the formats only for the selected range.
      * * FillWithoutFormatting: To fill without the format for the selected range.
-     * 
+     *
      * {% codeBlock src='spreadsheet/autoFillSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * > The `allowAutoFill` property should be `true`.
-     * 
+     *
      * @default { fillType: 'FillSeries', showFillOptions: true }
      */
 
@@ -220,7 +234,7 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * Specifies the cell style options.
-     * 
+     *
      * {% codeBlock src='spreadsheet/cellStyle/index.md' %}{% endcodeBlock %}
      *
      * @default {}
@@ -257,7 +271,7 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * Specifies the name of a range and uses it in a formula for calculation.
-     * 
+     *
      * {% codeBlock src='spreadsheet/definedNames/index.md' %}{% endcodeBlock %}
      *
      * @default []

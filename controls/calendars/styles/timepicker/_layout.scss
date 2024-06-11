@@ -78,8 +78,6 @@
     }
   }
 
-  //normal styles
-
   #{&}.e-timepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
       line-height: $timepicker-list-normal-line-height;
@@ -87,12 +85,10 @@
     }
   }
 
-  //bigger styles
   .e-bigger .e-time-wrapper,
   #{if(&, '&', '*')}.e-bigger.e-time-wrapper,
   #{if(&, '&', '*')}.e-bigger .e-control-wrapper .e-time-wrapper,
   #{if(&, '&', '*')}.e-control-wrapper.e-bigger.e-time-wrapper {
-
     #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-bigger-font-size;
       @if $timepicker-skin-name == 'material' or $timepicker-skin-name == 'material-dark' or $timepicker-skin-name == 'Material3' {
@@ -108,7 +104,6 @@
 
   .e-bigger #{&}.e-timepicker.e-popup,
   #{if(&, '&', '*')}.e-bigger#{&}.e-timepicker.e-popup {
-
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       padding: $timepicker-list-bigger-padding 0;
 
@@ -120,10 +115,8 @@
     }
   }
 
-  //mouse small size
   .e-small #{&}.e-timepicker.e-popup,
   #{if(&, '&', '*')}.e-small#{&}.e-timepicker.e-popup {
-
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       #{if(&, '&', '*')} .e-list-item {
         font-size: $timepicker-list-small-font-size;
@@ -137,7 +130,6 @@
   #{if(&, '&', '*')}.e-small.e-time-wrapper,
   #{if(&, '&', '*')}.e-small .e-control-wrapper.e-time-wrapper,
   #{if(&, '&', '*')}.e-control-wrapper.e-small.e-time-wrapper {
-
     #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-small-font-size;
       @if $timepicker-skin-name == 'Material3' {
@@ -149,10 +141,8 @@
     }
   }
 
-  //mouse small size
   .e-small.e-bigger #{&}.e-timepicker.e-popup,
   #{if(&, '&', '*')}.e-small.e-bigger#{&}.e-timepicker.e-popup {
-
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       #{if(&, '&', '*')} .e-list-item {
         font-size: $timepicker-list-bigger-small-font-size;
@@ -166,7 +156,6 @@
   #{if(&, '&', '*')}.e-small.e-bigger.e-time-wrapper,
   #{if(&, '&', '*')}.e-small.bigger .e-control-wrapper.e-time-wrapper,
   #{if(&, '&', '*')}.e-control-wrapper.e-small.bigger.e-time-wrapper {
-
     #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-bigger-small-font-size;
       @if $timepicker-skin-name == 'Material3' {
@@ -191,7 +180,6 @@
 }
 
 /* stylelint-disable */
-
 .e-time-overflow {
   overflow: hidden;
 }
@@ -225,7 +213,6 @@
 
 .e-timepicker-mob-popup-wrap .e-popup-expand,
 .e-datetimepicker.e-popup-expand {
-
     #{if(&, '&', '*')} .e-model-header {
       height: $modal-header-height;
       padding: $modal-header-padding;
@@ -271,8 +258,7 @@
 
 @media screen and (orientation: landscape) {
   .e-timepicker-mob-popup-wrap .e-popup-expand,
-  .e-datetimepicker.e-popup-expand {
-  
+  .e-datetimepicker.e-popup-expand {  
       #{if(&, '&', '*')} .e-model-header {
         height: $modal-header-landscape-height;
         font-size: $modal-header-landscape-font-size;

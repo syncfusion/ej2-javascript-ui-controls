@@ -55,17 +55,17 @@ export interface ScheduleModel extends ComponentModel{
     allowSwiping?: boolean;
 
     /**
-    * To render the custom toolbar items, the `toolbarItems` property can be used. It contains built-in and custom toolbar items.
-    * To avail the built-in toolbar items, the below string values are assigned to the `name` property of the `ToolbarItemModel`.
-    * * `Previous`: Schedule component navigates to the previous date from the current date.
-    * * `Next`: Schedule component navigates to the next date from the current date.
-    * * `Today`: Schedule component navigates to the current date from any date.
-    * * `Views`: Schedule component render the defined view options in the toolbar. If view option is not defined, then it will render default view options in the Schedule.
-    * * `DateRangeText`: Schedule component displays the current date text range.
-    * * `NewEvent`: Schedule component render the icon to add a new event.
-    *
-    * @default []
-    */
+     * To render the custom toolbar items, the `toolbarItems` property can be used. It contains built-in and custom toolbar items.
+     * To avail the built-in toolbar items, the below string values are assigned to the `name` property of the `ToolbarItemModel`.
+     * * `Previous`: Schedule component navigates to the previous date from the current date.
+     * * `Next`: Schedule component navigates to the next date from the current date.
+     * * `Today`: Schedule component navigates to the current date from any date.
+     * * `Views`: Schedule component render the defined view options in the toolbar. If view option is not defined, then it will render default view options in the Schedule.
+     * * `DateRangeText`: Schedule component displays the current date text range.
+     * * `NewEvent`: Schedule component render the icon to add a new event.
+     *
+     * @default []
+     */
     toolbarItems?: ToolbarItemModel[]
 
     /**

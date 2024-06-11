@@ -57,13 +57,23 @@ export function  triggerScrollEvent(target: HTMLElement, newScrollTop?: number, 
     if(newScrollLeft) {
         target.scrollLeft = newScrollLeft;
     }
-    var e = document.createEvent("UIEvents");
-    e.initUIEvent("scroll", true, true, window, 1);
+    let e = new UIEvent("scroll", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        detail: 1
+    });
     target.dispatchEvent(e);
 }
 export function triggerKeyboardEvent(target: Element, type: string, key: string): any {
-    let keyboardEve: KeyboardEvent = new KeyboardEvent(type);
-    keyboardEve.initKeyboardEvent(type, true, true, window, key, 0, '', false, '');
+    let keyboardEve = new KeyboardEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        key: key,
+        location: 0,
+        repeat: false,
+    });
     target.dispatchEvent(keyboardEve);
 }
 export function getKeyUpObj(keyCode: string | number, target: Element): any {

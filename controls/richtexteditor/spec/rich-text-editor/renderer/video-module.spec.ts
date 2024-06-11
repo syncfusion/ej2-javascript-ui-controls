@@ -15,6 +15,7 @@ describe('Video Module ', () => {
     describe('video resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
+        let vidResizeDiv: HTMLElement;
         let clickEvent: any;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -46,7 +47,7 @@ describe('Video Module ', () => {
         });
         it('video dialog', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -62,14 +63,16 @@ describe('Video Module ', () => {
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
             let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.style.display).toBe('block');
+            expect(placeHolder.classList.contains('enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
             clickEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", false, true);
             trg.dispatchEvent(clickEvent);
-            (rteObj.videoModule as any).resizeStart(clickEvent);
+            clickEvent.target.width = 120;
+            clickEvent.target.height = 80;
+            (rteObj.videoModule as any).resizeStart(clickEvent, clickEvent.target);
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-videoboxmark').length).toBe(4);
         });
@@ -80,7 +83,7 @@ describe('Video Module ', () => {
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
             expect((rteObj.videoModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(vidResizeDiv)).toBe(false);
         });
         it('resizing - mousemove - bottom right', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -155,6 +158,7 @@ describe('Video Module ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let clickEvent: any;
+        let vidResizeDiv: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -202,7 +206,7 @@ describe('Video Module ', () => {
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
             expect((rteObj.videoModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(vidResizeDiv)).toBe(false);
         });
         it('resizing - mousemove - bottom right', (done) => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -234,6 +238,7 @@ describe('Video Module ', () => {
     describe('predefined set video', () => {
         let rteObj: RichTextEditor;
         let clickEvent: any;
+        let vidResizeDiv: HTMLElement;
         let innerHTML: string = `<p><b>Description:</b></p>
 <p>The Rich Text Editor (RTE) control is an easy to render in
 client side. Customer easy to edit the contents and get the HTML content for
@@ -273,7 +278,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
             expect((rteObj.videoModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(vidResizeDiv)).toBe(false);
         });
         it('resizing', () => {
             let trg = (rteObj.element.querySelector('video') as HTMLElement);
@@ -403,6 +408,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('mobile resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
+        let vidResizeDiv: HTMLElement;
         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
         let defaultUA: string = navigator.userAgent;
@@ -450,7 +456,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((rteObj.videoModule as any).pageX).toBe(300);
             (rteObj.videoModule as any).onDocumentClick({ target: rteObj.contentModule.getEditPanel() });
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(vidResizeDiv)).toBe(false);
             (rteObj.videoModule as any).resizeStart(clickEvent);
             (rteObj.videoModule as any).resizeStart({ target: resizeBot, preventDefault: function () { }, stopImmediatePropagation: function () { } });
         });
@@ -1724,7 +1730,10 @@ client side. Customer easy to edit the contents and get the HTML content for
         let controlId: string;
         beforeEach((done: Function) => {
             rteObj = renderRTE({
-                value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`
+                value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`,
+                inlineMode: {
+                    enable: true
+                }
             });
             controlId = rteObj.element.id;
             done();
@@ -1762,7 +1771,47 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
-
+    describe('Video quick toolbar - iframe', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><span class="e-embed-video-wrap" contenteditable="false"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/hveapZxnOFY?si=zU9QX1Vww3ZIowHA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" style="min-width: 0px; max-width: 991px; min-height: 0px;" class="e-rte-embed-url e-resize">&ZeroWidthSpace;</iframe></span></span><br></p>`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(' Dimension dialog rendering and testing in iframe', (done: Function) => {
+            let video: HTMLElement = rteObj.element.querySelector(".e-video-clickelem");
+            setCursorPoint(video, 0);
+            dispatchEvent(video, 'mousedown');
+            video.click();
+            dispatchEvent(video, 'mouseup');
+            setTimeout(() => {
+                let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoDimension");
+                videoBtn.parentElement.click();
+                let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+                expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Video Size').toBe(true);
+                expect(dialogEle.querySelector('.e-dlg-content').firstElementChild.classList.contains('e-video-sizewrap')).toBe(true);
+                let range: any = new NodeSelection().getRange(document);
+                let save: any = new NodeSelection().save(range, document);
+                let args: any = {
+                    item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
+                    preventDefault: function () { }
+                };
+                args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-video-clickelem') as HTMLElement)]};
+                (<any>rteObj).formatter.editorManager.videoObj.videoDimension(args);
+                (dialogEle.querySelector('.e-vid-width') as HTMLInputElement).value = "200";
+                (dialogEle.querySelector('.e-vid-height') as HTMLInputElement).value = "200";
+                (rteObj.element.querySelector('.e-rte-video-dialog .e-footer-content button') as HTMLButtonElement).click();
+                done();
+            }, 100);
+        });
+    });
     describe('Deleting video using the - ', () => {
         let rteObj: RichTextEditor;
         let innerHTML1: string = `
@@ -3053,7 +3102,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             insertBtn.removeAttribute( 'disabled' );
             insertBtn.click();
             setTimeout ( () => {
-                expect(rteObj.element.childElementCount).toEqual(3);
+                expect(rteObj.rootContainer.childElementCount).toEqual(3);
                 done();
             }, 1000);
         });
@@ -3068,7 +3117,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             insertBtn.removeAttribute( 'disabled' );
             insertBtn.click();
             setTimeout ( () => {
-                expect(rteObj.element.childElementCount).toEqual(5);
+                expect(rteObj.rootContainer.childElementCount).toEqual(4);
                 done();
             }, 1000);
         });
@@ -3200,6 +3249,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let clickEvent: any;
+        let vidResizeDiv: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -3216,7 +3266,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video dialog', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -3235,7 +3285,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             videoElement.style.width = "150px";
             videoElement.style.height = "300px";
             let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.style.display).toBe('block');
+            expect(placeHolder.classList.contains('enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3253,7 +3303,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
             expect((rteObj.videoModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(vidResizeDiv)).toBe(false);
         });
         it('resizing - mousemove - bottom right', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3278,6 +3328,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let clickEvent: any;
+        let vidResizeDiv: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -3294,7 +3345,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video dialog', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -3313,7 +3364,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             videoElement.style.width = "150px";
             videoElement.style.height = "300px";
             let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.style.display).toBe('block');
+            expect(placeHolder.classList.contains('enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3331,7 +3382,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
             expect((rteObj.videoModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(vidResizeDiv)).toBe(false);
         });
         it('resizing - mousemove - bottom right', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3356,6 +3407,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let clickEvent: any;
+        let vidResizeDiv: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -3372,7 +3424,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video width to be zero - resizeByPercent as ture', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -3390,7 +3442,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             const videoElement = document.querySelector(".e-rte-video") as HTMLElement;
             videoElement.style.width = "0px";
             let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.style.display).toBe('block');
+            expect(placeHolder.classList.contains('enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3408,7 +3460,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
             expect((rteObj.videoModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(vidResizeDiv)).toBe(false);
         });
         it('resizing - mousemove - bottom right', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3433,6 +3485,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let clickEvent: any;
+        let vidResizeDiv: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -3449,7 +3502,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video width to be zero - resizeByPercent as false', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -3467,7 +3520,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             const videoElement = document.querySelector(".e-rte-video") as HTMLElement;
             videoElement.style.width = "0px";
             let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.style.display).toBe('block');
+            expect(placeHolder.classList.contains('enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3485,7 +3538,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
             expect((rteObj.videoModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(vidResizeDiv)).toBe(false);
         });
         it('resizing - mousemove - bottom right', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -4058,7 +4111,34 @@ client side. Customer easy to edit the contents and get the HTML content for
             done();
         });
     });
-
+    describe('836851 - Video keyup in iframe', function () {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let innerHTML: string = `<p>Testing<span class="e-embed-video-wrap" contenteditable="false"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/hveapZxnOFY?si=zU9QX1Vww3ZIowHA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" style="min-width: 0px; max-width: 991px; min-height: 0px;" class="e-rte-embed-url e-resize">&ZeroWidthSpace;</iframe></span></span><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML,
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check the video keyup - backspace in iframe', function (done) {
+            let startContainer = rteObj.contentModule.getEditPanel().querySelector('p').childNodes[0];
+            let endContainer = rteObj.contentModule.getEditPanel().querySelector('p')
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText( document, startContainer, endContainer, 7, 2 )
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (<any>rteObj).keyDown(keyBoardEvent);
+            (<any>rteObj).videoModule.onKeyUp();
+            expect(!isNullOrUndefined(rteObj.element.querySelector('.e-embed-video-wrap'))).toBe(true);
+            done();
+        });
+    });
     describe('850567 - Browser shortcut CTRL + SHIFT + V does not work when Video module is injected', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -4119,6 +4199,70 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
                 expect(urlInput.value !== null && urlInput.value !== undefined && urlInput.value !== '').toBe(true);
                 done();
+            }, 100);
+        });
+    });
+
+    describe('876592: Video not replaced ', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach(function (done) {
+            rteObj = renderRTE({
+                value: "<p>Testing<span class=\"e-video-wrap\" contenteditable=\"false\" title=\"movie.mp4\"><video class=\"e-rte-video e-video-inline\" controls=\"\"><source src=\"https://www.w3schools.com/html/mov_bbb.mp4\" type=\"video/mp4\"></video></span><br></p>"
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach(function (done) {
+            destroy(rteObj);
+            done();
+        });
+        it('Replace the embeded video to web url', function (done) {
+            rteObj.value = `<p><span class="e-embed-video-wrap" contenteditable="false"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" style="min-width: 0px; max-width: 1225px; min-height: 0px;" class="e-rte-embed-url e-video-focus">&ZeroWidthSpace;</iframe></span></span><br></p>`;
+            rteObj.dataBind();
+            let video: HTMLElement  = rteObj.element.querySelector(".e-video-clickelem");
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, video, video, 0, 1);
+            dispatchEvent(video, 'mousedown');
+            video.click();
+            dispatchEvent(video, 'mouseup');
+            setTimeout(function () {
+                let videoBtn: HTMLElement  = document.getElementById(controlId + "_quick_VideoReplace");
+                videoBtn.click();
+                let dialog: HTMLElement  = document.getElementById(controlId + "_video");
+                (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
+                urlInput.value =(`https://www.w3schools.com/html/mov_bbb.mp4`) as string;
+                (dialog.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                (dialog.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+                setTimeout(function () {
+                    let result = rteObj.inputElement.querySelector('video');
+                    expect(result.querySelector('source').src === 'https://www.w3schools.com/html/mov_bbb.mp4').toBe(true);
+                    done();
+                },200);
+            }, 100);
+        });
+        it('Replace the web url to embeded video', function (done) {
+            
+            let video: HTMLElement  = rteObj.element.querySelector(".e-video-wrap video");
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, video, video, 0, 1);
+            dispatchEvent(video, 'mousedown');
+            video.click();
+            dispatchEvent(video, 'mouseup');
+            setTimeout(function () {
+                let videoBtn: HTMLElement  = document.getElementById(controlId + "_quick_VideoReplace");
+                videoBtn.click();
+                let dialog: HTMLElement  = document.getElementById(controlId + "_video");
+                (dialog.querySelector('.e-video-url-wrap input#embedURL') as HTMLElement).click();
+                let urlInput: HTMLTextAreaElement = dialog.querySelector('.e-embed-video-url');
+                urlInput.value =(`<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`) as string
+                (dialog.querySelector('.e-embed-video-url') as HTMLTextAreaElement).dispatchEvent(new Event("keyup"));
+                (dialog.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+                setTimeout(function () {
+                    let result = rteObj.inputElement.querySelector('iframe');
+                    expect(!isNullOrUndefined(result) ).toBe(true);
+                    done();
+                },200);
             }, 100);
         });
     });

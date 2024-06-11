@@ -1,4 +1,4 @@
-import { CommentAction, HyperlinkType, ServerActionType, RevisionType, RevisionActionType } from './types';
+import { CommentAction, HyperlinkType, ServerActionType, RevisionType, RevisionActionType, ContentControlType } from './types';
 import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { Operation } from '../implementation';
@@ -61,6 +61,39 @@ export interface FormFieldData {
      */
     value: string | boolean | number
 
+}
+/**
+ * Represents the data for a content control element.
+ */
+export interface ContentControlInfo {
+    /**
+     * Specifies the title of the content control.
+     */
+    title: string;
+    /**
+     * Specifies the tag associated with the content control.
+     */
+    tag: string;
+    /**
+     * Specifies the value of the content control.
+     */
+    value: string;
+    /**
+     * Specifies whether the content control can be deleted.
+     */
+    canDelete: boolean;
+    /**
+     * Specifies whether the content control can be edited.
+     */
+    canEdit: boolean;
+    /**
+     * Specifies items for the content control, applicable if the type is combobox or dropdownlist.
+     */
+    items?: string[];
+    /**
+     * Specifies the type of content control.
+     */
+    type: ContentControlType
 }
 /**
  * This event arguments provides the necessary information about documentChange event.

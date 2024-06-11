@@ -251,7 +251,6 @@ export class DateRangePicker extends CalendarBase {
     private invalidValueString: string = null;
     private dateRangeOptions: DateRangePickerModel;
     private mobileRangePopupWrap: HTMLElement;
-    protected isAngular: boolean = false;
     protected preventChange: boolean = false;
     protected touchRangeModule: Touch;
     protected touchRangeStart: boolean;
@@ -1345,8 +1344,9 @@ export class DateRangePicker extends CalendarBase {
             const startDate: Date = this.presetsItem[i as number].start as Date;
             const endDate: Date = this.presetsItem[i as number].end as Date;
             if (this.startValue && this.endValue) {
-                if (startDate.getDate() == this.startValue.getDate() && startDate.getMonth() == this.startValue.getMonth() && startDate.getFullYear() == this.startValue.getFullYear()
-                    && endDate.getDate() == this.endValue.getDate() && endDate.getMonth() == this.endValue.getMonth() && endDate.getFullYear() == this.endValue.getFullYear()) {
+                if (startDate.getDate() === this.startValue.getDate() && startDate.getMonth() === this.startValue.getMonth() &&
+                    startDate.getFullYear() === this.startValue.getFullYear() && endDate.getDate() === this.endValue.getDate() &&
+                    endDate.getMonth() === this.endValue.getMonth() && endDate.getFullYear() === this.endValue.getFullYear()) {
                     this.activeIndex = i;
                     this.isCustomRange = false;
                 }
@@ -1616,8 +1616,8 @@ export class DateRangePicker extends CalendarBase {
         }
         this.updateHiddenInput();
     }
-    // eslint-disable-next-line @typescript-eslint/tslint/config
-    private getStartEndDate(date : Date, isEnd : boolean, range : string[], dateOptions : object) {
+
+    private getStartEndDate(date : Date, isEnd : boolean, range : string[], dateOptions : object): Date {
         if (this.depth === 'Month') {
             return this.globalize.parseDate(range[isEnd ? 1 : 0].trim(), dateOptions);
         } else if (this.depth === 'Year') {
@@ -3168,10 +3168,10 @@ export class DateRangePicker extends CalendarBase {
         const controlContainer: HTMLElement = this.createElement('div', { className: RANGECONTAINER });
         const headerContainer: HTMLElement = this.createElement('div', { className: RANGEHEADER });
         if (this.isMobile && this.fullScreenMode) {
-            const modelHeaderIconWrapper = this.createElement("div", { className: "e-model-header-wrapper" });
-            const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+            const modelHeaderIconWrapper: any = this.createElement('div', { className: 'e-model-header-wrapper' });
+            const modelCloseIcon: any = this.createElement('span', { className: 'e-popup-close' });
             EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.modelRangeCloseHandler, this);
-            const modelApplyButton = this.createElement("span", { className: "e-apply" });
+            const modelApplyButton: any = this.createElement('span', { className: 'e-apply' });
             EventHandler.add(modelApplyButton, 'mousedown touchstart', this.applyFunction, this);
             modelHeaderIconWrapper.appendChild(modelCloseIcon);
             modelHeaderIconWrapper.appendChild(modelApplyButton);
@@ -3267,10 +3267,13 @@ export class DateRangePicker extends CalendarBase {
             eve.preventDefault();
         }
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
-            if (!(this.previousStartValue && this.previousEndValue && this.startValue.getDate() == this.previousStartValue.getDate() && this.startValue.getMonth() == this.previousStartValue.getMonth() &&
-                this.startValue.getFullYear() == this.previousStartValue.getFullYear()
-                && this.endValue.getDate() == this.previousEndValue.getDate() && this.endValue.getMonth() == this.previousEndValue.getMonth()
-                && this.endValue.getFullYear() == this.previousEndValue.getFullYear())) {
+            if (!(this.previousStartValue && this.previousEndValue &&
+                this.startValue.getDate() === this.previousStartValue.getDate() &&
+                this.startValue.getMonth() === this.previousStartValue.getMonth() &&
+                this.startValue.getFullYear() === this.previousStartValue.getFullYear()
+                && this.endValue.getDate() === this.previousEndValue.getDate() &&
+                this.endValue.getMonth() === this.previousEndValue.getMonth()
+                && this.endValue.getFullYear() === this.previousEndValue.getFullYear())) {
                 Input.setValue(this.rangeArgs(eve).text, this.inputElement, this.floatLabelType, this.showClearButton);
             }
             this.previousStartValue = new Date(+this.startValue);
@@ -3436,12 +3439,12 @@ export class DateRangePicker extends CalendarBase {
             this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.presetElement.querySelectorAll('.' + LISTCLASS);
             this.wireListEvents();
             if (this.isMobile) {
-                if(this.fullScreenMode) {
+                if (this.fullScreenMode) {
                     const modelWrapper: HTMLElement = createElement('div', { className: 'e-range-mob-popup-wrap' });
                     const modelHeader: HTMLElement = this.createElement('div', { className: 'e-model-header' });
-                    const modelTitleSpan = this.createElement("span", { className: "e-model-title" });
-                    modelTitleSpan.textContent = "Select Preset";
-                    const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+                    const modelTitleSpan: any = this.createElement('span', { className: 'e-model-title' });
+                    modelTitleSpan.textContent = 'Select Preset';
+                    const modelCloseIcon: any = this.createElement('span', { className: 'e-popup-close' });
                     EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.modelRangeCloseHandler, this);
                     const presetContent: HTMLElement = this.presetElement;
                     modelHeader.appendChild(modelCloseIcon);
@@ -3503,11 +3506,11 @@ export class DateRangePicker extends CalendarBase {
             open: () => {
                 if (this.isMobile && this.fullScreenMode) {
                     this.iconRangeRight = this.calendarElement && window.getComputedStyle(this.calendarElement.querySelector('.e-header.e-month .e-prev')).cssFloat;
-                    if(this.iconRangeRight) {
-                        this.touchRangeModule = new Touch(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), {
+                    if (this.iconRangeRight) {
+                        this.touchRangeModule = new Touch(<HTMLElement>this.calendarElement.querySelector('.e-content.e-month'), {
                             swipe: this.dateRangeSwipeHandler.bind(this)
                         });
-                        EventHandler.add(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), "touchstart", this.touchStartRangeHandler, this)
+                        EventHandler.add(<HTMLElement>this.calendarElement.querySelector('.e-content.e-month'), 'touchstart', this.touchStartRangeHandler, this);
                     }
                 }
                 attributes(this.inputElement, { 'aria-expanded': 'true', 'aria-owns': this.element.id, 'aria-controls': this.inputElement.id });
@@ -3592,7 +3595,7 @@ export class DateRangePicker extends CalendarBase {
                     EventHandler.remove(document, 'keydown', this.popupCloseHandler);
                 }
             }, targetExitViewport: () => {
-                let popupEle: HTMLElement = this.popupObj && this.popupObj.element;
+                const popupEle: HTMLElement = this.popupObj && this.popupObj.element;
                 if (!Browser.isDevice && popupEle &&  popupEle.getBoundingClientRect().height < window.innerHeight) {
                     this.hide();
                 }
@@ -3615,27 +3618,27 @@ export class DateRangePicker extends CalendarBase {
 
     private dateRangeSwipeHandler(e: SwipeEventArgs): void {
         let direction: number = 0;
-        if (this.iconRangeRight == 'left') {
+        if (this.iconRangeRight === 'left') {
             switch (e.swipeDirection) {
-                case "Left":
-                    direction = 1;
-                    break;
-                case "Right":
-                    direction = -1;
-                    break;
-                default:
-                    break;
+            case 'Left':
+                direction = 1;
+                break;
+            case 'Right':
+                direction = -1;
+                break;
+            default:
+                break;
             }
         } else {
             switch (e.swipeDirection) {
-                case "Up":
-                    direction = 1;
-                    break;
-                case "Down":
-                    direction = -1;
-                    break;
-                default:
-                    break;
+            case 'Up':
+                direction = 1;
+                break;
+            case 'Down':
+                direction = -1;
+                break;
+            default:
+                break;
             }
         }
         if (this.touchRangeStart) {
@@ -3648,7 +3651,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
 
-    private touchStartRangeHandler(e: MouseEvent) {
+    private touchStartRangeHandler(e: MouseEvent): void {
         this.touchRangeStart = true;
     }
 
@@ -3893,8 +3896,8 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private createInput(): void {
-        if(this.fullScreenMode && this.isMobile){
-            this.cssClass += ' ' + "e-popup-expand";
+        if (this.fullScreenMode && this.isMobile){
+            this.cssClass += ' ' + 'e-popup-expand';
         }
         let updatedCssClassValue: string = this.cssClass;
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
@@ -4523,12 +4526,11 @@ export class DateRangePicker extends CalendarBase {
                             this.mobileRangePopupWrap,
                             this.popupObj.element,
                             this.modal,
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            this.isMobile || Browser.isDevice as any);
+                            this.isMobile || Browser.isDevice);
                     }
                 });
                 if (Browser.isDevice) {
-                    var dlgOverlay = this.createElement('div', { className: 'e-dlg-overlay'});
+                    const dlgOverlay: HTMLElement = this.createElement('div', { className: 'e-dlg-overlay'});
                     dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
                     this.mobileRangePopupWrap.appendChild(dlgOverlay);
                 }
@@ -4711,8 +4713,7 @@ export class DateRangePicker extends CalendarBase {
             this.updateHeader();
         }
     }
-    // eslint-disable-next-line @typescript-eslint/tslint/config
-    private getStartEndValue(date : Date, isEnd : boolean) {
+    private getStartEndValue(date : Date, isEnd : boolean): Date {
         if (this.depth === 'Month') {
             return this.checkDateValue(new Date(this.checkValue(date)));
         } else if (this.depth === 'Year') {

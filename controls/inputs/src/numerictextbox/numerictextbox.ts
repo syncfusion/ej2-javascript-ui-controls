@@ -72,10 +72,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private numericOptions: NumericTextBoxModel;
     private isInteract: boolean;
     private serverDecimalSeparator: string;
-    private isVue: boolean = false;
     private preventChange: boolean = false;
     private elementPrevValue: string;
-    private isAngular: boolean = false;
     private isDynamicChange: boolean = false;
     private inputValue: number;
     private clearButton: HTMLElement;
@@ -354,7 +352,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             for (index; index < this.element.attributes.length; index++) {
                 const attributeName: string = this.element.attributes[index as number].nodeName;
                 if (attributeName !== 'id' && attributeName !== 'class') {
-                    input.setAttribute(this.element.attributes[index as number].nodeName, this.element.attributes[index as number].nodeValue);
+                    input.setAttribute(this.element.attributes[index as number].nodeName,
+                                       this.element.attributes[index as number].nodeValue);
                     input.innerHTML = this.element.innerHTML;
                 }
                 else if (attributeName === 'class') {
@@ -431,6 +430,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             this.elementPrevValue = this.element.value;
             if (this.element.hasAttribute('data-val')) {
                 this.element.setAttribute('data-val', 'false');
+            }
+            if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder')) {
+                this.element.setAttribute('aria-label', 'numerictextbox');
             }
             if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
                 this.enabled = false;
@@ -560,7 +562,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             'validateHidden': 'true', 'aria-label': 'hidden', 'class': HIDDENELEMENT } }));
         this.inputName = this.inputName !== null ? this.inputName : this.element.id;
         this.element.removeAttribute('name');
-        if(this.isAngular && this.angularTagName === 'EJS-NUMERICTEXTBOX' && this.cloneElement.id.length > 0) {
+        if (this.isAngular && this.angularTagName === 'EJS-NUMERICTEXTBOX' && this.cloneElement.id.length > 0) {
             attributes(this.hiddenInput, { 'name': this.cloneElement.id });
         } else {
             attributes(this.hiddenInput, { 'name': this.inputName });
@@ -906,15 +908,14 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 }
                 if (this.element.selectionStart > 0) {
                     if ((this.element.value[this.element.selectionStart - 1].charCodeAt(0) === 45) && this.element.selectionStart > 1) {
-                        if (isNullOrUndefined(this.prevVal)) {
-                            // eslint-disable-next-line no-self-assign
-                            this.element.value = this.element.value;
-                        } else {
+                        if (!isNullOrUndefined(this.prevVal)) {
                             this.element.value = this.prevVal;
                         }
                         this.element.setSelectionRange(this.element.selectionStart, this.element.selectionStart);
                     }
-                    if (this.element.value[this.element.selectionStart - 1] === decimalSeparator && this.decimals === 0 && this.validateDecimalOnType) {
+                    if (this.element.value[this.element.selectionStart - 1] === decimalSeparator &&
+                        this.decimals === 0 &&
+                        this.validateDecimalOnType) {
                         this.element.value = this.element.value.substring(0, prevPos) +
                             this.element.value.substring(currentPos, this.element.value.length);
                     }
@@ -943,8 +944,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         }
     }
     private inputHandler(event: KeyboardEvent): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias
-        const numerictextboxObj: any = this;
+        const numerictextboxObj: any = null || this;
         if (!this.enabled || this.readonly) {
             return;
         }
@@ -967,7 +967,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             const previous: number = this.instance.getNumberParser({ format: 'n' })(this.elementPrevValue);
             //EJ2-54963-if type "." or ".0" or "-.0" it converts to "0" automatically when binding v-model
             const nonZeroRegex: RegExp = new RegExp('[^0-9]+$');
-            if (nonZeroRegex.test(this.element.value) || ((this.elementPrevValue.indexOf('.') !== -1 || this.elementPrevValue.indexOf('-') !== -1) && this.element.value[this.element.value.length - 1] === '0')) {
+            if (nonZeroRegex.test(this.element.value) ||
+            ((this.elementPrevValue.indexOf('.') !== -1 || this.elementPrevValue.indexOf('-') !== -1) &&
+              this.element.value[this.element.value.length - 1] === '0')) {
                 current = this.value;
             }
             const eventArgs: object = {
@@ -1167,11 +1169,11 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         } else {
             //EJ2-59813-update the numberpad decimal separator and update the cursor position
             if (isAlterNumPadDecimalChar) {
-            const start : number = this.element.selectionStart + 1;
-            this.element.value = text;
-            this.element.setSelectionRange(start, start);
-            event.preventDefault();
-            event.stopPropagation();
+                const start : number = this.element.selectionStart + 1;
+                this.element.value = text;
+                this.element.setSelectionRange(start, start);
+                event.preventDefault();
+                event.stopPropagation();
             }
             return true;
         }
@@ -1190,7 +1192,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (this.decimals && this.validateDecimalOnType) {
             fractionRule = '{0,' + this.decimals + '}';
         }
-         /* eslint-disable-next-line security/detect-non-literal-regexp */
+        /* eslint-disable-next-line security/detect-non-literal-regexp */
         return new RegExp('^(-)?(((\\d+(' + decimalSeparator + '\\d' + fractionRule +
             ')?)|(' + decimalSeparator + '\\d' + fractionRule + ')))?$');
     }
@@ -1291,8 +1293,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (!this.getElementData(event)) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const result: boolean = this.getElementData(event);
+        this.getElementData(event);
         const target: HTMLElement = <HTMLElement>event.currentTarget;
         const action: string = (target.classList.contains(SPINUP)) ? INCREMENT : DECREMENT;
         EventHandler.add(target, 'mouseleave', this.mouseUpClick, this);
@@ -1427,30 +1428,31 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.element.classList.remove('e-input');
         this.container.insertAdjacentElement('afterend', this.element);
         detach(this.container);
-            this.spinUp = null;
-            this.spinDown = null;
-            this.container = null;
-            this.hiddenInput = null;
-            this.changeEventArgs = null;
-            this.blurEventArgs = null;
-            this.focusEventArgs = null;
-            this.inputWrapper = null;
-            Input.destroy({
-                element: this.element,
-                floatLabelType: this.floatLabelType,
-                properties: this.properties
-            }, this.clearButton);
-            super.destroy();
+        this.spinUp = null;
+        this.spinDown = null;
+        this.container = null;
+        this.hiddenInput = null;
+        this.changeEventArgs = null;
+        this.blurEventArgs = null;
+        this.focusEventArgs = null;
+        this.inputWrapper = null;
+        Input.destroy({
+            element: this.element,
+            floatLabelType: this.floatLabelType,
+            properties: this.properties
+        }, this.clearButton);
+        super.destroy();
     }
-    /* eslint-disable valid-jsdoc, jsdoc/require-returns */
+
     /**
      * Returns the value of NumericTextBox with the format applied to the NumericTextBox.
      *
+     * @returns {string} - Returns the formatted value of the NumericTextBox.
      */
     public getText(): string {
         return this.element.value;
     }
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns */
+
     /**
      * Sets the focus to widget for interaction.
      *
@@ -1474,17 +1476,17 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             removeClass([this.container], [NUMERIC_FOCUS]);
         }
     }
-    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Gets the properties to be maintained in the persisted state.
      *
-     * @returns {string}
+     * @returns {string} - Returns the persisted data.
      */
     public getPersistData(): string {
         const keyEntity: string[] = ['value'];
         return this.addOnPersist(keyEntity);
     }
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Calls internally if any of the property value is changed.
      *

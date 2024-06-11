@@ -8,7 +8,7 @@ describe('Signature', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -400,5 +400,134 @@ describe('Signature', () => {
         const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    describe('Null or undefined Property testing', () => {
+        let signature: Signature;
+        let signatureElement: HTMLElement;
+
+        beforeEach(() => {
+            signatureElement = createElement('canvas', { id: 'signature' });
+            document.body.appendChild(signatureElement);
+        });
+
+        afterEach(() => {
+            if (signature) {
+                signature.destroy();
+                signature = undefined;
+            }
+            remove(signatureElement);
+        });
+
+        it('signature with backgroundImage', () => {
+            signature = new Signature({ backgroundImage: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.backgroundImage).toEqual(null);
+            signature = new Signature({ backgroundImage: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.backgroundImage).toEqual('');
+        });
+
+        it('signature with backgroundColor', () => {
+            signature = new Signature({ backgroundColor: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.backgroundColor).toEqual(null);
+            signature = new Signature({ backgroundColor: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.backgroundColor).toEqual('');
+        });
+
+        it('signature with disabled', () => {
+            signature = new Signature({ disabled: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.disabled).toEqual(null);
+            signature = new Signature({ disabled: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.disabled).toEqual(false);
+        });
+
+        it('signature with enablePersistence', () => {
+            signature = new Signature({ enablePersistence: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.enablePersistence).toEqual(null);
+            signature = new Signature({ enablePersistence: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.enablePersistence).toEqual(false);
+        });
+
+        it('signature with isReadOnly', () => {
+            signature = new Signature({ isReadOnly: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.isReadOnly).toEqual(null);
+            signature = new Signature({ isReadOnly: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.isReadOnly).toEqual(false);
+        });
+
+        it('signature with maxStrokeWidth', () => {
+            signature = new Signature({ maxStrokeWidth: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.maxStrokeWidth).toEqual(null);
+            signature = new Signature({ maxStrokeWidth: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.maxStrokeWidth).toEqual(2);
+        });
+
+        it('signature with minStrokeWidth', () => {
+            signature = new Signature({ minStrokeWidth: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.minStrokeWidth).toEqual(null);
+            signature = new Signature({ minStrokeWidth: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.minStrokeWidth).toEqual(0.5);
+        });
+
+        it('signature with saveWithBackground', () => {
+            signature = new Signature({ saveWithBackground: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.saveWithBackground).toEqual(null);
+            signature = new Signature({ saveWithBackground: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.saveWithBackground).toEqual(true);
+        });
+
+        it('signature with strokeColor', () => {
+            signature = new Signature({ strokeColor: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.strokeColor).toEqual(null);
+            signature = new Signature({ strokeColor: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.strokeColor).toEqual('#000000');
+        });
+
+        it('signature with velocity', () => {
+            signature = new Signature({ velocity: null });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.velocity).toEqual(null);
+            signature = new Signature({ velocity: undefined });
+            signature.appendTo('#signature');
+            signature.dataBind();
+            expect(signature.velocity).toEqual(0.7);
+        });
+
     });
 });

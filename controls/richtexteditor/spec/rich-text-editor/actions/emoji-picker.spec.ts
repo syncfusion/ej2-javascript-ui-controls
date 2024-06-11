@@ -1862,7 +1862,7 @@ describe('Emoji picker module', () => {
             rteObj.showEmojiPicker();
             setTimeout(() => {
                 const popEle: HTMLElement = rteObj.element.querySelector('.e-rte-emojipicker-popup');
-                expect(popEle.style.top).toBe('1806px');
+                expect(popEle.style.top).toBe('2982px');
                 done();
             }, 100);
         });

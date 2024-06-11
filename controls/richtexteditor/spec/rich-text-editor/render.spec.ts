@@ -77,3 +77,22 @@ export function leaveGripper(gripper: HTMLElement): void {
 }
 
 export type ImageResizeGripper = 'e-rte-botRight' | 'e-rte-botLeft' | 'e-rte-topRight' | 'e-rte-topLeft';
+
+
+export function selectTableCell(table: HTMLTableElement, rowIndex: number, cellIndex: number): void {
+    const rows: HTMLCollectionOf<HTMLTableRowElement> = table.rows;
+    const row: HTMLTableRowElement = rows[rowIndex];
+    const cell: HTMLTableCellElement = row.cells[cellIndex];
+    const mouseEvent: MouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+    cell.dispatchEvent(mouseEvent);
+}
+
+export function drawCellSelection(table: HTMLTableElement, rowIndex: number, cellIndex: number): void {
+    const rows: HTMLCollectionOf<HTMLTableRowElement> = table.rows;
+    const row: HTMLTableRowElement = rows[rowIndex];
+    const cell: HTMLTableCellElement = row.cells[cellIndex];
+    const mouseMoveEvent: MouseEvent = new MouseEvent('mousemove', { bubbles: true, cancelable: true, view: window });
+    cell.dispatchEvent(mouseMoveEvent);
+    const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+    cell.dispatchEvent(mouseUpEvent);
+}

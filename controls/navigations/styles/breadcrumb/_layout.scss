@@ -1,6 +1,4 @@
 @include export-module('breadcrumb-layout') {
-
-  /*! breadcrumb layout */
   .e-breadcrumb {
     display: block;
 
@@ -65,6 +63,12 @@
         }
       }
 
+      &.e-icon-item .e-breadcrumb-text {
+        @if $skin-name == 'fluent2' {
+          padding: 9px;
+        }
+      }
+
       @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
         &.e-icon-item .e-breadcrumb-text:focus {
           padding: $breadcrumb-icon-only-item-focus-padding;
@@ -83,6 +87,9 @@
         .e-anchor-wrap {
           align-items: inherit;
           display: inherit;
+          @if $breadcrumb-skin == 'fluent2' {
+            line-height: 20px;
+          }
         }
       }
 
@@ -98,32 +105,57 @@
         }
 
         &:hover {
-          @if $skin-name == 'FluentUI' {
+          @if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
             background-color: $content-bg-color-hover;
-            color: $content-text-color-alt3;
+            color: $breadcrumb-item-hover-color;
           }
           @else {
             text-decoration: underline;
+          }
+
+          & .e-breadcrumb-icon.e-home {
+            @if $skin-name == 'fluent2' {
+              color: $toolbar-icon-color;
+            }
           }
         }
 
         &:focus {
           @if $skin-name == 'FluentUI' {
             border: 1px solid $border-alt;
-            color: $content-text-color-alt1;
+            color: $breadcrumb-item-active-color;
           }
-          @else {
+          @else if $skin-name != 'fluent2' {
             text-decoration: underline;
+          }
+
+          &:not(:focus-visible) {
+            @if $skin-name == 'fluent2' {
+              background-color: $content-bg-color-hover;
+              color: $breadcrumb-item-active-color;
+            }
+
+            & .e-breadcrumb-icon.e-home {
+              @if $skin-name == 'fluent2' {
+                color: $primary;
+              }
+            }
           }
         }
 
         &:active {
-          @if $skin-name == 'FluentUI' {
-            background-color: $content-bg-color-alt4;
-            color: $content-text-color-alt3;
+          @if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
+            background-color: $breadcrumb-item-active-bg-color;
+            color: $breadcrumb-item-active-color;
           }
           @else {
             text-decoration: underline;
+          }
+
+          & .e-breadcrumb-icon.e-home {
+            @if $skin-name == 'fluent2' {
+              color: $primary;
+            }
           }
         }
 
@@ -132,6 +164,16 @@
           &:focus,
           &:active {
             text-decoration: none;
+          }
+        }
+
+        &:focus-visible {
+          @if $skin-name == 'fluent2' {
+            box-shadow: $secondary-shadow-focus;
+
+            & .e-breadcrumb-icon {
+              color: $icon-color;
+            }
           }
         }
       }
@@ -202,6 +244,9 @@
       display: flex;
       font-size: $breadcrumb-font-size;
       padding: $breadcrumb-separator-padding;
+      @if $breadcrumb-skin == 'fluent2' {
+        line-height: 14px;
+      }
 
       + .e-breadcrumb-separator {
         margin-left: $breadcrumb-sibling-separator-margin-left;
@@ -297,6 +342,9 @@
     .e-breadcrumb-item {
       list-style-type: none;
       white-space: nowrap;
+      @if $breadcrumb-skin == 'fluent2' {
+        margin: 4px;
+      }
 
       .e-breadcrumb-text {
         align-items: center;
@@ -306,6 +354,9 @@
         line-height: $breadcrumb-popup-item-height;
         padding: $breadcrumb-popup-item-padding;
         width: 100%;
+        @if $breadcrumb-skin == 'fluent2' {
+          border-radius: 4px;
+        }
 
         .e-anchor-wrap {
           align-items: inherit;
@@ -359,6 +410,9 @@
       font-size: $breadcrumb-bigger-font-size;
       height: $breadcrumb-popup-item-bigger-height;
       line-height: $breadcrumb-popup-item-bigger-height;
+      @if $skin-name == 'fluent2' {
+        padding: 8px 8px 10px !important; /* stylelint-disable-line declaration-no-important */
+      }
 
       .e-breadcrumb-icon {
         font-size: $breadcrumb-icon-bigger-font-size;
@@ -389,7 +443,6 @@
   .e-bigger.e-breadcrumb,
   .e-bigger .e-breadcrumb {
     .e-breadcrumb-item {
-
       .e-breadcrumb-text {
         @if $skin-name == 'FluentUI' {
           padding: 8px;
@@ -458,6 +511,9 @@
     .e-breadcrumb-menu {
       font-size: $breadcrumb-collapsed-icon-bigger-font-size;
       padding: $breadcrumb-collapsed-icon-bigger-padding;
+      @if $breadcrumb-skin == 'fluent2' {
+        line-height: 16px;
+      }
 
       @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
         &:focus {
@@ -486,6 +542,32 @@
       @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
         padding-left: $breadcrumb-icon-bigger-right-padding;
       }
+    }
+  }
+
+  @if $breadcrumb-skin == 'fluent2' {
+    .e-breadcrumb .e-breadcrumb-item a.e-breadcrumb-text {
+      border-radius: 4px;
+    }
+  
+    .e-bigger .e-breadcrumb .e-breadcrumb-item .e-breadcrumb-text .e-anchor-wrap {
+      line-height: 22px !important; /* stylelint-disable-line declaration-no-important */
+    }
+  
+    .e-bigger .e-breadcrumb .e-breadcrumb-separator {
+      line-height: 16px !important; /* stylelint-disable-line declaration-no-important */
+    }
+  
+    .e-bigger .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text {
+      padding: 12px !important; /* stylelint-disable-line declaration-no-important */
+    }
+  
+    .e-bigger .e-breadcrumb-popup .e-breadcrumb-item {
+      margin: 6px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item a.e-breadcrumb-text:active .e-breadcrumb-icon {
+      background-color: $content-bg-color-pressed !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 }

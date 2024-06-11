@@ -808,6 +808,7 @@ describe('Schedule year view', () => {
             expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[6].innerHTML).toEqual('S');
         });
     });
+    
     describe('Checking aria-label with resource group', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

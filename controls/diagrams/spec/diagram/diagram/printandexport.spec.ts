@@ -12,7 +12,6 @@ import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 Diagram.Inject(PrintAndExport, UndoRedo,DataBinding, HierarchicalTree);
-
 /**
  * Print and Export Spec
  */
@@ -899,12 +898,12 @@ describe('Print and export', () => {
                     },
                     {
                         id: 'nodesss2', width: 100, height: 100, offsetX: 400, offsetY: 100,
-                        style: {
-                            fill: 'red', opacity: 0.8, gradient: {
-                                x1: 0, y1: 0, x2: 0, y2: 100, stops: [{ color: 'red', offset: 0 }, { color: 'blue', offset: 1 }],
-                                type: 'Linear'
-                            }
-                        }
+                        style: { strokeColor: '#8f908f', fill: '#e2f3fa', gradient: {
+                            cx: 50, cy: 50, fx: 50, fy: 50,
+                            stops: [{ color: '#00555b', offset: 0 },
+                                { color: '#37909A', offset: 90 }],
+                            type: 'Radial'
+                        } }
                     }
                 ]
                 diagram = new Diagram({
@@ -1004,7 +1003,6 @@ describe('Print and export', () => {
             done();
         });
     });
-
     describe('884801-After zooming and exporting the HTML content, the scroll Padding value is not Considered', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1607,12 +1605,10 @@ describe('Print and export', () => {
             diagram.appendTo('#diagram');
 
         });
-
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
         });
-
         it('export the diagram check the padding attached', (done: Function) => {
             let zoomin: ZoomOptions = { type: 'ZoomIn', zoomFactor: 0.2 };
             diagram.zoomTo(zoomin);
@@ -1624,6 +1620,135 @@ describe('Print and export', () => {
                 const diagramHeight = Number(diargamSvgLayer.getAttribute('height'));
                 expect(diagramHeight === 960).toBe(true);
             }
+            done();
+        });
+    });
+
+
+    describe('Code coverage fixing', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramCode' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: "node1",
+                    height: 100,
+                    width: 100,
+                    offsetX: 100,
+                    offsetY: 100,
+                },
+                {
+                    id: "node2",
+                    height: 100,
+                    width: 100,
+                    offsetX: 300,
+                    offsetY: 100,
+                },
+                {
+                    id: "node3",
+                    height: 100,
+                    width: 100,
+                    offsetX: 500,
+                    offsetY: 100,
+                }
+            ];
+            diagram = new Diagram({
+                width: '100%', height: '700px', nodes: nodes
+            } as DiagramModel);
+            diagram.appendTo('#diagramCode');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Exporting node in SVG format', (done: Function) => {
+            let exportOptions: IExportOptions = {};
+            exportOptions.region = 'Content';
+            exportOptions.format = 'SVG';
+            let data = diagram.exportDiagram(exportOptions);
+            expect(data).toBe(null);
+            done();
+        });
+        it('Exporting node in SVG format without region', (done: Function) => {
+            let exportOptions: IExportOptions = {};
+            exportOptions.format = 'SVG';
+            let data = diagram.exportDiagram(exportOptions);
+            expect(data).toBe(null);
+            done();
+        });
+        it('Exporting node with BMP format', (done: Function) => {
+            let exportOptions: IExportOptions = {};
+            exportOptions.region = 'Content';
+            exportOptions.format = 'BMP';
+            exportOptions.mode = 'Data';
+            let data = diagram.exportDiagram(exportOptions);
+            expect(data !== null).toBe(true);
+            done();
+        });
+        it('Exporting node with JPG format', (done: Function) => {
+            let exportOptions: IExportOptions = {};
+            exportOptions.region = 'Content';
+            exportOptions.format = 'JPG';
+            exportOptions.mode = 'Download';
+            let data = diagram.exportDiagram(exportOptions);
+            expect(data === null).toBe(true);
+            done();
+        });
+        it('Exporting image with base64', (done: Function) => {
+            let base64 = 'data:image/png;base64,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';
+            let exportOptions: IExportOptions = {};
+            exportOptions.mode = 'Download';
+            exportOptions.margin = { left: 10, right: 10, top: 10, bottom: 10 };
+            exportOptions.bounds = new Rect(NaN, NaN, NaN, NaN);
+            let data = diagram.exportImage(base64,exportOptions);
+            expect(data === undefined).toBe(true);
+            done();
+        });
+        it('Exporting nodes with pageHeight and pageWidth', (done: Function) => {
+            let exportOptions:IExportOptions = {};
+            exportOptions.mode = 'Download';
+            exportOptions.multiplePage = true;
+            exportOptions.pageHeight = 500;
+            exportOptions.pageWidth = 500;
+            let data = diagram.exportDiagram(exportOptions);
+            expect(data === null).toBe(true);
+            done();
+        });
+        it('Exporting nodes with margin', (done: Function) => {
+            let exportOptions:IExportOptions = {};
+            exportOptions.mode = 'Download';
+            exportOptions.multiplePage = false;
+            exportOptions.margin = { left: 10, right: 10, top: 10, bottom: 10 };
+            let data = diagram.exportDiagram(exportOptions);
+            expect(data === null).toBe(true);
+            done();
+        });
+        it('Exporting node without setting format with multiple page', (done: Function) => {
+            let exportOptions: IExportOptions = {};
+            exportOptions.region = 'Content';
+            exportOptions.multiplePage = true;
+            exportOptions.pageOrientation = 'Landscape';
+            let data = diagram.exportDiagram(exportOptions);
+            expect(data).toBe(null);
+            done();
+        });
+        it('Zoom diagram without setting zoom factor', (done: Function) => {
+            let zoomOption = {type:'ZoomOut'};
+            diagram.zoomTo(zoomOption as ZoomOptions);
+            expect(diagram.scrollSettings.currentZoom !== 1).toBe(true);
+            done();
+        });
+        it('Nudging connector', (done: Function) => {
+            let connector: ConnectorModel = {type:'Straight',sourcePoint:{x:100,y:100},targetPoint:{x:200,y:200}};
+            diagram.add(connector);
+            diagram.select([diagram.connectors[0]]);
+            diagram.nudge('Down');
+            expect(diagram.connectors[0].sourcePoint.y !== 100).toBe(true);
             done();
         });
     });

@@ -24,8 +24,12 @@ function triggerTouchEvent(node: HTMLElement | Document, eventType: string, x?: 
 }
 function triggerScrollEvent(target: HTMLElement, scrollTop: number) {
     target.scrollTop = scrollTop;
-    let e: UIEvent = document.createEvent("UIEvents");
-    e.initUIEvent("scroll", true, true, window, 1);
+    let e = new UIEvent("scroll", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        detail: 1
+    });
     target.dispatchEvent(e);
 }
 
@@ -2653,5 +2657,238 @@ describe('Tooltip Control', () => {
             triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
         });
+    });
+
+    describe('Tooltip Null or undefined value testing ', () => {
+        let tooltip: Tooltip;
+        beforeEach((): void => {
+            tooltip = undefined;
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="tstooltip" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:150px;top:150px;">property changes</div></div>';
+            document.body.appendChild(elem.firstChild);
+        });
+        afterEach((): void => {
+            if (tooltip) {
+                tooltip.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('width', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", width: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.width).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", width: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.width).toBe('auto');
+            tooltip.destroy();
+        });
+        it('height', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", height: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.height).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", height: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.height).toBe('auto');
+            tooltip.destroy();
+        });
+        it('content', () => {
+            tooltip = new Tooltip({ content: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.content).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.content).toBe(undefined);
+            tooltip.destroy();
+        });
+        it('container', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", container: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.container).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", container: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.container).toBe('body');
+            tooltip.destroy();
+        });
+        it('target', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", target: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.target).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", target: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.target).toBe(undefined);
+            tooltip.destroy();
+        });
+        it('opensOn', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", opensOn: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.opensOn).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", opensOn: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.opensOn).toBe('Auto');
+            tooltip.destroy();
+        });
+        it('position', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", position: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.position).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", position: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.position).toBe('TopCenter');
+            tooltip.destroy();
+        });
+        it('tipPointerPosition', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", tipPointerPosition: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.tipPointerPosition).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", tipPointerPosition: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.tipPointerPosition).toBe('Auto');
+            tooltip.destroy();
+        });
+        it('offsetX', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", offsetX: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.offsetX).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", offsetX: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.offsetX).toBe(0);
+            tooltip.destroy();
+        });
+        it('offsetY', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", offsetY: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.offsetY).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", offsetY: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.offsetY).toBe(0);
+            tooltip.destroy();
+        });
+        it('cssClass', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", cssClass: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.cssClass).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", cssClass: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.cssClass).toBe(undefined);
+            tooltip.destroy();
+        });
+        it('animation', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", animation: {
+                open: { effect: null },
+                close: { effect: null }
+            } }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.animation.open.effect).toBe(null);
+            expect(tooltip.animation.close.effect).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", animation: {
+                open: { effect: undefined },
+                close: { effect: undefined }
+            } }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.animation.open.effect).toBe(undefined);
+            expect(tooltip.animation.close.effect).toBe(undefined);
+            tooltip.destroy();
+        });
+        // windowCollision
+        it('windowCollision', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", windowCollision: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.windowCollision).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", windowCollision: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.windowCollision).toBe(false);
+            tooltip.destroy();
+        });
+        // mouseTrail
+        it('mouseTrail', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", mouseTrail: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.mouseTrail).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", mouseTrail: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.mouseTrail).toBe(false);
+            tooltip.destroy();
+        });
+        // showTipPointer
+        it('showTipPointer', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", showTipPointer: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.showTipPointer).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", showTipPointer: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.showTipPointer).toBe(true);
+            tooltip.destroy();
+        });
+        // tipPointerPosition
+        it('tipPointerPosition', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", tipPointerPosition: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.tipPointerPosition).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", tipPointerPosition: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.tipPointerPosition).toBe('Auto');
+            tooltip.destroy();
+        });
+        // isSticky
+        it('isSticky', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", isSticky: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.isSticky).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", isSticky: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.isSticky).toBe(false);
+            tooltip.destroy();
+        });
+        // openDelay
+        it('openDelay', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", openDelay: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.openDelay).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", openDelay: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.openDelay).toBe(0);
+            tooltip.destroy();
+        });
+        // closeDelay
+        it('closeDelay', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", closeDelay: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.closeDelay).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", closeDelay: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.closeDelay).toBe(0);
+            tooltip.destroy();
+        });
+        // htmlAttributes
+        it('htmlAttributes', () => {
+            tooltip = new Tooltip({ content: "Tooltip Content", htmlAttributes: null }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.htmlAttributes).toBe(null);
+            tooltip.destroy();
+            tooltip = new Tooltip({ content: "Tooltip Content", htmlAttributes: undefined }, '#tstooltip');
+            tooltip.dataBind();
+            expect(tooltip.htmlAttributes).not.toBe(null);
+            tooltip.destroy();
+        });
+        
     });
 });

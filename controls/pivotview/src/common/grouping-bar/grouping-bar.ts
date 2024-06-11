@@ -9,6 +9,7 @@ import { AxisFields } from './axis-field-renderer';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { Column, ColumnModel } from '@syncfusion/ej2-grids';
 import { Toolbar } from '@syncfusion/ej2-navigations';
+import { IAxisSet } from '../../base/engine';
 
 /**
  * Module for GroupingBar rendering
@@ -29,18 +30,18 @@ export class GroupingBar implements IAction {
     private rowAxisPanel: HTMLElement;
     private touchObj: Touch;
     private resColWidth: number;
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    private timeOutObj: any;
+    private timeOutObj: ReturnType<typeof setTimeout>;
 
-    /* eslint-disable */
     /**
      * Module declarations
      */
     private parent: PivotView;
 
-    /** Constructor for GroupingBar module */
+    /** Constructor for GroupingBar module
+     *
+     * @param {PivotView} parent - Instance.
+     */
     constructor(parent: PivotView) {
-        /* eslint-enable */
         this.parent = parent;
         this.parent.groupingBarModule = this;
         this.resColWidth = (this.parent.isAdaptive ? 180 : 249);
@@ -61,8 +62,10 @@ export class GroupingBar implements IAction {
         return 'groupingBar';
     }
 
-    /* eslint-disable-next-line */
-    /** @hidden */
+    /**
+     * @hidden
+     * @returns {void}
+     */
     public renderLayout(): void {
         this.groupingTable = createElement('div', { className: cls.GROUPING_BAR_CLASS });
         const leftAxisPanel: HTMLElement = createElement('div', { className: cls.LEFT_AXIS_PANEL_CLASS });
@@ -136,17 +139,22 @@ export class GroupingBar implements IAction {
             this.groupingTable = undefined;
         }
     }
-    /* eslint-disable  */
+
     private appendToElement(): void {
-        let element: HTMLElement = this.groupingTable ? this.groupingTable : this.groupingChartTable;
-        let leftAxisPanel: HTMLElement = element.getElementsByClassName(cls.LEFT_AXIS_PANEL_CLASS)[0] as HTMLElement;
-        let filterPanel: HTMLElement = element.getElementsByClassName(cls.GROUP_FILTER_CLASS + ' ' + cls.FILTER_AXIS_CLASS)[0] as HTMLElement;
-        let columnPanel: HTMLElement = element.getElementsByClassName(cls.GROUP_COLUMN_CLASS + ' ' + cls.COLUMN_AXIS_CLASS)[0] as HTMLElement;
-        let valuePanel: HTMLElement = element.getElementsByClassName(cls.GROUP_VALUE_CLASS + ' ' + cls.VALUE_AXIS_CLASS)[0] as HTMLElement;
+        const element: HTMLElement = this.groupingTable ? this.groupingTable : this.groupingChartTable;
+        const leftAxisPanel: HTMLElement = element.getElementsByClassName(cls.LEFT_AXIS_PANEL_CLASS)[0] as HTMLElement;
+        const filterPanel: HTMLElement = element.getElementsByClassName(cls.GROUP_FILTER_CLASS + ' ' +
+            cls.FILTER_AXIS_CLASS)[0] as HTMLElement;
+        const columnPanel: HTMLElement = element.getElementsByClassName(cls.GROUP_COLUMN_CLASS + ' ' +
+            cls.COLUMN_AXIS_CLASS)[0] as HTMLElement;
+        const valuePanel: HTMLElement = element.getElementsByClassName(cls.GROUP_VALUE_CLASS + ' ' +
+            cls.VALUE_AXIS_CLASS)[0] as HTMLElement;
         if (this.parent.element.querySelector('.' + cls.GRID_CLASS) || this.parent.element.querySelector('.' + cls.PIVOTCHART)) {
             if (this.parent.showGroupingBar) {
                 if (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
-                    for (let element of this.parent.element.querySelectorAll('.' + cls.GROUPING_BAR_CLASS) as any) {
+                    const elements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.GROUPING_BAR_CLASS);
+                    for (let i: number = 0; i < elements.length; i++) {
+                        const element: HTMLElement = elements[i as number];
                         remove(element);
                     }
                 }
@@ -158,7 +166,8 @@ export class GroupingBar implements IAction {
                         this.parent.element.insertBefore(
                             this.groupingChartTable, select('#' + this.parent.element.id + '_chart', this.parent.element));
                         if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
-                            let chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                            const chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
+                                (this.parent.getWidthAsNumber() - 2);
                             this.chartPanel.width = chartPanelWidth < 400 ? '398px' : chartPanelWidth;
                             this.chartPanel.refreshOverflow();
                             if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
@@ -191,7 +200,7 @@ export class GroupingBar implements IAction {
                             Object.keys(this.parent.engineModule.headerContent).length : 0;
                     }
                     if (!isNullOrUndefined(emptyRowCount)) {
-                        let emptyHeader: HTMLElement =
+                        const emptyHeader: HTMLElement =
                             this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('.e-columnheader') as HTMLElement;
                         emptyHeader.removeAttribute('style');
                         addClass([emptyHeader.querySelector('.' + cls.HEADERCELL)], 'e-group-row');
@@ -203,25 +212,26 @@ export class GroupingBar implements IAction {
                         width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
                     });
                     if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
-                        let gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                        const gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
+                            (this.parent.getWidthAsNumber() - 2);
                         this.gridPanel.width = gridPanelWidth < 400 ? '398px' : gridPanelWidth;
                         this.gridPanel.refreshOverflow();
                     }
                     this.groupingTable.style.minWidth = '400px';
                     this.parent.axisFieldModule.render();
                     this.setGridRowWidth();
-                    let colGroupElement: HTMLElement =
+                    const colGroupElement: HTMLElement =
                         this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('colgroup').children[0] as HTMLElement;
-                    let rightAxisPanelWidth: string =
+                    const rightAxisPanelWidth: string =
                         formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
                     setStyleAttribute(valuePanel, { width: colGroupElement.style.width });
                     setStyleAttribute(this.rightAxisPanel, { width: rightAxisPanelWidth });
-                    let rightPanelHeight: number = (valuePanel.offsetHeight / 2);
+                    const rightPanelHeight: number = (valuePanel.offsetHeight / 2);
                     if (rightPanelHeight > columnPanel.offsetHeight) {
                         setStyleAttribute(filterPanel, { height: formatUnit(rightPanelHeight) });
                         setStyleAttribute(columnPanel, { height: formatUnit(rightPanelHeight + 2) });
                     }
-                    let topLeftHeight: number =
+                    const topLeftHeight: number =
                         (this.parent.element.querySelector('.' + cls.HEADERCONTENT) as HTMLElement).offsetHeight;
                     setStyleAttribute(this.rowPanel, {
                         height: topLeftHeight + 'px'
@@ -231,16 +241,16 @@ export class GroupingBar implements IAction {
                             topLeftHeight + 'px';
                     }
 
-                    let colRows: HTMLTableElement[] =
+                    const colRows: HTMLTableElement[] =
                         [].slice.call(this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('thead').querySelectorAll('tr'));
-                    let columnRows: HTMLTableElement[] = colRows.filter((trCell: HTMLTableElement) => {
+                    const columnRows: HTMLTableElement[] = colRows.filter((trCell: HTMLTableElement) => {
                         return (trCell.childNodes.length > 0);
                     });
-                    let colHeight: number = topLeftHeight / columnRows.length;
-                    for (let element of columnRows) {
+                    const colHeight: number = topLeftHeight / columnRows.length;
+                    for (const element of columnRows) {
                         setStyleAttribute(element, { 'height': colHeight + 'px' });
-                        let rowHeader: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-rhandler')) as HTMLElement[];
-                        for (let rhElement of rowHeader) {
+                        const rowHeader: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-rhandler')) as HTMLElement[];
+                        for (const rhElement of rowHeader) {
                             setStyleAttribute(rhElement, { 'height': colHeight + 'px' });
                         }
                     }
@@ -262,15 +272,16 @@ export class GroupingBar implements IAction {
 
     private updateChartAxisHeight(): void {
         if (this.groupingChartTable && select('#' + this.parent.element.id + '_chart', this.parent.element)) {
-            let rowPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS) as HTMLElement;
-            let valuePanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS) as HTMLElement;
-            let filterPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_FILTER_CLASS) as HTMLElement;
-            let columnPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS) as HTMLElement;
+            const rowPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS) as HTMLElement;
+            const valuePanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS) as HTMLElement;
+            const filterPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_FILTER_CLASS) as HTMLElement;
+            const columnPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS) as HTMLElement;
             if (rowPanel && columnPanel) {
                 rowPanel.style.height = 'auto';
                 columnPanel.style.height = 'auto';
                 if (rowPanel.offsetHeight > 0 && columnPanel.offsetHeight > 0) {
-                    let maxHeight: number = rowPanel.offsetHeight > columnPanel.offsetHeight ? rowPanel.offsetHeight : columnPanel.offsetHeight;
+                    const maxHeight: number = rowPanel.offsetHeight > columnPanel.offsetHeight ? rowPanel.offsetHeight :
+                        columnPanel.offsetHeight;
                     setStyleAttribute(rowPanel, { height: formatUnit(maxHeight) });
                     setStyleAttribute(columnPanel, { height: formatUnit(maxHeight) });
                 }
@@ -279,7 +290,8 @@ export class GroupingBar implements IAction {
                 valuePanel.style.height = 'auto';
                 filterPanel.style.height = 'auto';
                 if (valuePanel.offsetHeight > 0 && filterPanel.offsetHeight > 0) {
-                    let maxHeight: number = valuePanel.offsetHeight > filterPanel.offsetHeight ? valuePanel.offsetHeight : filterPanel.offsetHeight;
+                    const maxHeight: number = valuePanel.offsetHeight > filterPanel.offsetHeight ? valuePanel.offsetHeight :
+                        filterPanel.offsetHeight;
                     setStyleAttribute(valuePanel, { height: formatUnit(maxHeight) });
                     setStyleAttribute(filterPanel, { height: formatUnit(maxHeight) });
                 }
@@ -289,6 +301,7 @@ export class GroupingBar implements IAction {
 
     /**
      * @hidden
+     * @returns {void}
      */
     public refreshUI(): void {
         if (this.groupingChartTable) {
@@ -296,7 +309,8 @@ export class GroupingBar implements IAction {
                 width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
             });
             if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
-                let chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                const chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
+                    (this.parent.getWidthAsNumber() - 2);
                 this.chartPanel.width = chartPanelWidth < 400 ? '398px' : chartPanelWidth;
                 this.chartPanel.refreshOverflow();
             }
@@ -307,19 +321,21 @@ export class GroupingBar implements IAction {
             }
         }
         if (this.groupingTable) {
-            let valuePanel: HTMLElement = this.groupingTable.getElementsByClassName(cls.GROUP_VALUE_CLASS + ' ' + cls.VALUE_AXIS_CLASS)[0] as HTMLElement;
+            const valuePanel: HTMLElement = this.groupingTable.getElementsByClassName(cls.GROUP_VALUE_CLASS + ' ' +
+                cls.VALUE_AXIS_CLASS)[0] as HTMLElement;
             setStyleAttribute(this.groupingTable, {
                 width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
             });
             if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
-                let gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                const gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
+                    (this.parent.getWidthAsNumber() - 2);
                 this.gridPanel.width = gridPanelWidth < 400 ? '398px' : gridPanelWidth;
                 this.gridPanel.refreshOverflow();
             }
             this.groupingTable.style.minWidth = '400px';
-            let colGroupElement: HTMLElement =
+            const colGroupElement: HTMLElement =
                 this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('colgroup').children[0] as HTMLElement;
-            let rightAxisWidth: string = formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
+            const rightAxisWidth: string = formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
             setStyleAttribute(valuePanel, { width: colGroupElement.style.width });
             setStyleAttribute(this.rightAxisPanel, { width: rightAxisWidth });
             if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
@@ -327,7 +343,7 @@ export class GroupingBar implements IAction {
                 this.timeOutObj = setTimeout(this.alignIcon.bind(this));
             }
             if (!this.parent.grid.element.querySelector('.e-group-row')) {
-                let emptyRowHeader: HTMLElement =
+                const emptyRowHeader: HTMLElement =
                 this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('.e-columnheader') as HTMLElement;
                 addClass([emptyRowHeader.querySelector('.' + cls.HEADERCELL)], 'e-group-row');
                 setStyleAttribute(this.rowPanel, {
@@ -340,7 +356,7 @@ export class GroupingBar implements IAction {
                 setStyleAttribute(emptyRowHeader.querySelector('.e-group-row').querySelector('.e-sortfilterdiv') as HTMLElement, {
                     display: 'none'
                 });
-                let groupHeight: number =
+                const groupHeight: number =
                     (this.parent.element.querySelector('.' + cls.HEADERCONTENT) as HTMLElement).offsetHeight;
                 setStyleAttribute(this.rowPanel, {
                     height: groupHeight + 'px'
@@ -349,16 +365,16 @@ export class GroupingBar implements IAction {
                     (this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('.e-rhandler') as HTMLElement).style.height =
                         groupHeight + 'px';
                 }
-                let colRowElements: HTMLTableElement[] =
+                const colRowElements: HTMLTableElement[] =
                     [].slice.call(this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('thead').querySelectorAll('tr'));
-                let columnRows: HTMLTableElement[] = colRowElements.filter((trCell: HTMLTableElement) => {
+                const columnRows: HTMLTableElement[] = colRowElements.filter((trCell: HTMLTableElement) => {
                     return (trCell.childNodes.length > 0);
                 });
-                let colHeight: number = groupHeight / columnRows.length;
-                for (let element of columnRows) {
+                const colHeight: number = groupHeight / columnRows.length;
+                for (const element of columnRows) {
                     setStyleAttribute(element, { 'height': colHeight + 'px' });
-                    let rowHeader: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-rhandler')) as HTMLElement[];
-                    for (let handlerElement of rowHeader) {
+                    const rowHeader: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-rhandler')) as HTMLElement[];
+                    for (const handlerElement of rowHeader) {
                         if (!handlerElement.parentElement.parentElement.querySelector('.' + cls.FREEZED_CELL)) {
                             setStyleAttribute(handlerElement, { 'height': colHeight + 'px' });
                         }
@@ -368,9 +384,13 @@ export class GroupingBar implements IAction {
         }
     }
 
-    /** @hidden */
+    /**
+     *
+     * @returns {void}
+     * @hidden
+     */
     public alignIcon(): void {
-        let element: HTMLElement = this.parent.pivotFieldListModule.element;
+        const element: HTMLElement = this.parent.pivotFieldListModule.element;
         let currentWidth: number;
         if (this.parent.currentView === 'Table') {
             currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
@@ -378,7 +398,7 @@ export class GroupingBar implements IAction {
             currentWidth = this.parent.chart ? this.parent.pivotChartModule.getCalulatedWidth() : currentWidth;
         }
         if (currentWidth) {
-            let actWidth: number = currentWidth < 400 ? 400 : currentWidth;
+            const actWidth: number = currentWidth < 400 ? 400 : currentWidth;
             setStyleAttribute(element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
                 left: formatUnit(this.parent.enableRtl ?
                     -Math.abs((actWidth) -
@@ -386,35 +406,39 @@ export class GroupingBar implements IAction {
                     (actWidth) -
                     (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth),
 
-                top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ""
+                top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector(
+                    '.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ''
             });
         }
     }
+
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public setGridRowWidth(): void {
-        let colGroupElement: HTMLElement =
+        const colGroupElement: HTMLElement =
             this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('colgroup').children[0] as HTMLElement;
         if (this.rowPanel.querySelector('.' + cls.PIVOT_BUTTON_CLASS)) {
             if (!this.parent.isAdaptive) {
-                let pivotButtons: HTMLElement[] = [].slice.call(this.rowPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS));
-                let lastButton: HTMLElement = pivotButtons[pivotButtons.length - 1];
-                let lastButtonWidth: number = ((lastButton.querySelector('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement).offsetWidth +
+                const pivotButtons: HTMLElement[] = [].slice.call(this.rowPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS));
+                const lastButton: HTMLElement = pivotButtons[pivotButtons.length - 1];
+                const lastButtonWidth: number = ((lastButton.querySelector('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement).offsetWidth +
                     (lastButton.querySelector('.e-indent-div') as HTMLElement).offsetWidth + 20);
                 let buttonWidth: string = formatUnit(lastButtonWidth < this.resColWidth ? this.resColWidth : lastButtonWidth);
-                let rowHeaderTable: HTMLElement =
+                const rowHeaderTable: HTMLElement =
                 this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('.' + cls.HEADERCELL) as HTMLElement;
-                let rowContentTable: HTMLElement =
+                const rowContentTable: HTMLElement =
                 this.parent.element.querySelector('.' + cls.CONTENT_CLASS).querySelector('tbody').querySelector('.' + cls.FREEZED_CELL);
-                let rowContent: HTMLElement =
+                const rowContent: HTMLElement =
                 this.parent.element.querySelector('.' + cls.CONTENT_CLASS).querySelector('colgroup').children[0] as HTMLElement;
-                let colwidth: number = parseInt(buttonWidth, 10);
-                let hasPivotColumns: boolean = this.parent.pivotColumns.length > 0;
-                let gridColumn: Column[] = this.parent.grid.columns as Column[];
+                const colwidth: number = parseInt(buttonWidth, 10);
+                const hasPivotColumns: boolean = this.parent.pivotColumns.length > 0;
+                const gridColumn: Column[] = this.parent.grid.columns as Column[];
                 if (gridColumn && gridColumn.length > 0) {
                     gridColumn[0].width = gridColumn[0].autoFit ?
-                        gridColumn[0].width : (colwidth > this.resColWidth ? colwidth : this.resColWidth)
+                        gridColumn[0].width : (colwidth > this.resColWidth ? colwidth : this.resColWidth);
                 }
                 let valueColWidth: number;
                 if (this.parent.dataType === 'olap') {
@@ -428,17 +452,21 @@ export class GroupingBar implements IAction {
                 }
                 for (let cCnt: number = 0; cCnt < gridColumn.length; cCnt++) {
                     if (cCnt !== 0) {
-                        if ((gridColumn[cCnt] as Column).columns) {
-                            this.setColWidth((this.parent.renderModule.pivotColumns[cCnt] as Column).columns as Column[], valueColWidth);
+                        if ((gridColumn[cCnt as number] as Column).columns) {
+                            this.setColWidth(
+                                (this.parent.renderModule.pivotColumns[cCnt as number] as Column).columns as Column[], valueColWidth
+                            );
                         } else {
-                            if ((gridColumn[cCnt] as Column).width !== 'auto') {
-                                /* eslint-disable @typescript-eslint/no-explicit-any */
-                                let levelName: string = gridColumn[cCnt].customAttributes ?
-                                    (gridColumn[cCnt].customAttributes as any).cell.valueSort.levelName : '';
-                                gridColumn[cCnt].width = (gridColumn[cCnt].autoFit || (hasPivotColumns && this.parent.pivotColumns[cCnt].autoFit)) ? gridColumn[cCnt].width : this.parent.renderModule.setSavedWidth(levelName, valueColWidth);
-                                /* eslint-enable @typescript-eslint/no-explicit-any */
+                            if ((gridColumn[cCnt as number] as Column).width !== 'auto') {
+                                const levelName: string = gridColumn[cCnt as number].customAttributes ?
+                                    (gridColumn[cCnt as number].customAttributes.cell as IAxisSet).valueSort.levelName as string : '';
+                                const columnWidth: number = this.parent.renderModule.setSavedWidth(levelName, valueColWidth);
+                                gridColumn[cCnt as number].width = (gridColumn[cCnt as number].autoFit || (hasPivotColumns
+                                    && this.parent.pivotColumns[cCnt as number].autoFit)) ? gridColumn[cCnt as number].width :
+                                    (this.parent.renderModule.lastColumnName === gridColumn[cCnt as number].field ?
+                                        (columnWidth - 2) : columnWidth);
                             } else {
-                                (gridColumn[cCnt] as Column).minWidth = valueColWidth;
+                                (gridColumn[cCnt as number] as Column).minWidth = valueColWidth;
                             }
                         }
                     }
@@ -457,7 +485,7 @@ export class GroupingBar implements IAction {
                 }
             } else {
                 if (!this.parent.firstColWidth) {
-                    let gridColumn: Column[] = this.parent.grid.columns as Column[];
+                    const gridColumn: Column[] = this.parent.grid.columns as Column[];
                     if (gridColumn && gridColumn.length > 0) {
                         gridColumn[0].width = this.resColWidth;
                     }
@@ -478,15 +506,16 @@ export class GroupingBar implements IAction {
     }
     private setColWidth(columns: Column[], width: number): void {
         for (let cCnt: number = 0; cCnt < columns.length; cCnt++) {
-            if (columns[cCnt].columns) {
-                this.setColWidth(columns[cCnt].columns as Column[], width);
+            if (columns[cCnt as number].columns) {
+                this.setColWidth(columns[cCnt as number].columns as Column[], width);
             }
             else {
-                if (!columns[cCnt].autoFit) {
-                    if (columns[cCnt].width !== "auto") {
-                        columns[cCnt].width = width;
+                if (!columns[cCnt as number].autoFit) {
+                    if (columns[cCnt as number].width !== 'auto') {
+                        columns[cCnt as number].width = this.parent.renderModule.lastColumnName === columns[cCnt as number].field ?
+                            (width - 2) : width;
                     } else {
-                        columns[cCnt].minWidth = width;
+                        columns[cCnt as number].minWidth = width;
                     }
                 }
             }
@@ -510,21 +539,24 @@ export class GroupingBar implements IAction {
         }
     }
     private tapHoldHandler(e: TapEventArgs): void {
-        let target: Element = closest((e.originalEvent.target as Element), '.' + cls.PIVOT_BUTTON_CLASS);
+        const target: Element = closest((e.originalEvent.target as Element), '.' + cls.PIVOT_BUTTON_CLASS);
         if (!isNullOrUndefined(target) && this.parent.isAdaptive) {
-            let pos: OffsetPosition = (target as Element).getBoundingClientRect();
+            const pos: OffsetPosition = (target as Element).getBoundingClientRect();
             this.parent.contextMenuModule.fieldElement = target as HTMLElement;
             this.parent.contextMenuModule.menuObj.open(pos.top, pos.left);
             return;
         }
     }
+
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public RefreshFieldsPanel(): void {
         if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings != null) {
             if (selectAll('#' + this.parent.element.id + '_AllFields', this.parent.element).length > 0) {
-                for (let element of selectAll('#' + this.parent.element.id + '_AllFields', this.parent.element)) {
+                for (const element of selectAll('#' + this.parent.element.id + '_AllFields', this.parent.element)) {
                     element.remove();
                 }
             }
@@ -545,7 +577,7 @@ export class GroupingBar implements IAction {
             (select('#' + this.parent.element.id + '_AllFields', element) as HTMLElement).remove();
         }
         element.prepend(createElement('div', { id: this.parent.element.id + '_AllFields' }));
-        let toolbarObj: Toolbar = new Toolbar({
+        const toolbarObj: Toolbar = new Toolbar({
             cssClass: cls.ALL_FIELDS_PANEL_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             enableRtl: this.parent.enableRtl, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             items: [{ template: '<div class=' + cls.GROUP_ALL_FIELDS_CLASS + '></div>' }],
@@ -555,7 +587,10 @@ export class GroupingBar implements IAction {
         toolbarObj.appendTo(select('#' + this.parent.element.id + '_AllFields', element) as HTMLElement);
         return toolbarObj;
     }
+
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -567,6 +602,8 @@ export class GroupingBar implements IAction {
     }
 
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -578,7 +615,8 @@ export class GroupingBar implements IAction {
     }
 
     /**
-     * To destroy the groupingbar 
+     * To destroy the groupingbar
+     *
      * @returns {void}
      * @hidden
      */

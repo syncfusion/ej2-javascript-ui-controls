@@ -33,7 +33,7 @@ export interface ToolbarSettingsModel {
     /**
      * An array of string or object that is used to configure items.
      *
-     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
+     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote' 'OrderedList',
      * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
      */
     items?: (string |ToolbarConfigItems | IToolbarItems)[];
@@ -869,7 +869,7 @@ export interface FontFamilyModel {
     /**
      * Specifies content width
      *
-     * @default '65px'
+     * @default '72px'
      */
     width?: string;
 
@@ -897,7 +897,7 @@ export interface FontSizeModel {
     /**
      * Specifies content width
      *
-     * @default '35px'
+     * @default '60px'
      */
     width?: string;
 

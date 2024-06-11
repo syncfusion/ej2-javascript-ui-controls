@@ -1,4 +1,4 @@
-import { getPoint, withInRange, ChartLocation } from '../../common/utils/helper';
+import { getPoint, withInRange, ChartLocation, animateAddPoints } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
@@ -12,13 +12,17 @@ export class RangeStepAreaSeries extends LineBase {
     private prevPoint: Points = null;
 
     /**
-     * Render RangeStepArea series.
+     * Renders the Range Step Area series on the chart.
      *
+     * @param {Series} series - The series to be rendered.
+     * @param {Axis} xAxis - The x-axis associated with the series.
+     * @param {Axis} yAxis - The y-axis associated with the series.
+     * @param {boolean} isInverted - Specifies whether the series is inverted.
+     * @param {boolean} pointAnimate - Specifies whether to animate the series point.
+     * @param {boolean} pointUpdate - Specifies whether to update the previous point.
      * @returns {void}
-     * @private
      */
-
-    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate: boolean, pointUpdate?: boolean): void {
         this.prevPoint = null;
         let point: Points;
         let currentPoint: ChartLocation;
@@ -79,7 +83,6 @@ export class RangeStepAreaSeries extends LineBase {
                         : (this.prevPoint.low as number), xAxis, yAxis, isInverted);
                     direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, command));
                     this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, command));
-                    
                 }
                 else if (series.emptyPointSettings.mode === 'Gap') {
                     currentPoint = getPoint(point.xValue, point.high > point.low ? (point.high as number)
@@ -112,12 +115,12 @@ export class RangeStepAreaSeries extends LineBase {
         const options: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index, series.interior,
             0, 'transparent', series.opacity, series.dashArray, direction);
-        this.appendLinePath(options, series, '');
+        this[pointAnimate ? 'addPath' : 'appendLinePath'](options, series, '');
         /**
          * To draw border for the range step area chart.
          */
         if (series.border.width !== 0) {
-            this.appendLinePath(
+            this[pointAnimate ? 'addPath' : 'appendLinePath'](
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index, 'transparent',
                     borderWidth, borderColor, 1, series.dashArray,
@@ -127,16 +130,23 @@ export class RangeStepAreaSeries extends LineBase {
             );
             this.borderDirection = '';
         }
-        this.renderMarker(series);
+        if (!pointUpdate) {this.renderMarker(series); }
     }
 
     /**
      * Calculating path direction for rendering the low points.
      *
-     * @returns {void}.
+     * @param {Points[]} visiblePoints - The visible data points.
+     * @param {Points} point - The current data point.
+     * @param {Series} series - The series to which the data point belongs.
+     * @param {string} direction - The direction of the series.
+     * @param {number} i - The index of the current data point.
+     * @param {Axis} xAxis - The x-axis associated with the series.
+     * @param {Axis} yAxis - The y-axis associated with the series.
+     * @param {boolean} isInverted - Specifies whether the series is inverted.
+     * @returns {string} - Returns the path direction for low direction.
      * @private
      */
-
     protected closeRangeStepAreaPath(
         visiblePoints: Points[], point: Points, series: Series, direction: string,
         i: number, xAxis: Axis, yAxis: Axis, isInverted: boolean): string {
@@ -155,7 +165,6 @@ export class RangeStepAreaSeries extends LineBase {
                     low = high;
                     high = temp;
                 }
-
                 // Lowpoint for RangeStepArea path.
                 if (this.prevPoint != null) {
                     currentPoint = getPoint(point.xValue, point.low < point.high ? (point.low as number)
@@ -179,6 +188,66 @@ export class RangeStepAreaSeries extends LineBase {
         return direction;
 
     }
+
+    /**
+     * To animate point for range step area series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
+        for (let i: number = 0; i < point.length; i++) {
+            if (series.marker && series.marker.visible) {
+                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
+                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
+    }
+
+    public addPath(options: PathOption, series: Series, clipRect: string): void {
+        const points: { element: Element; previousDirection: string; } =
+            this.appendPathElement(options, series, clipRect);
+        if (points.previousDirection !== '' && options.d !== '') {
+            const startPathCommands: string[] = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (startPathCommands.length < endPathCommands.length) {
+                for (let i: number = startPathCommands.length; i < endPathCommands.length; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        startPathCommands.splice((Math.floor((startPathCommands.length / 2)) - 1), 0,
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) - 1],
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) - 1]);
+                        startPathCommands.splice((Math.floor((startPathCommands.length / 2)) + 2), 0,
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) + 2],
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) + 2]);
+                    }
+                }
+                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+            } else if (startPathCommands.length > endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        endPathCommands.splice(2, 0, endPathCommands[2]);
+                        endPathCommands.splice(endPathCommands.length - 3, 0, endPathCommands[endPathCommands.length - 3]);
+                    }
+                }
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
+            } else {
+                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+            }
+        }
+    }
     /**
      * Animates the series.
      *
@@ -192,8 +261,9 @@ export class RangeStepAreaSeries extends LineBase {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
          * Returns the module name of the series.
@@ -207,7 +277,6 @@ export class RangeStepAreaSeries extends LineBase {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
          * Destroys range step area series.

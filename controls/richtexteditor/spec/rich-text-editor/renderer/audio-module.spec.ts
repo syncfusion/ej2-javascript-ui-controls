@@ -374,6 +374,9 @@ describe('Audio Module', () => {
                 toolbarSettings: {
                     items: ['Audio', 'Bold']
                 },
+                insertAudioSettings: {
+                    removeUrl: ''
+                },
                 value: innerHTML1
             });
             rteEle = rteObj.element;
@@ -405,7 +408,49 @@ describe('Audio Module', () => {
             }, 200);
         });
      });
- 
+
+     describe('document click audio coverage', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `
+            <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio']
+                },
+                value: innerHTML1,
+                inlineMode: {
+                    enable: true
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('document click audio coverage', (done: Function) => {
+            let target: HTMLElement = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-audio-wrap');
+            let eventsArgs: any = { target: target, preventDefault: function () { } };
+            target.classList.add('e-audio-focus');
+            (rteObj as any).audioModule.onDocumentClick(eventsArgs);
+            (rteObj as any).audioModule.touchStart(eventsArgs);
+            (rteObj as any).audioModule.onDocumentClick(eventsArgs);
+            setCursorPoint(target, 0);
+            dispatchEvent(target, 'mousedown');
+            dispatchEvent(target, 'mouseup');
+            setTimeout(function () {
+                let audioBtn: HTMLElement = document.getElementById((rteObj as any).element.id + "_quick_AudioReplace");
+                 audioBtn.parentElement.click();
+                let eventsArgs: any = { target: document, preventDefault: function () { } };
+                (<any>rteObj).audioModule.onDocumentClick(eventsArgs);
+                done();
+            }, 200);
+        });
+     });
+
      describe('Audio deleting when press backspace button', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -646,6 +691,66 @@ describe('Audio Module', () => {
          });
      });
      
+     describe('Audio with inline and break applied using break && inline method', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        let innerHTML1: string = `
+            <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('classList testing for inline', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-audio-wrap');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({ args: eventsArg });
+            (<any>rteObj).audioModule.audEle = rteObj.contentModule.getEditPanel().querySelector('.e-audio-wrap audio');
+            setTimeout(function () {
+                let audio: HTMLElement = rteObj.element.querySelector('.e-rte-audio') as HTMLElement;
+                let mouseEventArg = { 
+                    args: {item: { command: 'Audios', subCommand: '' }},
+                    selectNode: [audio]
+                };
+                (<any>rteObj).audioModule.inline(mouseEventArg);
+                (<any>rteObj).audioModule.break(mouseEventArg);
+                expect(audio.classList.contains('e-audio-inline')).toBe(true);
+                done();
+            }, 200);
+        });
+     });
+
      describe('Mouse Click for audio testing when showOnRightClick enabled', () => {
          let rteObj: RichTextEditor;
          beforeEach((done: Function) => {
@@ -682,7 +787,10 @@ describe('Audio Module', () => {
          let controlId: string;
          beforeEach((done: Function) => {
              rteObj = renderRTE({
-                 value: `<p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`
+                 value: `<p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`,
+                 inlineMode: {
+                    enable: true
+                }
              });
              controlId = rteObj.element.id;
              done();
@@ -2083,6 +2191,44 @@ describe('Audio Module', () => {
                 toolbarSettings: {
                     items: ['Audio', 'Bold']
                 },
+                insertAudioSettings: {
+                    layoutOption: 'Break'
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the insertAudioUrl', (done: Function) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.audioModule);
+            (<any>rteObj).audioModule.uploadUrl = { url: "https://www.w3schools.com/html/mov_bbb.mp4" };
+            (rteEle.querySelectorAll('.e-toolbar-item')[0]as HTMLElement).click()
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.audioUrl .e-input.e-audio-url')as HTMLElement).click();
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
+            (document.querySelector('.e-insertAudio.e-primary')as HTMLElement).click();
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-audio'))).toBe(true)
+            done();
+        });
+    });
+    describe('836851 - insertAudioUrl Inline', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let QTBarModule: IRenderer;
+        var innerHTML: string = "<p>Testing</p>";
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                insertAudioSettings: {
+                    layoutOption: 'Inline'
+                },
                 value: innerHTML,
             });
             rteEle = rteObj.element;
@@ -2246,6 +2392,9 @@ describe('Audio Module', () => {
                 toolbarSettings: {
                     items: ['Audio']
                 },
+                insertAudioSettings: {
+                    layoutOption: 'Break'
+                }
             });
             done();
         })

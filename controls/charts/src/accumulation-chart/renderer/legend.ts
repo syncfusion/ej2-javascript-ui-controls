@@ -1,12 +1,7 @@
-/* eslint-disable curly */
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart legend
  */
-import { extend, Browser, isNullOrUndefined, Animation, AnimationOptions } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { AccumulationSeries, AccPoints, pointByIndex } from '../model/acc-base';
 import { MarginModel } from '../../common/model/base-model';
 import { AccumulationChart } from '../accumulation';
@@ -16,7 +11,6 @@ import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { Rect, Size, measureText } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, textTrim, getElement, blazorTemplatesReset} from '../../common/utils/helper';
 import { IAccLegendRenderEventArgs, IAccLegendClickEventArgs } from '../../accumulation-chart/model/pie-interface';
-import { Indexes } from '../../common/model/base';
 import { LegendTitlePosition } from '../../common/utils/enum';
 import { textWrap } from '../../common/utils/helper';
 import { legendClick } from '../../common/model/constants';
@@ -40,6 +34,8 @@ export class AccumulationLegend extends BaseLegend {
     }
     /**
      * Binding events for legend module.
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -49,6 +45,8 @@ export class AccumulationLegend extends BaseLegend {
     }
     /**
      * UnBinding events for legend module.
+     *
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -57,17 +55,34 @@ export class AccumulationLegend extends BaseLegend {
         this.chart.off(Browser.touchEndEvent, this.mouseEnd);
     }
     /**
-     * To handle mosue move for legend module
+     * To handle mosue move for legend module.
+     *
+     * @param {MouseEvent} e - The mouse move event for legend module.
+     * @returns {void}
      */
     private mouseMove(e: MouseEvent): void {
-        if (this.chart.legendSettings.visible && !this.chart.isTouch) {
-            if ((<AccumulationChart>this.chart).accumulationHighlightModule && (<AccumulationChart>this.chart).highlightMode !== 'None') {
-                this.click(e);
+         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
+             if ((<AccumulationChart>this.chart).accumulationHighlightModule && (<AccumulationChart>this.chart).highlightMode !== 'None') {
+                if (!(<AccumulationChart>this.chart).legendSettings.toggleVisibility) { this.click(e); }
+                const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
+                this.legendID + '_shape_', this.legendID + '_g_'];
+                const targetId: string = (<HTMLElement>e.target).id;
+                let index: number;
+                for (const id of legendItemsId) {
+                    if (targetId.indexOf(id) > -1) {
+                        index = parseInt(targetId.split(id)[1], 10);
+                        (<AccumulationChart>this.chart).accumulationHighlightModule.legendSelection((<AccumulationChart>this.chart), 0, index, e.target as Element, e.type);
+                        break;
+                    }
+                }
             }
-        }
+         }
     }
     /**
-     * To handle mosue end for legend module
+     * To handle mosue end for legend module.
+     *
+     * @param {MouseEvent} e - The mouse end event for legend module.
+     * @returns {void}
      */
     private mouseEnd(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && this.chart.isTouch) {
@@ -77,7 +92,9 @@ export class AccumulationLegend extends BaseLegend {
     /**
      * Get the legend options.
      *
-     * @returns {void} Legend options.
+     * @param {AccumulationChart} chart - The accumulation chart control.
+     * @param {AccumulationSeries[]} series - The array of series in the accumulation chart.
+     * @returns {void}
      * @private
      */
     public getLegendOptions(chart: AccumulationChart, series: AccumulationSeries[]): void {
@@ -107,6 +124,10 @@ export class AccumulationLegend extends BaseLegend {
     /**
      * To find legend bounds for accumulation chart.
      *
+     * @param {Size} availableSize - The available size for the legend.
+     * @param {Rect} legendBounds - The boundary of the legend.
+     * @param {LegendSettingsModel} legend - The legend settings.
+     * @returns {void}
      * @private
      */
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
@@ -180,14 +201,15 @@ export class AccumulationLegend extends BaseLegend {
                         }
                         columnWidth.push(maximumWidth);
                         maximumWidth = 0;
-                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                        columnHeight = legendOption.textSize.height + padding; legendOption.textSize.height + padding;
+                        columnHeight = legendOption.textSize.height + padding;
                         columnCount++;
                     }
                     this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ?
-                        this.columnHeights[columnCount as number] : 0) + legendOption.textSize.height + ((i === 0) ? padding : this.itemPadding);
+                        this.columnHeights[columnCount as number] : 0) + legendOption.textSize.height + ((i === 0) ?
+                        padding : this.itemPadding);
                     maximumWidth = Math.max(legendWidth, maximumWidth);
-                    this.rowHeights[rowCount as number] = Math.max((this.rowHeights[rowCount as number] ? this.rowHeights[rowCount as number] : 0), legendOption.textSize.height);
+                    this.rowHeights[rowCount as number] = Math.max((this.rowHeights[rowCount as number] ?
+                        this.rowHeights[rowCount as number] : 0), legendOption.textSize.height);
                     rowCount++;
                 } else {
                     if (!legend.enablePages) { // For new legend navigation support
@@ -208,7 +230,8 @@ export class AccumulationLegend extends BaseLegend {
                     const len: number = rowCount ? (rowCount - 1) : rowCount;
                     this.rowHeights[len as number] = Math.max((this.rowHeights[len as number] ? this.rowHeights[len as number] : 0),
                                                               legendOption.textSize.height);
-                    this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ? this.columnHeights[columnCount as number] : 0) +
+                    this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ?
+                        this.columnHeights[columnCount as number] : 0) +
                         legendOption.textSize.height + padding;
                     columnCount++;
                 }
@@ -251,6 +274,7 @@ export class AccumulationLegend extends BaseLegend {
     }
 
     /** @private */
+
     public getLegendHeight(option: LegendOptions, legend: LegendSettingsModel, bounds: Rect, rowWidth: number,
                            legendHeight: number, padding: number): void {
         const legendWidth: number = option.textSize.width;
@@ -274,7 +298,8 @@ export class AccumulationLegend extends BaseLegend {
     /**
      * To find html entities value for legend.
      *
-     * @returns {string} converts the entities to normal string.
+     * @param {string} legendText - The text of the legend item.
+     * @returns {string} - Converts the entities to normal string.
      */
     public convertHtmlEntities(legendText: string): string {
         let text: string = (legendText).replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"').replace('&nbsp;', ' ').replace('&cent;', '¢').replace('&pound;', '£').replace('&yen;', '¥').replace('&euro;', '€').replace('&copy;', '©').replace('&reg;', '®');
@@ -283,9 +308,13 @@ export class AccumulationLegend extends BaseLegend {
         return text;
     }
     /**
-     * To find maximum column size for legend
+     * To find maximum column size for legend.
      *
-     * @returns {number} Get a maximum columns.
+     * @param {number[]} columns - Array containing the number of legend items in each column.
+     * @param {number} width - The total width available.
+     * @param {number} padding - The padding between legend items.
+     * @param {number} rowWidth - The width of each row of legend items.
+     * @returns {number} - Get a maximum columns.
      */
     private getMaxColumn(columns: number[], width: number, padding: number, rowWidth: number): number {
         let maxPageColumn: number = padding;
@@ -318,7 +347,8 @@ export class AccumulationLegend extends BaseLegend {
                     prevPage = i;
                 }
             }
-            this.pageHeights.push(((prevPage !== columnCount - 1) ? Math.max.apply(null, this.columnHeights.slice(prevPage, columnCount - 1)) : this.columnHeights[prevPage as number]));
+            this.pageHeights.push(((prevPage !== columnCount - 1) ?
+                Math.max.apply(null, this.columnHeights.slice(prevPage, columnCount - 1)) : this.columnHeights[prevPage as number]));
             this.totalPages = this.pageHeights.length;
         }
         return maxPageColumn;
@@ -326,7 +356,9 @@ export class AccumulationLegend extends BaseLegend {
     /**
      * To find available width from legend x position.
      *
-     * @returns {number} Get a available width.
+     * @param {number} tx - The x-coordinate of the legend.
+     * @param {number} width - The total width available.
+     * @returns {number} - Get a available width.
      */
     private getAvailWidth(tx: number, width: number): number {
         if (this.isVertical) {
@@ -339,6 +371,14 @@ export class AccumulationLegend extends BaseLegend {
     /**
      * To find legend rendering locations from legend items.
      *
+     * @param {LegendOptions} legendOption - The legend options.
+     * @param {ChartLocation} start - The starting location for legend rendering.
+     * @param {number} textPadding - The padding between legend text items.
+     * @param {LegendOptions} prevLegend - The previous legend options.
+     * @param {Rect} rect - The bounding of the legend.
+     * @param {number} count - The count of legend items.
+     * @param {number} firstLegend - The index of the first legend item.
+     * @returns {void}
      * @private
      */
     public getRenderPoint(legendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
@@ -363,8 +403,9 @@ export class AccumulationLegend extends BaseLegend {
             const previousBound: number = prevLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
             if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth :
                 legendOption.textSize.width) + textPadding - this.itemPadding, rect, this.legend.shapeWidth / 2)) {
-                if (count !== firstLegend)
+                if (count !== firstLegend) {
                     this.chartRowCount++;
+                }
                 legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
                     prevLegend.location.y + this.rowHeights[(this.chartRowCount - 2)] + padding;
                 legendOption.location.x = start.x;
@@ -376,14 +417,19 @@ export class AccumulationLegend extends BaseLegend {
         let availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
         availablewidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availablewidth) : availablewidth;
         if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
-            legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
+            legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle,
+                                         this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
         }
     }
 
-    // eslint-disable-next-line jsdoc/require-returns
     /**
-     * check whether legend group within legend bounds or not.
+     * Check whether legend group within legend bounds or not.
      *
+     * @param {number} previousBound - The previous bound value.
+     * @param {number} textWidth - The width of the legend text.
+     * @param {Rect} legendBounds - The bounding of the legend.
+     * @param {number} shapeWidth - The width of the legend shape.
+     * @returns {boolean} - A boolean indicating whether the legend group is within the legend bounds.
      */
     private isWithinBounds(previousBound: number, textWidth: number, legendBounds: Rect, shapeWidth: number): boolean {
         if (!this.isRtlEnable) {
@@ -395,8 +441,11 @@ export class AccumulationLegend extends BaseLegend {
     }
 
     /**
-     * finding the smart legend place according to positions.
+     * Finding the smart legend place according to positions.
      *
+     * @param {Rect} labelBound - The bounding of the label.
+     * @param {Rect} legendBound - The bounding of the legend.
+     * @param {MarginModel} margin - The margin of the legend.
      * @returns {void}
      * @private
      */
@@ -429,7 +478,8 @@ export class AccumulationLegend extends BaseLegend {
     /**
      * To get title rect.
      *
-     * @returns {void} Get a title rect.
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @returns {void}
      */
     private getTitleRect(accumulation: AccumulationChart): void {
         if (!accumulation.title) {
@@ -440,9 +490,11 @@ export class AccumulationLegend extends BaseLegend {
             accumulation.availableSize.width / 2 - titleSize.width / 2, accumulation.margin.top, titleSize.width, titleSize.height);
     }
     /**
-     * To get legend by index
+     * To get legend by index.
      *
-     * @returns {LegendOptions} Return legend index.
+     * @param {number} index - The index of the legend.
+     * @param {LegendOptions[]} legendCollections - The array of legend options.
+     * @returns {LegendOptions} - Return legend index.
      */
     private legendByIndex(index: number, legendCollections: LegendOptions[]): LegendOptions {
         for (const legend of legendCollections) {
@@ -455,6 +507,7 @@ export class AccumulationLegend extends BaseLegend {
     /**
      * To show or hide the legend on clicking the legend.
      *
+     * @param {Event} event - The click event.
      * @returns {void}
      */
     public click(event: Event): void {
@@ -462,9 +515,10 @@ export class AccumulationLegend extends BaseLegend {
             (event.target as HTMLElement).firstChild['id'] : (<HTMLElement>event.target).id;
         const chart: AccumulationChart = this.chart as AccumulationChart;
         const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_', this.legendID + '_shape_marker_'];
-        if ((<AccumulationChart>this.chart).accumulationSelectionModule) {
-            const selectedDataIndexes: Indexes[] = <Indexes[]>extend([], (<AccumulationChart>this.chart).accumulationSelectionModule.selectedDataIndexes, null, true);
-        }
+        // if ((<AccumulationChart>this.chart).accumulationSelectionModule) {
+        //     // const selectedDataIndexes: Indexes[] = <Indexes[]>extend([], (<AccumulationChart>this.chart)
+        //     //     .accumulationSelectionModule.selectedDataIndexes, null, true);
+        // }
         (this.chart as AccumulationChart).animateSeries = false;
         for (const id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
@@ -509,7 +563,11 @@ export class AccumulationLegend extends BaseLegend {
         chart.redraw = false;
     }
     /**
-     * To translate the point elements by index and position
+     * To translate the point elements by index and position.
+     *
+     * @param {number} index - The index of the point element.
+     * @param {boolean} isVisible - A boolean value indicating whether the point is visible.
+     * @returns {void}
      */
     private sliceVisibility(index: number, isVisible: boolean): void {
         let sliceId: string = this.chart.element.id + '_Series_0_Point_';
@@ -520,11 +578,11 @@ export class AccumulationLegend extends BaseLegend {
     }
 
     /**
-     * Slice animation
+     * Slice animation.
      *
-     * @param {Element} element slice element.
-     * @param {boolean} isVisible boolean value of slice.
-     * @returns {void} slice animation method.
+     * @param {Element} element - slice element.
+     * @param {boolean} isVisible - boolean value of slice.
+     * @returns {void}
      */
     private sliceAnimate(element: Element, isVisible: boolean): void {
         if (!element) {
@@ -540,9 +598,9 @@ export class AccumulationLegend extends BaseLegend {
         });
     }
     /**
-     * Get module name
+     * Get module name.
      *
-     * @returns {string} Return module name.
+     * @returns {string} - Return module name.
      */
     protected getModuleName(): string {
         return 'AccumulationLegend';
@@ -556,7 +614,7 @@ export class AccumulationLegend extends BaseLegend {
      */
     public destroy(): void {
         /**
-         * Destroy method calling here
+         * Destroy method calling here.
          */
         this.removeEventListener();
     }

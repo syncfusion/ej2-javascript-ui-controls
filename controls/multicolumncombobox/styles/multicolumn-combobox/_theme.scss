@@ -1,0 +1,49 @@
+@include export-module('multicolumn-combobox-theme') {
+  .e-multicolumn-list .e-popup-footer {
+    background: $grid-footer-bg-color;
+    color: $grid-footer-color;
+    border-color: $footer-border-color;
+  }
+  .e-input-group.e-multicolumn-list:focus-visible {
+    outline: transparent;
+  }
+  .e-popup.e-multicolumn-list {
+    background: transparent;
+    box-shadow: $popup-box-shadow;
+    .e-nodata {
+      color: $popup-text-color;
+      border: 1px solid $nodata-border-color;
+      background: $nodata-bg-color;
+    }
+    .e-multicolumn-grid .e-rowcell {
+      color: $grid-content-color;
+    }
+    .e-multicolumn-grid .e-focused {
+      box-shadow: none;
+    }
+    .e-gridhover .e-row:hover .e-rowcell:not(.e-active),
+    .e-gridcontent .e-row-focus {
+      background: $grid-content-hover-bg-color !important; /* stylelint-disable-line declaration-no-important */
+    }
+    .e-multicolumn-grid td.e-active {
+      background: $grid-content-active-bg-color;
+      color: $grid-content-active-color;
+    }
+    .e-groupcaption {
+      color: $grid-group-content-header-color;
+      background: $grid-group-content-header-bg-color;
+    }
+    .e-gridheader,
+    .e-gridheader colgroup {
+      background: $grid-header-content-bg-color;
+    }
+    .e-altrow {
+      background: $altrow-bg-color;
+    }
+    .e-headertext,
+    .e-grid th.e-headercell[aria-sort = 'ascending'] .e-headertext,
+    .e-grid th.e-headercell[aria-sort = 'descending'] .e-headertext {
+      color: $grid-header-content-color;
+    }
+  }
+}

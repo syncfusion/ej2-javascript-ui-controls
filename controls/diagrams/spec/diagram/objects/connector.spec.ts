@@ -3,15 +3,16 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PathPortModel, PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints, PortVisibility, PortConstraints, ControlPointsVisibility, AnnotationConstraints } from '../../../src/diagram/enum/enum';
+import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints, PortVisibility, PortConstraints, ControlPointsVisibility, AnnotationConstraints, DiagramTools } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, TextElement, PathAnnotation, BezierSegment, Rect, cloneObject, IConnectionChangeEventArgs } from '../../../src/diagram/index';
+import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, TextElement, PathAnnotation, BezierSegment, Rect, cloneObject, IConnectionChangeEventArgs, Ej1Serialization } from '../../../src/diagram/index';
 import { getDiagramLayerSvg } from '../../../src/diagram/utility/dom-util';
 import { PortModel } from '../../../src/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+Diagram.Inject(Ej1Serialization);
 /**
  * Connector spec
  */
@@ -2029,7 +2030,7 @@ describe('Diagram Control', () => {
         it('Midpoint for Annotation', (done: Function) => {
             console.log("midpoint");
             console.log(diagram.connectors[0].wrapper.children[3].offsetX ,diagram.connectors[0].wrapper.children[3].offsetY );
-            expect(diagram.connectors[0].wrapper.children[3].offsetX === 149.82 && diagram.connectors[0].wrapper.children[3].offsetY === 449.83).toBe(false);
+            expect(diagram.connectors[0].wrapper.children[3].offsetX === 149.82 && diagram.connectors[0].wrapper.children[3].offsetY === 449.83).toBe(true);
             done();
         });
 
@@ -2180,7 +2181,7 @@ describe('Diagram Control', () => {
             ele = createElement('div', { id: 'diagramconPort' });
             document.body.appendChild(ele);
             var newNodes:NodeModel[] = [
-                { id: 'n1', offsetX: 100, offsetY: 100, width: 70, height: 70, ports: [{ id: 'n1p1', shape: 'Square', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default | PortConstraints.Drag }] },
+                { id: 'n1', offsetX: 100, offsetY: 100, width: 70, height: 70, ports: [{ id: 'n1p1', shape: 'Square', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default | PortConstraints.Drag }],annotations:[{content:'node1'}] },
                 { id: 'n2', offsetX: 500, offsetY: 150, width: 70, height: 70, ports: [{ id: 'n2p1', shape: 'Square', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default | PortConstraints.Draw }] },
             ];
             var newConnectors:ConnectorModel[] = [
@@ -2236,7 +2237,140 @@ describe('Diagram Control', () => {
             expect(newPortCount === portCount + 2).toBe(true);
             done();
         });
+        it('Adding Bezier connector with port at runtime', (done: Function) => {
+            let conCount = diagram.connectors.length;
+            let con:ConnectorModel = {
+                id:'newBez1',type:'Bezier',sourcePoint:{x:200,y:200},targetPoint:{x:300,y:300},
+                annotations:[{content:'Bezier',alignment:'After',horizontalAlignment:'Center'}],
+                ports:[{id:'newBez1p1',shape:'Square',offset:0.2,visibility:PortVisibility.Visible,alignment:'After'}]
+            };
+            diagram.add(con);
+            expect(conCount < diagram.connectors.length).toBe(true);
+            done();
+        });
+        it('Changing bezier annotation and port alignment at runtime', (done: Function) => {
+            let connector:ConnectorModel = diagram.nameTable['newBez1'];
+            connector.ports[0].alignment = 'Before';
+            diagram.dataBind();
+            connector.ports[0].alignment = 'Center';
+            diagram.dataBind();
+            connector.ports[0].alignment = 'After';
+            diagram.dataBind();
+            connector.annotations[0].alignment = 'Before';
+            diagram.dataBind();
+            connector.annotations[0].alignment = 'Center';
+            diagram.dataBind();
+            connector.annotations[0].alignment = 'After';
+            diagram.dataBind();
+            connector.ports[0].horizontalAlignment = 'Left';
+            diagram.dataBind();
+            connector.ports[0].horizontalAlignment = 'Center';
+            diagram.dataBind();
+            connector.ports[0].horizontalAlignment = 'Right';
+            diagram.dataBind();
+            connector.ports[0].horizontalAlignment = 'Auto';
+            diagram.dataBind();
+            connector.ports[0].horizontalAlignment = 'Stretch';
+            diagram.dataBind();
+            connector.annotations[0].horizontalAlignment = 'Left';
+            diagram.dataBind();
+            connector.annotations[0].horizontalAlignment = 'Center';
+            diagram.dataBind();
+            connector.annotations[0].horizontalAlignment = 'Right';
+            diagram.dataBind();
+            connector.annotations[0].horizontalAlignment = 'Auto';
+            diagram.dataBind();
+            connector.ports[0].verticalAlignment = 'Top';
+            diagram.dataBind();
+            connector.ports[0].verticalAlignment = 'Center';
+            diagram.dataBind();
+            connector.ports[0].verticalAlignment = 'Bottom';
+            diagram.dataBind();
+            connector.ports[0].verticalAlignment = 'Auto';
+            diagram.dataBind();
+            connector.ports[0].verticalAlignment = 'Stretch';
+            diagram.dataBind();
+            connector.annotations[0].verticalAlignment = 'Top';
+            diagram.dataBind();
+            connector.annotations[0].verticalAlignment = 'Center';
+            diagram.dataBind();
+            connector.annotations[0].verticalAlignment = 'Bottom';
+            diagram.dataBind();
+            connector.annotations[0].verticalAlignment = 'Auto';
+            diagram.dataBind();
+            connector.annotations[0].horizontalAlignment = 'Stretch';
+            diagram.dataBind();
+            connector.annotations[0].verticalAlignment = 'Stretch';
+            diagram.dataBind();
+            connector.annotations[0].style.textAlign = 'Justify';
+            diagram.dataBind();
+            expect(connector.ports[0].alignment === 'After').toBe(true);
+            done();
+        });
+        it('Adding port to bezier connector at runtime', (done: Function) => {
+            let con1: ConnectorModel = diagram.nameTable['newBez1'];
+            let portCount = con1.ports.length;
+            let ports: PathPortModel[] = [{id:'newBez1Port1',visibility:PortVisibility.Visible,shape:"Square",offset:0.2},
+            {id:'newBez1Port2',visibility:PortVisibility.Visible,shape:"Square",offset:0.8,constraints:PortConstraints.Default| PortConstraints.Draw}]
+            diagram.addPorts(con1,ports);
+            let newPortCount = con1.ports.length;
+            expect(newPortCount === portCount + 2).toBe(true);
+            done();
+        });
+        it('Adding fixed userHandle to connector and update it runtime', (done: Function) => {
+            let fixedUserHandles = [{ padding: { left: 2, right: 2, top: 2, bottom: 2 }, offset: 0.5, width: 20, alignment: 'Before', height: 20, id: 'usercon1', pathData: 'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z M68.5,72.5h-30V34.4h30V72.5z' }];
+            let con:ConnectorModel =  {id:'straightCon',type:'Straight',sourcePoint:{x:400,y:100},targetPoint:{x:600,y:200},fixedUserHandles:fixedUserHandles as any};
+            let addCon = diagram.add(con);
+            let updateHandle = [{ padding: { left: 2, right: 2, top: 2, bottom: 2 }, offset: 0.8, width: 25, alignment: 'After', height: 25, id: 'usercon1', pathData: 'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z M68.5,72.5h-30V34.4h30V72.5z' }];
+            diagram.updateConnectorfixedUserHandle(updateHandle[0] as any,addCon.fixedUserHandles[0] as any,addCon.wrapper,addCon);
+            expect(addCon.fixedUserHandles.length === 1).toBe(true);
+            done();
+        });
+        it('Drag connector with fixed user handle', (done: Function) => {
+          let con = diagram.nameTable['straightCon'];
+          let prePoint = con.sourcePoint.x;
+          diagram.drag(con, 100, 100);
+          let curPoint = con.sourcePoint.x;
+          expect(prePoint !== curPoint).toBe(true);
+          done();
+        });
+        it('Apply font style at runtime for connector annotation', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let connector:ConnectorModel = diagram.nameTable['newBez1'];
+            diagram.select([connector]);
+            mouseEvents.keyDownEvent(diagramCanvas, 'B', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'I', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+            expect(connector.annotations[0].style.bold).toBe(true);
+            done();
+        });
+        it('Dragging node connected with connector', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nameTable['n1'];
+            diagram.select([node]);
+            let preOffsetX = node.offsetX;
+            diagram.drag(node,20,20);
+            mouseEvents.keyDownEvent(diagramCanvas,'J',true,true);
+            expect(preOffsetX !== node.offsetX).toBe(true);
+            done();
+        });
+        it('Activate pointer tool', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            mouseEvents.keyDownEvent(diagramCanvas,'1',true,false);
+            expect(diagram.tool === DiagramTools.Default).toBe(true);
+            done();
+        });
+        it('Load EJ1 diagram', (done: Function) => {
+         let data = '{"width":"100%","height":"100%","nodes":[{"fillColor":"red","borderColor":"black","borderWidth":1,"borderDashArray":"","opacity":1,"gradient":null,"borderGradient":null,"type":"basic","flip":"none","isExpanded":true,"shadow":{"distance":5,"angle":45,"opacity":0.7},"cssClass":"","name":"task1","width":100,"height":40,"offsetX":200,"offsetY":200,"visible":true,"zOrder":0,"excludeFromLayout":false,"constraints":11026430,"parent":"","labels":[{"readOnly":false,"bold":false,"italic":false,"text":"Task 1","textDecoration":"none","fontSize":11,"fontFamily":"Arial","fontColor":"black","boundaryConstraints":true,"segmentOffset":0.5,"offset":{"x":0.5,"y":0.5},"textAlign":"center","alignment":"center","relativeMode":"segmentpath","horizontalAlignment":"center","verticalAlignment":"center","wrapping":"wrapwithoverflow","margin":{"top":0,"left":0,"right":0,"bottom":0},"padding":{"top":0,"left":0,"right":0,"bottom":0},"textOverflow":false,"overflowType":"ellipsis","mode":"edit","width":50,"rotateAngle":0,"opacity":1,"templateId":"","templateType":"html","name":"label_NrJF","visible":true,"borderColor":"transparent","borderWidth":0,"fillColor":"transparent","cssClass":"","hyperlink":"","dragLimit":{"top":10,"left":10,"right":10,"bottom":10},"height":0,"constraints":1,"_type":"label","_parent":"task1","_cssClass":""}],"expandIcon":{"shape":"none","width":13,"height":10,"margin":{"top":0,"left":0,"right":0,"bottom":0},"offset":{"x":0.5,"y":1},"borderColor":"#1a1a1a","borderWidth":1,"cornerRadius":0,"fillColor":"black","pathData":"","templateId":""},"collapseIcon":{"shape":"none","width":13,"height":10,"margin":{"top":0,"left":0,"right":0,"bottom":0},"offset":{"x":0.5,"y":1},"borderColor":"#1a1a1a","borderWidth":1,"cornerRadius":0,"fillColor":"black","pathData":"","templateId":""},"ports":[],"inEdges":[],"outEdges":["flow1"],"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"addInfo":{},"marginLeft":0,"marginTop":0,"marginRight":0,"marginBottom":0,"horizontalAlign":"left","verticalAlign":"top","minWidth":0,"maxWidth":0,"minHeight":0,"maxHeight":0,"connectorPadding":0,"cornerRadius":0,"paletteItem":{"enableScale":true,"wrapping":"nowrap","label":null,"margin":{"top":4,"left":4,"right":4,"bottom":4}},"_type":"node","_shape":"rectangle","shape":"rectangle","source":"","pathData":"","textBlock":null,"points":[],"templateId":null,"scale":"meet","contentAlignment":"xmidymid","_cssClass":""},{"fillColor":"red","borderColor":"black","borderWidth":1,"borderDashArray":"","opacity":1,"gradient":null,"borderGradient":null,"type":"basic","flip":"none","isExpanded":true,"shadow":{"distance":5,"angle":45,"opacity":0.7},"cssClass":"","name":"task2","width":100,"height":40,"offsetX":400,"offsetY":200,"visible":true,"zOrder":1,"excludeFromLayout":false,"constraints":11026430,"parent":"","labels":[{"readOnly":false,"bold":false,"italic":false,"text":"Task 2","textDecoration":"none","fontSize":11,"fontFamily":"Arial","fontColor":"black","boundaryConstraints":true,"segmentOffset":0.5,"offset":{"x":0.5,"y":0.5},"textAlign":"center","alignment":"center","relativeMode":"segmentpath","horizontalAlignment":"center","verticalAlignment":"center","wrapping":"wrapwithoverflow","margin":{"top":0,"left":0,"right":0,"bottom":0},"padding":{"top":0,"left":0,"right":0,"bottom":0},"textOverflow":false,"overflowType":"ellipsis","mode":"edit","width":50,"rotateAngle":0,"opacity":1,"templateId":"","templateType":"html","name":"label_AqDF","visible":true,"borderColor":"transparent","borderWidth":0,"fillColor":"transparent","cssClass":"","hyperlink":"","dragLimit":{"top":10,"left":10,"right":10,"bottom":10},"height":0,"constraints":1,"_type":"label","_parent":"task2","_cssClass":""}],"expandIcon":{"shape":"none","width":13,"height":10,"margin":{"top":0,"left":0,"right":0,"bottom":0},"offset":{"x":0.5,"y":1},"borderColor":"#1a1a1a","borderWidth":1,"cornerRadius":0,"fillColor":"black","pathData":"","templateId":""},"collapseIcon":{"shape":"none","width":13,"height":10,"margin":{"top":0,"left":0,"right":0,"bottom":0},"offset":{"x":0.5,"y":1},"borderColor":"#1a1a1a","borderWidth":1,"cornerRadius":0,"fillColor":"black","pathData":"","templateId":""},"ports":[],"inEdges":["flow1"],"outEdges":[],"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"addInfo":{},"marginLeft":0,"marginTop":0,"marginRight":0,"marginBottom":0,"horizontalAlign":"left","verticalAlign":"top","minWidth":0,"maxWidth":0,"minHeight":0,"maxHeight":0,"connectorPadding":0,"cornerRadius":0,"paletteItem":{"enableScale":true,"wrapping":"nowrap","label":null,"margin":{"top":4,"left":4,"right":4,"bottom":4}},"_type":"node","_shape":"rectangle","shape":"rectangle","source":"","pathData":"","textBlock":null,"points":[],"templateId":null,"scale":"meet","contentAlignment":"xmidymid","_cssClass":""}],"connectors":[{"name":"flow1","visible":true,"lineDashArray":"","targetDecorator":{"shape":"arrow","width":"10","height":"10","borderColor":"#606060","borderWidth":1,"fillColor":"black","pathData":"","cssClass":"","_cssClass":""},"sourceDecorator":{"shape":"none","width":8,"height":8,"borderColor":"black","borderWidth":1,"fillColor":"black","pathData":"","cssClass":""},"segments":[{"type":"straight","point":null,"point1":null,"point2":null,"vector1":null,"vector2":null,"_point1":{"x":0,"y":0},"_point2":{"x":0,"y":0},"length":null,"_length":null,"_bridges":[],"direction":null,"_direction":null,"points":[{"x":250,"y":200},{"x":350,"y":200}],"_point":{"x":350,"y":200},"_startPoint":{"x":250,"y":200},"_endPoint":{"x":350,"y":200}}],"sourcePoint":{"x":250,"y":200},"targetPoint":{"x":350,"y":200},"lineColor":"#606060","lineWidth":1,"flip":"none","constraints":350846,"opacity":1,"parent":"","labels":[{"readOnly":false,"bold":false,"italic":false,"text":"Label","textDecoration":"none","fontSize":12,"fontFamily":"Arial","fontColor":"black","boundaryConstraints":true,"segmentOffset":0.5,"offset":{"x":0.5,"y":0.5},"textAlign":"center","alignment":"center","relativeMode":"segmentpath","horizontalAlignment":"center","verticalAlignment":"center","wrapping":"wrapwithoverflow","margin":{"top":0,"left":0,"right":0,"bottom":0},"padding":{"top":0,"left":0,"right":0,"bottom":0},"textOverflow":false,"overflowType":"ellipsis","mode":"edit","width":50,"rotateAngle":0,"opacity":1,"templateId":"","templateType":"html","name":"label_pBBf","visible":true,"borderColor":"transparent","borderWidth":0,"fillColor":"white","cssClass":"","hyperlink":"","dragLimit":{"top":10,"left":10,"right":10,"bottom":10},"height":0,"constraints":1,"_type":"label","_parent":"flow1","_cssClass":""}],"zOrder":2,"lineHitPadding":10,"addInfo":{},"targetNode":"task2","targetPort":null,"sourceNode":"task1","sourcePort":null,"marginLeft":0,"marginTop":0,"marginRight":0,"marginBottom":0,"horizontalAlign":"left","verticalAlign":"top","cornerRadius":0,"bridgeSpace":10,"sourcePadding":0,"targetPadding":0,"type":"connector","cssClass":"","_endPointHitPadding":{"top":0,"left":0,"right":0,"bottom":0},"_srcDecoratorSize":13,"_tarDecoratorSize":15,"_inlineDecorators":[],"paletteItem":{"enableScale":true,"wrapping":"nowrap","label":null,"margin":{"top":4,"left":4,"right":4,"bottom":4}},"_intersects":[],"_cssClass":""}],"labelRenderingMode":"html","defaultSettings":{"connector":{"targetDecorator":{"shape":"arrow","borderColor":"#606060","width":"10","height":"10"},"lineColor":"#606060"},"node":{"width":100,"height":40,"fillColor":"red","labels":[{"fontSize":11}]},"group":null},"nodeTemplate":null,"connectorTemplate":null,"dataSourceSettings":{"dataSource":null,"query":null,"tableName":null,"id":"","parent":"","nodes":null,"connectors":null,"root":"","crudAction":{"create":"","update":"","destroy":"","read":""},"customFields":[],"connectionDataSource":{"dataSource":null,"id":"","sourceNode":"","targetNode":"","sourcePointX":"","sourcePointY":"","targetPointX":"","targetPointY":"","crudAction":{"create":"","update":"","destroy":"","read":""},"customFields":[]}},"serializationSettings":{"preventDefaultValues":false},"rulerSettings":{"showRulers":true,"horizontalRuler":{"interval":5,"segmentWidth":100,"arrangeTick":null,"tickAlignment":"rightorbottom","markerColor":"red","length":null,"thickness":25},"verticalRuler":{"interval":5,"segmentWidth":100,"arrangeTick":null,"tickAlignment":"rightorbottom","markerColor":"red","length":null,"thickness":25}},"snapSettings":{"horizontalGridLines":{"linesInterval":[1.25,18.75,0.25,19.75,0.25,19.75,0.25,19.75,0.25,19.75],"snapInterval":[20],"lineDashArray":"","lineColor":"lightgray"},"verticalGridLines":{"linesInterval":[1.25,18.75,0.25,19.75,0.25,19.75,0.25,19.75,0.25,19.75],"snapInterval":[20],"lineDashArray":"","lineColor":"lightgray"},"snapConstraints":15,"enableSnapToObject":true,"snapAngle":5,"snapObjectDistance":5},"scrollSettings":{"horizontalOffset":0,"verticalOffset":0,"currentZoom":1,"viewPortHeight":352.6000061035156,"viewPortWidth":1240,"minZoom":0.25,"maxZoom":30,"zoomFactor":0.2,"padding":{"left":0,"right":0,"top":0,"bottom":0}},"pageSettings":{"pageWidth":0,"pageHeight":0,"multiplePage":false,"pageBorderWidth":0,"pageBackgroundColor":"#ffffff","pageBorderColor":"#565656","pageMargin":24,"showPageBreak":false,"pageOrientation":"portrait","scrollLimit":"diagram","scrollableArea":{"x":0,"y":0,"width":0,"height":0},"autoScrollBorder":{"left":15,"top":15,"right":15,"bottom":15},"boundaryConstraints":"infinity"},"locale":"en-US","contextMenu":{"items":[],"showCustomMenuItemsOnly":false},"enableContextMenu":true,"enableAutoScroll":false,"tooltip":{"templateId":"","relativeMode":"object","alignment":{"horizontal":"center","vertical":"bottom"},"margin":{"top":5,"left":5,"right":5,"bottom":5},"offset":null,"delay":0},"showTooltip":true,"layout":{"avoidSegmentOverlapping":false,"bounds":null,"type":"none","horizontalAlignment":"center","verticalAlignment":"top","orientation":"toptobottom","horizontalSpacing":30,"verticalSpacing":30,"margin":{"left":0,"right":0,"top":0,"bottom":0},"marginX":0,"marginY":0,"fixedNode":"","getLayoutInfo":null,"getConnectorSegments":null,"root":"","springLength":100,"springFactor":0.442,"maxIteration":1000},"drawingTools":null,"backgroundImage":{"source":"","scale":"meet","alignment":"xmidymid"},"backgroundColor":"transparent","bridgeDirection":"top","version":"13.3.0.8","constraints":502,"tool":6,"drawType":{},"selectedItems":{"offsetX":0,"offsetY":0,"width":0,"height":0,"rotateAngle":0,"children":[],"constraints":30,"userHandles":[],"tooltip":{"templateId":"","relativeMode":"object","alignment":{"horizontal":"center","vertical":"bottom"},"margin":{"top":10,"left":5,"right":5,"bottom":5},"offset":null,"delay":0},"getConstraints":null},"commandManager":{"commands":{"copy":{"gesture":{"key":67,"keyModifiers":1},"_isDefault":true},"paste":{"gesture":{"key":86,"keyModifiers":1},"_isDefault":true},"cut":{"gesture":{"key":88,"keyModifiers":1},"_isDefault":true},"delete":{"gesture":{"key":46},"_isDefault":true},"undo":{"gesture":{"key":90,"keyModifiers":1},"_isDefault":true},"redo":{"gesture":{"key":89,"keyModifiers":1},"_isDefault":true},"selectAll":{"gesture":{"key":65,"keyModifiers":1},"_isDefault":true},"nudgeUp":{"parameter":"up","gesture":{"key":38},"_isDefault":true},"nudgeRight":{"parameter":"right","gesture":{"key":39},"_isDefault":true},"nudgeDown":{"parameter":"down","gesture":{"key":40},"_isDefault":true},"nudgeLeft":{"parameter":"left","gesture":{"key":37},"_isDefault":true},"startEdit":{"gesture":{"key":113},"_isDefault":true},"endEdit":{"gesture":{"key":27},"_isDefault":true},"focusToNextItem":{"gesture":{"key":9},"_isDefault":true},"focusToPreviousItem":{"gesture":{"key":9,"keyModifiers":1},"_isDefault":true},"selectFocusedItem":{"gesture":{"key":13},"_isDefault":true}}},"layers":[],"connectorType":"straightLine","editorFocusChange":null,"nodeCollectionChange":null,"templateNodeRendering":null,"historyChange":null,"autoScrollChange":null,"itemClick":null,"connectorCollectionChange":null,"selectionChange":null,"mouseLeave":null,"mouseEnter":null,"mouseOver":null,"click":null,"doubleClick":null,"dragEnter":null,"dragOver":null,"dragLeave":null,"drop":null,"drag":null,"textChange":null,"sizeChange":null,"connectionChange":null,"rotationChange":null,"contextMenuClick":null,"contextMenuBeforeOpen":null,"contextMenuClose":null,"connectorSourceChange":null,"connectorTargetChange":null,"scrollChange":null,"segmentChange":null,"propertyChange":null,"groupChange":null,"create":null,"destroy":null}';
+         diagram.loadDiagram(data,true);
+         expect(diagram.nodes.length === 2).toBe(true);
+         done();
+        });
     });
+
+    //875655- ConnectionChange Event not triggered in Changed state for port change in same node
     describe('Connectionchange event not triggered for port change in same node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -2362,7 +2496,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagramConnectorWrap' });
             document.body.appendChild(ele);
-           
+
             let connectors: ConnectorModel[] = [
                 {
                 id: 'connector1', sourcePoint: { x: 280, y: 300 }, targetPoint: { x: 400, y: 300 }, annotations: [ {content: 'This is very longlonglong text',style: {
@@ -2443,4 +2577,100 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('Code coverage - segment thumb shapes', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramConnectorSegThumb' });
+            document.body.appendChild(ele);
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1', type: 'Orthogonal', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 },
+                    segments: [{ type: 'Orthogonal', direction: "Right", length: 70 }, { type: 'Orthogonal', direction: "Bottom", length: 20 }]
+                },
+                {
+                    id:'connector2',type:'Bezier',sourcePoint:{x:300,y:100},targetPoint:{x:400,y:200},
+                    segments:[{type:'Bezier',point:{x:320,y:120}},{type:'Bezier',point:{x:350,y:150}}]
+                }
+            ];
+            diagram = new Diagram({
+                width: '900px', height: '500px', connectors: connectors,
+                segmentThumbShape:'DoubleArrow',
+                getConnectorDefaults: function (connector: ConnectorModel) {
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                }
+            });
+            diagram.appendTo('#diagramConnectorSegThumb');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Changing segment thumb shape at runtime for orthogonal connector', function (done) {
+            let connector1 = diagram.nameTable['connector1'];
+            diagram.select([connector1]);
+            diagram.segmentThumbShape = 'Circle';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Arrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Diamond';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'DoubleArrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Ellipse';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Fletch';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'IndentedArrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'OpenArrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'OpenFetch';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'OutdentedArrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Rectangle';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Rhombus';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Square';
+            diagram.dataBind();
+            expect(diagram.segmentThumbShape === 'Square').toBe(true);
+            done();
+        });
+        it('Changing segment thumb shape at runtime for bezier connector', function (done) {
+            let connector2 = diagram.nameTable['connector2'];
+            diagram.select([connector2]);
+            diagram.segmentThumbShape = 'Circle';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Arrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Diamond';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'DoubleArrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Ellipse';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Fletch';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'IndentedArrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'OpenArrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'OpenFetch';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'OutdentedArrow';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Rectangle';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Rhombus';
+            diagram.dataBind();
+            diagram.segmentThumbShape = 'Square';
+            diagram.dataBind();
+            expect(diagram.segmentThumbShape === 'Square').toBe(true);
+            done();
+        }); 
+    });
+
 });

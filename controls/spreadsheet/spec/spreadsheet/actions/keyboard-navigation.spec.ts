@@ -554,7 +554,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             setTimeout(() => {
                 expect(sheet.selectedRange).toBe('B2:B2');
                 done();
-            }, 10);
+            }, 30);
         });
         it('Right arrow Button in the last unlocked Row cell for navigation', (done: Function) => {
             helper.invoke('selectRange', ['D5']);
@@ -579,7 +579,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
                 done();
-            }, 10);
+            }, 30);
         });
         it('Down arrow Button in last unlocked row for navigation', (done: Function) => {
             helper.invoke('selectRange', ['B5']);
@@ -595,14 +595,14 @@ describe('Spreadsheet cell navigation module ->', () => {
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
                 done();
-            }, 10);
+            }, 30);
         });
         it('Up arrow Button in the first unlocked row and column cell for navigation', (done: Function) => {
             helper.triggerKeyNativeEvent(38);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('D5:D5');
                 done();
-            }, 20);
+            }, 30);
         });
     });
 
@@ -717,7 +717,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             });
         });
         it ('Apply hyperlink', (done: Function) => {
-            navigateMenuItemAndSelect(1, 0, [5]);
+            navigateMenuItemAndSelect(1, 0, [6]);
             setTimeout(() => {
                 helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                 const urlInput: HTMLInputElement = helper.getElementFromSpreadsheet(
@@ -732,7 +732,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             });
         });
         it ('Edit and remove hyperlink', (done: Function) => {
-            navigateMenuItemAndSelect(1, 0, [5]);
+            navigateMenuItemAndSelect(1, 0, [6]);
             setTimeout(() => {
                 helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
                 const urlInput: HTMLInputElement = helper.getElementFromSpreadsheet(
@@ -742,7 +742,7 @@ describe('Spreadsheet cell navigation module ->', () => {
                 expect(spreadsheet.sheets[0].rows[1].cells[0].hyperlink.address).toBe('https://www.google.com/');
                 const cell: HTMLElement = helper.invoke('getCell', [1, 0]);
                 expect(cell.querySelector('.e-hyperlink')).not.toBeNull();
-                navigateMenuItemAndSelect(1, 0, [7]);
+                navigateMenuItemAndSelect(1, 0, [8]);
                 expect(spreadsheet.sheets[0].rows[1].cells[0].hyperlink).toBeUndefined();
                 expect(cell.querySelector('.e-hyperlink')).toBeNull();
                 done();

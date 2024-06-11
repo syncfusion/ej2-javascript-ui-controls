@@ -1103,4 +1103,392 @@ describe('Axis properties', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+describe('Axis properties', () => {
+    let heatmap: HeatMap;
+    let ele: HTMLElement;
+    let text: HTMLElement;
+    let created: EmitType<Object>;
+    let data: any[] =
+        [
+            [52, 65, 67, 45, 37, 52,32, 76, 60, 64, 82, 91],
+            [68, 52, 63, 51, 30, 51,51, 81, 70, 60, 88, 80],
+            [60, 50, 42, 53, 66, 70,41, 69, 76, 74, 86, 97],
+            [66, 64, 46, 40, 47, 41, 45, 76, 83, 69, 92,84],
+            [65, 42, 58, 32, 36, 44,49, 79, 83, 69, 83, 93],
+            [54, 46, 61, 46, 40, 39,41, 69, 61, 84, 84, 87],
+            [48, 46, 61, 47, 49, 41,41, 67, 78, 83, 98, 87],
+            [69, 52, 41, 44, 41, 52,46, 71, 63, 84, 83, 91],
+            [50, 59, 44, 43, 27, 42,26, 64, 76, 65, 81, 86],
+            [47, 49, 66, 53, 50, 34,31, 79, 78, 79, 89, 95],
+            [61, 40, 62, 26, 34, 54,56, 74, 83, 78, 95, 98]
+        ]
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        heatmap = new HeatMap({
+            titleSettings: {
+                text: 'Product wise Monthly sales revenue for a e-commerce website',
+                    textStyle: {
+                        size: '15px',
+                        fontWeight: '500',
+                        fontStyle: 'Normal',
+                        fontFamily: 'Segoe UI'
+                    }
+                },
+                xAxis: {
+                    labels: ['Laptop', 'Mobile', 'Gaming', 'Cosmetics', 'Fragnance', 'Watches', 'Handbags', 'Apparels',
+                        'Kitchenware', 'Furniture', 'Home Decor'],
+                    multiLevelLabels: [
+                        {
+                            overflow:'Trim',
+                            alignment: 'Near',
+                             textStyle: {
+                                color: 'black',
+                                fontWeight: 'Bold'
+                            },
+                            border: { type: 'Rectangle', color: '#a19d9d' },
+                            categories: [
+                                { start: 0, end: 2, text: 'Electronics', },
+                                { start: 3, end: 4, text: 'Beauty and personal care'},
+                                { start: 5, end: 7, text: 'Fashion', },
+                                { start: 8, end: 10, text: 'Household', },
+                                {}
+                            ]
+                        },
+                    ]
+                },
+                yAxis: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    multiLevelLabels: []
+                },
+                legendSettings: {
+                    visible: false
+                },
+                paletteSettings: {
+                    palette: [{ color: '#F0C27B' },
+                    { color: '#4B1248' }
+                    ]
+                },
+                dataSource: data
+        });
+    });
+
+    afterAll((): void => {
+        heatmap.destroy();
+    });
+    it('Checking heatmap instance creation', (done: Function) => {
+        created = (args: Object): void => {
+            expect(heatmap != null).toBe(true);
+            done();
+        }
+        heatmap.created = created;
+        heatmap.appendTo('#container');
+    });
+    it('Checking x-axis label Text value changes', function () {
+        heatmap.xAxis.multiLevelLabels[0].categories[3].text = 'Beauty and personal care';
+        heatmap.refresh();
+        text = document.getElementById('container_XAxis_MultiLevel0_Text3');
+        expect(text.textContent == 'Beauty and personal care').toBe(true);
+    });
+    it('Checking x-axis label Text value changed as empty', function () {
+        heatmap.xAxis.multiLevelLabels[0].categories[4] = {};
+        heatmap.refresh();
+        text = document.getElementById('container_XAxis_MultiLevel0_Text0');
+        expect(text.textContent == 'Electronics').toBe(true);
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 }); 
+describe('Axis properties', () => {
+    let heatmap: HeatMap;
+    let ele: HTMLElement;
+    let text: HTMLElement;
+    let created: EmitType<Object>;
+    let data: any[] =
+    [
+        [73, 39, 26, 39, 94, 0],
+        [93, 58, 53, 38, 26, 68],
+        [99, 28, 22, 4, 66, 90],
+        [14, 26, 97, 69, 69, 3],
+        [7, 46, 47, 47, 88, 6],
+        [41, 55, 73, 23, 3, 79],
+        [56, 69, 21, 86, 3, 33],
+        [45, 7, 53, 81, 95, 79],
+        [60, 77, 74, 68, 88, 51],
+        [25, 25, 10, 12, 78, 14],
+        [25, 56, 55, 58, 12, 82],
+        [74, 33, 88, 23, 86, 59]
+    ]
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        heatmap = new HeatMap({
+            xAxis: {
+                valueType:"DateTime",
+                minimum: new Date(2007,0,1),
+                intervalType:"Years",
+                labelFormat:"yyyy",
+            },
+            yAxis: {
+               valueType:"Numeric",
+               labelFormat:"${value}"
+            },
+            legendSettings: {
+                visible: false,
+            },
+            dataSource: data
+        });
+    });
+
+    afterAll((): void => {
+        heatmap.destroy();
+    });
+    it('Checking heatmap instance creation', (done: Function) => {
+        created = (args: Object): void => {
+            expect(heatmap != null).toBe(true);
+            done();
+        }
+        heatmap.created = created;
+        heatmap.appendTo('#container');
+    });
+    it('Checking format value as null', function () {
+        heatmap.yAxis.labelFormat = null;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent == '0').toBe(true);
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+});
+describe('Axis properties', () => {
+    let heatmap: HeatMap;
+    let ele: HTMLElement;
+    let text: HTMLElement;
+    let created: EmitType<Object>;
+    let data: any[] =
+    [
+        { 'rowid': 'France', 'columnid': '2010', 'value': '77.6' },
+        { 'rowid': 'France', 'columnid': '2011', 'value': '79.4' },
+        { 'rowid': 'France', 'columnid': '2012', 'value': '80.8' },
+        { 'rowid': 'France', 'columnid': '2013', 'value': '86.6' },
+        { 'rowid': 'France', 'columnid': '2014', 'value': '83.7' },
+        { 'rowid': 'France', 'columnid': '2015', 'value': '84.5' },
+        { 'rowid': 'France', 'columnid': '2016', 'value': '82.6' },
+        { 'rowid': 'USA', 'columnid': '2010', 'value': '60.6' },
+        { 'rowid': 'USA', 'columnid': '2011', 'value': '65.4' },
+        { 'rowid': 'USA', 'columnid': '2012', 'value': '70.8' },
+        { 'rowid': 'USA', 'columnid': '2013', 'value': '73.8' },
+        { 'rowid': 'USA', 'columnid': '2014', 'value': '75.3' },
+        { 'rowid': 'USA', 'columnid': '2015', 'value': '77.5' },
+        { 'rowid': 'USA', 'columnid': '2016', 'value': '77.6' },
+        { 'rowid': 'Spain', 'columnid': '2010', 'value': '64.9' },
+        { 'rowid': 'Spain', 'columnid': '2011', 'value': '52.6' },
+        { 'rowid': 'Spain', 'columnid': '2012', 'value': '60.8' },
+        { 'rowid': 'Spain', 'columnid': '2013', 'value': '65.6' },
+        { 'rowid': 'Spain', 'columnid': '2014', 'value': '52.6' },
+        { 'rowid': 'Spain', 'columnid': '2015', 'value': '68.5' },
+        { 'rowid': 'Spain', 'columnid': '2016', 'value': '75.6' },
+        { 'rowid': 'China', 'columnid': '2010', 'value': '55.6' },
+        { 'rowid': 'China', 'columnid': '2011', 'value': '52.3' },
+        { 'rowid': 'China', 'columnid': '2012', 'value': '54.8' },
+        { 'rowid': 'China', 'columnid': '2013', 'value': '51.1' },
+        { 'rowid': 'China', 'columnid': '2014', 'value': '55.6' },
+        { 'rowid': 'China', 'columnid': '2015', 'value': '56.9' },
+        { 'rowid': 'China', 'columnid': '2016', 'value': '59.3' },
+        { 'rowid': 'Italy', 'columnid': '2010', 'value': '43.6' },
+        { 'rowid': 'Italy', 'columnid': '2011', 'value': '43.2' },
+        { 'rowid': 'Italy', 'columnid': '2012', 'value': '55.8' },
+        { 'rowid': 'Italy', 'columnid': '2013', 'value': '50.1' },
+        { 'rowid': 'Italy', 'columnid': '2014', 'value': '48.5' },
+        { 'rowid': 'Italy', 'columnid': '2015', 'value': '50.7' },
+        { 'rowid': 'Italy', 'columnid': '2016', 'value': '52.4' },
+        { 'rowid': 'UK', 'columnid': '2010', 'value': '28.2' },
+        { 'rowid': 'UK', 'columnid': '2011', 'value': '31.6' },
+        { 'rowid': 'UK', 'columnid': '2012', 'value': '29.8' },
+        { 'rowid': 'UK', 'columnid': '2013', 'value': '33.1' },
+        { 'rowid': 'UK', 'columnid': '2014', 'value': '32.6' },
+        { 'rowid': 'UK', 'columnid': '2015', 'value': '34.4' },
+        { 'rowid': 'UK', 'columnid': '2016', 'value': '35.8' },
+        { 'rowid': 'Germany', 'columnid': '2010', 'value': '26.8' },
+        { 'rowid': 'Germany', 'columnid': '2011', 'value': '29' },
+        { 'rowid': 'Germany', 'columnid': '2012', 'value': '26.8' },
+        { 'rowid': 'Germany', 'columnid': '2013', 'value': '27.6' },
+        { 'rowid': 'Germany', 'columnid': '2014', 'value': '33' },
+        { 'rowid': 'Germany', 'columnid': '2015', 'value': '35' },
+        { 'rowid': 'Germany', 'columnid': '2016', 'value': '35.6' },
+        { 'rowid': 'Mexico', 'columnid': '2010', 'value': '23.2' },
+        { 'rowid': 'Mexico', 'columnid': '2011', 'value': '24.9' },
+        { 'rowid': 'Mexico', 'columnid': '2012', 'value': '30.1' },
+        { 'rowid': 'Mexico', 'columnid': '2013', 'value': '22.2' },
+        { 'rowid': 'Mexico', 'columnid': '2014', 'value': '29.3' },
+        { 'rowid': 'Mexico', 'columnid': '2015', 'value': '32.1' },
+        { 'rowid': 'Mexico', 'columnid': '2016', 'value': '35' },
+        { 'rowid': 'Thailand', 'columnid': '2010', 'value': '15.9' },
+        { 'rowid': 'Thailand', 'columnid': '2011', 'value': '19.8' },
+        { 'rowid': 'Thailand', 'columnid': '2012', 'value': '21.8' },
+        { 'rowid': 'Thailand', 'columnid': '2013', 'value': '23.5' },
+        { 'rowid': 'Thailand', 'columnid': '2014', 'value': '24.8' },
+        { 'rowid': 'Thailand', 'columnid': '2015', 'value': '29.9' },
+        { 'rowid': 'Thailand', 'columnid': '2016', 'value': '32.6' },
+        { 'rowid': 'Austria', 'columnid': '2010', 'value': '22' },
+        { 'rowid': 'Austria', 'columnid': '2011', 'value': '21.3' },
+        { 'rowid': 'Austria', 'columnid': '2012', 'value': '24.2' },
+        { 'rowid': 'Austria', 'columnid': '2013', 'value': '23.2' },
+        { 'rowid': 'Austria', 'columnid': '2014', 'value': '25' },
+        { 'rowid': 'Austria', 'columnid': '2015', 'value': '26.7' },
+        { 'rowid': 'Austria', 'columnid': '2016', 'value': '28.1' },
+    ];
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        heatmap = new HeatMap({
+            xAxis: {
+                labels: ['Austria', 'China', 'France', 'Germany', 'Italy', 'Mexico', 'Spain', 'Thailand', 'UK', 'USA'],
+            },
+            yAxis: {
+                labels: ['2010', '2011', '2012', '2013', '2014', '2015', '2016'],
+            },
+            dataSource: data,
+            dataSourceSettings: {
+                isJsonData: true,
+                adaptorType: 'Cell',
+                xDataMapping: null,
+                yDataMapping: null,
+                valueMapping: 'value'
+            }, cellSettings: {
+                border: {
+                    radius: 4,
+                    width: 1,
+                    color: 'white'
+                },
+                showLabel: true,
+                format: '{value} M',
+            }, paletteSettings: {
+                palette: [{ color: '#DCD57E' },
+                { color: '#A6DC7E' },
+                { color: '#7EDCA2' },
+                { color: '#6EB5D0' }
+                ],
+            }
+        });
+    });
+
+    afterAll((): void => {
+        heatmap.destroy();
+    });
+    it('Checking heatmap instance creation', (done: Function) => {
+        created = (args: Object): void => {
+            expect(heatmap != null).toBe(true);
+            done();
+        }
+        heatmap.created = created;
+        heatmap.appendTo('#container');
+    });
+    it('Checking format value as null', function () {
+        heatmap.yAxis.labelFormat = null;
+        heatmap.refresh();
+        text = document.getElementById('container_HeatMapRect_0');
+        expect(text.getAttribute('fill') == '#EEEEEE').toBe(true);
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+describe('Axis properties', () => {
+    let heatmap: HeatMap;
+    let ele: HTMLElement;
+    let text: HTMLElement;
+    let created: EmitType<Object>;
+    let data: any[] =
+    [
+        { Year: '2017', Months: 'Jan-Feb', Accidents: 4, Fatalities: 39 },
+        { Year: '2017', Months: 'Mar-Apr', Accidents: 3, Fatalities: 8 },
+        { Year: '2017', Months: 'May-Jun', Accidents: 1, Fatalities: 3 },
+        { Year: '2017', Months: 'Jul-Aug', Accidents: 1, Fatalities: 10 },
+        { Year: '2017', Months: 'Sep-Oct', Accidents: 4, Fatalities: 4 },
+        { Year: '2017', Months: 'Nov-Dec', Accidents: 2, Fatalities: 15 },
+        { Year: '2016', Months: 'Jan-Feb', Accidents: 4, Fatalities: 28 },
+        { Year: '2016', Months: 'Mar-Apr', Accidents: 5, Fatalities: 92 },
+        { Year: '2016', Months: 'May-Jun', Accidents: 5, Fatalities: 73 },
+        { Year: '2016', Months: 'Jul-Aug', Accidents: 3, Fatalities: 1 },
+        { Year: '2016', Months: 'Sep-Oct', Accidents: 3, Fatalities: 4 },
+        { Year: '2016', Months: 'Nov-Dec', Accidents: 4, Fatalities: 126 },
+        { Year: '2015', Months: 'Jan-Feb', Accidents: 4, Fatalities: 45 },
+        { Year: '2015', Months: 'Mar-Apr', Accidents: 5, Fatalities: 152 },
+        { Year: '2015', Months: 'May-Jun', Accidents: 0, Fatalities: 0 },
+        { Year: '2015', Months: 'Jul-Aug', Accidents: 4, Fatalities: 54 },
+        { Year: '2015', Months: 'Sep-Oct', Accidents: 5, Fatalities: 243 },
+        { Year: '2015', Months: 'Nov-Dec', Accidents: 2, Fatalities: 45 },
+    ];
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        heatmap = new HeatMap({
+            xAxis: {
+                labels: ['2015', '2016', '2017'],
+            },
+            yAxis: {
+                labels: ['Jan-Feb', 'Mar-Apr', 'May-Jun', 'Jul-Aug', 'Sep-Oct', 'Nov-Dec'],
+            },
+            cellSettings: {
+                labelTemplate: '<div> Accidents - ${Accidents}</div>',
+            },
+            dataSourceSettings: {
+                isJsonData: true,
+                adaptorType: 'Cell',
+                xDataMapping: 'Year',
+                yDataMapping: 'Months',
+                valueMapping: null,
+            },
+            dataSource: data,
+        });
+    });
+
+    afterAll((): void => {
+        heatmap.destroy();
+    });
+    it('Checking heatmap instance creation', (done: Function) => {
+        created = (args: Object): void => {
+            expect(heatmap != null).toBe(true);
+            done();
+        }
+        heatmap.created = created;
+        heatmap.appendTo('#container');
+    });
+    it('Checking format value as null', function () {
+        heatmap.yAxis.labelFormat = null;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent == 'Jan-Feb').toBe(true);
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});

@@ -19,7 +19,7 @@ export function renderAdornerLayer(
     });
     if (!getDiagramElement(divElement.id)) {
         const nextElement: HTMLElement = pdfViewer.viewerBase.getElement('_pageDiv_' + index);
-        let pageBound = nextElement.getBoundingClientRect();
+        const pageBound: DOMRect | ClientRect = nextElement.getBoundingClientRect();
         const svgAdornerSvg: SVGElement = createSvg(pdfViewer.element.id + index + '_diagramAdorner_svg', pageBound.width, pageBound.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer' + index);
         svgAdornerSvg.setAttribute('style', 'pointer-events:none;');

@@ -48,7 +48,7 @@ export class ExcelExport {
     private bindEvents(): void {
         this.parent.treeGrid.beforeExcelExport = (args: Object) => {
             this.parent.trigger('beforeExcelExport', args);
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.showMaskRow();
             } else {
                 this.parent.showSpinner();
@@ -62,7 +62,7 @@ export class ExcelExport {
         };
         this.parent.treeGrid.excelExportComplete = (args: ExcelExportCompleteArgs) => {
             this.parent.trigger('excelExportComplete', args);
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.hideMaskRow();
             } else {
                 this.parent.hideSpinner();

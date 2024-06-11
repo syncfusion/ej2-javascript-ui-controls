@@ -1,6 +1,6 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, completeAction } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, readonlyAlert, completeAction, createNoteIndicator } from '../index';
 import { isValidation, checkDateFormat, applyCellFormat, activeCellChanged, NumberFormatArgs } from '../../workbook/common/index';
-import { getCell, setCell, getFormattedCellObject, getColorCode, getFormattedBarText } from '../../workbook/index';
+import { getCell, setCell, getFormattedCellObject, getColorCode, getFormattedBarText, getRow } from '../../workbook/index';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser, Internationalization } from '@syncfusion/ej2-base';
@@ -16,7 +16,7 @@ import { CellFormatArgs, DefineNameModel, ExtendedRange, getData, isCellReferenc
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, Workbook, checkIsFormula } from '../../workbook/index';
-import { getColumn, isLocked, getRowsHeight, getColumnsWidth, validationHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
+import { getColumn, isLocked, isReadOnly, validationHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -130,12 +130,20 @@ export class DataValidation {
                 if (td && td.getElementsByClassName('e-validation-list')[0]) {
                     this.listObj.destroy();
                     td.removeChild(td.getElementsByClassName('e-validation-list')[0]);
+                    this.removeNoteIndicator(td, actCelIdx[0], actCelIdx[1]);
                 }
             }
             if (eventArgs.isAction) {
                 delete args.cancel;
                 this.parent.notify(completeAction, { eventArgs: args, action: 'removeValidation' });
             }
+        }
+    }
+
+    private removeNoteIndicator(td: HTMLElement, rowIndex: number, columnIndex: number): void {
+        if (!isNullOrUndefined(td.children) && td.children.length > 0 && td.children[td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
+            td.removeChild(td.children[td.children.length - 1]);
+            this.parent.notify(createNoteIndicator, {targetElement: td, rowIndex: rowIndex, columnIndex: columnIndex});
         }
     }
 
@@ -193,12 +201,22 @@ export class DataValidation {
             const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
             const tdEle: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
             let isDevice: boolean;
+            let isNoteAvailable: boolean = false;
             if (!tdEle) { return; }
             if (document.getElementsByClassName('e-validation-list')[0]) {
                 if (this.listObj) {
                     this.listObj.destroy();
                 }
                 remove(document.getElementsByClassName('e-validation-list')[0]);
+                if (!isNullOrUndefined(this.parent.selectionModule.previousActiveCell)) {
+                    const pervActiveCellIdx: number[] = getCellIndexes(this.parent.selectionModule.previousActiveCell);
+                    const pervActiveCellEle: HTMLElement = this.parent.getCell(pervActiveCellIdx[0], pervActiveCellIdx[1]);
+                    if (!isNullOrUndefined(pervActiveCellEle.children) && pervActiveCellEle.children.length > 0 && pervActiveCellEle.children[pervActiveCellEle.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
+                        pervActiveCellEle.removeChild(pervActiveCellEle.children[pervActiveCellEle.children.length - 1]);
+                        this.parent.notify(createNoteIndicator, {targetElement: pervActiveCellEle,
+                            rowIndex: pervActiveCellIdx[0], columnIndex: pervActiveCellIdx[1]});
+                    }
+                }
                 this.data = [];
             }
             const validation: ValidationModel = (cell && cell.validation) || (sheet.columns && sheet.columns[indexes[1]] &&
@@ -217,6 +235,10 @@ export class DataValidation {
                     if (!validation.inCellDropDown) {
                         ddlCont.style.display = 'none';
                     }
+                    if (!isNullOrUndefined(tdEle.children) && tdEle.children.length > 0 && tdEle.children[tdEle.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
+                        tdEle.removeChild(tdEle.children[tdEle.children.length - 1]);
+                        isNoteAvailable = true;
+                    }
                     const parent: Element = tdEle.getElementsByClassName('e-wrap-content')[0] || tdEle;
                     parent.insertBefore(ddlCont, parent.firstChild);
                     const dataSource: { [key: string]: Object }[] = this.updateDataSource(cell, validation);
@@ -227,15 +249,15 @@ export class DataValidation {
                         width: '0px',
                         popupHeight: '200px',
                         change: () => this.listValueChange(this.listObj.text),
-                        beforeOpen: (args: PopupEventArgs) => {
-                            isDevice = (window as any).browserDetails.isDevice;
-                            if (isDevice) { (window as any).browserDetails.isDevice = false; }
+                        beforeOpen: () => {
+                            isDevice = (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice;
+                            if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = false; }
                         },
                         open: (args: PopupEventArgs) => {
                             args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
                             args.popup.offsetY = -((tdEle.querySelector('.e-control-wrapper.e-ddl') as HTMLElement).offsetHeight - 18);
                             args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
-                            if (isDevice) { (window as any).browserDetails.isDevice = true; }
+                            if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = true; }
                         },
                         close: (args: PopupEventArgs): void => {
                             if (args.event && ((args.event as KeyboardEvent).keyCode === 13 ||
@@ -247,6 +269,9 @@ export class DataValidation {
                         }
                     });
                     this.listObj.appendTo('#' + this.parent.element.id + 'listValid');
+                    if (isNoteAvailable) {
+                        this.parent.notify(createNoteIndicator, {targetElement: tdEle, rowIndex: indexes[0], columnIndex: indexes[1]});
+                    }
                 }
             }
             if (cell && cell.validation) {
@@ -277,10 +302,8 @@ export class DataValidation {
             for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
                 if (definedNames[idx as number].name === listValue) {
                     let definedNameRange: string = definedNames[idx as number].refersTo;
-                    // eslint-disable-next-line
-                    while (definedNameRange.includes("'")) {
-                        // eslint-disable-next-line
-                        definedNameRange = definedNameRange.replace("'", '');
+                    while (definedNameRange.includes('\'')) {
+                        definedNameRange = definedNameRange.replace('\'', '');
                     }
                     value = definedNameRange;
                 }
@@ -348,6 +371,8 @@ export class DataValidation {
         const cellObj: CellModel = Object.assign({}, getCell(cellIdx[0], cellIdx[1], sheet));
         if (sheet.isProtected && isLocked(cellObj, getColumn(sheet, cellIdx[1]))) {
             this.parent.notify(editAlert, null);
+        } else if (isReadOnly(cellObj, getColumn(sheet, cellIdx[1]), getRow(sheet, cellIdx[0]))) {
+            this.parent.notify(readonlyAlert, null);
         } else {
             if (this.parent.isEdit) { this.parent.closeEdit(); }
             const args: { value: string, oldValue: string, address: string, cancel: boolean } = { value: value, oldValue: cellObj.value, address: sheet.name + '!' + sheet.activeCell, cancel: false };
@@ -493,7 +518,7 @@ export class DataValidation {
                         return args.value;
                     }
                     return val;
-                }
+                };
                 value1 = getFormattedDate(value1); value2 = getFormattedDate(value2);
             } else {
                 value1 = val1; value2 = val2;
@@ -974,6 +999,7 @@ export class DataValidation {
                             if (tdEle && tdEle.getElementsByClassName('e-validation-list')[0]) {
                                 this.listObj.destroy();
                                 tdEle.removeChild(tdEle.getElementsByClassName('e-validation-list')[0]);
+                                this.removeNoteIndicator(tdEle, indexes[0], indexes[1]);
                             }
                         }
                         if (cell.validation.type === 'List') {
@@ -1208,7 +1234,8 @@ export class DataValidation {
                     }
                     if (type === 'List') {
                         if (value1.indexOf('=') !== -1) {
-                            this.data = !isNullOrUndefined(this.data) && !this.data.length ? this.updateDataSource(cell, validation) : this.data;
+                            this.data = !isNullOrUndefined(this.data) && !this.data.length ?
+                                this.updateDataSource(cell, validation) : this.data;
                             for (let idx: number = 0; idx < this.data.length; idx++) {
                                 if (args.value.toString() === this.data[idx as number].text) {
                                     isValidate = true;
@@ -1236,87 +1263,88 @@ export class DataValidation {
                             value2 = value2 ? parseInt(value2.toString(), 10) : null;
                         }
                         switch (opt) {
-                            case 'EqualTo':
-                                if (value === value1) {
-                                    isValidate = true;
-                                } else if (ignoreBlank && enterValue === '') {
-                                    isValidate = true;
-                                } else {
-                                    isValidate = false;
-                                }
-                                break;
-                            case 'NotEqualTo':
-                                if (value !== value1) {
-                                    isValidate = true;
-                                } else if (ignoreBlank && enterValue === '') {
-                                    isValidate = true;
-                                } else {
-                                    isValidate = false;
-                                }
-                                break;
-                            case 'Between':
-                                if (value >= value1 && value <= value2) {
-                                    isValidate = true;
-                                } else if (ignoreBlank && enterValue === '') {
-                                    isValidate = true;
-                                } else {
-                                    isValidate = false;
-                                }
-                                break;
-                            case 'NotBetween':
-                                if (value >= value1 && value <= value2) {
-                                    isValidate = false;
-                                } else if (ignoreBlank && enterValue === '') {
-                                    isValidate = true;
-                                } else {
-                                    isValidate = true;
-                                }
-                                break;
-                            case 'GreaterThan':
-                                if (value > value1) {
-                                    isValidate = true;
-                                } else if (ignoreBlank && enterValue === '') {
-                                    isValidate = true;
-                                } else {
-                                    isValidate = false;
-                                }
-                                break;
-                            case 'LessThan':
-                                if (value < value1) {
-                                    isValidate = true;
-                                } else if (ignoreBlank && enterValue === '') {
-                                    isValidate = true;
-                                } else {
-                                    isValidate = false;
-                                }
-                                break;
-                            case 'GreaterThanOrEqualTo':
-                                if (value >= value1) {
-                                    isValidate = true;
-                                } else if (ignoreBlank && enterValue === '') {
-                                    isValidate = true;
-                                } else {
-                                    isValidate = false;
-                                }
-                                break;
-                            case 'LessThanOrEqualTo':
-                                if (value <= value1) {
-                                    isValidate = true;
-                                } else if (ignoreBlank && enterValue === '') {
-                                    isValidate = true;
-                                } else {
-                                    isValidate = false;
-                                }
-                                break;
-                            default:
-                                break;
+                        case 'EqualTo':
+                            if (value === value1) {
+                                isValidate = true;
+                            } else if (ignoreBlank && enterValue === '') {
+                                isValidate = true;
+                            } else {
+                                isValidate = false;
+                            }
+                            break;
+                        case 'NotEqualTo':
+                            if (value !== value1) {
+                                isValidate = true;
+                            } else if (ignoreBlank && enterValue === '') {
+                                isValidate = true;
+                            } else {
+                                isValidate = false;
+                            }
+                            break;
+                        case 'Between':
+                            if (value >= value1 && value <= value2) {
+                                isValidate = true;
+                            } else if (ignoreBlank && enterValue === '') {
+                                isValidate = true;
+                            } else {
+                                isValidate = false;
+                            }
+                            break;
+                        case 'NotBetween':
+                            if (value >= value1 && value <= value2) {
+                                isValidate = false;
+                            } else if (ignoreBlank && enterValue === '') {
+                                isValidate = true;
+                            } else {
+                                isValidate = true;
+                            }
+                            break;
+                        case 'GreaterThan':
+                            if (value > value1) {
+                                isValidate = true;
+                            } else if (ignoreBlank && enterValue === '') {
+                                isValidate = true;
+                            } else {
+                                isValidate = false;
+                            }
+                            break;
+                        case 'LessThan':
+                            if (value < value1) {
+                                isValidate = true;
+                            } else if (ignoreBlank && enterValue === '') {
+                                isValidate = true;
+                            } else {
+                                isValidate = false;
+                            }
+                            break;
+                        case 'GreaterThanOrEqualTo':
+                            if (value >= value1) {
+                                isValidate = true;
+                            } else if (ignoreBlank && enterValue === '') {
+                                isValidate = true;
+                            } else {
+                                isValidate = false;
+                            }
+                            break;
+                        case 'LessThanOrEqualTo':
+                            if (value <= value1) {
+                                isValidate = true;
+                            } else if (ignoreBlank && enterValue === '') {
+                                isValidate = true;
+                            } else {
+                                isValidate = false;
+                            }
+                            break;
+                        default:
+                            break;
                         }
                     }
                 }
             }
         }
         errorMsg = l10n.getConstant('ValidationError');
-        if (isValidate && ((cell && cell.validation && cell.validation.isHighlighted) || (column && column.validation && column.validation.isHighlighted))) {
+        if (isValidate && ((cell && cell.validation && cell.validation.isHighlighted) ||
+            (column && column.validation && column.validation.isHighlighted))) {
             const style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
             if (!isHiddenRow(sheet, args.range[0])) {
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
@@ -1369,7 +1397,7 @@ export class DataValidation {
         inputEle.setAttribute('type', 'text');
         if (type === 'Date' && isNumber(value)) {
             const valArr: string[] = value.toString().split('.');
-            if (valArr.length == 2) {
+            if (valArr.length === 2) {
                 value = valArr[0];
             }
         }

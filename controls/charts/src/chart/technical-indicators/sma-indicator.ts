@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { firstToLowerCase } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
@@ -12,9 +9,11 @@ import { TechnicalAnalysis } from './indicator-base';
 export class SmaIndicator extends TechnicalAnalysis {
 
     /**
-     * Defines the predictions based on SMA approach
+     * Defines the predictions based on SMA approach.
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         const smaPoints: Points[] = [];
@@ -58,24 +57,25 @@ export class SmaIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * To destroy the SMA indicator
+     * To destroy the SMA indicator.
      *
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys the SMA indicator
+         * Destroys the SMA indicator.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'SmaIndicator';
     }

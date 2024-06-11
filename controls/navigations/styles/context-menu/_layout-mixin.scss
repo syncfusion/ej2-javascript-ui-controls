@@ -54,6 +54,10 @@
 @mixin li-size {
   height: $cmenu-li-height;
   line-height: $cmenu-li-height;
+  @if $skin-name == 'fluent2' {
+    line-height: 19px;
+    height: 32px;
+  }
   padding: $cmenu-li-padding;
 
   & .e-menu-url {
@@ -74,6 +78,9 @@
     margin-right: 0;
     position: absolute;
     right: $cmenu-caret-right;
+    @if $skin-name == 'fluent2' {
+      padding: 4px 0;
+    }
   }
 
   &.e-menu-caret-icon {
@@ -112,6 +119,9 @@
 @mixin rtl-li-size {
   & .e-menu-icon {
     margin-left: $cmenu-icon-margin-right;
+    @if $skin-name == 'fluent2' {
+      margin: 3px 3px 3px 5px;
+    }
   }
 
   & .e-caret {
@@ -143,6 +153,17 @@
 @mixin bigger-li-size {
   height: $cmenu-bigger-li-height;
   line-height: $cmenu-bigger-li-height;
+  @if $skin-name == 'fluent2' {
+    height: 40px;
+    line-height: 21px;
+    padding: 9px;
+  }
+
+  &.e-menu-caret-icon {
+    @if $skin-name == 'fluent2' {
+      padding: 9px 36px 9px 9px;
+    }
+  }
 
   & .e-menu-icon {
     font-size: $cmenu-icon-bigger-font-size;
@@ -154,6 +175,9 @@
 
   & .e-caret {
     line-height: $cmenu-bigger-li-height;
+    @if $skin-name == 'fluent2' {
+      margin: 3px 0;
+    }
   }
 
   &.e-separator {

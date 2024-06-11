@@ -206,10 +206,10 @@ export class UserHandle extends ChildProperty<UserHandle> {
     public disableConnectors: boolean;
 
     /**
-    * Used to show tooltip for user handle on mouse over.
-    *
-    * @default {}
-    */
+     * Used to show tooltip for user handle on mouse over.
+     *
+     * @default {}
+     */
     @Complex<DiagramTooltipModel>({}, DiagramTooltip)
     public tooltip: DiagramTooltipModel;
 

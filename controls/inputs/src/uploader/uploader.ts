@@ -589,7 +589,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private isFirstFileOnSelection: boolean = false;
     private dragCounter : number = 0;
     private isPreloadFiles: boolean;
-    private isAngular: boolean = false;
     /**
      * Get the file item(li) which are shown in file list.
      *
@@ -683,8 +682,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      *
      * @default true
      */
-     @Property(true)
-     public enableHtmlSanitizer: boolean;
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * You can customize the default text of “browse, clear, and upload” buttons with plain text or HTML elements.
@@ -1135,8 +1134,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.updateDirectoryAttributes();
                 break;
             case 'template':
-                const ejInstance: any = getValue('ej2_instances', this.element);
-                if(ejInstance[0].isReact){
+                if ((this as any).isReact){
                     this.reRenderFileList();
                 }else{
                     this.clearAll();
@@ -1255,10 +1253,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             let index: number = 0;
             for (index; index < this.element.attributes.length; index++) {
                 if (this.element.attributes[index as number].nodeName !== 'id'){
-                    inputElement.setAttribute(this.element.attributes[index as number].nodeName, this.element.attributes[index as number].nodeValue);
+                    inputElement.setAttribute(this.element.attributes[index as number].nodeName,
+                                              this.element.attributes[index as number].nodeValue);
                 }
-                else if(this.element.attributes[index as number].nodeName === 'id'){
-                    inputElement.setAttribute(this.element.attributes[index as number].nodeName, getUniqueID('uploader'))
+                else if (this.element.attributes[index as number].nodeName === 'id'){
+                    inputElement.setAttribute(this.element.attributes[index as number].nodeName, getUniqueID('uploader'));
                 }
                 inputElement.innerHTML = this.element.innerHTML;
             }
@@ -1378,7 +1377,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.uploadWrapper.appendChild(this.actionButtons);
         this.browseButton.blur();
         if (!this.isPreloadFiles) {
-            this.uploadButton.focus();  
+            this.uploadButton.focus();
         }
         this.wireActionButtonEvents();
     }
@@ -1838,7 +1837,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (item.length !== 1 && !this.multiple) {
             return;
         }
-        for (let file:number = 0; file < item.length; file++){
+        for (let file: number = 0; file < item.length; file++){
             const pasteFile: DataTransferItem = [].slice.call(item)[file as number];
             if ((pasteFile.kind === 'file') || pasteFile.type.match('^image/')) {
                 this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
@@ -2084,10 +2083,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         return false;
     }
-    /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
     /* istanbul ignore next */
     public traverseFileTree(item: any, event?: MouseEvent | TouchEvent | DragEvent | ClipboardEvent): void {
-    /* eslint-enable @typescript-eslint/explicit-module-boundary-types */
         if (item.isFile) {
             this.filesEntries.push(item);
         } else if (item.isDirectory) {
@@ -2203,25 +2200,25 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         if (this.enableHtmlSanitizer){
             for (let i: number = 0; i < fileData.length; i++) {
-                const sanitizeFile = SanitizeHtmlHelper.beforeSanitize();
-                const sanitizeFileName = SanitizeHtmlHelper.serializeValue(sanitizeFile, fileData[parseInt(i.toString())].name);
-                const currentFileName: string = fileData[parseInt(i.toString())].name;
+                const sanitizeFile: any = SanitizeHtmlHelper.beforeSanitize();
+                const sanitizeFileName: string = SanitizeHtmlHelper.serializeValue(sanitizeFile, fileData[parseInt(i.toString(), 10)].name);
+                const currentFileName: string = fileData[parseInt(i.toString(), 10)].name;
                 let isUTF8: boolean = false;
-                for (let i = 0; i < currentFileName.length; i++) {
+                for (let i: number = 0; i < currentFileName.length; i++) {
                     if (currentFileName.charCodeAt(i) > 127) {
                         isUTF8 = true;
                         break;
                     }
                 }
-                let htmlTagRegex = /<([a-z][a-z0-9]*)\b[^>]*>(.*?)<\/\1>/i;
-                let hasHTMLString: boolean = htmlTagRegex.test(currentFileName);
-                if ((sanitizeFileName !== fileData[parseInt(i.toString())].name) && !(isUTF8 && !hasHTMLString)) {
-                    const encodedFileName = targetFiles[parseInt(i.toString())].name.replace(/[\u00A0-\u9999<>\&]/g, function (i: any) {
+                const htmlTagRegex: RegExp = /<([a-z][a-z0-9]*)\b[^>]*>(.*?)<\/\1>/i;
+                const hasHTMLString: boolean = htmlTagRegex.test(currentFileName);
+                if ((sanitizeFileName !== fileData[parseInt(i.toString(), 10)].name) && !(isUTF8 && !hasHTMLString)) {
+                    const encodedFileName: any = targetFiles[parseInt(i.toString(), 10)].name.replace(/[\u00A0-\u9999<>\\&]/g, function (i: any): string {
                         return '&#' + i.charCodeAt(0) + ';';
                     });
-                    fileData[parseInt(i.toString())].name = encodedFileName;
-                    fileData[parseInt(i.toString())].status = this.localizedTexts('invalidFileName');
-                    fileData[parseInt(i.toString())].statusCode = '0';
+                    fileData[parseInt(i.toString(), 10)].name = encodedFileName;
+                    fileData[parseInt(i.toString(), 10)].status = this.localizedTexts('invalidFileName');
+                    fileData[parseInt(i.toString(), 10)].statusCode = '0';
                 }
             }
         }
@@ -2234,8 +2231,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private updateInitialFileDetails(args: MouseEvent | TouchEvent | DragEvent | ClipboardEvent,
-        // eslint-disable-next-line @typescript-eslint/indent
-        targetFiles: any, file: File, i: number, fileData: FileInfo[], directory?: boolean, paste?: boolean): void {
+                                     targetFiles: any, file: File, i: number, fileData: FileInfo[],
+                                     directory?: boolean, paste?: boolean): void {
         const fileName: string = directory ? targetFiles[i as number].path.substring(1, targetFiles[i as number].path.length) : paste ?
             getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
             this.directoryUpload ? targetFiles[i as number].webkitRelativePath : file.name;
@@ -2344,7 +2341,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private updateSortedFileList(filesData: FileInfo[]): void {
         const previousListClone: HTMLElement = this.createElement('div', {id: 'clonewrapper'});
         let added: number = -1;
-        let removedList: HTMLElement[];
         if (this.listParent) {
             for (let i: number = 0; i < this.listParent.querySelectorAll('li').length; i++) {
                 const liElement: HTMLElement = this.listParent.querySelectorAll('li')[i as number];
@@ -2384,7 +2380,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 allowedExtensions.push(extension.trim().toLocaleLowerCase());
             }
             for (let i: number = 0; i < files.length; i++) {
-                let checkFileType: string = files[i as number].type.indexOf(".") !== -1 ? files[i as number].type.replace(".", "") : files[i as number].type;
+                const checkFileType: string = files[i as number].type.indexOf('.') !== -1 ?
+                    files[i as number].type.replace('.', '') : files[i as number].type;
                 if (allowedExtensions.indexOf(('.' + checkFileType).toLocaleLowerCase()) === -1) {
                     files[i as number].status = this.localizedTexts('invalidFileType');
                     files[i as number].statusCode = '0';
@@ -2412,7 +2409,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private isPreLoadFile(fileData: FileInfo) : boolean {
         let isPreload: boolean = false;
         for (let i : number = 0; i < this.files.length; i++) {
-            if (this.files[i as number].name === fileData.name.slice(0, fileData.name.lastIndexOf('.')) && this.files[i as number].type === fileData.type) {
+            if (this.files[i as number].name === fileData.name.slice(0, fileData.name.lastIndexOf('.')) &&
+                this.files[i as number].type === fileData.type) {
                 isPreload = true;
             }
         }
@@ -2555,16 +2553,16 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private createFormInput(fileData: FileInfo[]): void {
         if (this.browserName !== 'safari') {
-        const inputElement: HTMLInputElement = this.element.cloneNode(true) as HTMLInputElement;
-        inputElement.classList.add(HIDDEN_INPUT);
-        for (const listItem of fileData) {
-            listItem.input = inputElement;
-        }
-        inputElement.setAttribute('id', getUniqueID('hiddenUploader'));
-        inputElement.setAttribute('name', this.uploaderName);
-        this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
-        if (this.browserName !== 'msie' && this.browserName !== 'edge') {
-            this.element.value = ''; }
+            const inputElement: HTMLInputElement = this.element.cloneNode(true) as HTMLInputElement;
+            inputElement.classList.add(HIDDEN_INPUT);
+            for (const listItem of fileData) {
+                listItem.input = inputElement;
+            }
+            inputElement.setAttribute('id', getUniqueID('hiddenUploader'));
+            inputElement.setAttribute('name', this.uploaderName);
+            this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
+            if (this.browserName !== 'msie' && this.browserName !== 'edge') {
+                this.element.value = ''; }
         }
     }
 
@@ -2665,7 +2663,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.fileList.push(fileList);
         this.renderReactTemplates();
     }
-    /* eslint-disable valid-jsdoc, jsdoc/require-param */
     /**
      * Create the file list for specified files data.
      *
@@ -2678,7 +2675,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private internalCreateFileList(fileData: FileInfo[]): void {
-        /* eslint-enable valid-jsdoc, jsdoc/require-param */
         this.createParentUL();
         if (this.template !== '' && !isNullOrUndefined(this.template)) {
             if (this.isFormUpload()) {
@@ -2830,7 +2826,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (!isNullOrUndefined(li) && !li.classList.contains(UPLOAD_SUCCESS)) {
                 filterFiles.push(files[i as number]);
             }
-            else if (!this.showFileList && files[i as number].status !== "File uploaded successfully") {
+            else if (!this.showFileList && files[i as number].status !== 'File uploaded successfully') {
                 filterFiles.push(files[i as number]);
             }
         }
@@ -3160,7 +3156,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for ( let selectFileIndex: number =  0 ; selectFileIndex < selectedFiles.length; selectFileIndex++ ) {
             const selectedFileData: FileInfo = selectedFiles[selectFileIndex as number];
             for ( let fileDataIndex: number = 0 ; fileDataIndex < this.filesData.length; fileDataIndex++ ) {
-                if ( this.filesData[fileDataIndex as number].name === selectedFileData.name && this.filesData[fileDataIndex as number].status === selectedFileData.status ) {
+                if ( this.filesData[fileDataIndex as number].name === selectedFileData.name &&
+                    this.filesData[fileDataIndex as number].status === selectedFileData.status ) {
                     matchFiles[matchFilesIndex as number] = this.filesData[fileDataIndex as number];
                     ++matchFilesIndex;
                 }
@@ -3382,7 +3379,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 liElement.querySelector('.' + STATUS).innerHTML = this.localizedTexts('fileUploadCancel');
                 liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
             }
-            this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
+            this.pauseButton = this.createElement('span',
+                                                  {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
             const removeIcon: Element = liElement.querySelector('.' + REMOVE_ICON);
             if (removeIcon) {
                 removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
@@ -3491,13 +3489,17 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.updateStatus(metaData.file, this.localizedTexts('fileUploadCancel'), '5');
             this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
             this.removeProgressbar(liElement, 'failure');
-            (deleteIcon && deleteIcon.classList.remove(ABORT_ICON));
-            (deleteIcon && deleteIcon.classList.add(REMOVE_ICON));
-            (deleteIcon && deleteIcon.setAttribute('title', this.localizedTexts('remove')));
+            if (deleteIcon) {
+                deleteIcon.classList.remove(ABORT_ICON);
+                deleteIcon.classList.add(REMOVE_ICON);
+                deleteIcon.setAttribute('title', this.localizedTexts('remove'));
+            }
             const pauseIcon: Element = liElement.querySelector('.' + PAUSE_UPLOAD);
-            (pauseIcon && pauseIcon.classList.add(RETRY_ICON));
-            (pauseIcon && pauseIcon.classList.remove(PAUSE_UPLOAD));
-            (pauseIcon && pauseIcon.setAttribute('title', this.localizedTexts('retry')));
+            if (pauseIcon) {
+                pauseIcon.classList.add(RETRY_ICON);
+                pauseIcon.classList.remove(PAUSE_UPLOAD);
+                pauseIcon.setAttribute('title', this.localizedTexts('retry'));
+            }
             if (!isNullOrUndefined(liElement) && !isNullOrUndefined(deleteIcon)
             && !isNullOrUndefined(liElement.querySelector('.e-spinner-pane'))) {
                 hideSpinner(spinnerTarget);
@@ -3779,13 +3781,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }, false);
         }
     }
-    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * It is used to convert bytes value into kilobytes or megabytes depending on the size based
      * on [binary prefix](https://en.wikipedia.org/wiki/Binary_prefix).
      *
      * @param { number } bytes - Specifies the file size in bytes.
-     * @returns {string}
+     * @returns {string} - Returns the file size.
      */
     public bytesToSize(bytes : number) : string {
         let i : number = -1;
@@ -3827,7 +3829,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         return sortedFilesData;
     }
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
      *
@@ -3954,20 +3956,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.fileStreams[fileCount as number] = file;
         return fileCount;
     }
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    /* istanbul ignore next */
-    private getFileInfo(index: number, ele: Element): FileInfo {
-    /* eslint-enable @typescript-eslint/no-unused-vars */
-        const files: FileInfo[] = this.filesData;
-        if (!files || files.length === 0) {
-            return null;
-        }
-        const file: FileInfo = files[index as number];
-        if (!file) {
-            return null;
-        }
-        return this.filesData[index as number];
-    }
 
     private uploadFiles(files: FileInfo[], custom?: boolean): void {
         let selectedFiles: FileInfo[] = [];
@@ -3991,11 +3979,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private uploadFilesRequest(selectedFiles: FileInfo[], i: number, custom?: boolean): void {
-        const cloneFiles: Blob[] = [];
         const chunkEnabled: boolean = this.checkChunkUpload();
         const ajax: Ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
         ajax.emitError = false;
-        let getFileData: FileInfo[];
         const eventArgs: UploadingEventArgs = {
             fileData: selectedFiles[i as number],
             customFormData: [],
@@ -4261,7 +4247,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     public retry(fileData?: FileInfo | FileInfo[], fromcanceledStage?: boolean, custom?: boolean): void {
         fileData = fileData ? fileData : this.filesData;
         const fileDataFiles: FileInfo[] = this.getFilesInArray(fileData);
-		if (this.sequentialUpload && this.isFirstFileOnSelection) {
+        if (this.sequentialUpload && this.isFirstFileOnSelection) {
             this.isFirstFileOnSelection = false;
         }
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);

@@ -2,107 +2,15 @@
 
 ## [Unreleased]
 
-## 25.2.6 (2024-05-28)
+## 26.1.35 (2024-06-11)
 
 ### Grid
 
-#### Bug fixes
+#### Features
 
-- `#I584245` - The problem of deselecting a row programmatically with toggle set to true, without triggering the `rowDeselecting` and `rowDeselected` events, and without deselecting the row when there are existing selected rows has been successfully resolved.
-- `#I580119` - Resolved the issue where the `Tooltip` element is not shown in context menu text overflow element.
-- `#I571259` - Resolved the issue with the `selectRow` method when both `virtualization` and `grouping` are enabled.
-- `#I587208` - The issue with misalignment of icons when the `headerText` field is empty has been resolved.
-- `#I591601` - Resolved the issue where continuous spinner loading when opening the Excel filter dialog after performing the grid's search operation.
-
-## 25.2.5 (2024-05-21)
-
-### Grid
-
-#### Bug fixes
-
-- `#I582334` - Resolved the issue where the page orientation Landscape throws script error while pdf export.
-- `#I584344` - Localization not applied on grid's group expand icons issue was resolved.
-- `#I586600` - Resolved the issue where the Interface `BeforeDataBoundArgs` mismatches the actual event arguments.
-- `#I587235` - Resolved the issue where the `INVALID FORMAT` console warning documentation reference link not found issue.
-- `#I587421` - Resolved the duplicate ID accessibility issue occurring when using multiple data grids with column chooser on the same page.
-
-## 25.2.3 (2024-05-08)
-
-### Grid
-
-#### Bug fixes
-
-- `#I581295`- Resolved the warning message that was thrown when using the Freeze property with `virtualization` in grid.
-- `#I578930` - The focus issue related to Excel Filter has been fixed. As of now, when you cancel the custom filter option in Excel filter, the focus stays on the current column.
-
-## 25.1.42 (2024-04-30)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB52421`- Frozen grid virtual scrolling displays blank page after reorder is resolved.
-- `#FB52497`- Column chooser `SelectAll` option not working properly has been fixed.
-
-## 25.1.41 (2024-04-23)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB52588` - Fixed the content overlap issue in exported PDF documents in hierarchy grid.
-- `#I571259` - Resolved the issue where the `selectRow` method was not working when both `virtualization` and grouping were enabled in grid.
-- `#I569550` - Fixed the issue where focusing on the grid through the tab key press did not properly focus on the first cell of the grid.
-- `#I573371` - The issue with the Grid search bar in `ODataV4Adaptor`, where the Excel filter displayed no matches found after searching for a record, has been fixed.
-
-## 25.1.40 (2024-04-16)
-
-### Grid
-
-#### Bug fixes
-
-- `#I577961` - The issue where checkbox selection was not working properly upon touching the header checkbox has been fixed.
-- `#FB52524` - Script error thrown when refreshing `aggregateModule` with grouping has been fixed.
-- `#I576058` - The issue with validation message positioning in dialog edit mode with frozen columns has been resolved.
-- `#I576570` - The issue where command column buttons were removed upon deleting a record in the infinite scrolling grid has been fixed.
-
-## 25.1.39 (2024-04-09)
-
-### Grid
-
-#### Bug fixes
-
-- `#I568054` - Fixed script error that occurred when opening the filter menu using the column menu feature in adaptive layout grid.
-- `#I573131` - Fixed issue where the Column Chooser `OKButton` remained enabled even after individually unchecking all visible column checkboxes items.
-- `#I571994` - Updated the emit type for the `ContextMenuClick` event in the grid documentation.
-- `#FB52005` - Resolved issue where JAWS screen reader incorrectly read out pager elements when navigating to the first content cell from the header in a grid with paging enabled.
-- `#I570288` - Resolved misalignment of frozen columns in the grid when resizing to fit content width.
-
-## 25.1.38 (2024-04-02)
-
-### Grid
-
-#### Bug fixes
-
-- `#I557722` - Script error thrown when using toolbar template with Adaptive Grid has been fixed.
-- `#FB51847` - Frozen Grid content text overlap in `boostrap4` theme issue has been resolved.
-- `#I564949` - Fixed issue where exporting more than two grids to PDF with `AppendToPage` type in `PdfExportProperties` caused overlapping text.
-
-## 25.1.37 (2024-03-26)
-
-### Grid
-
-#### Bug fixes
-
-- `#I565411` - Resolved the issue where the action complete event was not being triggered in the Infinite Scrolling.
-- `#I553471` - The issue of misleading text in Grid toolbar search when focus is lost has been resolved.
-- `#I562553` - The `getRows` method returning undefined for all the rows in the `rowTemplate` feature has been resolved.
-- `#I559289` - Resolved the issue where the validation message displayed immediately upon opening the dropdown instead of on focus out.
-- `#I558905` - The issue of white spaces being shown when the virtual scroll grid's height is set in pixels has been resolved.
-- `#I566680` - Resolved the Hierarchy grid export issue when the child grid's enable filter property is enabled.
-- `#I540683` - The issue of a script error being thrown when the last column contains auto width and `minWidth` in a Grid with `allowResizing` has been fixed.
-- `#I558576` - Resolved the issue where the sorting `popup` did not open when clicking the sort icon has been fixed.
-- `#FB51479` - The issue where the cell was automatically saved when opening the dropdown in Batch edit mode has been fixed.
+- `#FB3775` - The `ODataV4` functionality has been enhanced, enabling you to invoke custom URLs for data fetching and CRUD actions.
+- Lazy load grouping with sorting performance has been improved, allowing you to handle large datasets without performance lag.
+- The Fluent 2 theme and Fluent 2 High Contrast theme are now available in both light and dark modes on the EJ2 Grid.
 
 ## 25.1.35 (2024-03-15)
 

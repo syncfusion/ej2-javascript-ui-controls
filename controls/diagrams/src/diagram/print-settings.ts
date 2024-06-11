@@ -56,13 +56,7 @@ export class PrintAndExport {
         const buffers: string[] = [];
         let margin: MarginModel = options.margin || {};
         const region: DiagramRegions = options && options.region ? options.region : 'Content';
-        if (isBlazor()) {
-            if ((options as any).Mode === 0) {
-                options.mode = 'Download';
-            } else {
-                options.mode = 'Data';
-            }
-        }
+        // isBlazor code removed
         const mode: string = options && options.mode ? options.mode : 'Download';
         const bounds: Rect = this.getDiagramBounds(region, options);
         if (options.bounds) {
@@ -97,10 +91,7 @@ export class PrintAndExport {
             options.margin = margin;
             const svg: SVGElement = content = this.diagramAsSvg(options, margin);
             if (mode === 'Data') {
-                if (isBlazor() && options.format === 'SVG') {
-                    const svgData: string = new XMLSerializer().serializeToString(svg);
-                    return svgData;
-                }
+                // isBlazor code removed
                 return content;
             }
             const buffer: string = new XMLSerializer().serializeToString(svg);
@@ -167,8 +158,8 @@ export class PrintAndExport {
     private canvasMultiplePage(
         options: IExportOptions, canvas: HTMLCanvasElement, margin: MarginModel, image: string, fileName: string): void {
         let images: HTMLElement | string[] = [];
-        const imageData = image.substring(image.indexOf(':') + 1, image.indexOf(';'));
-        let imageFormat = imageData.substring(imageData.indexOf('/') + 1);
+        const imageData: string = image.substring(image.indexOf(':') + 1, image.indexOf(';'));
+        let imageFormat: string = imageData.substring(imageData.indexOf('/') + 1);
         if (imageFormat === 'jpeg') {
             imageFormat = undefined;
         } else {
@@ -318,9 +309,9 @@ export class PrintAndExport {
                 }
             }
         }
-        //884801-After zooming and exporting the HTML content, the scroll Padding value is not taken into account.
+        //884801-After zooming and exporting the HTML content, the scroll Padding value is not considered
         if (this.diagram.scrollSettings.padding) {
-            let scrollpadding: MarginModel = this.diagram.scrollSettings.padding;
+            const scrollpadding: MarginModel = this.diagram.scrollSettings.padding;
             left -= scrollpadding.left;
             top -= scrollpadding.top;
             right += (scrollpadding.left + scrollpadding.right);
@@ -455,7 +446,7 @@ export class PrintAndExport {
         const elements: NodeModel[] | ConnectorModel[] = [];
         let region: Rect = options.bounds;
         const margin: MarginModel = options.margin;
-        const mode: DiagramRegions = options && options.region ? options.region : 'Content';
+        const mode: DiagramRegions = options.region;
         let pageBounds: Rect = this.getDiagramBounds(mode, options);
         const bgColor: string = this.diagram.pageSettings.background.color;
         const canvas: HTMLCanvasElement = CanvasRenderer.createCanvas(
@@ -548,7 +539,7 @@ export class PrintAndExport {
         }
     }
 
-    private scaleGradientValue(node: NodeModel, scaleValue: number, isExport: boolean) {
+    private scaleGradientValue(node: NodeModel, scaleValue: number, isExport: boolean): void {
         if (node.style.gradient.stops.length > 0) {
             const gradients: DiagramGradientModel = node.style.gradient;
             if (node.style.gradient instanceof LinearGradient) {
@@ -772,7 +763,7 @@ export class PrintAndExport {
                         '</style><title></title></head>');
                     //833683-Need to close print window after closing the parent window
                     window.addEventListener('beforeunload', this.closePrintWindow);
-                    printWind.addEventListener('load', (event) => {
+                    printWind.addEventListener('load', () => {
                         setTimeout(() => {
                             printWind.window.print();
                             //To close new window once print window is closed

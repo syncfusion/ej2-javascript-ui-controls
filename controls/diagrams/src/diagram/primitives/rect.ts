@@ -198,8 +198,8 @@ export class Rect {
      * @private
      */
     public uniteRect(rect: Rect): Rect {
-        const right: number = Math.max(Number.NaN === this.right || this.x === Number.MAX_VALUE ? rect.right : this.right, rect.right);
-        const bottom: number = Math.max(Number.NaN === this.bottom || this.y === Number.MAX_VALUE ? rect.bottom : this.bottom, rect.bottom);
+        const right: number = Math.max(isNaN(this.right) || this.x === Number.MAX_VALUE ? rect.right : this.right, rect.right);
+        const bottom: number = Math.max(isNaN(this.bottom) || this.y === Number.MAX_VALUE ? rect.bottom : this.bottom, rect.bottom);
         this.x = Math.min(this.left, rect.left);
         this.y = Math.min(this.top, rect.top);
         this.width = right - this.x;

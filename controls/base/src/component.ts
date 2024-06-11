@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
 import { isUndefined, getValue, isNullOrUndefined, setValue, uniqueID, isBlazor } from './util';
 import { ModuleLoader, ModuleDeclaration } from './module-loader';
 import { Base } from './base';
@@ -35,7 +36,6 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
 
     public element: ElementType;
     // Root component instance.
-    // eslint-disable-next-line
     public root: any;
     private randomId: string = uniqueID();
     public ej2StatePersistenceVersion: string;
@@ -67,10 +67,13 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * @private
      */
     public isStringTemplate: boolean = false;
-    // eslint-disable-next-line
     public currentContext: { calls?: Function, args?: any };
     protected needsID: boolean = false;
     protected isReactHybrid: boolean = false;
+    public isAngular: boolean = false;
+    public isReact: boolean = false;
+    public isVue: boolean = false;
+    public portals: any;
     protected moduleLoader: ModuleLoader;
     protected localObserver: Observer;
     protected abstract render(): void;
@@ -130,7 +133,6 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      */
     public getRootElement(): HTMLElement {
         if (this.isReactHybrid) {
-            // eslint-disable-next-line
             return (this as any).actualElement;
         } else {
             return this.element;
@@ -141,7 +143,6 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      *
      * @returns {any} ?
      */
-    // eslint-disable-next-line
     public getLocalData(): any {
         const eleId: string = this.getModuleName() + this.element.id;
         if (versionBasedStatePersistence) {
@@ -214,7 +215,8 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
                 treegrid: ['filter'],
                 gantt: ['tooltip'],
                 chart: ['Export', 'Zoom'],
-                accumulationchart: ['Export']
+                accumulationchart: ['Export'],
+                'query-builder': 'all'
             };
             const component: string = this.getModuleName();
             if (this.requiredModules && (!ignoredComponents[`${component}`] || ignoredComponents[`${component}`] !== 'all')) {
@@ -249,8 +251,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     protected renderComplete(wrapperElement?: Node): void {
         if (isBlazor()) {
             const sfBlazor: string = 'sfBlazor';
-            // eslint-disable-next-line
-            (window as any)[sfBlazor].renderComplete(this.element, wrapperElement);
+            (window as any)[`${sfBlazor}`].renderComplete(this.element, wrapperElement);
         }
         this.isRendered = true;
     }
@@ -358,7 +359,6 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         }
         this.moduleLoader = new ModuleLoader(this);
         this.localObserver = new Observer(this);
-        // tslint:disable-next-line:no-function-constructor-with-string-args
         onIntlChange.on('notifyExternalChange', this.detectFunction, this, this.randomId);
         // Based on the considered control list we have count the instance
         if (typeof window !== 'undefined' && typeof document !== 'undefined' && !validateLicense()) {
@@ -382,7 +382,6 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * @returns {any} ?
      * @private
      */
-    // eslint-disable-next-line
     public createElement(tagName: string, prop?: ElementProperties, isVDOM?: boolean): any {
         return createElement(tagName, prop);
     }
@@ -393,16 +392,13 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public triggerStateChange(handler?: Function, argument?: any): void {
         if (this.isReactHybrid) {
-            // eslint-disable-next-line
             (this as any).setState();
             this.currentContext = { calls: handler, args: argument };
         }
 
     }
-    // tslint: enable: no-any
     private injectModules(): void {
         if (this.injectedModules && this.injectedModules.length) {
             this.moduleLoader.inject(this.requiredModules(), this.injectedModules);
@@ -437,15 +433,11 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             }
         }
     }
-
-    // eslint-disable-next-line
     protected renderReactTemplates(callback?: any): void {
         if (!isNullOrUndefined(callback)) {
             callback();
         }
     }
-
-    // eslint-disable-next-line
     protected clearTemplate(templateName?: string[], index?: any): void {
         //No Code
     }
@@ -477,9 +469,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     protected addOnPersist(options: string[]): string {
         const persistObj: Object = {};
         for (const key of options) {
-            let objValue: Object;
-            // eslint-disable-next-line
-            objValue = getValue(key, this);
+            const objValue: Object = getValue(key, this);
             if (!isUndefined(objValue)) {
                 setValue(key, this.getActualProperties(objValue), persistObj);
             }
@@ -505,8 +495,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         const newObj: { [key: string]: Object } = {};
         for (const key of Object.keys(obj)) {
             if (ignoreList.indexOf(key) === -1) {
-                // eslint-disable-next-line
-                const value: any = obj[key];
+                const value: any = obj[`${key}`];
                 if (typeof value === 'object' && !(value instanceof Array)) {
                     const newList: string[] = ignoreList.filter((str: string): boolean => {
                         const regExp: RegExpConstructor = RegExp;

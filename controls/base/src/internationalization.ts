@@ -306,8 +306,6 @@ export function loadCldr(...data: Object[]): void {
         extend(cldrData, obj, {}, true);
     }
 }
-
-
 /**
  * To enable or disable RTL functionality for all components globally.
  *
@@ -329,9 +327,7 @@ export function enableRtl(status: boolean = true): void {
  * @private
  */
 export function getNumericObject(locale: string, type?: string): Object {
-    // eslint-disable-next-line
-    let numObject: Object = (<any>IntlBase.getDependables(cldrData, locale, '', true))[mapper[0]];
-    // eslint-disable-next-line
+    const numObject: Object = (<any>IntlBase.getDependables(cldrData, locale, '', true))[mapper[0]];
     const dateObject: Object = (<any>IntlBase.getDependables(cldrData, locale, ''))[mapper[1]];
     const numSystem: string = getValue('defaultNumberingSystem', numObject);
     const symbPattern: Object = isBlazor() ?  getValue('numberSymbols', numObject) : getValue('symbols-numberSystem-' + numSystem, numObject);
@@ -349,9 +345,7 @@ export function getNumericObject(locale: string, type?: string): Object {
  * @private
  */
 export function getNumberDependable(locale: string, currency: string): string  {
-    // eslint-disable-next-line
     const numObject: Object = (<any>IntlBase.getDependables(cldrData, locale, '', true));
-    // eslint-disable-next-line
     return IntlBase.getCurrencySymbol((<any>numObject).numericObject, currency);
 }
 
@@ -364,6 +358,5 @@ export function getNumberDependable(locale: string, currency: string): string  {
  * @private
  */
 export function getDefaultDateObject(mode?: string): Object {
-    // eslint-disable-next-line
     return (<any>IntlBase.getDependables(cldrData, '', mode, false))[mapper[1]];
 }

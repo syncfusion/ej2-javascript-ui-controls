@@ -1,5 +1,5 @@
 import { TimelineFormat, ITaskData } from './../base/interface';
-import { createElement, isNullOrUndefined, getValue, addClass, removeClass, extend } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, getValue, addClass, removeClass, extend, append } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { TimelineSettingsModel } from '../models/timeline-settings-model';
 import * as cls from '../base/css-constants';
@@ -56,7 +56,7 @@ export class Timeline {
         this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
         if (this.parent.enablePersistence && this.parent.isLoad) {
             this.parent.timelineSettings = this.parent.currentZoomingLevel;
-          }
+        }
     }
 
     /**
@@ -87,7 +87,6 @@ export class Timeline {
         }
         const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
         this.parent.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
-        // eslint-disable-next-line
         this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
     }
 
@@ -99,7 +98,10 @@ export class Timeline {
      */
     public refreshTimelineByTimeSpan(): void {
         this.validateTimelineProp();
-        if (!this.parent.pdfExportModule || (this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport) || (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps && !this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
+        if (!this.parent.pdfExportModule || (this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport) ||
+            (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport &&
+                this.parent.pdfExportModule.helper.exportProps &&
+                !this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
             this.parent.ganttChartModule.chartTimelineContainer.innerHTML = '';
         }
         this.createTimelineSeries();
@@ -113,7 +115,7 @@ export class Timeline {
      */
     public updateChartByNewTimeline(): void {
         this.parent.chartRowsModule.refreshChartByTimeline();
-        let currentScrollLeft = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
+        const currentScrollLeft: number = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
         this.parent.element.getElementsByClassName('e-timeline-header-container')[0].scrollLeft = currentScrollLeft;
         this.parent.notify('refreshDayMarkers', {});
 
@@ -128,18 +130,18 @@ export class Timeline {
     public processZooming(isZoomIn: boolean): void {
         this.isZoomToFit = false;
         this.isZoomedToFit = false;
-        const action: string = isZoomIn ? "ZoomIn" : 'ZoomOut';
+        const action: string = isZoomIn ? 'ZoomIn' : 'ZoomOut';
         if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent'](action)) {
             if (this.parent.undoRedoModule['redoEnabled']) {
                 this.parent.undoRedoModule['disableRedo']();
             }
             this.parent.undoRedoModule['createUndoCollection']();
-            let previousTimeline: Object = {};
+            const previousTimeline: Object = {};
             previousTimeline['action'] = action;
             previousTimeline['previousZoomingLevel'] = extend({}, {}, this.parent.currentZoomingLevel, true);
-            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = previousTimeline;
+            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as Object) = previousTimeline;
         }
-        if(!this.parent['isProjectDateUpdated']){
+        if (!this.parent['isProjectDateUpdated']) {
             this.parent.dateValidationModule.calculateProjectDates();
         }
         if (!isNullOrUndefined(this.parent.zoomingProjectStartDate)) {
@@ -152,18 +154,19 @@ export class Timeline {
         this.isZoomIn = isZoomIn;
         this.isZooming = true;
         let currentLevel: number;
-        let level: number = isZoomIn ? currentZoomingLevel + 1 : currentZoomingLevel - 1;
-        const foundLevel = this.parent.zoomingLevels.find(tempLevel => tempLevel.level === level);
+        const level: number = isZoomIn ? currentZoomingLevel + 1 : currentZoomingLevel - 1;
+        const foundLevel: ZoomTimelineSettings = this.parent.zoomingLevels.find(
+            (tempLevel: ZoomTimelineSettings) => tempLevel.level === level);
         if (foundLevel) {
             currentLevel = level;
         } else {
             currentLevel = currentZoomingLevel;
-        } 
+        }
         if (this.parent.toolbarModule) {
             if (isZoomIn) {
                 if (currentLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false); // disable toolbar items.
-                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true)
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true);
                 } else {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true); // disable toolbar items.
                 }
@@ -186,7 +189,7 @@ export class Timeline {
             cancel: false
         };
         this.parent.trigger('actionBegin', args);
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
             this.parent.showMaskRow();
         } else {
             this.parent.showSpinner();
@@ -209,7 +212,7 @@ export class Timeline {
             this.isSingleTier = this.customTimelineSettings.topTier.unit === 'None' || this.customTimelineSettings.bottomTier.unit === 'None' ? true : false;
         }
         else if (!this.isZoomIn) {
-             this.isSingleTier = newTimeline.topTier.unit === 'None' || newTimeline.bottomTier.unit === 'None' ? true : false;
+            this.isSingleTier = newTimeline.topTier.unit === 'None' || newTimeline.bottomTier.unit === 'None' ? true : false;
         }
         const skipProperty: string = this.isSingleTier ?
             this.customTimelineSettings.topTier.unit === 'None' ?
@@ -217,11 +220,12 @@ export class Timeline {
         Object.keys(this.customTimelineSettings).forEach((property: string) => {
             if (property !== skipProperty) {
                 this.customTimelineSettings[property as string] = (typeof newTimeline[property as string] === 'object'
-                    && !isNullOrUndefined(newTimeline[property as string])) ? { ...newTimeline[property as string] } : newTimeline[property as string];
+                    && !isNullOrUndefined(newTimeline[property as string])) ?
+                    { ...newTimeline[property as string] } : newTimeline[property as string];
             } else {
                 const value: string = property === 'topTier' ? 'bottomTier' : 'topTier';
                 const assignValue: string = 'bottomTier';
-                if ( newTimeline[`${assignValue}`].unit != "None") {
+                if ( newTimeline[`${assignValue}`].unit !== 'None') {
                     this.customTimelineSettings[value as string] = { ...newTimeline[assignValue as string] };
                 }
             }
@@ -232,25 +236,28 @@ export class Timeline {
             this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
         const criticalModule: CriticalPath  = this.parent.criticalPathModule;
         if (this.parent.enableCriticalPath && criticalModule) {
-            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
-         }
+            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection,
+                                                 true, criticalModule.predecessorCollectionTaskIds);
+        }
         if (this.isZooming || this.isZoomToFit) {
             const args: ZoomEventArgs = {
                 requestType: this.isZoomIn ? 'AfterZoomIn' : this.isZoomToFit ? 'AfterZoomToProject' : 'AfterZoomOut',
                 timeline: this.parent.currentZoomingLevel
             };
             this.parent.trigger('actionComplete', args);
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.hideMaskRow();
             } else {
                 this.parent.hideSpinner();
             }
         }
-        let tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
-        if (this.parent.enableTimelineVirtualization && (!this.parent.pdfExportModule || this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport)) {
-            this.wholeTimelineWidth = this.calculateWidthBetweenTwoDate(tier, this.parent.timelineModule.timelineStartDate, this.parent.timelineModule.timelineEndDate);
-            this.parent.element.querySelectorAll(".e-chart-scroll-container")[0].querySelector(".e-virtualtrack")['style'].width = this.wholeTimelineWidth + 'px';
-            this.parent.element.querySelectorAll(".e-timeline-header-container")[0].querySelector(".e-virtualtrack")['style'].width = this.wholeTimelineWidth + 'px';
+        const tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
+        if (this.parent.enableTimelineVirtualization && (!this.parent.pdfExportModule || this.parent.pdfExportModule
+            && !this.parent.pdfExportModule.isPdfExport)) {
+            this.wholeTimelineWidth = this.calculateWidthBetweenTwoDate(tier, this.parent.timelineModule.timelineStartDate,
+                                                                        this.parent.timelineModule.timelineEndDate);
+            this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
+            this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
             this.parent.ganttChartModule.updateWidthAndHeight();
         }
     }
@@ -264,7 +271,7 @@ export class Timeline {
         this.isZoomToFit = true;
         this.isZooming = false;
         this.isZoomedToFit = true;
-        let previousTimeline: Object = {};
+        const previousTimeline: Object = {};
         if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent']('ZoomToFit')) {
             if (this.parent.undoRedoModule['redoEnabled']) {
                 this.parent.undoRedoModule['disableRedo']();
@@ -274,14 +281,15 @@ export class Timeline {
             previousTimeline['previousTimelineStartDate'] = extend([], [], [this.parent.cloneProjectStartDate], true)[0];
             previousTimeline['previousTimelineEndDate'] = extend([], [], [this.parent.cloneProjectEndDate], true)[0];
             previousTimeline['previousZoomingLevel'] = extend({}, {}, this.parent.currentZoomingLevel, true);
-            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = previousTimeline;
+            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as Object) = previousTimeline;
         }
         if (!this.parent.zoomingProjectStartDate) {
             this.parent.zoomingProjectStartDate = this.parent.cloneProjectStartDate;
             this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
         }
-        if(this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate){
-            this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ? this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
+        if (this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate) {
+            this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ?
+                this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
         }
         this.parent.dataOperation.calculateProjectDates();
         const timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
@@ -330,7 +338,7 @@ export class Timeline {
             this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         }
         this.parent.trigger('actionBegin', args);
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
             this.parent.showMaskRow();
         } else {
             this.parent.showSpinner();
@@ -339,35 +347,41 @@ export class Timeline {
         this.parent.isTimelineRoundOff = isNullOrUndefined(this.parent.projectStartDate) ? true : false;
         this.isZoomToFit = false;
     }
-    
-    private bottomTierCellWidthCalc(mode: string, zoomLevel: ZoomTimelineSettings, date: Date) {
+
+    private bottomTierCellWidthCalc(mode: string, zoomLevel: ZoomTimelineSettings, date: Date): number {
         let convertedMilliSeconds: number;
         switch (mode) {
-            case 'Minutes':
-                convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 1000);
-                break
-            case 'Hour':
-                convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 1000);
-                break
-            case 'Week':
-                convertedMilliSeconds = zoomLevel.bottomTier.count * (7 * 24 * 60 * 60 * 1000);
-                break
-            case 'Day':
-                convertedMilliSeconds = zoomLevel.bottomTier.count * (24 * 60 * 60 * 1000);
-                break;
-            case 'Month':
-                const daysInMonth: number = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-                convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 24 * daysInMonth * 1000);
-                break
-            case 'Year':
-                const daysInYear: number = (date.getFullYear() % 400 === 0 || (date.getFullYear() % 100 !== 0 && date.getFullYear() % 4 === 0)) ? 366 : 365;
-                convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 24 * daysInYear * 1000);
-                break
+        case 'Minutes':
+            convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 1000);
+            break;
+        case 'Hour':
+            convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 1000);
+            break;
+        case 'Week':
+            convertedMilliSeconds = zoomLevel.bottomTier.count * (7 * 24 * 60 * 60 * 1000);
+            break;
+        case 'Day':
+            convertedMilliSeconds = zoomLevel.bottomTier.count * (24 * 60 * 60 * 1000);
+            break;
+        case 'Month':
+        {
+            const daysInMonth: number = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 24 * daysInMonth * 1000);
+            break;
+        }
+        case 'Year':
+        {
+            const daysInYear: number = (date.getFullYear() % 400 === 0 ||
+            (date.getFullYear() % 100 !== 0 && date.getFullYear() % 4 === 0)) ? 366 : 365;
+            convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 24 * daysInYear * 1000);
+            break;
+        }
         }
         return convertedMilliSeconds;
     }
 
-    private roundOffDateToZoom(date: Date, isStartDate: boolean, perDayWidth: number, tierMode: string, zoomingLevel: ZoomTimelineSettings): void {
+    private roundOffDateToZoom(date: Date, isStartDate: boolean, perDayWidth: number,
+                               tierMode: string, zoomingLevel: ZoomTimelineSettings): void {
         const roundOffTime: number = this.bottomTierCellWidthCalc(tierMode, zoomingLevel, date);
         if (isStartDate) {
             date.setTime(date.getTime() - roundOffTime);
@@ -454,7 +468,7 @@ export class Timeline {
             this.customTimelineSettings.weekStartDay <= 6 ? this.customTimelineSettings.weekStartDay : 0;
         if (!(this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps &&
             this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
-           this.checkCurrentZoomingLevel();
+            this.checkCurrentZoomingLevel();
         }
     }
     /**
@@ -486,8 +500,8 @@ export class Timeline {
         const unit: string = this.customTimelineSettings.bottomTier.unit !== 'None' ?
             this.customTimelineSettings.bottomTier.unit : this.customTimelineSettings.topTier.unit;
         const tier: string = this.customTimelineSettings.bottomTier.unit !== 'None' ?
-            "bottomTier" : "topTier";
-        const zoomLevel: number = this.getCurrentZoomingLevel(unit, count,tier);
+            'bottomTier' : 'topTier';
+        const zoomLevel: number = this.getCurrentZoomingLevel(unit, count, tier);
         if (this.parent.toolbarModule) {
             if (zoomLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
                 this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false);
@@ -502,10 +516,11 @@ export class Timeline {
     /**
      * @param {string} unit .
      * @param {number} count .
+     * @param {string} tier .
      * @returns {number} .
      * @private
      */
-    private getCurrentZoomingLevel(unit: string, count: number,tier?:string): number {
+    private getCurrentZoomingLevel(unit: string, count: number, tier?: string): number {
         let level: number;
         let currentZoomCollection: ZoomTimelineSettings;
         let checkSameCountLevels: ZoomTimelineSettings[];
@@ -515,7 +530,7 @@ export class Timeline {
             this.parent.zoomingLevels = this.parent.getZoomingLevels();
         }
         let sameUnitLevels: ZoomTimelineSettings[] = this.parent.zoomingLevels.filter((tempLevel: ZoomTimelineSettings) => {
-            if (tier === "bottomTier") {
+            if (tier === 'bottomTier') {
                 return tempLevel.bottomTier.unit === unit;
             } else {
                 return tempLevel.topTier.unit === unit;
@@ -524,7 +539,7 @@ export class Timeline {
         if (sameUnitLevels.length === 0) {
             const closestUnit: string = this.getClosestUnit(unit, '', false);
             sameUnitLevels = this.parent.zoomingLevels.filter((tempLevel: ZoomTimelineSettings) => {
-                if (tier === "bottomTier") {
+                if (tier === 'bottomTier') {
                     return tempLevel.bottomTier.unit === closestUnit;
                 } else {
                     return tempLevel.topTier.unit === closestUnit;
@@ -532,7 +547,7 @@ export class Timeline {
             });
         }
         const sortedUnitLevels: ZoomTimelineSettings[] = sameUnitLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings)  =>  {
-            if (tier === "bottomTier") {
+            if (tier === 'bottomTier') {
                 return (!a.bottomTier.count || !b.bottomTier.count) ? 0 : ((a.bottomTier.count < b.bottomTier.count) ? 1 : -1);
             } else {
                 return (!a.topTier.count || !b.topTier.count) ? 0 : ((a.topTier.count < b.topTier.count) ? 1 : -1);
@@ -550,7 +565,7 @@ export class Timeline {
             if (count >= firstValue[`${tier}`].count) {
                 currentZoomCollection = sortedUnitLevels[i as number];
                 checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
-                    if (tier === "bottomTier") {
+                    if (tier === 'bottomTier') {
                         return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
                     } else {
                         return tempLevel.topTier.count === currentZoomCollection.topTier.count;
@@ -565,7 +580,7 @@ export class Timeline {
             } else if (count < firstValue[`${tier}`].count && count > secondValue[`${tier}`].count) {
                 currentZoomCollection = sortedUnitLevels[i + 1];
                 checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
-                    if (tier === "bottomTier") {
+                    if (tier === 'bottomTier') {
                         return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
                     } else {
                         return tempLevel.topTier.count === currentZoomCollection.topTier.count;
@@ -675,22 +690,25 @@ export class Timeline {
         }
     }
 
-    private dateByLeftValue(left: number,isMilestone?:boolean,property?:ITaskData): Date {
+    private dateByLeftValue(left: number, isMilestone?: boolean, property?: ITaskData): Date {
         let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
         pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
         /* To render the milestone in proper date while editing */
         if (isMilestone && !isNullOrUndefined(property.predecessorsName) && property.predecessorsName !== '') {
-            pStartDate.setDate(pStartDate.getDate()-1);
-            this.parent.dateValidationModule.setTime(this.parent.defaultEndTime,pStartDate);
-            pStartDate = this.parent.dateValidationModule.checkStartDate(pStartDate,property,true)
+            pStartDate.setDate(pStartDate.getDate() - 1);
+            const dayEndTime: number = this.parent['getCurrentDayEndTime'](property.isAutoSchedule ? property.autoEndDate : property.endDate);
+            this.parent.dateValidationModule.setTime(dayEndTime, pStartDate);
+            pStartDate = this.parent.dateValidationModule.checkStartDate(pStartDate, property, true);
         }
         const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.topTier :
             this.parent.timelineModule.bottomTier;
         if (tierMode !== 'Hour' && tierMode !== 'Minutes') {
-            if (this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && !this.parent.isInDst(pStartDate)) {
+            if (this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) &&
+            !this.parent.isInDst(pStartDate)) {
                 pStartDate.setTime(pStartDate.getTime() + (60 * 60 * 1000));
-            } else if (!this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && this.parent.isInDst(pStartDate)) {
+            } else if (!this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) &&
+            this.parent.isInDst(pStartDate)) {
                 pStartDate.setTime(pStartDate.getTime() - (60 * 60 * 1000));
             }
         }
@@ -703,7 +721,7 @@ export class Timeline {
      * @returns {void}
      * @private
      */
-    public createTimelineSeries(): void {           
+    public createTimelineSeries(): void {
         let tr: Element;
         let td: Element;
         let div: Element;
@@ -715,16 +733,21 @@ export class Timeline {
         let tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
         this.topTierCollection = [];
         this.bottomTierCollection = [];
-        if (this.restrictRender == true){        
+        if (this.restrictRender === true) {
             this.updateTimelineHeaderHeight();
-            this.wholeTimelineWidth = this.calculateWidthBetweenTwoDate(tier, this.parent.timelineModule.timelineStartDate, this.parent.timelineModule.timelineEndDate);
+            this.wholeTimelineWidth = this.calculateWidthBetweenTwoDate(tier, this.parent.timelineModule.timelineStartDate,
+                                                                        this.parent.timelineModule.timelineEndDate);
         }
         if (this.parent.enableTimelineVirtualization && (this.wholeTimelineWidth > this.parent.element.offsetWidth * 3)) {
             for (let count: number = 0; count < loopCount; count++) {
                 table = createElement('table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
                 table.setAttribute('role', 'none');
                 thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
-                tr = createElement('tr', { innerHTML: this.createTimelineTemplate(tier) });
+                const trTemplate: HTMLElement = this.createTimelineTemplate(tier);
+                tr = createElement('tr');
+                Array.from(trTemplate.childNodes).forEach((child: HTMLElement) => {
+                    tr.appendChild(child);
+                });
                 td = createElement('td');
                 div = createElement('div', { styles: 'width: 20px' });
                 virtualTableDiv = createElement('div', { className: cls.virtualTable });
@@ -740,8 +763,8 @@ export class Timeline {
                 tr = null;
                 this.restrictRender = false;
             }
-            if (this.parent.height === "Auto" || this.parent.timelineModule.isSingleTier) {
-                var timelineContainer = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
+            if (this.parent.height === 'Auto' || this.parent.timelineModule.isSingleTier) {
+                const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
                 this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
                 if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
                     this.parent.treeGrid.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
@@ -754,7 +777,11 @@ export class Timeline {
                 table = createElement('table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
                 table.setAttribute('role', 'none');
                 thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
-                tr = createElement('tr', { innerHTML: this.createTimelineTemplate(tier) });
+                const trTemplate: HTMLElement = this.createTimelineTemplate(tier);
+                tr = createElement('tr');
+                Array.from(trTemplate.childNodes).forEach((child: HTMLElement) => {
+                    tr.appendChild(child);
+                });
                 td = createElement('td');
                 div = createElement('div', { styles: 'width: 20px' });
                 td.appendChild(div);
@@ -765,8 +792,8 @@ export class Timeline {
                 tier = 'bottomTier';
                 tr = null;
             }
-            if (this.parent.height === "Auto" || this.parent.timelineModule.isSingleTier) {
-                var timelineContainer = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
+            if (this.parent.height === 'Auto' || this.parent.timelineModule.isSingleTier) {
+                const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
                 this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
                 if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
                     this.parent.treeGrid.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
@@ -777,38 +804,40 @@ export class Timeline {
 
     public timelineVirtualizationStyles(): void {
         let translateXValue: number = 0;
-        let translateYValue: number = 0;
-        let trackWidth: number = this.wholeTimelineWidth;
+        const translateYValue: number = 0;
+        const trackWidth: number = this.wholeTimelineWidth;
         if (this.parent.enableTimelineVirtualization) {
             //e-content styles updating
-            translateXValue = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(this.parent.ganttChartModule.scrollObject.element.scrollLeft)
-                && this.parent.ganttChartModule.scrollObject.element.scrollLeft != 0) ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : 0;
+            translateXValue = (this.parent.enableTimelineVirtualization &&
+                !isNullOrUndefined(this.parent.ganttChartModule.scrollObject.element.scrollLeft)
+                && this.parent.ganttChartModule.scrollObject.element.scrollLeft !== 0) ?
+                this.parent.ganttChartModule.scrollObject.getTimelineLeft() : 0;
             if (this.parent.enableRtl) {
-               translateXValue = -(translateXValue);
+                translateXValue = -(translateXValue);
             }
-            let contentVirtualTable: HTMLElement = this.parent.element.querySelectorAll(".e-chart-scroll-container")[0].querySelector(".e-virtualtable");
+            const contentVirtualTable: HTMLElement = this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtable');
             contentVirtualTable.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
-            let contentVirtualTrack: HTMLElement = this.parent.element.querySelectorAll(".e-chart-scroll-container")[0].querySelector(".e-virtualtrack");
-            contentVirtualTrack.style.position = "relative";
+            const contentVirtualTrack: HTMLElement = this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack');
+            contentVirtualTrack.style.position = 'relative';
             contentVirtualTrack.style.width = trackWidth + 'px';
             //timeline styles updating
             if (this.parent.ganttChartModule.scrollObject['isSetScrollLeft']) {
-                let virtualTableStylesT: HTMLElement = this.parent.element.querySelectorAll(".e-timeline-header-table-container")[0].querySelector(".e-virtualtable");
-                let virtualTableStylesB: HTMLElement = this.parent.element.querySelectorAll(".e-timeline-header-table-container")[1].querySelector(".e-virtualtable");
+                const virtualTableStylesT: HTMLElement = this.parent.element.querySelectorAll('.e-timeline-header-table-container')[0].querySelector('.e-virtualtable');
+                const virtualTableStylesB: HTMLElement = this.parent.element.querySelectorAll('.e-timeline-header-table-container')[1].querySelector('.e-virtualtable');
                 virtualTableStylesT.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
                 virtualTableStylesB.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
             }
-            let virtualTrackStylesT: HTMLElement = this.parent.element.querySelectorAll(".e-timeline-header-table-container")[0].querySelector(".e-virtualtrack");
-            let virtualTrackStylesB: HTMLElement = this.parent.element.querySelectorAll(".e-timeline-header-table-container")[1].querySelector(".e-virtualtrack");
-            virtualTrackStylesT.style.position = "relative";
-            virtualTrackStylesB.style.position = "relative";
+            const virtualTrackStylesT: HTMLElement = this.parent.element.querySelectorAll('.e-timeline-header-table-container')[0].querySelector('.e-virtualtrack');
+            const virtualTrackStylesB: HTMLElement = this.parent.element.querySelectorAll('.e-timeline-header-table-container')[1].querySelector('.e-virtualtrack');
+            virtualTrackStylesT.style.position = 'relative';
+            virtualTrackStylesB.style.position = 'relative';
             virtualTrackStylesT.style.width = trackWidth + 'px';
             virtualTrackStylesB.style.width = trackWidth + 'px';
             //dependency viewer styles updating
-            let dependencyViewer: Element = this.parent.connectorLineModule.svgObject;
+            const dependencyViewer: Element = this.parent.connectorLineModule.svgObject;
             dependencyViewer['style'].width = trackWidth + 'px';
             // timeline header container width updating
-            let timelineHeader: HTMLElement = this.parent.element.querySelector('.' + cls.timelineHeaderContainer);
+            const timelineHeader: HTMLElement = this.parent.element.querySelector('.' + cls.timelineHeaderContainer);
             timelineHeader['style'].width = 'calc(100% - ' + 17 + 'px)';
             if (this.parent.timelineModule.isZooming || this.parent.timelineModule.isZoomToFit) {
                 this.parent.ganttChartModule.scrollElement.scrollLeft = 0;
@@ -1025,7 +1054,8 @@ export class Timeline {
                 dateString = dateString.slice(1);
             } else {
                 if (this.parent.locale === 'ar') {
-                    dateString = dateString;
+                    const dateStringValue: string = dateString;
+                    dateString = dateStringValue;
                 }else{
                     dateString = dateString.slice(0, 1);
                 }
@@ -1059,30 +1089,33 @@ export class Timeline {
      * @returns {string} .
      * @private
      */
-    private createTimelineTemplate(tier: string): string {
-        var isFirstCell = false;
+    private createTimelineTemplate(tier: string): HTMLElement {
+        let isFirstCell: boolean = false;
         const parent: Gantt = this.parent;
-        let parentTh: string = '';
-        let parentTr: string = '';
+        const parentTh: HTMLElement = createElement('th');
+        let parentTr: HTMLElement;
         const mode: string = tier === 'topTier' ?
-            parent.timelineModule.customTimelineSettings.topTier.unit : parent.timelineModule.customTimelineSettings.bottomTier.unit;
+            parent.timelineModule.customTimelineSettings.topTier.unit :
+            parent.timelineModule.customTimelineSettings.bottomTier.unit;
         const count: number = tier === 'topTier' ? parent.timelineModule.customTimelineSettings.topTier.count :
             parent.timelineModule.customTimelineSettings.bottomTier.count;
         let increment: number;
         let newTime: number;
-        let leftValueForStartDate: number = (this.parent.enableTimelineVirtualization && this.parent.ganttChartModule.scrollObject.element.scrollLeft != 0)
+        const leftValueForStartDate: number = (this.parent.enableTimelineVirtualization &&
+            this.parent.ganttChartModule.scrollObject.element.scrollLeft !== 0)
             ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : null;
-        let startDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
-            ? new Date((this.dateByLeftValue(leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate.toString());
+        const startDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
+            ? new Date((this.dateByLeftValue(leftValueForStartDate)).toString()) :
+            new Date(this.parent.timelineModule.timelineStartDate.toString());
         const endDate: Date = new Date(this.timelineRoundOffEndDate.toString());
         const scheduleDateCollection: Date[] = [];
         let width: number = 0;
-        let WidthForVirtualTable: number = this.parent.element.offsetWidth * 3;
+        const WidthForVirtualTable: number = this.parent.element.offsetWidth * 3;
         do {
             // PDf export collection
             const timelineCell: TimelineFormat = {};
             timelineCell.startDate = new Date(startDate.getTime());
-            if ((mode === 'Month' || mode=='Hour') && tier === 'bottomTier' && (count != 1) && scheduleDateCollection.length === 0) {
+            if ((mode === 'Month' || mode === 'Hour') && tier === 'bottomTier' && (count !== 1) && scheduleDateCollection.length === 0) {
                 isFirstCell = true;
             }
             parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell, isFirstCell);
@@ -1101,17 +1134,17 @@ export class Timeline {
             }
             if (startDate.getHours() === 8 && count === 12 && tier === 'bottomTier' &&
                     this.parent.timelineModule.customTimelineSettings.bottomTier.unit === 'Hour') {
-                    startDate.setTime(startDate.getTime() - (1000 * 60 * 60 * 8));
+                startDate.setTime(startDate.getTime() - (1000 * 60 * 60 * 8));
             }
             if (startDate >= endDate) {
                 /* eslint-disable-next-line */
                 parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
             }
-            parentTh = parentTh + parentTr;
+            parentTh.appendChild(parentTr);
             const tierCollection: TimelineFormat[] = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
             timelineCell.endDate = new Date(startDate.getTime());
             if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.enableTimelineVirtualization) {
-                if(tier == 'topTier') {
+                if (tier === 'topTier') {
                     this.pdfExportTopTierCollection.push(timelineCell);
                 }
                 else {
@@ -1119,30 +1152,34 @@ export class Timeline {
                 }
             }
             else {
-                 tierCollection.push(timelineCell);
+                tierCollection.push(timelineCell);
             }
             width += timelineCell.width;
             this.weekendEndDate = timelineCell.endDate >= endDate ? endDate : timelineCell.endDate;
         }
-        while ((this.parent.enableTimelineVirtualization && (!this.parent.pdfExportModule || this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport)) ? (width < WidthForVirtualTable) && (startDate < endDate) : (startDate < endDate));
+        while ((this.parent.enableTimelineVirtualization && (!this.parent.pdfExportModule ||
+            this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport)) ? (width < WidthForVirtualTable) &&
+            (startDate < endDate) : (startDate < endDate));
         return parentTh;
     }
-   
-    public updateTimelineAfterZooming(endDate: Date, resized: boolean) {
+
+    public updateTimelineAfterZooming(endDate: Date, resized: boolean): void {
         let timeDiff: number;
         let perDayWidth: number;
         let totWidth: number;
-        let contentElement: HTMLElement = document.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
+        const contentElement: HTMLElement = document.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
         if (!isNullOrUndefined(contentElement)) {
-            let contentWidth: number = contentElement['offsetWidth'];
-            let contentHeight: number = contentElement['offsetHeight'];
-            let scrollHeight: number = document.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
+            const contentWidth: number = contentElement['offsetWidth'];
+            const contentHeight: number = contentElement['offsetHeight'];
+            const scrollHeight: number = document.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
             timeDiff = Math.abs(this.timelineStartDate.getTime() - endDate.getTime());
             timeDiff = timeDiff / (1000 * 3600 * 24);
             if (this.bottomTier === 'None') {
-                perDayWidth = this.getPerDayWidth(this.customTimelineSettings.timelineUnitSize, this.customTimelineSettings.topTier.count, this.topTier);
+                perDayWidth = this.getPerDayWidth(this.customTimelineSettings.timelineUnitSize,
+                                                  this.customTimelineSettings.topTier.count, this.topTier);
             } else {
-                perDayWidth = this.getPerDayWidth(this.customTimelineSettings.timelineUnitSize, this.customTimelineSettings.bottomTier.count, this.bottomTier);
+                perDayWidth = this.getPerDayWidth(this.customTimelineSettings.timelineUnitSize,
+                                                  this.customTimelineSettings.bottomTier.count, this.bottomTier);
             }
             if (contentHeight < scrollHeight) {
                 totWidth = (perDayWidth * timeDiff) + 17;
@@ -1155,7 +1192,7 @@ export class Timeline {
                 endDate.setDate(endDate.getDate() + widthDiff);
                 this.parent.timelineModule.timelineEndDate = endDate;
                 if (resized) {
-                    this.parent.updateProjectDates(this.timelineStartDate, this.timelineEndDate, this.parent.isTimelineRoundOff)
+                    this.parent.updateProjectDates(this.timelineStartDate, this.timelineEndDate, this.parent.isTimelineRoundOff);
                 }
             }
         }
@@ -1182,6 +1219,7 @@ export class Timeline {
      * @param {Date} startDate .
      * @param {number} count .
      * @param {string} mode .
+     * @param {boolean} isFirstCell .
      * @returns {number} .
      * @private
      */
@@ -1219,10 +1257,11 @@ export class Timeline {
             increment = this.checkDate(firstDay, lastDay, increment, count, mode);
             break;
         case 'Hour':
+        {
             lastDay.setMinutes(60);
             lastDay.setSeconds(0);
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * (count - 1));
-            let date = new Date(lastDay);
+            const date: Date = new Date(lastDay);
             date.setTime(date.getTime() + increment);
             if (isFirstCell && count === 12) {
                 if (firstDay.getHours() !== 0) {
@@ -1238,6 +1277,7 @@ export class Timeline {
             }
             increment = this.checkDate(firstDay, lastDay, increment, count, mode);
             break;
+        }
         case 'Minutes':
             lastDay.setSeconds(60);
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * (count - 1));
@@ -1248,10 +1288,10 @@ export class Timeline {
     }
 
     private checkDate(firstDay: Date, lastDay: Date, increment: number, count: number, mode: string): number {
-        var date = new Date(firstDay.getTime());
+        const date: Date = new Date(firstDay.getTime());
         date.setTime(date.getTime() + increment);
-        if (mode === "Day" && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
-            var diffCount = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24);
+        if (mode === 'Day' && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24)) !== count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
+            const diffCount: number = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24);
             if (!this.parent.isInDst(date)) {
                 increment += (1000 * 60 * 60 * diffCount);
             }
@@ -1259,8 +1299,8 @@ export class Timeline {
                 increment -= (1000 * 60 * 60 * diffCount);
             }
         }
-        else if (mode === "Hour" && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
-            var diffCount = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60);
+        else if (mode === 'Hour' && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60)) !== count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
+            const diffCount: number = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60);
             if (!this.parent.isInDst(date)) {
                 increment += (1000 * 60 * 60 * diffCount);
             }
@@ -1268,8 +1308,8 @@ export class Timeline {
                 increment -= (1000 * 60 * 60 * diffCount);
             }
         }
-        else if (mode === "Minutes" && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
-            var diffCount = count - (date.getTime() - lastDay.getTime()) / (1000 * 60);
+        else if (mode === 'Minutes' && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60)) !== count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
+            const diffCount: number = count - (date.getTime() - lastDay.getTime()) / (1000 * 60);
             if (!this.parent.isInDst(date)) {
                 increment += (1000 * 60 * 60 * diffCount);
             }
@@ -1294,9 +1334,9 @@ export class Timeline {
             this.parent.nonWorkingDayIndex.indexOf(day.getDay()) !== -1;
     }
 
-    private calculateQuarterEndDate(date: Date, count: number) {
+    private calculateQuarterEndDate(date: Date, count: number): Date {
         const month: number = date.getMonth();
-        if(count === 3){
+        if (count === 3) {
             if (month >= 0 && month <= 2) {
                 return new Date(date.getFullYear(), 3, 1);
             } else if (month >= 3 && month <= 5) {
@@ -1310,7 +1350,7 @@ export class Timeline {
         else{
             if (month >= 0 && month <= 5) {
                 return new Date(date.getFullYear(), 6, 1);
-            }else {
+            } else {
                 return new Date(date.getFullYear() + 1, 0, 1);
             }
         }
@@ -1329,9 +1369,13 @@ export class Timeline {
      * @private
      */
     /* eslint-disable-next-line */
-    private getHeaterTemplateString(scheduleWeeks: Date, mode: string, tier: string, isLast: boolean, count?: number, timelineCell?: TimelineFormat, isFirstCell?: boolean): string {
+    private getHeaterTemplateString(scheduleWeeks: Date, mode: string, tier: string, isLast: boolean, count?: number, timelineCell?: TimelineFormat, isFirstCell?: boolean): HTMLElement{
         let parentTr: string = '';
-        let td: string = '';
+        let template : NodeList;
+        let timelineTemplate: Function = null;
+        if (!isNullOrUndefined(this.parent.timelineTemplate)) {
+            timelineTemplate = this.parent.chartRowsModule.templateCompiler(this.parent.timelineTemplate);
+        }
         const format: string = tier === 'topTier' ?
             this.parent.timelineModule.customTimelineSettings.topTier.format :
             this.parent.timelineModule.customTimelineSettings.bottomTier.format;
@@ -1343,7 +1387,7 @@ export class Timeline {
             this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
         thWidth = (this.getIncrement(scheduleWeeks, count, mode, isFirstCell) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
-        const newDate: Date = new Date(scheduleWeeks.getTime() + this.getIncrement(scheduleWeeks, count, mode))
+        const newDate: Date = new Date(scheduleWeeks.getTime() + this.getIncrement(scheduleWeeks, count, mode));
         if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks)) ||
             (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks))) {
             let temp: number;
@@ -1356,8 +1400,9 @@ export class Timeline {
             thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
         }
         const cellWidth: number = thWidth;
-        thWidth = isLast || (isFirstCell && mode !=='Hour') ? isLast ? this.calculateWidthBetweenTwoDate(
-            mode, scheduleWeeks, this.timelineRoundOffEndDate) : this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks, count))
+        thWidth = isLast || (isFirstCell && mode !== 'Hour') ? isLast ? this.calculateWidthBetweenTwoDate(
+            mode, scheduleWeeks, this.timelineRoundOffEndDate) :
+            this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks, count))
             : thWidth;
         const isWeekendCell: boolean = this.isWeekendHeaderCell(mode, tier, scheduleWeeks);
         const textClassName: string = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
@@ -1367,18 +1412,40 @@ export class Timeline {
         }
         const value: string = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter));
-        td += this.parent.timelineModule.isSingleTier ?
-            '<th class="' + cls.timelineSingleHeaderCell + ' ' : '<th class="' + cls.timelineTopHeaderCell;
-        td += isWeekendCell ? ' ' + cls.weekendHeaderCell : '';
-        td += '" tabindex="-1" aria-label= "' + this.parent.localeObj.getConstant('timelineCell') + ' ' + date;
-        td += '" style="width:' + thWidth + 'px;';
-        td += isWeekendCell && this.customTimelineSettings.weekendBackground ?
-            'background-color:' + this.customTimelineSettings.weekendBackground + ';' : '';
-        td += '"><div class="' + cls.timelineHeaderCellLabel + textClassName + '" style="width:' +
-            (thWidth - 1) + 'px;' + (this.parent.timelineSettings.showTooltip ? '"title="' + date : '');
-        td += '">' + value + '</div>';
-        parentTr += td;
-        parentTr += '</th>';
+        if (!isNullOrUndefined(timelineTemplate)) {
+            const args: Object = {
+                date: date,
+                tier: tier,
+                value: value
+            };
+            template = timelineTemplate(extend({}, args), this.parent, 'TimelineTemplate',
+                                        this.parent.chartRowsModule.getTemplateID('TimelineTemplate'), false, undefined, null, this.parent['root']);
+        }
+        const className: string = this.parent.timelineModule.isSingleTier ? cls.timelineSingleHeaderCell : cls.timelineTopHeaderCell;
+        const weekendClass: string = isWeekendCell ? ' ' + cls.weekendHeaderCell : '';
+        const th: HTMLElement = createElement('th', {
+            className: `${className}${weekendClass}`,
+            styles: `width:${thWidth}px;${isWeekendCell && this.customTimelineSettings.weekendBackground ? 'background-color:' + this.customTimelineSettings.weekendBackground + ';' : ''}`
+        });
+        th.tabIndex = -1;
+        th.setAttribute('aria-label', `${this.parent.localeObj.getConstant('timelineCell')} ${date}`);
+        const div: HTMLElement = createElement('div', {
+            className: `${cls.timelineHeaderCellLabel}${textClassName}`,
+            styles: `width:${thWidth - 1}px;`
+        });
+        div.title = this.parent.timelineSettings.showTooltip ? date : '';
+        div.textContent = value;
+        if (this.parent.isReact && !isNullOrUndefined(template) && template.length > 0) {
+            template[0]['style'].width = '100%';
+            template[0]['style'].height = '100%';
+        }
+        if (!isNullOrUndefined(timelineTemplate) && !isNullOrUndefined(template) && template.length > 0) {
+            append(template, th);
+        } else {
+            th.append(div);
+        }
+        parentTr += th.outerHTML;
+
         if ((this.isSingleTier || tier === 'topTier') && !isLast) {
             this.totalTimelineWidth = this.totalTimelineWidth + thWidth;
         } else if ((this.isSingleTier || tier === 'topTier') && isLast) {
@@ -1388,7 +1455,7 @@ export class Timeline {
         timelineCell.value = value;
         timelineCell.isWeekend = isWeekendCell;
         timelineCell.width = thWidth;
-        return parentTr;
+        return th;
     }
 
     /**
@@ -1404,7 +1471,7 @@ export class Timeline {
         const sDate: Date = new Date(scheduleWeeks.getTime());
         const eDate: Date = new Date(endDate.getTime());
         this.parent.dateValidationModule['updateDateWithTimeZone'](sDate, eDate);
-        let timeDifference: number = (eDate.getTime() - sDate.getTime());
+        const timeDifference: number = (eDate.getTime() - sDate.getTime());
         const balanceDay: number = (timeDifference / (1000 * 60 * 60 * 24));
         return balanceDay * this.parent.perDayWidth;
     }
@@ -1484,7 +1551,8 @@ export class Timeline {
                 startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
                 endDate = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
             } else if (tierMode === 'Week') {
-                const dayIndex: number = !isNullOrUndefined(this.customTimelineSettings.weekStartDay) ? this.parent.timelineModule.customTimelineSettings.weekStartDay : 0;
+                const dayIndex: number = !isNullOrUndefined(this.customTimelineSettings.weekStartDay) ?
+                    this.parent.timelineModule.customTimelineSettings.weekStartDay : 0;
                 const roundOffStartDate: number = startDate.getDay() < dayIndex ?
                     (startDate.getDate()) - (7 - dayIndex + startDate.getDay()) :
                     (startDate.getDate()) - startDate.getDay() + dayIndex;
@@ -1622,14 +1690,12 @@ export class Timeline {
      * @returns {void} .
      * @private
      */
-    public updateTimeLineOnEditing(tempArray: IGanttData[][], data: any): void {
-        let action:any = data.action
+    public updateTimeLineOnEditing(tempArray: IGanttData[][], action: string): void {
         if (tempArray[0].length >= 1)
         {
             for (let i: number = 0; i < tempArray.length; i++)
             {
-                /* eslint-disable-next-line */
-                const temp: any = tempArray[i];
+                const temp: IGanttData[] = tempArray[parseInt(i.toString(), 10)];
                 const filteredStartDateRecord: IGanttData[] = temp.filter(
                     (pdc: IGanttData) => { return !isNullOrUndefined(pdc.ganttProperties.startDate); });
                 const filteredEndDateRecord: IGanttData[] = temp.filter(
@@ -1647,27 +1713,19 @@ export class Timeline {
                 const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
-                let taskbarModule: TaskbarEdit = this.parent.editModule.taskbarEditModule;
-                let validateDate:any;
-                if (data.data && data.data.ganttProperties) {
-                    validateDate = data.data.ganttProperties.startDate ? 
-                                        data.data.ganttProperties.startDate : 
-                                        data.data.ganttProperties.endDate;
-                }
-                let validLeft = maxStartLeft ? maxStartLeft : maxEndLeft
-                let validStartorEndLeft = validStartLeft ? validStartLeft : validEndLeft
-                let minOrMaxDate = minStartDate ? minStartDate :maxEndDate
-                if (!isNullOrUndefined(validLeft) && (((!isNullOrUndefined(taskbarModule)) && (!isNullOrUndefined(taskbarModule.taskBarEditAction)
-                    && taskbarModule.taskBarEditAction !== 'ProgressResizing' &&
-                    taskbarModule.taskBarEditAction !== 'RightResizing' && taskbarModule.taskBarEditAction !== 'LeftResizing')) || (((taskbarModule)
-                        && isNullOrUndefined(taskbarModule.taskBarEditAction)) && this.parent.timelineModule.timelineStartDate !== null &&
-                        validateDate && this.parent.timelineModule.timelineStartDate > validateDate)) && (validLeft < this.bottomTierCellWidth || validLeft <= validStartorEndLeft)) {
+                const taskbarModule: TaskbarEdit = this.parent.editModule.taskbarEditModule;
+                const startDate: number = filteredStartDateRecord.length > 0 ?
+                    new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')).setHours(0, 0, 0, 0) : null;
+                const timelineStartDate: number = new Date(this.timelineStartDate.getTime()).setHours(0, 0, 0, 0);
+                if (!isNullOrUndefined(maxStartLeft) && (((((!isNullOrUndefined(taskbarModule)) && ((taskbarModule.taskBarEditAction && taskbarModule.taskBarEditAction !== 'RightResizing') || isNullOrUndefined(taskbarModule.taskBarEditAction)))) &&
+                   (startDate <= timelineStartDate))) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
                     isChanged = 'prevTimeSpan';
-                    minStartDate = minOrMaxDate > this.timelineStartDate ? this.timelineStartDate : minOrMaxDate;
+                    minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
                 } else {
                     minStartDate = this.timelineStartDate;
                 }
-                if (!isNullOrUndefined(maxEndLeft) && (maxEndLeft >= ((this.parent.enableTimelineVirtualization ? this.wholeTimelineWidth : this.totalTimelineWidth) - this.bottomTierCellWidth) ||
+                if (!isNullOrUndefined(maxEndLeft) && (maxEndLeft >= ((this.parent.enableTimelineVirtualization ?
+                    this.wholeTimelineWidth : this.totalTimelineWidth) - this.bottomTierCellWidth) ||
                     maxEndLeft > validEndLeft)) {
                     isChanged = isChanged === 'prevTimeSpan' ? 'both' : 'nextTimeSpan';
                     maxEndDate = maxEndDate < this.timelineEndDate ? this.timelineEndDate : maxEndDate;
@@ -1718,17 +1776,18 @@ export class Timeline {
                 this.parent.ganttChartModule.updateScrollLeft(0);
                 this.parent.timelineModule.isZoomToFit = false;
             } else if (type === 'nextTimeSpan' && isFrom === 'publicMethod') {
-                this.parent.ganttChartModule.updateScrollLeft(this.parent.enableTimelineVirtualization? this.wholeTimelineWidth : this.totalTimelineWidth);
+                this.parent.ganttChartModule.updateScrollLeft(this.parent.enableTimelineVirtualization ?
+                    this.wholeTimelineWidth : this.totalTimelineWidth);
                 this.parent.timelineModule.isZoomToFit = false;
             } else if (type === 'nextTimeSpan' && isFrom === 'TaskbarEditing') {
-                let currentScrollLeft: number = document.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
+                const currentScrollLeft: number = document.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
                 this.parent.element.querySelector('.e-timeline-header-container').scrollLeft = currentScrollLeft;
                 this.parent.timelineModule.isZoomToFit = false;
             }
-            if (isFrom === 'TaskbarEditing' && this.parent.enableTimelineVirtualization && (this.wholeTimelineWidth > this.parent.element.offsetWidth * 3  || (isNullOrUndefined(this.parent.projectStartDate) && isNullOrUndefined(this.parent.projectEndDate)) ) ) {
+            if (isFrom === 'TaskbarEditing' && this.parent.enableTimelineVirtualization && (this.wholeTimelineWidth > this.parent.element.offsetWidth * 3  || (isNullOrUndefined(this.parent.projectStartDate) && isNullOrUndefined(this.parent.projectEndDate)))) {
                 this.parent.ganttChartModule.scrollObject.setScrollLeft(previousScrollLeft);
                 this.parent.ganttChartModule.scrollObject.updateContent();
-             }
+            }
             this.parent.timelineModule.timeSpanActionEvent('actionComplete', type, isFrom);
         } else {
             this.parent.cloneProjectStartDate = projectStartDate;

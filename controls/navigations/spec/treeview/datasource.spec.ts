@@ -57,6 +57,59 @@ export let hierarchicalData: any = [
     { id: 30, text: "Games" }
 ];
 
+export const hierarchicalDataWithSelectable: { [key: string]: Object }[] = [
+    {
+        nodeId: '01', selectable: false, nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/', nodeImage1: 'base/spec/images/Shooting.png',
+        nodeChild: [
+            { nodeId: '01-01', nodeText: 'Gouttes.mp3', nodeIcon: 'file' }
+        ]
+    },
+    {
+        nodeId: '02', selectable: true, nodeText: 'Videos', nodeIcon: 'folder', nodeHtmlAttr: nodeAttr, nodeImage1: 'base/spec/images/Shooting.png',
+        nodeChecked: true,
+        nodeChild: [
+            { nodeId: '02-01', nodeText: 'Naturals.mp4', nodeIcon: 'file' },
+            { nodeId: '02-02', nodeText: 'Wild.mpeg', nodeIcon: 'file' },
+        ]
+    },
+    {
+        nodeId: '03', selectable: true, nodeText: 'Documents', nodeIcon: 'folder',
+        nodeChild: [
+            { nodeId: '03-01', nodeText: 'Environment Pollution.docx', nodeIcon: 'file' },
+            { nodeId: '03-02', nodeText: 'Global Water, Sanitation, & Hygiene.docx', nodeIcon: 'file' },
+            { nodeId: '03-03', nodeText: 'Global Warming.ppt', nodeIcon: 'file' },
+            { nodeId: '03-04', nodeText: 'Social Network.pdf', nodeIcon: 'file' },
+            { nodeId: '03-05', nodeText: 'Youth Empowerment.pdf', nodeIcon: 'file' },
+        ]
+    },
+    {
+        nodeId: '04', selectable: true, nodeText: 'Pictures', nodeIcon: 'folder', nodeExpanded: true,
+        nodeChild: [
+            {
+                nodeId: '04-01', nodeText: 'Camera Roll', nodeIcon: 'folder', nodeExpanded: 'true',
+                nodeChild: [
+                    { nodeId: '04-01-01', nodeText: 'WIN_20160726_094117.JPG', nodeIcon: 'file' },
+                    { nodeId: '04-01-02', nodeText: 'WIN_20160726_094118.JPG', nodeIcon: 'file' },
+                    { nodeId: '04-01-03', nodeText: 'WIN_20160726_094119.JPG', nodeIcon: 'file' }
+                ]
+            },
+            { nodeId: '04-02', nodeText: 'Wind.jpg', nodeIcon: 'file' },
+            { nodeId: '04-03', nodeText: 'Stone.jpg', nodeIcon: 'file' },
+            { nodeId: '04-04', nodeText: 'Home.jpg', nodeIcon: 'file' },
+            { nodeId: '04-05', nodeText: 'Bridge.png', nodeIcon: 'file' }
+        ]
+    },
+    {
+        nodeId: '05', selectable: true, nodeText: 'Downloads', nodeIcon: 'folder', nodeExpanded1: true,
+        nodeChild: [
+            { nodeId: '05-01', nodeText: 'UI-Guide.pdf', nodeIcon: 'file' },
+            { nodeId: '05-02', nodeText: 'Tutorials.zip', nodeIcon: 'file' },
+            { nodeId: '05-03', nodeText: 'Game.exe', nodeIcon: 'file' },
+            { nodeId: '05-04', nodeText: 'TypeScript.7z', nodeIcon: 'file' },
+        ]
+    },
+];
+
 export let hierarchicalData1: { [key: string]: Object }[] = [
     {
         nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/', nodeImage1: 'base/spec/images/Shooting.png', nodeExpanded1: true,

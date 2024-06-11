@@ -8,12 +8,15 @@ import { InfiniteScroll } from '../../src/treegrid/actions/infinite-scroll';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { select } from '@syncfusion/ej2-base';
+import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { Freeze } from '../../src/treegrid/actions/freeze-column';
+import { Page } from '../../src/treegrid/actions/page';
 
 /**
  * TreeGrid Infinite Scroll spec
  */
 
-TreeGrid.Inject(InfiniteScroll, Edit, Toolbar, Filter, Sort);
+TreeGrid.Inject(InfiniteScroll, Edit, Toolbar, Filter, Sort, Freeze, Page);
 
 const virtualData: Object[] = [];
 /**
@@ -486,4 +489,204 @@ describe('TreeGrid Infinite Scroll', () => {
         });
     });
 
+});
+
+describe('Infinite scroll with logger', () => {
+    let treegrid: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor ,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                height: 400,
+                pageSettings: { pageSize: 50 },
+                treeColumnIndex: 1,
+                enableInfiniteScrolling: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
+                    { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
+                    { field: 'Duration', headerText: 'Duration', width: 110, textAlign: 'Right' },
+                    { field: 'Progress', headerText: 'Progress', width: 110 },
+                    { field: 'Priority', headerText: 'Priority', width: 130 }
+                ]
+            },
+            done
+        );
+    });
+    it('Mapping field missing', (done: Function) => {
+        expect(treegrid.parentIdMapping === null).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        treegrid['infiniteScrollModule']['destroy']();
+        destroy(treegrid);
+    });
+});
+
+describe('Infinite scrolling with freeze feature', () => {
+    let treegrid: TreeGrid;
+    let actionComplete: (e?: any) => void;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                frozenColumns:2,
+                infiniteScrollSettings: { enableCache: true },
+                treeColumnIndex: 1,
+                childMapping: 'Crew',
+                pageSettings: { pageSize: 30 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Below' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 317,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right', isPrimaryKey: true },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('Delete Row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'delete') {
+                expect(treegrid.grid.currentViewData[2]['TaskID']).toBe(4);
+                done();
+            }
+        };
+        treegrid.grid.actionComplete = actionComplete;
+        treegrid.selectRow(2);
+        (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_delete' } });
+    });
+    afterAll(() => {
+        treegrid['infiniteScrollModule']['destroy']();
+        destroy(treegrid);
+    });
+});
+
+describe('Add New Row with newRowPosition as Bottom', () => {
+    let treegrid: TreeGrid;
+    let actionComplete: (e?: any) => void;
+    let actionBegin: (e?: any) => void;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                childMapping: 'Crew',
+                treeColumnIndex: 1,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Bottom' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowFiltering: true,
+                allowSorting: true,
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 80, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 80, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 80, textAlign: 'Right' },
+                    { field: 'FIELD5', headerText: 'TMID', width: 80, textAlign: 'Right' },
+                    { field: 'FIELD6', headerText: 'TMID', width: 80, textAlign: 'Right' },
+                    { field: 'FIELD7', headerText: 'TMID', width: 80, textAlign: 'Right' },
+                    { field: 'FIELD8', headerText: 'TMID', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('Add New Row Begin', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'add') {
+                expect(treegrid.grid.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                expect(treegrid.grid.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(treegrid.grid.element.querySelectorAll('form').length).toBe(1);
+                done();
+            }
+        };
+        treegrid.grid.actionComplete = actionComplete;
+        (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_add' } });
+    });
+
+    it('Save New Row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(treegrid.grid.element.querySelectorAll('.e-normaledit').length).toBe(0);
+                expect(treegrid.grid.element.querySelectorAll('.e-gridform').length).toBe(0);
+                expect(treegrid.grid.element.querySelectorAll('form').length).toBe(0);
+                //updatated data cehck
+                expect((treegrid.grid.dataSource as any).length === 1001).toBe(true);
+                done();
+            }
+        };
+        actionBegin = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(treegrid.grid.isEdit).toBeTruthy();
+            }
+        };
+        treegrid.grid.actionComplete = actionComplete;
+        treegrid.grid.actionBegin = actionBegin;
+        (select('#' + treegrid.grid.element.id + 'TaskID', treegrid.grid.element) as any).value = '98765';
+        (select('#' + treegrid.grid.element.id + 'FIELD1', treegrid.grid.element) as any).value = 'New Row';
+        (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_update' } });
+    });
+    afterAll(() => {
+        destroy(treegrid);
+    });
+});
+
+describe('Add New Row with newRowPosition as Above', () => {
+    let treegrid: TreeGrid;
+    let actionComplete: (e?: any) => void;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                childMapping: 'Crew',
+                treeColumnIndex: 1,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Above' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowFiltering: true,
+                allowSorting: true,
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 80, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Save New Row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect((treegrid.grid.dataSource as any).length === 1001).toBe(true);
+                done();
+            }
+        };
+        treegrid.grid.actionComplete = actionComplete;
+        (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_add' } });
+        (select('#' + treegrid.grid.element.id + 'TaskID', treegrid.grid.element) as any).value = '98765';
+        (select('#' + treegrid.grid.element.id + 'FIELD1', treegrid.grid.element) as any).value = 'New Row';
+        (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_update' } });
+    });
+    afterAll(() => {
+        destroy(treegrid);
+    });
 });

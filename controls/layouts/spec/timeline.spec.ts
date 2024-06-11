@@ -1,13 +1,16 @@
-import { createElement, remove, isNullOrUndefined} from '@syncfusion/ej2-base';
-import { Timeline, TimelineItemModel, TimelineRenderingEventArgs } from '../src/timeline/index';
+import { Browser, createElement, remove, isNullOrUndefined} from '@syncfusion/ej2-base';
+import { Timeline, TimelineAlign, TimelineItemModel, TimelineOrientation, TimelineRenderingEventArgs } from '../src/timeline/index';
 import { getMemoryProfile, inMB, profile } from './common.spec';
+
+let timelineObj: Timeline;
+let ele: HTMLElement;
 
 describe('Timeline', () => {
     beforeAll(() => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -61,6 +64,32 @@ describe('Timeline', () => {
             expect(timelineElement.querySelectorAll('.e-dot').length).toBe(4);
         });
 
+        it('Dynamically change timeline items', () => {
+            timeline = new Timeline({
+                items: [{}, {}, {}, {}]
+            });
+            timeline.appendTo('#timeline');
+            expect(timelineElement.classList.contains('e-timeline')).toEqual(true);
+            expect(timelineElement.classList.contains('.e-vertical') != null).toEqual(true);
+            expect(timelineElement.querySelector('.e-timeline-items') != null).toEqual(true);
+            expect(timelineElement.querySelectorAll('.e-timeline-item').length).toBe(4);
+            let liElementArray: any = timelineElement.querySelectorAll('.e-dot');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-dot')).toEqual(true);
+            timeline.items = [
+                {dotCss: 'e-icons e-people'},
+                {dotCss: 'e-icons e-signature'},
+                {dotCss: 'e-icons e-location'},
+                {dotCss: 'e-icons e-cut'}
+            ];
+            timeline.dataBind();
+            expect(timelineElement.querySelectorAll('.e-timeline-item').length).toBe(4);
+            liElementArray = timelineElement.querySelectorAll('.e-dot');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-people')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-signature')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-location')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-cut')).toEqual(true);
+        });
+
         it('Custom Icon', () => {
             const customData: TimelineItemModel[] = [
                 {dotCss: 'e-icons e-people'},
@@ -80,6 +109,10 @@ describe('Timeline', () => {
             expect((liElementArray[1] as HTMLElement).classList.contains('e-signature')).toEqual(true);
             expect((liElementArray[2] as HTMLElement).classList.contains('e-location')).toEqual(true);
             expect((liElementArray[3] as HTMLElement).classList.contains('e-cut')).toEqual(true);
+            timeline.items[0].dotCss = 'e-icons e-copy';
+            timeline.dataBind();
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-people')).toEqual(false);
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-copy')).toEqual(true);
         });
 
         it('Get component name testing', () => {
@@ -162,6 +195,10 @@ describe('Timeline', () => {
             expect(timelineElement.querySelectorAll('.e-timeline-item').length).toBe(4);
             expect(timelineElement.querySelectorAll('.e-dot').length).toBe(4);
             expect(timelineElement.querySelector('.e-timeline-item').classList).toContain('testClass');
+            timeline.items[0].cssClass = 'newClass';
+            timeline.dataBind();
+            expect(timelineElement.querySelector('.e-timeline-item').classList.contains('testClass')).toBe(false);
+            expect(timelineElement.querySelector('.e-timeline-item').classList.contains('newClass')).toBe(true);
         });
 
         it('Item with disabled', () => {
@@ -182,6 +219,9 @@ describe('Timeline', () => {
             timeline.items[0].disabled = false;
             timeline.dataBind();
             expect(timelineElement.querySelector('.e-timeline-item').classList.contains('e-item-disabled')).toBe(false);
+            timeline.items[0].disabled = true;
+            timeline.dataBind();
+            expect(timelineElement.querySelector('.e-timeline-item').classList.contains('e-item-disabled')).toBe(true);
         });
 
         it('RTL', () => {
@@ -224,6 +264,9 @@ describe('Timeline', () => {
             expect((liElementArray[1] as HTMLElement).innerText).toEqual('Processing');
             expect((liElementArray[2] as HTMLElement).innerText).toEqual('Shipped');
             expect((liElementArray[3] as HTMLElement).innerText).toEqual('Delivered');
+            timeline.items[0].content = 'New Ordered';
+            timeline.dataBind();
+            expect((liElementArray[0] as HTMLElement).innerText).toEqual('New Ordered');
         });
 
         it('text content with reverse feature', () => {
@@ -376,6 +419,9 @@ describe('Timeline', () => {
             expect((liElementArray[1] as HTMLElement).innerText).toEqual('Processing');
             expect((liElementArray[2] as HTMLElement).innerText).toEqual('Shipped');
             expect((liElementArray[3] as HTMLElement).innerText).toEqual('Delivered');
+            timeline.items[0].oppositeContent = '09:00 am';
+            timeline.dataBind();
+            expect((liIconElementArray[0] as HTMLElement).innerText).toEqual('09:00 am');
         });
 
         it('timeline content as js renderer ', () => {
@@ -507,6 +553,32 @@ describe('Timeline', () => {
             expect((liElementArray[1] as HTMLElement).innerText).toEqual('Processing');
             expect((liElementArray[2] as HTMLElement).innerText).toEqual('Shipped');
             expect((liElementArray[3] as HTMLElement).innerText).toEqual('Delivered');
+        });
+
+        it('text content with opposite content with dynamic content position', () => {
+            const customData: TimelineItemModel[] = [
+                {oppositeContent: '09:30 am', content: 'Ordered'},
+                {oppositeContent: '10:30 am', content: 'Processing'},
+                {oppositeContent: '11:30 am', content: 'Shipped'},
+                {oppositeContent: '12:30 am', content: 'Delivered'}
+            ];
+            timeline = new Timeline({ items: customData, align: 'before' });
+            timeline.appendTo('#timeline');
+            expect(timelineElement.classList.contains('e-timeline')).toEqual(true);
+            expect(timelineElement.classList.contains('e-align-before')).toEqual(true);
+            expect(timelineElement.classList.contains('.e-vertical') != null).toEqual(true);
+            timeline.align = 'alternate';
+            timeline.dataBind();
+            expect(timelineElement.classList.contains('e-align-alternate')).toEqual(true);
+            expect(timelineElement.classList.contains('e-align-before')).toEqual(false);
+            timeline.align = 'alternatereverse';
+            timeline.dataBind();
+            expect(timelineElement.classList.contains('e-align-alternatereverse')).toEqual(true);
+            expect(timelineElement.classList.contains('e-align-alternate')).toEqual(false);
+            timeline.align = 'after';
+            timeline.dataBind();
+            expect(timelineElement.classList.contains('e-align-after')).toEqual(true);
+            expect(timelineElement.classList.contains('e-align-alternatereverse')).toEqual(false);
         });
 
         it('text content', () => {
@@ -840,4 +912,108 @@ describe('Timeline', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });
     });
+});
+
+describe("Null or undefined value testing", () => {
+    beforeAll(() => {
+        ele = createElement('div', { id: 'timeline' });
+        document.body.appendChild(ele);
+    });
+    beforeEach((): void => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
+    });
+    afterAll(() => {
+        document.body.innerHTML = "";
+    });
+    it('align', () => {
+        timelineObj = new Timeline({ align: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.align).toBe(null);
+        timelineObj.destroy();
+        timelineObj = new Timeline({ align: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.align).toBe(TimelineAlign.After);
+        timelineObj.destroy();
+    })
+    it('cssClass', () => {
+        timelineObj = new Timeline({ cssClass: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.cssClass).toBe(null);
+        timelineObj.destroy();
+        timelineObj = new Timeline({ cssClass: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.cssClass).toBe('');
+        timelineObj.destroy();
+    })
+    it('enablePersistence', () => {
+        timelineObj = new Timeline({ enablePersistence: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.enablePersistence).toBe(null);
+        timelineObj.destroy();
+        timelineObj = new Timeline({ enablePersistence: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.enablePersistence).toBe(false);
+        timelineObj.destroy();
+    })
+    it('enableRtl', () => {
+        timelineObj = new Timeline({ enableRtl: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.enableRtl).toBe(false);
+        timelineObj.destroy();
+        timelineObj = new Timeline({ enableRtl: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.enableRtl).toBe(false);
+        timelineObj.destroy();
+    })
+    it('items', () => {
+        timelineObj = new Timeline({ items: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.items).toEqual([]);
+        timelineObj.destroy();
+        timelineObj = new Timeline({ items: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.items).toEqual([]);
+        timelineObj.destroy();
+    })
+    it('locale', () => {
+        timelineObj = new Timeline({ locale: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.locale).toBe('en-US');
+        timelineObj.destroy();
+        timelineObj = new Timeline({ locale: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.locale).toBe('en-US');
+        timelineObj.destroy();
+    })
+    it('orientation', () => {
+        timelineObj = new Timeline({ orientation: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.orientation).toBe(null);
+        timelineObj.destroy();
+        timelineObj = new Timeline({ orientation: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.orientation).toBe(TimelineOrientation.Vertical);
+        timelineObj.destroy();
+    })
+    it('reverse', () => {
+        timelineObj = new Timeline({ reverse: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.reverse).toBe(null);
+        timelineObj.destroy();
+        timelineObj = new Timeline({ reverse: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.reverse).toBe(false);
+        timelineObj.destroy();
+    })
+    it('template', () => {
+        timelineObj = new Timeline({ template: null });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.template).toBe(null);
+        timelineObj.destroy();
+        timelineObj = new Timeline({ template: undefined });
+        timelineObj.appendTo('#timeline');
+        expect(timelineObj.template).toBe('');
+        timelineObj.destroy();
+    })
 });

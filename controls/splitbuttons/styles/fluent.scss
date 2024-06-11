@@ -1,4 +1,14 @@
-@import 'drop-down-button/fluent.scss';
-@import 'split-button/fluent.scss';
-@import 'button-group/fluent.scss';
-@import 'progress-button/fluent.scss';
+@import 'ej2-base/styles/definition/fluent.scss';
+@import 'ej2-buttons/styles/button/fluent-definition.scss';
+@import 'ej2-popups/styles/popup/fluent-definition.scss';
+@import 'drop-down-button/fluent-definition.scss';
+@import 'drop-down-button/icons/fluent.scss';
+@import 'drop-down-button/all.scss';
+
+@import 'split-button/fluent-definition.scss';
+@import 'split-button/all.scss';
+@import 'button-group/fluent-definition.scss';
+@import 'button-group/all.scss';
+@import 'ej2-popups/styles/spinner/fluent-definition.scss';
+@import 'progress-button/fluent-definition.scss';
+@import 'progress-button/all.scss';

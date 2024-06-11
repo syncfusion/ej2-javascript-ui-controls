@@ -1,19 +1,23 @@
 /**
  * Gantt column resize spec
  */
-import { Gantt, Resize } from '../../src/index';
+import { Gantt,UndoRedo, Resize,Edit,Toolbar, RowDD,Filter, ContextMenu, } from '../../src/index';
 import { baselineData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ResizeArgs } from '@syncfusion/ej2-grids';
 describe('Gantt column resize support', () => {
     describe('Gantt column resize action', () => {
-        Gantt.Inject(Resize);
+        Gantt.Inject(Resize,UndoRedo,Edit,Toolbar, RowDD,Filter, ContextMenu,);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
                     dataSource: baselineData,
                     allowResizing: true,
+                    enableUndoRedo: true,
+                    undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search','ZoomIn','ZoomOut'],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
                     taskFields: {
                         id: 'TaskId',
                         name: 'TaskName',
@@ -51,6 +55,7 @@ describe('Gantt column resize support', () => {
             triggerMouseEvent(resizeColumn, 'mousemove', 100);
             triggerMouseEvent(resizeColumn, 'mouseup');
             expect(ganttObj.element.getElementsByClassName('e-columnheader')[0].querySelector('.e-headercell').classList.contains('e-resized')).toBe(true);
+            ganttObj.undo();
         });
     });
 });

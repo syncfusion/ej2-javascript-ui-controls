@@ -4,7 +4,7 @@ import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-mo
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { ConnectorFixedUserHandle } from '../../../src/diagram/objects/fixed-user-handle';
-
+import { FixedUserHandleEventsArgs } from '../../../src/diagram/objects/interface/IElement';
 
 describe('Diagram Control', () => {
 
@@ -178,5 +178,66 @@ describe('Diagram Control', () => {
             done();
         });
         
+    });
+});
+
+describe('Fixed User Handle Tool Tip Support', () => {
+
+    describe('Tool tip support for node and connectors', () => {
+        var diagram: Diagram;
+        let ele: HTMLElement;
+        let selArray: any = [];
+        let mouseEvents: MouseEvents = new MouseEvents();
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = { id: 'node', offsetX: 100, offsetY: 100, width: 50, height: 50, fixedUserHandles:[{tooltip: { content: 'tooltip1', position: 'TopRight', relativeMode: 'Object' },offset:{x:0,y:0} ,visibility:true, iconStrokeColor:'red', fill:'green', margin:{right:20},width:20,handleStrokeColor:'orange', height:20,pathData: 'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z M68.5,72.5h-30V34.4h30V72.5z'}]};
+            let connectors: ConnectorModel[] = [{
+                id: 'connector1',
+                type: 'Straight',
+                sourcePoint: { x: 200, y: 200 },
+                targetPoint: { x: 300, y: 300 },
+                fixedUserHandles:[{tooltip: { content: 'tooltipConnector', position: 'TopRight', relativeMode: 'Object' },offset:0.3 ,visibility:true, iconStrokeColor:'red', fill:'green', width:20,handleStrokeColor:'orange', height:20,pathData: 'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z M68.5,72.5h-30V34.4h30V72.5z'}],
+            },]
+            
+            diagram = new Diagram({
+                width: 800, height: 800, nodes: [node1], connectors: connectors,
+                onFixedUserHandleMouseEnter: function(args){
+                    if(args)
+                    console.log(args);
+                }, 
+                onFixedUserHandleMouseLeave: function(args){
+                    if(args)
+                    console.log(args);
+                },                  
+            }); 
+            diagram.appendTo('#diagram');
+        });
+
+        it('Checking node fixed user handle tooltip', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas, 20, 20, false, false);
+            expect(document.getElementsByClassName('e-tip-content').length === 0).toBe(true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 64, 84, false, false);
+            expect(document.getElementsByClassName('e-tip-content').length !== 0).toBe(true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 20, 20, false, false);
+            expect(document.getElementsByClassName('e-tip-content').length === 0).toBe(true);
+            done();
+        });
+        it('Checking connector fixed user handle tooltip', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas, 20, 20, false, false);
+            expect(document.getElementsByClassName('e-tip-content').length === 0).toBe(true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 240, 240, false, false);
+            expect(document.getElementsByClassName('e-tip-content').length !== 0).toBe(true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 20, 20, false, false);
+            expect(document.getElementsByClassName('e-tip-content').length === 0).toBe(true);
+            done();
+        });
     });
 });

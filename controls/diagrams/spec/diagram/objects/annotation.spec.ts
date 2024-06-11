@@ -449,7 +449,7 @@ describe('Diagram Control', () => {
             console.log('transform' + transform);
             console.log('transform2' + transform2);
             expect(transform === 'rotate(0,100,137.2)translate(72.8193359375,130)').toBe(true);
-            expect(transform2 === 'rotate(0,100,137.2)translate(80.65625,130)').toBe(true);
+            expect(transform2 === 'rotate(0,100,137.2)translate(82.162109375,130)').toBe(true);
             done();
         });
     });
@@ -1211,7 +1211,7 @@ describe('Diagram Control', () => {
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "16.37890625" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "15.87890625").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "and overflow").toBe(true);
-            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.6669921875" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.1669921875").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.6669921875" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.1669921875" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") === "29.67578125").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("y") == "82.80000000000001").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).textContent == "is Wrap").toBe(true);
             done();
@@ -1386,11 +1386,11 @@ describe('Annotation Alignment Issue in virtualisation', () => {
     it('Testing Annotation alignment in initial rendering', (done: Function) => {
         expect(diagram.nodes[0].annotations[0].horizontalAlignment == "Center").toBe(true);
         expect(diagram.nodes[0].annotations[0].verticalAlignment == "Bottom").toBe(true);
-        expect(Math.round(diagram.nodes[0].wrapper.children[1].bounds.x) == 248).toBe(true);
+        expect(Math.round(diagram.nodes[0].wrapper.children[1].bounds.x) == 249).toBe(true);
         expect(Math.round(diagram.nodes[0].wrapper.children[1].bounds.y) == 46).toBe(true);
         expect(diagram.nodes[1].annotations[0].horizontalAlignment == "Center").toBe(true);
         expect(diagram.nodes[1].annotations[0].verticalAlignment == "Center").toBe(true);
-        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 279).toBe(true);
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 280).toBe(true);
         expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.y) == 153).toBe(true);
         done();
     });
@@ -1398,12 +1398,12 @@ describe('Annotation Alignment Issue in virtualisation', () => {
         diagram.nodes[1].annotations[0].horizontalAlignment = "Center";
         diagram.nodes[1].annotations[0].verticalAlignment = "Bottom";        
         diagram.dataBind();
-        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 279).toBe(true);
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 280).toBe(true);
         expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.y) == 146).toBe(true);
         let savedata: string;
         savedata = diagram.saveDiagram();
         diagram.loadDiagram(savedata);
-        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 279).toBe(true);
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 280).toBe(true);
         expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.y) == 146).toBe(true);
         done();
     });
@@ -1530,6 +1530,41 @@ describe('Checking hyperlink for connector', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, 451, 406, true);
         mouseEvents.mouseUpEvent(diagramCanvas, 451, 406, true);
         expect(element.style.cursor === 'pointer').toBe(true);
+        done();
+    });
+});
+
+describe('Bug 885842: Position of annotation inside the node is not aligned center', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramAnnotationPosition2' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [ { content: 'x'}],style: { fill: 'transparent' }
+            }
+        ];
+        diagram = new Diagram({ width: 800, height: 500, nodes: nodes });
+        diagram.appendTo('#diagramAnnotationPosition2');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking single annotation character rendered at center', (done: Function) => {
+        let node = diagram.nodes[0];
+        let textBounds = node.wrapper.children[1].bounds;
+        console.log(Math.round(textBounds.x));
+        expect(Math.round(textBounds.x) === 96 || Math.round(textBounds.x) === 97 ).toBe(true);
         done();
     });
 });

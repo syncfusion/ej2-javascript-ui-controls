@@ -36,9 +36,9 @@ export function measureText(text: string, font: TextStyleModel, themeFontStyle?:
     }
     htmlObject.innerHTML = (breakText.indexOf('<br>') > -1 || breakText.indexOf('<br/>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontSize = font.size || themeFontStyle.size;
+    htmlObject.style.fontWeight = font.fontWeight || themeFontStyle.fontWeight;
+    htmlObject.style.fontStyle = font.fontStyle || themeFontStyle.fontStyle;
     htmlObject.style.fontFamily = font.fontFamily || themeFontStyle.fontFamily;
     htmlObject.style.visibility = 'hidden';
     htmlObject.style.top = '-100';
@@ -357,10 +357,10 @@ export function textElement(
         'x': options.x,
         'y': options.y,
         'fill': color,
-        'font-size': font.size,
-        'font-style': font.fontStyle,
+        'font-size': font.size || themeStyle.size,
+        'font-style': font.fontStyle || themeStyle.fontStyle,
         'font-family': font.fontFamily || themeStyle.fontFamily,
-        'font-weight': font.fontWeight,
+        'font-weight': font.fontWeight || themeStyle.fontWeight,
         'text-anchor': options.anchor,
         'transform': options.transform,
         'opacity': font.opacity,

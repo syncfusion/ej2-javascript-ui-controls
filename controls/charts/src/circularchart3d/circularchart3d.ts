@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 /**
  * Circular 3D chart file.
  */
@@ -112,7 +111,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
     /**
      * Options for customizing the title of the circular 3D chart.
      */
-    @Complex<FontModel>({ fontFamily: null, size: '16px', fontStyle: 'Normal', fontWeight: '600', color: null }, Font)
+    @Complex<FontModel>({ fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null }, Font)
     public titleStyle: FontModel;
 
     /**
@@ -126,7 +125,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
     /**
      * Options for customizing the subtitle of the circular 3D Chart.
      */
-    @Complex<FontModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '400', color: null }, Font)
+    @Complex<FontModel>({ fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null }, Font)
     public subTitleStyle: FontModel;
 
     /**
@@ -1022,6 +1021,10 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         case 'FluentDark':
             tabColor = '#9e9e9e';
             break;
+        case 'Fluent2':
+        case 'Fluent2Dark':
+            tabColor = '#0078D4';
+            break;
         default:
             tabColor = '#9e9e9e';
             break;
@@ -1154,10 +1157,10 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
      * @returns {void}
      */
     private setSeriesTabIndex(): void {
-        let elements: NodeListOf<Element>
+        let elements: NodeListOf<Element>;
         for (let i: number = 0; i < this.visibleSeries[0].points.length; i++) {
-            if(this.visibleSeries[0].points[i as number].visible){
-                elements = document.querySelectorAll("[id*=\"region-series-0-point-"+ this.visibleSeries[0].points[i as number].index + "\"]");
+            if (this.visibleSeries[0].points[i as number].visible) {
+                elements = document.querySelectorAll('[id*="region-series-0-point-' + this.visibleSeries[0].points[i as number].index + '"]');
                 break;
             }
         }
@@ -1246,7 +1249,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
             this.svgObject.appendChild(clippath);
             const id: string = this.element.id;
             const groupElementID: string = this.groupElement.id;
-            document.querySelectorAll("[id*=\"region-series-" + "\"]").forEach(function (slice: Element): void {
+            document.querySelectorAll('[id*="region-series-"]').forEach(function (slice: Element): void {
                 if (slice.parentElement.id === groupElementID) {
                     (slice as HTMLElement).style.cssText = 'clip-path:url(#' + clippath.id + '); -webkit-clip-path:url(#' + clippath.id + ');';
                     slice.setAttribute('clip-path', 'url(#' + id + 'SeriesGroup0' + '_clipPath' + ')');
@@ -1560,7 +1563,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         const alignment: Alignment = this.titleStyle.textAlignment;
         const subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont);
         for (const titleText of this.titleCollection) {
-            titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
+            titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartTitleFont).width;
             maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
         }
         const rect: Rect = new Rect(
@@ -1664,10 +1667,11 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
                                                this.themeStyle.chartTitleFont).height * this.titleCollection.length : titleHeight;
         if (this.subTitle) {
             for (const titleText of this.titleCollection) {
-                titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
+                titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartTitleFont).width;
                 maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
             }
-            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.enableRtl, this.themeStyle.chartTitleFont);
+            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth,
+                                               this.enableRtl, this.themeStyle.chartSubTitleFont);
             subTitleHeight = (measureText(this.subTitle,
                                           this.subTitleStyle, this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length);
         }
@@ -1994,7 +1998,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
                                      legendElement.firstElementChild as HTMLElement);
                 }
                 else if (this.previousTargetId.indexOf('-title') > -1 && targetId.indexOf('-point-') > -1) {
-                    this.currentPointIndex =  parseInt(targetId.split('point-')[1], 10)
+                    this.currentPointIndex =  parseInt(targetId.split('point-')[1], 10);
                 }
             }
 
@@ -2032,8 +2036,8 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
                 for (let i: number = 0; i < this.visibleSeries[0].points.length; i++) {
                     const point: CircularChart3DPoints = this.visibleSeries[0].points[i as number];
                     totalLength = point.visible ? totalLength + 1 : totalLength;
-                    if(this.visibleSeries[0].points[i as number].visible){
-                        seriesIndexes.push(this.visibleSeries[0].points[i as number].index)
+                    if (this.visibleSeries[0].points[i as number].visible){
+                        seriesIndexes.push(this.visibleSeries[0].points[i as number].index);
                     }
                 }
                 this.currentPointIndex = seriesIndexes.indexOf(this.currentPointIndex) + ((e.code === 'ArrowUp' || e.code === 'ArrowRight') ? 1 : -1);
@@ -2211,22 +2215,22 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
      * @private
      */
     public removeSeriesElements(chart: CircularChart3D): void {
-        document.querySelectorAll("[id*=\"region-series-" + "\"]").forEach(function (element: Element): void {
+        document.querySelectorAll('[id*="region-series-"]').forEach(function (element: Element): void {
             if (element.parentElement.id === chart.groupElement.id) {
                 return element.remove();
             }
         });
-        document.querySelectorAll("[id*=\"data-label-text-" + "\"]").forEach(function (element: Element): void {
+        document.querySelectorAll('[id*="data-label-text-"]').forEach(function (element: Element): void {
             if (element.parentElement.id === chart.groupElement.id) {
                 return element.remove();
             }
         });
-        document.querySelectorAll("[id*=\"data-label-series-0-shape-" + "\"]").forEach(function (element: Element): void {
+        document.querySelectorAll('[id*="data-label-series-0-shape-"]').forEach(function (element: Element): void {
             if (element.parentElement.id === chart.groupElement.id) {
                 return element.remove();
             }
         });
-        document.querySelectorAll("[id*=\"datalabel-series-0-connector-" + "\"]").forEach(function (element: Element): void {
+        document.querySelectorAll('[id*="datalabel-series-0-connector-"]').forEach(function (element: Element): void {
             if (element.parentElement.id === chart.groupElement.id) {
                 return element.remove();
             }

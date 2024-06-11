@@ -1,7 +1,5 @@
 @include export-module('grid-fusionnew-icons') {
 
-  /*! component icons */
-
   .e-icon-check::before {
     content: '\e774';
   }
@@ -9,10 +7,13 @@
   #{&}.e-grid,
   .e-grid-menu {
 
+    &.e-rtl .e-icon-rowdragicon::before,
+    .e-icon-rowdragicon::before,
     .e-group-animate .e-drag.e-icon-drag::before {
       content: '\e726';
     }
 
+    .e-icon-grightarrow::before,
     .e-group-animate .e-nextgroup.e-icon-next::before {
       content: '\e748';
     }
@@ -25,10 +26,13 @@
       content: '\e7d8';
     }
 
-    .e-icon-hide::before {
-      content: '\e7e7';
-    }
-
+    .e-cancel::before,
+    & .e-chkcancel-icon::before,
+    & .e-ccdlg span.e-cc-cancel::before,
+    .e-cancel-icon::before,
+    .e-ccsearch-icon.e-cc-cancel::before,
+    .e-chkcancel-icon::before,
+    .e-icon-hide::before,
     .e-ungroupbutton.e-icon-hide::before {
       content: '\e7e7';
     }
@@ -45,25 +49,16 @@
       content: '\e729';
     }
 
-    .e-icon-grightarrow::before {
-      content: '\e748';
-    }
-
+    .e-columnchooserdiv::before,
+    .e-excl-filter-icon::before,
     .e-icon-filter::before,
-    .e-icon-filter.e-filtered::before {
-      content: '\e7f7';
-    }
-
+    .e-icon-filter.e-filtered::before,
     .e-resfilter-icon::before {
       content: '\e7f7';
     }
 
     .e-ressort-icon::before {
       content: '\e823';
-    }
-
-    .e-excl-filter-icon::before {
-      content: '\e7f7';
     }
 
     .e-excl-filter-icon.e-filtered::before {
@@ -76,10 +71,7 @@
       }
     }
 
-    .e-icon-group::before {
-      content: '\e724';
-    }
-
+    .e-icon-group::before,
     .e-icon-ungroup::before {
       content: '\e724';
     }
@@ -88,6 +80,8 @@
       content: '\e87a';
     }
 
+    .e-columnchooser-btn::before,
+    .e-cc-icon::before,
     .e-icon-reorderdownarrow::before {
       content: '\e70d';
     }
@@ -124,6 +118,7 @@
       content: '\e730';
     }
 
+    .e-responsivetoolbaritems-btn::before,
     .e-columnmenu::before,
     .e-columnmenu.e-filtered::before {
       content: '\e770';
@@ -133,34 +128,16 @@
       content: '\e820';
     }
 
-    .e-cancel::before {
-      content: '\e7e7';
-    }
-
     .e-copy::before {
       content: '\e77c';
     }
 
-    .e-save::before {
-      content: '\e7c8';
-    }
-
+    .e-save::before,
     .e-update::before {
       content: '\e7c8';
     }
 
-    .e-search-icon::before {
-      content: '\e754';
-    }
-
-    .e-cancel-icon::before {
-      content: '\e7e7';
-    }
-
-    .e-columnchooserdiv::before {
-      content: '\e7f7';
-    }
-
+    .e-search-icon::before,
     .e-ccsearch-icon::before {
       content: '\e754';
     }
@@ -168,38 +145,10 @@
     .e-columnchooser::before {
       content: '\e21e'; // icon not found
     }
-
-    .e-columnchooser-btn::before {
-      content: '\e70d';
-    }
-
-    .e-cc-icon::before {
-      content: '\e70d';
-    }
-
-    .e-icon-rowdragicon::before {
-      content: '\e726';
-    }
-
-    .e-responsivetoolbaritems-btn::before {
-      content: '\e770';
-    }
-
-    &.e-rtl {
-      .e-icon-rowdragicon::before {
-        content: '\e726';
-      }
-    }
-
-    .e-ccsearch-icon.e-cc-cancel::before,
-    .e-chkcancel-icon::before {
-      content: '\e7e7';
-    }
   }
 }
 
 .e-responsive-dialog {
-
   & .e-resfilterback::before {
     content: '\e773';
   }
@@ -208,6 +157,7 @@
     content: '\e7f9';
   }
 
+  & .e-resfilter-icon.e-icons::before,
   & .e-filterset::before {
     content: '\e7f7';
   }
@@ -217,17 +167,8 @@
     content: '\e754';
   }
 
-  & .e-chkcancel-icon::before,
-  & .e-ccdlg span.e-cc-cancel::before {
-    content: '\e7e7';
-  }
-
   & .e-icon-filter-clear::before {
     content: '\e72c';
-  }
-
-  & .e-resfilter-icon.e-icons::before {
-    content: '\e7f7';
   }
 
   & .e-resascending-icon.e-icons::before {
@@ -247,17 +188,17 @@
   }
 }
 
-.e-grid-toolbarmenu {
-  .e-responsivetoolbar-menu .e-menu-icon.e-print::before  {
+.e-grid-toolbarmenu .e-responsivetoolbar-menu {
+  .e-menu-icon.e-print::before {
     content: '\e75d';
   }
-  .e-responsivetoolbar-menu .e-menu-icon.e-pdfexport::before  {
+  .e-menu-icon.e-pdfexport::before {
     content: '\e700';
   }
-  .e-responsivetoolbar-menu .e-menu-icon.e-excelexport::before  {
+  .e-menu-icon.e-excelexport::before {
     content: '\e7c1';
   }
-  .e-responsivetoolbar-menu .e-menu-icon.e-csvexport::before  {
+  .e-menu-icon.e-csvexport::before {
     content: '\e7ba';
   }
 }

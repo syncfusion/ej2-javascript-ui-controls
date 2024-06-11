@@ -12,7 +12,7 @@ describe('Spinner Control', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -214,6 +214,21 @@ describe('Spinner Control', () => {
             expect(innerObject.classList.contains('e-spinner-inner')).toEqual(true);
             let materialObj = (<HTMLElement>innerObject.childNodes[0]);
             expect(materialObj.classList.contains('e-spin-fluent')).toEqual(true);
+        });
+        it('Ensure fluent2 theme element structure and class testing', () => {
+            let spinObject = createSpinner({ 
+                target: document.getElementById('spinner-01'),
+                    width:50,
+                    label:"Loading...",
+                    type: 'Fluent2'
+            });
+            let container = document.getElementById('spinner-01');
+            showSpinner(container);
+            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spinner-pane')).toEqual(true);
+            let innerObject = (<HTMLElement>(container.querySelector('.e-spinner-pane')as HTMLElement).childNodes[0]);
+            expect(innerObject.classList.contains('e-spinner-inner')).toEqual(true);
+            let materialObj = (<HTMLElement>innerObject.childNodes[0]);
+            expect(materialObj.classList.contains('e-spin-fluent2')).toEqual(true);
         });
         it('Spinner width testing for material', () => {
             let spinObject = createSpinner({ 

@@ -38,7 +38,7 @@ describe('filter menu module =>', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
             }
             gridObj = createGrid(
                 {
@@ -549,6 +549,7 @@ describe('filter menu module =>', () => {
 
     describe('filtering menu template and custom filter operators  =>', () => {
         let gridObj: Grid;
+        let dropInstance: any;
         let actionBegin: () => void;
         let actionComplete: () => void;
         beforeAll((done: Function) => {
@@ -577,22 +578,22 @@ describe('filter menu module =>', () => {
                                     let db: Object = new DataManager(filterData);
                                     let flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                                     args.target.appendChild(flValInput);
-                                    this.dropInstance = new DropDownList({
+                                    dropInstance = new DropDownList({
                                         dataSource: new DataManager(filterData),
                                         fields: { text: 'CustomerID', value: 'CustomerID' },
                                         placeholder: 'Select a value',
                                         popupHeight: '200px'
                                     });
-                                    this.dropInstance.appendTo(flValInput);
+                                    dropInstance.appendTo(flValInput);
                                 },
                                 write: (args: {
                                     column: Object, target: Element, parent: any,
                                     filteredValue: number | string
                                 }) => {
-                                    this.dropInstance.value = args.filteredValue;
+                                    dropInstance.value = args.filteredValue;
                                 },
                                 read: (args: { target: Element, column: any, operator: string, fltrObj: Filter }) => {
-                                    args.fltrObj.filterByColumn(args.column.field, args.operator, this.dropInstance.value);
+                                    args.fltrObj.filterByColumn(args.column.field, args.operator, dropInstance.value);
 
                                 }
                             }

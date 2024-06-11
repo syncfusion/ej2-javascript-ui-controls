@@ -285,7 +285,8 @@ export class DiagramContextMenu {
         for (let i: number = 0; i < this.parent.contextMenuSettings.items.length; i++) {
             const items: ContextMenuItemModel = this.parent.contextMenuSettings.items[parseInt(i.toString(), 10)];
             for (let j: number = 0; j < this.contextMenu.items.length; j++) {
-                if (this.contextMenu.items[parseInt(j.toString(), 10)].text === this.parent.contextMenuSettings.items[parseInt(i.toString(), 10)].text) {
+                if (this.contextMenu.items[parseInt(j.toString(), 10)].text
+                    === this.parent.contextMenuSettings.items[parseInt(i.toString(), 10)].text) {
                     canInsert = false;
                 }
             }
@@ -312,15 +313,8 @@ export class DiagramContextMenu {
             }
         }
         this.eventArgs = args.event;
-        if (isBlazor()) {
-            diagramArgs =
-                (await this.parent.trigger(contextMenuOpen, diagramArgs) as DiagramBeforeMenuOpenEventArgs) || diagramArgs;
-            if (typeof diagramArgs === 'string') {
-                diagramArgs = JSON.parse(diagramArgs);
-            }
-        } else {
-            this.parent.trigger(contextMenuOpen, diagramArgs);
-        }
+        //Removed isBlazor code
+        this.parent.trigger(contextMenuOpen, diagramArgs);
         let hidden: boolean = true;
         this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
         this.contextMenu.enableItems(this.disableItems, false, true);
@@ -344,12 +338,12 @@ export class DiagramContextMenu {
             this.hiddenItems = [];
         }
         /* tslint:disable */
-        if (this.parent.selectedItems.nodes.length && (this.parent.selectedItems.nodes[0] as any).isPhase && !this.parent.contextMenuSettings.showCustomMenuOnly) {
+        if (this.parent.selectedItems.nodes.length && (this.parent.selectedItems.nodes[0] as any).isPhase
+            && !this.parent.contextMenuSettings.showCustomMenuOnly) {
             args.cancel = true;
         }
         /* tslint:enable */
     }
-
     private ensureTarget(item: MenuItemModel): boolean {
         const selectedLength: number = this.parent.selectedItems.nodes.length +
             this.parent.selectedItems.connectors.length;

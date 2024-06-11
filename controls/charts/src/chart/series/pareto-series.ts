@@ -1,6 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { Series } from '../series/chart-series';
 import { ColumnBase } from './column-base';
@@ -79,7 +76,11 @@ export class ParetoSeries extends ColumnBase {
         series.chart.columnSeriesModule.render(series);
     }
     /**
-     * To perform the cumulative calculation for pareto series.
+     * Perform cumulative calculation on the provided JSON data based on the series type.
+     *
+     * @param {Object} json - The JSON data to perform cumulative calculation on.
+     * @param {Series} series - The series for which cumulative calculation is performed.
+     * @returns {Object[]} - An array containing the result of the cumulative calculation.
      */
     public performCumulativeCalculation(json: Object, series: Series): Object[] {
         const data: Object[] = <Object[]>json;
@@ -106,11 +107,13 @@ export class ParetoSeries extends ColumnBase {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'ParetoSeries';
         /**
-         * return the module name
+         * return the module name.
          */
     }
     /**
@@ -119,10 +122,9 @@ export class ParetoSeries extends ColumnBase {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroy method performed here
+         * Destroy method performed here.
          */
     }
 }

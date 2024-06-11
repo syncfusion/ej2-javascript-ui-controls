@@ -52,54 +52,56 @@ export class EventMarker {
         let eventMarkerElement: HTMLElement;
         let spanElement: HTMLElement;
         let rightArrow: HTMLElement;
-        let eventMarkerCollection:IEventMarkerInfo[] =[];
+        const eventMarkerCollection: IEventMarkerInfo[] = [];
         for (let i: number = 0; i < this.parent.eventMarkers.length; i++) {
-            left = this.parent.dataOperation.getTaskLeft(
-                this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true), false, true);
-                eventMarkerCollection.push({id:i,left: left,label:this.parent.eventMarkers[i as number].label,date : this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true)})
-            let align: string;
-            if(this.parent.enableRtl) {
-                align = `right:${left}px;`;
-            }
-            else {
-                align = `left:${left}px;`;
-            }
-            eventMarkerElement = createElement('div', {
-                className: cls.eventMarkersChild, styles: `${align}  height:100%;`,
-                id: 'stripline' + i
-            });
-            if (this.parent.eventMarkers[i as number].label) {
-                spanElement = createElement('div', {
-                    className: cls.eventMarkersSpan
-                });
-                const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
-                spanElement[property as string] = this.parent.eventMarkers[i as number].label;
-                if (this.parent.enableHtmlSanitizer && typeof (spanElement[property as string]) === 'string') {
-                    spanElement[property as string] = SanitizeHtmlHelper.sanitize(spanElement[property as string]);
-                }
+            if (!isNullOrUndefined(this.parent.eventMarkers[i as number].day)) {
+                left = this.parent.dataOperation.getTaskLeft(
+                    this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true), false, true);
+                eventMarkerCollection.push({ id: i, left: left, label: this.parent.eventMarkers[i as number].label,
+                    date: this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true) });
+                let align: string;
                 if (this.parent.enableRtl) {
-                   spanElement.style.right = '5px';
+                    align = `right:${left}px;`;
                 }
                 else {
-                    spanElement.style.left = '5px';
+                    align = `left:${left}px;`;
                 }
-                eventMarkerElement.appendChild(spanElement);
-                rightArrow = createElement('div', {
-                    className: 'e-gantt-right-arrow'
+                eventMarkerElement = createElement('div', {
+                    className: cls.eventMarkersChild, styles: `${align}  height:100%;`,
+                    id: 'stripline' + i
                 });
-                eventMarkerElement.appendChild(rightArrow);
-            }
-            if (this.parent.eventMarkers[i as number].cssClass) {
-                eventMarkerElement.classList.add(this.parent.eventMarkers[i as number].cssClass);
-            }
-            eventMarkerElement.setAttribute('tabindex', '-1');
-            if (!isNullOrUndefined(this.parent.eventMarkers[i as number].day)) {
+                if (this.parent.eventMarkers[i as number].label) {
+                    spanElement = createElement('div', {
+                        className: cls.eventMarkersSpan
+                    });
+                    const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
+                    spanElement[property as string] = this.parent.eventMarkers[i as number].label;
+                    if (this.parent.enableHtmlSanitizer && typeof(spanElement[property as string]) === 'string') {
+                        spanElement[property as string] = SanitizeHtmlHelper.sanitize(spanElement[property as string]);
+                    }
+                    if (this.parent.enableRtl) {
+                        spanElement.style.right = '5px';
+                    }
+                    else {
+                        spanElement.style.left = '5px';
+                    }
+                    eventMarkerElement.appendChild(spanElement);
+                    rightArrow = createElement('div', {
+                        className: 'e-gantt-right-arrow'
+                    });
+                    eventMarkerElement.appendChild(rightArrow);
+                }
+                if (this.parent.eventMarkers[i as number].cssClass) {
+                    eventMarkerElement.classList.add(this.parent.eventMarkers[i as number].cssClass);
+                }
+                eventMarkerElement.setAttribute('tabindex', '-1');
                 eventMarkerElement.setAttribute('aria-label', this.parent.localeObj.getConstant('eventMarkers') + ' '
                     + (typeof this.parent.eventMarkers[i as number].day === 'string' ?
-                        this.parent.eventMarkers[i as number].day : this.parent.getFormatedDate(this.parent.eventMarkers[i as number].day as Date))
+                        this.parent.eventMarkers[i as number].day :
+                        this.parent.getFormatedDate(this.parent.eventMarkers[i as number].day as Date))
                     + ' ' + this.parent.eventMarkers[i as number].label);
+                container.appendChild(eventMarkerElement);
             }
-            container.appendChild(eventMarkerElement);
         }
         this.parent.eventMarkerColloction = eventMarkerCollection;
     }

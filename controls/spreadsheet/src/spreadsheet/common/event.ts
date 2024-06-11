@@ -132,6 +132,20 @@ export const editHyperlink: string = 'editHyperlink';
 /** @hidden */
 export const openHyperlink: string = 'openHyperlink';
 /** @hidden */
+export const addNote: string = 'addNote';
+/** @hidden */
+export const editNote: string = 'editNote';
+/** @hidden */
+export const deleteNote: string = 'deleteNote';
+/** @hidden */
+export const showNote: string = 'showNote';
+/** @hidden */
+export const createNoteIndicator: string = 'createNoteIndicator';
+/** @hidden */
+export const updateNoteContainer: string = 'updateNoteContainer';
+/** @hidden */
+export const removeNoteContainer: string = 'removeNoteContainer';
+/** @hidden */
 export const removeHyperlink: string = 'removeHyperlink';
 /** @hidden */
 export const createHyperlinkElement: string = 'createHyperlinkElement';
@@ -205,6 +219,8 @@ export const findHandler: string = 'findHandler';
 export const created: string = 'created';
 /** @hidden */
 export const editAlert: string = 'editAlert';
+/** @hidden */
+export const readonlyAlert: string = 'readonlyAlert';
 /** @hidden */
 export const setUndoRedo: string = 'setUndoRedo';
 /** @hidden */

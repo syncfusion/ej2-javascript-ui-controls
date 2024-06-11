@@ -168,9 +168,9 @@ export interface ToolbarItemModel {
 
     /**
      * Specifies the unique name for each toolbar item rendered in Schedule. This name is used to map the toolbar items in the Schedule component.
-     * 
+     *
      * To access the default toolbar items, provide the name below,
-     * 
+     *
      * * `Custom`: Schedule component render the custom toolbar item.
      * * `Previous`: Schedule component navigates to the previous date from the current date.
      * * `Next`: Schedule component navigates to the next date from the current date.

@@ -20,7 +20,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 import { RowSelectEventArgs, NotifyArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
-import { infiniteGroupData } from '../../../spec/grid/base/datasource.spec';
+import { infiniteGroupData, filterData } from '../../../spec/grid/base/datasource.spec';
 import { CommandColumn } from '../../../src/grid/actions/command-column';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, CommandColumn, Aggregate, Freeze, VirtualScroll);
@@ -2037,5 +2037,65 @@ describe('EJ2-865027 - Coverage for Implementaion of enabling column virtualizat
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+// used for code coverage
+describe('width service code coverage', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                allowSorting: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, showAddNewRow: true, newRowPosition: 'Top'},
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    {
+                        field: 'CustomerID', headerText: 'Customer ID',
+                        validationRules: { required: true }, width: 140
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 140, format: 'C2', validationRules: { required: true }
+                    },
+                    {
+                        field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit',
+                        width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },
+                    },
+                ],
+            }, done);
+    });
+
+
+    it('Edit start', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(0, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+
+    
+    it('coverage the setColumnWidth', () => {
+        gridObj.widthService.setWidthToColumns();
+        (gridObj as any).childGrid = true;
+        gridObj.widthService.setWidthToTable();
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = null;
     });
 });

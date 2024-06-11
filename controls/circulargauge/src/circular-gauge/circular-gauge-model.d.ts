@@ -107,7 +107,7 @@ export interface CircularGaugeModel extends ComponentModel{
     allowPdfExport?: boolean;
 
     /**
-     * Allow the range element to be rendered ahead of the axis element, when this property is set to "true". 
+     * Allow the range element to be rendered ahead of the axis element, when this property is set to "true".
      *
      * @default true
      */

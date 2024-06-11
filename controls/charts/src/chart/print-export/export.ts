@@ -1,6 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { AccumulationChart, AccumulationSeries, AccumulationSeriesModel } from '../../accumulation-chart';
 import { RangeNavigator, RangeNavigatorSeriesModel } from '../../range-navigator';
@@ -100,7 +97,20 @@ export class Export {
     }
 
     /**
-     * Handles the export method for chart control.
+     * Exports the chart or charts to the specified file format.
+     *
+     * @param {ExportType} type - The type of export (e.g., 'PNG', 'JPEG', 'PDF', etc.).
+     * @param {string} fileName - The name of the file to save.
+     * @param {PdfPageOrientation} [orientation] - The orientation of the PDF page. Defaults to 'Portrait'.
+     * @param {(Chart | AccumulationChart | RangeNavigator | StockChart)[]} [controls] - An array of chart or chart-like components to export.
+     * @param {number} [width] - The width of the exported image or PDF page.
+     * @param {number} [height] - The height of the exported image or PDF page.
+     * @param {boolean} [isVertical] - Specifies whether to export the chart vertically. Defaults to false.
+     * @param {IPDFArgs} [header] - The header options for the PDF.
+     * @param {IPDFArgs} [footer] - The footer options for the PDF.
+     * @param {boolean} [exportToMultiplePage] - Specifies whether to export the charts to multiple pages in PDF. Defaults to false.
+     * @returns {void}
+     * @public
      */
     public export(
         type: ExportType, fileName: string,
@@ -126,7 +136,13 @@ export class Export {
         }
     }
     /**
-     * To handle the export of XLSX and CSV files.
+     * Exports the specified chart or charts to Excel format.
+     *
+     * @param {(Chart | AccumulationChart | RangeNavigator | StockChart)[]} controls - An array of chart or chart-like components to export.
+     * @param {string} fileName - The name of the Excel file to save.
+     * @param {ExportType} type - The type of export (e.g., 'XLSX', 'CSV', etc.).
+     * @returns {void}
+     * @private
      */
     private excelExport(controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[], fileName: string, type: ExportType): void{
         this.rows = [];
@@ -177,7 +193,13 @@ export class Export {
         book.save(fileName +  (type === 'XLSX' ? '.xlsx' : '.csv'));
     }
     /**
-     * To create an Excel sheet when the Rangenavigator series is not given.
+     * Creates an Excel sheet for exporting RangeNavigator control data.
+     *
+     * @param {RangeNavigator} controls - The RangeNavigator control to export.
+     * @param {ExcelCellStyle} headerStyle - The style to apply to the header cells in the Excel sheet.
+     * @param {ExportType} type - The type of export (e.g., 'XLSX', 'CSV', etc.).
+     * @returns {void}
+     * @private
      */
     private createRangeNavigatorExcelSheet(controls: RangeNavigator,
                                            headerStyle: ExcelCellStyle, type: ExportType): void {
@@ -199,8 +221,13 @@ export class Export {
         this.requiredValuesLength = 2;
     }
     /**
-     * To get the number of columns for the excel.
+     * Gets the number of columns for the Excel sheet.
+     *
+     * @param {boolean} isRangeNavigator - Specifies whether the data is for a RangeNavigator control.
+     * @returns {string[][]} - An array containing the required values for the Excel sheet.
+     * @private
      */
+
     private getRequiredValues(isRangeNavigator: boolean): string[][] {
         const requiredValues: string[][] = [];
         for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
@@ -258,8 +285,19 @@ export class Export {
         return requiredValues;
     }
     /**
-     * To obtain the chart title and series name.
+     * Gets the title for the Excel sheet.
+     *
+     * @param {string[][]} requiredValues - The required values for the Excel sheet.
+     * @param {ExcelCellStyle} headerStyle - The style for the header.
+     * @param {(Chart | AccumulationChart | RangeNavigator | StockChart)[]} controls - The controls to export.
+     * @param {boolean} isRangeNavigator - Specifies whether the data is for a RangeNavigator control.
+     * @param {boolean} isAccumulation - Specifies whether the data is for an AccumulationChart.
+     * @param {ExportType} type - The type of export.
+     * @param {number} xValueLength - The length of X values.
+     * @returns {void}
+     * @private
      */
+
     private getTitle (requiredValues: string[][], headerStyle: ExcelCellStyle,
                       controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
                       isRangeNavigator : boolean, isAccumulation: boolean, type: ExportType, xValueLength: number) : void {
@@ -349,13 +387,21 @@ export class Export {
         this.requiredValuesLength = index - 1;
     }
     /**
-     * To obtain all x values in the series.
+     * Gets the X values for the Excel sheet.
+     *
+     * @param {string[][]} requiredValues - The required values for the Excel sheet.
+     * @param {(Chart | AccumulationChart | RangeNavigator | StockChart)[]} controls - The controls to export.
+     * @param {boolean} isRangeNavigator - Specifies whether the data is for a RangeNavigator control.
+     * @param {boolean} isAccumulation - Specifies whether the data is for an AccumulationChart.
+     * @returns {number[][]} - The X values.
+     * @private
      */
+
     private getXValue(requiredValues: string[][], controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
                       isRangeNavigator: boolean, isAccumulation: boolean): number[][] {
         const xValues: number[][] = [];
         for (let axisCount: number = 0; axisCount < this.axisCollection.length; axisCount++) {
-            const xValue: number[] = [];            
+            const xValue: number[] = [];
             const valueType: string = isAccumulation ? '' : isRangeNavigator ? (controls[0] as RangeNavigator).valueType : this.axisCollection[axisCount as number].valueType;
             for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
                 const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type.indexOf('Bar') > -1)) ? null : this.axisCollection[axisCount as number].name : '';
@@ -384,8 +430,18 @@ export class Export {
         return (xValues);
     }
     /**
-     * To create an Excel sheet.
+     * Creates an Excel sheet.
+     *
+     * @param {boolean} isRangeNavigator - Specifies whether the data is for a RangeNavigator control.
+     * @param {boolean} isAccumulation - Specifies whether the data is for an AccumulationChart.
+     * @param {number[][]} xValues - The X values for the Excel sheet.
+     * @param {ExportType} type - The type of export.
+     * @param {string[][]} requiredValues - The required values for the Excel sheet.
+     * @param {ExcelCellStyle} headerStyle - The style for the header in Excel.
+     * @param {(Chart | AccumulationChart | RangeNavigator | StockChart)[]} controls - The controls to export.
+     * @private
      */
+
     private createExcelSheet(isRangeNavigator: boolean, isAccumulation: boolean, xValues: number[][], type: ExportType,
                              requiredValues: string[][], headerStyle: ExcelCellStyle,
                              controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[]): void {
@@ -445,14 +501,20 @@ export class Export {
         }
     }
     /**
-     * To get data url for charts.
+     * Gets the data URL of the chart or accumulation chart.
+     *
+     * @param {Chart | AccumulationChart} chart - The chart or accumulation chart.
+     * @returns {{ element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string}} - The data URL information.
      */
+
     public getDataUrl(chart: Chart | AccumulationChart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string} {
         const exportUtil: ExportUtils = new ExportUtils(chart);
         return exportUtil.getDataUrl(chart as Chart | AccumulationChart);
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         // Returns the module name

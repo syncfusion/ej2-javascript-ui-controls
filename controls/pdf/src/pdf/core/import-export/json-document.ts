@@ -1,6 +1,6 @@
 import { _ExportHelper } from './xfdf-document';
 import { PdfDocument } from './../pdf-document';
-import { _stringToAnnotationFlags, _convertToColor, _encode, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _convertStringToBytes, _bytesToString, _hexStringToByteArray, _decode } from './../utils';
+import { _stringToAnnotationFlags, _convertToColor, _encode, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _bytesToString, _hexStringToByteArray, _decode } from './../utils';
 import { PdfPage } from './../pdf-page';
 import { PdfAnnotation, PdfLineAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
@@ -11,6 +11,8 @@ import { PdfField } from './../form/field';
 import { PdfAnnotationFlag } from './../enumerator';
 export class _JsonDocument extends _ExportHelper {
     _isImport: boolean = false;
+    _isColorSpace: boolean = false;
+    _isDuplicate: boolean = false;
     constructor(fileName?: string) {
         super();
         if (fileName !== null && typeof fileName !== 'undefined') {
@@ -58,9 +60,7 @@ export class _JsonDocument extends _ExportHelper {
             if (typeof value === 'string' || (Array.isArray(value) && value.length === 1)) {
                 value = this._getValidString(typeof value === 'string' ? value : value[0]);
                 this._jsonData.push(this._doubleQuotes, this._colon, this._doubleQuotes);
-                for (let i: number = 0; i < value.length; i++) {
-                    this._jsonData.push(value.charCodeAt(i));
-                }
+                this._jsonData = _stringToBytes(value, true, false, this._jsonData) as number[];
                 this._jsonData.push(this._doubleQuotes);
             } else {
                 this._jsonData.push(this._doubleQuotes, this._colon, this._openingBracket);
@@ -92,7 +92,7 @@ export class _JsonDocument extends _ExportHelper {
             const page: PdfPage = document.getPage(i);
             if (page && page.annotations.count > 0) {
                 this._jsonData.push(i !== 0 && isAnnotationAdded ? this._comma : this._space, this._doubleQuotes);
-                const pageNumber: number[] = _convertStringToBytes(i.toString(), []);
+                const pageNumber: number[] = _stringToBytes(i.toString(), true, false, []) as number[];
                 pageNumber.forEach((entry: number) => {
                     this._jsonData.push(entry);
                 });
@@ -110,7 +110,7 @@ export class _JsonDocument extends _ExportHelper {
                     }
                     count++;
                     this._exportAnnotation(annotation, i);
-                    this._jsonData = _convertStringToBytes(this._convertToJson(this._table), this._jsonData);
+                    this._jsonData = _stringToBytes(this._convertToJson(this._table), true, false, this._jsonData) as number[];
                     this._table.clear();
                 }
             }
@@ -584,20 +584,37 @@ export class _JsonDocument extends _ExportHelper {
     _writeAppearanceDictionary(table: Map<string, string>, dictionary: _PdfDictionary): void {
         if (dictionary && dictionary.size > 0) {
             dictionary.forEach((key: string, value: any) => { // eslint-disable-line
-                this._writeObject(table, ((value instanceof _PdfReference) ? dictionary.get(key) : value), dictionary, key);
+                if (key === 'OC' && value instanceof Array || (key !== 'P' && key !== 'Parent' && key !== 'Dest' && key !== 'OC') ) {
+                    this._writeObject(table, ((value instanceof _PdfReference) ? dictionary.get(key) : value), dictionary, key);
+                }
             });
         }
     }
     _writeObject(table?: Map<string, string>,
-                 value?: any, dictionary?: _PdfDictionary, key?: string, array?: Map<string, string>[]): void { // eslint-disable-line
-        if (value instanceof _PdfName) {
+                 value?: any, dictionary?: _PdfDictionary, key?: string, array?: Map<string, string>[], isColorSpace: boolean = false): void { // eslint-disable-line
+        if (this._isDuplicate && key === 'AllowedInteractions') {
+            const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
+            this._writeTable('unicodeData', _byteArrayToHexString(bytes), table, key, array);
+        } else if (value instanceof _PdfName) {
+            value.name = this._getValidString(value.name);
             this._writeTable('name', value.name, table, key, array);
         } else if (Array.isArray(value)) {
             const list: Map<string, string>[] = [];
-            this._writeArray(list, value, dictionary);
+            if (key === 'ColorSpace' || isColorSpace) {
+                this._writeArray(list, value, dictionary, true);
+            } else {
+                this._writeArray(list, value, dictionary);
+            }
+            this._isColorSpace = false;
             this._writeTable('array', this._convertToJsonArray(list), table, key, array);
         } else if (typeof value === 'string') {
-            this._writeTable('string', value, table, key, array);
+            value = this._getValidString(value);
+            if (this._isColorSpace) {
+                const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
+                this._writeTable('unicodeData', _byteArrayToHexString(bytes), table, key, array);
+            } else {
+                this._writeTable('string', value, table, key, array);
+            }
         } else if (typeof value === 'number') {
             this._writeTable(Number.isInteger(value) ? 'int' : 'fixed', value.toString(), table, key, array);
         } else if (typeof value === 'boolean') {
@@ -619,6 +636,12 @@ export class _JsonDocument extends _ExportHelper {
             if (isImageStream && baseStream.stream && baseStream.stream instanceof _PdfStream) {
                 const stream: _PdfStream = baseStream.stream;
                 data = baseStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
+            } else if (baseStream.stream && baseStream.stream.stream) {
+                const flateStream: any = baseStream.stream; // eslint-disable-line
+                if (flateStream.stream && flateStream.stream instanceof _PdfStream) {
+                    const stream: _PdfStream = flateStream.stream;
+                    data = flateStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
+                }
             } else {
                 data = value.getString(true);
             }
@@ -659,9 +682,12 @@ export class _JsonDocument extends _ExportHelper {
             array.push(map);
         }
     }
-    _writeArray(array: Map<string, string>[], value: any[], dictionary: _PdfDictionary): void { // eslint-disable-line
+    _writeArray(array: Map<string, string>[], value: any[], dictionary: _PdfDictionary, isColorSpace: boolean = false): void { // eslint-disable-line
         for (let i: number = 0; i < value.length; i++) {
-            this._writeObject(null, value[Number.parseInt(i.toString(), 10)], dictionary, null, array);
+            if (isColorSpace && typeof value[Number.parseInt(i.toString(), 10)] === 'string') {
+                this._isColorSpace = true;
+            }
+            this._writeObject(null, value[Number.parseInt(i.toString(), 10)], dictionary, null, array, isColorSpace);
         }
     }
     _convertToJson(table: Map<string, string>): string {
@@ -670,7 +696,11 @@ export class _JsonDocument extends _ExportHelper {
         table.forEach((value: string, key: string) => {
             if (value.startsWith('{') || value.startsWith('[')) {
                 if (key === 'AllowedInteractions') {
-                    json += '"' + key + '":"' + value + '"';
+                    if (this._isDuplicate) {
+                        json += `"${key}":${value}`;
+                    } else {
+                        json += '"' + key + '":"' + value + '"';
+                    }
                 } else {
                     json += '"' + key + '":' + value;
                 }
@@ -701,7 +731,7 @@ export class _JsonDocument extends _ExportHelper {
     _parseJson(document: PdfDocument, data: Uint8Array): any { // eslint-disable-line
         this._document = document;
         this._crossReference = document._crossReference;
-        let stringData: string = _bytesToString(data);
+        let stringData: string = _bytesToString(data, true);
         if (stringData.startsWith('{') && !stringData.endsWith('}')) {
             while (stringData.length > 0 && !stringData.endsWith('}')) {
                 stringData = stringData.substring(0, stringData.length - 1);
@@ -1431,6 +1461,8 @@ export class _JsonDocument extends _ExportHelper {
             stream.reference = value;
             stream.dictionary.objId = value.objectNumber + ' ' + value.generationNumber;
             this._crossReference._cacheMap.set(value, stream);
+        } else if (keys.indexOf('unicodeData') !== -1) {
+            value = _bytesToString(_hexStringToByteArray(element.unicodeData, false) as Uint8Array, true);
         } else {
             value = null;
         }

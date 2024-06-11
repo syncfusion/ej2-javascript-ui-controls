@@ -5,7 +5,6 @@ import { Input, InputObject, FloatLabelType } from '../../input/input';
 import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';
 import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';
 import { MaskedTextBoxModel } from './maskedtextbox-model';
-import { maskInputBlurHandler } from '../base/mask-base';
 
 const ROOT: string = 'e-control-wrapper e-mask';
 const INPUT: string = 'e-input';
@@ -53,7 +52,6 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private formElement: HTMLElement;
     private initInputValue: string = '';
     private maskOptions: MaskedTextBoxModel;
-    private isAngular: boolean = false;
     private preventChange: boolean = false;
     private isClicked: boolean = false;
     private clearButton: HTMLElement;
@@ -150,7 +148,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * For more information on mask, refer to
      * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
-     * 
+     *
      * {% codeBlock src='maskedtextbox/mask/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -313,7 +311,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         const keyEntity: string[] = ['value'];
         return this.addOnPersist(keyEntity);
     }
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Initializes the component rendering.
      *
@@ -345,8 +343,11 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
-            if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+            if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
                 this.enabled = false;
+            }
+            if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder')) {
+                this.element.setAttribute('aria-label', 'maskedtextbox');
             }
             this.renderComplete();
         }
@@ -511,7 +512,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 if (this.placeholder && !this.isFocus) {
                     this.setMaskPlaceholder(false, false);
                 }
-                if (this.value === "" && oldProp.value != null) {
+                if (this.value === '' && oldProp.value != null) {
                     this.element.selectionStart = 0;
                     this.element.selectionEnd = 0;
                 }
@@ -589,17 +590,17 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         this.resetMaskedTextBox();
         setMaskValue.call(this, strippedVal);
     }
-    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Gets the value of the MaskedTextBox with the masked format.
      * By using `value` property, you can get the raw value of maskedtextbox without literals and prompt characters.
      *
-     * @returns {string}
+     * @returns {string} Returns the value with the masked format.
      */
     public getMaskedValue(): string {
         return unstrippedValue.call(this, this.element);
     }
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Sets the focus to widget for interaction.
      *
@@ -639,15 +640,15 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }
         const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
-            'aria-disabled','autocapitalize','spellcheck', 'aria-autocomplete', 'aria-live', 'aria-invalid'];
+            'aria-disabled', 'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-invalid'];
         for (let i: number = 0; i < attrArray.length; i++) {
             this.element.removeAttribute(attrArray[i as number]);
         }
         this.element.classList.remove('e-input');
-        if(this.inputObj)
+        if (this.inputObj)
         {
-        this.inputObj.container.insertAdjacentElement('afterend', this.element);
-        detach(this.inputObj.container);
+            this.inputObj.container.insertAdjacentElement('afterend', this.element);
+            detach(this.inputObj.container);
         }
         this.blurEventArgs = null;
         Input.destroy({

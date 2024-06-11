@@ -65,7 +65,13 @@ export type HeatMapTheme =
     /** Renders a map with Material3 theme. */
     'Material3' |
     /** Renders a map with Material3dark theme. */
-    'Material3Dark';
+    'Material3Dark' |
+    /**  Render a heatmap with Fluent2 theme. */
+    'Fluent2' |
+    /**  Render a heatmap with Fluent2 Dark theme. */
+    'Fluent2Dark' |
+    /**  Render a heatmap with Fluent2 High Contrast theme. */
+    'Fluent2HighContrast' ;
 
 /**
  * @private

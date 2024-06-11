@@ -26,7 +26,7 @@ describe('Column chooser module', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending; //Skips test (in Chai)
             }
             gridObj = createGrid(
                 {
@@ -887,6 +887,10 @@ describe('Column chooser module', () => {
             let cell: any = gridObj.getContent().querySelector('.e-row').childNodes[1];
             cell.click();
         });
+        it('coverage - 2', () => {
+            gridObj.setProperties({ enableRtl: true}, true);
+            (gridObj.columnChooserModule as any).createCheckBox('Select All', true, 'Grid-selectAll');
+        });
 
         afterAll(() => {
             (<any>gridObj).columnChooserModule.destroy();
@@ -1030,4 +1034,49 @@ describe('Column chooser module', () => {
             gridObj = null;
         });
     });
+    // describe('EJ2-880941 => Column Chooser Select All option not working properly', () => {
+    //     let gridObj: Grid;
+    //     beforeAll((done: Function) => {
+    //         gridObj = createGrid(
+    //             {
+    //                 dataSource: data,
+    //                 showColumnChooser: true,
+    //                 toolbar: ['ColumnChooser'],
+    //                 columns: [
+    //                     { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+    //                     { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+    //                     { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+    //                     { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+    //                     { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+    //                 ],
+    //             }, done);
+    //     });
+    //     it('search the column chooser value', (done) => {
+    //         setTimeout(function () {
+    //             gridObj.columnChooserModule.openColumnChooser();
+    //             let cheEle: any = gridObj.element.querySelectorAll('.e-cc-selectall .e-selectall')[0];
+    //             cheEle.click();
+    //             let e: Object;
+    //             e = { target: { value: 'sh' } };
+    //             (gridObj.columnChooserModule as any).columnChooserManualSearch(e);
+    //             done();
+    //         }, 500)
+    //     });
+
+    //     it('select the column chooser value', (done) => {
+    //         setTimeout(function () {
+    //             let cheEle: any = gridObj.element.querySelectorAll('.e-cc-selectall .e-selectall')[0];
+    //             cheEle.click();
+    //             let okButton: any = gridObj.element.querySelector(".e-cc_okbtn");
+    //             okButton.click();
+    //             expect(gridObj.getVisibleColumns().length).toBe(2);
+    //             done();
+    //         }, 500)
+    //     });
+
+    //     afterAll(() => {
+    //         destroy(gridObj);
+    //         gridObj = null;
+    //     });
+    // });
 });

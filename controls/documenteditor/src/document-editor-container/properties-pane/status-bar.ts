@@ -50,7 +50,7 @@ export class StatusBar {
         this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text', 'aria-label' : this.localObj.getConstant('Current Page Number') }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
         this.editablePageNumber = createElement('div', { styles: 'display: inline-flex', className: 'e-input e-de-pagenumber-text' });
         this.editablePageNumber.appendChild(this.pageNumberInput);
-        let pageNumberOfLabelStyle = "";
+        let pageNumberOfLabelStyle: string = '';
         if (isRtl) {
             label.style.marginLeft = '6px';
             this.editablePageNumber.style.marginLeft = '6px';
@@ -187,12 +187,14 @@ export class StatusBar {
     private setSpellCheckValue(text: string): void {
         this.spellCheckButton.content = this.localObj.getConstant('Spelling');
         if (text.match(this.localObj.getConstant('Spell Check'))) {
-            this.documentEditor.spellCheckerModule.enableSpellCheck = (this.documentEditor.spellCheckerModule.enableSpellCheck) ? false : true;            
+            this.documentEditor.spellCheckerModule.enableSpellCheck =
+            (this.documentEditor.spellCheckerModule.enableSpellCheck) ? false : true;
             this.documentEditor.documentHelper.triggerSpellCheck = false;
             this.documentEditor.documentHelper.triggerElementsOnLoading = false;
         } else if (text.match(this.localObj.getConstant('Underline errors'))) {
             if (this.documentEditor.enableSpellCheck && this.documentEditor.spellCheckerModule.enableSpellCheck) {
-                this.documentEditor.spellCheckerModule.removeUnderline = (this.documentEditor.spellCheckerModule.removeUnderline) ? false : true;
+                this.documentEditor.spellCheckerModule.removeUnderline =
+                (this.documentEditor.spellCheckerModule.removeUnderline) ? false : true;
             }
         }
     }
@@ -224,7 +226,8 @@ export class StatusBar {
     }
     public updatePageNumberOnViewChange(args: ViewChangeEventArgs): void {
         if (this.documentEditor.selectionModule
-            && this.documentEditor.selectionModule.startPage >= args.startPage && this.documentEditor.selectionModule.startPage <= args.endPage) {
+            && this.documentEditor.selectionModule.startPage >= args.startPage
+            && this.documentEditor.selectionModule.startPage <= args.endPage) {
             this.startPage = this.documentEditor.selectionModule.startPage;
         } else {
             this.startPage = args.startPage;

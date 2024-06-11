@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer, ImageSuccessEventArgs, ICssClassArgs, CleanupResizeElemArgs, IShowPopupArgs } from '../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, ImageSuccessEventArgs, ICssClassArgs } from '../base/interface';
 import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
@@ -303,13 +303,10 @@ export class PasteCleanup {
         }
     }
 
-    private uploadMethod(fileList: File, imgElem: Element): void {
-        const uploadEle: HTMLInputElement | HTMLElement = document.createElement('div');
-        document.body.appendChild(uploadEle);
-        uploadEle.setAttribute('display', 'none');
+    private uploadMethod(file: File, imgElem: Element): void {
         (imgElem as HTMLElement).style.opacity = '0.5';
         const popupEle: HTMLElement = this.parent.createElement('div');
-        this.parent.element.appendChild(popupEle);
+        this.parent.rootContainer.appendChild(popupEle);
         const contentEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
             id: this.parent.getID() + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
@@ -334,13 +331,12 @@ export class PasteCleanup {
         this.popupObj.element.style.display = 'none';
         addClass([this.popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
         if (!isNOU(this.parent.cssClass)) {
-            addClass([this.popupObj.element], this.parent.cssClass);
+            addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
-        const timeOut: number = fileList.size > 1000000 ? 300 : 100;
+        const timeOut: number = file.size > 1000000 ? 300 : 100;
         setTimeout(() => {
             this.refreshPopup(imgElem as HTMLElement, this.popupObj);
         }, timeOut);
-        let rawFile: FileInfo[];
         this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
@@ -401,20 +397,17 @@ export class PasteCleanup {
             }
         });
         this.uploadObj.appendTo(this.popupObj.element.childNodes[0] as HTMLElement);
-
-        /* eslint-disable */
-  let fileData: any = [{
-    name: fileList.name,
-    rawFile: fileList,
-    size: fileList.size,
-    type: fileList.type,
-    validationMessages: { minSize: "", maxSize: "" },
-    statusCode: '1'
-  }];
-  (this.uploadObj as any).createFileList(fileData);
-        rawFile = fileData;
-        /* eslint-enable */
-        this.uploadObj.upload(fileData);
+        const fileInfo: FileInfo[] = [{
+            name: file.name,
+            rawFile: file,
+            size: file.size,
+            type: file.type,
+            status: 'Ready to Upload',
+            validationMessages: { minSize: '', maxSize: ''},
+            statusCode: '1'
+        }];
+        this.uploadObj.createFileList(fileInfo);
+        this.uploadObj.upload(fileInfo);
         (this.popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
         detach(this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
     }
@@ -425,7 +418,7 @@ export class PasteCleanup {
             popupObj.close();
         }
         this.parent.trigger(events.imageUploadFailed, e);
-        if (uploadObj && document.body.contains(uploadObj.element) ) {
+        if (uploadObj && document.body.contains(uploadObj.element)) {
             uploadObj.destroy();
         }
     }
@@ -538,8 +531,6 @@ export class PasteCleanup {
         }
     }
     private pasteDialog(value: string, args: Object, isClipboardHTMLDataNull: boolean): void {
-        let isHeight: boolean = false;
-        const preRTEHeight: string | number = this.parent.height;
         const dialogModel: DialogModel = {
             buttons: [
                 {
@@ -548,8 +539,6 @@ export class PasteCleanup {
                             const keepChecked: boolean = (this.parent.element.querySelector('#keepFormating') as HTMLInputElement).checked;
                             const cleanChecked: boolean = (this.parent.element.querySelector('#cleanFormat') as HTMLInputElement).checked;
                             this.dialogObj.hide();
-                            this.parent.height = isHeight ? preRTEHeight : this.parent.height;
-                            isHeight = false;
                             const argument: Dialog = this.dialogObj;
                             this.dialogRenderObj.close(argument);
                             this.dialogObj.destroy();
@@ -566,8 +555,6 @@ export class PasteCleanup {
                     click: () => {
                         if (!this.dialogObj.isDestroyed) {
                             this.dialogObj.hide();
-                            this.parent.height = isHeight ? preRTEHeight : this.parent.height;
-                            isHeight = false;
                             const args: Dialog = this.dialogObj;
                             this.dialogRenderObj.close(args);
                             this.dialogObj.destroy();
@@ -603,16 +590,10 @@ export class PasteCleanup {
             rteDialogWrapper = this.parent.createElement('div', {
                 id: this.parent.getID() + '_pasteCleanupDialog'
             }) as HTMLElement;
-            this.parent.element.appendChild(rteDialogWrapper);
+            this.parent.rootContainer.appendChild(rteDialogWrapper);
         }
         this.dialogObj.appendTo(rteDialogWrapper);
         this.radioRender();
-        /* eslint-disable */
-        if (this.parent.element.offsetHeight < parseInt((this.dialogObj.height as string).split('px')[0], null)) {
-            this.parent.setProperties({height : parseInt((this.dialogObj.height as string).split('px')[0], null) + 40});
-            /* eslint-enable */
-            isHeight = true;
-        }
         this.dialogObj.show();
         this.setCssClass({cssClass: this.parent.getCssClass()});
     }
@@ -655,7 +636,7 @@ export class PasteCleanup {
 
     private docClick(e: { [key: string]: object }): void {
         const target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
-        if (target && target.classList && ((this.dialogObj && !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" + ']')))
+        if (target && target.classList && ((this.dialogObj && !closest(target, '[id=' + '\'' + this.dialogObj.element.id + '\'' + ']')))
             && (!target.classList.contains('e-toolbar-item'))) {
             if (this.dialogObj) {
                 this.dialogObj.hide();
@@ -691,7 +672,7 @@ export class PasteCleanup {
             clipBoardElem = this.allowedStyle(clipBoardElem);
         }
         this.saveSelection.restore();
-        const newText: string = clipBoardElem.innerHTML.split("&").join("&amp;");
+        const newText: string = clipBoardElem.innerHTML.split('&').join('&amp;');
         clipBoardElem.innerHTML = this.sanitizeHelper(newText);
         const allImg: NodeListOf<HTMLImageElement> = clipBoardElem.querySelectorAll('img');
         for (let i: number = 0; i < allImg.length; i++) {
@@ -750,6 +731,7 @@ export class PasteCleanup {
                 },
                 clipBoardElem, null, null, this.parent.enterKey
             );
+            this.parent.notify(events.autoResize, {});
             scrollToCursor(this.parent.contentModule.getDocument(), this.parent.inputElement);
             this.removeTempClass();
             this.parent.notify(events.toolbarRefresh, {});
@@ -760,16 +742,16 @@ export class PasteCleanup {
         const imgElem: NodeListOf<HTMLImageElement> = element.querySelectorAll('img');
         for (let i: number = 0; i < imgElem.length; i++) {
             if (imgElem[i as number].getAttribute('src') &&
-                imgElem[i as number].getAttribute('src').startsWith("blob")) {
-                let blobImageUrl: string = imgElem[i as number].getAttribute('src');
-                let img: HTMLImageElement = new Image();
-                const onImageLoadEvent = () => {
-                    let canvas: HTMLCanvasElement = document.createElement('canvas');
-                    let ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+                imgElem[i as number].getAttribute('src').startsWith('blob')) {
+                const blobImageUrl: string = imgElem[i as number].getAttribute('src');
+                const img: HTMLImageElement = new Image();
+                const onImageLoadEvent: () => void = () => {
+                    const canvas: HTMLCanvasElement = document.createElement('canvas');
+                    const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
-                    let base64String: string = canvas.toDataURL('image/png');
+                    const base64String: string = canvas.toDataURL('image/png');
                     (imgElem[i as number] as HTMLImageElement).src = base64String;
                     img.removeEventListener('load', onImageLoadEvent);
                 };
@@ -815,7 +797,8 @@ export class PasteCleanup {
                 }
             }
         } else {
-            if (!isNullOrUndefined(this.parent.insertImageSettings.saveUrl) && !isNullOrUndefined(this.parent.insertImageSettings.path) && !isNullOrUndefined(this.parent.inputElement.querySelectorAll("img")) && this.parent.inputElement.querySelectorAll("img")[0].src.startsWith("blob")) {
+            if (!isNOU(this.parent.insertImageSettings.saveUrl) && !isNOU(this.parent.insertImageSettings.path) &&
+            this.parent.inputElement.querySelectorAll('img').length > 0 && this.parent.inputElement.querySelectorAll('img')[0].src.startsWith('blob')) {
                 this.convertBlobToBase64(this.parent.inputElement);
                 setTimeout(() => {
                     this.imgUploading(this.parent.inputElement);
@@ -1111,9 +1094,11 @@ export class PasteCleanup {
                 const allowedAttributeArray: string[] = [];
                 const deniedAttributeArray: string[] = [];
                 for (let j: number = 0; j < userAttributes.length; j++) {
-                    // eslint-disable-next-line
-                    userAttributes[j].indexOf('!') < 0 ? allowedAttributeArray.push(userAttributes[j].trim())
-                        : deniedAttributeArray.push(userAttributes[j as number].split('!')[1].trim());
+                    if (userAttributes[j as number].indexOf('!') < 0) {
+                        allowedAttributeArray.push(userAttributes[j as number].trim());
+                    } else {
+                        deniedAttributeArray.push(userAttributes[j as number].split('!')[1].trim());
+                    }
                 }
                 const allowedAttribute: string = allowedAttributeArray.length > 1 ?
                     (allowedAttributeArray.join('][')) : (allowedAttributeArray.join());
@@ -1200,10 +1185,10 @@ export class PasteCleanup {
             const imgElem: HTMLImageElement | null = pictureElems[i as number].querySelector('img');
             const sourceElems: NodeListOf<HTMLSourceElement> = pictureElems[i as number].querySelectorAll('source');
             if (imgElem && imgElem.getAttribute('src')) {
-                const srcValue: string = imgElem.getAttribute('src')!;
+                const srcValue: string = (imgElem as HTMLElement).getAttribute('src');
                 const url: URL = new URL(srcValue);
                 for (let j: number = 0; j < sourceElems.length; j++) {
-                    let srcset: string | null = sourceElems[j as number].getAttribute('srcset');
+                    const srcset: string | null = sourceElems[j as number].getAttribute('srcset');
                     if (srcset) {
                         if (srcset.indexOf('http') === -1) {
                             const fullPath: string = url.origin + srcset;

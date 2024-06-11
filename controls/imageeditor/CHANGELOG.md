@@ -2,15 +2,28 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
+## 26.1.35 (2024-06-11)
+
+### Image Editor
+
+#### Features
+
+- `Annotation enhancement` - The latest update to our Image Editor significantly improves the annotation feature. Users can now draw multiple annotations simultaneously, enhancing creative flexibility. Furthermore, every action, including customizations, will be tracked in the undo/redo collection, ensuring a seamless user experience and making it easier to experiment with different designs.
+
+- `Z-order support` - We are excited to introduce z-order support in the Image Editor. It's a powerful tool that allows users to adjust the positioning of annotations. This feature is particularly useful for designing personalized templates like greeting cards or posters, where managing the layering of multiple annotations is crucial for a polished final product.
+    - `Types of z-order adjustments`:
+        - `Sent Backward`: Switch the selected annotation with the annotation one layer behind it.
+        - `Send to Back`: Move the selected annotation to behind all other annotations.
+        - `Bring to Front`: Move the selected annotation to ahead of all other annotations.
+        - `Bring forward`: Switch the selected annotation with the annotation one layer ahead of it.
+
+- `Save support enhancement` - Users can now save an image with a specified file name, file type, and image quality. This enhancement provides more control over the output, ensuring that users can save their work exactly as they need it.
 
 ### Image Editor
 
 #### Bug Fixes
 
-- `#I587459` - The issue with "Image size increased" has been resolved.
-
-## 25.2.3 (2024-05-08)
+- `#I588099` - The issue with "image editor click event triggered two times in Angular" has been resolved.
 
 ### Image Editor
 
@@ -22,42 +35,9 @@
 
 #### Bug Fixes
 
-- The issue with "dropdown button `popup` has empty space when using toolbar property in ImageEditor" has been resolved.
-
-## 25.1.42 (2024-04-30)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I584239` - The issue with "Add Image dropdown item not displayed while using custom toolbar property as annotate" has been resolved.
-
-## 25.1.40 (2024-04-16)
-
-### Image Editor
-
-#### Bug Fixes
-
-- The issue with "content and close icon not proper in alert dialog of the ImageEditor" has been resolved.
-
-## 25.1.39 (2024-04-09)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I564880` - The issue with "unable to restore the old image position after reopening the same image" has been resolved.
 - `#I575218` - The issue with "Image annotation not selected when we set the drawImage method with isSelected parameter as true." has been resolved.
 
-## 25.1.38 (2024-04-02)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I875625` - The issue with "need to add all default toolbar items in `API` link" has been resolved.
-
-## 25.1.37 (2024-03-26)
+- `#I564880` - The issue with "unable to restore the old image position after reopening the same image" has been resolved.
 
 ### Image Editor
 
@@ -65,11 +45,15 @@
 
 - `#I567703` - The issue with "Script error thrown in ProfilePicture ImageEditor sample on a mobile device" has been resolved.
 
+- `#I875625` - The issue with "need to add all default toolbar items in `API` link" has been resolved.
+
+### Image Editor
+
+#### Bug Fixes
+
 - `#I565340` - The issue with "Script error thrown when attempting to reopen a base64 URL using a custom toolbar in mobile mode" has been resolved.
 
 - `#I566745` - The issue with "FontSize is not updated properly while using the updateShape method" has been resolved.
-
-- `#I570160` - "Provide the option to change stroke color for annotations using the shapeChanging event at the beginning of the toolbar render" has been completed.
 
 ## 25.1.35 (2024-03-15)
 

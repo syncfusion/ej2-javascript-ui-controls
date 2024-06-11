@@ -439,7 +439,7 @@ export class Axis extends ChildProperty<Axis> {
                     let labelWidth: number = 0;
                     for (let index: number = 0; index < wrappedlabels.length; index++)
                     {
-                        let wrappedlabelSize: Size = measureText(wrappedlabels[index as number], axis.textStyle);
+                        const wrappedlabelSize: Size = measureText(wrappedlabels[index as number], axis.textStyle);
                         if (wrappedlabelSize.width > labelWidth)
                         {
                             labelWidth = wrappedlabelSize.width;
@@ -448,9 +448,10 @@ export class Axis extends ChildProperty<Axis> {
                     }
                 }
                 if (axis.orientation === 'Vertical'){
-                    let tempintervel: number = heatmap.initialClipRect.height / (axis.axisLabelSize / axis.axisLabelInterval);
+                    const tempintervel: number = heatmap.initialClipRect.height / (axis.axisLabelSize / axis.axisLabelInterval);
                     for (let index: number = 0; index < wrappedlabels.length; index++){
-                        if ((measureText(label, axis.textStyle).height * wrappedlabels.length) > (tempintervel - labelPadding) && wrappedlabels.length > 0 && (axis.angle !== 90 && axis.angle !== 270)){
+                        if ((measureText(label, axis.textStyle).height * wrappedlabels.length) > (tempintervel - labelPadding) &&
+                            wrappedlabels.length > 0 && (axis.angle !== 90 && axis.angle !== 270)){
                             wrappedlabels.pop();
                             if (wrappedlabels.length > 0) {
                                 wrappedlabels[wrappedlabels.length - 1] = wrappedlabels[wrappedlabels.length - 1] + '...';
@@ -548,7 +549,7 @@ export class Axis extends ChildProperty<Axis> {
             max = temp;
         }
         max = !isNullOrUndefined(this.maximum) ? max : (adaptorMax ? <number>adaptorMax : (max + min));
-        const format: string = this.labelFormat;
+        const format: string = !isNullOrUndefined(this.labelFormat) ? this.labelFormat : '';
         const isCustom: boolean = format.match('{value}') !== null;
         this.format = heatmap.intl.getNumberFormat({
             format: isCustom ? '' : format
@@ -582,7 +583,7 @@ export class Axis extends ChildProperty<Axis> {
         let max: number = !isNullOrUndefined(this.maximum) && !(this.maximum instanceof Date) ? <number>this.maximum : this.maxLength;
         const interval: number = this.interval ? this.interval : 1;
         let temp: number;
-        const format: string = this.labelFormat;
+        const format: string = !isNullOrUndefined(this.labelFormat) ? this.labelFormat : '';
         const isCustom: boolean = format.match('{value}') !== null;
         if (!isNullOrUndefined(this.minimum) && !isNullOrUndefined(this.maximum) && min > max) {
             temp = min;
@@ -591,17 +592,17 @@ export class Axis extends ChildProperty<Axis> {
         }
         if (labels && labels.length > 0) {
             for (let i: number = min; i <= max; i = i + interval) {
-                const value: string = !isNullOrUndefined(labels[i as number]) ?  isCustom ? format.replace('{value}', labels[i as number].toString()): labels[i as number].toString(): isCustom ? format.replace('{value}', i.toString()): i.toString();
+                const value: string = !isNullOrUndefined(labels[i as number]) ?  isCustom ? format.replace('{value}', labels[i as number].toString()) : labels[i as number].toString() : isCustom ? format.replace('{value}', i.toString()) : i.toString();
                 this.axisLabels.push(value);
             }
         } else {
             for (let i: number = min; i <= max; i = i + interval) {
-                const value = isCustom ? format.replace('{value}', i.toString()):  i.toString();
+                const value: string = isCustom ? format.replace('{value}', i.toString()) :  i.toString();
                 this.axisLabels.push(value);
             }
         }
         for (let i: number = min; i <= max; i++) {
-            this.tooltipLabels.push(!isNullOrUndefined(labels[i as number]) ? isCustom ? format.replace('{value}', labels[i as number].toString()): labels[i as number].toString() : isCustom ? format.replace('{value}', i.toString()): i.toString());
+            this.tooltipLabels.push(!isNullOrUndefined(labels[i as number]) ? isCustom ? format.replace('{value}', labels[i as number].toString()) : labels[i as number].toString() : isCustom ? format.replace('{value}', i.toString()) : i.toString());
             this.labelValue.push(!isNullOrUndefined(labels[i as number]) ? labels[i as number].toString() : i.toString());
         }
         this.min = min;
@@ -813,4 +814,27 @@ export class Axis extends ChildProperty<Axis> {
         this.multilevel = [];
     }
 
+    /**
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        this.axisLabels = null;
+        this.multipleRow = null;
+        this.rect = null;
+        this.nearSizes = null;
+        this.farSizes = null;
+        this.maxLabelSize = null;
+        this.titleSize = null;
+        this.labelValue = null;
+        this.format = null;
+        this.multilevel = [];
+        this.tooltipLabels = [];
+        this.dateTimeAxisLabelInterval = [];
+        this.jsonCellLabel = [];
+        this.multiLevelSize = [];
+        this.xAxisMultiLabelHeight = [];
+        this.yAxisMultiLabelHeight = [];
+        this.multiLevelPosition = [];
+    }
 }

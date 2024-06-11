@@ -91,7 +91,7 @@ export class FocusModule {
             if (!ganttObj.element.classList.contains('e-scroll-disabled')) {
                 this.upDownKeyNavigate(e);
                 if (!isNullOrUndefined(targetElement) && !isNullOrUndefined(targetElement.closest('.e-chart-row'))) {
-                    ganttObj.ganttChartModule.manageFocus(this.getActiveElement(), 'remove', true);
+                    ganttObj.ganttChartModule.manageFocus(this.getActiveElement(), 'remove', true, e.action);
                 }
             }
             break;
@@ -156,7 +156,7 @@ export class FocusModule {
         {
             if (ganttObj.editModule && ganttObj.editModule.cellEditModule && ganttObj.editModule.cellEditModule.isCellEdit) {
                 e.stopPropagation();
-               } 
+            }
             else if (isNullOrUndefined(document.getElementById(this.parent.element.id + '_dialog'))) {
                 e.preventDefault();
                 ganttObj.addRecord(undefined, this.parent.editSettings.newRowPosition, this.parent.selectedRowIndex);
@@ -194,13 +194,13 @@ export class FocusModule {
                     || (ganttObj.editSettings.allowTaskbarEditing && !ganttObj.editModule.taskbarEditModule.touchEdit))) {
                 if ((ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectionModule.selectedRowIndexes.length)
                         || (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length)) {
-                            if (!isNullOrUndefined(e.target)) {
-                                if (e.target['tagName'] !== 'INPUT' ){
-                                    ganttObj.editModule.startDeleteAction();
-                                }
-                            } else {
-                                ganttObj.editModule.startDeleteAction();
-                            }
+                    if (!isNullOrUndefined(e.target)) {
+                        if (e.target['tagName'] !== 'INPUT' ){
+                            ganttObj.editModule.startDeleteAction();
+                        }
+                    } else {
+                        ganttObj.editModule.startDeleteAction();
+                    }
                 }
             }
             break;
@@ -253,16 +253,16 @@ export class FocusModule {
             e.preventDefault();
             break;
         }
-        case 'undo': 
+        case 'undo':
         {
-            if(this.parent.undoRedoModule && this.parent.undoRedoModule['getUndoCollection'].length > 0) {
+            if (this.parent.undoRedoModule && this.parent.undoRedoModule['getUndoCollection'].length > 0) {
                 this.parent.undo();
             }
             break;
         }
-        case 'redo': 
+        case 'redo':
         {
-            if(this.parent.undoRedoModule && this.parent.undoRedoModule['getRedoCollection'].length > 0) {
+            if (this.parent.undoRedoModule && this.parent.undoRedoModule['getRedoCollection'].length > 0) {
                 this.parent.redo();
             }
             break;
@@ -287,15 +287,14 @@ export class FocusModule {
             if (ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectedRowIndex !== -1) {
                 const selectedItem: IGanttData = ganttObj.currentViewData[ganttObj.selectedRowIndex];
                 const focussedElement: HTMLElement = <HTMLElement>ganttObj.element.querySelector('.e-focused');
-                if(focussedElement){
+                if (focussedElement) {
                     removeClass([focussedElement], 'e-focused');
                 }
-                const focusedRowIndex: number = this.parent.ganttChartModule.focusedRowIndex;
                 const selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
                 const currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
                     expandedRecords[selectingRowIndex - 1];
-                const activeElement: Element = this.parent['args']
-                if (document.activeElement != activeElement) {
+                const activeElement: Element = this.parent['args'];
+                if (document.activeElement !== activeElement) {
                     ganttObj.selectionModule.selectRow(ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
                 }
             } else if (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length > 0) {

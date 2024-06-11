@@ -63,7 +63,7 @@ export class NavigationLine {
                 dashArray = navigation[i as number].dashArray;
                 arrowSettings = navigation[i as number].arrowSettings;
                 showArrow = !isNullOrUndefined(arrowSettings) ? arrowSettings.showArrow : false;
-                if (longitude.length === latitude.length && visible) {
+                if (!isNullOrUndefined(longitude) && !isNullOrUndefined(latitude) && longitude.length === latitude.length && visible) {
                     for (let i: number = 0; i < longitude.length; i++) {
                         const location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                             new Point(longitude[i as number], latitude[i as number]), factor, this.maps.tileTranslatePoint, true

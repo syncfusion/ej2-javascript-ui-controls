@@ -24,9 +24,3 @@ export type EnterKey = 'P' | 'DIV' | 'BR';
  */
 export type ShiftEnterKey = 'P' | 'DIV' | 'BR';
 
-/**
- * Defines the types of action to be used in the Rich Text Editor.
- * @hidden
- * @private
- */
-export type ContentHeightSource = 'SourceCode' | 'Init' | 'Preview' | 'Maximize' | 'Minimize' | 'WindowResize' | 'Toolbar' | 'Resize' | 'Refresh';

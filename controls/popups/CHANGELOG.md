@@ -2,22 +2,6 @@
 
 ## [Unreleased]
 
-## 25.1.42 (2024-04-30)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I579519` - The issue with Tooltip position was improper while assigning margin top to the container has been resolved.
-
-## 25.1.39 (2024-04-09)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I570443` - The issue with the Tooltip component appearance while hovering using a tab key in the uploader sample has been resolved.
-
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

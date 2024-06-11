@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { Chart3D } from '../chart3D';
 import { Chart3DSeries, Chart3DPoint } from './chart-series';
 import { Chart3DStyleOptions, Chart3DVector, Chart3DLocation, Chart3DPointRenderEventArgs, Chart3DRangeValues, Chart3DDepthInfoType } from '../model/chart3d-Interface';
@@ -60,10 +59,14 @@ export class StackingBarSeries3D {
         } else {
             topValue = (series.yAxis.valueType && series.yAxis.valueType.toLowerCase() === 'logarithmic') ? point.top : (point.top < top) ? point.top : top;
         }
-        const tlpoint: Chart3DLocation = chart.svg3DRenderer.transform3DToVisible(series, (point.left > xStart) ? point.left : xStart, topValue, chart);
-        const rbpoint: Chart3DLocation = chart.svg3DRenderer.transform3DToVisible(series, (xEnd > point.right) ? point.right : xEnd, (bottom > point.bottom) ? bottom : point.bottom, chart);
-        const tlfVector: Chart3DVector = chart.vector.vector3D(Math.min(tlpoint.x, rbpoint.x), Math.min(tlpoint.y, rbpoint.y), point.startDepth);
-        const brbVector: Chart3DVector = chart.vector.vector3D(Math.max(tlpoint.x, rbpoint.x), Math.max(tlpoint.y, rbpoint.y), point.endDepth);
+        const tlpoint: Chart3DLocation = chart.svg3DRenderer.transform3DToVisible(series, (point.left > xStart) ? point.left :
+            xStart, topValue, chart);
+        const rbpoint: Chart3DLocation = chart.svg3DRenderer.transform3DToVisible(series, (xEnd > point.right) ? point.right :
+            xEnd, (bottom > point.bottom) ? bottom : point.bottom, chart);
+        const tlfVector: Chart3DVector = chart.vector.vector3D(Math.min(tlpoint.x, rbpoint.x),
+                                                               Math.min(tlpoint.y, rbpoint.y), point.startDepth);
+        const brbVector: Chart3DVector = chart.vector.vector3D(Math.max(tlpoint.x, rbpoint.x),
+                                                               Math.max(tlpoint.y, rbpoint.y), point.endDepth);
         const styleOptions: Chart3DStyleOptions = series.setStyle(series);
         const name: string = 'region' + '-series-' + seriesIndex + '-point-' + pointIndex;
         if (series.columnFacet === 'Cylinder') {

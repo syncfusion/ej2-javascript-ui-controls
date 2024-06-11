@@ -76,6 +76,14 @@ export class Row extends ChildProperty<SheetModel> {
 
     /** @hidden */
     public isFiltered: boolean;
+
+    /**
+     * Represents whether a row in the sheet is read-only or not. If set to true, it prevents editing the specified cell in the sheet.
+     *
+     * @default false
+     */
+    @Property(false)
+    public isReadOnly: boolean;
 }
 
 /**

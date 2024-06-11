@@ -1,7 +1,5 @@
 @include export-module('grid-material-icons') {
 
-  /* !componenticons */
-
   .e-icon-check::before {
     content: '\e7ff';
   }
@@ -9,6 +7,8 @@
   #{&}.e-grid,
   .e-grid-menu {
 
+    &.e-rtl .e-icon-rowdragicon::before,
+    .e-icon-rowdragicon::before,
     .e-group-animate .e-drag.e-icon-drag::before {
       content: '\e330';
     }
@@ -25,6 +25,8 @@
       content: '\e83f';
     }
 
+    .e-cancel-icon::before,
+    .e-cancel::before,
     .e-icon-hide::before {
       content: '\e825';
     }
@@ -54,16 +56,13 @@
       content: '\e7ee';
     }
 
+    .e-excl-filter-icon::before,
     .e-resfilter-icon::before {
       content: '\e251';
     }
 
     .e-ressort-icon::before {
       content: '\e612';
-    }
-
-    .e-excl-filter-icon::before {
-      content: '\e251';
     }
 
     .e-excl-filter-icon.e-filtered::before {
@@ -76,10 +75,7 @@
       }
     }
 
-    .e-icon-group::before {
-      content: '\e926';
-    }
-
+    .e-icon-group::before,
     .e-icon-ungroup::before {
       content: '\e926';
     }
@@ -124,6 +120,7 @@
       content: '\e81e';
     }
 
+    .e-responsivetoolbaritems-btn::before,
     .e-columnmenu::before,
     .e-columnmenu.e-filtered::before {
       content: '\e984';
@@ -131,10 +128,6 @@
 
     .e-delete::before {
       content: '\e84e';
-    }
-
-    .e-cancel::before {
-      content: '\e825';
     }
 
     .e-copy::before {
@@ -149,20 +142,13 @@
       content: '\e735';
     }
 
+    .e-ccsearch-icon::before,
     .e-search-icon::before {
       content: '\e993';
     }
 
-    .e-cancel-icon::before {
-      content: '\e825';
-    }
-
     .e-columnchooserdiv::before {
       content: '\e714';
-    }
-
-    .e-ccsearch-icon::before {
-      content: '\e993';
     }
 
     .e-columnchooser::before {
@@ -175,20 +161,6 @@
 
     .e-cc-icon::before {
       content: '\e82e';
-    }
-
-    .e-icon-rowdragicon::before {
-      content: '\e330';
-    }
-
-    .e-responsivetoolbaritems-btn::before {
-      content: '\e984';
-    }
-
-    &.e-rtl {
-      .e-icon-rowdragicon::before {
-        content: '\e330';
-      }
     }
 
     .e-ccsearch-icon.e-cc-cancel::before,
@@ -233,26 +205,23 @@
     content: '\e83f';
   }
 
-  & .e-resgroup-icon.e-icons::before {
-    content: '\e926';
-  }
-
+  & .e-resgroup-icon.e-icons::before,
   & .e-resungroup-icon.e-icons::before {
     content: '\e926';
   }
 }
 
-.e-grid-toolbarmenu {
-  .e-responsivetoolbar-menu .e-menu-icon.e-print::before  {
+.e-grid-toolbarmenu .e-responsivetoolbar-menu {
+  .e-menu-icon.e-print::before {
     content: '\e813';
   }
-  .e-responsivetoolbar-menu .e-menu-icon.e-pdfexport::before  {
+  .e-menu-icon.e-pdfexport::before {
     content: '\e240';
   }
-  .e-responsivetoolbar-menu .e-menu-icon.e-excelexport::before  {
+  .e-menu-icon.e-excelexport::before {
     content: '\e242';
   }
-  .e-responsivetoolbar-menu .e-menu-icon.e-csvexport::before  {
+  .e-menu-icon.e-csvexport::before {
     content: '\e241';
   }
 }

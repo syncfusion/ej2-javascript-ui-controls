@@ -5,30 +5,35 @@ import { Size } from '../utility/size';
 
 /**
  * Set of TickAlignment available for Ruler.
+ *
  * @private
  */
 export type TickAlignment = 'LeftOrTop' | 'RightOrBottom';
 
 /**
  * Set of orientations available for Ruler.
+ *
  * @private
  */
 export type RulerOrientation = 'Horizontal' | 'Vertical';
 
 /**
  * Interface for a class Point
+ *
  * @private
  */
 export interface PointModel {
 
     /**
      * Sets the x-coordinate of a position
+     *
      * @default 0
      */
     x?: number;
 
     /**
      * Sets the y-coordinate of a position
+     *
      * @default 0
      */
     y?: number;
@@ -137,8 +142,8 @@ export class Ruler {
     /**
      *  Constructor for creating the Ruler Component
      *
-     * @param {RulerModel} options The ruler model.
      * @param {string | HTMLElement} element The ruler element.
+     * @param {RulerHelper} rulerHelper The ruler helper.
      */
     constructor(element: HTMLElement, rulerHelper: RulerHelper) {
         this.element = element;
@@ -148,6 +153,7 @@ export class Ruler {
 
     /**
      * @private
+     * @returns {void} To append the ruler
      */
     public appendTo(): void {
         this.preRender();
@@ -219,7 +225,9 @@ export class Ruler {
 
     // }
     /**
+     * @param {boolean} show - provide the show value.
      * @private
+     * @returns {void} To show or hide the ruler
      */
     public showHideRuler(show: boolean): void {
         if (show) {
@@ -250,7 +258,7 @@ export class Ruler {
 
     /**
      * @private
-     * 
+     *
      * @returns {void} To update the ruler
      */
     public updateRuler(): void {
@@ -306,7 +314,7 @@ export class Ruler {
             this.startValue = (this.startValue % 1) !== 0 ? Number((this.startValue).toFixed(1)) : this.startValue;
             //  rulerSegment.label.textContent = (this.startValue).toString();
             let labeltext: number;
-            if (this.rulerStartValue == 0) {
+            if (this.rulerStartValue === 0) {
                 this.addSegmentWidth = true;
             }
             if (this.addSegmentWidth) {
@@ -373,13 +381,13 @@ export class Ruler {
         //let rect: SVGElement;
         const rectattr: Object = { 'class': 'e-de-ruler-segment1' };
         const rect: SVGElement = this.rulerHelper.createSvgElement('rect', rectattr);
-        let width: number = this.orientation === "Horizontal" ? (segmentWidth * this.scale) : 15;
-        let height: number = this.orientation === "Horizontal" ? 15 : segmentWidth;
-        rect.setAttribute("x", "0");
-        rect.setAttribute("y", "0");
-        rect.setAttribute("width", width.toString());
-        rect.setAttribute("height", height.toString());
-        rect.setAttribute("fill", "lightgrey");
+        const width: number = this.orientation === 'Horizontal' ? (segmentWidth * this.scale) : 15;
+        const height: number = this.orientation === 'Horizontal' ? 15 : segmentWidth;
+        rect.setAttribute('x', '0');
+        rect.setAttribute('y', '0');
+        rect.setAttribute('width', width.toString());
+        rect.setAttribute('height', height.toString());
+        rect.setAttribute('fill', 'lightgrey');
         // g.appendChild(rect);
         for (let i: number = 0; i < this.interval; i++) {
             tickInterval = segmentWidth / this.interval;
@@ -403,7 +411,7 @@ export class Ruler {
     private createTick(svg: SVGElement, tickInterval: number, length: number, run: number): SVGElement {
         let ruler: Ruler;
         //let line: SVGElement;
-        let linePoint: number = this.getLinePoint(svg, tickInterval, length);
+        const linePoint: number = this.getLinePoint(svg, tickInterval, length);
         const rulerSize: number = this.getRulerSize();
         //let args: IArrangeTickOptions;
         //let attr: Object;
@@ -544,7 +552,7 @@ export class Ruler {
     }
 
     private getRulerGeometry(): Size {
-        if (this.orientation === "Horizontal") {
+        if (this.orientation === 'Horizontal') {
             return new Size(
                 this.length,
                 this.element ? this.element.getBoundingClientRect().height : 0
@@ -577,7 +585,8 @@ export class Ruler {
                 svg = this.rulerHelper.createSvgElement('svg', attr);
                 if (rulerSpace.childNodes.length > 0) {
                     for (let i: number = rulerSpace.childNodes.length - 1; i >= 0; i--) {
-                        rulerSpace.childNodes[parseInt(i.toString(), 10)].parentNode.removeChild(rulerSpace.childNodes[parseInt(i.toString(), 10)]);
+                        rulerSpace.childNodes[parseInt(i.toString(), 10)].parentNode.removeChild(
+                            rulerSpace.childNodes[parseInt(i.toString(), 10)]);
                     }
                 }
                 rulerSpace.appendChild(svg);

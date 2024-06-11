@@ -116,10 +116,13 @@ export class Overlay {
             parent.appendChild(div);
             this.renderResizeHandler(div);
             this.addEventListener(div);
+        } else if (this.parent.isPrintingProcessing) {
+            div.style.visibility = 'hidden';
+            document.body.append(div);
         }
         this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
         this.originalHeight = parseFloat(getComputedStyle(div, null).getPropertyValue('height').replace('px', ''));
-        return { element: div, top: pos.top, left: pos.left }
+        return { element: div, top: pos.top, left: pos.left };
     }
 
     /**
@@ -375,9 +378,10 @@ export class Overlay {
         }
         else {
             const selector: string = 'e-ss-overlay-active';
-            const overlayElems: HTMLElement[] = Array.from(this.parent.element.getElementsByClassName(selector) as HTMLCollectionOf<HTMLElement>);
-            for (let i = 0; i < overlayElems.length; i++) {
-                let element = overlayElems[i as number];
+            const overlayElems: HTMLElement[] =
+                Array.from(this.parent.element.getElementsByClassName(selector) as HTMLCollectionOf<HTMLElement>);
+            for (let i: number = 0; i < overlayElems.length; i++) {
+                const element: HTMLElement = overlayElems[i as number];
                 if (element) {
                     removeClass([element], 'e-ss-overlay-active');
                     this.parent.notify(removeDesignChart, {});
@@ -448,7 +452,7 @@ export class Overlay {
         while (idx < handles.length) {
             handleElem = this.parent.createElement(
                 'div', { className: handles[idx as number] + ' ' + 'e-ss-resizer' + (Browser.isDevice ? ' e-ss-resizer-touch' : ''),
-                styles: 'width: 8px; height: 8px; border-radius: 4px;' });
+                    styles: 'width: 8px; height: 8px; border-radius: 4px;' });
             overlay.appendChild(handleElem);
             idx++;
         }

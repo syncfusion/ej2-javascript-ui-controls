@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, ChildProperty, Collection, BaseEventArgs, Event, EmitType, NotifyPropertyChanges, Property, getUniqueID, addClass, attributes, isNullOrUndefined, select, compile, remove, removeClass, append } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, ChildProperty, Collection, BaseEventArgs, Event, EmitType, NotifyPropertyChanges, Property, getUniqueID, attributes, select, compile, remove, removeClass, append, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TimelineModel, TimelineItemModel } from '../timeline';
 
 const ITEMLISTCONTAINER: string = 'e-timeline-items';
@@ -141,7 +141,7 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
      * The possible values are:
      * * Horizontal
      * * vertical
-     * 
+     *
      * {% codeBlock src='timeline/orientation/index.md' %}{% endcodeBlock %}
      *
      * @isenumeration true
@@ -159,7 +159,7 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
      * * After
      * * Alternate
      * * AlternateReverse
-     * 
+     *
      * {% codeBlock src='timeline/align/index.md' %}{% endcodeBlock %}
      *
      * @isenumeration true
@@ -186,7 +186,7 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
     public cssClass: string;
 
     /**
-     * Defines whether to show the timeline items in reverse order or not. 
+     * Defines whether to show the timeline items in reverse order or not.
      *
      * @default false
      */
@@ -195,7 +195,7 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Defines the template content for each timeline item. The template context will contain the item model.
-     * 
+     *
      * {% codeBlock src='timeline/template/index.md' %}{% endcodeBlock %}
      *
      * @default ''
@@ -226,7 +226,6 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
     /* Private variables */
     private timelineListEle: HTMLElement;
     private templateFunction: Function;
-    private isReact?: boolean;
 
     /**
      * * Constructor for creating the Timeline component.
@@ -246,7 +245,7 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * To get component name.
      *
-     * @returns {string} - Module Name
+     * @returns {string} - It returns the current module name.
      * @private
      */
     public getModuleName(): string {
@@ -257,7 +256,7 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
      * This method is abstract member of the Component<HTMLElement>.
      *
      * @private
-     * @returns {string}
+     * @returns {string} - It returns the persisted data.
      */
     protected getPersistData(): string {
         return this.addOnPersist([]);
@@ -276,21 +275,21 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
         this.element.appendChild(this.timelineListEle);
     }
 
-    
-
     protected updateOrientation(): void {
-        const orientation = this.orientation.toLowerCase();
-        if (orientation === 'horizontal' || orientation === 'vertical') {
-            this.element.classList.remove(HORIZONTAL, VERTICAL);
-            this.element.classList.add('e-' + orientation);
+        if (!(isNullOrUndefined(this.orientation))) {
+            const orientation: string = this.orientation.toLowerCase();
+            if (orientation === 'horizontal' || orientation === 'vertical') {
+                this.element.classList.remove(HORIZONTAL, VERTICAL);
+                this.element.classList.add('e-' + orientation);
+            }
         }
     }
 
-    protected updateCssClass(addCss: string, removeCss: string = ""): void {
+    protected updateCssClass(addCss: string, removeCss: string = ''): void {
         let cssClasses: string[];
         if (removeCss) {
             cssClasses = removeCss.trim().split(' ');
-            this.element.classList.remove(...cssClasses); 
+            this.element.classList.remove(...cssClasses);
         }
         if (addCss) {
             cssClasses = addCss.trim().split(' ');
@@ -303,10 +302,12 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     protected updateAlign(): void {
-        const align: string = this.align.toLowerCase();
-        if (align === 'before' || align === 'after' || align === 'alternate' || align === 'alternatereverse') {
-            this.element.classList.remove('e-align-before', 'e-align-after', 'e-align-alternate', 'e-align-alternatereverse');
-            this.element.classList.add('e-align-' + align);
+        if (!(isNullOrUndefined(this.align))) {
+            const align: string = this.align.toLowerCase();
+            if (align === 'before' || align === 'after' || align === 'alternate' || align === 'alternatereverse') {
+                this.element.classList.remove('e-align-before', 'e-align-after', 'e-align-alternate', 'e-align-alternatereverse');
+                this.element.classList.add('e-align-' + align);
+            }
         }
     }
 
@@ -315,34 +316,21 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderItems(): void {
+        this.haveOneSidecontent();
         for (let index: number = 0; index < this.items.length; index++) {
             const item: TimelineItemModel = this.items[parseInt(index.toString(), 10)];
             const timelineItem: HTMLElement = this.createElement('li', { className: ITEMCONTAINER + ' ' + ITEMCONNECTOR });
             if (!this.template) {
-                const oppositeTextEle = this.createElement('div', { className: OPPOSITECONTENT });
-                if (item.oppositeContent) {
-                    const oppositeCtn: string | Function = this.getTemplateFunction(item.oppositeContent);
-                    if (typeof oppositeCtn === 'string') {
-                        oppositeTextEle.innerText = oppositeCtn;
-                    } else {
-                        append(oppositeCtn({ item: item, itemIndex: index }), oppositeTextEle);
-                    }
-                }
+                const oppositeTextEle: HTMLElement = this.createElement('div', { className: OPPOSITECONTENT });
+                if (item.oppositeContent) { this.updateItemContent(false, item, index, oppositeTextEle); }
                 timelineItem.appendChild(oppositeTextEle);
                 const dotContainer: HTMLElement = this.createElement('div', { className: DOTCONTAINER });
                 const dotEleCss: string = item.dotCss ? DOTCONTENT + ' ' + item.dotCss.trim() : DOTCONTENT;
                 const dotEle: HTMLElement = this.createElement('div', { className: dotEleCss });
                 dotContainer.appendChild(dotEle);
                 timelineItem.appendChild(dotContainer);
-                const contentEle = this.createElement('div', { className: CONTENT });
-                if (item.content){
-                    const ctn: string | Function = this.getTemplateFunction(item.content);
-                    if (typeof ctn === 'string') {
-                        contentEle.innerText = ctn;
-                    } else {
-                        append(ctn({ item: item, itemIndex: index }), contentEle);
-                    }
-                }
+                const contentEle: HTMLElement = this.createElement('div', { className: CONTENT });
+                if (item.content){ this.updateItemContent(true, item, index, contentEle); }
                 timelineItem.appendChild(contentEle);
                 if (item.cssClass) { timelineItem.classList.add(...item.cssClass.trim().split(' ')); }
                 if (item.disabled) { timelineItem.classList.add(DISABLED); }
@@ -352,7 +340,29 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
             }
             const eventArgs: TimelineRenderingEventArgs = { element: timelineItem, index: index };
             this.trigger('beforeItemRender', eventArgs, (args: TimelineRenderingEventArgs) => { this.timelineListEle.appendChild(args.element); });
-           
+        }
+    }
+
+    private haveOneSidecontent(): void {
+        let haveContent: boolean = false;
+        let haveOppContent: boolean = false;
+        for (let index: number = 0; index < this.items.length; index++) {
+            const item: TimelineItemModel = this.items[parseInt(index.toString(), 10)];
+            if (!haveContent) { haveContent = item.content.length > 0; }
+            if (!haveOppContent) { haveOppContent = item.oppositeContent.length > 0; }
+        }
+        this.element.classList.remove('e-content-only', 'e-opposite-content-only');
+        if (haveContent && !haveOppContent) { this.element.classList.add('e-content-only'); }
+        if (haveOppContent && !haveContent) { this.element.classList.add('e-opposite-content-only'); }
+    }
+
+    private updateItemContent(isContent: boolean, item: TimelineItemModel, index: number, contentEle: HTMLElement): void {
+        const notCompile: boolean = !(this.isReact || this.isVue);
+        const ctn: string | Function = this.getTemplateFunction(isContent ? item.content : item.oppositeContent, notCompile);
+        if (typeof ctn === 'string') {
+            contentEle.innerText = ctn;
+        } else {
+            append(ctn({ item: item, itemIndex: index }, this), contentEle);
         }
     }
 
@@ -366,8 +376,8 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
             this.removeItemContent(listItems[parseInt((index).toString(), 10)] as HTMLElement);
         }
         if (this.template) {
-            isrerender ? listItems[parseInt((index).toString(), 10)].classList.add(TEMPLATE) :
-                timelineItem.classList.add(TEMPLATE);
+            if (isrerender) { listItems[parseInt((index).toString(), 10)].classList.add(TEMPLATE); }
+            else { timelineItem.classList.add(TEMPLATE); }
             const item: TimelineItemModel = this.items[parseInt(index.toString(), 10)];
             append(this.templateFunction({ item: item, itemIndex: index }, this, 'timelineTemplate', (this.element.id + '_timelineTemplate'), this.isStringTemplate), isrerender ? listItems[parseInt((index).toString(), 10)] : timelineItem);
         }
@@ -386,6 +396,7 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
      * Gets template content based on the template property value.
      *
      * @param {string | Function} template - Template property value.
+     * @param {boolean} notCompile - Compile property value.
      * @returns {Function} - Return template function.
      * @hidden
      */
@@ -435,12 +446,47 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
         super.destroy();
         // unwires the events and detach the li elements
         this.removeItemElements();
-        this.element.removeAttribute("role");
-        this.element.removeAttribute("aria-label");
+        this.element.removeAttribute('role');
+        this.element.removeAttribute('aria-label');
         this.clearTemplate();
         if (this.timelineListEle) { remove(this.timelineListEle); }
         this.timelineListEle = null;
         this.updateElementClassArray();
+    }
+
+    private updateItems(newProp: string, oldPropItems: TimelineItemModel, index: number, item: TimelineItemModel): void {
+        const timelineItemElements: NodeListOf<Element> = this.timelineListEle.querySelectorAll('li');
+        let dotEle: HTMLElement;
+        let contentEle: HTMLElement;
+        let oppositeEle: HTMLElement;
+        switch (newProp) {
+        case 'dotCss':
+            dotEle = timelineItemElements[parseInt(index.toString(), 10)].querySelector('.' + DOTCONTENT);
+            if (oldPropItems.dotCss !== '') { dotEle.classList.remove(...oldPropItems.dotCss.trim().split(' ')); }
+            dotEle.classList.add(...this.items[parseInt(index.toString(), 10)].dotCss.trim().split(' '));
+            break;
+        case 'content':
+            contentEle = timelineItemElements[parseInt(index.toString(), 10)].querySelector('.' + CONTENT);
+            contentEle.innerText = '';
+            this.updateItemContent(true, item, index, contentEle);
+            this.haveOneSidecontent();
+            break;
+        case 'oppositeContent':
+            oppositeEle = timelineItemElements[parseInt(index.toString(), 10)].querySelector('.' + OPPOSITECONTENT);
+            oppositeEle.innerText = '';
+            this.updateItemContent(false, item, index, oppositeEle);
+            this.haveOneSidecontent();
+            break;
+        case 'disabled':
+            timelineItemElements[parseInt(index.toString(), 10)].classList[this.items[parseInt(index.toString(), 10)].disabled ? 'add' : 'remove'](DISABLED);
+            break;
+        case 'cssClass':
+            if (oldPropItems.cssClass !== '') {
+                timelineItemElements[parseInt(index.toString(), 10)].classList.remove(...oldPropItems.cssClass.trim().split(' '));
+            }
+            timelineItemElements[parseInt(index.toString(), 10)].classList.add(...item.cssClass.trim().split(' '));
+            break;
+        }
     }
 
     /**
@@ -454,11 +500,19 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
     public onPropertyChanged(newProp: TimelineModel, oldProp?: TimelineModel): void {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-            case 'items': {
-                this.removeItemElements();
-                this.renderItems();
+            case 'items':
+                if (Array.isArray(newProp.items)) {
+                    this.removeItemElements();
+                    this.renderItems();
+                } else {
+                    const itemObject: Object[] = Object.keys(newProp.items);
+                    for (let i: number = 0; i < itemObject.length; i++) {
+                        const index: number = parseInt(Object.keys(newProp.items)[i as number], 10);
+                        const property: string = Object.keys(newProp.items[index as number])[0];
+                        this.updateItems(property, oldProp.items[index as number], index, newProp.items[index as number]);
+                    }
+                }
                 break;
-            }
             case 'orientation':
                 this.updateOrientation();
                 break;

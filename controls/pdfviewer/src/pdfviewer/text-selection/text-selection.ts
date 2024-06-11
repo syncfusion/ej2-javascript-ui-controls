@@ -1,6 +1,5 @@
-/* eslint-disable */
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PdfViewer, PdfViewerBase } from '../index';
+import { Annotation, PdfViewer, PdfViewerBase } from '../index';
 
 /**
  * The `IRectangle` module is used to handle rectangle property of PDF viewer.
@@ -35,9 +34,11 @@ export interface ISelection {
 }
 /**
  * The `TextSelection` module is used to handle the text selection of PDF viewer.
+ *
+ * @param {Event} event - event
+ * @returns {void}
  */
 export class TextSelection {
-
     /**
      * @private
      */
@@ -61,8 +62,7 @@ export class TextSelection {
     public selectionRangeArray: ISelection[] = [];
     private selectionAnchorTouch: { [key: string]: Object } = null;
     private selectionFocusTouch: { [key: string]: Object } = null;
-    // eslint-disable-next-line
-    private scrollMoveTimer: any = 0;
+    private scrollMoveTimer: number = 0;
     private isMouseLeaveSelection: boolean = false;
     private isTouchSelection: boolean = false;
     private previousScrollDifference: number = 0;
@@ -70,13 +70,13 @@ export class TextSelection {
     private topStoreRight: { [key: string]: Object } = null;
     private isTextSearched: boolean = false;
     private isSelectionStartTriggered: boolean = false;
-    private allTextContent : any = "";
+    private allTextContent : any = '';
+
     /**
-     * @param pdfViewer
-     * @param pdfViewerBase
-     * @param pdfViewer
-     * @param pdfViewerBase
+     * @param {PdfViewer} pdfViewer - It describes about the pdfviewer
+     * @param {PdfViewerBase} pdfViewerBase - It describes about the pdfviewer base
      * @private
+     * @returns {void}
      */
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
@@ -84,11 +84,12 @@ export class TextSelection {
     }
 
     /**
-     * @param target
-     * @param x
-     * @param y
-     * @param isExtended
+     * @param {EventTarget} target - It describes about the target
+     * @param {number} x - It describes about the X value
+     * @param {number} y - It describes about the Y value
+     * @param {boolean} isExtended - It describes about the isExtended boolean value
      * @private
+     * @returns {void}
      */
     public textSelectionOnMouseMove(target: EventTarget, x: number, y: number, isExtended?: boolean): void {
         const targetElement: HTMLElement = target as HTMLElement;
@@ -116,15 +117,12 @@ export class TextSelection {
                 const rangeBounds: ClientRect = range.getBoundingClientRect();
                 let rightBounds: number = rangeBounds.right;
                 if (isExtended) {
-                    // eslint-disable-next-line
-                    rightBounds = parseInt(rangeBounds.right.toString());
+                    rightBounds = parseInt(rangeBounds.right.toString(), 10);
                 }
-                // eslint-disable-next-line max-len
-                // eslint-disable-next-line
-                if (rangeBounds.left <= x && rightBounds >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
+                if (rangeBounds.left <= x && rightBounds >= x && parseInt(rangeBounds.top.toString(), 10) <= y && rangeBounds.bottom >= y) {
                     if (selection.anchorNode !== null && (selection.anchorNode.parentNode as HTMLElement).classList.contains('e-pv-text')) {
                         if (selection.anchorOffset > currentPosition) {
-                            if (this.backwardStart != 0) {
+                            if (this.backwardStart !== 0) {
                                 range.setStart(selection.anchorNode, this.backwardStart);
                             } else {
                                 range.setStart(selection.anchorNode, selection.anchorOffset + 1);
@@ -139,14 +137,13 @@ export class TextSelection {
                         this.selectionStartPage = this.pdfViewerBase.currentPageNumber - 1;
                     }
                     this.isTextSelection = true;
-                    // eslint-disable-next-line
-                    let isIE: boolean = !!(document as any).documentMode;
+                    const isIE: boolean = !!(document as any).documentMode;
                     if (!isIE) {
                         if (this.isBackwardPropagatedSelection || range.endOffset > currentPosition) {
-                            if (this.backwardStart != range.startOffset && range.startOffset >= currentPosition) {
+                            if (this.backwardStart !== range.startOffset && range.startOffset >= currentPosition) {
                                 this.backwardStart = range.endOffset;
                             }
-                            if (currentPosition === 0 && range.endOffset != 1) {
+                            if (currentPosition === 0 && range.endOffset !== 1) {
                                 selection.extend(targetElement, currentPosition);
                             } else {
                                 selection.extend(targetElement, currentPosition + 1);
@@ -161,17 +158,14 @@ export class TextSelection {
                 }
                 currentPosition += 1;
             }
-            // eslint-disable-next-line
-            let annotationModule: any = this.pdfViewer.annotationModule;
-            // eslint-disable-next-line max-len
-            if (annotationModule && annotationModule.textMarkupAnnotationModule && annotationModule.textMarkupAnnotationModule.isEnableTextMarkupResizer(annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode)) {
-                // eslint-disable-next-line
-                let leftDivElement: any = document.getElementById(this.pdfViewer.element.id + '_droplet_left');
+            const annotationModule: Annotation = this.pdfViewer.annotationModule;
+            if (annotationModule && annotationModule.textMarkupAnnotationModule &&
+                annotationModule.textMarkupAnnotationModule.
+                    isEnableTextMarkupResizer(annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode)) {
+                const leftDivElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_droplet_left');
                 if (this.pdfViewerBase.isSelection && selection && selection.rangeCount > 0) {
-                    // eslint-disable-next-line
-                    let currentrange: any = selection.getRangeAt(0);
-                    // eslint-disable-next-line
-                    let rect: any = currentrange.getBoundingClientRect();
+                    const currentrange: Range = selection.getRangeAt(0);
+                    const rect: any = currentrange.getBoundingClientRect();
                     const left: number = rect.left;
                     const top: number = rect.top;
                     this.pdfViewer.annotation.textMarkupAnnotationModule.updateLeftposition(left, top);
@@ -183,14 +177,13 @@ export class TextSelection {
             }
         } else {
             for (let i: number = 0; i < targetElement.childNodes.length; i++) {
-                if (targetElement.childNodes[i].nodeType === targetElement.TEXT_NODE) {
+                if (targetElement.childNodes[parseInt(i.toString(), 10)].nodeType === targetElement.TEXT_NODE) {
                     const range: Range = this.getSelectionRange(i, targetElement);
                     const rangeBounds: ClientRect = range.getBoundingClientRect();
-                    // eslint-disable-next-line max-len
-                    // eslint-disable-next-line
-                    if (rangeBounds.left <= x && rangeBounds.right >= parseInt(x.toString()) && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
+                    if (rangeBounds.left <= x && rangeBounds.right >= parseInt(x.toString(), 10) &&
+                    parseInt(rangeBounds.top.toString(), 10) <= y && rangeBounds.bottom >= y) {
                         range.detach();
-                        this.textSelectionOnMouseMove(targetElement.childNodes[i], x, y, isExtended);
+                        this.textSelectionOnMouseMove(targetElement.childNodes[parseInt(i.toString(), 10)], x, y, isExtended);
                     } else {
                         range.detach();
                     }
@@ -198,20 +191,14 @@ export class TextSelection {
             }
         }
     }
+
     /**
-     * @param target
-     * @param x
-     * @param y
-     * @param isforward
-     * @param target
-     * @param x
-     * @param y
-     * @param isforward
-     * @param target
-     * @param x
-     * @param y
-     * @param isforward
+     * @param {EventTarget} target - It describes about the target
+     * @param {number} x - It describes about the X value
+     * @param {number} y - It describes about the Y value
+     * @param {boolean} isforward - It describes about the isforward boolean value
      * @private
+     * @returns {boolean} - boolean
      */
     public textSelectionOnDrag(target: EventTarget, x: number, y: number, isforward: boolean): boolean {
         const targetElement: HTMLElement = target as HTMLElement;
@@ -233,11 +220,9 @@ export class TextSelection {
                 range.setStart(targetElement, currentPosition);
                 range.setEnd(targetElement, currentPosition + 1);
                 const rangeBounds: ClientRect = range.getBoundingClientRect();
-                // eslint-disable-next-line max-len
-                // eslint-disable-next-line
-                if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
+                if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString(), 10) <= y &&
+                rangeBounds.bottom >= y) {
                     if (isforward) {
-                        // eslint-disable-next-line max-len
                         if (selection.anchorNode !== null && (selection.anchorNode.parentNode as HTMLElement).classList.contains('e-pv-text')) {
                             range.setStart(selection.anchorNode, selection.anchorOffset);
                         }
@@ -259,10 +244,8 @@ export class TextSelection {
                 currentPosition += 1;
             }
             if (this.pdfViewerBase.isSelection) {
-                // eslint-disable-next-line
-                let currentrange: any = selection.getRangeAt(0);
-                // eslint-disable-next-line
-                let rect: any = currentrange.getBoundingClientRect();
+                const currentrange: Range = selection.getRangeAt(0);
+                const rect: any = currentrange.getBoundingClientRect();
                 const left: number = rect.left;
                 const top: number = rect.top;
                 this.pdfViewer.annotation.textMarkupAnnotationModule.updateLeftposition(left, top);
@@ -271,14 +254,13 @@ export class TextSelection {
             this.pdfViewer.annotation.textMarkupAnnotationModule.updatePosition(x, y);
         } else {
             for (let i: number = 0; i < targetElement.childNodes.length; i++) {
-                if (targetElement.childNodes[i].nodeType === targetElement.TEXT_NODE) {
+                if (targetElement.childNodes[parseInt(i.toString(), 10)].nodeType === targetElement.TEXT_NODE) {
                     const range: Range = this.getSelectionRange(i, targetElement);
                     const rangeBounds: ClientRect = range.getBoundingClientRect();
-                    // eslint-disable-next-line max-len
-                    // eslint-disable-next-line
-                    if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
+                    if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString(), 10) <= y &&
+                    rangeBounds.bottom >= y) {
                         range.detach();
-                        this.textSelectionOnDrag(targetElement.childNodes[i], x, y, isforward);
+                        this.textSelectionOnDrag(targetElement.childNodes[parseInt(i.toString(), 10)], x, y, isforward);
                     } else {
                         range.detach();
                     }
@@ -293,98 +275,86 @@ export class TextSelection {
      *
      * @param  {number} pageNumbers - Specifies the page number
      * @param  {IRectangle[]} bounds -  Specifies the bounds of the texts.
-     * @returns void
+     * @returns {void}
      */
     public selectTextRegion(pageNumbers: number, bounds: IRectangle[]): void {
-        // eslint-disable-next-line
         let element: any = null;
         const pageNumber: number = (pageNumbers - 1);
         for (let k: number = 0; k < bounds.length; k++) {
-            // eslint-disable-next-line
-            let bound: any = bounds[k];
+            const bound: any = bounds[parseInt(k.toString(), 10)];
             const x: number = (bound.left ? bound.left : bound.Left) * this.pdfViewerBase.getZoomFactor();
             const y: number = (bound.top ? bound.top : bound.Top) * this.pdfViewerBase.getZoomFactor();
             const width: number = (bound.width ? bound.width : bound.Width) * this.pdfViewerBase.getZoomFactor();
-            const height: number = bound.height ? bound.height : bound.Height;
-            // eslint-disable-next-line
-            let textLayer: any = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
+            const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
             if (textLayer) {
-                // eslint-disable-next-line
-                let textDivs: any = textLayer.childNodes;
+                const textDivs: any = textLayer.childNodes;
                 for (let n: number = 0; n < textDivs.length; n++) {
-                    if (textDivs[n]) {
-                        // eslint-disable-next-line
-                        let rangebounds: any = textDivs[n].getBoundingClientRect();
+                    if (textDivs[parseInt(n.toString(), 10)]) {
+                        const rangebounds: any = textDivs[parseInt(n.toString(), 10)].getBoundingClientRect();
                         const top: number = this.getClientValueTop(rangebounds.top, pageNumber);
-                        // eslint-disable-next-line max-len
                         const currentLeft: number = rangebounds.left - this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).getBoundingClientRect().left;
                         const totalLeft: number = currentLeft + rangebounds.width;
-                        // eslint-disable-next-line
-                        let textDiVLeft: number = parseInt(textDivs[n].style.left);
-                        // eslint-disable-next-line
-                        let currentTop: number = parseInt(textDivs[n].style.top);
+                        const textDiVLeft: number = parseInt(textDivs[parseInt(n.toString(), 10)].style.left, 10);
+                        const currentTop: number = parseInt(textDivs[parseInt(n.toString(), 10)].style.top, 10);
                         const isLeftBounds: boolean = this.checkLeftBounds(currentLeft, textDiVLeft, totalLeft, x);
                         const isTopBounds: boolean = this.checkTopBounds(top, currentTop, y);
                         if (isLeftBounds && isTopBounds) {
-                            element = textDivs[n];
+                            element = textDivs[parseInt(n.toString(), 10)];
                             break;
                         }
                     }
                 }
                 if (element != null) {
-                    // eslint-disable-next-line
-                    let boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + pageNumber).getBoundingClientRect();
+                    const boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + pageNumber).getBoundingClientRect();
                     this.textSelectionOnMouseMove(element, x + boundingRect.left, y + boundingRect.top, false);
                     if ((bounds.length - 1) === k) {
-                        // eslint-disable-next-line max-len
                         this.textSelectionOnMouseMove(element, x + boundingRect.left + width, y + boundingRect.top, false);
                     }
                 }
             }
         }
     }
+
     /**
-     * @param left
-     * @param textDiVLeft
-     * @param totalLeft
-     * @param x
+     * @param {number} left - It describes about the left value
+     * @param {number} textDiVLeft - It describes about the text div left value
+     * @param {number} totalLeft - It describes about the total left value
+     * @param {number} x - It describes about the x value
      * @private
+     * @returns {boolean} - boolean
      */
     public checkLeftBounds(left: number, textDiVLeft: number, totalLeft: number, x: number): boolean {
         let isExists: boolean = false;
-        // eslint-disable-next-line max-len
-        // eslint-disable-next-line
-        if (left === parseInt(x.toString()) || parseInt(left.toString()) === parseInt(x.toString()) || (left + 1) === parseInt(x.toString()) || (left - 1) === parseInt(x.toString())
-            // eslint-disable-next-line
-            || textDiVLeft === parseInt(x.toString()) || textDiVLeft === x || (totalLeft >= x && left <= x)) {
-            isExists = true;
-        }
-        return isExists;
-    }
-    /**
-     * @param top
-     * @param currentTop
-     * @param y
-     * @param top
-     * @param currentTop
-     * @param y
-     * @private
-     */
-    public checkTopBounds(top: number, currentTop: number, y: number): boolean {
-        let isExists: boolean = false;
-        // eslint-disable-next-line max-len
-        // eslint-disable-next-line
-        if ((top === parseInt(y.toString()) || parseInt(top.toString()) === parseInt(y.toString()) || parseInt((top + 1).toString()) === parseInt(y.toString()) || parseInt((top - 1).toString()) === parseInt(y.toString())
-            // eslint-disable-next-line
-            || currentTop === parseInt(y.toString()) || currentTop === y)) {
+        if (left === parseInt(x.toString(), 10) || parseInt(left.toString(), 10) === parseInt(x.toString(), 10) ||
+        (left + 1) === parseInt(x.toString(), 10) || (left - 1) === parseInt(x.toString(), 10)
+            || textDiVLeft === parseInt(x.toString(), 10) || textDiVLeft === x || (totalLeft >= x && left <= x)) {
             isExists = true;
         }
         return isExists;
     }
 
     /**
-     * @param event
+     * @param {number} top - It describes about the top value
+     * @param {number} currentTop - It describes about the current top value
+     * @param {number} y - It describes about the Y value
      * @private
+     * @returns {boolean} - boolean
+     */
+    public checkTopBounds(top: number, currentTop: number, y: number): boolean {
+        let isExists: boolean = false;
+        if ((top === parseInt(y.toString(), 10) || parseInt(top.toString(), 10) === parseInt(y.toString(), 10) ||
+        parseInt((top + 1).toString(), 10) === parseInt(y.toString(), 10) ||
+        parseInt((top - 1).toString(), 10) === parseInt(y.toString(), 10)
+            || currentTop === parseInt(y.toString(), 10) || currentTop === y)) {
+            isExists = true;
+        }
+        return isExists;
+    }
+
+    /**
+     * @param {MouseEvent} event - It describes about the event
+     * @private
+     * @returns {void}
      */
     public textSelectionOnMouseLeave(event: MouseEvent): void {
         event.preventDefault();
@@ -421,6 +391,7 @@ export class TextSelection {
 
     /**
      * @private
+     * @returns {void}
      */
     public clear(): void {
         if (this.scrollMoveTimer) {
@@ -430,21 +401,13 @@ export class TextSelection {
     }
 
     /**
-     * @param element
-     * @param x
-     * @param y
-     * @param isStoreSelection
-     * @param element
-     * @param x
-     * @param y
-     * @param isStoreSelection
-     * @param element
-     * @param x
-     * @param y
-     * @param isStoreSelection
+     * @param {any} element - It describes about the element
+     * @param {number} x - It describes about the X value
+     * @param {number} y - It describes about the Y value
+     * @param {boolean} isStoreSelection - It describes about the isStoreSelection value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public selectAWord(element: any, x: number, y: number, isStoreSelection: boolean): void {
         let padding: number = 0;
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
@@ -460,32 +423,33 @@ export class TextSelection {
                 range.setStart(element, currentPosition);
                 range.setEnd(element, currentPosition + 1);
                 const rangeBounds: ClientRect = range.getBoundingClientRect();
-                if (rangeBounds.left <= x + padding && rangeBounds.right >= x - padding && rangeBounds.top <= y + padding && rangeBounds.bottom >= y - padding) {
+                if (rangeBounds.left <= x + padding && rangeBounds.right >= x - padding &&
+                    rangeBounds.top <= y + padding && rangeBounds.bottom >= y - padding) {
                     const textContent: string = element.textContent;
                     const indices: number[] = [];
                     let startPosition: number;
                     let endPos: number;
                     for (let i: number = 0; i < textContent.length; i++) {
-                        if (textContent[i] === ' ') {
+                        if (textContent[parseInt(i.toString(), 10)] === ' ') {
                             indices.push(i);
                         }
                     }
                     for (let j: number = 0; j < indices.length; j++) {
-                        if (currentPosition === indices[j]) {
-                            startPosition = indices[j];
-                            endPos = indices[j];
+                        if (currentPosition === indices[parseInt(j.toString(), 10)]) {
+                            startPosition = indices[parseInt(j.toString(), 10)];
+                            endPos = indices[parseInt(j.toString(), 10)];
                         }
                         if (indices[0] > currentPosition) {
                             startPosition = 0;
-                            endPos = indices[j];
+                            endPos = indices[parseInt(j.toString(), 10)];
                             break;
                         }
-                        if (currentPosition > indices[j] && currentPosition < indices[j + 1]) {
-                            startPosition = indices[j];
+                        if (currentPosition > indices[parseInt(j.toString(), 10)] && currentPosition < indices[j + 1]) {
+                            startPosition = indices[parseInt(j.toString(), 10)];
                             endPos = indices[j + 1];
-                        } else if (currentPosition > indices[j]) {
+                        } else if (currentPosition > indices[parseInt(j.toString(), 10)]) {
                             if (!indices[j + 1]) {
-                                startPosition = indices[j];
+                                startPosition = indices[parseInt(j.toString(), 10)];
                             }
                         }
                     }
@@ -501,13 +465,12 @@ export class TextSelection {
                     selection.removeAllRanges();
                     selection.addRange(range);
                     this.isTextSelection = true;
-                    // eslint-disable-next-line max-len
-                    const startParent: HTMLElement = isNullOrUndefined(range.startContainer.parentElement) ? (range.startContainer.parentNode as HTMLElement) : range.startContainer.parentElement;
-                    // eslint-disable-next-line radix
-                    this.selectionStartPage = parseInt(startParent.id.split('_text_')[1]);
+                    const startParent: HTMLElement = isNullOrUndefined(range.startContainer.parentElement) ?
+                        (range.startContainer.parentNode as HTMLElement) : range.startContainer.parentElement;
+                    this.selectionStartPage = parseInt(startParent.id.split('_text_')[1], 10);
                     if (isStoreSelection) {
-                        // eslint-disable-next-line max-len
-                        this.selectionAnchorTouch = { anchorNode: selection.anchorNode.parentElement.id, anchorOffset: selection.anchorOffset };
+                        this.selectionAnchorTouch = { anchorNode: selection.anchorNode.parentElement.id,
+                            anchorOffset: selection.anchorOffset };
                         this.selectionFocusTouch = { focusNode: selection.focusNode.parentElement.id, focusOffset: selection.focusOffset };
                     }
                     if (!Browser.isIE) {
@@ -521,9 +484,10 @@ export class TextSelection {
             for (let i: number = 0; i < element.childNodes.length; i++) {
                 const range: Range = this.getSelectionRange(i, element);
                 const rangeBounds: ClientRect = range.getBoundingClientRect();
-                if (rangeBounds.left <= x + padding && rangeBounds.right >= x - padding && rangeBounds.top <= y + padding && rangeBounds.bottom >= y - padding) {
+                if (rangeBounds.left <= x + padding && rangeBounds.right >= x - padding &&
+                    rangeBounds.top <= y + padding && rangeBounds.bottom >= y - padding) {
                     range.detach();
-                    this.selectAWord(element.childNodes[i], x, y, isStoreSelection);
+                    this.selectAWord(element.childNodes[parseInt(i.toString(), 10)], x, y, isStoreSelection);
                 } else {
                     range.detach();
                 }
@@ -532,34 +496,31 @@ export class TextSelection {
     }
 
     private getSelectionRange(index: number, element: HTMLElement): Range {
-        const range: Range = element.childNodes[index].ownerDocument.createRange();
-        range.selectNodeContents(element.childNodes[index]);
+        const range: Range = element.childNodes[parseInt(index.toString(), 10)].ownerDocument.createRange();
+        range.selectNodeContents(element.childNodes[parseInt(index.toString(), 10)]);
         return range;
     }
 
     /**
-     * @param event
+     * @param {MouseEvent} event - It describes about the event
      * @private
+     * @returns {void}
      */
     public selectEntireLine(event: MouseEvent): void {
         const textIds: string[] = [];
         const targetElement: HTMLElement = event.target as HTMLElement;
         const targetRect: ClientRect = targetElement.getBoundingClientRect();
-        // eslint-disable-next-line
-        let targetcentre: number = parseInt((targetRect.top + (targetRect.height / 2)).toString());
-        // eslint-disable-next-line radix
-        const pageNumber: number = parseInt((event.target as HTMLElement).id.split('_text_')[1]);
+        const targetcentre: number = parseInt((targetRect.top + (targetRect.height / 2)).toString(), 10);
+        const pageNumber: number = parseInt((event.target as HTMLElement).id.split('_text_')[1], 10);
         const textDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_text_' + pageNumber + '"]');
         if (targetElement.classList.contains('e-pv-text')) {
             this.pdfViewer.fireTextSelectionStart(pageNumber + 1);
             for (let i: number = 0; i < textDivs.length; i++) {
-                const rect: ClientRect = (textDivs[i] as HTMLElement).getBoundingClientRect();
-                // eslint-disable-next-line radix
-                const topValue: number = parseInt(rect.top.toString());
-                // eslint-disable-next-line radix
-                const bottomValue: number = parseInt(rect.bottom.toString());
+                const rect: ClientRect = (textDivs[parseInt(i.toString(), 10)] as HTMLElement).getBoundingClientRect();
+                const topValue: number = parseInt(rect.top.toString(), 10);
+                const bottomValue: number = parseInt(rect.bottom.toString(), 10);
                 if ((topValue <= targetcentre && bottomValue > targetcentre) && (targetRect.bottom + 10 > bottomValue)) {
-                    const textId: string = (textDivs[i] as HTMLElement).id;
+                    const textId: string = (textDivs[parseInt(i.toString(), 10)] as HTMLElement).id;
                     if (textId !== '') {
                         textIds.push(textId);
                     }
@@ -570,7 +531,7 @@ export class TextSelection {
             const range: Range = document.createRange();
             const lengths: number = (textIds.length - 1);
             const d1: HTMLElement = document.getElementById(textIds[0]);
-            const d2: HTMLElement = document.getElementById(textIds[lengths]);
+            const d2: HTMLElement = document.getElementById(textIds[parseInt(lengths.toString(), 10)]);
             const childNodes: number = d2.childNodes.length;
             if (childNodes > 0) {
                 range.setStart(d1.childNodes[0], 0);
@@ -579,8 +540,7 @@ export class TextSelection {
                 range.setStart(d1.childNodes[0], 0);
                 range.setEnd(d2, 1);
             }
-            // eslint-disable-next-line radix
-            this.selectionStartPage = parseInt(range.startContainer.parentElement.id.split('_text_')[1]);
+            this.selectionStartPage = parseInt(range.startContainer.parentElement.id.split('_text_')[1], 10);
             selection.addRange(range);
             this.isTextSelection = true;
             if (selection != null && this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp') {
@@ -591,18 +551,19 @@ export class TextSelection {
 
     /**
      * @private
+     * @returns {void}
      */
     public enableTextSelectionMode(): void {
         this.pdfViewerBase.isTextSelectionDisabled = false;
-        if(!isNullOrUndefined(this.pdfViewerBase.viewerContainer)){
+        if (!isNullOrUndefined(this.pdfViewerBase.viewerContainer)){
             this.pdfViewerBase.viewerContainer.classList.remove('e-disable-text-selection');
             this.pdfViewerBase.viewerContainer.classList.add('e-enable-text-selection');
-            this.pdfViewerBase.viewerContainer.addEventListener('selectstart', (e) => {
+            this.pdfViewerBase.viewerContainer.addEventListener('selectstart', (e: any) => {
                 e.preventDefault();
                 return true;
             });
         }
-        
+
     }
 
     public clearTextSelection(): void {
@@ -617,8 +578,8 @@ export class TextSelection {
                 let lowerPageIndex: number = this.pdfViewerBase.currentPageNumber - 3;
                 lowerPageIndex = (lowerPageIndex < 0) ? 0 : lowerPageIndex;
                 let higherPageIndex: number = this.pdfViewer.currentPageNumber + 1;
-                // eslint-disable-next-line max-len
-                higherPageIndex = (higherPageIndex < (this.pdfViewerBase.pageCount - 1)) ? higherPageIndex : (this.pdfViewerBase.pageCount - 1);
+                higherPageIndex = (higherPageIndex < (this.pdfViewerBase.pageCount - 1)) ? higherPageIndex :
+                    (this.pdfViewerBase.pageCount - 1);
                 for (let i: number = lowerPageIndex; i <= higherPageIndex; i++) {
                     this.pdfViewer.linkAnnotationModule.modifyZindexForTextSelection(i, false);
                 }
@@ -639,6 +600,7 @@ export class TextSelection {
 
     /**
      * @private
+     * @returns {void}
      */
     public removeTouchElements(): void {
         if (this.dropDivElementLeft) {
@@ -655,38 +617,36 @@ export class TextSelection {
 
     /**
      * @private
+     * @returns {void}
      */
     public resizeTouchElements(): void {
         const viewerContainerLeft: number = this.pdfViewerBase.viewerContainer.getBoundingClientRect().left;
         if (this.dropDivElementLeft) {
             const elementClientRect: ClientRect = this.dropDivElementLeft.getBoundingClientRect();
             let dropElementHeight: number = 0;
-            // eslint-disable-next-line max-len
             const leftCurrentPagePosition: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + this.topStoreLeft.pageNumber).getBoundingClientRect();
             this.dropDivElementLeft.style.left = parseFloat(this.topStoreLeft.left.toString()) * this.pdfViewerBase.getZoomFactor() + leftCurrentPagePosition.left - viewerContainerLeft - (elementClientRect.width / 2) + 'px';
             if (this.topStoreLeft.isHeightNeeded) {
                 dropElementHeight = (elementClientRect.height / 2) * this.pdfViewerBase.getZoomFactor();
             }
-            // eslint-disable-next-line max-len
             this.dropDivElementLeft.style.top = parseFloat(this.topStoreLeft.pageTop.toString()) * this.pdfViewerBase.getZoomFactor() + parseFloat(this.topStoreLeft.topClientValue.toString()) * this.pdfViewerBase.getZoomFactor() + dropElementHeight + 'px';
         }
         if (this.dropDivElementRight) {
             const elementClientRect: ClientRect = this.dropDivElementRight.getBoundingClientRect();
             let dropElementHeight: number = 0;
-            // eslint-disable-next-line max-len
             const rightCurrentPagePosition: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + this.topStoreRight.pageNumber).getBoundingClientRect();
             this.dropDivElementRight.style.left = parseFloat(this.topStoreRight.left.toString()) * this.pdfViewerBase.getZoomFactor() + rightCurrentPagePosition.left - viewerContainerLeft - (elementClientRect.width / 2) + 'px';
             if (this.topStoreRight.isHeightNeeded) {
                 dropElementHeight = (elementClientRect.height / 2) * this.pdfViewerBase.getZoomFactor();
             }
-            // eslint-disable-next-line max-len
             this.dropDivElementRight.style.top = parseFloat(this.topStoreRight.pageTop.toString()) * this.pdfViewerBase.getZoomFactor() + parseFloat(this.topStoreRight.topClientValue.toString()) * this.pdfViewerBase.getZoomFactor() + dropElementHeight + 'px';
         }
     }
 
     /**
-     * @param event
+     * @param {MouseEvent} event - It describes about the event
      * @private
+     * @returns {void}
      */
     public textSelectionOnMouseup(event: MouseEvent): void {
         this.clear();
@@ -698,8 +658,7 @@ export class TextSelection {
             const isTextSearch: boolean = this.pdfViewerBase.textLayer.getTextSearchStatus();
             if (isTextSearch) {
                 this.pdfViewerBase.textLayer.clearDivSelection();
-                // eslint-disable-next-line
-                let indexes: any = this.pdfViewer.textSearchModule.getIndexes();
+                const indexes: any = this.pdfViewer.textSearchModule.getIndexes();
                 const lowerPageValue: number = parseFloat(indexes.lowerPageValue.toString());
                 const higherPageValue: number = parseFloat(indexes.higherPageValue.toString());
                 for (let i: number = lowerPageValue; i < higherPageValue; i++) {
@@ -728,24 +687,26 @@ export class TextSelection {
 
     /**
      * @private
+     * @returns {void}
      */
     public fireTextSelectEnd(): void {
         if (this.selectionRangeArray.length !== 0) {
             let selectEndPageIndex: number = 0;
             let selectedText: string = '';
-            // eslint-disable-next-line
-            let selectedBounds: any[] = [];
+            const selectedBounds: any[] = [];
             for (let k: number = 0; k < this.selectionRangeArray.length; k++) {
-                selectedText += this.selectionRangeArray[k].textContent;
-                for (let j: number = 0; j < this.selectionRangeArray[k].rectangleBounds.length; j++) {
-                    const currentBound: IRectangle = this.selectionRangeArray[k].rectangleBounds[j];
-                    // eslint-disable-next-line max-len
-                    selectedBounds.push({ left: currentBound.left, right: currentBound.right, top: currentBound.top, bottom: currentBound.bottom, width: currentBound.width, height: currentBound.height, pageIndex: this.selectionRangeArray[k].pageNumber + 1 });
+                selectedText += this.selectionRangeArray[parseInt(k.toString(), 10)].textContent;
+                for (let j: number = 0; j < this.selectionRangeArray[parseInt(k.toString(), 10)].rectangleBounds.length; j++) {
+                    const currentBound: IRectangle =
+                    this.selectionRangeArray[parseInt(k.toString(), 10)].rectangleBounds[parseInt(j.toString(), 10)];
+                    selectedBounds.push({ left: currentBound.left, right: currentBound.right, top: currentBound.top,
+                        bottom: currentBound.bottom, width: currentBound.width, height: currentBound.height,
+                        pageIndex: this.selectionRangeArray[parseInt(k.toString(), 10)].pageNumber + 1 });
                 }
-                if (this.selectionRangeArray[k].isBackward && k === 0) {
-                    selectEndPageIndex = this.selectionRangeArray[k].pageNumber + 1;
-                } else if (!this.selectionRangeArray[k].isBackward && k === this.selectionRangeArray.length - 1) {
-                    selectEndPageIndex = this.selectionRangeArray[k].pageNumber + 1;
+                if (this.selectionRangeArray[parseInt(k.toString(), 10)].isBackward && k === 0) {
+                    selectEndPageIndex = this.selectionRangeArray[parseInt(k.toString(), 10)].pageNumber + 1;
+                } else if (!this.selectionRangeArray[parseInt(k.toString(), 10)].isBackward && k === this.selectionRangeArray.length - 1) {
+                    selectEndPageIndex = this.selectionRangeArray[parseInt(k.toString(), 10)].pageNumber + 1;
                 }
             }
             this.pdfViewer.fireTextSelectionEnd(selectEndPageIndex, selectedText, selectedBounds);
@@ -753,31 +714,26 @@ export class TextSelection {
     }
 
     /**
-     * @param isMaintainSelection
-     * @param isStich
-     * @param isMaintainSelection
-     * @param isStich
+     * @param {boolean}  isMaintainSelection - It describes about the isMaintainSelection value
+     * @param {boolean} isStich - It describes about the isStich value
      * @private
+     * @returns {void}
      */
     public maintainSelectionOnZoom(isMaintainSelection: boolean, isStich: boolean): void {
         const selection: Selection = window.getSelection();
         if (selection.type === 'Range' || (!selection.type && !selection.isCollapsed)) {
             const isBackward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
-            if (selection.anchorNode !== null) {
-                // eslint-disable-next-line radix
-                const anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
-                // eslint-disable-next-line radix
-                let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
+            if (selection.anchorNode != null) {
+                const anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1], 10);
+                let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1], 10);
                 if (this.isTouchSelection && isNaN(focusPageId)) {
                     const focusElement: HTMLElement = selection.focusNode as HTMLElement;
                     if (focusElement === this.pdfViewerBase.pageContainer) {
                         const lastChildNode: HTMLElement = this.pdfViewerBase.pageContainer.lastChild as HTMLElement;
                         if (lastChildNode.classList.contains('e-pv-touch-select-drop')) {
-                            // eslint-disable-next-line radix
-                            focusPageId = parseInt((lastChildNode.previousSibling.previousSibling as HTMLElement).id.split('_pageDiv_')[1]);
+                            focusPageId = parseInt((lastChildNode.previousSibling.previousSibling as HTMLElement).id.split('_pageDiv_')[1], 10);
                         } else if (lastChildNode.classList.contains('e-pv-page-div')) {
-                            // eslint-disable-next-line radix
-                            focusPageId = parseInt((lastChildNode as HTMLElement).id.split('_pageDiv_')[1]);
+                            focusPageId = parseInt((lastChildNode as HTMLElement).id.split('_pageDiv_')[1], 10);
                         }
                     }
                 }
@@ -798,15 +754,16 @@ export class TextSelection {
     }
 
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - It describes about the page number value
      * @private
+     * @returns {boolean} - boolean
      */
     public isSelectionAvailableOnScroll(pageNumber: number): boolean {
         let isSelectionAvailable: boolean = false;
         const ranges: ISelection[] = this.selectionRangeArray;
         for (let i: number = 0; i < ranges.length; i++) {
-            if (ranges[i] !== null) {
-                if (pageNumber === ranges[i].pageNumber) {
+            if (ranges[parseInt(i.toString(), 10)] !== null) {
+                if (pageNumber === ranges[parseInt(i.toString(), 10)].pageNumber) {
                     isSelectionAvailable = true;
                     if (this.isTouchSelection && !this.pdfViewerBase.getMagnified()) {
                         isSelectionAvailable = false;
@@ -819,8 +776,9 @@ export class TextSelection {
     }
 
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - It describes about the page number
      * @private
+     * @returns {void}
      */
     public applySelectionRangeOnScroll(pageNumber: number): void {
         if (this.isMouseLeaveSelection) {
@@ -830,15 +788,14 @@ export class TextSelection {
         }
     }
 
-    // eslint-disable-next-line
     private getSelectionRangeFromArray(pageNumber: number): any {
         let isSelectionAvailable: boolean = false;
         let selectionRange: ISelection = null;
         const ranges: ISelection[] = this.selectionRangeArray;
         for (let i: number = 0; i < ranges.length; i++) {
-            if (ranges[i] !== null) {
-                if (pageNumber === ranges[i].pageNumber) {
-                    selectionRange = ranges[i];
+            if (ranges[parseInt(i.toString(), 10)] !== null) {
+                if (pageNumber === ranges[parseInt(i.toString(), 10)].pageNumber) {
+                    selectionRange = ranges[parseInt(i.toString(), 10)];
                     isSelectionAvailable = true;
                     break;
                 }
@@ -856,10 +813,8 @@ export class TextSelection {
                 const selectionRange: ISelection = selectionObject.selectionRange;
                 let anchorOffsetDiv: number; let focusOffsetDiv: number; let anchorOffset: number; let focusOffset: number;
                 if (selectionRange.isBackward) {
-                    // eslint-disable-next-line radix
-                    const startId: number = parseInt(selectionRange.endNode.split('_text_')[1].split('_')[1]);
-                    // eslint-disable-next-line radix
-                    const endId: number = parseInt(selectionRange.startNode.split('_text_')[1].split('_')[1]);
+                    const startId: number = parseInt(selectionRange.endNode.split('_text_')[1].split('_')[1], 10);
+                    const endId: number = parseInt(selectionRange.startNode.split('_text_')[1].split('_')[1], 10);
                     if (startId < endId) {
                         anchorOffsetDiv = startId;
                         anchorOffset = selectionRange.endOffset;
@@ -872,16 +827,14 @@ export class TextSelection {
                         focusOffset = selectionRange.startOffset;
                     }
                 } else {
-                    // eslint-disable-next-line radix
-                    anchorOffsetDiv = parseInt(selectionRange.startNode.split('text_')[1].split('_')[1]);
-                    // eslint-disable-next-line radix
-                    focusOffsetDiv = parseInt(selectionRange.endNode.split('text_')[1].split('_')[1]);
+                    anchorOffsetDiv = parseInt(selectionRange.startNode.split('text_')[1].split('_')[1], 10);
+                    focusOffsetDiv = parseInt(selectionRange.endNode.split('text_')[1].split('_')[1], 10);
                     anchorOffset = selectionRange.startOffset;
                     focusOffset = selectionRange.endOffset;
                 }
                 window.getSelection().removeAllRanges();
-                // eslint-disable-next-line max-len
-                this.pdfViewerBase.textLayer.applySpanForSelection(pageNumber, pageNumber, anchorOffsetDiv, focusOffsetDiv, anchorOffset, focusOffset);
+                this.pdfViewerBase.textLayer.applySpanForSelection(pageNumber, pageNumber, anchorOffsetDiv, focusOffsetDiv,
+                                                                   anchorOffset, focusOffset);
                 if (this.pdfViewer.textSearchModule) {
                     this.pdfViewer.textSearchModule.searchAfterSelection();
                 }
@@ -907,16 +860,12 @@ export class TextSelection {
                     range.setEnd(anchorNode, selectionRange.startOffset);
                 }
             } else {
-                // eslint-disable-next-line
-                let anchorPageIndex: number = isNaN(parseInt(selection.anchorNode.parentElement.id.split('_text_')[1])) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+                let anchorPageIndex: number = isNaN(parseInt(selection.anchorNode.parentElement.id.split('_text_')[1], 10)) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1], 10) : parseInt(selection.anchorNode.parentElement.id.split('_text_')[1], 10);
                 if (isNaN(anchorPageIndex)) {
-                    // eslint-disable-next-line radix
-                    anchorPageIndex = parseInt((selection.anchorNode as HTMLElement).id.split('_text_')[1]);
+                    anchorPageIndex = parseInt((selection.anchorNode as HTMLElement).id.split('_text_')[1], 10);
                 }
-                // eslint-disable-next-line
-                let focusPageIndex: number = isNaN(parseInt(selection.focusNode.parentElement.id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
-                // eslint-disable-next-line radix
-                const currentAnchorIndex: number = parseInt(selectionRange.startNode.split('_text_')[1]);
+                const focusPageIndex: number = isNaN(parseInt(selection.focusNode.parentElement.id.split('_text_')[1], 10)) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1], 10) : parseInt(selection.focusNode.parentElement.id.split('_text_')[1], 10);
+                const currentAnchorIndex: number = parseInt(selectionRange.startNode.split('_text_')[1], 10);
                 if ((anchorPageIndex === focusPageIndex) && (anchorPageIndex === currentAnchorIndex)) {
                     if (!selectionRange.isBackward) {
                         range.setStart(anchorNode, selectionRange.startOffset);
@@ -927,8 +876,8 @@ export class TextSelection {
                     }
                 } else if (!isNaN(anchorPageIndex)) {
                     if (!isNaN(anchorPageIndex) && !selectionRange.isBackward) {
-                        // eslint-disable-next-line max-len
-                        if (anchorPageIndex < currentAnchorIndex && currentAnchorIndex < focusPageIndex && anchorPageIndex !== focusPageIndex) {
+                        if (anchorPageIndex < currentAnchorIndex && currentAnchorIndex < focusPageIndex &&
+                            anchorPageIndex !== focusPageIndex) {
                             range.setStart(selection.anchorNode, selection.anchorOffset);
                             range.setEnd(selection.focusNode, selection.focusOffset);
                         } else if (anchorPageIndex < currentAnchorIndex) {
@@ -940,16 +889,16 @@ export class TextSelection {
                         }
                     } else {
                         const isBackward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
-                        // eslint-disable-next-line max-len
-                        if (anchorPageIndex > currentAnchorIndex && currentAnchorIndex > focusPageIndex && anchorPageIndex !== focusPageIndex) {
+                        if (anchorPageIndex > currentAnchorIndex && currentAnchorIndex > focusPageIndex &&
+                            anchorPageIndex !== focusPageIndex) {
                             if (!isBackward) {
                                 range.setStart(selection.anchorNode, selection.anchorOffset);
                                 range.setEnd(selection.focusNode, selection.focusOffset);
                             } else {
                                 selection.extend(selection.focusNode, selection.focusOffset);
                             }
-                            // eslint-disable-next-line max-len
-                        } else if (anchorPageIndex < currentAnchorIndex && currentAnchorIndex < focusPageIndex && anchorPageIndex !== focusPageIndex) {
+                        } else if (anchorPageIndex < currentAnchorIndex && currentAnchorIndex < focusPageIndex &&
+                            anchorPageIndex !== focusPageIndex) {
                             if (!isBackward) {
                                 range.setStart(selection.anchorNode, selection.anchorOffset);
                                 range.setEnd(selection.focusNode, selection.focusOffset);
@@ -996,10 +945,8 @@ export class TextSelection {
                                 range.setEnd(selection.focusNode, selection.focusOffset);
                             }
                         } else if (anchorPageIndex > currentAnchorIndex) {
-                            // eslint-disable-next-line radix
-                            const currentAnchorOffset: number = parseInt(selectionRange.startNode.split('_' + currentAnchorIndex + '_')[1]);
-                            // eslint-disable-next-line radix
-                            const currentFocusOffset: number = parseInt(selectionRange.endNode.split('_' + currentAnchorIndex + '_')[1]);
+                            const currentAnchorOffset: number = parseInt(selectionRange.startNode.split('_' + currentAnchorIndex + '_')[1], 10);
+                            const currentFocusOffset: number = parseInt(selectionRange.endNode.split('_' + currentAnchorIndex + '_')[1], 10);
                             if (isBackward) {
                                 if (currentAnchorIndex !== this.selectionRangeArray[0].pageNumber) {
                                     if (currentAnchorOffset < currentFocusOffset) {
@@ -1040,11 +987,10 @@ export class TextSelection {
     }
 
     /**
-     * @param pageNumber
-     * @param isStich
-     * @param pageNumber
-     * @param isStich
+     * @param {number} pageNumber - It describes about the page number
+     * @param {boolean} isStich - It describes about the isStich value
      * @private
+     * @returns {void}
      */
     public maintainSelectionOnScroll(pageNumber: number, isStich: boolean): void {
         const isSelectionAvailable: boolean = this.isSelectionAvailableOnScroll(pageNumber);
@@ -1054,32 +1000,27 @@ export class TextSelection {
     }
 
     /**
-     * @param pageNumber
-     * @param isStich
+     * @param {number} pageNumber - It describes about the page number
+     * @param {boolean} isStich - It describes about the isStich value
      * @private
+     * @returns {void}
      */
     public maintainSelection(pageNumber: number, isStich: boolean): void {
         const selection: Selection = window.getSelection();
         if (this.isTextSelection && (selection.type === 'Range' || (!selection.type && !selection.isCollapsed))) {
-            // eslint-disable-next-line
-            let anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
-            // eslint-disable-next-line
-            let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
+            const anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1], 10);
+            let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1], 10);
             if (isNaN(focusPageId) && selection.anchorNode !== null) {
                 const backward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
                 if (!backward) {
-                    // eslint-disable-next-line radix
                     const lastChildNode: HTMLElement = this.pdfViewerBase.pageContainer.lastChild as HTMLElement;
                     if (lastChildNode.classList.contains('e-pv-touch-select-drop')) {
-                        // eslint-disable-next-line radix
-                        focusPageId = parseInt((lastChildNode.previousSibling.previousSibling as HTMLElement).id.split('_pageDiv_')[1]);
+                        focusPageId = parseInt((lastChildNode.previousSibling.previousSibling as HTMLElement).id.split('_pageDiv_')[1], 10);
                     } else {
-                        // eslint-disable-next-line radix
-                        focusPageId = parseInt(lastChildNode.id.split('_pageDiv_')[1]);
+                        focusPageId = parseInt(lastChildNode.id.split('_pageDiv_')[1], 10);
                     }
                 } else {
-                    // eslint-disable-next-line radix
-                    focusPageId = parseInt((this.pdfViewerBase.pageContainer.firstChild as HTMLElement).id.split('_pageDiv_')[1]);
+                    focusPageId = parseInt((this.pdfViewerBase.pageContainer.firstChild as HTMLElement).id.split('_pageDiv_')[1], 10);
                 }
             }
             const backward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
@@ -1090,14 +1031,15 @@ export class TextSelection {
                 let selectionObject: ISelection = null;
                 const selectionBounds: IRectangle = this.getSelectionBounds(selection.getRangeAt(0), pageNumber);
                 const selectionRectBounds: IRectangle[] = this.getSelectionRectangleBounds(selection.getRangeAt(0), pageNumber);
-                // eslint-disable-next-line max-len
-                const anchorOffsetValue: number = (this.getNodeElementFromNode(selection.anchorNode).childNodes.length === 1) ? selection.anchorOffset : this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
-                const focusOffsetValue: number = (this.getNodeElementFromNode(selection.focusNode).childNodes.length === 1) ? selection.focusOffset : this.getCorrectOffset(selection.focusNode, selection.focusOffset);
+                const anchorOffsetValue: number = (this.getNodeElementFromNode(selection.anchorNode).childNodes.length === 1) ?
+                    selection.anchorOffset : this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
+                const focusOffsetValue: number = (this.getNodeElementFromNode(selection.focusNode).childNodes.length === 1) ?
+                    selection.focusOffset : this.getCorrectOffset(selection.focusNode, selection.focusOffset);
                 selectionObject = {
                     isBackward: backward, startNode: this.getNodeElementFromNode(selection.anchorNode).id,
                     startOffset: anchorOffsetValue, endNode: this.getNodeElementFromNode(selection.focusNode).id,
-                    // eslint-disable-next-line max-len
-                    endOffset: focusOffsetValue, textContent: this.allTextContent, pageNumber: pageNumber, bound: selectionBounds, rectangleBounds: selectionRectBounds
+                    endOffset: focusOffsetValue, textContent: this.allTextContent, pageNumber: pageNumber, bound: selectionBounds,
+                    rectangleBounds: selectionRectBounds
                 };
                 this.pushSelectionRangeObject(selectionObject, pageNumber);
             } else {
@@ -1116,11 +1058,11 @@ export class TextSelection {
         let offsetValue: number = 0;
         const parentElement: HTMLElement = this.getNodeElementFromNode(node);
         for (let i: number = 0; i < parentElement.childNodes.length; i++) {
-            if (parentElement.childNodes[i] === node) {
+            if (parentElement.childNodes[parseInt(i.toString(), 10)] === node) {
                 offsetValue = offsetValue + offset;
                 break;
             } else {
-                offsetValue = offsetValue + parentElement.childNodes[i].textContent.length;
+                offsetValue = offsetValue + parentElement.childNodes[parseInt(i.toString(), 10)].textContent.length;
             }
         }
         return offsetValue;
@@ -1129,8 +1071,7 @@ export class TextSelection {
     private pushSelectionRangeObject(selectionObject: ISelection, pageNumber: number): void {
         if (this.isTouchSelection) {
             const currentObject: ISelection[] = this.selectionRangeArray.filter(
-                // eslint-disable-next-line
-                obj => {
+                (obj: any) => {
                     return (obj.pageNumber === pageNumber);
                 });
             if (currentObject.length > 0) {
@@ -1140,15 +1081,13 @@ export class TextSelection {
             }
         }
         const nextPageObject: ISelection[] = this.selectionRangeArray.filter(
-            // eslint-disable-next-line
-            obj => {
+            (obj: any) => {
                 return (obj.pageNumber === (pageNumber + 1));
             });
         if (nextPageObject.length === 0) {
             if (this.isTouchSelection && this.selectionRangeArray.length !== 0) {
                 const prevPageObject: ISelection[] = this.selectionRangeArray.filter(
-                    // eslint-disable-next-line
-                    obj => {
+                    (obj: any) => {
                         return (obj.pageNumber === (pageNumber - 1));
                     });
                 if (prevPageObject.length !== 0) {
@@ -1174,11 +1113,8 @@ export class TextSelection {
     private extendCurrentSelection(element: HTMLElement, offset: number, selection: Selection, range: Range): void {
         const currentFocusOffset: number = selection.focusOffset;
         let currentFocusElement: string = selection.focusNode.parentElement.id;
-        // eslint-disable-next-line
-        let focusPageId: number = isNaN(parseInt(currentFocusElement.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(currentFocusElement.split('_text_')[1]);
-        // eslint-disable-next-line radix
-        if (isNaN(parseInt(currentFocusElement.split('_text_')[1]))) {
-            // eslint-disable-next-line
+        const focusPageId: number = isNaN(parseInt(currentFocusElement.split('_text_')[1], 10)) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1], 10) : parseInt(currentFocusElement.split('_text_')[1], 10);
+        if (isNaN(parseInt(currentFocusElement.split('_text_')[1], 10))) {
             currentFocusElement = (this.pdfViewerBase.getElement('_textLayer_' + (focusPageId + 1)).firstChild as HTMLElement).id;
         }
         range.setStart(element.childNodes[0], offset);
@@ -1226,8 +1162,9 @@ export class TextSelection {
     }
 
     /**
-     * @param currentPageNumber
+     * @param {number} currentPageNumber - It describes about the current page number
      * @private
+     * @returns {void}
      */
     public textSelectionOnMouseWheel(currentPageNumber: number): void {
         this.isMouseLeaveSelection = true;
@@ -1235,16 +1172,15 @@ export class TextSelection {
     }
 
     /**
-     * @param currentPageNumber
+     * @param {number} currentPageNumber - It describes about the current page number
      * @private
+     * @returns {void}
      */
     public stichSelectionOnScroll(currentPageNumber: number): void {
         const selection: Selection = window.getSelection();
         if (this.isTextSelection) {
-            // eslint-disable-next-line radix
-            const anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
-            // eslint-disable-next-line radix
-            const focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
+            const anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1], 10);
+            const focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1], 10);
             let nextPageElement: HTMLElement;
             if (anchorPageId !== currentPageNumber && focusPageId !== currentPageNumber) {
                 const backward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
@@ -1285,13 +1221,11 @@ export class TextSelection {
     }
 
     /**
-     * @param pageNumber
-     * @param anchorPageId
-     * @param focusPageId
-     * @param pageNumber
-     * @param anchorPageId
-     * @param focusPageId
+     * @param {number} pageNumber - It describes about the page number
+     * @param {number} anchorPageId - It describes about the anchor page id
+     * @param {number} focusPageId - It describes about the focus page id
      * @private
+     * @returns {ISelection} - ISelection
      */
     public createRangeObjectOnScroll(pageNumber: number, anchorPageId: number, focusPageId: number): ISelection {
         let selectionObject: ISelection = null;
@@ -1307,26 +1241,21 @@ export class TextSelection {
                 if (!backward) {
                     if (pageNumber === anchorPageId) {
                         firstElement = this.getNodeElementFromNode(selection.anchorNode);
-                        // eslint-disable-next-line max-len
                         lastElement = (element.lastChild as HTMLElement);
                         startOffset = this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
                         endOffset = this.getTextLastLength(lastElement);
                     } else if (pageNumber > anchorPageId && pageNumber < focusPageId) {
-                        // eslint-disable-next-line max-len
                         firstElement = (element.firstChild as HTMLElement);
-                        // eslint-disable-next-line max-len
                         lastElement = (element.lastChild as HTMLElement);
                         startOffset = 0;
                         endOffset = this.getTextLastLength(lastElement);
                     } else if (pageNumber === focusPageId) {
-                        // eslint-disable-next-line max-len
                         firstElement = (element.firstChild as HTMLElement);
                         const pageNumberIndex: number = this.getNodeElementFromNode(selection.focusNode).id.indexOf(focusPageId.toString());
                         if (pageNumberIndex !== -1) {
                             lastElement = this.getNodeElementFromNode(selection.focusNode);
                             endOffset = this.getCorrectOffset(selection.focusNode, selection.focusOffset);
                         } else {
-                            // eslint-disable-next-line max-len
                             lastElement = (document.getElementById(this.pdfViewer.element.id + '_textLayer_' + focusPageId).lastChild as HTMLElement);
                             endOffset = this.getTextLastLength(lastElement);
                         }
@@ -1335,33 +1264,29 @@ export class TextSelection {
                 } else {
                     if (pageNumber === anchorPageId) {
                         firstElement = this.getNodeElementFromNode(selection.anchorNode);
-                        // eslint-disable-next-line max-len
                         lastElement = (element.firstChild as HTMLElement);
                         startOffset = this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
                         endOffset = 0;
                     } else if (pageNumber < anchorPageId && pageNumber > focusPageId) {
-                        // eslint-disable-next-line max-len
                         firstElement = (element.firstChild as HTMLElement);
-                        // eslint-disable-next-line max-len
                         lastElement = (element.lastChild as HTMLElement);
                         startOffset = 0;
                         endOffset = this.getTextLastLength(lastElement);
                     } else if (pageNumber === focusPageId) {
                         firstElement = this.getNodeElementFromNode(selection.focusNode);
-                        // eslint-disable-next-line max-len
                         lastElement = (element.lastChild as HTMLElement);
                         startOffset = this.getCorrectOffset(selection.focusNode, selection.focusOffset);
                         endOffset = this.getTextLastLength(lastElement);
                     }
                 }
                 if (firstElement && lastElement) {
-                    // eslint-disable-next-line max-len
-                    const selectionRangeObject: Range = this.getSelectionRangeObject(firstElement.id, startOffset, lastElement.id, endOffset, pageNumber);
-                    const selectionString: string = selectionRangeObject.toString();
+                    const selectionRangeObject: Range = this.getSelectionRangeObject(firstElement.id, startOffset,
+                                                                                     lastElement.id, endOffset, pageNumber);
                     const selectionBound: IRectangle = this.getSelectionBounds(selectionRangeObject, pageNumber);
                     const selectionRectBounds: IRectangle[] = this.getSelectionRectangleBounds(selectionRangeObject, pageNumber);
-                    // eslint-disable-next-line max-len
-                    return selectionObject = { isBackward: backward, startNode: firstElement.id, startOffset: startOffset, endNode: lastElement.id, endOffset: endOffset, textContent: this.allTextContent, pageNumber: pageNumber, bound: selectionBound, rectangleBounds: selectionRectBounds };
+                    return selectionObject = { isBackward: backward, startNode: firstElement.id, startOffset: startOffset,
+                        endNode: lastElement.id, endOffset: endOffset, textContent: this.allTextContent, pageNumber: pageNumber,
+                        bound: selectionBound, rectangleBounds: selectionRectBounds };
                 } else {
                     return null;
                 }
@@ -1379,10 +1304,8 @@ export class TextSelection {
         if (endElement.childNodes[0]) {
             endElement = endElement.childNodes[0];
         }
-        // eslint-disable-next-line radix
-        const currentAnchorOffset: number = parseInt(startNode.split('_' + pageNumber + '_')[1]);
-        // eslint-disable-next-line radix
-        const currentFocusOffset: number = parseInt(endNode.split('_' + pageNumber + '_')[1]);
+        const currentAnchorOffset: number = parseInt(startNode.split('_' + pageNumber + '_')[1], 10);
+        const currentFocusOffset: number = parseInt(endNode.split('_' + pageNumber + '_')[1], 10);
         const range: Range = document.createRange();
         if (currentAnchorOffset <= currentFocusOffset) {
             range.setStart(startElement, startOffset);
@@ -1400,8 +1323,8 @@ export class TextSelection {
         let bounds: IRectangle = null;
         if (startElement !== endElement) {
             const newStartRange: Range = document.createRange();
-            // eslint-disable-next-line max-len
-            const startRange: Range = this.createRangeForSelection(range.startContainer, range.endContainer, range.startOffset, range.endOffset, newStartRange);
+            const startRange: Range = this.createRangeForSelection(range.startContainer, range.endContainer,
+                                                                   range.startOffset, range.endOffset, newStartRange);
             bounds = this.normalizeBounds(startRange.getBoundingClientRect(), pageNumber);
         } else {
             bounds = this.normalizeBounds(range.getBoundingClientRect(), pageNumber);
@@ -1414,8 +1337,8 @@ export class TextSelection {
         const startElement: HTMLElement = this.getNodeElementFromNode(range.startContainer);
         const endElement: HTMLElement = this.getNodeElementFromNode(range.endContainer);
         let bounds: IRectangle = null;
-        let selectionTexts = [];
-        this.allTextContent = "";
+        const selectionTexts: any[] = [];
+        this.allTextContent = '';
         if (startElement !== endElement) {
             let startOffset: number = 0; let endOffset: number = 0; let currentId: number = 0;
             const anchorPageId: number = this.pdfViewerBase.textLayer.getPageIndex(range.startContainer);
@@ -1429,7 +1352,7 @@ export class TextSelection {
                 currentId = 0;
             }
             for (let j: number = currentId; j < textDivs.length; j++) {
-                const textElement: HTMLElement = textDivs[j] as HTMLElement;
+                const textElement: HTMLElement = textDivs[parseInt(j.toString(), 10)] as HTMLElement;
                 if (j > focusTextId) {
                     break;
                 }
@@ -1446,16 +1369,14 @@ export class TextSelection {
                 if (startOffset !== 0 || endOffset !== 0) {
                     const newRange: Range = document.createRange();
                     for (let k: number = 0; k < textElement.childNodes.length; k++) {
-                        const node: Node = textElement.childNodes[k];
+                        const node: Node = textElement.childNodes[parseInt(k.toString(), 10)];
                         newRange.setStart(node, startOffset);
                         newRange.setEnd(node, endOffset);
                     }
                     let boundingRect: IRectangle;
                     if (this.pdfViewerBase.clientSideRendering) {
                         boundingRect = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
-                        let pageDetails: any = this.pdfViewerBase.pageSize[pageNumber];
                         let textRotate: number = 0;
-                        let pageRotation: number = this.getAngle(pageDetails.rotation);
                         if (textElement && textElement.style.transform !== '') {
                             if (textElement.style.transform.startsWith('rotate(90deg)')) {
                                 textRotate = 90;
@@ -1472,7 +1393,7 @@ export class TextSelection {
                         boundingRect = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
                     }
                     selectionBounds.push(boundingRect);
-                    let textselection = newRange.toString();
+                    const textselection: string = newRange.toString();
                     selectionTexts.push(textselection);
                     newRange.detach();
                     if (textselection === '\r\n' || textselection === ' ') {
@@ -1485,11 +1406,11 @@ export class TextSelection {
                     }
                 }
             }
-            for (let i = 0; i < selectionTexts.length; i++) {
-                let text = selectionTexts[i];
+            for (let i: number = 0; i < selectionTexts.length; i++) {
+                let text: string = selectionTexts[parseInt(i.toString(), 10)];
                 // While copy and paste for space construct new line
-                if ((i != 0 && text === ' ' && selectionTexts[i - 1].includes('\r\n')) || (i != selectionTexts.length - 1 && selectionTexts[i] === ' ' && selectionTexts[i + 1] === '\r\n')) {
-                    text = ''
+                if ((i !== 0 && text === ' ' && selectionTexts[i - 1].includes('\r\n')) || (i !== selectionTexts.length - 1 && selectionTexts[parseInt(i.toString(), 10)] === ' ' && selectionTexts[i + 1] === '\r\n')) {
+                    text = '';
                 }
                 if (text.slice(text.length - 2) !== '\r\n' || i === selectionTexts.length - 1) {
                     this.allTextContent += text;
@@ -1502,9 +1423,7 @@ export class TextSelection {
         else {
             bounds = this.normalizeBounds(range.getBoundingClientRect(), pageNumber);
             if (this.pdfViewerBase.clientSideRendering) {
-                let pageDetails: any = this.pdfViewerBase.pageSize[pageNumber];
                 let textRotate: number = 0;
-                let pageRotation: number = this.getAngle(pageDetails.rotation);
                 if (startElement && startElement.style.transform !== '') {
                     if (startElement.style.transform.startsWith('rotate(90deg)')) {
                         textRotate = 90;
@@ -1524,32 +1443,31 @@ export class TextSelection {
         return selectionBounds;
     }
 
-    private getAngle(rotation: number): number { // eslint-disable-next-line
+    private getAngle(rotation: number): number {
         let angle: number = 0;
         if (rotation) {
             switch (rotation) {
-                case 0:
-                    angle = 0;
-                    break;
-                case 1:
-                    angle = 90;
-                    break;
-                case 2:
-                    angle = 180;
-                    break;
-                case 3:
-                    angle = 270;
-                    break;
+            case 0:
+                angle = 0;
+                break;
+            case 1:
+                angle = 90;
+                break;
+            case 2:
+                angle = 180;
+                break;
+            case 3:
+                angle = 270;
+                break;
             }
         }
         return angle;
-    };
+    }
 
     private getTextId(elementId: string): number {
         const index: number = elementId.lastIndexOf('_');
         const divId: string = elementId.substring(index + 1, elementId.length);
-        // eslint-disable-next-line radix
-        return parseInt(divId);
+        return parseInt(divId, 10);
     }
 
     private normalizeBounds(bound: ClientRect, pageNumber: number): IRectangle {
@@ -1575,16 +1493,17 @@ export class TextSelection {
     }
 
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - It describes about the page number
      * @private
+     * @returns {IRectangle} - IRectangle
      */
     public getCurrentSelectionBounds(pageNumber: number): IRectangle {
         let bound: IRectangle = null;
         const ranges: ISelection[] = this.selectionRangeArray;
         for (let i: number = 0; i < ranges.length; i++) {
-            if (ranges[i] !== null) {
-                if (pageNumber === ranges[i].pageNumber) {
-                    bound = ranges[i].bound;
+            if (ranges[parseInt(i.toString(), 10)] !== null) {
+                if (pageNumber === ranges[parseInt(i.toString(), 10)].pageNumber) {
+                    bound = ranges[parseInt(i.toString(), 10)].bound;
                 }
             }
         }
@@ -1601,41 +1520,34 @@ export class TextSelection {
         if (this.selectionRangeArray.length !== 0) {
             const selection: Selection = window.getSelection();
             const isBackward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
-            // eslint-disable-next-line
-            let anchorPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1])) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
+            let anchorPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1], 10)) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1], 10) : parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1], 10);
             if (isNaN(anchorPage)) {
-                // eslint-disable-next-line radix
-                anchorPage = parseInt((selection.anchorNode as HTMLElement).id.split('_text_')[1]);
+                anchorPage = parseInt((selection.anchorNode as HTMLElement).id.split('_text_')[1], 10);
             }
-            // eslint-disable-next-line
-            let focusPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
+            let focusPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1], 10)) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1], 10) : parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1], 10);
             if (isNaN(focusPage)) {
-                // eslint-disable-next-line
-                focusPage = isNaN(parseInt((selection.focusNode as HTMLElement).id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_textLayer_')[1]) : parseInt((selection.focusNode as HTMLElement).id.split('_text_')[1]);
+                focusPage = isNaN(parseInt((selection.focusNode as HTMLElement).id.split('_text_')[1], 10)) ? parseInt((selection.focusNode as HTMLElement).id.split('_textLayer_')[1], 10) : parseInt((selection.focusNode as HTMLElement).id.split('_text_')[1], 10);
             }
             let arrayObject: ISelection[] = [];
             if (!isBackward) {
                 arrayObject = this.selectionRangeArray.filter(
-                    // eslint-disable-next-line
-                    obj => {
+                    (obj: any) => {
                         return (!((this.selectionStartPage <= obj.pageNumber) && (obj.pageNumber < focusPage)));
                     });
             } else {
                 arrayObject = this.selectionRangeArray.filter(
-                    // eslint-disable-next-line
-                    obj => {
+                    (obj: any) => {
                         return (!((focusPage < obj.pageNumber) && (obj.pageNumber <= this.selectionStartPage)));
                     });
             }
             if (arrayObject.length > 0) {
                 for (let i: number = 0; i < arrayObject.length; i++) {
-                    const indexInArray: number = this.selectionRangeArray.indexOf(arrayObject[i]);
+                    const indexInArray: number = this.selectionRangeArray.indexOf(arrayObject[parseInt(i.toString(), 10)]);
                     if (indexInArray !== -1) {
                         this.selectionRangeArray.splice(indexInArray, 1);
                     }
                 }
                 if (this.selectionRangeArray.length === 1) {
-                    // eslint-disable-next-line max-len
                     if (this.selectionRangeArray[0].pageNumber === anchorPage || this.selectionRangeArray[0].pageNumber === focusPage) {
                         arrayObject = [];
                     }
@@ -1646,50 +1558,42 @@ export class TextSelection {
 
     /**
      * @private
+     * @returns {void}
      */
     public applySpanForSelection(): void {
         const selection: Selection = window.getSelection();
-        // eslint-disable-next-line max-len
         if (selection.anchorNode === selection.focusNode && selection.anchorOffset === selection.focusOffset && !selection.isCollapsed) {
             selection.removeAllRanges();
         }
-        // eslint-disable-next-line max-len
-        if (selection.anchorNode !== null && this.pdfViewerBase.viewerContainer.contains(this.getNodeElementFromNode(selection.anchorNode))) {
+        if (selection.anchorNode !== null &&
+            this.pdfViewerBase.viewerContainer.contains(this.getNodeElementFromNode(selection.anchorNode))) {
             const isBackWardSelection: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
             let anchorPageId: number; let focusPageId: number; let anchorOffsetDiv: number; let focusOffsetDiv: number;
             let anchorOffset: number; let focusOffset: number;
             if (isBackWardSelection) {
-                // eslint-disable-next-line radix
-                anchorPageId = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
-                // eslint-disable-next-line radix
-                focusPageId = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
-                // eslint-disable-next-line radix
-                anchorOffsetDiv = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1].split('_')[1]);
-                // eslint-disable-next-line radix
-                focusOffsetDiv = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1].split('_')[1]);
+                anchorPageId = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1], 10);
+                focusPageId = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1], 10);
+                anchorOffsetDiv = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1].split('_')[1], 10);
+                focusOffsetDiv = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1].split('_')[1], 10);
                 anchorOffset = selection.focusOffset;
                 focusOffset = selection.anchorOffset;
             } else {
                 let anchorElement: HTMLElement = this.getNodeElementFromNode(selection.anchorNode);
                 let focusElement: HTMLElement = this.getNodeElementFromNode(selection.focusNode);
-                // eslint-disable-next-line
-                anchorPageId = (anchorElement.id.indexOf('text_') !== -1) ? parseInt(anchorElement.id.split('text_')[1]) : parseInt(anchorElement.id.split('_textLayer_')[1]);
-                // eslint-disable-next-line
-                focusPageId = (focusElement.id.indexOf('text_') !== -1) ? parseInt(focusElement.id.split('text_')[1]) : parseInt(focusElement.id.split('_textLayer_')[1]);
+                anchorPageId = (anchorElement.id.indexOf('text_') !== -1) ? parseInt(anchorElement.id.split('text_')[1], 10) : parseInt(anchorElement.id.split('_textLayer_')[1], 10);
+                focusPageId = (focusElement.id.indexOf('text_') !== -1) ? parseInt(focusElement.id.split('text_')[1], 10) : parseInt(focusElement.id.split('_textLayer_')[1], 10);
                 let isFocusChanged: boolean = false;
                 if (this.isTouchSelection) {
                     if ((selection.focusNode as HTMLElement) === this.pdfViewerBase.pageContainer) {
                         const lastChildNode: HTMLElement = this.pdfViewerBase.pageContainer.lastChild as HTMLElement;
                         if (lastChildNode.classList.contains('e-pv-touch-select-drop')) {
                             const lastPageDiv: HTMLElement = lastChildNode.previousSibling.previousSibling as HTMLElement;
-                            // eslint-disable-next-line radix
-                            focusPageId = parseInt(lastPageDiv.id.split('_pageDiv_')[1]);
+                            focusPageId = parseInt(lastPageDiv.id.split('_pageDiv_')[1], 10);
                             focusElement = this.pdfViewerBase.getElement('_textLayer_' + focusPageId).lastChild as HTMLElement;
                             isFocusChanged = true;
                         } else if (lastChildNode.classList.contains('e-pv-page-div')) {
                             const lastPageDiv: HTMLElement = lastChildNode as HTMLElement;
-                            // eslint-disable-next-line radix
-                            focusPageId = parseInt(lastPageDiv.id.split('_pageDiv_')[1]);
+                            focusPageId = parseInt(lastPageDiv.id.split('_pageDiv_')[1], 10);
                             focusElement = this.pdfViewerBase.getElement('_textLayer_' + focusPageId).lastChild as HTMLElement;
                             isFocusChanged = true;
                         }
@@ -1697,13 +1601,11 @@ export class TextSelection {
                 }
                 if (anchorElement.classList.contains('e-pv-maintaincontent')) {
                     anchorElement = this.getNodeElementFromNode(anchorElement);
-                    // eslint-disable-next-line radix
-                    anchorPageId = parseInt(anchorElement.id.split('text_')[1]);
+                    anchorPageId = parseInt(anchorElement.id.split('text_')[1], 10);
                 }
                 if (focusElement.classList.contains('e-pv-maintaincontent')) {
                     focusElement = this.getNodeElementFromNode(focusElement);
-                    // eslint-disable-next-line radix
-                    focusPageId = parseInt(focusElement.id.split('text_')[1]);
+                    focusPageId = parseInt(focusElement.id.split('text_')[1], 10);
                 }
                 if (anchorPageId === focusPageId) {
                     if (anchorElement.contains(focusElement)) {
@@ -1713,10 +1615,8 @@ export class TextSelection {
                         focusElement = anchorElement;
                     }
                 }
-                // eslint-disable-next-line radix
-                anchorOffsetDiv = (anchorElement.id.split('text_')[1]) ? parseInt(anchorElement.id.split('text_')[1].split('_')[1]) : null;
-                // eslint-disable-next-line radix
-                focusOffsetDiv = (focusElement.id.split('text_')[1]) ? parseInt(focusElement.id.split('text_')[1].split('_')[1]) : null;
+                anchorOffsetDiv = (anchorElement.id.split('text_')[1]) ? parseInt(anchorElement.id.split('text_')[1].split('_')[1], 10) : null;
+                focusOffsetDiv = (focusElement.id.split('text_')[1]) ? parseInt(focusElement.id.split('text_')[1].split('_')[1], 10) : null;
                 anchorOffsetDiv = isNaN(anchorOffsetDiv) ? focusOffsetDiv : anchorOffsetDiv;
                 focusOffsetDiv = isNaN(focusOffsetDiv) ? anchorOffsetDiv : focusOffsetDiv;
                 anchorOffset = selection.anchorOffset;
@@ -1725,8 +1625,8 @@ export class TextSelection {
             if (this.pdfViewerBase.checkIsNormalText()) {
                 selection.removeAllRanges();
                 this.pdfViewerBase.textLayer.clearDivSelection();
-                // eslint-disable-next-line max-len
-                this.pdfViewerBase.textLayer.applySpanForSelection(anchorPageId, focusPageId, anchorOffsetDiv, focusOffsetDiv, anchorOffset, focusOffset);
+                this.pdfViewerBase.textLayer.applySpanForSelection(anchorPageId, focusPageId, anchorOffsetDiv, focusOffsetDiv,
+                                                                   anchorOffset, focusOffset);
             }
             if (this.pdfViewer.textSearchModule) {
                 this.pdfViewer.textSearchModule.searchAfterSelection();
@@ -1735,10 +1635,11 @@ export class TextSelection {
     }
 
     /**
-     * @param event
-     * @param x
-     * @param y
+     * @param {TouchEvent} event - It describes about the event
+     * @param {number} x - It describes about the X value
+     * @param {number} y - It describes about the Y value
      * @private
+     * @returns {void}
      */
     public initiateTouchSelection(event: TouchEvent, x: number, y: number): void {
         if (this.pdfViewerBase.isShapeBasedAnnotationsEnabled()) {
@@ -1746,7 +1647,6 @@ export class TextSelection {
                 this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
             }
         }
-        // eslint-disable-next-line
         let element: any = event.target;
         const belowElements: Element[] = document.elementsFromPoint(event.touches[0].clientX, event.touches[0].clientY);
         if (belowElements.length !== 0) {
@@ -1763,8 +1663,8 @@ export class TextSelection {
         this.applySpanForSelection();
     }
 
-    // eslint-disable-next-line
-    private selectTextByTouch(element: any, x: number, y: number, isForwardSelection: boolean, target: string, isCloserMovement: boolean): boolean {
+    private selectTextByTouch(element: any, x: number, y: number, isForwardSelection: boolean, target: string,
+                              isCloserMovement: boolean): boolean {
         let isTextSelected: boolean = false;
         if (element.nodeType === element.TEXT_NODE) {
             let rangeObject: Range = element.ownerDocument.createRange();
@@ -1777,12 +1677,12 @@ export class TextSelection {
                 rangeObject.setEnd(element, currentPosition + 1);
                 const rangeBounds: ClientRect = rangeObject.getBoundingClientRect();
                 if (rangeBounds.left <= x && rangeBounds.right >= x && rangeBounds.top <= y && rangeBounds.bottom >= y) {
-                    if (selection.anchorNode != null) {
+                    if (selection.anchorNode !== null) {
                         if (isForwardSelection) {
                             rangeObject.setStart(selection.anchorNode, selection.anchorOffset);
                         }
-                        // eslint-disable-next-line max-len
-                        rangeObject = this.setTouchSelectionStartPosition(selection, rangeObject, isForwardSelection, target, element, currentPosition, isCloserMovement);
+                        rangeObject = this.setTouchSelectionStartPosition(selection, rangeObject, isForwardSelection, target,
+                                                                          element, currentPosition, isCloserMovement);
                         if (isForwardSelection) {
                             selection.extend(element, currentPosition);
                         }
@@ -1795,12 +1695,13 @@ export class TextSelection {
             }
         } else {
             for (let i: number = 0; i < element.childNodes.length; i++) {
-                const range: Range = element.childNodes[i].ownerDocument.createRange();
-                range.selectNodeContents(element.childNodes[i]);
+                const range: Range = element.childNodes[parseInt(i.toString(), 10)].ownerDocument.createRange();
+                range.selectNodeContents(element.childNodes[parseInt(i.toString(), 10)]);
                 const rangeBounds: ClientRect = range.getBoundingClientRect();
                 if (rangeBounds.left <= x && rangeBounds.right >= x && rangeBounds.top <= y && rangeBounds.bottom >= y) {
                     range.detach();
-                    return (this.selectTextByTouch(element.childNodes[i], x, y, isForwardSelection, target, isCloserMovement));
+                    return (this.selectTextByTouch(element.childNodes[parseInt(i.toString(), 10)], x, y, isForwardSelection,
+                                                   target, isCloserMovement));
                 } else {
                     range.detach();
                 }
@@ -1809,18 +1710,16 @@ export class TextSelection {
         return isTextSelected;
     }
 
-    // eslint-disable-next-line
-    private setTouchSelectionStartPosition(selection: Selection, range: Range, isForwardSelection: boolean, target: string, element: any, currentPosition: number, isCloserMovement: boolean): Range {
+    private setTouchSelectionStartPosition(selection: Selection, range: Range, isForwardSelection: boolean, target: string,
+                                           element: any, currentPosition: number, isCloserMovement: boolean): Range {
         if (isForwardSelection) {
             if (target === 'left') {
-                // eslint-disable-next-line
-                let startNode: any = this.getTouchFocusElement(selection, true);
+                const startNode: any = this.getTouchFocusElement(selection, true);
                 range.setStart(startNode.focusNode, startNode.focusOffset);
                 range.setEnd(element, currentPosition);
                 this.selectionAnchorTouch = { anchorNode: range.endContainer.parentElement.id, anchorOffset: range.endOffset };
             } else if (target === 'right') {
-                // eslint-disable-next-line
-                let startNode: any = this.getTouchAnchorElement(selection, false);
+                const startNode: any = this.getTouchAnchorElement(selection, false);
                 range.setStart(startNode.anchorNode, startNode.anchorOffset);
                 range.setEnd(element, currentPosition);
                 this.selectionFocusTouch = { focusNode: range.endContainer.parentElement.id, focusOffset: range.endOffset };
@@ -1828,10 +1727,8 @@ export class TextSelection {
         } else {
             if (target === 'left') {
                 if (!isCloserMovement) {
-                    // eslint-disable-next-line
-                    let startNode: any = this.getTouchFocusElement(selection, false);
+                    const startNode: any = this.getTouchFocusElement(selection, false);
                     range.setStart(element, currentPosition);
-                    // eslint-disable-next-line radix
                     range.setEnd(startNode.focusNode, startNode.focusOffset);
                     if (range.toString() === '') {
                         range.setStart(element, currentPosition);
@@ -1844,8 +1741,7 @@ export class TextSelection {
                     this.selectionAnchorTouch = { anchorNode: range.startContainer.parentElement.id, anchorOffset: range.startOffset };
                 }
             } else if (target === 'right') {
-                // eslint-disable-next-line
-                let startNode: any = this.getTouchAnchorElement(selection, true);
+                const startNode: any = this.getTouchAnchorElement(selection, true);
                 range.setStart(element, currentPosition);
                 range.setEnd(startNode.anchorNode, startNode.anchorOffset);
                 if (range.toString() === '') {
@@ -1866,8 +1762,7 @@ export class TextSelection {
         let offset: number = 0;
         if (element) {
             startNode = element.childNodes[0];
-            // eslint-disable-next-line radix
-            offset = parseInt(this.selectionAnchorTouch.anchorOffset.toString());
+            offset = parseInt(this.selectionAnchorTouch.anchorOffset.toString(), 10);
         } else {
             if (isCurrentFocus) {
                 startNode = selection.focusNode;
@@ -1886,8 +1781,7 @@ export class TextSelection {
         let offset: number = 0;
         if (element) {
             startNode = element.childNodes[0];
-            // eslint-disable-next-line radix
-            offset = parseInt(this.selectionFocusTouch.focusOffset.toString());
+            offset = parseInt(this.selectionFocusTouch.focusOffset.toString(), 10);
         } else {
             if (isCurrentAnchor) {
                 startNode = selection.anchorNode;
@@ -1901,15 +1795,13 @@ export class TextSelection {
     }
 
     private createTouchSelectElement(event: TouchEvent): void {
-        let topMargin: number = 10;
-        let dropTopAboveTwoHundred: number = 8;
-        let dropTopAboveHundard: number = 4;
+        const topMargin: number = 10;
+        const dropTopAboveTwoHundred: number = 8;
+        const dropTopAboveHundard: number = 4;
         this.isTouchSelection = true;
         const selection: Selection = window.getSelection();
         if (selection.type === 'Range') {
-            // eslint-disable-next-line max-len
             this.dropDivElementLeft = createElement('div', { id: this.pdfViewer.element.id + '_touchSelect_droplet_left', className: 'e-pv-touch-select-drop' });
-            // eslint-disable-next-line max-len
             this.dropDivElementRight = createElement('div', { id: this.pdfViewer.element.id + '_touchSelect_droplet_right', className: 'e-pv-touch-select-drop' });
             this.dropElementLeft = createElement('div', { className: 'e-pv-touch-ellipse' });
             this.dropElementLeft.style.transform = 'rotate(0deg)';
@@ -1923,46 +1815,45 @@ export class TextSelection {
             const range: Range = selection.getRangeAt(0);
             const rangePosition: ClientRect = range.getBoundingClientRect();
             const dropElementRect: ClientRect = this.dropDivElementLeft.getBoundingClientRect();
-            // eslint-disable-next-line max-len
             const pageTopValue: number = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top;
             const viewerLeftPosition: number = this.pdfViewerBase.viewerContainer.getBoundingClientRect().left;
             const topClientValue: number = this.getClientValueTop(rangePosition.top, this.pdfViewerBase.currentPageNumber - 1);
-            // eslint-disable-next-line max-len
-            let dropElementTop: number = this.pdfViewerBase.getZoomFactor() > 2 ? dropTopAboveTwoHundred : this.pdfViewerBase.getZoomFactor() > 1 ? dropTopAboveHundard : 0;
-            // eslint-disable-next-line max-len
+            const dropElementTop: number = this.pdfViewerBase.getZoomFactor() > 2 ?
+                dropTopAboveTwoHundred : this.pdfViewerBase.getZoomFactor() > 1 ? dropTopAboveHundard : 0;
             const topPositionValue: string = (topClientValue - dropElementTop) + pageTopValue * this.pdfViewerBase.getZoomFactor() + (dropElementRect.height / 2) * this.pdfViewerBase.getZoomFactor() + 'px';
             this.dropDivElementLeft.style.top = topPositionValue;
             this.dropDivElementLeft.style.left = rangePosition.left - (viewerLeftPosition + (dropElementRect.width)) + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
             this.dropDivElementRight.style.top = topPositionValue;
-            // eslint-disable-next-line max-len
             this.dropDivElementRight.style.left = rangePosition.left + rangePosition.width - viewerLeftPosition + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
             const currentPageLeft: number = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).getBoundingClientRect().left;
             const currentRangeLeft: number = rangePosition.left - currentPageLeft;
-            // eslint-disable-next-line max-len
-            this.topStoreLeft = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue), pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft), isHeightNeeded: true };
-            // eslint-disable-next-line max-len
-            this.topStoreRight = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue), pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft + rangePosition.width), isHeightNeeded: true };
+            this.topStoreLeft = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue),
+                pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft),
+                isHeightNeeded: true };
+            this.topStoreRight = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue),
+                pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft +
+                    rangePosition.width), isHeightNeeded: true };
             this.dropDivElementLeft.addEventListener('touchstart', this.onLeftTouchSelectElementTouchStart);
             this.dropDivElementLeft.addEventListener('touchmove', this.onLeftTouchSelectElementTouchMove);
             this.dropDivElementLeft.addEventListener('touchend', this.onLeftTouchSelectElementTouchEnd);
             this.dropDivElementRight.addEventListener('touchstart', this.onRightTouchSelectElementTouchStart);
             this.dropDivElementRight.addEventListener('touchmove', this.onRightTouchSelectElementTouchMove);
             this.dropDivElementRight.addEventListener('touchend', this.onRightTouchSelectElementTouchEnd);
-            // eslint-disable-next-line max-len
-            this.calculateContextMenuPosition((event.touches[0].clientY + this.dropDivElementLeft.clientHeight + topMargin), (parseInt(this.dropDivElementLeft.style.left,10) - topMargin));
+            this.calculateContextMenuPosition((event.touches[0].clientY + this.dropDivElementLeft.clientHeight + topMargin),
+                                              (parseInt(this.dropDivElementLeft.style.left, 10) - topMargin));
         }
     }
+
     /**
-     * @param top
-     * @param left
+     * @param {any} top - It describes about the top value
+     * @param {any} left - It describes about the left value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public calculateContextMenuPosition(top: any, left: any): any { 
-        let topMargin: number = 10;
+    public calculateContextMenuPosition(top: any, left: any): void {
+        const topMargin: number = 10;
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            // eslint-disable-next-line
-            let contextTop: any = top - this.contextMenuHeight;
+            const contextTop: number = top - this.contextMenuHeight;
             if (contextTop < this.pdfViewerBase.toolbarHeight) {
                 top = top + this.contextMenuHeight;
             } else {
@@ -1975,26 +1866,28 @@ export class TextSelection {
         if (this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp') {
             left = left - 50;
         }
-        let proxy: any = this;
+        // eslint-disable-next-line
+        const proxy: any = this;
         setTimeout(
             () => {
-            let leftValue: number = 35;
-            let selectedContent: any = document.getElementsByClassName("e-pv-maintaincontent")[0] ? document.getElementsByClassName("e-pv-maintaincontent")[0].getBoundingClientRect() : null;
-            if (selectedContent) {
-            if ((selectedContent.bottom + proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight) > window.innerHeight) {
-                top = selectedContent.top - (proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight - topMargin); 
-            } else {
-                top = selectedContent.bottom + proxy.pdfViewerBase.toolbarHeight - topMargin;
-            }
-                left =  selectedContent.left - leftValue;
-                let toolbarModule: any = this.pdfViewer.toolbarModule ? this.pdfViewer.toolbarModule.annotationToolbarModule : 'null';
-                if (!toolbarModule || !toolbarModule.textMarkupToolbarElement || toolbarModule.textMarkupToolbarElement.children.length === 0) {
-                    // eslint-disable-next-line max-len
-                    proxy.pdfViewerBase.contextMenuModule.open(top, left, proxy.pdfViewerBase.viewerContainer);
+                const leftValue: number = 35;
+                const selectedContent: any = document.getElementsByClassName('e-pv-maintaincontent')[0] ? document.getElementsByClassName('e-pv-maintaincontent')[0].getBoundingClientRect() : null;
+                if (selectedContent) {
+                    if ((selectedContent.bottom + proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight) > window.innerHeight) {
+                        top = selectedContent.top - (proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight - topMargin);
+                    } else {
+                        top = selectedContent.bottom + proxy.pdfViewerBase.toolbarHeight - topMargin;
+                    }
+                    left =  selectedContent.left - leftValue;
+                    const toolbarModule: any = this.pdfViewer.toolbarModule ? this.pdfViewer.toolbarModule.annotationToolbarModule : 'null';
+                    if (!toolbarModule || !toolbarModule.textMarkupToolbarElement ||
+                        toolbarModule.textMarkupToolbarElement.children.length === 0) {
+                        proxy.pdfViewerBase.contextMenuModule.open(top, left, proxy.pdfViewerBase.viewerContainer);
+                    }
                 }
-            }
-          });
-        }
+            });
+    }
+
     private onLeftTouchSelectElementTouchStart = (event: TouchEvent): void => {
         this.initiateSelectionByTouch();
     };
@@ -2010,8 +1903,10 @@ export class TextSelection {
     private onRightTouchSelectElementTouchEnd = (event: TouchEvent): void => {
         this.terminateSelectionByTouch(event);
     };
+
     /**
      * @private
+     * @returns {void}
      */
     public initiateSelectionByTouch(): void {
         this.pdfViewerBase.textLayer.clearDivSelection();
@@ -2019,7 +1914,6 @@ export class TextSelection {
         let lowerPageIndex: number = this.pdfViewerBase.currentPageNumber - 3;
         lowerPageIndex = (lowerPageIndex < 0) ? 0 : lowerPageIndex;
         let higherPageIndex: number = this.pdfViewer.currentPageNumber + 1;
-        // eslint-disable-next-line max-len
         higherPageIndex = (higherPageIndex < (this.pdfViewerBase.pageCount - 1)) ? higherPageIndex : (this.pdfViewerBase.pageCount - 1);
         for (let i: number = lowerPageIndex; i <= higherPageIndex; i++) {
             const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + i);
@@ -2034,19 +1928,18 @@ export class TextSelection {
         }
     }
 
-    // eslint-disable-next-line
     private terminateSelectionByTouch(event: any): void {
-        let topMargin: number = 10;
+        const topMargin: number = 10;
         this.maintainSelectionOnZoom(true, false);
         this.applySpanForSelection();
         if (this.pdfViewerBase.getTextMarkupAnnotationMode()) {
-            // eslint-disable-next-line max-len
-            this.pdfViewer.annotationModule.textMarkupAnnotationModule.drawTextMarkupAnnotations(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode);
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.
+                drawTextMarkupAnnotations(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode);
         } else {
             this.fireTextSelectEnd();
             let top: any = event.changedTouches[0].clientY + event.currentTarget.clientHeight;
-            var spanBounds = this.getSpanBounds();
-            if(spanBounds) {
+            const spanBounds: any = this.getSpanBounds();
+            if (spanBounds) {
                 if ((spanBounds.bottom + this.contextMenuHeight + this.pdfViewerBase.toolbarHeight) > window.innerHeight) {
                     top = spanBounds.top - (this.contextMenuHeight + this.pdfViewerBase.toolbarHeight);
                 } else {
@@ -2057,31 +1950,33 @@ export class TextSelection {
     }
 
     private getSpanBounds(): any {
-        let spanWidth: Array<number> = [];
-        let spanRight: Array<number> = [];
-        let spanLeft: Array<number> = [];
-        let spanHeight: number = 0; 
-        let selectedContent: any = document.getElementsByClassName("e-pv-maintaincontent");
-        if(selectedContent.length > 0) {
+        const spanWidth: Array<number> = [];
+        const spanRight: Array<number> = [];
+        const spanLeft: Array<number> = [];
+        let spanHeight: number = 0;
+        const selectedContent: HTMLCollectionOf<Element> = document.getElementsByClassName('e-pv-maintaincontent');
+        if (selectedContent.length > 0) {
             for (let i: number = 0; i < selectedContent.length; i++) {
-                let spanElement: any = selectedContent[i].getBoundingClientRect();
+                const spanElement: any = selectedContent[parseInt(i.toString(), 10)].getBoundingClientRect();
                 spanHeight = spanHeight + spanElement.height;
-                spanWidth.push(spanElement.width); 
+                spanWidth.push(spanElement.width);
                 spanRight.push(spanElement.right);
                 spanLeft.push(spanElement.left);
             }
-            // eslint-disable-next-line max-len
-            return {top: selectedContent[0].getBoundingClientRect().top, bottom: selectedContent[selectedContent.length - 1].getBoundingClientRect().bottom, left: Math.min.apply(null, spanLeft) , right: Math.max.apply(null, spanRight), width: Math.max.apply(null, spanWidth), height: spanHeight} ;
+            return {top: selectedContent[0].getBoundingClientRect().top,
+                bottom: selectedContent[selectedContent.length - 1].getBoundingClientRect().bottom,
+                left: Math.min.apply(null, spanLeft) , right: Math.max.apply(null, spanRight),
+                width: Math.max.apply(null, spanWidth), height: spanHeight} ;
         }
     }
 
     private onLeftTouchSelectElementTouchMove = (event: TouchEvent): void => {
         let range: Range;
         let nodeElement: Node;
-        let zoomFactorabovehundard: number = 15;
-        let zoomFactorAboveSeventy: number = 10;
-        let zoomFactoraboveFifty: number = 8;
-        let zoomFactorbelowFifty: number = 4;
+        const zoomFactorabovehundard: number = 15;
+        const zoomFactorAboveSeventy: number = 10;
+        const zoomFactoraboveFifty: number = 8;
+        const zoomFactorbelowFifty: number = 4;
         event.preventDefault();
         (event.target as HTMLElement).style.zIndex = '0';
         const rightElement: HTMLElement = this.dropDivElementRight;
@@ -2093,16 +1988,18 @@ export class TextSelection {
             (event.target as HTMLElement).style.zIndex = '1000';
             nodeElement = this.getNodeElement(range, xTouch, yTouch, event, nodeElement);
             if (nodeElement) {
-                // eslint-disable-next-line max-len
-                const currentDifference: number = Math.sqrt((yTouch - dropBounds.top) * (yTouch - dropBounds.top) + (xTouch - dropBounds.left) * (xTouch - dropBounds.left));
+                const currentDifference: number = Math.sqrt((yTouch - dropBounds.top) * (yTouch - dropBounds.top) +
+                (xTouch - dropBounds.left) * (xTouch - dropBounds.left));
                 const isCloserMovement: boolean = this.isCloserTouchScroll(currentDifference);
                 let isTextSelected: boolean = false;
-                let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
-                let topDifference: number = Math.abs(yTouch - dropBounds.top);
-                // eslint-disable-next-line max-len
-                let textHeight: number = zoomFactor > 1 ? zoomFactorabovehundard : zoomFactor > 0.7 ? zoomFactorAboveSeventy : zoomFactor > 0.5 ? zoomFactoraboveFifty : zoomFactorbelowFifty;
-                // eslint-disable-next-line max-len
-                if (parseInt(yTouch.toString()) <= parseInt(dropBounds.top.toString()) && (parseInt(topDifference.toString()) >= textHeight) || parseInt(xTouch.toString()) <= parseInt(dropBounds.left.toString()) && (parseInt(topDifference.toString()) <= textHeight)) {
+                const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+                const topDifference: number = Math.abs(yTouch - dropBounds.top);
+                const textHeight: number = zoomFactor > 1 ? zoomFactorabovehundard : zoomFactor > 0.7 ?
+                    zoomFactorAboveSeventy : zoomFactor > 0.5 ? zoomFactoraboveFifty : zoomFactorbelowFifty;
+                if (parseInt(yTouch.toString(), 10) <= parseInt(dropBounds.top.toString(), 10) &&
+                (parseInt(topDifference.toString(), 10) >= textHeight) ||
+                parseInt(xTouch.toString(), 10) <= parseInt(dropBounds.left.toString(), 10) &&
+                (parseInt(topDifference.toString(), 10) <= textHeight)) {
                     this.dropElementLeft.style.transform = 'rotate(0deg)';
                     this.dropElementRight.style.transform = 'rotate(-90deg)';
                     isTextSelected = this.selectTextByTouch(nodeElement.parentElement, xTouch, yTouch, false, 'left', isCloserMovement);
@@ -2115,13 +2012,12 @@ export class TextSelection {
                     const elementClientRect: ClientRect = this.dropDivElementLeft.getBoundingClientRect();
                     const pageTopValue: number = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top;
                     const topClientValue: number = this.getClientValueTop(yTouch, this.pdfViewerBase.currentPageNumber - 1);
-                    // eslint-disable-next-line max-len
                     const currentPageLeft: number = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).getBoundingClientRect().left;
                     const currentRangeLeft: number = xTouch - currentPageLeft;
-                    // eslint-disable-next-line max-len
                     this.dropDivElementLeft.style.top = pageTopValue * this.pdfViewerBase.getZoomFactor() + topClientValue + 'px';
-                    this.topStoreLeft = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue), pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft), isHeightNeeded: false };
-                    // eslint-disable-next-line max-len
+                    this.topStoreLeft = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue),
+                        pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft),
+                        isHeightNeeded: false };
                     this.dropDivElementLeft.style.left = xTouch - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - (elementClientRect.width / 2) + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
                     this.previousScrollDifference = currentDifference;
                 }
@@ -2129,14 +2025,13 @@ export class TextSelection {
         }
     };
 
-    // eslint-disable-next-line
     private onRightTouchSelectElementTouchMove = (event: TouchEvent): void => {
         let range: Range;
         let nodeElement: Node;
-        let zoomFactorabovehundard: number = 25;
-        let zoomFactorAboveSeventy: number = 15;
-        let zoomFactoraboveFifty: number = 8;
-        let zoomFactorbelowFifty: number = 7;
+        const zoomFactorabovehundard: number = 25;
+        const zoomFactorAboveSeventy: number = 15;
+        const zoomFactoraboveFifty: number = 8;
+        const zoomFactorbelowFifty: number = 7;
         event.preventDefault();
         (event.target as HTMLElement).style.zIndex = '0';
         const leftElement: HTMLElement = this.dropDivElementLeft;
@@ -2148,16 +2043,17 @@ export class TextSelection {
             (event.target as HTMLElement).style.zIndex = '1000';
             nodeElement = this.getNodeElement(range, touchX, touchY, event, nodeElement);
             if (nodeElement) {
-                // eslint-disable-next-line max-len
-                const currentDifference: number = Math.sqrt((touchY - dropPosition.top) * (touchY - dropPosition.top) + (touchX - dropPosition.left) * (touchX - dropPosition.left));
+                const currentDifference: number = Math.sqrt((touchY - dropPosition.top) * (touchY - dropPosition.top) +
+                (touchX - dropPosition.left) * (touchX - dropPosition.left));
                 const isCloserMovement: boolean = this.isCloserTouchScroll(currentDifference);
                 let isTextSelected: boolean = false;
-                let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
-                let topDifference: number = Math.abs(touchY - dropPosition.top);
-                // eslint-disable-next-line max-len
-                let textHeight: number = zoomFactor > 1 ? (zoomFactor * zoomFactorabovehundard) : (zoomFactor > 0.7 ?  zoomFactorAboveSeventy : (zoomFactor > 0.5 ? zoomFactoraboveFifty : zoomFactorbelowFifty));
-                // eslint-disable-next-line max-len
-                if ((parseInt(touchY.toString()) >= parseInt(dropPosition.top.toString()) && parseInt(topDifference.toString()) >=  textHeight) || (parseInt(topDifference.toString()) <=  textHeight && parseInt(touchX.toString()) >= parseInt(dropPosition.left.toString()))) {
+                const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+                const topDifference: number = Math.abs(touchY - dropPosition.top);
+                const textHeight: number = zoomFactor > 1 ? (zoomFactor * zoomFactorabovehundard) :
+                    (zoomFactor > 0.7 ?  zoomFactorAboveSeventy : (zoomFactor > 0.5 ? zoomFactoraboveFifty : zoomFactorbelowFifty));
+                if ((parseInt(touchY.toString(), 10) >= parseInt(dropPosition.top.toString(), 10) &&
+                parseInt(topDifference.toString(), 10) >=  textHeight) || (parseInt(topDifference.toString(), 10) <=  textHeight &&
+                parseInt(touchX.toString(), 10) >= parseInt(dropPosition.left.toString(), 10))) {
                     this.dropElementRight.style.transform = 'rotate(-90deg)';
                     this.dropElementLeft.style.transform = 'rotate(0deg)';
                     isTextSelected = this.selectTextByTouch(nodeElement.parentElement, touchX, touchY, true, 'right', isCloserMovement);
@@ -2171,12 +2067,11 @@ export class TextSelection {
                     const topClientValue: number = this.getClientValueTop(touchY, this.pdfViewerBase.currentPageNumber - 1);
                     const elementClientRect: ClientRect = this.dropDivElementRight.getBoundingClientRect();
                     this.dropDivElementRight.style.top = pageTopValue * this.pdfViewerBase.getZoomFactor() + topClientValue + 'px';
-                    // eslint-disable-next-line max-len
                     const currentPageLeft: number = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).getBoundingClientRect().left;
                     const currentRangeLeft: number = touchX - currentPageLeft;
-                    // eslint-disable-next-line max-len
-                    this.topStoreRight = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue), pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft), isHeightNeeded: false };
-                    // eslint-disable-next-line max-len
+                    this.topStoreRight = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue),
+                        pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft),
+                        isHeightNeeded: false };
                     this.dropDivElementRight.style.left = touchX - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - (elementClientRect.width / 2) + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
                     this.previousScrollDifference = currentDifference;
                 }
@@ -2188,12 +2083,9 @@ export class TextSelection {
         if (document.caretRangeFromPoint) {
             range = document.caretRangeFromPoint(touchX, touchY);
             nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
-            // eslint-disable-next-line
         } else if ((document as any).caretPositionFromPoint) {
-            // eslint-disable-next-line
-            let start: any = (document as any).caretPositionFromPoint(touchX, touchY);
-            // eslint-disable-next-line
-            let end: any = (document as any).caretPositionFromPoint(touchX, touchY);
+            const start: any = (document as any).caretPositionFromPoint(touchX, touchY);
+            const end: any = (document as any).caretPositionFromPoint(touchX, touchY);
             range = document.createRange();
             range.setStart(start.offsetNode, start.offset);
             range.setEnd(end.offsetNode, end.offset);
@@ -2243,7 +2135,6 @@ export class TextSelection {
 
     private getClientValueTop(clientValue: number, pageNumber: number): number {
         if (this.pdfViewerBase.getElement('_pageDiv_' + pageNumber)) {
-            // eslint-disable-next-line max-len
             return clientValue - this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).getBoundingClientRect().top;
         } else {
             return clientValue;
@@ -2252,8 +2143,9 @@ export class TextSelection {
 
     private isScrolledOnScrollBar(event: TouchEvent): boolean {
         let isScrollBar: boolean = false;
-        // eslint-disable-next-line max-len
-        if (event.touches && (this.pdfViewerBase.viewerContainer.clientHeight + this.pdfViewerBase.viewerContainer.offsetTop) < event.touches[0].clientY && event.touches[0].clientY < (this.pdfViewerBase.viewerContainer.offsetHeight + this.pdfViewerBase.viewerContainer.offsetTop)) {
+        if (event.touches && (this.pdfViewerBase.viewerContainer.clientHeight + this.pdfViewerBase.viewerContainer.offsetTop) <
+        event.touches[0].clientY && event.touches[0].clientY < (this.pdfViewerBase.viewerContainer.offsetHeight +
+            this.pdfViewerBase.viewerContainer.offsetTop)) {
             isScrollBar = true;
         }
         return isScrollBar;
@@ -2278,14 +2170,14 @@ export class TextSelection {
     /**
      * Copy the selected text in the PDF Document.
      *
-     * @returns void
+     * @returns {void}
      */
     public copyText(): void {
         let selectionText: string = '';
         this.maintainSelectionOnZoom(true, false);
         if (this.selectionRangeArray.length > 0) {
             for (let i: number = 0; i < this.selectionRangeArray.length; i++) {
-                selectionText += this.selectionRangeArray[i].textContent;
+                selectionText += this.selectionRangeArray[parseInt(i.toString(), 10)].textContent;
             }
         }
         if (selectionText.length > 0) {
@@ -2295,7 +2187,6 @@ export class TextSelection {
             const textArea: HTMLElement = document.createElement('textarea');
             textArea.contentEditable = 'true';
             textArea.textContent = selectionText;
-            // eslint-disable-next-line max-len
             if (this.pdfViewer.annotation && this.pdfViewer.annotation.freeTextAnnotationModule) {
                 this.pdfViewer.annotation.freeTextAnnotationModule.selectedText = selectionText;
             }
@@ -2313,14 +2204,18 @@ export class TextSelection {
             }
         }
     }
+
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.clear();
     }
+
     /**
      * @private
+     * @returns {string} - string
      */
     public getModuleName(): string {
         return 'TextSelection';

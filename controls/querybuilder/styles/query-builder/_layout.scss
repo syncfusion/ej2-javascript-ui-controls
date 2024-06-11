@@ -1,3 +1,22 @@
+@mixin fluent2-small-round-btn {
+  @if $theme-name == 'fluent2' {
+    height: 32px;
+    width: 32px;
+    border-radius: 20px;
+    border-color: transparent;
+    line-height: 14px;
+  }
+}
+
+@mixin fluent2-bigger-small-round-btn {
+  @if $theme-name == 'fluent2' {
+    height: 38px;
+    width: 38px;
+    border-radius: 20px;
+    border-color: transparent;
+    line-height: 0px;
+  }
+}
 @include export-module('querybuilder-layout') {
   .e-query-builder {
     border: $qrybldr-brdr;
@@ -10,8 +29,70 @@
       right: $qrybldr-spinner-right;
     }
 
-    &.e-rtl {
+    & .e-cloneproperties.e-group-body {
+      padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
 
+    & .e-dragclone.e-cloneproperties {
+      & .e-group-container,
+      & .e-rule-container {
+        @if $skin-name == 'fluent2' {
+          box-shadow: $shadow-md;
+        }
+        background-color: $qrybldr-drag-bg-color;
+      }
+
+      & .e-rule-value-delete {
+        margin-top: 10px;
+      }
+
+      & .e-drag-qb-rule {
+        padding: 18px 5px;
+        @if $skin-name == 'fluent2' {
+          color: $icon-color;
+        }
+      }
+    }
+
+    & .e-dragclone,
+    & .e-drag-qb-rule {
+      cursor: move;
+    }
+
+    & .e-dragclone .e-rule-field {
+      display: flex;
+      padding: 10px;
+    }
+
+    & .e-dragclone.e-notallowedcur,
+    & .e-dragclone.e-notallowedcur .e-drag-qb-rule {
+      cursor: not-allowed !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    & .e-group-body .e-drag-qb-rule,
+    & .e-dragclone .e-drag-qb-rule {
+      padding: 15px 3px 15px 11px;
+      vertical-align: middle;
+      font-size: $qrybldr-drag-icon-font-size;
+      @if $skin-name == 'fluent2' {
+        color: $qryblr-drag-icon-color;
+      }
+    }
+
+    & .e-group-header .e-drag-qb-rule {
+      margin: 1px;
+      padding: $qrybldr-drag-grp-icon-pad !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    & .e-drag-rule-bottom-line {
+      border-bottom: 2px solid $qrybldr-btngroup-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    & .e-drag-rule-top-line {
+      border-top: 2px solid $qrybldr-btngroup-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &.e-rtl {
       & .e-btn-group.e-rtl .e-btn.e-btngroup-and-lbl.e-small {
         &.e-not {
           @if $skin-name == 'Material3' {
@@ -82,6 +163,10 @@
         padding-left: $qrybldr-btn-left;
       }
 
+      &.e-device .e-rule-field .e-drag-qb-rule:not(.e-hidden) {
+        display: block;
+      }
+
       & .e-group-header {
         & .e-group-action .e-btn {
           margin-left: $qrybldr-group-container-margin-left;
@@ -149,7 +234,12 @@
 
     & .e-rule-list > ::after,
     & .e-rule-list > ::before {
-      border-style: $qrybldr-rule-list-border-style;
+      @if $theme-name == 'fluent2' {
+        border-style: dotted;
+      }
+      @else {
+        border-style: $qrybldr-rule-list-border-style;
+      }
       content: '';
       left: $qrybldr-rule-list-first-left;
       position: $vrmode-ruledlt-mrgnpos;
@@ -188,7 +278,6 @@
     }
 
     & .e-group-header {
-
       & .e-group-action .e-btn {
         margin-left: $group-action-margin;
       }
@@ -229,6 +318,14 @@
         border: $qrybldr-btngrp-brdr;
         box-shadow: $qrybldr-btngrp-shadow;
         display: $qrybldr-btngroup-display;
+
+        & .e-btn.e-small {
+          @if $theme-name == 'fluent2' {
+            font-size: 14px;
+            line-height: 18.4px;
+            padding: 6px 12px;
+          }
+        }
       }
 
       & .e-btn.e-btngroup-and-lbl.e-small {
@@ -316,6 +413,10 @@
         box-shadow: $ruledelete-shadow;
       }
 
+      & .e-btn.e-small.e-round {
+        @include fluent2-small-round-btn;
+      }
+
       & .e-group-action .e-readonly {
         display: inline-block;
         visibility: hidden;
@@ -383,11 +484,7 @@
           margin-top: $grpcon-padding;
         }
 
-        & .e-rule-filter {
-          padding: $rulecon-padding;
-          width: $qrybldr-width;
-        }
-
+        & .e-rule-filter,
         & .e-rule-sub-filter {
           padding: $rulecon-padding;
           width: $qrybldr-width;
@@ -469,6 +566,10 @@
         &.e-btn.e-small.e-round {
           box-shadow: $ruledelete-shadow;
         }
+
+        & .e-btn.e-small.e-round {
+          @include fluent2-small-round-btn;
+        }
       }
 
       & .e-vertical-mode .e-removerule.e-rule-delete {
@@ -485,10 +586,7 @@
       box-shadow: $rule-boxshadow;
     }
 
-    &.e-device .e-group-body .e-rule-container .e-rule-filter {
-      padding: $device-rulecon-padding;
-    }
-
+    &.e-device .e-group-body .e-rule-container .e-rule-filter,
     &.e-device .e-group-body .e-rule-container .e-rule-sub-filter {
       padding: $device-rulecon-padding;
     }
@@ -582,6 +680,105 @@
         padding: $device-rule-padding;
       }
     }
+
+    &.e-multi-connector {
+      & .e-rule-list > .e-btn-group {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+
+      & .e-qb-toggle {
+        margin-left: 3px;
+        margin-right: 10px;
+      }
+
+      & .e-group-container:not(:first-child) {
+        padding: 12px;
+        border: 1px solid;
+        margin-top: 0;
+        border-radius: 4px;
+      }
+
+      & .e-rule-list > .e-group-container:first-child {
+        padding: 12px;
+        border: 1px solid;
+        border-radius: 4px;
+      }
+
+      & .e-group-container:not(:first-child)::before,
+      & .e-rule-list > .e-group-container:first-child::before{
+        height: calc(50% - 8px);
+      }
+
+      & .e-group-container::after {
+        height: calc(50% + 17px);
+        top: calc(50% - 17px);
+      }
+
+      & .e-btn-group + .e-group-container {
+        margin-top: 0;
+      }
+
+      & .e-group-action .e-btn:first-child {
+        margin-left: 0;
+      }
+
+      & .e-qb-toggle-btn + .e-group-action .e-btn:first-child {
+        margin-left: 6px !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      & .e-btn-group {
+        & .e-btn.e-small {
+          @if $theme-name == 'fluent2' {
+            font-size: 14px;
+            line-height: 18.4px;
+            padding: 6px 12px;
+          }
+        }
+      }
+
+      & .e-multi-connector-init-group {
+        height: 40px;
+      }
+
+      & .e-btn-group::after,
+      & .e-btn-group::before {
+        left: -12px;
+        width: 8px;
+      }
+
+      & .e-rule-list .e-group-container::before,
+      & .e-rule-list .e-group-container::after {
+        left: -12px !important; /* stylelint-disable-line declaration-no-important */
+        @if $skin-name == 'Material3' {
+          left: -13px !important; /* stylelint-disable-line declaration-no-important */
+        }
+        
+        @if $skin-name == 'material' {
+          left: -12.8px !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+
+      & .e-rule-list .e-btn-group::before,
+      & .e-rule-list .e-btn-group::after {
+        left: -11.2px !important; /* stylelint-disable-line declaration-no-important */
+        @if $skin-name == 'Material3' {
+          left: -12.5px !important; /* stylelint-disable-line declaration-no-important */
+        }
+
+        @if $skin-name == 'material' {
+          left: -12px !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+
+      & .e-qb-toggle-btn {
+        box-shadow: none !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      & .e-btn-group + .e-rule-container {
+        margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
   }
 
   .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-top,
@@ -658,6 +855,39 @@
       margin-top: $device-rulecon-padding;
     }
 
+    & .e-rule-container button.e-button-hide {
+      display: $qrybldr-button-hide !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    & .e-collapse-rule {
+      @if $theme-name == 'fluent2' {
+        font-size: 16px;
+        padding: 11px;
+      }
+    }
+
+    & .e-btn.e-small.e-round .e-btn-icon {
+      @if $theme-name == 'fluent2' {
+        font-size: 16px;
+      }
+    }
+
+    & .e-drag-qb-rule {
+      font-size: $qrybldr-drag-icon-bigger-font-size;
+    }
+
+    & .e-group-header .e-btn-group .e-small.e-btn {
+      @if $theme-name == 'fluent2' {
+        font-size: 16px;
+        line-height: 20px;
+        padding: 8px 12px;
+      }
+    }
+
+    & .e-group-header .e-group-action .e-btn.e-small.e-round {
+      @include fluent2-bigger-small-round-btn;
+    }
+
     & .e-group-body {
       padding-left: $bigger-groupbody-paddingleft;
 
@@ -723,6 +953,10 @@
         &.e-btn.e-small.e-round {
           box-shadow: $ruledelete-shadow;
         }
+
+        & .e-btn.e-small.e-round {
+          @include fluent2-bigger-small-round-btn;
+        }
       }
     }
 
@@ -758,5 +992,34 @@
     & .e-value {
       padding: $bigger-rulecon-padding;
     }
+  }
+
+  .e-query-builder.e-device .e-rule-field .e-drag-qb-rule:not(.e-hidden) {
+    display: block;
+  }
+
+  .e-bigger .e-query-builder .e-dragclone.e-cloneproperties {
+    & .e-drag-qb-rule {
+      padding: 24px 5px;
+    }
+    & .e-rule-value-delete {
+      margin: 15px;
+    }
+  }
+
+  .e-query-builder.e-device .e-dragclone.e-cloneproperties .e-rule-field {
+    display: block;
+  }
+
+  .e-query-builder.e-draggable .e-rule-list .e-group-container::before {
+    height: $qrybldr-drag-grp-list-heg;
+  }
+
+  .e-bigger .e-query-builder.e-draggable .e-rule-list .e-group-container::before {
+    height: $qrybldr-drag-grp-big-list-heg;
+  }
+
+  .e-bigger .e-query-builder .e-group-header .e-drag-qb-rule {
+    padding: $qrybldr-drag-grp-big-icon-pad !important; /* stylelint-disable-line declaration-no-important */
   }
 }

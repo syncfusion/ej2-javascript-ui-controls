@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel, BpmnShapeModel, BpmnAnnotationModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, BpmnShapeModel, BpmnAnnotationModel, SwimLaneModel } from '../../../src/diagram/objects/node-model';
 import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
 import { ShadowModel, RadialGradientModel, StopModel } from '../../../src/diagram/core/appearance-model';
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
@@ -52,8 +52,8 @@ describe('Diagram Control', () => {
                         type: 'Bpmn', shape: 'DataObject',
                         dataObject: { collection: false, type: 'Input' },
                         annotations: [
-                            { id: 'annot1', angle: 30, length: 150, text: 'textAnnotation1' },
-                            { id: 'annot2', angle: 90, width: 100, height: 100, length: 150, text: 'textAnnotation2' },
+                            { id: 'annot1',angle: 30, length: 150, text: 'textAnnotation1' },
+                            { angle: 90, width: 100, height: 100, length: 150, text: 'textAnnotation2' },
                             { id: 'annot3', angle: 180, width: 100, height: 100, length: 150, text: 'textAnnotation3' },
                             { id: 'annot4', angle: 280, width: 100, height: 100, length: 150, text: 'textAnnotation4' }
                         ]
@@ -162,6 +162,94 @@ describe('Diagram Control', () => {
         });
 
        });
+
+       describe('BPMN Text Annotations test2', () => {
+        let diagram: Diagram;
+
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramBpmnTextAn' });
+            document.body.appendChild(ele);
+
+            let node: NodeModel[] = [
+                {
+                    id: 'start', width: 100, height: 100, offsetX: 300, offsetY: 450,
+                    annotations:[{content:'start'}],
+                    style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5 } as ShapeStyleModel,
+                    shape: {
+                        type: 'Bpmn', shape: 'Event',
+                    } as BpmnShapeModel,
+                },
+                {
+                    id: 'textAn1', width: 100, height: 100, offsetX: 450, offsetY: 450,
+                    shape: {
+                        type: 'Bpmn', shape: 'TextAnnotation',
+                        textAnnotation:{textAnnotationDirection:'Left',textAnnotationTarget:'start'}
+                    } as BpmnShapeModel,
+                },
+                {
+                    id: 'textAn2', width: 100, height: 100, offsetX: 150, offsetY: 450,
+                    shape: {
+                        type: 'Bpmn', shape: 'TextAnnotation',
+                        textAnnotation:{textAnnotationDirection:'Right',textAnnotationTarget:'start'}
+                    } as BpmnShapeModel,
+                },
+                {
+                    id: 'textAn3', width: 100, height: 100, offsetX: 450, offsetY: 150,
+                    shape: {
+                        type: 'Bpmn', shape: 'TextAnnotation',
+                        textAnnotation:{textAnnotationDirection:'Top',textAnnotationTarget:'start'}
+                    } as BpmnShapeModel,
+                },
+                {
+                    id: 'textAn4', width: 100, height: 100, offsetX: 450, offsetY: 500,
+                    shape: {
+                        type: 'Bpmn', shape: 'TextAnnotation',
+                        textAnnotation:{textAnnotationDirection:'Bottom',textAnnotationTarget:'start'}
+                    } as BpmnShapeModel,
+                },
+            ];
+            diagram = new Diagram({
+                width: 900, height: 550, nodes: node
+            });
+            diagram.appendTo('#diagramBpmnTextAn');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+            it('Checking nodes and connectors render', (done: Function) => {
+                let nodeCount = diagram.nodes.length;
+                let connectorCount = diagram.connectors.length;
+                expect(nodeCount === 5 && connectorCount === 4).toBe(true);
+                done();
+            });
+            it('Apply font style at runtime using keyboard', (done: Function) => {
+                let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+                let start:NodeModel = diagram.nameTable['start'];
+                diagram.select([start]);
+                mouseEvents.keyDownEvent(diagramCanvas, 'B', true);
+                mouseEvents.keyDownEvent(diagramCanvas, 'I', true);
+                mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+                mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+                expect(start.annotations[0].style.bold).toBe(true);
+                done();
+            });
+            it('Checking nodes opacity', (done: Function) => {
+                let start:NodeModel = diagram.nameTable['start'];
+                diagram.updateNodeProperty(start.wrapper,true,0.5);
+                expect(start.wrapper.style.opacity === 0.5).toBe(true);
+                done();
+            });
+       });
    
        describe('Testing Bpmn text annotation in symbol palette ',()=>{
             let diagram: Diagram;
@@ -177,12 +265,48 @@ describe('Diagram Control', () => {
                     width: '70%', height: 500
                 });
                 diagram.appendTo('#diagramBpmnIssue');
-                var BpmnShape : NodeModel[] =[ {
+                var BpmnShape : NodeModel[] =[  {
                     id: 'BPMNnode1',
                     annotations:[{content:'Text'}],
                         shape: {
                             type: 'Bpmn', shape: 'TextAnnotation',
                             textAnnotation:{textAnnotationDirection:'Auto',textAnnotationTarget:'',},
+                            annotation:{}
+                        }
+                },
+                {
+                    id: 'BPMNnode2',
+                    annotations:[{content:'Text'}],
+                        shape: {
+                            type: 'Bpmn', shape: 'TextAnnotation',
+                            textAnnotation:{textAnnotationDirection:'Right',textAnnotationTarget:'',},
+                            annotation:{}
+                        }
+                },
+                {
+                    id: 'BPMNnode3',
+                    annotations:[{content:'Text'}],
+                        shape: {
+                            type: 'Bpmn', shape: 'TextAnnotation',
+                            textAnnotation:{textAnnotationDirection:'Bottom',textAnnotationTarget:'',},
+                            annotation:{}
+                        }
+                },
+                {
+                    id: 'BPMNnode4',
+                    annotations:[{content:'Text'}],
+                        shape: {
+                            type: 'Bpmn', shape: 'TextAnnotation',
+                            textAnnotation:{textAnnotationDirection:'Left',textAnnotationTarget:'',},
+                            annotation:{}
+                        }
+                },
+                {
+                    id: 'BPMNnode5',
+                    annotations:[{content:'Text'}],
+                        shape: {
+                            type: 'Bpmn', shape: 'TextAnnotation',
+                            textAnnotation:{textAnnotationDirection:'Top',textAnnotationTarget:'',},
                             annotation:{}
                         }
                 },
@@ -568,6 +692,7 @@ describe('Diagram Control', () => {
             expect(oldNodeLength !== diagram.nodes.length && oldConnectorLength !== diagram.connectors.length).toBe(true);
             done();
         });
+       
     });
 
     describe('BPMN Text Annotation throws error when start Text Edit', () => {

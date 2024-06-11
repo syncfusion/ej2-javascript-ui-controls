@@ -1,0 +1,853 @@
+@import '../common/mixin.scss';
+
+:root {
+  --color-sf-content-bg-color: #212529;
+  --color-sf-content-bg-color-alt1: #282d31;
+  --color-sf-content-bg-color-alt2: #343a40;
+  --color-sf-content-bg-color-alt3: #dee2e6;
+  --color-sf-content-bg-color-alt4: #6c757d;
+  --color-sf-content-bg-color-alt5: #adb5bd;
+  --color-sf-content-bg-color-hover: #31373d;
+  --color-sf-content-bg-color-pressed: var(--color-sf-content-bg-color-alt3);
+  --color-sf-content-bg-color-focus: var(--color-sf-content-bg-color-hover);
+  --color-sf-content-bg-color-selected: #0d6efd;
+  --color-sf-content-bg-color-dragged: #343a40;
+  --color-sf-content-bg-color-disabled: var(--color-sf-content-bg-color);
+  --color-sf-flyout-bg-color: #343a40;
+  --color-sf-flyout-bg-color-hover: #444c54;
+  --color-sf-flyout-bg-color-pressed: #0d6efd;
+  --color-sf-flyout-bg-color-focus: #444c54;
+  --color-sf-overlay-bg-color: rgba(#000000, .4);
+  --color-sf-table-bg-color-hover: var(--color-sf-content-bg-color-hover);
+  --color-sf-table-bg-color-pressed: var(--color-sf-content-bg-color-pressed);
+  --color-sf-table-bg-color-selected: #3c444b;
+
+  // text-color
+  --color-sf-content-text-color: #ffffff;
+  --color-sf-content-text-color-alt1: #e9ecef;
+  --color-sf-content-text-color-alt2: #ced4da;
+  --color-sf-content-text-color-alt3: #7b848d;
+  --color-sf-content-text-color-hover: var(--color-sf-content-text-color);
+  --color-sf-content-text-color-pressed: var(--color-sf-content-text-color);
+  --color-sf-content-text-color-focus: var(--color-sf-content-text-color);
+  --color-sf-content-text-color-selected: var(--color-sf-primary-text-color);
+  --color-sf-content-text-color-dragged: var(--color-sf-content-text-color);
+  --color-sf-content-text-color-disabled: #6c757d;
+  --color-sf-placeholder-text-color: #6c757d;
+  --color-sf-flyout-text-color: var(--color-sf-content-text-color);
+  --color-sf-flyout-text-color-hover: var(--color-sf-content-text-color);
+  --color-sf-flyout-text-color-pressed: var(--color-sf-primary-text-color);
+  --color-sf-flyout-text-color-focus: var(--color-sf-content-text-color);
+  --color-sf-table-text-color-hover: var(--color-sf-content-text-color);
+  --color-sf-table-text-color-pressed: var(--color-sf-content-text-color);
+  --color-sf-table-text-color-selected: var(--color-sf-content-text-color);
+
+  // icon-color
+  --color-sf-icon-color: #adb5bd;
+  --color-sf-icon-color-hover: #dee2e6;
+  --color-sf-icon-color-pressed: #f8f9fa;
+  --color-sf-icon-color-disabled: #adb5bd;
+
+  // border-color
+  --color-sf-border-light: #495057;
+  --color-sf-border: #6c757d;
+  --color-sf-border-dark: #adb5bd;
+  --color-sf-border-hover: #495057;
+  --color-sf-border-pressed: #6c757d;
+  --color-sf-border-focus: var(--color-sf-border-hover);
+  --color-sf-border-selected: var(--color-sf-border);
+  --color-sf-border-dragged: var(--color-sf-border);
+  --color-sf-border-disabled: var(--color-sf-border-light);
+  --color-sf-border-warning: #ffca2b;
+  --color-sf-border-error: #eb8c95;
+  --color-sf-border-success: #2ed889;
+  --color-sf-spreadsheet-gridline: #dee2e6;
+  --color-sf-flyout-border: var(--color-sf-border-hover);
+
+  //sf Variables
+  --color-sf-primary: #0d6efd;
+  --color-sf-primary-text-color: #ffffff;
+  --color-sf-primary-light: #86b7fe;
+  --color-sf-primary-lighter: #031633;
+  --color-sf-secondary: #6c757d;
+  --color-sf-success: #21b26f;
+  --color-sf-info: #0dcaf0;
+  --color-sf-warning: #ffc107;
+  --color-sf-danger: #e4606d;
+  --color-sf-success-light: #d1e7dd;
+  --color-sf-info-light: #cff4fc;
+  --color-sf-warning-light: #fff3cd;
+  --color-sf-danger-light: #f8d7da;
+  --color-sf-success-dark: #115c39;
+  --color-sf-info-dark: #066477;
+  --color-sf-warning-dark: #866500;
+  --color-sf-danger-dark: #bd2130;
+  --color-sf-success-light-alt: #09311e;
+  --color-sf-info-light-alt: #066477;
+  --color-sf-warning-light-alt: #a07e00;
+  --color-sf-danger-light-alt: #7c151f;
+  --color-sf-badge-primary-bg-color-darken: darken($primary, 10%);
+  --color-sf-badge-secondary-bg-color-darken: darken($content-bg-color-alt1, 10%);
+  --color-sf-badge-success-bg-color-darken: darken($success-light, 10%);
+  --color-sf-badge-danger-bg-color-darken: darken($danger-light, 10%);
+  --color-sf-badge-warning-bg-color-darken: darken($warning-light, 10%);
+  --color-sf-badge-info-bg-color-darken: darken($info-light, 10%);
+  --color-sf-badge-light-bg-color-darken: darken($content-bg-color-alt2, 10%);
+  --color-sf-badge-dark-bg-color-darken: darken($content-text-color-alt2, 10%);
+  --color-sf-breadcrumb-item-hover-color: darken($primary-outline, 10%);
+  --color-sf-breadcrumb-item-active-color: darken($primary-outline, 15%);
+  --color-sf-breadcrumb-item-focus-border-color: darken($primary-outline, 10%);
+  --color-sf-calendar-yeardecade-selected-hover-bg: darken(primary-bg-color, 10%);
+  --color-sf-calendar-active-hover-bg-color: darken($primary-bg-color, 10%);
+  --color-sf-tab-alt-wrap-hover-color: darken($secondary, 15%);
+  --color-sf-treeview-item-active-hover-bg: darken($content-bg-color-selected, 5%);
+  --color-sf-de-style-btn-bg-color: darken($secondary-bg-color, 7.5%);
+  --color-sf-de-toggle-border-color: darken($secondary-bg-color, 12.5%);
+  --color-sf-de-toggle-hover-color: darken($secondary-bg-color, 7.5%);
+  --color-sf-de-toggle-border-hover-color: darken($secondary-bg-color, 10%);
+  --color-sf-de-toggle-disabled-color: lighten($secondary-bg-color, 65%);
+  --color-sf-connector-point-hover-color: darken($primary, 10%);
+  --color-sf-gantt-connected-task: lighten($primary, 20%);
+  --color-sf-gantt-active-parent-task: lighten($warning-text, 10%);
+  --color-sf-schedule-hover-bg-color: darken($content-bg-color-alt1, 2%);
+  --color-sf-timepicker-active-border-color: darken($gray-600, 10%);
+  --color-sf-hdr-selection-border-color: darken($border-light, 8%);
+
+  // Primary-button
+  --color-sf-primary-bg-color: var(--color-sf-primary);
+  --color-sf-primary-border-color: var(--color-sf-primary);
+  --color-sf-primary-text: var(--color-sf-primary-text-color);
+  --color-sf-primary-bg-color-hover: #0b5ed7;
+  --color-sf-primary-border-color-hover: #0a58ca;
+  --color-sf-primary-text-hover: var(--color-sf-primary-text-color);
+  --color-sf-primary-bg-color-pressed: #0a58ca;
+  --color-sf-primary-border-color-pressed: #0a53be;
+  --color-sf-primary-text-pressed: var(--color-sf-primary-text-color);
+  --color-sf-primary-bg-color-focus: var(--color-sf-primary-bg-color-hover);
+  --color-sf-primary-border-color-focus: var(--color-sf-primary-border-color-hover);
+  --color-sf-primary-text-focus: var(--color-sf-primary-text-hover);
+  --color-sf-primary-bg-color-disabled: rgba(13, 110, 253, .65);
+  --color-sf-primary-border-color-disabled: var(--color-sf-primary-bg-color-disabled);
+  --color-sf-primary-text-disabled: rgba(255, 255, 255, .65);
+  
+  // Secondary-button
+  --color-sf-secondary-bg-color: var(--color-sf-secondary);
+  --color-sf-secondary-border-color: var(--color-sf-secondary-bg-color);
+  --color-sf-secondary-text-color: #ffffff;
+  --color-sf-secondary-bg-color-hover: #5c636a;
+  --color-sf-secondary-border-color-hover: #565e64;
+  --color-sf-secondary-text-color-hover: var(--color-sf-secondary-text-color);
+  --color-sf-secondary-bg-color-pressed: #565e64;
+  --color-sf-secondary-border-color-pressed: #51585e;
+  --color-sf-secondary-text-color-pressed: var(--color-sf-secondary-text-color);
+  --color-sf-secondary-bg-color-focus: var(--color-sf-secondary-bg-color-hover);
+  --color-sf-secondary-border-color-focus: var(--color-sf-secondary-border-color-hover);
+  --color-sf-secondary-text-color-focus: var(--color-sf-secondary-text-color-hover);
+  --color-sf-secondary-bg-color-disabled: rgba(108, 117, 125, .65);
+  --color-sf-secondary-border-color-disabled: var(--color-sf-secondary-bg-color-disabled);
+  --color-sf-secondary-text-color-disabled: rgba(255, 255, 255, .65);
+  
+  // Success-button
+  --color-sf-success-bg-color: var(--color-sf-success);
+  --color-sf-success-border-color: var(--color-sf-success-bg-color);
+  --color-sf-success-text: #ffffff;
+  --color-sf-success-bg-color-hover: #157347;
+  --color-sf-success-border-color-hover: #146c43;
+  --color-sf-success-text-hover: var(--color-sf-success-text);
+  --color-sf-success-bg-color-pressed: #146c43;
+  --color-sf-success-border-color-pressed: #13653f;
+  --color-sf-success-text-pressed: var(--color-sf-success-text);
+  --color-sf-success-bg-color-focus: var(--color-sf-success-bg-color-hover);
+  --color-sf-success-border-color-focus: var(--color-sf-success-bg-color-focus);
+  --color-sf-success-text-focus: var(--color-sf-success-text);
+  --color-sf-success-bg-color-disabled: rgba(25, 135, 84, .65);
+  --color-sf-success-border-color-disabled: var(--color-sf-success-bg-color-disabled);
+  --color-sf-success-text-disabled: rgba(255, 255, 255, .65);
+  
+  // Warning-button
+  --color-sf-warning-bg-color: var(--color-sf-warning);
+  --color-sf-warning-border-color: var(--color-sf-warning-bg-color);
+  --color-sf-warning-text: #000000;
+  --color-sf-warning-bg-color-hover: #ffca2c;
+  --color-sf-warning-border-color-hover: #ffc720;
+  --color-sf-warning-text-hover: var(--color-sf-warning-text);
+  --color-sf-warning-bg-color-pressed: #ffcd39;
+  --color-sf-warning-border-color-pressed: #ffc720;
+  --color-sf-warning-text-pressed: var(--color-sf-warning-text);
+  --color-sf-warning-bg-color-focus: var(--color-sf-warning-bg-color-hover);
+  --color-sf-warning-border-color-focus: var(--color-sf-warning-bg-color-focus);
+  --color-sf-warning-text-focus: var(--color-sf-warning-text);
+  --color-sf-warning-bg-color-disabled: rgba(255, 193, 7, .65);
+  --color-sf-warning-border-color-disabled: var(--color-sf-warning-bg-color-disabled);
+  --color-sf-warning-text-disabled: rgba(0, 0, 0, .65);
+
+  // Info-button
+  --color-sf-info-bg-color: var(--color-sf-info);
+  --color-sf-info-border-color: var(--color-sf-info-bg-color);
+  --color-sf-info-text: #000000;
+  --color-sf-info-bg-color-hover: #31d2f2;
+  --color-sf-info-border-color-hover: #25cff2;
+  --color-sf-info-text-hover: var(--color-sf-info-text);
+  --color-sf-info-bg-color-pressed: #3dd5f3;
+  --color-sf-info-border-color-pressed: #25cff2;
+  --color-sf-info-text-pressed: var(--color-sf-info-text);
+  --color-sf-info-bg-color-focus: var(--color-sf-info-bg-color-hover);
+  --color-sf-info-border-color-focus: var(--color-sf-info-bg-color-focus);
+  --color-sf-info-text-focus: var(--color-sf-info-text-hover);
+  --color-sf-info-bg-color-disabled: rgba(13, 202, 240, .65);
+  --color-sf-info-border-color-disabled: var(--color-sf-info-bg-color-disabled);
+  --color-sf-info-text-disabled: rgba(0, 0, 0, .65);
+  
+  // danger-button
+  --color-sf-danger-bg-color: var(--color-sf-danger);
+  --color-sf-danger-border-color: var(--color-sf-danger-bg-color);
+  --color-sf-danger-text: #ffffff;
+  --color-sf-danger-bg-color-hover: #bb2d3b;
+  --color-sf-danger-border-color-hover: #b02a37;
+  --color-sf-danger-text-hover: var(--color-sf-danger-text);
+  --color-sf-danger-bg-color-pressed: #b02a37;
+  --color-sf-danger-border-color-pressed: #a52834;
+  --color-sf-danger-text-pressed: var(--color-sf-danger-text);
+  --color-sf-danger-bg-color-focus: var(--color-sf-danger-bg-color-hover);
+  --color-sf-danger-border-color-focus: var(--color-sf-danger-bg-color-focus);
+  --color-sf-danger-text-focus: var(--color-sf-danger-text-hover);
+  --color-sf-danger-bg-color-disabled: rgba(220, 53, 69, .65);
+  --color-sf-danger-border-color-disabled: var(--color-sf-danger-bg-color-disabled);
+  --color-sf-danger-text-disabled: rgba(255, 255, 255, .65);
+
+  //Outline button
+  --color-sf-primary-outline: #408cfd;
+  --color-sf-secondary-outline: #868e96;
+  --color-sf-warning-outline: #ffce3a;
+  --color-sf-danger-outline: #eb8c95;
+  --color-sf-success-outline: #2ed889;
+  --color-sf-info-outline: #3cd5f4;
+
+  // Tooltip
+  --color-sf-tooltip-bg-color: #e9ecef;
+  --color-sf-tooltip-border: var(--color-sf-tooltip-bg-color);
+  --color-sf-toooltip-text-color: #212529;
+
+  //Light
+  --color-sf-appbar-bg-color-alt1: var(--color-sf-content-bg-color-alt2);
+  --color-sf-appbar-color-alt1: var(--color-sf-content-text-color);
+  --color-sf-appbar-border-color-alt1: var(--color-sf-appbar-bg-color-alt1);
+  --color-sf-appbar-hover-bg-color-alt1: $transparent;
+
+  //dark
+  --color-sf-appbar-bg-color-alt2: var(--color-sf-content-bg-color-alt3);
+  --color-sf-appbar-color-alt2: #212529;
+  --color-sf-appbar-border-color-alt2: var(--color-sf-appbar-bg-color-alt2);
+  --color-sf-appbar-hover-bg-color-alt2: $transparent;
+
+  //diagram Palette color
+  --color-sf-diagram-palette-background: var(--color-sf-content-bg-color-alt3);
+  --color-sf-diagram-palette-hover-background: #ced4da;
+
+  //rating
+  --color-sf-rating-selected-color: var(--color-sf-primary);
+  --color-sf-rating-unrated-color: var(--color-sf-content-bg-color-alt5);
+  --color-sf-rating-selected-disabled-color: var(--color-sf-content-bg-color-alt4);
+  --color-sf-rating-unrated-disabled-color: var(--color-sf-content-bg-color-alt3);
+  --color-sf-rating-selected-hover-color: var(--color-sf-content-bg-color-alt5);
+  --color-sf-rating-unrated-hover-color: var(--color-sf-primary);
+  --color-sf-rating-pressed-color: #599bfe;
+
+  //Message default
+  --color-sf-msg-color: #ffffff;
+  --color-sf-msg-bg-color: #3b4248;
+  --color-sf-msg-border-color: #444c54;
+  --color-sf-msg-color-alt1: var(--color-sf-content-text-color);
+  --color-sf-msg-bg-color-alt1: $transparent;
+  --color-sf-msg-border-color-alt1: #9ca3af;
+  --color-sf-msg-color-alt2: #ffffff;
+  --color-sf-msg-bg-color-alt2: #444c54;
+  --color-sf-msg-border-color-alt2: var(--color-sf-msg-bg-color-alt2);
+  --color-sf-msg-icon-color: var(--color-sf-content-text-color);
+  --color-sf-msg-icon-color-alt1: var(--color-sf-content-text-color);
+  --color-sf-msg-icon-color-alt2: #ffffff;
+  --color-sf-msg-close-icon-color: var(--color-sf-icon-color);
+  --color-sf-msg-close-icon-color-alt1: var(--color-sf-icon-color);
+  --color-sf-msg-close-icon-color-alt2: #ffffff;
+
+  //Message danger
+  --color-sf-msg-danger-color: #fae3e5;
+  --color-sf-msg-danger-bg-color: #66121a;
+  --color-sf-msg-danger-border-color: var(--color-sf-msg-danger-bg-color);
+  --color-sf-msg-danger-color-alt1: var(--color-sf-danger);
+  --color-sf-msg-danger-bg-color-alt1: $transparent;
+  --color-sf-msg-danger-border-color-alt1: var(--color-sf-msg-danger-color-alt1);
+  --color-sf-msg-danger-color-alt2: #212529;
+  --color-sf-msg-danger-bg-color-alt2: var(--color-sf-danger);
+  --color-sf-msg-danger-border-color-alt2: var(--color-sf-msg-danger-bg-color-alt2);
+  --color-sf-msg-danger-icon-color: #fae3e5;
+  --color-sf-msg-danger-icon-color-alt1: var(--color-sf-danger);
+  --color-sf-msg-danger-icon-color-alt2: #212529;
+  --color-sf-msg-danger-close-icon-color: var(--color-sf-icon-color);
+  --color-sf-msg-danger-close-icon-color-alt1: var(--color-sf-icon-color);
+  --color-sf-msg-danger-close-icon-color-alt2: #212529;
+
+  //Message success
+  --color-sf-msg-success-color: #2ed889;
+  --color-sf-msg-success-bg-color: #09311e;
+  --color-sf-msg-success-border-color: #0b3a24;
+  --color-sf-msg-success-color-alt1: #21b26f;
+  --color-sf-msg-success-bg-color-alt1: $transparent;
+  --color-sf-msg-success-border-color-alt1: #21b26f;
+  --color-sf-msg-success-color-alt2: #212529;
+  --color-sf-msg-success-bg-color-alt2: #21b26f;
+  --color-sf-msg-success-border-color-alt2: var(--color-sf-msg-success-bg-color-alt2);
+  --color-sf-msg-success-icon-color: #2ed889;
+  --color-sf-msg-success-icon-color-alt1: #21b26f;
+  --color-sf-msg-success-icon-color-alt2: #212529;
+  --color-sf-msg-success-close-icon-color: var(--color-sf-icon-color);
+  --color-sf-msg-success-close-icon-color-alt1: var(--color-sf-icon-color);
+  --color-sf-msg-success-close-icon-color-alt2: #212529;
+
+  //Message warning
+  --color-sf-msg-warning-color: #ffeeb9;
+  --color-sf-msg-warning-bg-color: #866500;
+  --color-sf-msg-warning-border-color: #967000;
+  --color-sf-msg-warning-color-alt1: var(--color-sf-warning);
+  --color-sf-msg-warning-bg-color-alt1: $transparent;
+  --color-sf-msg-warning-border-color-alt1: var(--color-sf-msg-warning-color-alt1);
+  --color-sf-msg-warning-color-alt2: #212529;
+  --color-sf-msg-warning-bg-color-alt2: var(--color-sf-warning);
+  --color-sf-msg-warning-border-color-alt2: var(--color-sf-msg-warning-bg-color-alt2);
+  --color-sf-msg-warning-icon-color: var(--color-sf-warning);
+  --color-sf-msg-warning-icon-color-alt1: var(--color-sf-warning);
+  --color-sf-msg-warning-icon-color-alt2: #212529;
+  --color-sf-msg-warning-close-icon-color: var(--color-sf-icon-color);
+  --color-sf-msg-warning-close-icon-color-alt1: var(--color-sf-icon-color);
+  --color-sf-msg-warning-close-icon-color-alt2: #212529;
+
+  //Message info
+  --color-sf-msg-info-color: #84e5f8;
+  --color-sf-msg-info-bg-color: #05505f;
+  --color-sf-msg-info-border-color: #065c6d;
+  --color-sf-msg-info-color-alt1: var(--color-sf-info);
+  --color-sf-msg-info-bg-color-alt1: $transparent;
+  --color-sf-msg-info-border-color-alt1: var(--color-sf-msg-info-color-alt1);
+  --color-sf-msg-info-color-alt2: #212529;
+  --color-sf-msg-info-bg-color-alt2: var(--color-sf-info);
+  --color-sf-msg-info-border-color-alt2: var(--color-sf-msg-bg-color-alt2);
+  --color-sf-msg-info-icon-color: var(--color-sf-info);
+  --color-sf-msg-info-icon-color-alt1: var(--color-sf-info);
+  --color-sf-msg-info-icon-color-alt2: #212529;
+  --color-sf-msg-info-close-icon-color: var(--color-sf-icon-color);
+  --color-sf-msg-info-close-icon-color-alt1: var(--color-sf-icon-color);
+  --color-sf-msg-info-close-icon-color-alt2: #212529;
+}
+
+// black
+$black:#000 !default;
+
+// White
+$white:#fff !default;
+
+@function shade-color($color, $percentage) {
+  @return mix($black, $color, $percentage);
+}
+
+@function tint-color($color, $percentage) {
+  @return mix($white, $color, $percentage);
+}
+
+// Transparent
+$transparent: transparent;
+
+// scss-docs-start gray-color-variables
+$gray-100: #f8f9fa !default;
+$gray-200: #e9ecef !default;
+$gray-300: #dee2e6 !default;
+$gray-400: #ced4da !default;
+$gray-500: #adb5bd !default;
+$gray-600: #6c757d !default;
+$gray-700: #495057 !default;
+$gray-800: #343a40 !default;
+$gray-900: #212529 !default;
+
+// scss-docs-start color-variables
+$blue:#0d6efd !default;
+$indigo:#6610f2 !default;
+$purple:#6f42c1 !default;
+$pink:#d63384 !default;
+$red: #dc3545 !default;
+$orange:#fd7e14 !default;
+$yellow:#ffc107 !default;
+$green: #198754 !default;
+$teal:#20c997 !default;
+$cyan:#0dcaf0 !default;
+
+$primary: $blue !default;
+$secondary: $gray-600 !default;
+$success: lighten($green, 10%) !default;
+$info:$cyan !default;
+$warning: $yellow !default;
+$danger:lighten($red, 10%) !default;
+$success-light: tint-color($success, 80%) !default;
+$info-light:tint-color($info, 80%) !default;
+$warning-light: tint-color($warning, 80%) !default;
+$danger-light:tint-color($danger, 80%) !default;
+$primary-text-color: $white !default;
+$primary-light: tint-color($primary, 50%) !default;
+$primary-lighter: shade-color($primary, 80%) !default;
+$success-dark: darken($success, 10%) !default;
+$info-dark:darken($info, 25%) !default;
+$warning-dark: darken($warning, 25%) !default;
+$danger-dark:darken($danger, 10%) !default;
+$success-light-alt: darken($green, 20%) !default;
+$info-light-alt:darken($cyan, 25%) !default;
+$warning-light-alt: darken($yellow, 20%) !default;
+$danger-light-alt:darken($red, 25%) !default;
+
+// backgroundcolor
+$content-bg-color: $gray-900 !default;
+$content-bg-color-alt1: lighten($gray-900, 3%) !default;
+$content-bg-color-alt2: $gray-800 !default;
+$content-bg-color-alt3: $gray-700 !default;
+$content-bg-color-alt4: $gray-600 !default;
+$content-bg-color-alt5: $gray-500 !default;
+$content-bg-color-hover: lighten($content-bg-color, 7%) !default;
+$content-bg-color-pressed: $gray-700 !default;
+$content-bg-color-focus: $content-bg-color-hover !default;
+$content-bg-color-selected: $primary !default;
+$content-bg-color-dragged: $gray-800 !default;
+$content-bg-color-disabled: $content-bg-color !default;
+$flyout-bg-color: $gray-800 !default;
+$flyout-bg-color-hover: lighten($flyout-bg-color, 7%) !default;
+$flyout-bg-color-pressed: $primary !default;
+$flyout-bg-color-focus: $flyout-bg-color-hover !default;
+$flyout-border: $gray-700 !default;
+$overlay-bg-color: rgba($black, .4) !default;
+$table-bg-color-hover: lighten($content-bg-color, 7%) !default;
+$table-bg-color-pressed: $gray-700 !default;
+$table-bg-color-selected: lighten($content-bg-color, 12%) !default;
+
+//All theme commoon color
+$colorpicker-gradient-1: #f00 !default;
+$colorpicker-gradient-2: #ff0 !default;
+$ccolorpicker-gradient-3: #0f0 !default;
+$colorpicker-gradient-4: #0ff !default;
+$colorpicker-gradient-5: #00f !default;
+$colorpicker-gradient-6: #f0f !default;
+$colorpicker-gradient-7: #ff0004 !default;
+$spreadsheet-selection-1: #673ab8;
+$spreadsheet-selection-2: #9c27b0;
+$spreadsheet-selection-3: #029688;
+$spreadsheet-selection-4: #4caf51;
+$spreadsheet-selection-5: #fe9800;
+$spreadsheet-selection-6: #3f52b5;
+
+// text-color
+$content-text-color: $white !default;
+$content-text-color-alt1: $gray-200 !default;
+$content-text-color-alt2: $gray-400 !default;
+$content-text-color-alt3: lighten($gray-600, 6%) !default;
+$content-text-color-hover: $white !default;
+$content-text-color-pressed: $white !default;
+$content-text-color-focus: $white !default;
+$content-text-color-selected: $primary-text-color !default;
+$content-text-color-dragged: $white !default;
+$content-text-color-disabled: $gray-600 !default;
+$placeholder-text-color: $gray-600 !default;
+$flyout-text-color: $white !default;
+$flyout-text-color-hover: $white !default;
+$flyout-text-color-pressed: $primary-text-color !default;
+$flyout-text-color-focus: $white !default;
+$table-text-color-hover: $white !default;
+$table-text-color-pressed: $white !default;
+$table-text-color-selected: $white !default;
+
+// icon-color
+$icon-color: $gray-500 !default;
+$icon-color-hover: $gray-300 !default;
+$icon-color-pressed: $gray-100 !default;
+$icon-color-disabled: $gray-500 !default;
+
+// border-color
+$border-light: lighten($gray-800, 7%) !default;
+$border: $gray-600 !default;
+$border-dark: $gray-500 !default;
+$border-hover: $gray-700 !default;
+$border-pressed: $gray-600 !default;
+$border-focus: $gray-700 !default;
+$border-selected: $gray-600 !default;
+$border-dragged: $gray-600 !default;
+$border-disabled: $border-light !default;
+$border-warning: lighten($yellow, 10%) !default;
+$border-error: lighten($red, 10%) !default;
+$border-success: lighten($green, 10%) !default;
+$spreadsheet-gridline: $gray-300 !default;
+
+// Tooltip
+$tooltip-bg-color: $gray-200 !default;
+$tooltip-border: $gray-200;
+$toooltip-text-color: $gray-900 !default;
+
+// shadow
+$shadow: 0 .8px 16px rgba($black, .15) !default;
+$shadow-sm: 0 2px 4px rgba($black, .075) !default;
+$shadow-md: 0 8px 12px rgba($black, .15) !default;
+$shadow-lg:0 16px 48px rgba($black, .175) !default;
+$shadow-xl: 0 20px 25px -5px rgba($black, .1), 0 10px 10px -5px rgba($black, .04) !default;
+$shadow-2xl: 0 25px 50px -12px rgba($black, .25) !default;
+$shadow-inner: inset 0 1px 2px rgba($black, .075) !default;
+$shadow-none: 0 0 rgba($black, 0) !default;
+$shadow-focus-ring1: 0 0 0 4px rgba($primary, .25) !default;
+$shadow-focus-ring2: 0 0 0 4px rgba($primary, .25) !default;
+$primary-shadow-focus: 0 0 0 4px rgba(tint-color($primary, 15%), .5) !default;
+$secondary-shadow-focus: 0 0 0 4px rgba(tint-color($secondary, 15%), .5) !default;
+$success-shadow-focus: 0 0 0 4px rgba(tint-color($success, 15%), .5) !default;
+$danger-shadow-focus: 0 0 0 4px rgba(tint-color($danger, 15%), .5) !default;
+$info-shadow-focus: 0 0 0 4px rgba(tint-color($info, 15%), .5) !default;
+$warning-shadow-focus: 0 0 0 4px rgba(tint-color($warning, 15%), .5) !default;
+
+// fontfamily
+$font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !default;
+
+// default font Size
+$text-xxs: 10px !default;
+$text-xs: 12px !default;
+$text-sm: 14px !default;
+$text-base: 16px !default;
+$text-lg: 18px !default;
+$text-xl: 20px !default;
+$text-2xl: 24px !default;
+$text-3xl: 30px !default;
+$text-4xl: 36px !default;
+$text-5xl: 48px !default;
+$text-6xl: 60px !default;
+$text-7xl: 72px !default;
+$text-8xl: 96px !default;
+$text-9xl: 128px !default;
+
+// heading
+$h1-font-size: 40px !default;
+$h2-font-size: 32px !default;
+$h3-font-size: 28px !default;
+$h4-font-size: $text-2xl !default;
+$h5-font-size: $text-xl !default;
+$h6-font-size: $text-base !default;
+
+// Line height
+$leading-none: 1 !default;
+$leading-tight: 1.25 !default;
+$leading-snug: 1.375 !default;
+$leading-normal: 1.5 !default;
+$leading-relaxed: 1.625 !default;
+$leading-loose: 2 !default;
+
+// font Weight
+$font-weight-lighter: lighter !default;
+$font-weight-light: 300 !default;
+$font-weight-normal:400 !default;
+$font-weight-medium:500 !default;
+$font-weight-bold:700 !default;
+$font-weight-bolder:bolder !default;
+
+// Secondary-button
+$secondary-bg-color: $secondary !default;
+$secondary-border-color: $secondary-bg-color !default;
+$secondary-text-color: $white !default;
+$secondary-bg-color-hover: shade-color($secondary-bg-color, 15%) !default;
+$secondary-border-color-hover: shade-color($secondary-bg-color, 20%) !default;
+$secondary-text-color-hover: $secondary-text-color !default;
+$secondary-bg-color-pressed: shade-color($secondary-bg-color, 20%) !default;
+$secondary-border-color-pressed: shade-color($secondary-bg-color, 25%) !default;
+$secondary-text-color-pressed: $secondary-text-color !default;
+$secondary-bg-color-focus: $secondary-bg-color-hover !default;
+$secondary-border-color-focus: $secondary-border-color-hover !default;
+$secondary-text-color-focus: $secondary-text-color-hover !default;
+$secondary-bg-color-disabled: rgba($secondary-bg-color, .65) !default;
+$secondary-border-color-disabled: $secondary-bg-color-disabled !default;
+$secondary-text-color-disabled: rgba($secondary-text-color, .65) !default;
+
+// Primary-button
+$primary-bg-color: $primary !default;
+$primary-border-color: $primary !default;
+$primary-text: $primary-text-color !default;
+$primary-bg-color-hover: shade-color($primary-bg-color, 15%) !default;
+$primary-border-color-hover: shade-color($primary-bg-color, 20%) !default;
+$primary-text-hover: $primary-text !default;
+$primary-bg-color-pressed: shade-color($primary-bg-color, 20%) !default;
+$primary-border-color-pressed: shade-color($primary-bg-color, 25%) !default;
+$primary-text-pressed: $primary-text-color !default;
+$primary-bg-color-focus: $primary-bg-color-hover !default;
+$primary-border-color-focus: $primary-border-color-hover !default;
+$primary-text-focus: $primary-text !default;
+$primary-bg-color-disabled: rgba($primary-bg-color, .65) !default;
+$primary-border-color-disabled: $primary-bg-color-disabled !default;
+$primary-text-disabled: rgba($primary-text, .65) !default;
+
+// Success-button
+$success-bg-color: $green !default;
+$success-border-color: $green !default;
+$success-text: $white !default;
+$success-bg-color-hover: shade-color($success-bg-color, 15%) !default;
+$success-border-color-hover: shade-color($success-bg-color, 20%) !default;
+$success-text-hover: $success-text !default;
+$success-bg-color-pressed: shade-color($success-bg-color, 20%) !default;
+$success-border-color-pressed: shade-color($success-bg-color, 25%) !default;
+$success-text-pressed: $success-text !default;
+$success-bg-color-focus: $success-bg-color-hover !default;
+$success-border-color-focus: $success-border-color-hover !default;
+$success-text-focus: $success-text !default;
+$success-bg-color-disabled: rgba($success-bg-color, .65) !default;
+$success-border-color-disabled: $success-bg-color-disabled !default;
+$success-text-disabled: rgba($success-text, .65) !default;
+
+// Warning-button
+$warning-bg-color: $yellow !default;
+$warning-border-color: $yellow !default;
+$warning-text: $black !default;
+$warning-bg-color-hover: tint-color($warning-bg-color, 15%) !default;
+$warning-border-color-hover: tint-color($warning-bg-color, 10%) !default;
+$warning-text-hover: $warning-text !default;
+$warning-bg-color-pressed: tint-color($warning-bg-color, 20%) !default;
+$warning-border-color-pressed: tint-color($warning-bg-color, 10%) !default;
+$warning-text-pressed: $warning-text !default;
+$warning-bg-color-focus: $warning-bg-color-hover !default;
+$warning-border-color-focus: $warning-border-color-hover !default;
+$warning-text-focus: $warning-text !default;
+$warning-bg-color-disabled: rgba($warning-bg-color, .65) !default;
+$warning-border-color-disabled: $warning-bg-color-disabled !default;
+$warning-text-disabled: rgba($warning-text, .65) !default;
+
+// danger-button
+$danger-bg-color: $red !default;
+$danger-border-color: $red !default;
+$danger-text: $white !default;
+$danger-bg-color-hover: shade-color($danger-bg-color, 15%) !default;
+$danger-border-color-hover: shade-color($danger-bg-color, 20%) !default;
+$danger-text-hover: $danger-text !default;
+$danger-bg-color-pressed: shade-color($danger-bg-color, 20%) !default;
+$danger-border-color-pressed: shade-color($danger-bg-color, 25%) !default;
+$danger-text-pressed: $danger-text !default;
+$danger-bg-color-focus: $danger-bg-color-hover !default;
+$danger-border-color-focus: $danger-border-color-hover !default;
+$danger-text-focus: $danger-text !default;
+$danger-bg-color-disabled: rgba($danger-bg-color, .65) !default;
+$danger-border-color-disabled: $danger-bg-color-disabled !default;
+$danger-text-disabled: rgba($danger-text, .65) !default;
+
+// Info-button
+$info-bg-color: $cyan !default;
+$info-border-color: $cyan !default;
+$info-text: $black !default;
+$info-bg-color-hover: tint-color($info-bg-color, 15%) !default;
+$info-border-color-hover: tint-color($info-bg-color, 10%) !default;
+$info-text-hover: $info-text !default;
+$info-bg-color-pressed: tint-color($info-bg-color, 20%) !default;
+$info-border-color-pressed: tint-color($info-bg-color, 10%) !default;
+$info-text-pressed: $info-text !default;
+$info-bg-color-focus: $info-bg-color-hover !default;
+$info-border-color-focus: $info-border-color-hover !default;
+$info-text-focus: $info-text-hover !default;
+$info-bg-color-disabled: rgba($info-bg-color, .65) !default;
+$info-border-color-disabled: $info-bg-color-disabled !default;
+$info-text-disabled: rgba($info-text, .65) !default;
+
+//Outline button
+$primary-outline: lighten($primary, 10%) !default;
+$secondary-outline: lighten($secondary, 10%) !default;
+$warning-outline: lighten($warning, 10%) !default;
+$danger-outline: lighten($danger, 10%) !default;
+$success-outline: lighten($success, 10%) !default;
+$info-outline: lighten($info, 10%) !default;
+
+// Chart series
+$series-1: $gray-800;
+$series-2: $gray-700;
+$series-3: $gray-600;
+$series-4: $gray-500;
+$series-5: #5ecb9b;
+$series-6: #a860f1;
+$series-7: #557ef7;
+$series-8: #eba844;
+$series-9: #e9599b;
+$series-10: #3bc6cf;
+$series-11: #74b706;
+$series-12: #ea6266;
+$skin-name: 'bootstrap5' !default;
+$theme-name: 'bootstrap5-dark' !default;
+
+//Diagram Palette color
+$diagram-palette-background: $gray-300 !default;
+$diagram-palette-hover-background: $gray-400 !default;
+
+//Message component
+
+//Message Default
+$msg-color: $white !default;
+$msg-bg-color: #3b4248 !default;
+$msg-border-color: lighten($gray-800, 7%) !default;
+$msg-color-alt1: $white !default;
+$msg-bg-color-alt1: $transparent !default;
+$msg-border-color-alt1: #9ca3af !default;
+$msg-color-alt2: $white !default;
+$msg-bg-color-alt2: lighten($gray-800, 7%) !default;
+$msg-border-color-alt2: $msg-bg-color-alt2 !default;
+
+$msg-icon-color: $white !default;
+$msg-icon-color-alt1: $white !default;
+$msg-icon-color-alt2: $white !default;
+
+$msg-close-icon-color: $icon-color !default;
+$msg-close-icon-color-alt1: $icon-color !default;
+$msg-close-icon-color-alt2: $white !default;
+
+//Message Danger
+$msg-danger-color: lighten($red, 40%) !default;
+$msg-danger-bg-color: darken($red, 30%) !default;
+$msg-danger-border-color: darken($red, 30%) !default;
+$msg-danger-color-alt1: lighten($red, 10%) !default;
+$msg-danger-bg-color-alt1: $transparent !default;
+$msg-danger-border-color-alt1: lighten($red, 10%) !default;
+$msg-danger-color-alt2: $gray-900 !default;
+$msg-danger-bg-color-alt2: lighten($red, 10%) !default;
+$msg-danger-border-color-alt2: lighten($red, 10%) !default;
+
+$msg-danger-icon-color: lighten($red, 40%) !default;
+$msg-danger-icon-color-alt1: lighten($red, 10%) !default;
+$msg-danger-icon-color-alt2: $gray-900 !default;
+
+$msg-danger-close-icon-color: $icon-color !default;
+$msg-danger-close-icon-color-alt1: $icon-color !default;
+$msg-danger-close-icon-color-alt2: $gray-900 !default;
+
+//Message success
+$msg-success-color: #2ed889 !default;
+$msg-success-bg-color: darken($green, 20%) !default;
+$msg-success-border-color: darken($green, 18%) !default;
+$msg-success-color-alt1: lighten($green, 10%) !default;
+$msg-success-bg-color-alt1: $transparent !default;
+$msg-success-border-color-alt1: lighten($green, 10%) !default;
+$msg-success-color-alt2: $gray-900 !default;
+$msg-success-bg-color-alt2: lighten($green, 10%) !default;
+$msg-success-border-color-alt2: lighten($green, 10%) !default;
+
+$msg-success-icon-color: #2ed889 !default;
+$msg-success-icon-color-alt1: lighten($green, 10%) !default;
+$msg-success-icon-color-alt2: $gray-900 !default;
+
+$msg-success-close-icon-color: $icon-color !default;
+$msg-success-close-icon-color-alt1: $icon-color !default;
+$msg-success-close-icon-color-alt2: $gray-900 !default;
+
+//Message warning
+$msg-warning-color: lighten($yellow, 35%) !default;
+$msg-warning-bg-color: darken($yellow, 25%) !default;
+$msg-warning-border-color: darken($yellow, 22%) !default;
+$msg-warning-color-alt1: $yellow !default;
+$msg-warning-bg-color-alt1: $transparent !default;
+$msg-warning-border-color-alt1: $yellow !default;
+$msg-warning-color-alt2: $gray-900 !default;
+$msg-warning-bg-color-alt2: $yellow !default;
+$msg-warning-border-color-alt2: $yellow !default;
+
+$msg-warning-icon-color: $yellow !default;
+$msg-warning-icon-color-alt1: $yellow !default;
+$msg-warning-icon-color-alt2: $gray-900 !default;
+
+$msg-warning-close-icon-color: $icon-color !default;
+$msg-warning-close-icon-color-alt1: $icon-color !default;
+$msg-warning-close-icon-color-alt2: $gray-900 !default;
+
+//Message Info
+$msg-info-color: lighten($cyan, 25%) !default;
+$msg-info-bg-color: darken($cyan, 30%) !default;
+$msg-info-border-color: darken($cyan, 27%) !default;
+$msg-info-color-alt1: $cyan !default;
+$msg-info-bg-color-alt1: $transparent !default;
+$msg-info-border-color-alt1: $cyan !default;
+$msg-info-color-alt2: $gray-900 !default;
+$msg-info-bg-color-alt2: $cyan !default;
+$msg-info-border-color-alt2: $cyan !default;
+
+$msg-info-icon-color: $cyan !default;
+$msg-info-icon-color-alt1: $cyan !default;
+$msg-info-icon-color-alt2: $gray-900 !default;
+
+$msg-info-close-icon-color: $icon-color !default;
+$msg-info-close-icon-color-alt1: $icon-color !default;
+$msg-info-close-icon-color-alt2: $gray-900 !default;
+
+//App bar
+//Light
+$appbar-bg-color-alt1: $gray-800 !default;
+$appbar-color-alt1: $white !default;
+$appbar-border-color-alt1: $gray-800 !default;
+$appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
+
+//Dark
+$appbar-bg-color-alt2: $gray-300 !default;
+$appbar-color-alt2: $gray-900 !default;
+$appbar-border-color-alt2: $gray-300 !default;
+$appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
+
+//shadow
+$appbar-bottom-shadow: none !default;
+$appbar-top-shadow: none !default;
+
+//rating
+$rating-selected-color: $primary !default;
+$rating-unrated-color: $gray-500 !default;
+$rating-selected-disabled-color: $gray-600 !default;
+$rating-unrated-disabled-color: $gray-700 !default;
+$rating-selected-hover-color: $gray-500 !default;
+$rating-unrated-hover-color: $primary !default;
+$rating-pressed-color: lighten($primary, 15%) !default;
+
+//font-icons
+$font-icon-8: 8px !default;
+$font-icon-9: 9px !default;
+$font-icon-10: 10px !default;
+$font-icon-12: 12px !default;
+$font-icon-13: 13px !default;
+$font-icon-14: 14px !default;
+$font-icon-15: 15px !default;
+$font-icon-16: 16px !default;
+$font-icon-17: 17px !default;
+$font-icon-18: 18px !default;
+$font-icon-20: 20px !default;
+$font-icon-22: 22px !default;
+$font-icon-24: 24px !default;
+$font-icon-26: 26px !default;
+$font-icon-28: 28px !default;
+$font-icon-32: 32px !default;
+
+$font-size: 12px !default;
+$font-weight: 400 !default;
+$error-font-color: $danger !default;
+$warning-font-color: $yellow !default;
+$success-font-color: lighten($green, 10%) !default;
+$information-font-color: $cyan !default;
+
+$badge-primary-bg-color-darken: darken($primary, 10%);
+$badge-secondary-bg-color-darken: darken($content-bg-color-alt1, 10%);
+$badge-success-bg-color-darken: darken($success-light, 10%);
+$badge-danger-bg-color-darken: darken($danger-light, 10%);
+$badge-warning-bg-color-darken: darken($warning-light, 10%);
+$badge-info-bg-color-darken: darken($info-light, 10%);
+$badge-light-bg-color-darken: darken($content-bg-color-alt2, 10%);
+$badge-dark-bg-color-darken: darken($content-text-color-alt2, 10%);
+$breadcrumb-item-hover-color: darken($primary-outline, 10%);
+$breadcrumb-item-active-color: darken($primary-outline, 15%);
+$breadcrumb-item-focus-border-color: darken($primary-outline, 10%);
+$calendar-yeardecade-selected-hover-bg: darken($primary-bg-color, 10%);
+$calendar-active-hover-bg-color: darken($primary-bg-color, 10%);
+$tab-alt-wrap-hover-color: darken($secondary, 15%);
+$treeview-item-active-hover-bg: darken($content-bg-color-selected, 5%);
+$de-style-btn-bg-color: darken($secondary-bg-color, 7.5%);
+$de-toggle-border-color: darken($secondary-bg-color, 12.5%);
+$de-toggle-hover-color: darken($secondary-bg-color, 7.5%);
+$de-toggle-border-hover-color: darken($secondary-bg-color, 10%);
+$de-toggle-disabled-color: lighten($secondary-bg-color, 65%);
+$connector-point-hover-color: darken($primary, 10%);
+$gantt-connected-task: lighten($primary, 20%);
+$gantt-active-parent-task: lighten($warning-text, 10%);
+$schedule-hover-bg-color: darken($content-bg-color-alt1, 2%);
+$timepicker-active-border-color: darken($gray-600, 10%);
+$hdr-selection-border-color: darken($border-light, 8%);
+$accordion-text-active-color: shade-color($primary, 10%) !default;

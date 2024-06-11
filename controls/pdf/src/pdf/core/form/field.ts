@@ -58,6 +58,7 @@ export abstract class PdfField {
     _white: PdfBrush;
     _black: PdfBrush;
     _isTransparentBackColor: boolean = false;
+    _isTransparentBorderColor: boolean = false;
     _tabIndex: number;
     _annotationIndex: number;
     _defaultFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 8);
@@ -620,28 +621,12 @@ export abstract class PdfField {
      * ```
      */
     get borderColor(): number[] {
-        let value: number[];
-        const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
-        if (widget && widget.borderColor) {
-            value = widget.borderColor;
-        } else if (this._mkDictionary) {
-            const dictionary: _PdfDictionary = this._mkDictionary;
-            if (dictionary && dictionary.has('BC')) {
-                const colorArray: number[] = dictionary.getArray('BC');
-                if (colorArray) {
-                    value = _parseColor(colorArray);
-                }
-            }
-        }
-        if (typeof value === 'undefined' || value === null) {
-            value = [0, 0, 0];
-        }
-        return value;
+        return this._parseBorderColor(true);
     }
     /**
      * Sets the border color of the field.
      *
-     * @param {number[]} value R, G, B color values in between 0 to 255.
+     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -656,24 +641,7 @@ export abstract class PdfField {
      * ```
      */
     set borderColor(value: number[]) {
-        const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
-        if (widget && widget.borderColor !== value) {
-            widget.borderColor = value;
-        } else {
-            const mkDict: _PdfDictionary = this._mkDictionary;
-            if (typeof mkDict === 'undefined') {
-                const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-                dictionary.update('BC', [Number.parseFloat((value[0] / 255).toFixed(3)),
-                    Number.parseFloat((value[1] / 255).toFixed(3)),
-                    Number.parseFloat((value[2] / 255).toFixed(3))]);
-                this._dictionary.update('MK', dictionary);
-            } else if (!mkDict.has('BC') || _parseColor(mkDict.getArray('BC')) !== value) {
-                mkDict.update('BC', [Number.parseFloat((value[0] / 255).toFixed(3)),
-                    Number.parseFloat((value[1] / 255).toFixed(3)),
-                    Number.parseFloat((value[2] / 255).toFixed(3))]);
-                this._dictionary._updated = true;
-            }
-        }
+        this._updateBorderColor(value, true);
     }
     /**
      * Gets a value indicating whether read only.
@@ -1197,6 +1165,20 @@ export abstract class PdfField {
             return !this._isTransparentBackColor;
         }
     }
+    get _hasBorderColor(): boolean {
+        if (this._isLoaded) {
+            let mkDictionary: _PdfDictionary = this._mkDictionary;
+            if (!mkDictionary) {
+                const item: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
+                if (item && item._dictionary.has('MK')) {
+                    mkDictionary = item._dictionary.get('MK');
+                }
+            }
+            return (mkDictionary && mkDictionary.has('BC'));
+        } else {
+            return !this._isTransparentBorderColor;
+        }
+    }
     _parseBackColor(hasTransparency: boolean): number[] {
         let value: number[];
         if ((!hasTransparency) || ((this._isLoaded && this._hasBackColor) || (!this._isLoaded && !this._isTransparentBackColor))) {
@@ -1214,6 +1196,27 @@ export abstract class PdfField {
             }
             if (typeof value === 'undefined' || value === null) {
                 value = [255, 255, 255];
+            }
+        }
+        return value;
+    }
+    _parseBorderColor(hasTransparency: boolean): number[] {
+        let value: number[];
+        if ((!hasTransparency) || ((this._isLoaded && this._hasBorderColor) || (!this._isLoaded && !this._isTransparentBorderColor))) {
+            const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
+            if (widget && widget.borderColor) {
+                value = widget.borderColor;
+            } else if (this._mkDictionary) {
+                const mkDict: _PdfDictionary = this._mkDictionary;
+                if (mkDict && mkDict.has('BC')) {
+                    const bgArray: number[] = mkDict.getArray('BC');
+                    if (bgArray) {
+                        value = _parseColor(bgArray);
+                    }
+                }
+            }
+            if (typeof value === 'undefined' || value === null) {
+                value = [0, 0, 0];
             }
         }
         return value;
@@ -1248,6 +1251,49 @@ export abstract class PdfField {
                     this._dictionary.update('MK', dictionary);
                 } else if (!mkDictionary.has('BG') || _parseColor(mkDictionary.getArray('BG')) !== value) {
                     mkDictionary.update('BG', [Number.parseFloat((value[0] / 255).toFixed(3)),
+                        Number.parseFloat((value[1] / 255).toFixed(3)),
+                        Number.parseFloat((value[2] / 255).toFixed(3))]);
+                    this._dictionary._updated = true;
+                }
+            }
+        }
+    }
+    _updateBorderColor(value: number[], hasTransparency: boolean = false): void {
+        if (hasTransparency && value.length === 4 && value[3] !== 255) {
+            this._isTransparentBorderColor = true;
+            if (this._dictionary.has('BC')) {
+                delete this._dictionary._map.BC;
+            }
+            const mkDictionary: _PdfDictionary = this._mkDictionary;
+            if (mkDictionary && mkDictionary.has('BC')) {
+                delete mkDictionary._map.BC;
+                if (this._dictionary.has('BS')) {
+                    const bsDictionary: _PdfDictionary = this._dictionary.get('BS');
+                    if (bsDictionary && bsDictionary.has('W')) {
+                        delete bsDictionary._map.W;
+                    }
+                }
+                this._dictionary._updated = true;
+            }
+            const item: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
+            if (item) {
+                item.borderColor = value;
+            }
+        } else {
+            this._isTransparentBorderColor = false;
+            const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
+            if (widget && widget.borderColor !== value) {
+                widget.borderColor = value;
+            } else {
+                const mkDictionary: _PdfDictionary = this._mkDictionary;
+                if (typeof mkDictionary === 'undefined') {
+                    const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+                    dictionary.update('BC', [Number.parseFloat((value[0] / 255).toFixed(3)),
+                        Number.parseFloat((value[1] / 255).toFixed(3)),
+                        Number.parseFloat((value[2] / 255).toFixed(3))]);
+                    this._dictionary.update('MK', dictionary);
+                } else if (!mkDictionary.has('BC') || _parseColor(mkDictionary.getArray('BC')) !== value) {
+                    mkDictionary.update('BC', [Number.parseFloat((value[0] / 255).toFixed(3)),
                         Number.parseFloat((value[1] / 255).toFixed(3)),
                         Number.parseFloat((value[2] / 255).toFixed(3))]);
                     this._dictionary._updated = true;
@@ -1719,7 +1765,7 @@ export abstract class PdfField {
         switch (state) {
         case _PdfCheckFieldState.unchecked:
         case _PdfCheckFieldState.checked:
-            if (parameter.borderPen) {
+            if (parameter.borderPen || parameter.backBrush) {
                 graphics.drawRectangle(parameter.bounds[0],
                                        parameter.bounds[1],
                                        parameter.bounds[2],
@@ -1729,16 +1775,16 @@ export abstract class PdfField {
             break;
         case _PdfCheckFieldState.pressedChecked:
         case _PdfCheckFieldState.pressedUnchecked:
-            if ((parameter.borderStyle === PdfBorderStyle.beveled) ||
+            if ((parameter.borderStyle === PdfBorderStyle.beveled || parameter.backBrush) ||
                 (parameter.borderStyle === PdfBorderStyle.underline)) {
-                if (parameter.borderPen) {
+                if (parameter.borderPen || parameter.backBrush) {
                     graphics.drawRectangle(parameter.bounds[0],
                                            parameter.bounds[1],
                                            parameter.bounds[2],
                                            parameter.bounds[3],
                                            parameter.backBrush);
                 }
-            } else if (parameter.borderPen) {
+            } else if (parameter.borderPen || parameter.shadowBrush) {
                 graphics.drawRectangle(parameter.bounds[0],
                                        parameter.bounds[1],
                                        parameter.bounds[2],
@@ -2859,9 +2905,11 @@ export class PdfTextBoxField extends PdfField {
         }
         parameter.foreBrush = new PdfBrush(widget.color);
         const border: PdfInteractiveBorder = widget.border;
-        parameter.borderPen = new PdfPen(widget.borderColor, border.width);
-        parameter.borderStyle = border.style;
+        if (widget.borderColor) {
+            parameter.borderPen = new PdfPen(widget.borderColor, border.width);
+        }
         parameter.borderWidth = border.width;
+        parameter.borderStyle = border.style;
         if (backcolor) {
             const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
             const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
@@ -2914,7 +2962,7 @@ export class PdfTextBoxField extends PdfField {
         if (typeof maxLength !== 'undefined') {
             if (parameter.insertSpaces) {
                 let width: number = 0;
-                if (typeof maxLength !== 'undefined' && maxLength > 0) {
+                if (typeof maxLength !== 'undefined' && maxLength > 0 && this.borderColor) {
                     width = parameter.bounds[2] / maxLength;
                     g.drawRectangle(parameter.bounds[0],
                                     parameter.bounds[1],
@@ -3583,9 +3631,11 @@ export class PdfButtonField extends PdfField {
         }
         parameter.foreBrush = new PdfBrush(widget.color);
         const border: PdfInteractiveBorder = widget.border;
-        parameter.borderPen = new PdfPen(widget.borderColor, border.width);
-        parameter.borderStyle = border.style;
+        if (widget.borderColor) {
+            parameter.borderPen = new PdfPen(widget.borderColor, border.width);
+        }
         parameter.borderWidth = border.width;
+        parameter.borderStyle = border.style;
         if (backcolor) {
             const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
             const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
@@ -4059,6 +4109,49 @@ export class PdfCheckBoxField extends PdfField {
     set backColor(value: number[]) {
         this._updateBackColor(value, true);
     }
+    /**
+     * Gets the border color of the field.
+     *
+     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the form field at index 0
+     * let field: PdfField = document.form.fieldAt(0);
+     * // Gets the border color of the field.
+     * let borderColor: number[] = field.borderColor;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get borderColor(): number[] {
+        return this._parseBorderColor(true);
+    }
+    /**
+     * Sets the border color of the field.
+     *
+     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the form field at index 0
+     * let field: PdfField = document.form.fieldAt(0);
+     * // Sets the border color of the field.
+     * field.borderColor = [255, 0, 0];
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set borderColor(value: number[]) {
+        this._updateBorderColor(value, true);
+        if (this._isLoaded) {
+            this._setAppearance = true;
+        }
+    }
     _initialize(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number}): void {
         this._crossReference = page._crossReference;
         this._page = page;
@@ -4145,9 +4238,11 @@ export class PdfCheckBoxField extends PdfField {
         }
         parameter.foreBrush = new PdfBrush(widget.color);
         const border: PdfInteractiveBorder = widget.border;
-        parameter.borderPen = new PdfPen(widget.borderColor, border.width);
-        parameter.borderStyle = border.style;
+        if (widget.borderColor) {
+            parameter.borderPen = new PdfPen(widget.borderColor, border.width);
+        }
         parameter.borderWidth = border.width;
+        parameter.borderStyle = border.style;
         if (backcolor) {
             const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
             const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
@@ -4407,6 +4502,46 @@ export class PdfRadioButtonListField extends PdfField {
                 }
             }
         }
+    }
+    /**
+     * Gets the border color of the field.
+     *
+     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the form field at index 0
+     * let field: PdfField = document.form.fieldAt(0);
+     * // Gets the border color of the field.
+     * let borderColor: number[] = field.borderColor;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get borderColor(): number[] {
+        return this._parseBorderColor(!this._isLoaded);
+    }
+    /**
+     * Sets the border color of the field.
+     *
+     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the form field at index 0
+     * let field: PdfField = document.form.fieldAt(0);
+     * // Sets the border color of the field.
+     * field.borderColor = [255, 0, 0];
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set borderColor(value: number[]) {
+        this._updateBorderColor(value, true);
     }
     /**
      * Gets the item at the specified index.
@@ -4717,9 +4852,11 @@ export class PdfRadioButtonListField extends PdfField {
         }
         parameter.foreBrush = new PdfBrush(widget.color);
         const border: PdfInteractiveBorder = widget.border;
-        parameter.borderPen = new PdfPen(widget.borderColor, border.width);
-        parameter.borderStyle = border.style;
+        if (widget.borderColor) {
+            parameter.borderPen = new PdfPen(widget.borderColor, border.width);
+        }
         parameter.borderWidth = border.width;
+        parameter.borderStyle = border.style;
         if (backcolor) {
             const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
             const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
@@ -6087,7 +6224,9 @@ export class PdfComboBoxField extends PdfListField {
             }
             parameter.foreBrush = new PdfBrush(item.color);
             const border: PdfInteractiveBorder = item.border;
-            parameter.borderPen = new PdfPen(item.borderColor, border.width);
+            if (item.borderColor) {
+                parameter.borderPen = new PdfPen(item.borderColor, border.width);
+            }
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
             if (backcolor) {
@@ -6121,7 +6260,9 @@ export class PdfComboBoxField extends PdfListField {
             }
             parameter.foreBrush = new PdfBrush(this.color);
             const border: PdfInteractiveBorder = this.border;
-            parameter.borderPen = new PdfPen(this.borderColor, border.width);
+            if (this.borderColor) {
+                parameter.borderPen = new PdfPen(this.borderColor, border.width);
+            }
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
             if (backcolor) {
@@ -6445,10 +6586,6 @@ export class PdfListBoxField extends PdfListField {
         if (field._dictionary.has('Kids')) {
             field._kids = field._dictionary.get('Kids');
         }
-        const options: Array<string[]> = field._dictionary.getArray('Opt');
-        if (options !== null && typeof options !== 'undefined') {
-            field._listValues = new Array(options.length);
-        }
         field._defaultIndex = 0;
         field._parsedItems = new Map<number, PdfListFieldItem>();
         if (field._kidsCount > 0) {
@@ -6459,19 +6596,34 @@ export class PdfListBoxField extends PdfListField {
     _retrieveOptionValue(): void {
         if (this._dictionary.has('Opt')) {
             const options: Array<string[]> = this._dictionary.getArray('Opt');
+            const itemsCount: number = this._kidsCount;
+            const count: number = options.length <= itemsCount ? options.length : itemsCount;
+            this._listValues = new Array(count);
             if (options && options.length > 0) {
-                const index: number = this._dictionary.get('I');
-                for (let i: number = 0; i < options.length; i++) {
-                    if (typeof index !== 'undefined' && index !== null) {
-                        this._listValues[Number.parseInt(i.toString(), 10)] = options[Number.parseInt(i.toString(), 10)][1];
-                        if (i === index) {
-                            this.itemAt(i)._text = this._listValues[Number.parseInt(i.toString(), 10)];
-                            this._selectedIndex = i;
+                let index: number = this._dictionary.get('I');
+                if (Array.isArray(index) && index.length > 0) {
+                    index = index[0];
+                    this._selectedIndex = index;
+                }
+                for (let i: number = 0; i < count; i++) {
+                    const item: PdfListFieldItem = this.itemAt(i);
+                    if (item) {
+                        if (typeof index !== 'undefined' && index !== null) {
+                            const value: any = options[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+                            if (Array.isArray(value)) {
+                                this._listValues[Number.parseInt(i.toString(), 10)] = value[1];
+                            } else {
+                                this._listValues[Number.parseInt(i.toString(), 10)] = value;
+                            }
+                            if (i === index) {
+                                item._text = this._listValues[Number.parseInt(i.toString(), 10)];
+                                this._selectedIndex = i;
+                            } else {
+                                item._text = this._listValues[Number.parseInt(i.toString(), 10)];
+                            }
                         } else {
-                            this.itemAt(i)._text = this._listValues[Number.parseInt(i.toString(), 10)];
+                            item._text = '';
                         }
-                    } else {
-                        this.itemAt(i)._text = '';
                     }
                 }
             }
@@ -6493,7 +6645,9 @@ export class PdfListBoxField extends PdfListField {
             }
             parameter.foreBrush = new PdfBrush(item.color);
             const border: PdfInteractiveBorder = item.border;
-            parameter.borderPen = new PdfPen(item.borderColor, border.width);
+            if (item.borderColor) {
+                parameter.borderPen = new PdfPen(item.borderColor, border.width);
+            }
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
             if (backcolor) {
@@ -6525,7 +6679,9 @@ export class PdfListBoxField extends PdfListField {
             }
             parameter.foreBrush = new PdfBrush(this.color);
             const border: PdfInteractiveBorder = this.border;
-            parameter.borderPen = new PdfPen(this.borderColor, border.width);
+            if (this.borderColor) {
+                parameter.borderPen = new PdfPen(this.borderColor, border.width);
+            }
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
             if (backcolor) {
@@ -6847,7 +7003,7 @@ export class PdfSignatureField extends PdfField {
     }
     _doPostProcess(isFlatten: boolean = false): void {
         const needAppearance: boolean = this._setAppearance || this._form._setAppearance;
-        if (!this._isLoaded && (isFlatten || needAppearance)) {
+        if (isFlatten || needAppearance) {
             const count: number = this._kidsCount;
             if (count > 0) {
                 for (let i: number = 0; i < count; i++) {
@@ -6894,9 +7050,11 @@ export class PdfSignatureField extends PdfField {
         }
         parameter.foreBrush = new PdfBrush(widget.color);
         const border: PdfInteractiveBorder = widget.border;
-        parameter.borderPen = new PdfPen(widget.borderColor, border.width);
-        parameter.borderStyle = border.style;
+        if (widget.borderColor) {
+            parameter.borderPen = new PdfPen(widget.borderColor, border.width);
+        }
         parameter.borderWidth = border.width;
+        parameter.borderStyle = border.style;
         if (backcolor) {
             const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
             const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,

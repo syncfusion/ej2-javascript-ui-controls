@@ -1,9 +1,9 @@
 import { IDataSet } from '../../src/base/engine';
 import { pivot_dataset, pivot_nodata } from '../base/datasource.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
-import { BeginDrillThroughEventArgs } from '../../src/common/base/interface';
+import { BeginDrillThroughEventArgs, DrillThroughEventArgs } from '../../src/common/base/interface';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 import { Grid } from '@syncfusion/ej2-grids';
 import { VirtualScroll } from '../../src/pivotview/actions';
@@ -376,6 +376,131 @@ describe('- Drill Through', () => {
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
             }, 500);
+        });
+    });
+
+    describe('- Using CSV data', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        let csvdata: string = "Region,Country,Item Type,Sales Channel,Order Priority,Order Date,Order ID,Ship Date,Units Sold,Unit Price,Unit Cost,Total Revenue,Total Cost,Total Profit\r\n" +
+        "Middle East and North Africa,Libya,Cereal,Offline,M,10/18/2014,686800706,10/31/2014,8446,437.20,263.33,3692591.20,2224085.18,1468506.02\r\n" +
+        "North America,Canada,Cosmetics,Online,M,11/7/2011,185941302,12/8/2011,3018,154.06,90.93,464953.08,274426.74,190526.34\r\n" +
+        "Asia,Japan,Cereal,Offline,C,4/10/2010,161442649,5/12/2010,3322,205.70,117.11,683335.40,389039.42,294295.98\r\n" +
+        "Sub-Saharan Africa,Chad,Cosmetics,Offline,H,8/16/2011,645713555,8/31/2011,9845,9.33,6.92,91853.85,68127.40,23726.45\r\n" +
+        "Europe,Armenia,Cosmetics,Online,H,11/24/2014,683458888,12/28/2014,9528,205.70,117.11,1959909.60,1115824.08,844085.52\r\n" +
+        "Sub-Saharan Africa,Eritrea,Cereal,Online,H,3/4/2015,679414975,4/17/2015,2844,205.70,117.11,585010.80,333060.84,251949.96\r\n";
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, DrillThrough, CalculatedField);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: getCSVData(),
+                    type: 'CSV',
+                    expandAll: true,
+                    enableSorting: true,
+                    allowLabelFilter: true,
+                    allowValueFilter: true,
+                    rows: [
+                        { name: 'Region' },
+                        { name: 'Country' }
+                    ], columns: [
+                        { name: 'Item Type' },
+                        { name: 'Sales Channel' }
+                    ], values: [
+                        { name: 'Total Cost' },
+                        { name: 'Total Revenue' },
+                        { name: 'Total', type: 'CalculatedField' }
+                    ],
+                    filters: [],
+                    calculatedFieldSettings: [{ name: 'Total', formula: '"Sum(Total Cost)"' }]
+                },
+                width: '100%',
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                allowDrillThrough: true,
+                dataBound: dataBound,
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        function getCSVData(): string[][] {
+            let dataSource: string[][] = [];
+            let jsonObject: string[] = csvdata.split(/\r?\n|\r/);
+            for (let i: number = 0; i < jsonObject.length; i++) {
+                if (!isNullOrUndefined(jsonObject[i]) && jsonObject[i] !== '') {
+                    dataSource.push(jsonObject[i].split(','));
+                }
+            }
+            return dataSource;
+        }
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 500);
+        });
+        it('Editing cell value', (done: Function) => {
+            document.querySelectorAll('td[aria-colindex="2"]')[1].dispatchEvent(new Event('dblclick', { bubbles: true }));
+            setTimeout(() => {
+                document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[0].dispatchEvent(new Event('dblclick', { bubbles: true }));
+                document.querySelectorAll('.e-spin-up')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
+                document.getElementById('PivotGrid_drillthroughgrid_update').dispatchEvent(new Event('click', { bubbles: true }));
+                document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0].dispatchEvent(new Event('click', { bubbles: true }));
+                expect(document.querySelectorAll('.e-drillthrough-grid td[data-colindex="1"]')[0].textContent).toBe('389040.42');
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('- Using drillthrough event', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, DrillThrough, CalculatedField);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    enableSorting: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: []
+                },
+                width: '100%',
+                editSettings: { allowEditing: true, allowInlineEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                allowDrillThrough: true,
+                drillThrough: function (args: DrillThroughEventArgs) {
+                    args.rawData = [args.rawData[1]];
+                },
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 500);
+        });
+        it('Render testing', (done: Function) => {
+            document.querySelectorAll('td[aria-colindex="5"]')[1].dispatchEvent(new Event('dblclick', { bubbles: true }));
+            setTimeout(() => {
+                document.querySelectorAll('.e-spin-up')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
+                expect(document.querySelectorAll('.e-pivot-button').length).toBe(0);
+                done();
+            }, 1000);
         });
     });
 

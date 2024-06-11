@@ -1,7 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Axis } from '../axis/axis';
 import { getMinPointsDelta, getActualDesiredIntervalsCount, setRange, triggerLabelRender } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
@@ -34,6 +30,7 @@ export class Double {
      * Constructor for the dateTime module.
      *
      * @private
+     * @param {Chart} chart - Specifies the chart.
      */
     constructor(chart?: Chart) {
         this.chart = chart;
@@ -43,6 +40,10 @@ export class Double {
      * Numeric Nice Interval for the axis.
      *
      * @private
+     * @param {Axis} axis - The axis.
+     * @param {number} delta - The delta value.
+     * @param {Size} size - The size.
+     * @returns {number} - The calculated nice interval.
      */
     protected calculateNumericNiceInterval(axis: Axis, delta: number, size: Size): number {
         const actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
@@ -65,9 +66,11 @@ export class Double {
     }
 
     /**
-     * Actual Range for the axis.
+     * Determines whether auto interval is enabled on both axes.
      *
      * @private
+     * @param {Axis} axis - The axis.
+     * @returns {boolean} - The boolean value indicating if auto interval is enabled on both axes.
      */
     public isAutoIntervalOnBothAxis(axis: Axis): boolean {
         if (((axis.zoomFactor < 1 || axis.zoomPosition > 0) && axis.enableAutoIntervalOnZooming)) {
@@ -98,6 +101,8 @@ export class Double {
      * Range for the axis.
      *
      * @private
+     * @param {Axis} axis - The axis.
+     * @returns {void}
      */
     public initializeDoubleRange(axis: Axis): void {
         //Axis Min
@@ -212,6 +217,9 @@ export class Double {
      * Apply padding for the range.
      *
      * @private
+     * @param {Axis} axis - The axis for which padding is applied.
+     * @param {Size} size - The size used for padding calculation.
+     * @returns {void}
      */
     public applyRangePadding(axis: Axis, size: Size): void {
         const start: number = axis.actualRange.min;
@@ -299,6 +307,9 @@ export class Double {
      * Calculate visible range for axis.
      *
      * @private
+     * @param {Size} size - The size used for calculation.
+     * @param {Axis} axis - The axis for which the visible range is calculated.
+     * @returns {void}
      */
     protected calculateVisibleRange(size: Size, axis: Axis): void {
         axis.visibleRange = {
@@ -308,7 +319,7 @@ export class Double {
         if (this.chart.chartAreaType === 'Cartesian') {
             const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-                axis.calculateVisibleRangeOnZooming(size);
+                axis.calculateVisibleRangeOnZooming();
                 axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
                     : axis.visibleRange.interval;
@@ -317,7 +328,8 @@ export class Double {
         if (axis.maximum && axis.orientation === 'Vertical' && axis.rangePadding === 'Auto') {
             let duplicateTempInterval: number;
             let tempInterval: number = axis.visibleRange.min;
-            for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval); tempInterval += axis.visibleRange.interval) {
+            for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval);
+                tempInterval += axis.visibleRange.interval) {
                 duplicateTempInterval = tempInterval;
             }
             if (duplicateTempInterval < axis.visibleRange.max) {
@@ -405,7 +417,7 @@ export class Double {
 
     public formatValue(axis: Axis, isCustom: boolean, format: string, tempInterval: number): string {
         /*The toLocaleString method is used to adjust the decimal points for this ticket, specifically for ticket numbers I481747 and I541484.*/
-        let labelValue: Number = !(tempInterval % 1) ? tempInterval : Number(tempInterval.toLocaleString('en-US').split(',').join(''));
+        const labelValue: number = !(tempInterval % 1) ? tempInterval : Number(tempInterval.toLocaleString('en-US').split(',').join(''));
         return isCustom ? format.replace('{value}', axis.format(labelValue))
             : format ? axis.format(tempInterval) : axis.format(labelValue);
     }

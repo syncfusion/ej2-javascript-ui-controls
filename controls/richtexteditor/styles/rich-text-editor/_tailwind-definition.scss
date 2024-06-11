@@ -113,6 +113,7 @@ $rte-big-formatlists-dropdown-line-height: 35px;
 //Layout Variables End
 
 //Theme Variables Start
+$rte-table-multicell-select-bg-color: rgba($primary, .08) !default;
 $rte-border-color: $border-light !default;
 $rte-content-bg: $content-bg-color !default;
 $rte-full-screen-bg: $content-bg-color !default;
@@ -162,18 +163,19 @@ $rte-split-btn-bar-size: 0 !default;
 $rte-split-btn-active-border: 1px solid $secondary-border-color-hover !default;
 $rte-split-btn-active-color-icon-line-height: 30px !default;
 $rte-big-split-btn-active-color-icon-line-height: 38px !default;
+$rte-qt-item-btn-line-height: 32px;
 
 $rte-link-valid-color: $danger !default;
 $rte-upload-drag-border-clr: $border-dark !default;
 $rte-img-header-clr: $content-text-color-alt1 !default;
 $rte-drop-text-clr: $content-text-color-alt2 !default;
-$rte-default-character-count-color: $placeholder-text-color !default;
+$rte-default-character-count-color: $content-text-color-alt1 !default;
 $rte-warning-character-count-color: $warning !default;
 $rte-error-character-count-color: $danger !default;
 $rte-img-border: solid 2px #4a90e2 !default;
 $rte-font-family: $font-family !default;
 $rte-content-color: $content-text-color !default;
-$rte-content-blockquote-border-left-color: solid 2px $content-text-color !default;
+$rte-content-blockquote-border-left-color: solid 3px $content-bg-color-alt4 !default;
 $rte-dropdown-selection-bgcolor: $secondary-bg-color-pressed !default;
 $rte-ext-tbar-overlay-icons-color: $icon-color-disabled !default;
 $rte-overlay-color: $overlay-bg-color !default;
@@ -195,7 +197,7 @@ $rte-table-popup-box: $shadow !default;
 $rte-table-border-color: $border-light !default;
 $rte-table-alternate-color: $content-bg-color-alt1 !default;
 $rte-table-header-bg: $content-bg-color-alt1 !default;
-$rte-toolbar-hor-nav-border-width: 0 0 0 1px !default;
+$rte-toolbar-hor-nav-border-width: 0 0 0 0 !default;
 $rte-border-top-left-radius: 0;
 $rte-border-top-right-radius: 0;
 $rte-border-bottom-right-radius: 0;
@@ -240,7 +242,7 @@ $rte-big-dropdown-btn-color-content-padding: 0 !default;
 $rte-tb-expended-min-height: 40px !default;
 $rte-big-tb-expended-min-height: 48px !default;
 $rte-tb-expended-padding-left: 1px !default;
-$rte-tb-expended-hover-padding-left: 1px !default;
+$rte-tb-expended-hover-padding-left: 0 !default;
 $rte-toolbar-expaned-minwidth: 18px !default;
 
 $rte-emoji-pop-background: $flyout-bg-color;
@@ -252,6 +254,8 @@ $rte-emoji-tbar-btn-select-bg : $secondary-border-color-hover;
 $rte-emoji-tbar-btn-hover: $secondary-border-color-hover;
 $rte-emoji-btn-height: 249px;
 $rte-emoji-grp-btn-line-height: 1px;
+$rte-emoji-grp-btn-height: 40px;
+$rte-emoji-grp-btn-width: 40px;
 $rte-emoji-headname-font-weight: 400;
 $rte-emoji-headname-color:$content-text-color-alt2;
 $rte-big-emoji-btn-height: 254px;

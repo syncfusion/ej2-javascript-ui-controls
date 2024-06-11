@@ -1,6 +1,6 @@
 [![coverage](http://ej2.syncfusion.com/badges/ej2-documenteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-documenteditor)
 
-# JavaScript Word Processor Control
+# JavaScript Word Processor Control 
 
 The [JavaScript Word Processor](https://www.syncfusion.com/javascript-ui-controls/js-word-processor/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-word-processor-npm) control is a feature rich UI component with document editing capabilities like Microsoft Word. Also known as the document editor, it is used to create, edit, view, and print Word documents. It provides all the common Word processing features including editing text, formatting content, resizing images and tables, finding and replacing text, bookmarks, tables of contents, track changes, commenting, restrict editing, printing, importing and exporting Word documents.
 

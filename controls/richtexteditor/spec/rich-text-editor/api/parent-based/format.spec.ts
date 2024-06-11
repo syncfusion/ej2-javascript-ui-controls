@@ -25,7 +25,7 @@ describe('RTE PARENT BASED - formats - ', () => {
         });
 
         it(' Test the default value of items ', () => {
-            expect(rteObj.format.types.length === 7).toBe(true);
+            expect(rteObj.format.types.length === 6).toBe(true);
         });
     });
     describe(' PROPERTIES - ', () => {
@@ -37,6 +37,17 @@ describe('RTE PARENT BASED - formats - ', () => {
                     value: '<span id="rte">RTE</span>',
                     toolbarSettings: {
                         items: ['Formats']
+                    },
+                    format: {
+                        types: [
+                            { text: 'Paragraph', value: 'P' },
+                            { text: 'Code', value: 'Pre'},
+                            { text: 'Quotation', value: 'BlockQuote'},
+                            { text: 'Heading 1', value: 'H1' },
+                            { text: 'Heading 2', value: 'H2' },
+                            { text: 'Heading 3', value: 'H3' },
+                            { text: 'Heading 4', value: 'H4' }
+                        ]
                     }
                 });
                 controlId = rteObj.element.id;
@@ -80,7 +91,7 @@ describe('RTE PARENT BASED - formats - ', () => {
                 dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
                 (popup.querySelectorAll('.e-item')[2] as HTMLElement).click()
                 let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                expect(tag.parentElement.tagName === 'BLOCKQUOTE').toBe(true);
+                expect(tag.parentElement.parentElement.tagName === 'BLOCKQUOTE').toBe(true);
             });
             it(' Test - apply the "H1" format to selected node', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
@@ -238,6 +249,17 @@ describe('RTE PARENT BASED - formats - ', () => {
                     },
                     toolbarSettings: {
                         items: ['Formats']
+                    },
+                    format: {
+                        types: [
+                            { text: 'Paragraph', value: 'P' },
+                            { text: 'Code', value: 'Pre'},
+                            { text: 'Quotation', value: 'BlockQuote'},
+                            { text: 'Heading 1', value: 'H1' },
+                            { text: 'Heading 2', value: 'H2' },
+                            { text: 'Heading 3', value: 'H3' },
+                            { text: 'Heading 4', value: 'H4' }
+                        ]
                     }
                 });
                 controlId = rteObj.element.id;
@@ -291,7 +313,7 @@ describe('RTE PARENT BASED - formats - ', () => {
                     dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
                     (popup.querySelectorAll('.e-item')[2] as HTMLElement).click()
                     let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                    expect(tag.parentElement.tagName === 'BLOCKQUOTE').toBe(true);
+                    expect(tag.parentElement.parentElement.tagName === 'BLOCKQUOTE').toBe(true);
                     done();
                 }, 500);
             });
@@ -468,6 +490,17 @@ describe('RTE PARENT BASED - formats - ', () => {
                     value: '<span id="rte">RTE</span>',
                     toolbarSettings: {
                         items: ['Formats']
+                    },
+                    format: {
+                        types: [
+                            { text: 'Paragraph', value: 'P' },
+                            { text: 'Code', value: 'Pre'},
+                            { text: 'Quotation', value: 'BlockQuote'},
+                            { text: 'Heading 1', value: 'H1' },
+                            { text: 'Heading 2', value: 'H2' },
+                            { text: 'Heading 3', value: 'H3' },
+                            { text: 'Heading 4', value: 'H4' }
+                        ]
                     }
                 });
                 controlId = rteObj.element.id;
@@ -519,7 +552,7 @@ describe('RTE PARENT BASED - formats - ', () => {
                 (popup.querySelectorAll('.e-item')[2] as HTMLElement).click();
                 dispatchEvent(document.body, 'mousedown');
                 dispatchEvent((rteObj as any).inputElement, 'focusout');
-                expect(rteObj.getHtml() === '<blockquote><span id="rte">RTE</span></blockquote>').toBe(true);
+                expect(rteObj.getHtml() === '<blockquote><p><span id="rte">RTE</span></p></blockquote>').toBe(true);
                 expect(rteObj.getText() === 'RTE').toBe(true);
             });
             it(' Test - apply the "H1" format to selected node', () => {
@@ -588,6 +621,17 @@ describe('RTE PARENT BASED - formats - ', () => {
                     value: '<span id="rte">RTE</span>',
                     toolbarSettings: {
                         items: ['Formats']
+                    },
+                    format: {
+                        types: [
+                            { text: 'Paragraph', value: 'P' },
+                            { text: 'Code', value: 'Pre'},
+                            { text: 'Quotation', value: 'BlockQuote'},
+                            { text: 'Heading 1', value: 'H1' },
+                            { text: 'Heading 2', value: 'H2' },
+                            { text: 'Heading 3', value: 'H3' },
+                            { text: 'Heading 4', value: 'H4' }
+                        ]
                     }
                 });
                 controlId = rteObj.element.id;
@@ -637,7 +681,7 @@ describe('RTE PARENT BASED - formats - ', () => {
                 (popup.querySelectorAll('.e-item')[2] as HTMLElement).click();
                 rteObj.showSourceCode();
                 let textArea: HTMLTextAreaElement = rteObj.element.querySelector('.e-rte-srctextarea');
-                expect(textArea.value === '<blockquote><span id="rte">RTE</span></blockquote>').toBe(true);
+                expect(textArea.value === '<blockquote><p><span id="rte">RTE</span></p></blockquote>').toBe(true);
             });
             it(' Test - apply the "H1" format to selected node', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
@@ -768,6 +812,17 @@ describe('RTE PARENT BASED - formats - ', () => {
                     value: '<span id="rte">RTE</span>',
                     toolbarSettings: {
                         items: ['Formats']
+                    },
+                    format: {
+                        types: [
+                            { text: 'Paragraph', value: 'P' },
+                            { text: 'Code', value: 'Pre'},
+                            { text: 'Quotation', value: 'BlockQuote'},
+                            { text: 'Heading 1', value: 'H1' },
+                            { text: 'Heading 2', value: 'H2' },
+                            { text: 'Heading 3', value: 'H3' },
+                            { text: 'Heading 4', value: 'H4' }
+                        ]
                     }
                 });
                 controlId = rteObj.element.id;
@@ -811,7 +866,7 @@ describe('RTE PARENT BASED - formats - ', () => {
                 dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
                 (popup.querySelectorAll('.e-item')[2] as HTMLElement).click()
                 let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                expect(tag.parentElement.tagName === 'BLOCKQUOTE').toBe(true);
+                expect(tag.parentElement.parentElement.tagName === 'BLOCKQUOTE').toBe(true);
             });
             it(' Test - apply the "H1" format to selected node', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
@@ -885,6 +940,17 @@ describe('RTE PARENT BASED - formats - ', () => {
                     value: '<span id="rte">RTE</span>',
                     toolbarSettings: {
                         items: ['Formats']
+                    },
+                    format: {
+                        types: [
+                            { text: 'Paragraph', value: 'P' },
+                            { text: 'Code', value: 'Pre'},
+                            { text: 'Quotation', value: 'BlockQuote'},
+                            { text: 'Heading 1', value: 'H1' },
+                            { text: 'Heading 2', value: 'H2' },
+                            { text: 'Heading 3', value: 'H3' },
+                            { text: 'Heading 4', value: 'H4' }
+                        ]
                     }
                 });
                 controlId = rteObj.element.id;
@@ -1126,8 +1192,8 @@ describe('RTE PARENT BASED - formats - ', () => {
             item.click();
             // Select the H1 format
             let popup: HTMLElement = document.getElementById(rteObj.element.id + '_toolbar_Formats-popup');
-            dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
-            (popup.querySelectorAll('.e-item')[3] as HTMLElement).click();
+            dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
+            (popup.querySelectorAll('.e-item')[2] as HTMLElement).click();
             expect(rteObj.getHtml() === '<h1><br></h1>').toBe(true);
         });
     });
@@ -1152,8 +1218,8 @@ describe('RTE PARENT BASED - formats - ', () => {
             item.click();
             // Select the H1 format
             let popup: HTMLElement = document.getElementById(rteObj.element.id + '_toolbar_Formats-popup');
-            dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
-            (popup.querySelectorAll('.e-item')[3] as HTMLElement).click();
+            dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
+            (popup.querySelectorAll('.e-item')[2] as HTMLElement).click();
             const expected: string =`<p>Paragraph</p><h1 class="target"><br></h1><p>Paragraph</p>`
             expect(rteObj.getHtml() === expected).toBe(true);
         });

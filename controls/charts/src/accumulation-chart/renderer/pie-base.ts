@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * Accumulation charts base file
  */
@@ -33,6 +30,9 @@ export class PieBase extends AccumulationBase {
      * To initialize the property values.
      *
      * @private
+     * @param {AccumulationChart} chart - The accumulation chart control.
+     * @param {AccumulationSeries} series - The series for which the properties are initialized.
+     * @returns {void}
      */
     public initProperties(chart: AccumulationChart, series: AccumulationSeries): void {
         this.accumulation = chart;
@@ -92,6 +92,9 @@ export class PieBase extends AccumulationBase {
      * To find the center of the accumulation.
      *
      * @private
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {AccumulationSeries} series - The series for which the center is calculated.
+     * @returns {void}
      */
     public findCenter(accumulation: AccumulationChart, series: AccumulationSeries): void {
         this.accumulation = accumulation;
@@ -109,6 +112,9 @@ export class PieBase extends AccumulationBase {
 
     /**
      * To find angles from series.
+     *
+     * @param {AccumulationSeries} series - The series for which to calculate angles.
+     * @returns {void}
      */
     private initAngles(series: AccumulationSeries): void {
         const endAngle: number = isNullOrUndefined(series.endAngle) ? series.startAngle : series.endAngle;
@@ -119,9 +125,13 @@ export class PieBase extends AccumulationBase {
     }
 
     /**
-     * To calculate data-label bound
+     * To calculate data-label bound.
      *
      * @private
+     * @param {AccumulationSeries} series - The series for which to calculate data-label bounds.
+     * @param {boolean} visible - Indicates whether the data-labels are visible.
+     * @param {AccumulationLabelPosition} position - The position of the data-labels.
+     * @returns {void}
      */
     public defaultLabelBound(series: AccumulationSeries, visible: boolean, position: AccumulationLabelPosition): void {
         const accumulationBound: Rect = this.getSeriesBound(series);
@@ -135,9 +145,11 @@ export class PieBase extends AccumulationBase {
     }
 
     /**
-     * To calculate series bound
+     * To calculate series bound.
      *
      * @private
+     * @param {AccumulationSeries} series - The series for which to calculate the bound.
+     * @returns {Rect} - Returns a rect.
      */
     public getSeriesBound(series: AccumulationSeries): Rect {
         const rect: Rect = new Rect(Infinity, Infinity, -Infinity, -Infinity);
@@ -172,14 +184,24 @@ export class PieBase extends AccumulationBase {
         return rect;
     }
     /**
-     * To get rect location size from angle
+     * To get rect location size from angle.
+     *
+     * @param {number} angle - The angle in degrees.
+     * @returns {Rect} - The rect representing the location size from angle.
      */
     private getRectFromAngle(angle: number): Rect {
         const location: ChartLocation = degreeToLocation(angle, this.pieBaseRadius, this.pieBaseCenter);
         return new Rect(location.x, location.y, 0, 0);
     }
     /**
-     * To get path arc direction
+     * To get path arc direction.
+     *
+     * @param {ChartLocation} center - The center coordinates of the arc.
+     * @param {number} start - The starting angle of the arc in degrees.
+     * @param {number} end - The ending angle of the arc in degrees.
+     * @param {number} radius - The radius of the arc.
+     * @param {number} innerRadius - The inner radius of the arc.
+     * @returns {string} - The path string representing the arc direction.
      */
     protected getPathArc(center: ChartLocation, start: number, end: number, radius: number, innerRadius: number): string {
         let degree: number = end - start; degree = degree < 0 ? (degree + 360) : degree;
@@ -193,14 +215,31 @@ export class PieBase extends AccumulationBase {
         }
     }
     /**
-     * To get pie direction
+     * To get pie direction.
+     *
+     * @param {ChartLocation} center - The center of the pie.
+     * @param {ChartLocation} start - The starting location of the pie.
+     * @param {ChartLocation} end - The ending location of the pie.
+     * @param {number} radius - The radius of the pie.
+     * @param {number} clockWise - The direction of the pie.
+     * @returns {string} - The path direction for the pie.
      */
     protected getPiePath(center: ChartLocation, start: ChartLocation, end: ChartLocation, radius: number, clockWise: number): string {
         return 'M ' + center.x + ' ' + center.y + ' L ' + start.x + ' ' + start.y + ' A ' + radius + ' ' +
             radius + ' 0 ' + clockWise + ' 1 ' + end.x + ' ' + end.y + ' Z';
     }
     /**
-     * To get doughnut direction
+     * To get doughnut direction.
+     *
+     * @param {ChartLocation} center - The center of the doughnut.
+     * @param {ChartLocation} start - The starting location of the outer doughnut.
+     * @param {ChartLocation} end - The ending location of the outer doughnut.
+     * @param {number} radius - The radius of the outer doughnut.
+     * @param {ChartLocation} innerStart - The starting location of the inner doughnut.
+     * @param {ChartLocation} innerEnd - The ending location of the inner doughnut.
+     * @param {number} innerRadius - The radius of the inner doughnut.
+     * @param {number} clockWise - The direction of the doughnut.
+     * @returns {string} - The path direction for the doughnut.
      */
     protected getDoughnutPath(center: ChartLocation, start: ChartLocation, end: ChartLocation, radius: number,
                               innerStart: ChartLocation, innerEnd: ChartLocation, innerRadius: number, clockWise: number): string {
@@ -210,6 +249,11 @@ export class PieBase extends AccumulationBase {
     }
     /**
      * Method to start animation for pie series.
+     *
+     * @param {Element} slice - The slice element to animate.
+     * @param {AccumulationSeries} series - The accumulation chart control.
+     * @param {Element} groupElement - The group element containing the pie series.
+     * @returns {void}
      */
     protected doAnimation(slice: Element, series: AccumulationSeries, groupElement: Element): void {
         const startAngle: number = series.startAngle - 90;

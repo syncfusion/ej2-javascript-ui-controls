@@ -1,4 +1,3 @@
-/*! component's theme wise override definitions and variables */
 $tbar-skin: 'bootstrap' !default;
 $tbar-zero-value: 0 !default;
 $tbar-separator-bgr-minheight: 36px !default;
@@ -196,11 +195,9 @@ $tbar-popup-nav-pressed-border-size: 0 !default;
 $tbar-popup-nav-pressed-focus-border-color: $tbar-pressed-bg !default;
 $tbar-popup-nav-pressed-focus-border-size: 0 !default;
 $tbar-popup-btn-hover-border-size: $tbar-zero-value !default;
-
 @mixin tbar-btn-animation {
   content: '';
 }
-
 @mixin tbar-btn-animation-after {
   content: '';
 }

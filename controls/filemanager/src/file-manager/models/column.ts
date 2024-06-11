@@ -25,7 +25,7 @@ export type TextAlign =
  * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
  * also it will display tooltip while hover on ellipsis applied cell.
  */
-export type ClipMode = 
+export type ClipMode =
     /**  Truncates the cell content when it overflows its area */
     'Clip' |
     /** Displays ellipsis when the cell content overflows its area */
@@ -144,7 +144,7 @@ export class Column extends ChildProperty<Column> {
      * Defines the custom sort comparer function.
      * The sort comparer function has the same functionality like
      * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
-     * 
+     *
      * @default null
      * @aspType string
      */
@@ -182,10 +182,8 @@ export class Column extends ChildProperty<Column> {
      *
      * @default null
      */
-    /* eslint-disable */
     @Property(null)
     public customAttributes: { [x: string]: Object };
-    /* eslint-enable */
 
     /**
      * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
@@ -204,10 +202,8 @@ export class Column extends ChildProperty<Column> {
      *
      * @default null
      */
-    /* eslint-disable */
     @Property(null)
     public customFormat: { [x: string]: Object };
-    /* eslint-enable */
 
     /**
      * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.

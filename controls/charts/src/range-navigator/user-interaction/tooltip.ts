@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { RangeNavigator, RangeSlider } from '../../range-navigator';
 import { Tooltip as SVGTooltip} from '@syncfusion/ej2-svg-base';
 import { getElement, createTemplate, firstToLowerCase } from '../../common/utils/helper';
@@ -25,6 +22,7 @@ export class RangeTooltip {
     /**
      * Constructor for tooltip module.
      *
+     * @param {RangeNavigator} range - The RangeNavigator control.
      * @private
      */
     constructor(range: RangeNavigator) {
@@ -34,7 +32,8 @@ export class RangeTooltip {
     /**
      * Left tooltip method called here.
      *
-     * @param {RangeSlider} rangeSlider RangeSlider
+     * @param {RangeSlider} rangeSlider - RangeSlider
+     * @returns {void}
      */
     public renderLeftTooltip(rangeSlider: RangeSlider): void {
         this.fadeOutTooltip();
@@ -50,9 +49,10 @@ export class RangeTooltip {
         );
     }
     /**
-     * get the content size
+     * get the content size.
      *
-     * @param {string[]} value value
+     * @param {string[]} value - The array of values.
+     * @returns {number} - The content size.
      */
     private getContentSize(value: string[]): number {
         let width: number;
@@ -73,7 +73,8 @@ export class RangeTooltip {
     /**
      * Right tooltip method called here.
      *
-     * @param {RangeSlider} rangeSlider RangeSlider
+     * @param {RangeSlider} rangeSlider - RangeSlider
+     * @returns {void}
      */
     public renderRightTooltip(rangeSlider: RangeSlider): void {
         this.fadeOutTooltip();
@@ -90,9 +91,10 @@ export class RangeTooltip {
         );
     }
     /**
-     * Tooltip element creation
+     * Tooltip element creation.
      *
-     * @param {string} id element id
+     * @param {string} id - The element id.
+     * @returns {Element} - The created tooltip element.
      */
     private createElement(id: string): Element {
         if (getElement(this.elementId + id)) {
@@ -114,12 +116,13 @@ export class RangeTooltip {
         }
     }
     /**
-     * Tooltip render called here
+     * Tooltip render called here.
      *
-     * @param {Rect} bounds bounds
-     * @param {Element} parent parent
-     * @param {number} pointX pointX
-     * @param {string[]} content content
+     * @param {Rect} bounds - bounds
+     * @param {Element} parent - parent
+     * @param {number} pointX - pointX
+     * @param {string[]} content - content
+     * @returns {SVGTooltip} - SVGTooltip
      */
     private renderTooltip(bounds: Rect, parent: Element, pointX: number, content: string[]): SVGTooltip {
         const control: RangeNavigator = this.control;
@@ -143,7 +146,7 @@ export class RangeTooltip {
                     theme: this.control.theme,
                     clipBounds: { x: left },
                     border: tooltip.border, opacity: tooltip.opacity ?  tooltip.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark') ? 1 : 0.75),
-                    template: tooltip.template as any,
+                    template: tooltip.template as string | Function,
                     textStyle: argsData.textStyle,
                     availableSize: control.availableSize,
                     controlName: 'RangeNavigator',
@@ -160,9 +163,10 @@ export class RangeTooltip {
         }
     }
     /**
-     * Tooltip content processed here
+     * Tooltip content processed here.
      *
-     * @param {number} value tooltip value
+     * @param {number} value - The tooltip value.
+     * @returns {string[]} - An array containing the processed tooltip content.
      */
     private getTooltipContent(value: number): string[] {
         const control: RangeNavigator = this.control;
@@ -192,7 +196,9 @@ export class RangeTooltip {
         return [text];
     }
     /**
-     * Fadeout animation performed here
+     * Fadeout animation performed here.
+     *
+     * @returns {void}
      */
     private fadeOutTooltip(): void {
         const tooltip: RangeTooltipSettingsModel = this.control.tooltip;
@@ -211,6 +217,8 @@ export class RangeTooltip {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - The name of the module.
      */
     protected getModuleName(): string {
         return 'RangeTooltip';

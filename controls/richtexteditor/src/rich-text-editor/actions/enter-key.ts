@@ -72,7 +72,8 @@ export class EnterKeyAction {
         if ((e.args as KeyboardEventArgs).which === 13 && !(e.args as KeyboardEventArgs).ctrlKey && (!Browser.isDevice ? (e.args as KeyboardEventArgs).code === 'Enter' : (e.args as KeyboardEventArgs).key === 'Enter' )) {
             if (isNOU(this.startNode.closest('LI, UL, OL')) && isNOU(this.endNode.closest('LI, UL, OL')) &&
             isNOU(this.startNode.closest('.e-img-inner')) && isTableEnter &&
-            isNOU(this.startNode.closest('PRE')) && isNOU(this.endNode.closest('PRE'))) {
+            isNOU(this.startNode.closest('PRE')) && isNOU(this.endNode.closest('PRE')) &&
+            isNOU(this.startNode.closest('BLOCKQUOTE')) && isNOU(this.endNode.closest('BLOCKQUOTE'))) {
                 const shiftKey: boolean = (e.args as KeyboardEventArgs).shiftKey;
                 const actionBeginArgs: ActionBeginEventArgs = {
                     cancel: false,
@@ -202,8 +203,13 @@ export class EnterKeyAction {
                                 const fireFoxEnterAtMiddle: boolean = Browser.userAgent.indexOf('Firefox') !== -1 && this.range.startOffset === 0 && this.range.startContainer === this.range.endContainer &&
                                     this.range.startContainer.nodeName === '#text' && !this.parent.formatter.editorManager.domNode.isBlockNode(this.range.startContainer.previousSibling as Element) &&
                                     this.range.startContainer.parentElement === this.range.startContainer.previousSibling.parentElement;
+                                const preventZeroWithSpace: boolean = ((this.range.startContainer.nodeName === '#text' && this.range.startContainer.textContent.includes('\u200B') &&
+                                    this.range.startContainer.textContent.trim() === '\u200B') ||
+                                    (this.range.startContainer.nodeName === '#text' && !isNOU(this.range.startContainer.textContent[this.range.startOffset]) &&
+                                    this.range.startContainer.textContent[this.range.startOffset].includes('\u200B') && this.range.startContainer.textContent[this.range.startOffset] === '\u200B' &&
+                                    this.parent.inputElement.textContent[0] !== '\u200B'));
                                 // eslint-disable-next-line max-len
-                                if (!fireFoxEnterAtMiddle && ((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
+                                if (!preventZeroWithSpace && !fireFoxEnterAtMiddle && ((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
                                     !(!isNOU(this.range.startContainer.previousSibling) &&
                                     (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
                                     let isNearBlockLengthZero: boolean;
@@ -268,9 +274,9 @@ export class EnterKeyAction {
                                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                                         this.parent.contentModule.getDocument(), (insertElem as Element).nextElementSibling,
                                         0);
-                                    } else if (nearBlockNode.textContent.length === 0 && !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG' ||
+                                } else if (nearBlockNode.textContent.length === 0 && !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG' ||
                                     (nearBlockNode.querySelectorAll('video').length > 0) || (nearBlockNode.querySelectorAll('audio').length > 0) || (nearBlockNode.querySelectorAll('img').length > 0))) {
-                                        if (!isNOU(nearBlockNode.children[0]) && nearBlockNode.children[0].tagName !== 'BR') {
+                                    if (!isNOU(nearBlockNode.children[0]) && nearBlockNode.children[0].tagName !== 'BR') {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
                                         this.parent.formatter.editorManager.domNode.insertAfter((newElem as Element), nearBlockNode);
@@ -335,7 +341,7 @@ export class EnterKeyAction {
                                         newElem.childNodes[0].textContent.length === 0) {
                                         detach(newElem.childNodes[0]);
                                     }
-                                    if (newElem.textContent.trim().length === 0) {
+                                    if (newElem.textContent.trim().length === 0 || (newElem.childNodes[0].textContent.trim().includes('\u200B') && newElem.childNodes[0].textContent.trim() === '\u200B')) {
                                         const brElm: HTMLElement = this.parent.createElement('br');
                                         if (this.startNode.nodeName === 'A') {
                                             const startParentElem: HTMLElement = this.startNode.parentElement;
@@ -348,6 +354,9 @@ export class EnterKeyAction {
                                             }
                                         }
                                         if (newElem.childNodes[0].textContent === '\n') {
+                                            detach(newElem.childNodes[0]);
+                                        }
+                                        if (newElem.childNodes[0].textContent.trim().includes('\u200B') && newElem.childNodes[0].textContent.trim() === '\u200B') {
                                             detach(newElem.childNodes[0]);
                                         }
                                         this.parent.formatter.editorManager.nodeSelection.setCursorPoint(

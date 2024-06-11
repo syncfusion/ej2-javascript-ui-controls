@@ -2653,7 +2653,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const settings: PageSettingsModel = Object.assign({template: undefined}, this.pageSettings);
         this.setProperties({pageSettings: settings}, true);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((this as any).isAngular) {
+        if (this.isAngular) {
             delete this.groupSettings['properties']['captionTemplate'];
         }
         this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
@@ -2771,7 +2771,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.getFrozenColumns() || this.frozenRows || this.frozenRightCount || this.frozenLeftCount) {
             modules.push({ member: 'freeze', args: [this, this.serviceLocator], name: 'Freeze' });
         }
-        if (this.isCommandColumn(<Column[]>this.columns)) {
+        if (!isNullOrUndefined(<Column[]>this.columns) && this.isCommandColumn(<Column[]>this.columns)) {
             modules.push({
                 member: 'commandColumn',
                 args: [this, this.serviceLocator],
@@ -2829,7 +2829,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 name: 'ColumnChooser'
             });
         }
-        if (this.isForeignKeyEnabled(this.columns as Column[])) {
+        if (!isNullOrUndefined(this.columns as Column[]) && this.isForeignKeyEnabled(this.columns as Column[])) {
             modules.push({ member: 'foreignKey', args: [this, this.serviceLocator], name: 'ForeignKey' });
         }
         if (this.enableLogger) {
@@ -3082,7 +3082,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             && !(!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result)) {
             this.isVirtualAdaptive = true;
         }
-        if ((<{ isReact?: boolean }>this).isReact) {
+        if (this.isReact) {
             const args: LoadEventArgs = {requireTemplateRef: this.requireTemplateRef};
             this.trigger(events.load, args);
             if (!args.requireTemplateRef) {
@@ -3700,15 +3700,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.removeMediaListener();
         this.notify(events.destroy, {});
         this.destroyDependentModules();
-        if ((<{ isReact?: boolean }>this).isReact) {
+        if (this.isReact) {
             this.destroyTemplate(['template']);
         }
-        if ((<{ isVue?: boolean }>this).isVue) {
+        if (this.isVue) {
             this.destroyTemplate();
         }
         if (hasGridChild) { super.destroy(); }
         this.toolTipObj.destroy();
-        if ((<{ isReact?: boolean }>this).isReact && !Browser.isIE) {
+        if (this.isReact && !Browser.isIE) {
             this.element.innerHTML = '';
         }
         const modules: string[] = ['renderModule', 'headerModule', 'contentModule', 'valueFormatterService',
@@ -4057,7 +4057,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
                 this.dataSource = {
-                    result: gResult, count: (<DataResult>this.dataSource).count,
+                    result: gResult as Object[] | Group[], count: (<DataResult>this.dataSource).count,
                     aggregates: (<DataResult>this.dataSource).aggregates
                 };
                 this.getDataModule().setState({});
@@ -4073,7 +4073,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         }
                     }
                     this.dataSource = {
-                        result: gResult, count: (<DataResult>this.dataSource).count
+                        result: gResult as Object[] | Group[], count: (<DataResult>this.dataSource).count
                     };
                 }
                 this.getDataModule().setState({ isDataChanged: false });
@@ -4172,7 +4172,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private updateColumnModel(columns: Column[], isRecursion?: boolean): void {
-        for (let i: number = 0, len: number = columns.length; i < len; i++) {
+        for (let i: number = 0, len: number = (!isNullOrUndefined(columns) ? columns.length : 0); i < len; i++) {
             if (columns[parseInt(i.toString(), 10)].columns) {
                 this.updateColumnModel(columns[parseInt(i.toString(), 10)].columns as Column[], true);
             } else {
@@ -4761,7 +4761,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 }
                 const sRow: Cell<Column> = selectedRow[`${cells}`][fieldIdx - Idx];
                 cell.refreshTD(td, sRow, selectedRow[`${rowData}`], { index: selectedRow[`${rowIdx}`] });
-                if ((<{ isReact?: boolean }>this).isReact) {
+                if (this.isReact) {
                     td = this.enableVirtualization ? tr.children[parseInt(fieldIdx.toString(), 10)]
                         : this.getCellFromIndex(selectedRow[`${rowIdx}`], fieldIdx);
                 }
@@ -4779,7 +4779,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.trigger(events.queryCellInfo, {
                     cell: td, column: col, data: selectedRow[`${rowData}`]
                 });
-                if ((<{ isReact?: boolean }>this).isReact && td.getAttribute('tabindex') === '0' && td.classList.contains('e-focused')) {
+                if (this.isReact && td.getAttribute('tabindex') === '0' && td.classList.contains('e-focused')) {
                     (td as HTMLElement).focus();
                 }
             }
@@ -4795,7 +4795,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public refreshReactColumnTemplateByUid(columnUid: string, renderTemplates?: boolean): void {
-        if ((<{ isReact?: boolean }>this).isReact) {
+        if (this.isReact) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).clearTemplate(['columnTemplate'], undefined, () => {
                 const isChildGrid: boolean = this.childGrid && this.element.querySelectorAll('.e-childgrid').length ? true : false;
@@ -4876,7 +4876,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public refreshReactHeaderTemplateByUid(columnUid: string): void {
-        if ((<{ isReact?: boolean }>this).isReact) {
+        if (this.isReact) {
             const cells: string = 'cells';
             const rowsObj: Row<Column>[] = (<{ rows?: Row<Column>[] }>this.headerModule).rows;
             const cellIndex: number = this.getNormalizedColumnIndex(columnUid);
@@ -5770,7 +5770,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             }
         }
-        for (let i: number = 0; i < columns.length; i++) {
+        for (let i: number = 0; i < (!isNullOrUndefined(columns) ? columns.length : 0); i++) {
             if (columns[parseInt(i.toString(), 10)].columns) {
                 this.leftcount = 0;
                 this.rightcount = 0;
@@ -6010,7 +6010,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private getFrozenCount(cols: Column[], cnt: number, index?: number): number {
-        for (let i: number = 0, len: number = cols.length; i < len; i++) {
+        for (let i: number = 0, len: number = (!isNullOrUndefined(cols) ? cols.length: 0); i < len; i++) {
             if (cols[parseInt(i.toString(), 10)].columns) {
                 cnt = this.getFrozenCount(cols[parseInt(i.toString(), 10)].columns as Column[], cnt, index);
             } else {

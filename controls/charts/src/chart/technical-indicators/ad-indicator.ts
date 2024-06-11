@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -11,9 +8,11 @@ import { TechnicalAnalysis } from './indicator-base';
 export class AccumulationDistributionIndicator extends TechnicalAnalysis {
 
     /**
-     * Defines the predictions using accumulation distribution approach
+     * Defines the predictions using accumulation distribution approach.
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         let adPoints: Points[] = [];
@@ -25,9 +24,11 @@ export class AccumulationDistributionIndicator extends TechnicalAnalysis {
     }
 
     /**
-     *  Calculates the Accumulation Distribution values
+     * Calculates the accumulation distribution (AD) points for a technical indicator.
      *
-     * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the AD points are calculated.
+     * @param {Points[]} validData - The valid data points used for calculation.
+     * @returns {Points[]} - The calculated accumulation distribution (AD) points.
      */
     private calculateADPoints(indicator: TechnicalIndicator, validData: Points[]): Points[] {
         const temp: Points[] = [];
@@ -70,16 +71,18 @@ export class AccumulationDistributionIndicator extends TechnicalAnalysis {
      */
     public destroy(): void {
         /**
-         * Destroys the Accumulation Distribution Technical indicator
+         * Destroys the Accumulation Distribution Technical indicator.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the Indicator
+         * Returns the module name of the Indicator.
          */
         return 'AccumulationDistributionIndicator';
     }

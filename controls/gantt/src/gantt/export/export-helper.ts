@@ -1,5 +1,5 @@
 import { TaskFieldsModel } from './../models/task-fields-model.d';
-import { PdfFontFamily, PdfTextWebLink, PdfImage } from '@syncfusion/ej2-pdf-export';
+import { PdfFontFamily, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfPageCountField, PdfPageNumberField } from '@syncfusion/ej2-pdf-export';
 import { PdfPageTemplateElement, RectangleF, PdfCompositeField, PointF } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfTextAlignment, PdfFont, PdfStandardFont, PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
@@ -16,8 +16,8 @@ import {
 } from './../base/interface';
 import { Gantt } from './../base/gantt';
 import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, extend } from '@syncfusion/ej2-base';
-import { getForeignData, ValueFormatter } from '@syncfusion/ej2-grids';
-import { pixelToPoint, isScheduledTask, pointToPixel } from '../base/utils';
+import { getForeignData, PdfFooter, ValueFormatter } from '@syncfusion/ej2-grids';
+import { pixelToPoint, isScheduledTask } from '../base/utils';
 import { Timeline } from '../renderer/timeline';
 import { PdfGanttTaskbarCollection } from './pdf-taskbar';
 import { PdfGanttPredecessor } from './pdf-connector-line';
@@ -73,7 +73,8 @@ export class ExportHelper {
             this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
         }
         if (this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate) {
-            this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ? this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
+            this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ?
+                this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
         }
         this.parent.dataOperation.calculateProjectDates();
         const timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
@@ -81,10 +82,10 @@ export class ExportHelper {
         let chartsideWidth: number;
         let gridWidth: number;
         if (this.exportProps.fitToWidthSettings.gridWidth) {
-            gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0]);
+            gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0], 10);
         }
         if (this.exportProps.fitToWidthSettings.chartWidth) {
-            chartsideWidth = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0]);
+            chartsideWidth = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0], 10);
         }
         else {
             if (this.exportProps.fitToWidthSettings.gridWidth) {
@@ -128,8 +129,7 @@ export class ExportHelper {
         this.parent.timelineModule['roundOffDateToZoom'](this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
         const numberOfCells: number = this.parent.timelineModule['calculateNumberOfTimelineCells'](newTimeline);
         const scrollHeight: number = this.parent.pdfExportModule['pdfPageDimensions'].height; //17 is horizontal scrollbar width
-        const contentHeight: number = this.parent.pdfExportModule['pdfPageDimensions'].height;
-        const emptySpace: number = contentHeight <= scrollHeight ? 0 : 17;
+        const emptySpace: number = scrollHeight <= 0 ? 0 : 17;
         newTimeline.timelineUnitSize = Math.abs((chartWidth - emptySpace)) / numberOfCells;
         this.parent.timelineModule['changeTimelineSettings'](newTimeline);
         this.parent.timelineModule.isZoomToFit = false;
@@ -198,7 +198,7 @@ export class ExportHelper {
         this.row.height = pixelToPoint(treeGridHeaderHeight);
         if (column.headerTextAlign) {
             cell.style.format.alignment = PdfTextAlignment[column.headerTextAlign];
-        };
+        }
         const template: ITemplateDetails = {
             image: null,
             value: null,
@@ -242,8 +242,7 @@ export class ExportHelper {
         if (this.flatData.length === 0) {
             this.renderEmptyGantt();
         } else {
-            let flatData: IGanttData[];
-            flatData = this.flatData;
+            const flatData: IGanttData[] = this.flatData;
             flatData.forEach((data: IGanttData) => {
                 this.row = this.gantt.rows.addRow();
                 if (data.hasChildRecords) {
@@ -273,14 +272,18 @@ export class ExportHelper {
             = (this.parent.timelineModule.isSingleTier ? 45 : 60 / 2);
         this.gantt.chartHeader.topTierCellWidth = timelineSettings.topTierCellWidth;
         this.gantt.chartHeader.bottomTierCellWidth = timelineSettings.bottomTierCellWidth;
-        this.gantt.chartHeader.topTier = extend([], [], this.parent.enableTimelineVirtualization ? timelineSettings.pdfExportTopTierCollection : timelineSettings.topTierCollection, true) as [];
-        this.gantt.chartHeader.bottomTier = extend([], [], this.parent.enableTimelineVirtualization ? timelineSettings.pdfExportBottomTierCollection : timelineSettings.bottomTierCollection, true) as [];
-        if (this.exportProps && this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth && this.parent.enableTimelineVirtualization) {
+        this.gantt.chartHeader.topTier = extend([], [], this.parent.enableTimelineVirtualization ?
+            timelineSettings.pdfExportTopTierCollection : timelineSettings.topTierCollection, true) as [];
+        this.gantt.chartHeader.bottomTier = extend([], [], this.parent.enableTimelineVirtualization ?
+            timelineSettings.pdfExportBottomTierCollection : timelineSettings.bottomTierCollection, true) as [];
+        if (this.exportProps && this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth &&
+            this.parent.enableTimelineVirtualization) {
             const tier: string = timelineSettings.topTier === 'None' ? 'bottomTier' : 'topTier';
             this.gantt.chartHeader.width = timelineSettings['calculateWidthBetweenTwoDate'](tier, timelineSettings.timelineStartDate, timelineSettings.timelineEndDate);
         }
         else {
-            this.gantt.chartHeader.width = this.parent.enableTimelineVirtualization ? this.parent.timelineModule.wholeTimelineWidth : timelineSettings.totalTimelineWidth;
+            this.gantt.chartHeader.width = this.parent.enableTimelineVirtualization ? this.parent.timelineModule.wholeTimelineWidth :
+                timelineSettings.totalTimelineWidth;
         }
         this.gantt.chartHeader.height = this.gantt.rows.getRow(0).height;
         this.gantt.timelineStartDate = new Date(timelineSettings.timelineStartDate.getTime());
@@ -347,9 +350,9 @@ export class ExportHelper {
         } else {
             cell.value = !isNullOrUndefined(data[column.field]) ? data[column.field].toString() : '';
         }
-        const cellValueString = !isNullOrUndefined(cell.value) ? cell.value.toString() : '';
+        const cellValueString: string = !isNullOrUndefined(cell.value) ? cell.value.toString() : '';
         const cellValue: string = cellValueString;
-        let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
+        const value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
         cell.isHeaderCell = false;
         cell.style.padding = new PdfPaddings();
         this.copyStyles(this.ganttStyle.cell, cell, row.isParentRow);
@@ -375,7 +378,8 @@ export class ExportHelper {
             args.value.width = (<{ width?: number }>args.image).width || args.value.width;
         }
         cell.value = args.value;
-        if (!isNullOrUndefined(args.hyperLink) && !isNullOrUndefined(args.hyperLink.displayText)) {
+        if (!isNullOrUndefined(args.hyperLink) && (!isNullOrUndefined(args.hyperLink.displayText) ||
+        !isNullOrUndefined(args.hyperLink.target))) {
             cell.value = this.setHyperLink(args);
         }
     }
@@ -398,8 +402,7 @@ export class ExportHelper {
      * @returns {void} .
      */
     private processTaskbar(): void {
-        let flatData: IGanttData[];
-        flatData = this.flatData;
+        const flatData: IGanttData[] = this.flatData;
         flatData.forEach((data: IGanttData) => {
             const taskbar: PdfGanttTaskbarCollection = this.gantt.taskbar.add();
             const ganttProp: ITaskData = data.ganttProperties;
@@ -421,22 +424,23 @@ export class ExportHelper {
                     taskbar.unscheduleStarteDate = this.parent.dateValidationModule.getValidStartDate(data.ganttProperties);
                     taskbar.unscheduleEndDate = this.parent.dateValidationModule.getValidEndDate(data.ganttProperties);
                 }
-            } else {
-                taskbar.unscheduleStarteDate = null;
-                taskbar.unscheduleEndDate = null;
             }
+            // else {
+            //     taskbar.unscheduleStarteDate = null;
+            //     taskbar.unscheduleEndDate = null;
+            // }
             taskbar.startDate = ganttProp.startDate;
             taskbar.endDate = ganttProp.endDate;
             taskbar.height = this.parent.chartRowsModule.taskBarHeight;
-            if (this.parent.renderBaseline) {
-                let height: number;
-                if ((taskbar.height + this.baselineHeight) <= this.parent.rowHeight) {
-                    height = taskbar.height;
-                } else {
-                    height = taskbar.height - (this.baselineHeight + 1);
-                }
-                taskbar.height = height;
-            }
+            // if (this.parent.renderBaseline) {
+            //     let height: number;
+            //     if ((taskbar.height + this.baselineHeight) <= this.parent.rowHeight) {
+            //         height = taskbar.height;
+            //     } else {
+            //         height = taskbar.height - (this.baselineHeight + 1);
+            //     }
+            //     taskbar.height = height;
+            // }
             taskbar.indicators = ganttProp.indicators;
             taskbar.autoStartDate = ganttProp.autoStartDate;
             taskbar.autoEndDate = ganttProp.autoEndDate;
@@ -445,8 +449,8 @@ export class ExportHelper {
             taskbar.autoLeft = ganttProp.autoLeft;
             taskbar.segment = ganttProp.segments;
             taskbar.isSpliterTask = (isNullOrUndefined(ganttProp.segments) || ganttProp.segments.length === 0) ? false : true;
-            if(taskbar.isSpliterTask){
-                taskbar.segmentCollection = taskbar.segment.map( (obj :any) => ({ ...obj }));}
+            if (taskbar.isSpliterTask) {
+                taskbar.segmentCollection = taskbar.segment.map((obj: ITaskData ) => ({ ...obj })); }
             taskbar.baselineTop = this.parent.chartRowsModule.baselineTop;
             taskbar.isMilestone = ganttProp.isMilestone;
             taskbar.baselineStartDate = ganttProp.baselineStartDate;
@@ -505,7 +509,7 @@ export class ExportHelper {
             const labelTemplateStyle: ILabel = {};
             labelTemplateStyle.leftLabel = { value: null, image: null, fontStyle: { fontBrush: null } };
             labelTemplateStyle.rightLabel = { value: null, image: null, fontStyle: { fontBrush: null } };
-            labelTemplateStyle.taskLabel = { value: null, image: null, fontStyle: { fontBrush: null } }
+            labelTemplateStyle.taskLabel = { value: null, image: null, fontStyle: { fontBrush: null } };
             taskbar.labelSettings = labelTemplateStyle;
             const taskbarTemplate: ITemplateDetails = {
                 value: null,
@@ -576,7 +580,8 @@ export class ExportHelper {
                 } else if (!isNullOrUndefined(args.labelSettings.rightLabel.image)) {
                     taskbar.labelSettings.rightLabel.image = args.labelSettings.rightLabel.image;
                 }
-                const applyTemplate = (target: PdfGanttTaskbarCollection, source: PdfQueryTaskbarInfoEventArgs) => {
+                /* eslint-disable-next-line */
+                const applyTemplate: any = (target: PdfGanttTaskbarCollection, source: PdfQueryTaskbarInfoEventArgs) => {
                     target.progressFontColor = source.taskbar.progressFontColor;
                     target.taskColor = new PdfColor(source.taskbar.taskColor);
                     target.taskBorderColor = source.taskbar.taskBorderColor;
@@ -584,9 +589,13 @@ export class ExportHelper {
                     target.milestoneColor = source.taskbar.milestoneColor;
                     if (!isNullOrUndefined(source.taskbarTemplate.image) && !isNullOrUndefined(source.taskbarTemplate.image[0].base64)) {
                         const width: number = source.taskbarTemplate.image[0].width;
-                        const milestoneHeight: number = taskbar.isMilestone ? ((source.taskbarTemplate.image[0].height < (this.parent.chartRowsModule.taskBarHeight * 0.7)) ? source.taskbarTemplate.image[0].height : (this.parent.chartRowsModule.taskBarHeight * 0.7) - 2) : (this.parent.chartRowsModule.taskBarHeight * 0.7) - 2;
-                        const taskbarHeight: number = !isNullOrUndefined(source.taskbarTemplate.image[0].height) ? ((source.taskbarTemplate.image[0].height < taskbar.height) ? source.taskbarTemplate.image[0].height : taskbar.height - 2) : taskbar.height - 2;
-                        const height = taskbar.isMilestone ? milestoneHeight : taskbarHeight;
+                        const milestoneHeight: number = taskbar.isMilestone ? ((source.taskbarTemplate.image[0].height <
+                            (this.parent.chartRowsModule.taskBarHeight * 0.7)) ? source.taskbarTemplate.image[0].height :
+                            (this.parent.chartRowsModule.taskBarHeight * 0.7) - 2) : (this.parent.chartRowsModule.taskBarHeight * 0.7) - 2;
+                        const taskbarHeight: number = !isNullOrUndefined(source.taskbarTemplate.image[0].height) ?
+                            ((source.taskbarTemplate.image[0].height < taskbar.height) ?
+                                source.taskbarTemplate.image[0].height : taskbar.height - 2) : taskbar.height - 2;
+                        const height: number = taskbar.isMilestone ? milestoneHeight : taskbarHeight;
                         target.taskbarTemplate.image = source.taskbarTemplate.image;
                         target.taskbarTemplate.image[0].width = width;
                         target.taskbarTemplate.image[0].height = height;
@@ -601,9 +610,9 @@ export class ExportHelper {
                         target.taskbarTemplate.fontStyle.fontBrush = source.taskbarTemplate.fontStyle.fontBrush;
                     }
                 };
-                if (!args.data.hasChildRecords) {
+                if (!args.data.hasChildRecords && args.data.ganttProperties.duration !== 0) {
                     applyTemplate(taskbar, args);
-                } else if (args.data.hasChildRecords) {
+                } else if (args.data.hasChildRecords && args.data.ganttProperties.duration !== 0) {
                     applyTemplate(taskbar, args);
                 } else if (args.data.ganttProperties.duration === 0) {
                     applyTemplate(taskbar, args);
@@ -625,18 +634,18 @@ export class ExportHelper {
             format = new PdfStringFormat();
         }
         switch (textAlign) {
-            case 'Right':
-                format.alignment = PdfTextAlignment.Right;
-                break;
-            case 'Center':
-                format.alignment = PdfTextAlignment.Center;
-                break;
-            case 'Justify':
-                format.alignment = PdfTextAlignment.Justify;
-                break;
-            case 'Left':
-                format.alignment = PdfTextAlignment.Left;
-                break;
+        case 'Right':
+            format.alignment = PdfTextAlignment.Right;
+            break;
+        case 'Center':
+            format.alignment = PdfTextAlignment.Center;
+            break;
+        case 'Justify':
+            format.alignment = PdfTextAlignment.Justify;
+            break;
+        case 'Left':
+            format.alignment = PdfTextAlignment.Left;
+            break;
         }
         return format;
     }
@@ -655,31 +664,31 @@ export class ExportHelper {
             format = this.getHorizontalAlignment(textAlign, format);
         }
         switch (verticalAlign) {
-            case 'Bottom':
-                format.lineAlignment = PdfVerticalAlignment.Bottom;
-                break;
-            case 'Middle':
-                format.lineAlignment = PdfVerticalAlignment.Middle;
-                break;
-            case 'Top':
-                format.lineAlignment = PdfVerticalAlignment.Top;
-                break;
+        case 'Bottom':
+            format.lineAlignment = PdfVerticalAlignment.Bottom;
+            break;
+        case 'Middle':
+            format.lineAlignment = PdfVerticalAlignment.Middle;
+            break;
+        case 'Top':
+            format.lineAlignment = PdfVerticalAlignment.Top;
+            break;
         }
         return format;
     }
 
     private getFontFamily(fontFamily: string): number {
         switch (fontFamily) {
-            case 'TimesRoman':
-                return 2;
-            case 'Courier':
-                return 1;
-            case 'Symbol':
-                return 3;
-            case 'ZapfDingbats':
-                return 4;
-            default:
-                return 0;
+        case 'TimesRoman':
+            return 2;
+        case 'Courier':
+            return 1;
+        case 'Symbol':
+            return 3;
+        case 'ZapfDingbats':
+            return 4;
+        default:
+            return 0;
         }
     }
 
@@ -693,23 +702,22 @@ export class ExportHelper {
         const fontFamily: number = (!isNullOrUndefined(content.style.fontFamily)) ?
             (this.getFontFamily(content.style.fontFamily)) : PdfFontFamily.TimesRoman;
 
-        let fontStyle: PdfFontStyle = PdfFontStyle.Regular;
-        if (!isNullOrUndefined(content.style.bold) && content.style.bold) {
-            fontStyle |= PdfFontStyle.Bold;
-        }
+        const fontStyle: PdfFontStyle = PdfFontStyle.Regular;
+        // if (!isNullOrUndefined(content.style.bold) && content.style.bold) {
+        //     fontStyle |= PdfFontStyle.Bold;
+        // }
 
-        if (!isNullOrUndefined(content.style.italic) && content.style.italic) {
-            fontStyle |= PdfFontStyle.Italic;
-        }
+        // if (!isNullOrUndefined(content.style.italic) && content.style.italic) {
+        //     fontStyle |= PdfFontStyle.Italic;
+        // }
 
-        if (!isNullOrUndefined(content.style.underline) && content.style.underline) {
-            fontStyle |= PdfFontStyle.Underline;
-        }
+        // if (!isNullOrUndefined(content.style.underline) && content.style.underline) {
+        //     fontStyle |= PdfFontStyle.Underline;
+        // }
 
-        if (!isNullOrUndefined(content.style.strikeout) && content.style.strikeout) {
-            fontStyle |= PdfFontStyle.Strikeout;
-        }
-
+        // if (!isNullOrUndefined(content.style.strikeout) && content.style.strikeout) {
+        //     fontStyle |= PdfFontStyle.Strikeout;
+        // }
         return new PdfStandardFont(fontFamily, fontSize, fontStyle);
     }
     private renderEmptyGantt(): void {
@@ -767,11 +775,11 @@ export class ExportHelper {
         if (this.exportProps && this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
             let gridWidth: number;
             if (this.exportProps.fitToWidthSettings.gridWidth) {
-                gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0]);
+                gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0], 10);
             }
             else {
                 if (this.exportProps.fitToWidthSettings.chartWidth) {
-                    let chartWidth: number = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0]);
+                    const chartWidth: number = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0], 10);
                     gridWidth = 100 - chartWidth;
                 }
                 else {
@@ -784,7 +792,8 @@ export class ExportHelper {
                 this.gantt.columns.getColumn(i as number).width = perColumnWidth;
             }
         }
-        const PdfPage = this.parent.pdfExportModule.pdfPage;
+        /* eslint-disable-next-line */
+        const PdfPage: any = this.parent.pdfExportModule.pdfPage;
         if (this.totalColumnWidth > (this.pdfDoc.pageSettings.width - 82) && this.totalColumnWidth < PdfPage.getClientSize().width) {
             this.gantt.style.allowHorizontalOverflow = true;
         } else if ((tWidth / this.columns.length) < widths[treeColumnIndex as number]) {
@@ -811,8 +820,9 @@ export class ExportHelper {
             compositeField.draw(footer.graphics, new PointF(0, 0));
             pdfDoc.template.bottom = footer;
         }
-        const pageSize = PdfPage.size;
-        const clientSize: SizeF = !isNullOrUndefined(pageSize)?  pageSize : this.pdfDoc.pageSettings.size;
+        /* eslint-disable-next-line */
+        const pageSize: any = PdfPage.size;
+        const clientSize: SizeF = !isNullOrUndefined(pageSize) ?  pageSize : this.pdfDoc.pageSettings.size;
         // code for draw header content
         if (!isNullOrUndefined(this.exportProps.header)) {
             const headerProp: PdfHeader = this.exportProps.header;
@@ -824,7 +834,7 @@ export class ExportHelper {
         }
         // code for customization of footer
         if (!this.exportProps.enableFooter && !isNullOrUndefined(this.exportProps.footer)) {
-            const footer: any = this.exportProps.footer;
+            const footer: PdfFooter = this.exportProps.footer;
             const position: PointF = new PointF(0, ((clientSize.width - 80) - ((footer && footer.fromBottom) ?
                 footer.fromBottom * 0.75 : 0)));
             const size: SizeF = new SizeF((clientSize.width * 1.1), ((footer && footer.height) ? footer.height * 0.75 : 50));
@@ -835,31 +845,32 @@ export class ExportHelper {
     private drawPageTemplate(template: PdfPageTemplateElement, element: PdfHeader): PdfPageTemplateElement {
         for (const content of element.contents) {
             switch (content.type) {
-                case 'Text':
-                    if (content.value === '' || content.value === undefined || content.value === null || typeof content.value !== 'string') {
-                        throw new Error('please enter the valid input value in text content...');
-                    }
-                    this.drawText(template, content);
-                    break;
-                case 'PageNumber':
-                    this.drawPageNumber(template, content);
-                    break;
-                case 'Image':
-                    if (content.src === undefined || content.src === null || content.src === '') {
-                        throw new Error('please enter the valid base64 string in image content...');
-                    }
-                    this.drawImage(template, content);
-                    break;
-                case 'Line':
-                    this.drawLine(template, content);
-                    break;
-                default:
-                    throw new Error('Please set valid content type...');
+            case 'Text':
+                if (content.value === '' || content.value === undefined || content.value === null || typeof content.value !== 'string') {
+                    throw new Error('please enter the valid input value in text content...');
+                }
+                this.drawText(template, content);
+                break;
+            case 'PageNumber':
+                this.drawPageNumber(template, content);
+                break;
+            case 'Image':
+                if (content.src === undefined || content.src === null || content.src === '') {
+                    throw new Error('please enter the valid base64 string in image content...');
+                }
+                this.drawImage(template, content);
+                break;
+            case 'Line':
+                this.drawLine(template, content);
+                break;
+            default:
+                throw new Error('Please set valid content type...');
             }
         }
         return template;
     }
     // code for draw text
+    /* eslint-disable-next-line */
     private drawText(pageTemplate: PdfPageTemplateElement, content: any): void {
         const font: PdfFont = this.getFont(content);
         let brush: PdfSolidBrush = this.getBrushFromContent(content);
@@ -868,7 +879,7 @@ export class ExportHelper {
             const penColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textPenColor);
             pen = new PdfPen(new PdfColor(penColor.r, penColor.g, penColor.b));
         }
-        if (brush == null && pen == null) {
+        if (brush === null && pen === null) {
             brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
         }
         const value: string = content.value.toString();
@@ -886,6 +897,7 @@ export class ExportHelper {
         }
     }
     // code for draw pagenumber
+    /* eslint-disable-next-line */
     private drawPageNumber(documentHeader: PdfPageTemplateElement, content: any): void {
         const font: PdfFont = this.getFont(content);
         let brush: PdfSolidBrush = null;
@@ -895,7 +907,6 @@ export class ExportHelper {
         } else {
             brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
         }
-        const pageCounts = this.pdfDoc.pages.count;
         const pageNumber: PdfPageNumberField = new PdfPageNumberField(font, brush);
         pageNumber.numberStyle = this.getPageNumberStyle(content.pageNumberType);
         let compositeField: PdfCompositeField;
@@ -935,8 +946,8 @@ export class ExportHelper {
         }
         compositeField.draw(documentHeader.graphics, x, y);
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // code for draw image
+    /* eslint-disable-next-line */
     private drawImage(documentHeader: PdfPageTemplateElement, content: any): void {
         const x: number = content.position.x * 0.75;
         const y: number = content.position.y * 0.75;
@@ -952,8 +963,8 @@ export class ExportHelper {
             documentHeader.graphics.drawImage(image, x, y);
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // code for draw line
+    /* eslint-disable-next-line */
     private drawLine(documentHeader: PdfPageTemplateElement, content: any): void {
         const x1: number = content.points.x1 * 0.75;
         const y1: number = content.points.y1 * 0.75;
@@ -978,16 +989,16 @@ export class ExportHelper {
     }
     private getDashStyle(dashStyle: PdfDashStyle): number {
         switch (dashStyle) {
-            case 'Dash':
-                return 1;
-            case 'Dot':
-                return 2;
-            case 'DashDot':
-                return 3;
-            case 'DashDotDot':
-                return 4;
-            default:
-                return 0;
+        case 'Dash':
+            return 1;
+        case 'Dot':
+            return 2;
+        case 'DashDot':
+            return 3;
+        case 'DashDotDot':
+            return 4;
+        default:
+            return 0;
         }
     }
     private getBrushFromContent(content: PdfHeaderFooterContent): PdfSolidBrush {
@@ -1016,17 +1027,17 @@ export class ExportHelper {
         format = new PdfStringFormat(PdfTextAlignment.Left, PdfVerticalAlignment.Middle);
         if (!isNullOrUndefined(content.style.hAlign)) {
             switch (content.style.hAlign) {
-                case 'Right':
-                    format.alignment = PdfTextAlignment.Right;
-                    break;
-                case 'Center':
-                    format.alignment = PdfTextAlignment.Center;
-                    break;
-                case 'Justify':
-                    format.alignment = PdfTextAlignment.Justify;
-                    break;
-                default:
-                    format.alignment = PdfTextAlignment.Left;
+            case 'Right':
+                format.alignment = PdfTextAlignment.Right;
+                break;
+            case 'Center':
+                format.alignment = PdfTextAlignment.Center;
+                break;
+            case 'Justify':
+                format.alignment = PdfTextAlignment.Justify;
+                break;
+            default:
+                format.alignment = PdfTextAlignment.Left;
             }
         }
         if (!isNullOrUndefined(content.style.vAlign)) {
@@ -1036,16 +1047,16 @@ export class ExportHelper {
     }
     private getPageNumberStyle(pageNumberType: PdfPageNumberType): number {
         switch (pageNumberType) {
-            case 'LowerLatin':
-                return 2;
-            case 'LowerRoman':
-                return 3;
-            case 'UpperLatin':
-                return 4;
-            case 'UpperRoman':
-                return 5;
-            default:
-                return 1;
+        case 'LowerLatin':
+            return 2;
+        case 'LowerRoman':
+            return 3;
+        case 'UpperLatin':
+            return 4;
+        case 'UpperRoman':
+            return 5;
+        default:
+            return 1;
         }
     }
 }

@@ -765,7 +765,12 @@ export const showColorPicker: string = 'showColorPicker';
  * @hidden
  * @deprecated
  */
-export const closeTooltip: string = 'closeTooltip'; 
+export const closeTooltip: string = 'closeTooltip';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const autoResize: string = 'autoResize';
 /**
  * @hidden
  * @deprecated

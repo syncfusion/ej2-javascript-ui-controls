@@ -163,9 +163,13 @@ export class CellColor {
         for (let i: number = 0; i < list.length; i++) {
             if (Number(list[i as number].value) === offset) {
                 let color: string = list[i as number].color;
-                if (color.indexOf('rgb') !== -1) {
-                    color = this.convertToHex(color);
-                } else if (color.indexOf('#') === -1) {
+                if (!isNullOrUndefined(color)) {
+                    if (color.indexOf('rgb') !== -1) {
+                        color = this.convertToHex(color);
+                    } else if (color.indexOf('#') === -1) {
+                        color = '#FFFFFF';
+                    }
+                }  else {
                     color = '#FFFFFF';
                 }
                 return color;
@@ -406,5 +410,13 @@ export class CellColor {
             color = this.heatMap.emptyPointColor;
         }
         return color;
+    }
+
+    /**
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        this.heatMap = null;
     }
 }

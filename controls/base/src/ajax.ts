@@ -91,7 +91,7 @@ export class Ajax {
      * Send the request to server.
      *
      * @param {any} data - To send the user data
-     * @return {Promise} ?
+     * @returns {Promise} ?
      */
 
     public send(data?: string | Object): Promise<Ajax> {
@@ -203,17 +203,13 @@ export class Ajax {
      */
 
     public getResponseHeader(key: string): string {
-        let responseHeaders: { [key: string]: string };
-        let header: string;
-        // eslint-disable-next-line
-        responseHeaders = {};
+        const responseHeaders: { [key: string]: string } = {};
         let headers: string[] = headerRegex.exec(this.httpRequest.getAllResponseHeaders());
         while (headers) {
             responseHeaders[headers[1].toLowerCase()] = headers[2];
             headers = headerRegex.exec(this.httpRequest.getAllResponseHeaders());
         }
-        // eslint-disable-next-line
-        header = responseHeaders[key.toLowerCase()];
+        const header: string = responseHeaders[key.toLowerCase()];
         return isNullOrUndefined(header) ? null : header;
     }
 }

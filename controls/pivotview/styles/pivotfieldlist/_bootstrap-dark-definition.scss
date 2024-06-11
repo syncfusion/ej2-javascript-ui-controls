@@ -1,4 +1,3 @@
-/*! component's default definitions and variables */
 $field-list-skin: 'bootstrap-dark' !default;
 $field-list-active-color: $brand-primary !default;
 $field-list-toggle-border-color: $grey-8c !default;
@@ -137,8 +136,6 @@ $field-list-member-editor-search-padding: 0 $field-list-editor-search-padding-si
 $field-list-member-editor-node-limit-outer-div-bigger-height: 100px !default;
 $field-list-member-editor-bigger-height: 400px !default;
 $field-list-member-editor-node-limit-bigger-height: 450px !default;
-
-/*! component's adaptive definitions and variables */
 $field-list-adaptive-content-padding-size: 20px !default;
 $field-list-adaptive-footer-padding-size: 15px !default;
 $field-list-adaptive-btn-icon-size: 18px !default;
@@ -166,8 +163,6 @@ $field-list-calc-bigger-formula-font-size: 13px !default;
 $field-list-bigger-button-line-height: 1em !default;
 $error-font-color: #f44336 !default;
 $field-list-adaptive-outerdiv-height: 190px !default;
-
-/*! component's theme wise override definitions and variables */
 $field-list-default-font-color: $grey-dark-font !default;
 $field-list-default-formula-font-color: $field-list-default-font-color !default;
 $field-list-cal-button-text-color: $field-list-default-font-color !default;
@@ -215,8 +210,6 @@ $field-list-excel-member-filter-node-limit-height: 140px !default;
 $field-list-excel-filter-height: 234px !default;
 $field-list-excel-member-filter-bigger-height: 102px !default;
 $field-list-excel-filter-bigger-height: 213px !default;
-
-/*! component's common definitions and variables */
 $field-list-bigger-excel-dialog-min-width: 350px !default;
 $format-label-font-size: 13px !default;
 $format-label-bigger-font-size: 14px !default;

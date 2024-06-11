@@ -3,7 +3,7 @@
  */
 import { isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { AdaptorOptions, DataManager, UrlAdaptor, WebApiAdaptor, ODataAdaptor } from '@syncfusion/ej2-data';
-import { WebMethodAdaptor, CacheAdaptor, RemoteSaveAdaptor, ODataV4Adaptor, JsonAdaptor } from '@syncfusion/ej2-data';
+import { WebMethodAdaptor, CacheAdaptor, RemoteSaveAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { ITaskData, IGanttData, ITaskAddedEventArgs } from './interface';
 import { Gantt } from './gantt';
 
@@ -77,8 +77,8 @@ export function isRemoteData(dataSource: object): boolean {
         return (adaptor instanceof ODataAdaptor || (adaptor instanceof ODataV4Adaptor) ||
             (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
             (adaptor instanceof CacheAdaptor) || (adaptor instanceof RemoteSaveAdaptor) ||
-			adaptor instanceof UrlAdaptor);   
-	}
+			adaptor instanceof UrlAdaptor);
+    }
     return false;
 }
 
@@ -96,9 +96,8 @@ export function getTaskData(
     {
         let result: object;
         for (let i: number = 0; i < records.length; i++) {
-            let data: object;
-            // eslint-disable-next-line
-            data = isNotExtend ? (records[i].taskData) : extend({}, records[i].taskData, {}, true);
+            const data: object = isNotExtend ?
+                (records[parseInt(i.toString(), 10)].taskData) : extend({}, records[parseInt(i.toString(), 10)].taskData, {}, true);
             result = (data);
         }
         return result;
@@ -106,12 +105,11 @@ export function getTaskData(
     else {
         const result: object[] = [];
         for (let i: number = 0; i < records.length; i++) {
-            let data: object;
             if (!isNullOrUndefined(parent) && parent.timezone) {
                 updateDates(records[i as number], parent);
             }
-            // eslint-disable-next-line
-            data = isNotExtend ? (records[i].taskData) : extend({}, records[i].taskData, {}, true);
+            const data: object = isNotExtend ? (records[parseInt(i.toString(), 10)].taskData) :
+                extend({}, records[parseInt(i.toString(), 10)].taskData, {}, true);
             result.push(data);
         }
         return result;
@@ -129,7 +127,7 @@ export function updateDates(record: IGanttData, parent: Gantt): void {
     if (record && !isNullOrUndefined((record as IGanttData).ganttProperties)) {
         (record as IGanttData).taskData[parent.taskFields.startDate] = parent.dateValidationModule.remove(
             (record as IGanttData).ganttProperties.startDate, parent.timezone);
-        if (parent.taskFields.endDate != null) {
+        if (parent.taskFields.endDate !== null) {
             (record as IGanttData).taskData[parent.taskFields.endDate] = parent.dateValidationModule.remove(
                 (record as IGanttData).ganttProperties.endDate, parent.timezone);
         }

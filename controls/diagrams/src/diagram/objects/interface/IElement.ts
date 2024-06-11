@@ -9,6 +9,7 @@ import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
 import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel } from '../../objects/connector-model';
 import { UserHandleModel } from '../../interaction/selector-model';
+import { FixedUserHandleModel } from '../../objects/fixed-user-handle-model';
 import { ShapeAnnotation, PathAnnotation } from '../../objects/annotation';
 import { PointPortModel } from '../../objects/port-model';
 import { KeyGestureModel } from '../../diagram/keyboard-commands-model';
@@ -292,6 +293,14 @@ export interface IBlazorSegmentCollectionChangeEventArgs {
 export interface UserHandleEventsArgs {
     /** returns the user handle object that is being clicked. */
     element: UserHandleModel;
+}
+/**
+ * FixedUserHandleEventsArgs notifies while the fixed user handle gets clicked.
+ *
+ */
+export interface FixedUserHandleEventsArgs {
+    /** returns the fixed user handle object that is being clicked. */
+    element: FixedUserHandleModel;
 }
 
 /**

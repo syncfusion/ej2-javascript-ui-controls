@@ -85,7 +85,6 @@ export class Toolbar {
     private onClicked(args: ClickEventArgs): void {
         if (isNOU(args.item) || !args.item.id) { return; }
         const tool: string = args.item.id.substr((this.parent.element.id + '_tb_').length);
-        // eslint-disable-next-line
         let details: Object[];
         if (tool === 'refresh' || tool === 'newfolder' || tool === 'upload') {
             details = [getPathObject(this.parent)];
@@ -210,11 +209,11 @@ export class Toolbar {
                 enableRtl: this.parent.enableRtl,
                 content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>',
                 beforeItemRender: (args: MenuEventArgs) => {
-                    const tickIcon = args.item.iconCss;
-                    const viewText = args.item.text === getLocaleText(this.parent, 'View-LargeIcons');
-                    const iconClass = tickIcon ? ' e-menu-icon ' + tickIcon : '';
+                    const tickIcon: string = args.item.iconCss;
+                    const viewText: boolean = args.item.text === getLocaleText(this.parent, 'View-LargeIcons');
+                    const iconClass: string = tickIcon ? ' e-menu-icon ' + tickIcon : '';
                     args.element.innerHTML = '<span class="' + iconClass + '"></span>' + (viewText ? largeIconSpan : gridSpan) + args.item.text;
-                    const span = args.element.firstChild as HTMLElement;
+                    const span: HTMLElement = args.element.firstChild as HTMLElement;
                     if (span && span.className === '') {
                         args.element.removeChild(span);
                     }
@@ -380,7 +379,7 @@ export class Toolbar {
                 break;
             }
             if (this.parent.toolbarItems.length > 0 && propItem) {
-                const mergedItems: ToolbarItemModel = { ...item, ...propItem };
+                const mergedItems: ToolbarItemModel = Object.assign({}, item, propItem);
                 items.push(mergedItems);
             }
             else {

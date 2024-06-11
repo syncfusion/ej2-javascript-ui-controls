@@ -1340,14 +1340,14 @@ describe('RTE base module', () => {
 
         it('Content element height testing', (done) => {
             //height is default is auto, so the content wrapper holds without content height is 18px whether toolbar enabled or not
-            expect((<HTMLElement>elem.querySelector('.e-rte-content')).style.height).toBe('182px');
+            expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBe(52);
             rteObj.toolbarSettings.enable = false;
             rteObj.dataBind();
             expect(rteObj.element.querySelector('.e-toolbar-items')).toBe(null);
-            expect((<HTMLElement>elem.querySelector('.e-rte-content')).style.height).toBe('200px');
+            expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBe(52);
             rteObj.toolbarSettings.enable = true;
             rteObj.dataBind();
-            expect((<HTMLElement>elem.querySelector('.e-rte-content')).style.height).toBe('182px');
+            expect((<HTMLElement>elem.querySelector('.e-rte-content')).clientHeight).toBe(52);
             let node = rteObj.contentModule.getEditPanel().childNodes[0];
             let sel = new NodeSelection().setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 2);
             let parentNodes = new NodeSelection().getParentNodeCollection(new NodeSelection().getRange(document));
@@ -1503,7 +1503,6 @@ describe('RTE base module', () => {
                     enableFloating: true,
                 }
             });
-            rteObj.setContentHeight('Init', true);
             expect(rteObj.toolbarModule.getToolbarElement()).not.toBe(null);
         });
 
@@ -3290,34 +3289,34 @@ describe('RTE base module', () => {
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Italic (Ctrl+I)");
         });
         it('Ensure placeholder property', () => {
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('type something');
         });
         it('ensure placeholder when backspace key is pressed(with exact enter key content added)', () => {
             rteObj.placeholder = 'write content';
             rteObj.dataBind();
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('write content');
             rteObj.value = '<p><br></p>';
             rteObj.dataBind();
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
         });
         it('ensure placeholder when enter key is pressed', () => {
             rteObj.placeholder = 'write content';
             rteObj.dataBind();
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('write content');
             keyboardEventArgs.action = 'enter';
             keyboardEventArgs.keyCode = 13;
             (rteObj as any).keyUp(keyboardEventArgs);
             rteObj.dataBind();
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
         });
         it('ensure through onproperty change - placeholder', () => {
             rteObj.placeholder = 'changed';
             rteObj.value = '<p> jadskfasfese <p>';
             rteObj.dataBind();
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(false);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('changed');
         });
         it('ensure through onproperty change - value', () => {
@@ -3326,7 +3325,7 @@ describe('RTE base module', () => {
             rteObj.dataBind();
             expect((rteObj as any).value === null).toBe(true);
             expect((rteObj as any).valueContainer.value === '').toBe(true);
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('changed');
         });
         it('ensure through onproperty change - value', () => {
@@ -3342,14 +3341,14 @@ describe('RTE base module', () => {
                 value: '<p>test</p>'
             });
             elem = rteObj.element;
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(false);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('type something');
             rteObj.placeholder = 'changed';
             rteObj.value = null;
             rteObj.dataBind();
             expect((rteObj as any).value === null).toBe(true);
             expect((rteObj as any).valueContainer.value === '').toBe(true);
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('changed');
         });
         it('ensure through onproperty change - valueTemplate', () => {
@@ -3365,14 +3364,14 @@ describe('RTE base module', () => {
                 valueTemplate: '<p>test</p>'
             });
             elem = rteObj.element;
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(false);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('type something');
             rteObj.placeholder = 'changed';
             rteObj.value = null;
             rteObj.dataBind();
             expect((rteObj as any).value === null).toBe(true);
             expect((rteObj as any).valueContainer.value === '').toBe(true);
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('changed');
         });
         it('ensure placeholder on execute command', () => {
@@ -3386,9 +3385,9 @@ describe('RTE base module', () => {
             let curDocument: Document;
             curDocument = rteObj.contentModule.getDocument();
             setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(true);
             rteObj.executeCommand('insertHTML', 'inserted an html');
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(false);
         });
 
         it('ensure insert image on execute command', () => {
@@ -4823,66 +4822,6 @@ describe("RTE content remove issue", () => {
     });
 });
 
-describe('RTE Placeholder DIV', () => {
-    let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
-    beforeAll(() => {
-        rteObj = renderRTE({
-            toolbarSettings: {
-                items: ['SourceCode']
-            },
-            value: `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`,
-            placeholder: 'Type something'
-        });
-        rteEle = rteObj.element;
-    });
-    it("Ensuring placeholder property", () => {
-        expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
-        rteObj.value = ``;
-        rteObj.dataBind();
-        expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
-        let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
-        trgEle.click();
-        expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
-        trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
-        trgEle.click();
-        expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
-    });
-    afterAll(() => {
-        destroy(rteObj);
-    });
-});
-
-describe('RTE Update Value', () => {
-    let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
-    beforeAll(() => {
-        rteObj = renderRTE({
-            toolbarSettings: {
-                items: ['SourceCode']
-            },
-            value: `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`,
-            placeholder: 'Type something'
-        });
-        rteEle = rteObj.element;
-    });
-    it("RTE Update Value testing", () => {
-        expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
-        rteObj.value = ``;
-        rteObj.updateValue(rteObj.value);
-        rteObj.dataBind();
-        let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
-        trgEle.click();
-        expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
-        trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
-        trgEle.click();
-        expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
-    });
-    afterAll(() => {
-        destroy(rteObj);
-    });
-});
-
 describe('RTE Form reset', () => {
     let rteObj: RichTextEditor;
     let element: HTMLElement;
@@ -6162,7 +6101,7 @@ describe('RTE content element height check-Pixel', function () {
     it('Check pixel', function (done) {
         document.getElementById('defaultRTE').style.display = 'block';
         setTimeout(() => {
-            expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('100px');
+            expect(rteObj.contentModule.getPanel().offsetHeight).toBe(18);
             done();
         }, 100);
 
@@ -6194,7 +6133,7 @@ describe('RTE content element height check-percentage', function () {
     it('check pecentage', function (done) {
         document.getElementById('defaultRTE').style.display = 'block';
         setTimeout(() => {
-            expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('50%');
+            expect(rteObj.contentModule.getPanel().offsetHeight).toBe(18);
             done();
         }, 100);
 
@@ -7128,14 +7067,14 @@ describe('852939 - Undo redo is enabled by default in the quick format toolbar s
     });
     it('Checking the undo and rendo is in the disable state when the toolbar type is multi-row.', () => {
         expect(elem.querySelectorAll(".e-toolbar-item")[0].classList.contains("e-overlay")).toBe(false);
-        expect(elem.querySelectorAll(".e-toolbar-item")[13].classList.contains("e-overlay")).toBe(true);
         expect(elem.querySelectorAll(".e-toolbar-item")[14].classList.contains("e-overlay")).toBe(true);
+        expect(elem.querySelectorAll(".e-toolbar-item")[15].classList.contains("e-overlay")).toBe(true);
     });
     it('Checking the undo and rendo is in the disable state when the toolbar type is Scrollable', () => {
         rteObj.toolbarSettings.type = ToolbarType.Scrollable;
         expect(elem.querySelectorAll(".e-toolbar-item")[0].classList.contains("e-overlay")).toBe(false);
-        expect(elem.querySelectorAll(".e-toolbar-item")[13].classList.contains("e-overlay")).toBe(true);
         expect(elem.querySelectorAll(".e-toolbar-item")[14].classList.contains("e-overlay")).toBe(true);
+        expect(elem.querySelectorAll(".e-toolbar-item")[15].classList.contains("e-overlay")).toBe(true);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -7257,6 +7196,17 @@ describe('850064 -  Quotation format not changed while changing the format', () 
             toolbarSettings: {
                 items: ['Formats', 'OrderedList', 'UnorderedList']
             },
+            format: {
+                types: [
+                    { text: 'Paragraph', value: 'P' },
+                    { text: 'Code', value: 'Pre'},
+                    { text: 'Quotation', value: 'BlockQuote', cssClass: 'e-quote'},
+                    { text: 'Heading 1', value: 'H1' },
+                    { text: 'Heading 2', value: 'H2' },
+                    { text: 'Heading 3', value: 'H3' },
+                    { text: 'Heading 4', value: 'H4' }
+                ]
+            },
             value: `<ol><li>The Rich Text Editor (RTE) control is an easy to render in the
             client side.</li></ol>`
         });
@@ -7313,7 +7263,7 @@ describe('850064 -  Quotation format not changed while changing the format', () 
     it('revert from blockquotes while pressing enter key while configuring zerowidthspace', (done: Function) => {
         rteObj.value = `<blockquote><ol><li>testing</li></ol><p>&#8203;</p><p>&#8203;</p></blockquote>`;
         rteObj.dataBind();
-        setCursorPoint(document, rteObj.inputElement.querySelector("ol").nextSibling.nextSibling.childNodes[0] as Element, 0,);
+        setCursorPoint(document, rteObj.inputElement.querySelector("ol").nextSibling.nextSibling.childNodes[0] as Element, 0);
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
         keyBoardEvent.code = 'Enter';
         keyBoardEvent.action = 'enter';
@@ -7321,6 +7271,7 @@ describe('850064 -  Quotation format not changed while changing the format', () 
         expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(false);
         (rteObj as any).keyDown(keyBoardEvent);
         expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(true);
+        expect(rteObj.inputElement.innerHTML === `<blockquote><ol><li>testing</li></ol><p>​</p></blockquote><p><br></p>`).toBe(true);
         done();
     });
     it('dont revert from blockquotes while pressing enter key while configuring zerowidthspace', (done: Function) => {
@@ -7344,7 +7295,8 @@ describe('850064 -  Quotation format not changed while changing the format', () 
         keyBoardEvent.action = 'enter';
         keyBoardEvent.which = 13;
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(false);
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(true);
+        expect(rteObj.inputElement.innerHTML === `<blockquote><ol><li>testing</li></ol><p>testing</p></blockquote><p><br></p>`).toBe(true);
         done();
     });
     afterEach((done) => {
@@ -7473,6 +7425,1004 @@ describe('881576 - The tooltips are not destroyed when the dialog with the edito
         destroy(rteObj);
         done();
     });
+});  
+describe("Null or undefined value testing", () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        const ele = createElement('div', { id: 'rteTarget' });
+        document.body.appendChild(ele);
+    });
+    beforeEach((): void => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
+    });
+    afterEach(() => {
+        document.body.innerHTML = "";
+    });
+    it("autoSaveOnIdle", () => {
+        rteObj = new RichTextEditor({ autoSaveOnIdle: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.autoSaveOnIdle).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ autoSaveOnIdle: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.autoSaveOnIdle).toBe(false);
+        rteObj.destroy();
+    });
+    it("backgroundColor", () => {
+        rteObj = new RichTextEditor({ backgroundColor: {
+            columns: null
+        } });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.backgroundColor.columns).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ backgroundColor: {
+            columns: undefined
+        } });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.backgroundColor.columns).toBe(10);
+        rteObj.destroy();
+
+        rteObj = new RichTextEditor({ backgroundColor: {
+            colorCode: null
+        } });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.backgroundColor.colorCode).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ backgroundColor: {
+            colorCode: undefined
+        } });
+        rteObj.appendTo('#rteTarget');
+        let result = true;
+        const defaultValue: string[] = ['', '#000000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff0000', '#000080', '#800080', '#996633','#f2f2f2', '#808080', '#ffffcc', '#b3ffb3', '#ccffff', '#ccccff', '#ffcccc', '#ccccff', '#ff80ff', '#f2e6d9','#d9d9d9', '#595959', '#ffff80', '#80ff80', '#b3ffff', '#8080ff', '#ff8080', '#8080ff', '#ff00ff', '#dfbf9f','#bfbfbf', '#404040', '#ffff33', '#33ff33', '#33ffff', '#3333ff', '#ff3333', '#0000b3', '#b300b3', '#c68c53','#a6a6a6', '#262626', '#e6e600', '#00b300', '#009999','#000099', '#b30000', '#000066', '#660066', '#86592d','#7f7f7f', '#0d0d0d', '#999900', '#006600', '#006666', '#000066', '#660000', '#00004d', '#4d004d', '#734d26']
+        rteObj.backgroundColor.colorCode.Custom.forEach((item,index) => {
+            if(item !== defaultValue[index]){
+                result = false;
+            }
+        })
+        expect(result).toBe(true);
+        rteObj.destroy();
+    });
+    it("bulletFormatList", () => {
+        rteObj = new RichTextEditor({ bulletFormatList: {types: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.bulletFormatList.types).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ bulletFormatList: {types: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.bulletFormatList.types.length === 4).toBe(true);
+        rteObj.destroy();
+    });
+    it("cssClass", () => {
+        rteObj = new RichTextEditor({ cssClass: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.cssClass).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ cssClass: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.cssClass).toBe(null);
+        rteObj.destroy();
+    });
+    it("editorMode", () => {
+        rteObj = new RichTextEditor({ editorMode: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.editorMode).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ editorMode: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.editorMode).toBe('HTML');
+        rteObj.destroy();
+    });
+    it("emojiPickerSettings", () => {
+        rteObj = new RichTextEditor({ emojiPickerSettings: {iconsSet : null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.emojiPickerSettings.iconsSet).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ emojiPickerSettings: {iconsSet: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.emojiPickerSettings.iconsSet.length === 7).toBe(true);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ emojiPickerSettings: {showSearchBox : null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.emojiPickerSettings.showSearchBox).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ emojiPickerSettings: {showSearchBox: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.emojiPickerSettings.showSearchBox).toBe(true);
+        rteObj.destroy();
+    });
+    it("enableAutoUrl", () => {
+        rteObj = new RichTextEditor({ enableAutoUrl: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableAutoUrl).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enableAutoUrl: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableAutoUrl).toBe(false);
+        rteObj.destroy();
+    });
+    it("enableHtmlEncode", () => {
+        rteObj = new RichTextEditor({ enableHtmlEncode: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableHtmlEncode).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enableHtmlEncode: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableHtmlEncode).toBe(false);
+        rteObj.destroy();
+    });
+    it("enableHtmlSanitizer", () => {
+        rteObj = new RichTextEditor({ enableHtmlSanitizer: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableHtmlSanitizer).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enableHtmlSanitizer: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableHtmlSanitizer).toBe(true);
+        rteObj.destroy();
+    });
+    it("enablePersistence", () => {
+        rteObj = new RichTextEditor({ enablePersistence: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enablePersistence).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enablePersistence: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enablePersistence).toBe(false);
+        rteObj.destroy();
+    });
+    it("enableResize", () => {
+        rteObj = new RichTextEditor({ enableResize: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableResize).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enableResize: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableResize).toBe(false);
+        rteObj.destroy();
+    });
+    it("enableRtl", () => {
+        rteObj = new RichTextEditor({ enableRtl: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableRtl).toBe(false);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enableRtl: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableRtl).toBe(false);
+        rteObj.destroy();
+    });
+    it("enableTabKey", () => {
+        rteObj = new RichTextEditor({ enableTabKey: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableTabKey).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enableTabKey: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableTabKey).toBe(false);
+        rteObj.destroy();
+    });
+    it("enableXhtml", () => {
+        rteObj = new RichTextEditor({ enableXhtml: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableXhtml).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enableXhtml: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enableXhtml).toBe(false);
+        rteObj.destroy();
+    });
+    it("enabled", () => {
+        rteObj = new RichTextEditor({ enabled: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enabled).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enabled: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enabled).toBe(true);
+        rteObj.destroy();
+    });
+    it("enterKey", () => {
+        rteObj = new RichTextEditor({ enterKey: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enterKey).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ enterKey: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.enterKey).toBe('P');
+        rteObj.destroy();
+    });
+    it("fileManagerSettings", () => {
+        //rteObj.fileManagerSettings.enable
+        rteObj = new RichTextEditor({ fileManagerSettings: {enable:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.enable).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fileManagerSettings: {enable:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.enable).toBe(false);
+        rteObj.destroy();
+        //rteObj.fileManagerSettings.path
+        rteObj = new RichTextEditor({ fileManagerSettings: {path:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.path).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fileManagerSettings: {path:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.path).toBe('/');
+        rteObj.destroy();
+        //rteObj.fileManagerSettings.path
+        rteObj = new RichTextEditor({ fileManagerSettings: {ajaxSettings:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.ajaxSettings).not.toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fileManagerSettings: {ajaxSettings:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.ajaxSettings).not.toBe(null);
+        rteObj.destroy();
+        //rteObj.fileManagerSettings.contextMenuSettings
+        rteObj = new RichTextEditor({ fileManagerSettings: {contextMenuSettings:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.contextMenuSettings).not.toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fileManagerSettings: {contextMenuSettings:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.contextMenuSettings).not.toBe(null);
+        rteObj.destroy();
+        //rteObj.fileManagerSettings.navigationPaneSettings
+        rteObj = new RichTextEditor({ fileManagerSettings: {navigationPaneSettings:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.navigationPaneSettings).not.toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fileManagerSettings: {navigationPaneSettings:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.navigationPaneSettings).not.toBe(null);
+        rteObj.destroy();
+        //rteObj.fileManagerSettings.toolbarSettings
+        rteObj = new RichTextEditor({ fileManagerSettings: {toolbarSettings:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.toolbarSettings).not.toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fileManagerSettings: {toolbarSettings:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.toolbarSettings).not.toBe(null);
+        rteObj.destroy();
+        //rteObj.fileManagerSettings.uploadSettings
+        rteObj = new RichTextEditor({ fileManagerSettings: {uploadSettings:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.uploadSettings).not.toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fileManagerSettings: {uploadSettings:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fileManagerSettings.uploadSettings).not.toBe(null);
+        rteObj.destroy();
+    });
+    it("floatingToolbarOffset", () => {
+        rteObj = new RichTextEditor({ floatingToolbarOffset: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.floatingToolbarOffset).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fileManagerSettings: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.floatingToolbarOffset).toBe(0);
+        rteObj.destroy();
+    });
+    it("fontColor", () => {
+        //fontColor.columns
+        rteObj = new RichTextEditor({ fontColor: {columns: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontColor.columns).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fontColor: {columns: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontColor.columns).toBe(10);
+        rteObj.destroy();
+        //fontColor.colorCode
+        rteObj = new RichTextEditor({ fontColor: {colorCode: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontColor.colorCode).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fontColor: {colorCode: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontColor.colorCode.Custom.length === 60).toBe(true);
+        rteObj.destroy();
+    });
+    it("fontFamily", () => {
+        //fontFamily.default
+        rteObj = new RichTextEditor({ fontFamily: {default: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontFamily.default).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fontFamily: {default: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontFamily.default).toBe(null);
+        rteObj.destroy();
+        //fontFamily.width
+        rteObj = new RichTextEditor({ fontFamily: {width: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontFamily.width).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fontFamily: {width: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontFamily.width).toBe('72px');
+        rteObj.destroy();
+        //fontFamily.items
+        rteObj = new RichTextEditor({ fontFamily: {items: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontFamily.items).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fontFamily: {items: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontFamily.items.length === 8).toBe(true);
+        rteObj.destroy();
+    });
+    it("fontSize", () => {
+        //fontSize.default
+        rteObj = new RichTextEditor({ fontSize: {default: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontSize.default).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fontSize: {default: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontSize.default).toBe(null);
+        rteObj.destroy();
+        //fontSize.width
+        rteObj = new RichTextEditor({ fontSize: {width: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontSize.width).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ fontSize: {width: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontSize.width ).toBe('60px');
+        rteObj.destroy();
+        //fontSize.items
+        rteObj = new RichTextEditor({ fontSize: {items: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.fontSize.items).toBe(null);
+        rteObj.destroy();
+    });
+    it("format", () => {
+        //format.default
+        rteObj = new RichTextEditor({ format: {default: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.format.default).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ format: {default: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.format.default).toBe(null);
+        rteObj.destroy();
+        //format.width
+        rteObj = new RichTextEditor({ format: {width: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.format.width).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ format: {width: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.format.width).toBe('65px');
+        rteObj.destroy();
+        //format.types
+        rteObj = new RichTextEditor({ format: {types: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.format.types).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ format: {types: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.format.types.length === 6).toBe(true);
+        rteObj.destroy();
+    });
+    it("formatPainterSettings", () => {
+        // formatPainterSettings.allowedFormats
+        rteObj = new RichTextEditor({ formatPainterSettings: {allowedFormats: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.formatPainterSettings.allowedFormats).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ formatPainterSettings: {allowedFormats: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.formatPainterSettings.allowedFormats).toBe('b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; ol; ul; li; pre;');
+        rteObj.destroy();
+        // formatPainterSettings.deniedFormats
+        rteObj = new RichTextEditor({ formatPainterSettings: {deniedFormats: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.formatPainterSettings.deniedFormats).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ formatPainterSettings: {deniedFormats: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.formatPainterSettings.deniedFormats).toBe(null);
+        rteObj.destroy();
+    });
+    it("formatter", () => {
+        rteObj = new RichTextEditor({ formatter: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.formatter).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ formatter: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.formatter).toBe(null);
+        rteObj.destroy();
+    });
+    it("height", () => {
+        rteObj = new RichTextEditor({ height: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.height).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ height: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.height).toBe('auto');
+        rteObj.destroy();
+    });
+    it("htmlAttributes", () => {
+        rteObj = new RichTextEditor({ htmlAttributes: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.htmlAttributes).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ htmlAttributes: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(Object.keys(rteObj.htmlAttributes).length === 0 ).toBe(true);
+        rteObj.destroy();
+    });
+    it("iframeSettings", () => {
+        // iframeSettings.enable
+        rteObj = new RichTextEditor({ iframeSettings: { enable:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.iframeSettings.enable).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ iframeSettings: { enable:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.iframeSettings.enable).toBe(false);
+        rteObj.destroy();
+        // iframeSettings.enable
+        rteObj = new RichTextEditor({ iframeSettings: { attributes:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.iframeSettings.attributes).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ iframeSettings: { attributes:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.iframeSettings.attributes).toBe(null);
+        rteObj.destroy();
+        // iframeSettings.resources
+        rteObj = new RichTextEditor({ iframeSettings: { resources:null} });
+        rteObj.appendTo('#rteTarget');
+        // expect(rteObj.iframeSettings.resources).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ iframeSettings: { resources:undefined} });
+        rteObj.appendTo('#rteTarget');
+        // expect(rteObj.iframeSettings.resources).toBe(null);
+        rteObj.destroy();
+    });
+    it("inlineMode", () => {
+        // iframeSettings.enable
+        rteObj = new RichTextEditor({ inlineMode: { enable:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.inlineMode.enable).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ inlineMode: { enable:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.inlineMode.enable).toBe(false);
+        rteObj.destroy();
+        // iframeSettings.onSelection
+        rteObj = new RichTextEditor({ inlineMode: { onSelection:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.inlineMode.onSelection).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ inlineMode: { onSelection:undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.inlineMode.onSelection).toBe(true);
+        rteObj.destroy();
+    });
+    it("insertAudioSettings", () => {
+        // insertAudioSettings.allowedTypes
+        rteObj = new RichTextEditor({ insertAudioSettings: {allowedTypes:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.allowedTypes).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertAudioSettings: {allowedTypes:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.allowedTypes).toBe(null);
+        rteObj.destroy();
+        // insertAudioSettings.layoutOption
+        rteObj = new RichTextEditor({ insertAudioSettings: {layoutOption:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.layoutOption).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertAudioSettings: {layoutOption:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.layoutOption).toBe(null);
+        rteObj.destroy();
+        // insertAudioSettings.saveFormat
+        rteObj = new RichTextEditor({ insertAudioSettings: {saveFormat:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.saveFormat).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertAudioSettings: {saveFormat:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.saveFormat).toBe(null);
+        rteObj.destroy();
+        // insertAudioSettings.saveUrl
+        rteObj = new RichTextEditor({ insertAudioSettings: {saveUrl:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.saveUrl).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertAudioSettings: {saveUrl:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.saveUrl).toBe(null);
+        rteObj.destroy();
+        // insertAudioSettings.path
+        rteObj = new RichTextEditor({ insertAudioSettings: {path:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.path).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertAudioSettings: {path:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertAudioSettings.path).toBe(null);
+        rteObj.destroy();
+    });
+    it("insertImageSettings", () => {
+        // insertImageSettings.allowedTypes
+        rteObj = new RichTextEditor({ insertImageSettings: {allowedTypes:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.allowedTypes).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertImageSettings: {allowedTypes:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.allowedTypes).toBe(null);
+        rteObj.destroy();
+        // insertImageSettings.display
+        rteObj = new RichTextEditor({ insertImageSettings: {display:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.display).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertImageSettings: {display:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.display).toBe(null);
+        rteObj.destroy();
+        // insertImageSettings.width
+        rteObj = new RichTextEditor({ insertImageSettings: {width:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.width).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertImageSettings: {width:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.width).toBe(null);
+        rteObj.destroy();
+        // insertImageSettings.height
+        rteObj = new RichTextEditor({ insertImageSettings: {height:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.height).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertImageSettings: {height:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.height).toBe(null);
+        rteObj.destroy();
+        // insertImageSettings.saveFormat
+        rteObj = new RichTextEditor({ insertImageSettings: {saveFormat:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.saveFormat).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertImageSettings: {saveFormat:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.saveFormat).toBe(null);
+        rteObj.destroy();
+        // insertImageSettings.saveUrl
+        rteObj = new RichTextEditor({ insertImageSettings: {saveUrl:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.saveUrl).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertImageSettings: {saveUrl:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.saveUrl).toBe(null);
+        rteObj.destroy();
+        // insertImageSettings.path
+        rteObj = new RichTextEditor({ insertImageSettings: {path:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.path).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertImageSettings: {path:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertImageSettings.path).toBe(null);
+        rteObj.destroy();
+    });
+    it("insertVideoSettings", () => {
+        // insertVideoSettings.allowedTypes
+        rteObj = new RichTextEditor({ insertVideoSettings: {allowedTypes:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.allowedTypes).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertVideoSettings: {allowedTypes:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.allowedTypes).toBe(null);
+        rteObj.destroy();
+        // insertVideoSettings.layoutOption
+        rteObj = new RichTextEditor({ insertVideoSettings: {layoutOption:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.layoutOption).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertVideoSettings: {layoutOption:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.layoutOption).toBe(null);
+        rteObj.destroy();
+        // insertVideoSettings.width
+        rteObj = new RichTextEditor({ insertVideoSettings: {width:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.width).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertVideoSettings: {width:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.width).toBe(null);
+        rteObj.destroy();
+        // insertVideoSettings.height
+        rteObj = new RichTextEditor({ insertVideoSettings: {height:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.height).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertVideoSettings: {height:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.height).toBe(null);
+        rteObj.destroy();
+        // insertVideoSettings.saveFormat
+        rteObj = new RichTextEditor({ insertVideoSettings: {saveFormat:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.saveFormat).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertVideoSettings: {saveFormat:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.saveFormat).toBe(null);
+        rteObj.destroy();
+        // insertVideoSettings.saveUrl
+        rteObj = new RichTextEditor({ insertVideoSettings: {saveUrl:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.saveUrl).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertVideoSettings: {saveUrl:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.saveUrl).toBe(null);
+        rteObj.destroy();
+        // insertVideoSettings.path
+        rteObj = new RichTextEditor({ insertVideoSettings: {path:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.path).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ insertVideoSettings: {path:null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.insertVideoSettings.path).toBe(null);
+        rteObj.destroy();
+    });
+    it("keyConfig", () => {
+        rteObj = new RichTextEditor({ keyConfig: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.keyConfig).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ keyConfig: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.keyConfig).toBe(null);
+        rteObj.destroy();
+    });
+    it("locale", () => {
+        rteObj = new RichTextEditor({ locale: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.locale).toBe('en-US');
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ locale: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.locale).toBe('en-US');
+        rteObj.destroy();
+    });
+    it("maxLength", () => {
+        rteObj = new RichTextEditor({ maxLength: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.maxLength).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ maxLength: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.maxLength).toBe(-1);
+        rteObj.destroy();
+    });
+    it("numberFormatList", () => {
+        rteObj = new RichTextEditor({ numberFormatList: {types: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.numberFormatList.types).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ numberFormatList: {types: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.numberFormatList.types.length === 7).toBe(true);
+        rteObj.destroy();
+    });
+    it("placeholder", () => {
+        rteObj = new RichTextEditor({ placeholder: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.placeholder).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ placeholder: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.placeholder).toBe(null);
+        rteObj.destroy();
+    });
+    it("quickToolbarSettings", () => {
+        //quickToolbarSettings.enable
+        rteObj = new RichTextEditor({ quickToolbarSettings: {enable: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.quickToolbarSettings.enable).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ quickToolbarSettings: {enable: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.quickToolbarSettings.enable).toBe(true);
+        rteObj.destroy();
+        //quickToolbarSettings.actionOnScroll
+        rteObj = new RichTextEditor({ quickToolbarSettings: {actionOnScroll: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.quickToolbarSettings.actionOnScroll).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ quickToolbarSettings: {actionOnScroll: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.quickToolbarSettings.actionOnScroll).toBe('hide');
+        rteObj.destroy();
+         //quickToolbarSettings.link
+         rteObj = new RichTextEditor({ quickToolbarSettings: {link: null} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.link).toBe(null);
+         rteObj.destroy();
+         rteObj = new RichTextEditor({ quickToolbarSettings: {link: undefined} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.link.length === 3).toBe(true);
+         rteObj.destroy();
+         //quickToolbarSettings.image
+         rteObj = new RichTextEditor({ quickToolbarSettings: {image: null} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.image).toBe(null);
+         rteObj.destroy();
+         rteObj = new RichTextEditor({ quickToolbarSettings: {image: undefined} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.image.length === 12).toBe(true);
+         rteObj.destroy();
+         //quickToolbarSettings.text
+         rteObj = new RichTextEditor({ quickToolbarSettings: {text: null} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.text).toBe(null);
+         rteObj.destroy();
+         rteObj = new RichTextEditor({ quickToolbarSettings: {text: undefined} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.text).toBe(null);
+         rteObj.destroy();
+         //quickToolbarSettings.table
+         rteObj = new RichTextEditor({ quickToolbarSettings: {table: null} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.table).toBe(null);
+         rteObj.destroy();
+         rteObj = new RichTextEditor({ quickToolbarSettings: {table: undefined} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.table.length === 9).toBe(true);
+         rteObj.destroy();
+         //quickToolbarSettings.audio
+         rteObj = new RichTextEditor({ quickToolbarSettings: {audio: null} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.audio).toBe(null);
+         rteObj.destroy();
+         rteObj = new RichTextEditor({ quickToolbarSettings: {audio: undefined} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.audio.length === 3).toBe(true);
+         rteObj.destroy();
+         //quickToolbarSettings.video
+         rteObj = new RichTextEditor({ quickToolbarSettings: {video: null} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.video).toBe(null);
+         rteObj.destroy();
+         rteObj = new RichTextEditor({ quickToolbarSettings: {video: undefined} });
+         rteObj.appendTo('#rteTarget');
+         expect(rteObj.quickToolbarSettings.video.length === 5).toBe(true);
+         rteObj.destroy();
+    });
+    it("readonly", () => {
+        rteObj = new RichTextEditor({ readonly: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.readonly).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ readonly: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.readonly).toBe(false);
+        rteObj.destroy();
+    });
+    it("saveInterval", () => {
+        rteObj = new RichTextEditor({ saveInterval: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.saveInterval).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ saveInterval: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.saveInterval).toBe(10000);
+        rteObj.destroy();
+    });
+    it("shiftEnterKey", () => {
+        rteObj = new RichTextEditor({ shiftEnterKey: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.shiftEnterKey).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ shiftEnterKey: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.shiftEnterKey).toBe('BR');
+        rteObj.destroy();
+    })
+    it("showCharCount", () => {
+        rteObj = new RichTextEditor({ showCharCount: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.showCharCount).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ showCharCount: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.showCharCount).toBe(false);
+        rteObj.destroy();
+    });
+    it("showTooltip", () => {
+        rteObj = new RichTextEditor({ showTooltip: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.showTooltip).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ showTooltip: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.showTooltip).toBe(true);
+        rteObj.destroy();
+    });
+    it("tableSettings", () => {
+        //tableSettings.width
+        rteObj = new RichTextEditor({ tableSettings: {width: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.width).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ tableSettings: {width: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.width).toBe('100%');
+        rteObj.destroy();
+        //tableSettings.styles
+        rteObj = new RichTextEditor({ tableSettings: {styles: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.styles).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ tableSettings: {styles: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.styles.length === 2).toBe(true);
+        rteObj.destroy();
+        //tableSettings.resize
+        rteObj = new RichTextEditor({ tableSettings: {resize: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.resize).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ tableSettings: {resize: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.resize).toBe(true);
+        rteObj.destroy();
+        //tableSettings.minWidth
+        rteObj = new RichTextEditor({ tableSettings: {minWidth: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.minWidth).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ tableSettings: {minWidth: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.minWidth).toBe(0);
+        rteObj.destroy();
+        //tableSettings.maxWidth
+        rteObj = new RichTextEditor({ tableSettings: {maxWidth: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.maxWidth).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ tableSettings: {maxWidth: undefined} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.tableSettings.maxWidth).toBe(null);
+        rteObj.destroy();
+    });
+    it("toolbarSettings", () => {
+        //toolbarSettings.enable
+        rteObj = new RichTextEditor({ toolbarSettings: {enable: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.enable).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ toolbarSettings: {enable: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.enable).toBe(null);
+        rteObj.destroy();
+        //toolbarSettings.enableFloating
+        rteObj = new RichTextEditor({ toolbarSettings: {enableFloating: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.enableFloating).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ toolbarSettings: {enableFloating: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.enableFloating).toBe(null);
+        rteObj.destroy();
+        //toolbarSettings.type
+        rteObj = new RichTextEditor({ toolbarSettings: {type: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.type).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ toolbarSettings: {type: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.type).toBe(null);
+        rteObj.destroy();
+        //toolbarSettings.items
+        rteObj = new RichTextEditor({ toolbarSettings: {items: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.items).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ toolbarSettings: {items: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.items).toBe(null);
+        rteObj.destroy();
+        //toolbarSettings.items
+        rteObj = new RichTextEditor({ toolbarSettings: {itemConfigs: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.itemConfigs).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ toolbarSettings: {itemConfigs: null} });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.toolbarSettings.itemConfigs).toBe(null);
+        rteObj.destroy();
+    });
+    it("undoRedoSteps", () => {
+        rteObj = new RichTextEditor({ undoRedoSteps: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.undoRedoSteps).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ undoRedoSteps: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.undoRedoSteps).toBe(30);
+        rteObj.destroy();
+    });
+    it("undoRedoTimer", () => {
+        rteObj = new RichTextEditor({ undoRedoTimer: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.undoRedoTimer).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ undoRedoTimer: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.undoRedoTimer).toBe(300);
+        rteObj.destroy();
+    });
+    it("value", () => {
+        rteObj = new RichTextEditor({ value: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.value).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ value: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.value).toBe(null);
+        rteObj.destroy();
+    });
+    it("width", () => {
+        rteObj = new RichTextEditor({ width: null });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.width).toBe(null);
+        rteObj.destroy();
+        rteObj = new RichTextEditor({ width: undefined });
+        rteObj.appendTo('#rteTarget');
+        expect(rteObj.width).toBe('100%');
+        rteObj.destroy();
+    });
 });
-  
+
+describe('286578: Dialog element not removed when destroying RTE instance in mobile mode', () => {
+    let rteEle: HTMLElement;
+    let rteObj: RichTextEditor;
+    let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
+    let defaultUA: string = navigator.userAgent;
+    beforeAll((done: Function) => {
+        Browser.userAgent = mobileUA;
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Audio', 'Video', 'Image', 'CreateTable']
+            }
+        });
+        rteEle = rteObj.element;
+        done();
+    });
+    afterAll((done: Function) => {
+        Browser.userAgent = defaultUA;
+        destroy(rteObj);
+        done();
+    });
+    it('Checking the dialog element in mobile mode', (done: Function) => {
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+        (trgEle.firstElementChild as HTMLElement).click();
+        (<any>rteObj).destroy();
+        expect(document.querySelector('.e-dialog.e-rte-elements')).toBe(null);
+        done();
+    });
+});
 });

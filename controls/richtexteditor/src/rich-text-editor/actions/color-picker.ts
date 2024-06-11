@@ -194,11 +194,11 @@ export class ColorPickerInput {
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.showColorPicker, this.showColorPicker, this);
     }
-    private showColorPicker(e: { [key: string]: Object }) {
-        if (!isNullOrUndefined(this.fontColorPicker) && ((e as { [key: string]: Object }).toolbarClick === "fontcolor")) {
+    private showColorPicker(e: { [key: string]: Object }): void {
+        if (!isNullOrUndefined(this.fontColorPicker) && ((e as { [key: string]: Object }).toolbarClick === 'fontcolor')) {
             this.fontColorDropDown.toggle();
         }
-        else if (!isNullOrUndefined(this.backgroundColorPicker) && ((e as { [key: string]: Object }).toolbarClick === "backgroundcolor")) {
+        else if (!isNullOrUndefined(this.backgroundColorPicker) && ((e as { [key: string]: Object }).toolbarClick === 'backgroundcolor')) {
             this.backgroundColorDropDown.toggle();
         }
     }

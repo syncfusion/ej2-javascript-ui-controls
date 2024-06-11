@@ -2951,3 +2951,111 @@ describe("Cell Editing with Virtual Scrolling", () => {
     destroy(gridObj);
   });
 });
+
+describe("Virtual Scrolling without height", () => {
+  let gridObj: TreeGrid;
+  let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        toolbar: ["Add", "Edit", "Update", "Delete", "Cancel"],
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Cell",
+          newRowPosition: "Below",
+        },
+        childMapping: "Crew",
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+        actionFailure: actionFailedFunction
+      },
+      done
+    );
+  });
+  it('actionFailure testing', () => {
+    expect(actionFailedFunction).toHaveBeenCalled();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe("Virtual Scrolling with paging", () => {
+  let gridObj: TreeGrid;
+  let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        enableVirtualization: true,
+        allowPaging: true,
+        height:450,
+        treeColumnIndex: 1,
+        toolbar: ["Add", "Edit", "Update", "Delete", "Cancel"],
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Cell",
+          newRowPosition: "Below",
+        },
+        childMapping: "Crew",
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+        actionFailure: actionFailedFunction
+      },
+      done
+    );
+  });
+  it('actionFailure testing', () => {
+    expect(actionFailedFunction).toHaveBeenCalled();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

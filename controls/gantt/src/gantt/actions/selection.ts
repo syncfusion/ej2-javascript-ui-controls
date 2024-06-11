@@ -110,7 +110,7 @@ export class Selection {
             if (this.parent.enableTimelineVirtualization) {
                 this.parent['isRowSelected'] = true;
             }
-            if(args.data && !isNullOrUndefined(args.data['length'])){
+            if (args.data && !isNullOrUndefined(args.data['length'])) {
                 for (let i: number = 0; i < args.data['length']; i++){
                     this.parent.ganttChartModule.updateScrollLeft(args.data[i as number].ganttProperties.left);
                 }
@@ -159,7 +159,7 @@ export class Selection {
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
         if (this.selectedRowIndexes.length === 1) {
-           this.parent.setProperties({ selectedRowIndex: this.selectedRowIndexes[0] }, true);
+            this.parent.setProperties({ selectedRowIndex: this.selectedRowIndexes[0] }, true);
         }
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
@@ -227,12 +227,11 @@ export class Selection {
      */
     public selectRow(index: number, isToggle?: boolean, isPreventFocus?: boolean): void {
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
-        // eslint-disable-next-line
         if (this.parent.enableVirtualization && this.parent.treeGridModule.addedRecord) {
             index = this.parent.flatData.indexOf(this.parent.currentViewData[index as number]);
-            this.parent.treeGridModule.addedRecord = false
+            this.parent.treeGridModule.addedRecord = false;
         }
-        const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 0) === index)[0];
+        const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index)[0];
         let condition: boolean;
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
@@ -290,19 +289,19 @@ export class Selection {
      * @returns {Object[]} .
      */
     public getSelectedRecords(): Object[] {
-        if(!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
-            let selectedRows: IGanttData[] = [];
-            let selectedIndexes: number[] = this.parent.selectionModule.getSelectedRowIndexes();
-            for(let i: number=0; i<selectedIndexes.length; i++) {
-               const rec: IGanttData = this.parent.currentViewData.filter((data: IGanttData) => {
-                    return data.index == selectedIndexes[i as number]
+        if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+            const selectedRows: IGanttData[] = [];
+            const selectedIndexes: number[] = this.parent.selectionModule.getSelectedRowIndexes();
+            for (let i: number = 0; i < selectedIndexes.length; i++) {
+                const rec: IGanttData = this.parent.currentViewData.filter((data: IGanttData) => {
+                    return data.index === selectedIndexes[i as number];
                 })[0];
-               selectedRows.push(rec);
+                selectedRows.push(rec);
             }
             return selectedRows;
         }
         else {
-          return this.parent.treeGrid.getSelectedRecords();
+            return this.parent.treeGrid.getSelectedRecords();
         }
     }
 
@@ -359,7 +358,7 @@ export class Selection {
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
                 if (!this.parent.allowTaskbarDragAndDrop || (this.parent.allowTaskbarDragAndDrop && (this.parent.rowDragAndDropModule &&
                    !this.parent.rowDragAndDropModule['draggedRecord']))) {
-                   this.selectRow(rIndex, isToggle);
+                    this.selectRow(rIndex, isToggle);
                 }
             } else {
                 if (this.isMultiShiftRequest) {
@@ -404,17 +403,20 @@ export class Selection {
     }
 
     private addRemoveClass(records: number[]): void {
-        if(typeof(records)=="number"){
+        if (typeof(records) == 'number') {
             records = [records];
-            }
+        }
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         for (let i: number = 0; i < records.length; i++) {
             const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
-            // eslint-disable-next-line
-                parseInt(e.getAttribute('data-rowindex'), 0) === records[i])[0];
+                parseInt(e.getAttribute('data-rowindex'), 10) === records[parseInt(i.toString(), 10)])[0];
             if (!isNullOrUndefined(selectedRow)) {
-                // eslint-disable-next-line
-                this.getSelectedRowIndexes().indexOf(records[i]) > -1 ? this.addClass(selectedRow) : this.removeClass(selectedRow);
+                if (this.getSelectedRowIndexes().indexOf(records[parseInt(i.toString(), 10)]) > -1) {
+                    this.addClass(selectedRow);
+                }
+                else {
+                    this.removeClass(selectedRow);
+                }
             }
         }
     }
@@ -494,7 +496,7 @@ export class Selection {
      */
     private mouseUpHandler(e: PointerEvent): void {
         let isTaskbarEdited: boolean = false;
-        var elements = document.querySelectorAll('.e-drag-item');
+        const elements: NodeListOf<Element> = document.querySelectorAll('.e-drag-item');
         let targetElement: Element = null;
         if ((e.target as Element).closest('.e-rowcell')) {
             targetElement = e.target as HTMLElement;

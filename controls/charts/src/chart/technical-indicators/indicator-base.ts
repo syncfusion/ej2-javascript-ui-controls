@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { LineBase } from '../series/line-base';
 import { Series, Points } from '../series/chart-series';
 import { RectOption, appendClipElement } from '../../common/utils/helper';
@@ -15,6 +13,9 @@ export class TechnicalAnalysis extends LineBase {
      * Defines the collection of series, that are used to represent the given technical indicator
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the series collection is initialized.
+     * @param {Chart} chart - The chart associated with the technical indicator.
+     * @returns {void}
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         indicator.targetSeries = [];
@@ -23,9 +24,16 @@ export class TechnicalAnalysis extends LineBase {
     }
 
     /**
-     * Initializes the properties of the given series
+     * Sets properties for a series associated with a technical indicator.
      *
-     * @private
+     * @protected
+     * @param {Series} series - The series for which properties are to be set.
+     * @param {TechnicalIndicator} indicator - The technical indicator associated with the series.
+     * @param {string} name - The name of the series.
+     * @param {string} fill - The fill color of the series.
+     * @param {number} width - The width of the series line.
+     * @param {Chart} chart - The chart associated with the series.
+     * @returns {void}
      */
     protected setSeriesProperties(
         series: Series, indicator: TechnicalIndicator, name: string, fill: string,
@@ -55,9 +63,13 @@ export class TechnicalAnalysis extends LineBase {
     }
 
     /**
-     * Creates the elements of a technical indicator
+     * Creates elements for a technical indicator in the chart.
      *
-     * @private
+     * @public
+     * @param {Chart} chart - The chart in which the indicator elements are to be created.
+     * @param {TechnicalIndicator} indicator - The technical indicator for which elements are to be created.
+     * @param {number} index - The index of the indicator.
+     * @returns {void}
      */
     public createIndicatorElements(chart: Chart, indicator: TechnicalIndicator, index: number): void {
         if (indicator.seriesName || indicator.dataSource) {

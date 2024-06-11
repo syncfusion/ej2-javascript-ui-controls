@@ -14,7 +14,7 @@ import {
     characterSpacingProperty, scalingProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, bordersProperty, leftIndentProperty,
     rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, beforeSpacingProperty,
     afterSpacingProperty, spaceBeforeAutoProperty, spaceAfterAutoProperty, lineSpacingProperty,
-    lineSpacingTypeProperty, outlineLevelProperty, listFormatProperty, tabsProperty, 
+    lineSpacingTypeProperty, outlineLevelProperty, listFormatProperty, tabsProperty,
     keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty,
     topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty,
     colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty
@@ -55,20 +55,22 @@ export class HelperMethods {
         }
     }
     /**
+     * @returns {string} returns a string value
+     * @param {string} text takes string as parameter
      * @private
-     * @param text 
-     * @returns 
      */
     private static replaceSpecialChars(text: string): string {
-        text = text.replace("^[\\s]*", '');
+        text = text.replace('^[\\s]*', '');
+        /* eslint-disable quotes */
         text = text.replace("^[#@!~\\$%^&\\*\\(\\)\\-_\\+\\.=\\{\\}\\[\\]:;,<>\\?'\\\\\"\\“\\”\\//0123456789]+", '');
         text = text.replace("[#@!~\\$%^&\\*\\(\\)\\-_\\+\\.=\\{\\}\\[\\]:;,<>\\?'\\\\\"\\“\\”\\//0123456789]+$", '');
+        /* eslint-enable quotes */
         return text;
     }
     /**
-     * @private
-     * @param text 
-     * @returns 
+     * @returns {any} returns any type
+     * @param {string} text gets string as a input
+     * @public
      */
     public static getSpellCheckData(text: string): any {
         text = text.replace('\r\n', ' ');
@@ -78,10 +80,10 @@ export class HelperMethods {
         text = text.replace('\t', ' ');
         text = text.replace('/', ' ');
 
-        let stringarr: string[] = text.split(' ');
-        let spellColl: any = [];
+        const stringarr: string[] = text.split(' ');
+        const spellColl: any = [];
         for (const str of stringarr) {
-            let spellInfo: any = {};
+            const spellInfo: any = {};
             spellInfo.Text = this.replaceSpecialChars(str);
             spellInfo.HasSpellError = false;
             spellColl.push(spellInfo);
@@ -96,8 +98,8 @@ export class HelperMethods {
      */
     public static checkTextFormat(input: string): boolean {
         // Regular expression patterns for Roman and Arabic numerals
-        const romanPattern = /^(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i;
-        const arabicPattern = /^[0-9]+$/;
+        const romanPattern: RegExp = /^(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i;
+        const arabicPattern: RegExp = /^[0-9]+$/;
         // Check if the input matches either pattern
         if (romanPattern.test(input) || arabicPattern.test(input)) {
             return true;
@@ -106,68 +108,78 @@ export class HelperMethods {
         }
     }
     /**
-     * @private
+     * @returns {string}
      * Sanitize the string for xss string content
-     * @param value
-     * @returns 
+     * @param {string} value accepts a string value
+     * @public
      */
     public static sanitizeString(value: string): string {
-        if(isNullOrUndefined(value)) return '';
-        const sanitizedContent = SanitizeHtmlHelper.sanitize(value)
-                                    .replace(/&amp;/g, '&')
-                                    .replace(/&nbsp;/g, String.fromCharCode(160))
-                                    .replace(/&gt;/g, '>')
-                                    .replace(/&lt;/g, '<');
+        if (isNullOrUndefined(value)) {
+            return '';
+        }
+        const sanitizedContent: string = SanitizeHtmlHelper.sanitize(value)
+            .replace(/&amp;/g, '&')
+            .replace(/&nbsp;/g, String.fromCharCode(160))
+            .replace(/&gt;/g, '>')
+            .replace(/&lt;/g, '<');
         return sanitizedContent;
     }
     /**
-     * @private
+     * @returns {any} returns any type
      * Get the SFDT document from the optimized SFDT.
-     * @param json 
-     * @returns 
+     * @param {any} json accepts a json file
+     * @public
      */
     public static getSfdtDocument(json: any): any {
         json = (json instanceof Object) ? json : JSON.parse(json);
         if (!isNullOrUndefined(json.sfdt)) {
-            let zipArchive: ZipArchive = new ZipArchive();
+            const zipArchive: ZipArchive = new ZipArchive();
             zipArchive.open(JSON.stringify(json.sfdt));
-            let zipItem: ZipArchiveItem = zipArchive.items[0] as ZipArchiveItem;
-            let value: Uint8Array = new Uint8Array(zipItem.data as ArrayBuffer);
-            let str: string = new TextDecoder("utf-8").decode(value);
+            const zipItem: ZipArchiveItem = zipArchive.items[0] as ZipArchiveItem;
+            const value: Uint8Array = new Uint8Array(zipItem.data as ArrayBuffer);
+            const str: string = new TextDecoder('utf-8').decode(value);
             json = JSON.parse(str);
         }
         // json = JSON.parse(this.sanitizeString(JSON.stringify(json)));
         return json;
     }
     /**
-     * @private
+     * @returns {number}
      * Generates a unique unique hexadecimal ID.
-     * @returns 
+     * @param {WList[]} lists accepts list
+     * @param {WAbstractList[]} abstractLists accepts array of abstractList
+     * @public
      */
     public static generateUniqueId(lists: WList[], abstractLists?: WAbstractList[]): number {
-        let isAbstractList: boolean = !isNullOrUndefined(abstractLists) ? true : false;
+        const isAbstractList: boolean = !isNullOrUndefined(abstractLists) ? true : false;
         const randomNumber: number = Math.floor(Math.random() * 100000000);
         if (isAbstractList) {
-            return this.isSameListIDExists(randomNumber, undefined, abstractLists, isAbstractList) ? this.generateUniqueId(undefined, abstractLists) : randomNumber;
+            return this.isSameListIDExists(randomNumber, undefined, abstractLists, isAbstractList) ?
+                this.generateUniqueId(undefined, abstractLists) : randomNumber;
         } else {
             return this.isSameListIDExists(randomNumber, lists) ? this.generateUniqueId(lists) : randomNumber;
         }
     }
     /**
+     * @returns {boolean} returns a boolean value
+     * @param {number} nsid accepts number as a parameter
+     * @param {WList[]} lists accepts an array of type WList
+     * @param {WAbstractList[]} abstractLists accepts an array of type WAbstractList
+     * @param {boolean} isAbstractList accepts a boolean value
      * @private
      */
     public static isSameListIDExists(nsid: number, lists: WList[], abstractLists?: WAbstractList[], isAbstractList?: boolean): boolean {
         if (isAbstractList) {
-            for (let i = 0; i < abstractLists.length; i++) {
-                let abstractList: WAbstractList = abstractLists[parseInt(i.toString(), 10)];
-                if (nsid == abstractList.nsid) {
+            for (let i: number = 0; i < abstractLists.length; i++) {
+                const abstractList: WAbstractList = abstractLists[parseInt(i.toString(), 10)];
+                if (nsid === abstractList.nsid) {
                     return true;
                 }
             }
         } else {
-            for (let j = 0; j < lists.length; j++) {
-                let list: WList = lists[parseInt(j.toString(), 10)];
-                if (nsid == list.nsid) {
+            for (let j: number = 0; j < lists.length; j++) {
+                const list: WList = lists[parseInt(j.toString(), 10)];
+                if (nsid === list.nsid) {
                     return true;
                 }
             }
@@ -216,10 +228,10 @@ export class HelperMethods {
         return -1;
     }
     /**
-     * Convert ARGB to RGB 
+     * Convert ARGB to RGB
      * @private
-     * @param {string} color 
-     * @returns {string}
+     * @param {string} color accepts a color string
+     * @returns {string} returns a string value
      */
     public static convertArgbToRgb(color: string): string {
         if (color.length >= 8) {
@@ -242,17 +254,19 @@ export class HelperMethods {
     //     return val*28.34644;
     // }
     /**
+     * @returns {number} returns a number
+     * @param {string} input accepts a string value as an input
      * @private
      */
     public static getNumberFromString(input: string): number {
         const numbers: number[] = [];
-        let currentNumber = "";
+        let currentNumber: string = '';
         for (const char of input) {
             if (/\d|\./.test(char)) {
                 currentNumber += char;
             } else if (currentNumber) {
                 numbers.push(parseFloat(currentNumber));
-                currentNumber = "";
+                currentNumber = '';
             }
         }
         if (currentNumber) {
@@ -292,7 +306,9 @@ export class HelperMethods {
     }
 
     /**
-     * @private
+     * @returns {HTMLElement[]} returns an array of HTML elements
+     * @param {NodeListOf<HTMLElement>} nodeList accepts a list of HTML elements
+     * @public
      */
     public static convertNodeListToArray(nodeList: NodeListOf<HTMLElement>): HTMLElement[] {
         const array: HTMLElement[] = [];
@@ -361,14 +377,14 @@ export class HelperMethods {
 
     public static getTextVerticalAlignment(textVerticalAlignment: number | VerticalAlignment): VerticalAlignment {
         switch (textVerticalAlignment) {
-            case 0:
-                return 'Top';
-            case 1:
-                return 'Center';
-            case 2:
-                return 'Bottom';
-            default:
-                return textVerticalAlignment as VerticalAlignment;
+        case 0:
+            return 'Top';
+        case 1:
+            return 'Center';
+        case 2:
+            return 'Bottom';
+        default:
+            return textVerticalAlignment as VerticalAlignment;
         }
     }
 
@@ -444,7 +460,6 @@ export class HelperMethods {
     }
     /**
      * Checks whether string ends with whitespace.
-     *
      * @private
      * @param {string} text - Specifies the text.
      * @returns {boolean} - Returns true if text ends with specified text.
@@ -480,12 +495,14 @@ export class HelperMethods {
     }
     public static parseBoolValue(value: any): boolean {
         if (value instanceof String) {
-            if (isNullOrUndefined(value) || value === "f" || value === "0" || value === "off" || value === "false") {
+            if (isNullOrUndefined(value) || value === 'f' || value === '0' || value === 'off' || value === 'false') {
                 return false;
             } else {
                 return true;
             }
-        } else {
+        }
+        /* eslint-disable eqeqeq */
+        else {
             if (value == 1) {
                 return true;
             } else {
@@ -493,6 +510,7 @@ export class HelperMethods {
             }
         }
     }
+    /* eslint-enable eqeqeq */
     public static getBaselineAlignmentEnumValue(baselineAlignment: BaselineAlignment): number {
         switch (baselineAlignment) {
         case 'Normal':

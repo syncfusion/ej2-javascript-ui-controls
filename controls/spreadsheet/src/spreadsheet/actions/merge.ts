@@ -95,7 +95,7 @@ export class Merge {
                     }
                 }
                 if (cell.rowSpan > 1 && !isMergeApplied) {
-                    const rowMergeCount = cell.rowSpan - this.parent.hiddenCount(mergeArgs.range[0], mergeArgs.range[2]);
+                    const rowMergeCount: number = cell.rowSpan - this.parent.hiddenCount(mergeArgs.range[0], mergeArgs.range[2]);
                     if (rowMergeCount > 0) {
                         clearMerge();
                         args.td.style.display = '';
@@ -124,8 +124,9 @@ export class Merge {
         if (args.cell.colSpan < 0) {
             if (args.colIdx - 1 > -1 && isHiddenCol(sheet, args.colIdx - 1)) {
                 cell = getCell(args.rowIdx, args.colIdx - 1, sheet, false, true);
-                if ((cell.colSpan !== undefined || cell.rowSpan !== undefined) && (cell.rowSpan === undefined || cell.rowSpan > 1 ||
-                    (isRowMergeCell = (args.rowIdx - 1 > -1 && isHiddenRow(sheet, args.rowIdx - 1))))) {
+                isRowMergeCell = args.rowIdx - 1 > -1 && isHiddenRow(sheet, args.rowIdx - 1);
+                if ((cell.colSpan !== undefined || cell.rowSpan !== undefined) && (cell.rowSpan === undefined ||
+                    cell.rowSpan > 1 || isRowMergeCell)) {
                     mergeArgs = { range: [args.rowIdx, args.colIdx - 1, args.rowIdx, args.colIdx - 1] };
                     this.parent.notify(activeCellMergedRange, mergeArgs); mergeArgs.range = mergeArgs.range as number[];
                     cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);

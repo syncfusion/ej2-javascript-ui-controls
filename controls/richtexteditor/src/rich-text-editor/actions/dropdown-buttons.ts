@@ -1,11 +1,11 @@
-import { addClass, isNullOrUndefined, removeClass, select, closest } from '@syncfusion/ej2-base';
+import { addClass, isNullOrUndefined, removeClass, select, closest, L10n } from '@syncfusion/ej2-base';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { RenderType } from '../base/enum';
 import { getIndex } from '../base/util';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
-import { getDropDownValue, getFormattedFontSize, getTooltipText} from '../base/util';
+import { getDropDownValue, getFormattedFontSize} from '../base/util';
 import * as model from '../models/items';
 import { IRichTextEditor, IRenderer, IDropDownModel, IDropDownItemModel, IDropDownRenderArgs, IListDropDownModel, ICssClassArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
@@ -37,10 +37,12 @@ export class DropDownButtons {
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;
     protected renderFactory: RendererFactory;
+    private i10n: L10n;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
+        this.i10n = serviceLocator.getService<L10n>('rteLocale');
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
     }
@@ -53,10 +55,6 @@ export class DropDownButtons {
         const item: IDropDownItemModel = args.item as IDropDownItemModel;
         if (item.cssClass) {
             addClass([args.element], item.cssClass);
-        }
-        if (item.command === 'Alignments' || item.subCommand === 'JustifyLeft'
-            || item.subCommand === 'JustifyRight' || item.subCommand === 'JustifyCenter') {
-            args.element.setAttribute('title', getTooltipText(item.subCommand.toLocaleLowerCase(), this.locator));
         }
     }
 
@@ -156,7 +154,7 @@ export class DropDownButtons {
                         content: this.dropdownContent(
                             this.parent.fontFamily.width,
                             type,
-                            ((type === 'quick') ? '' : getDropDownValue(fontItem, fontNameContent, 'text', 'text'))),
+                            ((type === 'quick') ? '' : (getDropDownValue(fontItem, fontNameContent, 'text', 'text') === 'Default' ? this.i10n.getConstant('fontName') : getDropDownValue(fontItem, fontNameContent, 'text', 'text')))),
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_NAME_TB_BTN,
                         itemName: 'FontName', items: fontItem, element: targetElement
                     } as IDropDownModel);
@@ -169,20 +167,22 @@ export class DropDownButtons {
                     if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
                         return;
                     }
-                    const fontsize: IDropDownItemModel[] = !isNullOrUndefined(this.fontSizeDropDown) && !isNullOrUndefined(this.fontSizeDropDown.items) && this.fontSizeDropDown.items.length > 0 ? this.fontSizeDropDown.items : JSON.parse(JSON.stringify(this.parent.fontSize.items.slice()));
+                    const fontsize: IDropDownItemModel[] = !isNullOrUndefined(this.fontSizeDropDown) &&
+                    !isNullOrUndefined(this.fontSizeDropDown.items) && this.fontSizeDropDown.items.length > 0 ?
+                        this.fontSizeDropDown.items : JSON.parse(JSON.stringify(this.parent.fontSize.items.slice()));
                     fontsize.forEach((item: IDropDownItemModel): void => {
                         Object.defineProperties((item as object), {
                             command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontSize', enumerable: true }
                         });
                     });
-                    const fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
+                    const fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[0].text :
                         this.parent.fontSize.default;
+                    const fontSizeDropDownContent: string = ((fontSizeContent === 'Default') ? getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'text', 'text') : getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'));
                     this.fontSizeDropDown = this.toolbarRenderer.renderDropDownButton({
                         content: this.dropdownContent(
                             this.parent.fontSize.width,
                             type,
-                            getFormattedFontSize(getDropDownValue(
-                                fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'))),
+                            getFormattedFontSize((fontSizeDropDownContent === 'Default') ? this.i10n.getConstant('fontSize') : fontSizeDropDownContent)),
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_SIZE_TB_BTN,
                         itemName: 'FontSize', items: fontsize, element: targetElement
                     } as IDropDownModel);
@@ -258,7 +258,7 @@ export class DropDownButtons {
                                 this.parent.fontFamily.default;
                             content = this.dropdownContent(
                                 this.parent.fontFamily.width, type,
-                                ((type === 'quick') ? '' : getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
+                                ((type === 'quick') ? '' : (getDropDownValue(fontItems, fontNameContent, 'text', 'text')) === 'Default' ? this.i10n.getConstant('fontName') : getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
                             this.fontNameDropDown.setProperties({ content: content });
                             if (!isNullOrUndefined(this.parent.fontFamily.default)) {
                                 this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
@@ -284,15 +284,12 @@ export class DropDownButtons {
                             const fontsize: IDropDownItemModel[] = this.fontSizeDropDown.items;
                             type = !isNullOrUndefined(
                                 closest(this.fontSizeDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
-                            const fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
+                            const fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[0].text :
                                 this.parent.fontSize.default;
+                            const fontSizeDropDownContent: string = ((fontSizeContent === 'Default') ? getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'text', 'text') : getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'));
                             content = this.dropdownContent(
                                 this.parent.fontSize.width, type,
-                                getFormattedFontSize(getDropDownValue(
-                                    fontsize,
-                                    fontSizeContent.replace(/\s/g, ''),
-                                    'value',
-                                    'text')));
+                                getFormattedFontSize((fontSizeDropDownContent === 'Default') ? this.i10n.getConstant('fontSize') : fontSizeDropDownContent));
                             this.fontSizeDropDown.setProperties({ content: content });
                             if (!isNullOrUndefined(this.parent.fontSize.default)) {
                                 this.getEditNode().style.fontSize = this.parent.fontSize.default;

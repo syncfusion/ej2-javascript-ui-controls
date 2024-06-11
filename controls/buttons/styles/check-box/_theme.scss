@@ -1,6 +1,4 @@
 @include export-module('checkbox-theme') {
-
-  /*! checkbox theme */
   .e-checkbox-wrapper,
   .e-css.e-checkbox-wrapper {
     /* stylelint-disable property-no-vendor-prefix */
@@ -50,30 +48,7 @@
       }
 
       & .e-checkbox {
-        &:focus {
-          +.e-frame {
-            background-color: $cbox-focussed-bgcolor;
-            border-color: $cbox-focussed-border-color;
-            box-shadow: $cbox-focussed-box-shadow;
-
-            &.e-check {
-              background-color: $cbox-focussed-checkmark-bgcolor;
-              border-color: $cbox-focussed-checkmark-border-color;
-              box-shadow: $cbox-focussed-box-shadow;
-              color: $cbox-focussed-checkmark-color;
-            }
-
-            &.e-stop {
-              background-color: $cbox-focussed-checkmark-bgcolor;
-              border-color: $cbox-focussed-checkmark-border-color;
-              box-shadow: $cbox-focussed-box-shadow;
-              color: $cbox-indeterminate-hover-color;
-            }
-          }
-        }
-      }
-
-      & .e-checkbox {
+        &:focus,
         &:active {
           +.e-frame {
             background-color: $cbox-focussed-bgcolor;
@@ -139,7 +114,7 @@
               background-color: $cbox-checkmark-hover-bgcolor;
               border-color: $cbox-checkmark-hover-border-color;
             }
-            @else if $skin-name == 'FluentUI' {
+            @else if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
               border-color: $cbox-checkmark-hover-border-color;
             }
             @else {
@@ -211,14 +186,10 @@
           }
         }
 
-        & .e-frame {
+        & .e-frame,
+        & .e-frame.e-check {
           outline: $cbox-focus-outline;
           outline-offset: $cbox-focus-outline-offset;
-
-          &.e-check {
-            outline: $cbox-focus-outline;
-            outline-offset: $cbox-focus-outline-offset;
-          }
         }
       }
 
@@ -243,12 +214,7 @@
         
         &.e-checkbox-disabled {
           & .e-frame {
-            &.e-check {
-              @if $skin-name == 'Material3' {
-                line-height: 18px;
-              }
-            }
-  
+            &.e-check,
             &.e-stop {
               @if $skin-name == 'Material3' {
                 line-height: 18px;

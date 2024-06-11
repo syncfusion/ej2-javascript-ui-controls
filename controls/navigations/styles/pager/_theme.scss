@@ -1,16 +1,28 @@
+@mixin color-opacity-styles($color, $opacity) {
+  color: $color;
+  opacity: $opacity;
+}
+
+@mixin background-color-opacity-styles($background, $color, $opacity) {
+  background: $background;
+  @include color-opacity-styles($color, $opacity);
+}
+
 @include export-module('pager-theme') {
 
   /*! Pager theme */
   #{&}.e-pager {
-    background-color: $pager-bg-color;
     @if $pager-skin == 'material3' {
       border-color: rgba($border-light);
+    }
+    @else if $pager-skin == 'fluent2' {
+      border-color: $border-light;
     }
     @else {
       border-color: $pager-border-color;
     }
-    color: $pager-color;
-    opacity: $pager-content-opacity;
+
+    @include background-color-opacity-styles($pager-bg-color, $pager-color, $pager-content-opacity);
 
     div.e-icons.e-pager-default {
       color: $pager-icon-color;
@@ -21,9 +33,7 @@
     }
 
     .e-pager-default:hover {
-      background: $pager-hover-bg-color;
-      color: $pager-hover-color;
-      opacity: $pager-content-opacity;
+      @include background-color-opacity-styles($pager-hover-bg-color, $pager-hover-color, $pager-content-opacity);
       @if $pager-skin == 'material3' {
         border-radius: 4px;
       }
@@ -34,8 +44,7 @@
     }
 
     .e-spacing {
-      color: $page-content-color;
-      opacity: $pager-content-opacity;
+      @include color-opacity-styles($page-content-color, $pager-content-opacity);
     }
 
     .e-spacing.e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
@@ -43,8 +52,7 @@
     }
 
     .e-numericitem:hover {
-      color: $pager-hover-color;
-      opacity: $pager-content-opacity;
+      @include color-opacity-styles($pager-hover-color, $pager-content-opacity);
     }
 
     .e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
@@ -54,7 +62,6 @@
 
     .e-numericitem {
       background: $pager-bg-color;
-      border-right-color: $pager-border-color;
       color: $page-content-color;
     }
 
@@ -70,6 +77,26 @@
       color: $pager-icon-color;
     }
 
+    .e-prevpagedisabled,
+    .e-nextpagedisabled,
+    .e-lastpagedisabled,
+    .e-firstpagedisabled {
+      @if $pager-skin == 'fluent2' {
+        background-color: $content-bg-color-disabled;
+      }
+    }
+
+    @media (max-width: 769px) {
+      .e-prevpagedisabled,
+      .e-nextpagedisabled,
+      .e-lastpagedisabled,
+      .e-firstpagedisabled {
+        @if $pager-skin == 'fluent2' {
+          background-color: $pager-bg-color;
+        }
+      }
+    }
+
     .e-lastpage,
     .e-firstpage {
       background-color: transparent;
@@ -80,6 +107,7 @@
       border-color: $pager-border-color;
     }
 
+    .e-numericitem,
     .e-firstpage,
     .e-prevpage,
     .e-firstpagedisabled,
@@ -99,9 +127,7 @@
       @if $pager-skin == 'material3' {
         border-radius: 4px;
       }
-      background: $pager-active-bg-color;
-      color: $pager-active-color;
-      opacity: 1;
+      @include background-color-opacity-styles($pager-active-bg-color, $pager-active-color, 1);
     }
 
     .e-numericitem.e-focused,
@@ -127,18 +153,12 @@
 
     @media (max-width: 590px) {
       .e-pager-default:hover {
-        background: $pager-bg-color;
-        color: $pager-mhover-color;
-        opacity: $pager-content-opacity;
+        @include background-color-opacity-styles($pager-bg-color, $pager-mhover-color, $pager-content-opacity);
       }
     }
 
     &.e-rtl {
-
-      & .e-numericitem {
-        border-left-color: $pager-border-color;
-      }
-
+      & .e-numericitem,
       & .e-firstpage,
       & .e-prevpage,
       & .e-firstpagedisabled,
@@ -146,10 +166,7 @@
       & .e-nextpage,
       & .e-lastpage,
       & .e-nextpagedisabled,
-      & .e-lastpagedisabled {
-        border-left-color: $pager-border-color;
-      }
-
+      & .e-lastpagedisabled,
       & .e-nextpage,
       & .e-nextpagedisabled {
         border-left-color: $pager-border-color;

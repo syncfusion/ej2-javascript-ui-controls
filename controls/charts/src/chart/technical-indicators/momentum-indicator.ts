@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -11,9 +8,12 @@ import { Chart } from '../chart';
  */
 export class MomentumIndicator extends TechnicalAnalysis {
     /**
-     * Defines the collection of series to represent a momentum indicator
+     * Defines the collection of series to represent a momentum indicator.
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the series collection is initialized.
+     * @param {Chart} chart - The chart associated with the technical indicator.
+     * @returns {void}
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         super.initSeriesCollection(indicator, chart);
@@ -26,6 +26,8 @@ export class MomentumIndicator extends TechnicalAnalysis {
      * Defines the predictions using momentum approach
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         const upperCollection: Points[] = [];
@@ -56,24 +58,25 @@ export class MomentumIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * To destroy the momentum indicator
+     * To destroy the momentum indicator.
      *
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys the momentum indicator
+         * Destroys the momentum indicator.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'MomentumIndicator';
     }

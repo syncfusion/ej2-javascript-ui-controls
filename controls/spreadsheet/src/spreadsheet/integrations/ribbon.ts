@@ -1,14 +1,14 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
-import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, updateSortCollection } from '../common/index';
+import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, updateSortCollection, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze, toggleProtect } from '../common/index';
-import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
+import { dialog, reapplyFilter, enableFileMenuItems, protectCellFormat, protectWorkbook } from '../common/index';
 import { DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, completeAction, applySort, hideRibbonTabs } from '../common/index';
 import { enableToolbarItems, ribbonClick, paste, locale, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink, clearFilter } from '../common/index';
 import { addRibbonTabs, addToolbarItems, hideFileMenuItems, addFileMenuItems, hideToolbarItems, enableRibbonTabs } from '../common/index';
-import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel, Tab } from '@syncfusion/ej2-navigations';
 import { ItemModel as TlbItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { ColorPicker, ColorPickerEventArgs, PaletteTileEventArgs } from '@syncfusion/ej2-inputs';
@@ -19,7 +19,7 @@ import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFo
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { SortCollectionModel, applyNumberFormatting, getFormattedCellObject, getRangeIndexes, setMerge, unMerge } from '../../workbook/common/index';
+import { SortCollectionModel, applyNumberFormatting, getDataRange, getFormattedCellObject, getRangeIndexes, getSwapRange, setMerge, unMerge } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
 import { SortOrder, NumberFormatType, SetCellFormatArgs, CFArgs, clearCFRule, NumberFormatArgs } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
@@ -28,7 +28,7 @@ import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { insertDesignChart, removeDesignChart, isImported } from '../common/index';
-import { refreshRibbonIcons, ChartTheme, beginAction, count, setCFRule, addFormatToCustomFormatDlg } from '../../workbook/common/index';
+import { refreshRibbonIcons, ChartTheme, beginAction, setCFRule, addFormatToCustomFormatDlg } from '../../workbook/common/index';
 import { currencyFormat, findToolDlg } from '../../workbook/common/index';
 
 /**
@@ -85,7 +85,7 @@ export class Ribbon {
     private getRibbonMenuItems(): MenuItemModel[] {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const id: string = this.parent.element.id;
-        return [{
+        const menuItems: MenuItemModel[] = [{
             text: this.parent.isMobileView() ? '' : l10n.getConstant('File'),
             iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null, id: `${id}_File`,
             items: [
@@ -99,8 +99,13 @@ export class Ribbon {
                         { text: l10n.getConstant('CSV'), id: `${id}_Csv`, iconCss: 'e-csv e-icons' },
                         { text: l10n.getConstant('PDF'), id: `${id}_Pdf`, iconCss: 'e-pdf e-icons' }
                     ]
-                }]
+                }
+            ]
         }];
+        if (this.parent.allowPrint) {
+            menuItems[0].items.push({ text: l10n.getConstant('Print'), id: `${id}_Print`, iconCss: 'e-print e-icons' });
+        }
+        return menuItems;
     }
 
 
@@ -502,7 +507,7 @@ export class Ribbon {
         numFormatBtn.appendChild(numFormatText);
         const customFormatData: string[] = ['General', '0', '0.00', '#,##0', '#,##0.00', '#,##0_);(#,##0)', '#,##0_);[Red](#,##0)',
             '#,##0.00_);(#,##0.00)', '#,##0.00_);[Red](#,##0.00)', currencyFormat.currency[4], currencyFormat.currency[2],
-            currencyFormat.currency[3], currencyFormat.currency[5],'0%', '0.00%', '0.00E+00', '##0.0E+0', '# ?/?', '# ??/??', 'dd-MM-yy',
+            currencyFormat.currency[3], currencyFormat.currency[5], '0%', '0.00%', '0.00E+00', '##0.0E+0', '# ?/?', '# ??/??', 'dd-MM-yy',
             'dd-MMM-yy', 'dd-MMM', 'MMM-yy', 'h:mm AM/PM', 'h:mm:ss AM/PM', 'h:mm', 'h:mm:ss', 'dd-MM-yy h:mm', 'mm:ss', 'mm:ss.0', '@',
             '[h]:mm:ss', currencyFormat.accounting[1], '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)', currencyFormat.accounting[0],
             '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'];
@@ -528,7 +533,7 @@ export class Ribbon {
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.tBarDdbBeforeOpen(
                     args.element, args.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('NumberFormat'));
-            },
+            }
         });
         this.numFormatDDB.createElement = this.parent.createElement;
         this.numFormatDDB.appendTo(numFormatBtn);
@@ -709,15 +714,15 @@ export class Ribbon {
         let cultureText: string = l10n.getConstant('ClusteredColumn');
         const clusteredColumn: HTMLElement = this.parent.createElement(
             'span', { id: 'clusteredColumn', className: 'e-clusteredcolumn e-column-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedColumn');
         const stackedColumn: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedColumn', className: 'e-stackedcolumn e-column-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedColumn100');
         const stackedColumn100: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedColumn100', className: 'e-stackedcolumn100 e-column-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         const clusteredColumn3D: HTMLElement = this.parent.createElement(
             'span', { id: 'clusteredColumn3D', className: 'e-clusteredColumn3D e-column-icon' });
         const stackedColumn3D: HTMLElement =
@@ -738,15 +743,15 @@ export class Ribbon {
         cultureText = l10n.getConstant('ClusteredBar');
         const clusteredBar: HTMLElement = this.parent.createElement(
             'span', { id: 'clusteredBar', className: 'e-clusteredbar e-bar-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedBar');
         const stackedBar: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedBar', className: 'e-stackedbar e-bar-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedBar100');
         const stackedBar100: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedBar100', className: 'e-stackedbar100 e-bar-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         const clusteredBar3D: HTMLElement =
             this.parent.createElement('span', { id: 'clusteredBar3D', className: 'e-clusteredBar3D e-bar-icon' });
         const stackedBar3D: HTMLElement =
@@ -767,15 +772,15 @@ export class Ribbon {
         cultureText = l10n.getConstant('Area');
         const defArea: HTMLElement = this.parent.createElement(
             'span', { id: 'area', className: 'e-area e-area-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedArea');
         const stackedArea: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedArea', className: 'e-stackedarea e-area-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedArea100');
         const stackedArea100: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedArea100', className: 'e-stackedarea100 e-area-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         areaCont.appendChild(defArea); areaCont.appendChild(stackedArea); areaCont.appendChild(stackedArea100);
 
         const line: HTMLElement =
@@ -790,29 +795,30 @@ export class Ribbon {
         cultureText = l10n.getConstant('Line');
         const defLine: HTMLElement = this.parent.createElement(
             'span', { id: 'line', className: 'e-line e-line-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedLine');
         const stackedLine: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedLine', className: 'e-stackedline e-line-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedLine100');
         const stackedLine100: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedLine100', className: 'e-stackedline100 e-line-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('LineMarker');
         const defLineMarker: HTMLElement = this.parent.createElement(
             'span', { id: 'lineMarker', className: 'e-line-marker e-line-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedLineMarker');
         const stackedLineMarker: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedLineMarker', className: 'e-stackedline-marker e-line-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('StackedLine100Marker');
         const stackedLine100Marker: HTMLElement = this.parent.createElement(
             'span', { id: 'stackedLine100Marker', className: 'e-stackedline100-marker e-line-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         lineCont.appendChild(defLine); lineCont.appendChild(stackedLine); lineCont.appendChild(stackedLine100);
-        lineContMarker.appendChild(defLineMarker); lineContMarker.appendChild(stackedLineMarker); lineContMarker.appendChild(stackedLine100Marker);
+        lineContMarker.appendChild(defLineMarker); lineContMarker.appendChild(stackedLineMarker);
+        lineContMarker.appendChild(stackedLine100Marker);
         const pie: HTMLElement = this.parent.createElement('div', { id: 'pie_main', className: 'e-pie-main' });
         const pieText: HTMLElement = this.parent.createElement('div', { id: 'pie_text', className: 'e-pie-text' });
         pieText.innerText = l10n.getConstant('Pie');
@@ -822,11 +828,11 @@ export class Ribbon {
         cultureText = l10n.getConstant('Pie');
         const defPie: HTMLElement = this.parent.createElement(
             'span', { id: 'pie', className: 'e-pie e-pie-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         cultureText = l10n.getConstant('Doughnut');
         const doughnut: HTMLElement = this.parent.createElement(
             'span', { id: 'doughnut', className: 'e-doughnut e-pie-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         pieCont.appendChild(defPie); pieCont.appendChild(doughnut);
 
         const radar: HTMLElement = this.parent.createElement('div', { id: 'radar_main', className: 'e-radar-main' });
@@ -851,7 +857,7 @@ export class Ribbon {
         scatter.appendChild(scatterCont);
         const defscatter: HTMLElement = this.parent.createElement(
             'span', { id: 'scatter', className: 'e-scatter e-scatter-icon e-menu-icon e-icons',
-            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         scatterCont.appendChild(defscatter);
         chartMenu.createElement = this.parent.createElement;
         chartMenu.appendTo(ul);
@@ -1127,7 +1133,7 @@ export class Ribbon {
                     cultureText = l10n.getConstant(icon.key);
                     iconWrap = this.parent.createElement(
                         'div', { id: icon.id || icon.key, className: `e-${icon.cls} e-is-wrapper`,
-                        attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
                     for (countIdx = 0; countIdx < icon.count; countIdx++) {
                         iconWrap.appendChild(this.createElement('span', `e-${icon.cls}-${countIdx + 1} e-iconsetspan`));
                     }
@@ -1260,23 +1266,23 @@ export class Ribbon {
         const id: string = this.parent.element.id;
         const bordersMenu: Menu = new Menu({
             cssClass: 'e-borders-menu',
-            items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders'), id:`${id}_border_topborders` }, {
+            items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders'), id: `${id}_border_topborders` }, {
                 iconCss: 'e-icons e-left-borders',
-                text: l10n.getConstant('LeftBorders'), id:`${id}_border_leftborders`
-            }, { iconCss: 'e-icons e-right-borders', text: l10n.getConstant('RightBorders'), id:`${id}_border_rightborders` }, {
-                iconCss: 'e-icons e-bottom-borders', text: l10n.getConstant('BottomBorders'), id:`${id}_border_bottomborders`
+                text: l10n.getConstant('LeftBorders'), id: `${id}_border_leftborders`
+            }, { iconCss: 'e-icons e-right-borders', text: l10n.getConstant('RightBorders'), id: `${id}_border_rightborders` }, {
+                iconCss: 'e-icons e-bottom-borders', text: l10n.getConstant('BottomBorders'), id: `${id}_border_bottomborders`
             }, {
                 iconCss: 'e-icons e-all-borders', text:
-                    l10n.getConstant('AllBorders'), id:`${id}_border_allborders`
-            }, { iconCss: 'e-icons e-horizontal-borders', text: l10n.getConstant('HorizontalBorders'), id:`${id}_border_horizontalborders` }, {
-                iconCss: 'e-icons e-vertical-borders', text: l10n.getConstant('VerticalBorders'), id:`${id}_border_verticalborders`
+                    l10n.getConstant('AllBorders'), id: `${id}_border_allborders`
+            }, { iconCss: 'e-icons e-horizontal-borders', text: l10n.getConstant('HorizontalBorders'), id: `${id}_border_horizontalborders` }, {
+                iconCss: 'e-icons e-vertical-borders', text: l10n.getConstant('VerticalBorders'), id: `${id}_border_verticalborders`
             }, {
                 iconCss: 'e-icons e-outside-borders',
-                text: l10n.getConstant('OutsideBorders'), id:`${id}_border_outsideborders`
-            }, { iconCss: 'e-icons e-inside-borders', text: l10n.getConstant('InsideBorders'), id:`${id}_border_insideborders` },
-            { iconCss: 'e-icons e-no-borders', text: l10n.getConstant('NoBorders'), id:`${id}_border_noborders` }, { separator: true }, {
+                text: l10n.getConstant('OutsideBorders'), id: `${id}_border_outsideborders`
+            }, { iconCss: 'e-icons e-inside-borders', text: l10n.getConstant('InsideBorders'), id: `${id}_border_insideborders` },
+            { iconCss: 'e-icons e-no-borders', text: l10n.getConstant('NoBorders'), id: `${id}_border_noborders` }, { separator: true }, {
                 text:
-                    l10n.getConstant('BorderColor'), items: [{ id: `${id}_border_colors` }], id:`${id}_border_bordercolor`
+                    l10n.getConstant('BorderColor'), items: [{ id: `${id}_border_colors` }], id: `${id}_border_bordercolor`
             }, {
                 text: l10n.getConstant('BorderStyle'), items: [
                     { iconCss: 'e-icons e-selected-icon', id: `${id}_1px` }, { id: `${id}_2px` },
@@ -1322,7 +1328,7 @@ export class Ribbon {
             onClose: (): void => focus(bordersMenu.element),
             select: (args: MenuEventArgs): void => {
                 this.borderSelected(args, bordersMenu);
-            },
+            }
         });
         bordersMenu.createElement = this.parent.createElement;
         bordersMenu.appendTo(ul);
@@ -1441,7 +1447,7 @@ export class Ribbon {
                 fontNameBtn.setAttribute('aria-label', args.item.text);
                 if (!eventArgs.cancel) { this.refreshFontNameSelection(eventArgs.style.fontFamily); }
             },
-            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>{
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.tBarDdbBeforeOpen(
                     args.element, args.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant(('Font')));
             }
@@ -1452,7 +1458,7 @@ export class Ribbon {
     }
 
     private getBtn(id: string, name: string, text: string, bindEvent: boolean = true): Element {
-        const btnObj: Button = new Button({ iconCss: `e-icons e-${name}-icon`,cssClass:'e-flat',isToggle: true });
+        const btnObj: Button = new Button({ iconCss: `e-icons e-${name}-icon`, cssClass: 'e-flat', isToggle: true });
         btnObj.createElement = this.parent.createElement;
         btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}`, attrs: { 'aria-label': text, 'type': 'button' } }));
         if (bindEvent) {
@@ -1497,7 +1503,7 @@ export class Ribbon {
                     break;
                 }
                 this.datavalidationDdb.element.setAttribute('aria-label', args.item.text);
-            },
+            }
         });
         this.datavalidationDdb.createElement = this.parent.createElement;
         this.datavalidationDdb.appendTo(
@@ -1618,6 +1624,10 @@ export class Ribbon {
     private merge(itemId: string): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const indexes: number[] = getRangeIndexes(sheet.selectedRange); let cell: CellModel;
+        if (isReadOnlyCells(this.parent, getSwapRange(indexes))) {
+            this.parent.notify(readonlyAlert, null);
+            return;
+        }
         let isDataPresent: boolean;
         const isMergeAll: boolean = itemId.includes('merge_all');
         for (let i: number = indexes[0]; i <= indexes[2]; i++) {
@@ -1704,7 +1714,7 @@ export class Ribbon {
                 const eventArgs: { [key: string]: boolean } = { isFiltered: false, isClearAll: true };
                 this.parent.notify(getFilteredColumn, eventArgs);
                 if (!this.parent.allowSorting && (args.item.text === l10n.getConstant('SortAscending') ||
-                    args.item.text===l10n.getConstant('SortDescending') || args.item.text ===(l10n.getConstant('CustomSort') + '...'))) {
+                    args.item.text === l10n.getConstant('SortDescending') || args.item.text === (l10n.getConstant('CustomSort') + '...'))) {
                     args.element.classList.add('e-disabled');
                 }
                 if (!this.parent.allowFiltering && args.item.text === (l10n.getConstant('Filter'))) {
@@ -1724,6 +1734,16 @@ export class Ribbon {
                     'aria-label', (this.parent.serviceLocator.getService(locale) as L10n).getConstant('SortAndFilter'));
             },
             select: (args: MenuEventArgs): void => {
+                const prevSort: SortCollectionModel[] = [];
+                if (args.item.text === l10n.getConstant('SortAscending') || args.item.text === l10n.getConstant('SortDescending') ||
+                    args.item.text === l10n.getConstant('CustomSort') + '...') {
+                    const range: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    const sortRange: number[] = getDataRange(range[0], range[1], this.parent.getActiveSheet());
+                    if (isReadOnlyCells(this.parent, sortRange)) {
+                        this.parent.notify(readonlyAlert, null);
+                        return;
+                    }
+                }
                 switch (args.item.text) {
                 case l10n.getConstant('Filter'):
                     this.parent.notify(initiateFilterUI, {});
@@ -1739,10 +1759,10 @@ export class Ribbon {
                     break;
                 default:
                     direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
-                    let prevSort: SortCollectionModel[] = [];
                     if (this.parent.sortCollection) {
                         for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
-                            if (this.parent.sortCollection[i as number] && this.parent.sortCollection[i as number].sheetIndex === this.parent.activeSheetIndex) {
+                            if (this.parent.sortCollection[i as number] &&
+                                this.parent.sortCollection[i as number].sheetIndex === this.parent.activeSheetIndex) {
                                 prevSort.push(this.parent.sortCollection[i as number]);
                                 this.parent.sortCollection.splice(i, 1);
                             }
@@ -1753,7 +1773,7 @@ export class Ribbon {
                     break;
                 }
                 this.sortingDdb.element.setAttribute('aria-label', args.item.text);
-            },
+            }
         });
         this.sortingDdb.createElement = this.parent.createElement;
         this.sortingDdb.appendTo(
@@ -1791,7 +1811,7 @@ export class Ribbon {
             select: (args: MenuEventArgs): void => {
                 this.parent.notify(clearViewer, { options: { type: args.item.id.replace(id + '_', '') }, isAction: true });
                 this.clearDdb.element.setAttribute('aria-label', args.item.text);
-            },
+            }
         });
         this.clearDdb.createElement = this.parent.createElement;
         this.clearDdb.appendTo(
@@ -1885,7 +1905,8 @@ export class Ribbon {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const items: ItemModel[] = [];
         const themes: string[] = ['Material', 'Fabric', 'Bootstrap', 'HighContrastLight', 'MaterialDark', 'FabricDark', 'HighContrast',
-            'BootstrapDark', 'Bootstrap4', 'Bootstrap5Dark', 'Bootstrap5', 'TailwindDark', 'Tailwind', 'FluentDark', 'Fluent', 'Material3','Material3Dark'];
+            'BootstrapDark', 'Bootstrap4', 'Bootstrap5Dark', 'Bootstrap5', 'TailwindDark', 'Tailwind', 'FluentDark', 'Fluent', 'Fluent2', 'Fluent2Dark',
+            'Material3', 'Material3Dark'];
         themes.forEach((id: string): void => {
             items.push({ id: id, text: l10n.getConstant(id), iconCss: id === theme ? 'e-icons e-selected-icon' : '' });
         });
@@ -1924,15 +1945,20 @@ export class Ribbon {
         const actionArgs: BeforeCellFormatArgs = {
             range: sheet.name + '!' + eventArgs.range, format: eventArgs.format, requestType: 'NumberFormat'
         };
-        this.parent.trigger('beforeCellFormat', eventArgs);
-        this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
-        if (eventArgs.cancel) {
-            return;
+        const isReadonly: boolean = isReadOnlyCells(this.parent, getSwapRange(getRangeIndexes(eventArgs.range)));
+        if (!isReadonly) {
+            this.parent.trigger('beforeCellFormat', eventArgs);
+            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
+            if (eventArgs.cancel) {
+                return;
+            }
         }
         this.parent.notify(applyNumberFormatting, eventArgs);
         this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
         this.refreshNumFormatSelection(text);
-        this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
+        if (!isReadonly) {
+            this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
+        }
     }
 
     private renderCustomFormatDialog(formatData: string[]): void {
@@ -2229,6 +2255,9 @@ export class Ribbon {
         let dialogInst: Dialog;
         if (!selectArgs.cancel) {
             switch (args.item.id) {
+            case `${id}_Print`:
+                this.parent.print();
+                break;
             case `${id}_Open`:
                 select('#' + id + '_fileUpload', this.parent.element).click();
                 focus(this.parent.element);
@@ -2362,7 +2391,7 @@ export class Ribbon {
                 }
             }
             const text: string = this.getLocaleText(args.props);
-            if(args.props === 'GridLines') {
+            if (args.props === 'GridLines') {
                 (this.parent.serviceLocator.getService('sheet') as IRenderer).toggleGridlines();
             }
             const id: string = `${this.parent.element.id}_${args.props.toLowerCase()}`;
@@ -2722,7 +2751,7 @@ export class Ribbon {
                 const tabItem: HTMLElement = this.ribbon.element.querySelector('.e-tab-header .e-toolbar-item .e-tab-wrap');
                 if (tabItem) {
                     focus(tabItem);
-                    const menuItem: HTMLElement = tabItem.querySelector('.e-menu-item.e-focused')
+                    const menuItem: HTMLElement = tabItem.querySelector('.e-menu-item.e-focused');
                     if (menuItem) {
                         menuItem.classList.remove('e-focused');
                     }
@@ -2881,6 +2910,11 @@ export class Ribbon {
         const ribbonEle: HTMLElement = this.ribbon ? this.ribbon.element : null;
         const cPickerEle: HTMLElement = this.cPickerEle;
         const id: string = parentElem.id;
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const ribbonTabObj: Tab = getComponent(parentElem.querySelector('.e-tab') as HTMLElement, 'tab') as Tab;
+        let curTabIndex: number;
+        if (ribbonTabObj) { curTabIndex = ribbonTabObj.selectedItem; }
+        this.switchRibbonTab(l10n.getConstant('Home'));
         ['bold', 'italic', 'line-through', 'underline'].forEach((name: string): void => {
             destroyComponent(select('#' + `${id}_${name}`, parentElem), Button);
         });
@@ -2903,6 +2937,10 @@ export class Ribbon {
         if (this.cfDdb) { this.cfDdb.destroy(); } this.cfDdb = null;
         this.detachPopupElement(id);
         this.parent.notify('destroyRibbonComponents', null);
+        if (curTabIndex) { ribbonTabObj.selectedItem = curTabIndex; ribbonTabObj.dataBind(); }
+        if (this.addChartDdb) { this.addChartDdb.destroy(); this.addChartDdb = null; }
+        this.destroyComponent(id + '_chart_theme', 'menu'); this.destroyComponent(id + '_chart_theme', 'dropdown-btn');
+        this.destroyComponent(id + '_chart-type-btn', 'menu'); this.destroyComponent(id + '_chart-type-btn', 'dropdown-btn');
         if (this.ribbon) { this.ribbon.destroy(); }
         if (ribbonEle) {
             detach(ribbonEle);
@@ -2941,6 +2979,25 @@ export class Ribbon {
             const ddbPopup: HTMLElement = document.getElementById(`${id}${selector}-popup`);
             if (ddbPopup) { detach(ddbPopup); }
         });
+    }
+    private switchRibbonTab(tabInnerText: string): void {
+        let tabId: string;
+        const tabTextElements: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-tab-text');
+        for (let i: number = 0; i < tabTextElements.length; i++) {
+            const element: Element = tabTextElements[i as number];
+            if (element.textContent.toLowerCase() === tabInnerText.toLowerCase()) {
+                const parentElement: Element = element.closest('.e-toolbar-item');
+                if (parentElement) {
+                    tabId = parentElement.getAttribute('data-id');
+                    break;
+                }
+            }
+        }
+        const tabObj: Tab = getComponent(this.parent.element.querySelector('.e-tab') as HTMLElement, 'tab') as Tab;
+        if (tabObj && !isNullOrUndefined(tabId)) {
+            tabObj.selectedItem = tabObj.getItemIndex(tabId);
+            tabObj.dataBind();
+        }
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {

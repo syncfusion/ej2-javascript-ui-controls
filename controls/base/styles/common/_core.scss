@@ -1,8 +1,8 @@
 @include export-module('base-core') {
 
-  /*! common core */
   .e-control,
-  .e-css  {
+  .e-css,
+  .e-error {
     font-family: $font-family;
     font-size: $font-size;
     font-weight: $font-weight;
@@ -10,9 +10,8 @@
 
   $white: #fff;
   $background: #e82824;
-
   $warning: #ffd800;
-  $yellow: #ffff00;
+  $yellow: #ff0;
   .e-error {
     @if $skin-name == 'Material3' {
       color: rgba($error-font-color);
@@ -20,9 +19,6 @@
     @else {
       color: $error-font-color;
     }
-    font-family: $font-family;
-    font-size: $font-size;
-    font-weight: $font-weight;
   }
 
   .e-control,

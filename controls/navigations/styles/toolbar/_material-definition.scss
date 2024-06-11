@@ -1,4 +1,3 @@
-/*! component's theme wise override definitions and variables */
 $tbar-skin: 'material' !default;
 $tbar-pop-icon-bgr-padding: 0;
 $tbar-pop-btn-txt-bgr-pad: 0;
@@ -23,7 +22,6 @@ $tbar-radius: 0;
 $tbar-pop-radius: 0;
 $tbar-separator-border-type: $border-type;
 $tbar-pop-box-shadow: 0 2px 2px 1px rgba(0, 0, 0, .21);
-
 $tbar-default-bg: $grey-50 !default;
 $tbar-items-default-bg: $tbar-default-bg !default;
 $tbar-pop-bg: $tbar-default-bg !default;
@@ -38,9 +36,7 @@ $tbar-border-radius: $border-radius !default;
 $tbar-tab-highlight-color:  rgba(0, 0, 0, 0) !default;
 $tbar-border-nav-type: solid !default;
 $tbar-btn-box-shadow: none !default;
-
 $tbar-active-bg: $grey-400 !default;
-
 $tbar-nrml-size: 42px !default;
 $tbar-bgr-size: 56px !default;
 $tbar-nrml-items-size: 42px !default;
@@ -58,7 +54,6 @@ $tbar-nav-bgr-width: 40px !default;
 $tbar-popup-padding: 0 !default;
 $tbar-btn-border-radius: 2px !default;
 $tbar-btn-pressed-box-shadow: none !default;
-
 $tbar-item-bgr-padding: 5px !default;
 $tbar-item-nrml-padding: 3.5px !default;
 $btn-txt-nrml-padding: 0 2px 0 2px !default;
@@ -71,7 +66,6 @@ $tbar-multirow-items-mrgn-bigger: 24px !default;
 $tbar-multirow-items-mrgn-small: 18px !default;
 $tbar-multirow-item-top-btm-mrgn-bigger: 0 !default;
 $tbar-multirow-item-top-btm-mrgn-small: 0 !default;
-
 $tbar-btn-nrml-mrgn: 4px 0 !default;
 $tbar-separator-nrml-mrgn: 7.5px 3px !default;
 $tbar-separator-bgr-mrgn: 10px 5px !default;
@@ -90,7 +84,6 @@ $tbar-btn-bgr-focus-padding: 0 6px !default;
 $tbar-btn-nrml-padding: $tbar-zero-value 1.5px !default;
 $tbar-pop-btn-bgr-padding: $tbar-zero-value 16px !default;
 $tbar-pop-btn-nrml-padding: $tbar-zero-value 16px !default;
-
 $tbar-btn-border: none !default;
 $tbar-nav-press-border: 0 !default;
 $tbar-nav-hover-border: 1px solid rgba($grey-black, .12) !default;
@@ -108,7 +101,6 @@ $tbar-popup-rtl-border-width: 0 1px 0 0 !default;
 $tbar-popup-vertical-border-width: $border-size 0 0 0 !default;
 $tbar-popup-vertical-rtl-border-width: 0 0 $border-size 0 !default;
 $tbar-item-pop-bg-color: transparent !default;
-
 $tbar-btn-font-size: 14px !default;
 $tbar-btn-txt-font-size: $tbar-btn-font-size !default;
 $tbar-hover-bg: rgba($grey-black, .12) !default;
@@ -121,24 +113,19 @@ $tbar-hover-font: $tbar-default-font !default;
 $tbar-default-font-overlay: rgba($grey-light-font, .38) !default;
 $tbar-active-font-color: $tbar-default-font !default;
 $tbar-press-font: $tbar-default-font !default;
-
 $tbar-pressed-bg: $tbar-hover-bg !default;
 $tbar-pressed-border: $tbar-hover-border-color !default;
 $tbar-pressed-font: $tbar-hover-font !default;
 $tbar-select-font: $tbar-hover-font !default;
-
 $tbar-default-icon-overlay: rgba($grey-light-font, .26) !default;
 $tbar-separator-border: rgba($grey-black, .12) !default;
 $tbar-default-border: $tbar-separator-border !default;
-
 $tbar-bgr-btn-text-font-size: 14px !default;
 $tbar-bgr-btn-icon-font-size: 14px !default;
 $tbar-bgr-btn-focus-padding: 0 6px !default;
-
 $tbar-nrml-btn-border-radius: 2px !default;
 $tbar-nrml-btn-focus-padding: 0 1.5px !default;
 $tbar-nrml-btn-focus-outline: 0 !default;
-
 $tbar-btn-icons-focus-color: $tbar-default-icon-color !default;
 $tbar-btn-text-focus-color: $tbar-default-font !default;
 $tbar-btn-focus-border-color: $tbar-focus-border-color !default;
@@ -154,14 +141,12 @@ $tbar-btn-pressed-text-color: rgba($grey-black, .87) !default;
 $tbar-btn-pressed-focus-box-shadow: none !default;
 $tbar-btn-pressed-bg: mix($tbar-btn-pressed-text-color, transparent, 24%) !default;
 $tbar-flat-btn-active-box-shadow: none !default;
-
 $tbar-ext-btn-focus-padding: 0 1.5px !default;
 $tbar-ext-btn-icon-padding: 0 !default;
 $tbar-ext-btn-icon-font-size: 14px !default;
 $tbar-ext-btn-focus-box-shadow: none !default;
 $tbar-ext-btn-hover-border-color: $tbar-hover-border-color !default;
 $tbar-ext-btn-border: none !default;
-
 $tbar-popup-icon-font-size: 12px !default;
 $tbar-popup-text-btn-icon-padding: 0 !default;
 $tbar-popup-bgr-text-btn-icon-padding: 0 !default;
@@ -199,7 +184,6 @@ $tbar-popup-nav-pressed-border-size: 0 !default;
 $tbar-popup-nav-pressed-focus-border-color: $tbar-pressed-bg !default;
 $tbar-popup-nav-pressed-focus-border-size: 0 !default;
 $tbar-popup-btn-hover-border-size: $tbar-zero-value !default;
-
 $tbar-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
 $tbar-ribble-animation-shadow-frame: 0 0 0 0 $tbar-ribble-animation-border-frame !default;
 $tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;

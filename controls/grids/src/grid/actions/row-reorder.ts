@@ -44,7 +44,10 @@ export class RowDD {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private helper: Function = (e: { sender: MouseEventArgs }) => {
         const gObj: IGrid = this.parent;
-        const target: Element = this.draggable.currentStateTarget as Element;
+        let target: Element = this.draggable.currentStateTarget as Element;
+        if (!isNullOrUndefined(target) && gObj.rowDropSettings.targetID && !isNullOrUndefined(target.classList) && !target.classList.contains('e-rowcell')) {
+            target = parentsUntil(target as Element, 'e-rowcell');
+        }
         const visualElement: HTMLElement = this.parent.createElement('div', {
             className: 'e-cloneproperties e-draganddrop e-grid e-dragclone',
             styles: 'height:"auto", z-index:2, width:' + gObj.element.offsetWidth
@@ -53,7 +56,7 @@ export class RowDD {
         const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
 
         if (document.getElementsByClassName('e-griddragarea').length ||
-            (gObj.rowDropSettings.targetID && ((!(target as Element).classList.contains('e-selectionbackground')
+            (gObj.rowDropSettings.targetID && ((!isNullOrUndefined(target) && !(target as Element).classList.contains('e-selectionbackground')
                 && gObj.selectionSettings.type !== 'Single') || !parentsUntil(target as Element, 'e-rowcell'))) ||
             (!gObj.rowDropSettings.targetID && !parentsUntil(target as Element, 'e-rowdragdrop'))) {
             return false;

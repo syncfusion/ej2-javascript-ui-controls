@@ -192,11 +192,11 @@ export class ListDialog {
             this.numberFormatDiv.classList.add('e-de-rtl');
         }
         const startAtTextBox: HTMLInputElement = document.getElementById(containerId + '_startAt') as HTMLInputElement;
-        startAtTextBox.setAttribute('aria-label','startAt');
+        startAtTextBox.setAttribute('aria-label', 'startAt');
         const textIndentAtTextBox: HTMLInputElement = document.getElementById(containerId + '_textIndent') as HTMLInputElement;
-        textIndentAtTextBox.setAttribute('aria-label','textIndent');
+        textIndentAtTextBox.setAttribute('aria-label', 'textIndent');
         const alignedAtTextBox: HTMLInputElement = document.getElementById(containerId + '_alignedAt') as HTMLInputElement;
-        alignedAtTextBox.setAttribute('aria-label','alignedAt');
+        alignedAtTextBox.setAttribute('aria-label', 'alignedAt');
         this.startAt = new NumericTextBox({
             format: '#',
             decimals: 0,
@@ -257,7 +257,7 @@ export class ListDialog {
      * @returns {void}
      */
     private onTextIndentChanged = (args: ChangeEventArgs): void => {
-        if(!args.isInteracted) {
+        if (!args.isInteracted) {
             return;
         }
         this.viewModel.listLevel.paragraphFormat.leftIndent = args.value as number;
@@ -268,7 +268,7 @@ export class ListDialog {
      * @returns {void}
      */
     private onStartValueChanged = (args: ChangeEventArgs): void => {
-        if(!args.isInteracted) {
+        if (!args.isInteracted) {
             return;
         }
         if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
@@ -302,10 +302,11 @@ export class ListDialog {
      * @returns {void}
      */
     private onAlignedAtValueChanged = (args: ChangeEventArgs): void => {
-        if(!args.isInteracted) {
+        if (!args.isInteracted) {
             return;
         }
-        this.viewModel.listLevel.paragraphFormat.firstLineIndent = this.alignedAt.value  - this.viewModel.listLevel.paragraphFormat.leftIndent;
+        this.viewModel.listLevel.paragraphFormat.firstLineIndent =
+            this.alignedAt.value - this.viewModel.listLevel.paragraphFormat.leftIndent;
     };
     private updateRestartLevelBox(): void {
         const containerId: string = this.documentHelper.owner.containerId;
@@ -349,7 +350,7 @@ export class ListDialog {
      * @returns {void}
      */
     private onLevelPatternValueChanged = (args: ChangeEventArgs): void => {
-        if(!args.isInteracted) {
+        if (!args.isInteracted) {
             return;
         }
         this.viewModel.listLevelPattern = args.value as ListLevelPattern;
@@ -419,7 +420,7 @@ export class ListDialog {
             this.documentHelper.selection.caret.style.display = 'none';
         }
     };
-    
+
     private calculateAlignedAt(): number {
         if (this.viewModel.listLevel.paragraphFormat.firstLineIndent < 0) {
             return this.viewModel.listLevel.paragraphFormat.leftIndent + this.viewModel.listLevel.paragraphFormat.firstLineIndent;
@@ -456,7 +457,9 @@ export class ListDialog {
         this.documentHelper.owner.fontDialogModule.showFontDialog(this.listLevel.characterFormat, true);
     };
     /**
+     * @param {WCharacterFormat} format - Specifies the character format.
      * @private
+     * @returns {void}
      */
     public updateCharacterFormat(format: WCharacterFormat): void {
         this.listLevel.characterFormat.copyFormat(format);

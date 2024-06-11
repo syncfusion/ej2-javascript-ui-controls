@@ -1,9 +1,4 @@
-/*! Tab's material3 theme wise override definitions and variables */
-/* stylelint-disable */
-/*! Horizontal Tab */
 $tab-skin: 'material3' !default;
-
-// font definitions
 $tab-font-family: $font-family !default;
 $tab-big-vertical-nav-arrow-font-size: $text-2xl !default;
 $tab-nrml-vertical-nav-arrow-font-size: $text-lg !default;
@@ -13,8 +8,6 @@ $tab-nrml-font-size: $text-sm !default;
 $tab-font-weight: 500 !default;
 $tab-semi-font-weight: 500 !default;
 $tab-light-font-weight: 500 !default;
-
-// dimension definitions
 $tab-big-height: 48px !default;
 $tab-nrml-height: 40px !default;
 $tab-focus-big-height: 48px !default;
@@ -136,7 +129,7 @@ $tab-big-fill-tb-wrap-height: auto !default;
 $tab-nrml-fill-tb-wrap-height: auto !default;
 $tab-fill-active-wrap-corner: 3px 3px 0 0 !default;
 $tab-fill-even-active-wrap-corner: 0 0 3px 3px !default;
-$tab-alt-tb-active-bg-color: rgba($transparent, 0.0001) !default;
+$tab-alt-tb-active-bg-color: rgba($transparent, .0001) !default;
 $tab-fill-big-wrap-padding: 0 16px !default;
 $tab-fill-nrml-wrap-padding: 0 12px !default;
 $tab-mob-fill-wrap-padding: 0 15px !default;
@@ -258,8 +251,6 @@ $tab-big-nav-tb-icon-top: 0 !default;
 $tab-nrml-nav-tb-icon-top: 0 !default;
 $tab-big-nav-icons-top: -2px !default;
 $tab-nrml-nav-icons-top: 0 !default;
-
-// color definitions
 $tab-border-color: rgba($primary) !default;
 $tab-hover-border-color: $transparent !default;
 $tab-disable-border-color: rgba($transparent, .38) !default;
@@ -330,7 +321,7 @@ $tab-active-nav-icon-color: $tab-active-text-color !default;
 $tab-hover-nav-icon-color: $tab-hover-text-color !default;
 $tab-alt-hover-nav-icon-color: $tab-alt-hover-text-color !default;
 $tab-disable-nav-icon-color: rgba($content-text-color-alt1) !default;
-$tab-nav-focus-bg-color: ($content-bg-color-focus, 0.1) !default;
+$tab-nav-focus-bg-color: ($content-bg-color-focus, .1) !default;
 $tab-nav-focus-icon-color: rgba($icon-color) !default;
 $tab-bg-nav-focus-icon-color: rgba($icon-color) !default;
 $tab-pop-icon-color: rgba($icon-color) !default;
@@ -340,14 +331,12 @@ $tab-pop-icon-focus-border: 1px solid $transparent !default;
 $tab-pop-icon-active-border: 1px solid $transparent !default;
 $tab-pop-border-box-shadow: none !default;
 $tab-bg-hover-nav-icon-color: rgba($primary-text-color) !default;
-
 $tab-nav-pop-press-border: 3px solid $transparent !default;
 $tab-nav-pop-press-active-border: 3px solid $transparent !default;
-$tab-pop-box-shadow: $shadow-md rgba(0, 0, 0, 0.1), $shadow-md rgba(0, 0, 0, 0.13) !default;
+$tab-pop-box-shadow: $shadow-md rgba(0, 0, 0, .1), $shadow-md rgba(0, 0, 0, .13) !default;
 $tab-pop-icon-transition: none !default;
 $tab-pop-up-icon-transform: rotate(0deg) !default;
 $tab-pop-down-icon-transform: rotate(0deg) !default;
-
 $tab-bgr-active-last-margin: 0 !default;
 $tab-bgr-hscroll-items-nav-width: 48px !default;
 $tab-bgr-item-textwrap-height: 48px !default;
@@ -374,7 +363,6 @@ $tab-bgr-rtl-icon-right-margin: 0 !default;
 $tab-bgr-background-active-padding: $tab-alt-big-active-item-padding !default;
 $tab-bgr-fill-active-item-padding: 0 !default;
 $tab-bgr-item-text-margin-bottom: 0 !default;
-
 $tab-nrml-hscroll-items-nav-width: 40px !default;
 $tab-nrml-hscroll-items-bdr-radius: 4px !default;
 $tab-nrml-item-text-wrap-height: 40px !default;
@@ -432,7 +420,6 @@ $tab-nrml-bottom-wrap-before-top: 1.6px solid rgba($primary-text-color) !default
 $tab-nrml-background-vertical-indicator-display: block !default;
 $tab-nrml-background-active-padding: $tab-alt-nrml-active-item-padding !default;
 $tab-nrml-item-text-margin-bottom: 0 !default;
-
 @mixin tbar-alt-btn-animation-after {
   animation: none;
 }
@@ -440,8 +427,6 @@ $tab-nrml-item-text-margin-bottom: 0 !default;
 @mixin hscroll-alt-btn-animation-after {
   animation: none;
 }
-
-/*! Material3 specific themes definition's */
 $tab-alt-focused-active-wrap-focus-or-hover-color: rgba($primary-text-color) !default;
 $tab-alt-focused-active-wrap-focus-and-hover-color: rgba($primary) !default;
 $tab-even-active-item-bottom-border-color: 1px solid rgba($series-1) !default;
@@ -452,8 +437,6 @@ $tab-alt-wrap-hover-color: darken-color($content-text-color-alt1, 15%) !default;
 $tab-nav-active-box-shadow: inset 0 0 0 3px rgba($content-text-color-alt1, .5) !default;
 $tab-nav-focus-border-color: rgba($content-text-color-alt1) !default;
 $tab-alt-nav-hover-bg-color: $content-bg-color-hover !default;
-
-/*! Vertical Tab */
 $tab-vscroll-nrml-padding: 16px 0 !default;
 $tab-vscroll-big-padding: 24px 0 !default;
 $tab-big-v-wrap-padding: 0 16px !default;
@@ -476,7 +459,6 @@ $tab-v-pop-focus-outline: 0 !default;
 $tab-vscroll-nav-border-color: rgba($border-light, .12) !default;
 $tab-v-nav-focus-bg-color: ($content-bg-color-focus, .12) !default;
 $tab-v-nav-hover-bg-color: ($content-bg-color-hover, .12) !default;
-
 $tab-header-font-weight: 400 !default;
 $tab-header-before-border-color: $tab-hdr-bdr-color !default;
 $tab-header-before-border-width: 0 !default;
@@ -504,7 +486,6 @@ $tab-item-left-icon-before-top: 0 !default;
 $tab-item-icon-before-top: 1px !default;
 $tab-item-icon-before-left: 5px !default;
 $tab-item-active-border-bottom: initial !default;
-
 $tab-pop-wrap-hover-border: 0 !default;
 $tab-pop-wrap-hover-border-radius: 0 !default;
 $tab-pop-wrap-hover-close-color: rgba($flyout-text-color) !default;
@@ -519,7 +500,6 @@ $tab-pop-nav-active-bg: inherit !default;
 $tab-pop-nav-active-border: 0 !default;
 $tab-pop-nav-active-border-radius: $tab-active-item-border-radius !default;
 $tab-pop-active-icons-color: rgba($icon-color) !default;
-
 $tab-scroll-nav-bg: inherit !default;
 $tab-scroll-nav-arrow-font: $tab-nav-icon-color !default;
 $tab-scroll-arrow-hover-border: $tab-item-active-wrap-border !default;
@@ -535,7 +515,6 @@ $tab-scroll-overlay-arrow-hover-bg: $tab-hover-nav-bg-color !default;
 $tab-scroll-overlay-arrow-hover-border-color: unset !default;
 $tab-scroll-focused-nav-focus-icon-bg: $tab-nav-focus-bg-color !default;
 $tab-scroll-focused-nav-focus-icon-border: $tab-pop-up-icon-focus-border !default;
-
 $tab-bottom-border-color: unset !default;
 $tab-bottom-border-width: 0 !default;
 $tab-bottom-hidden-items-border-color: rgba($primary-text-color) !default;
@@ -543,7 +522,6 @@ $tab-bottom-hidden-items-border-width: 0 !default;
 $tab-bottom-active-border-color: none !default;
 $tab-bottom-active-border-width: 0 !default;
 $tab-bottom-active-margin-top: 0 !default;
-
 $tab-vertical-scroll-hover-border-color: $tab-vscroll-nav-border-color transparent transparent !default;
 $tab-vertical-scroll-hover-active-bg: $tab-v-nav-focus-bg-color !default;
 $tab-vertical-focus-active-arrow-color: none !default;
@@ -551,7 +529,6 @@ $tab-vertical-pop-icon-hover-color: $tab-hover-text-color !default;
 $tab-vertical-pop-icon-active-color: $tab-nav-focus-icon-color !default;
 $tab-vertical-focused-nav-focus-border-color: $tab-vertical-scroll-hover-border-color !default;
 $tab-vertical-before-border-width: 0 !default;
-
 $tab-fill-wrap-hover-icon-color: $tab-hover-text-color !default;
 $tab-fill-active-tabwrap-border-color: unset !default;
 $tab-fill-active-text-before-border: unset !default;
@@ -564,7 +541,6 @@ $tab-fill-pop-wrap-hover-close-color: rgba($flyout-text-color) !default;
 $tab-fill-focused-active-tabwrap-focus-border-color: $tab-focused-wrap-focus-border-color !default;
 $tab-fill-focused-active-wrap-focus-text-color: $tab-fill-focused-active-wrap-focus-color !default;
 $tab-fill-focused-active-wrap-focus-close-color: $tab-fill-focused-active-wrap-focus-color !default;
-
 $tab-background-indicator-bottom: 0 !default;
 $tab-background-wrap-border-color: transparent !default;
 $tab-background-close-hover-color: $tab-alt-active-wrap-close-icon-color !default;
@@ -657,5 +633,4 @@ $tab-background-focused-active-wrap-icon-color: $tab-alt-active-hover-text-color
 $tab-background-accent-indicator-bg: rgba($primary-text-color) !default;
 $tab-background-active-text-font-weight: $tab-light-font-weight !default;
 $tab-background-text-color: $tab-alt-text-color !default;
-
 $tab-fill-background-disable-text-color: rgba($primary-text-color, .38) !default;

@@ -5,7 +5,7 @@ import { ShapeStyle, Margin } from '../core/appearance';
 import { ShapeStyleModel, MarginModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { PointModel } from '../primitives/point-model';
-import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility, PortAlignment } from '../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility, PortAlignment, PortConnectionDirection } from '../enum/enum';
 import { DiagramTooltip } from './tooltip';
 import { DiagramTooltipModel } from './tooltip-model';
 
@@ -108,6 +108,19 @@ export abstract class Port extends ChildProperty<Port> {
      */
     @Property('Square')
     public shape: PortShapes;
+
+    /**
+     * Defines the allowed direction for connections to the port
+     * * Auto - Maintains the default behavior of automatic direction calculation.
+     * * Left - Restricts connections to only connect to the left side of the port.
+     * * Top - Restricts connections to only connect to the top side of the port.
+     * * Right - Restricts connections to only connect to the right side of the port.
+     * * Bottom - Restricts connections to only connect to the bottom side of the port.
+     *
+     * @default 'Auto'
+     */
+    @Property('Auto')
+    public connectionDirection: PortConnectionDirection;
 
     /**
      * Defines the type of the port visibility
@@ -223,7 +236,7 @@ export class PathPort extends Port {
     @Property(0.5)
     public offset: number;
 
-        /**
+    /**
      * Sets the displacement of an ports from its actual position
      *
      * @aspDefaultValueIgnore

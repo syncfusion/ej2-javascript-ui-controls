@@ -6,7 +6,6 @@ import { BorderModel, FontModel } from '../../common/model/base-model';
 import { Chart3DSeriesModel } from '../series/chart-series-model';
 import { Matrix3D } from '../utils/chart3dRender';
 import { Alignment, ChartTheme, LegendShape, TextOverflow, TitlePosition } from '../../common/utils/enum';
-import { VisibleRangeModel } from '../../common/model/interface';
 import { ChildProperty, Complex, Property } from '@syncfusion/ej2-base';
 import { Chart3DTextFontModel, TitleBorderModel } from './chart3d-Interface-model';
 
@@ -744,6 +743,32 @@ export interface Chart3DRangeValues {
     median: number;
     /** Indicates whether the range is empty. */
     isEmpty: boolean;
+}
+
+/**
+ * Interface representing attributes for a 3D chart line.
+ *
+ * @interface
+ */
+export interface Chart3DLineAttributes {
+    /** The data attribute for the line. */
+    id: string,
+    /** The x-coordinate of the starting point of the line. */
+    'x1': number,
+    /** The y-coordinate of the starting point of the line. */
+    'y1': number,
+    /** The x-coordinate of the ending point of the line. */
+    'x2': number,
+    /** The y-coordinate of the ending point of the line. */
+    'y2': number,
+    /** The dash pattern of the line stroke. */
+    'stroke-dasharray': string,
+    /** The width of the line stroke. */
+    'stroke-width': number,
+    /** The color of the line stroke. */
+    'stroke': string,
+    /** The opacity of the line. */
+    'opacity': number,
 }
 
 /**

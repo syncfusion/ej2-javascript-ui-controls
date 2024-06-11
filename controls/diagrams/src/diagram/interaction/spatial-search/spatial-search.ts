@@ -64,7 +64,8 @@ export class SpatialSearch {
 
     private update(quad: Quad): void {
         //EJ2-841966-Nodes disappears while enabling virtualization constrai
-        if (quad.parent && quad.objects.length === 0 && quad.first == null && quad.second == null && quad.third == null && quad.fourth == null) {
+        if (quad.parent && quad.objects.length === 0 && quad.first == null && quad.second == null
+            && quad.third == null && quad.fourth == null) {
             const parent: Quad = quad.parent;
             if (parent.first === quad) {
                 parent.first = null;
@@ -228,6 +229,7 @@ export class SpatialSearch {
      *
      * @returns { boolean }    updateBounds method .\
      * @param {IGroupable} node - provide the options value.
+     * @param {boolean} isSwimLane - provide boolean if its swimlane container
      * @private
      */
     public updateBounds(node: IGroupable, isSwimLane?: boolean): boolean {
@@ -263,25 +265,25 @@ export class SpatialSearch {
         return modified;
     }
 
-    private updateTop() {
+    private updateTop(): boolean {
         this.pageTop = Number.MAX_VALUE;
         this.topElement = null;
         this.findTop(this.parentQuad);
         return true;
     }
-    private updateBottom() {
+    private updateBottom(): boolean {
         this.pageBottom = -Number.MAX_VALUE;
         this.bottomElement = null;
         this.findBottom(this.parentQuad);
         return true;
     }
-    private updateLeft() {
+    private updateLeft(): boolean {
         this.pageLeft = Number.MAX_VALUE;
         this.leftElement = null;
         this.findLeft(this.parentQuad);
         return true;
     }
-    private updateRight() {
+    private updateRight(): boolean {
         this.pageRight = -Number.MAX_VALUE;
         this.rightElement = null;
         this.findRight(this.parentQuad);

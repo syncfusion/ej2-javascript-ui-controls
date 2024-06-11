@@ -1725,4 +1725,84 @@ describe('Timeline view events dragging', () => {
             triggerMouseEvent(dragElement, 'mouseup');
         });
     });
+
+    describe('Timeline view events dragging for resources with scaling', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '500px', height: '500px', selectedDate: new Date(2018, 4, 1),
+                views: ['TimelineMonth'],
+                group: {
+                    byGroupID: false,
+                    resources: ['Halls', 'Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'HallId', title: 'Hall',
+                        name: 'Halls', allowMultiple: false,
+                        dataSource: [
+                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
+                        ],
+                        textField: 'HallText', idField: 'Id', colorField: 'HallColor'
+                    },
+                    {
+                        field: 'RoomId', title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor', expandedField: 'Expand'
+                    },
+                    {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' }
+                        ],
+                        textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                    }
+                ]
+            };
+            document.body.style.transform = 'scale(1.25)';
+            schObj = util.createSchedule(schOptions, timelineResourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Timeline Month event dragging with scaling', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
+                const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                expect(event.OwnerId).toEqual(1);
+                expect(event.RoomId).toEqual(2);
+                const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                expect(dragElement.offsetTop).toEqual(362);
+                expect(dragElement.offsetHeight).toEqual(38);
+                expect(dragElement.offsetWidth).toEqual(68);
+                done();
+            };
+            const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+            expect(event.OwnerId).toEqual(1);
+            expect(event.RoomId).toEqual(1);
+            const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(dragElement.offsetTop).toEqual(122);
+            expect(dragElement.offsetHeight).toEqual(38);
+            expect(dragElement.offsetWidth).toEqual(68);
+            triggerMouseEvent(dragElement, 'mousedown', 224, 340);
+            triggerMouseEvent(dragElement, 'mousemove', 224, 350);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(188) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 360, 480);
+            expect(cloneElement.offsetTop).toEqual(420);
+            expect(cloneElement.offsetHeight).toEqual(38);
+            expect(cloneElement.offsetWidth).toEqual(70);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+    });
 });

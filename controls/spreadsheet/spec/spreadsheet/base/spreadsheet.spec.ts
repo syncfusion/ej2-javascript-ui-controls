@@ -6,11 +6,12 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData, filterData, ScrollingData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel } from '../../../src/workbook/index';
-import { EmitType, setCurrencyCode, L10n } from '@syncfusion/ej2-base';
+import { EmitType, setCurrencyCode, L10n, createElement, Browser } from '@syncfusion/ej2-base';
 
 describe('Spreadsheet base module ->', () => {
     let helper: SpreadsheetHelper;
     let model: SpreadsheetModel;
+    let spreadsheetEle: Spreadsheet;
 
     beforeAll(() => {
         helper = new SpreadsheetHelper('spreadsheet');
@@ -441,7 +442,7 @@ describe('Spreadsheet base module ->', () => {
 
     });
 
-    describe('Methods checking ->', () => {
+    describe('Methods checking - I ->', () => {
 
         beforeAll((done: Function) => {
             model = {
@@ -606,20 +607,6 @@ describe('Spreadsheet base module ->', () => {
             done();
         });
 
-        it('setRowHeight testing', (done: Function) => {
-            helper.invoke('setRowHeight', [100, 2]);
-            let tr: HTMLTableRowElement = helper.invoke('getRow', [2]);
-            expect(tr.style.height).toBe('100px');
-            done();
-        });
-
-        it('refreshNode testing', (done: Function) => {
-            let td: HTMLTableCellElement = helper.invoke('getCell', [0, 8]);
-            helper.invoke('refreshNode', [td, { result: 'test' }]);
-            expect(td.textContent).toBe('test');
-            done();
-        });
-
         it('startEdit testing', (done: Function) => {
             helper.invoke('selectRange', ['K3']);
             helper.invoke('startEdit');
@@ -659,11 +646,6 @@ describe('Spreadsheet base module ->', () => {
             }, 20);
         });
 
-        it('clearRange testing', (done: Function) => {
-            helper.invoke('clearRange', ['K3']);
-            done();
-        });
-
         it('getModel testing', () => {
             let sheets: SheetModel[] = helper.getInstance().sheets;
             expect(getModel(sheets, 0)).not.toBeNull();
@@ -686,15 +668,6 @@ describe('Spreadsheet base module ->', () => {
             expect(helper.getInstance().definedNames.length).toBe(0);
         });
 
-        it('refresh', (done: Function) => {
-            helper.invoke('refresh', []);
-            setTimeout(() => {
-                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":"Item Name"}');
-                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
-                done();
-            });
-        });
-
         it('setColumnWidth testing', (done: Function) => {
             helper.invoke('setColWidth', [130, 1]);
             expect(helper.getInstance().sheets[0].columns[1].width).toBe(130);
@@ -705,6 +678,92 @@ describe('Spreadsheet base module ->', () => {
             done();
         });
 
+        it('setRowsHeight testing', (done: Function) => {
+            helper.invoke('setRowsHeight', [50, ['1', '8:10', 'Sheet2!10:13']]);
+            setTimeout(() => {
+                const tr: HTMLTableRowElement = helper.invoke('getContentTable').rows[7];
+                expect(tr.style.height).toBe('50px');
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].height).toBe(50);
+                expect(spreadsheet.sheets[0].rows[7].height).toBe(50);
+                expect(spreadsheet.sheets[0].rows[8].height).toBe(50);
+                expect(spreadsheet.sheets[0].rows[9].height).toBe(50);
+                expect(spreadsheet.sheets[1].rows[9].height).toBe(50);
+                expect(spreadsheet.sheets[1].rows[12].height).toBe(50);
+                helper.invoke('setRowsHeight');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
+                    expect(spreadsheet.sheets[0].rows[7].height).toBe(20);
+                    expect(spreadsheet.sheets[0].rows[8].height).toBe(20);
+                    expect(spreadsheet.sheets[0].rows[9].height).toBe(20);
+                    done();
+                }, 20);
+            }, 30);
+        });
+        it('setColumnsWidth testing', (done: Function) => {
+            helper.invoke('setColumnsWidth', [80, ['A', 'B:D', 'Sheet2!G:I']]);
+            let col: HTMLElement = helper.invoke('getContentTable').querySelector('colgroup col');
+            expect(col.style.width).toBe('80px');
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].columns[0].width).toBe(80);
+            expect(spreadsheet.sheets[0].columns[1].width).toBe(80);
+            expect(spreadsheet.sheets[0].columns[2].width).toBe(80);
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(80);
+            expect(spreadsheet.sheets[1].columns[6].width).toBe(80);
+            expect(spreadsheet.sheets[1].columns[8].width).toBe(80);
+            helper.invoke('setColumnsWidth');
+            expect(spreadsheet.sheets[0].columns[0].width).toBe(64);
+            expect(spreadsheet.sheets[0].columns[1].width).toBe(64);
+            expect(spreadsheet.sheets[0].columns[2].width).toBe(64);
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(64);
+            done();
+        });
+        it('I489622 -> setColumnsWidth without passing ranges ', (done: Function) => {
+            helper.invoke('setColumnsWidth', [130]);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].columns[0].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[1].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[2].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[4].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[5].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[6].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[7].width).toBe(130);
+            done();
+        });
+    });
+
+    describe('Methods checking - II ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }]}] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('setRowHeight testing', (done: Function) => {
+            helper.invoke('setRowHeight', [100, 2]);
+            setTimeout(() => {
+                let tr: HTMLTableRowElement = helper.invoke('getRow', [2]);
+                expect(tr.style.height).toBe('100px');
+                done();
+            });
+        });
+        it('refreshNode testing', (done: Function) => {
+            let td: HTMLTableCellElement = helper.invoke('getCell', [0, 8]);
+            helper.invoke('refreshNode', [td, { result: 'test' }]);
+            setTimeout(() => {
+                expect(td.textContent).toBe('test');
+                done();
+            });
+        });
+        it('refresh', (done: Function) => {
+            helper.invoke('refresh', []);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":"Item Name"}');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+                done();
+            });
+        });
         it('updateUndoRedoCollection', (done: Function) => {
             helper.invoke('getCell', [0, 0]).classList.add('customClass');
             helper.invoke('updateUndoRedoCollection', [{ eventArgs: { class: 'customClass', rowIdx: 0, colIdx: 0, action: 'customCSS' } }]);
@@ -716,7 +775,6 @@ describe('Spreadsheet base module ->', () => {
             helper.getInstance().actionComplete = undefined;
             done();
         });
-
         it('addCustomFunction', (done: Function) => {
             (window as any).CustomFuntion = (str: string) => {
                 let num: number;
@@ -753,55 +811,6 @@ describe('Spreadsheet base module ->', () => {
             helper.edit('J5', formula);
             expect(cell.textContent).toBe('3.16227766');
             expect(sheet.rows[4].cells[9].value).toBe(3.1622776601683795);
-            done();
-        });
-        it('setRowsHeight testing', (done: Function) => {
-            helper.invoke('setRowsHeight', [50, ['1', '8:10', 'Sheet2!10:13']]);
-            let tr: HTMLTableRowElement = helper.invoke('getRow', [7]);
-            expect(tr.style.height).toBe('50px');
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            expect(spreadsheet.sheets[0].rows[0].height).toBe(50);
-            expect(spreadsheet.sheets[0].rows[7].height).toBe(50);
-            expect(spreadsheet.sheets[0].rows[8].height).toBe(50);
-            expect(spreadsheet.sheets[0].rows[9].height).toBe(50);
-            expect(spreadsheet.sheets[1].rows[9].height).toBe(50);
-            expect(spreadsheet.sheets[1].rows[12].height).toBe(50);
-            helper.invoke('setRowsHeight');
-            expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
-            expect(spreadsheet.sheets[0].rows[7].height).toBe(20);
-            expect(spreadsheet.sheets[0].rows[8].height).toBe(20);
-            expect(spreadsheet.sheets[0].rows[9].height).toBe(20);
-            done();
-        });
-        it('setColumnsWidth testing', (done: Function) => {
-            helper.invoke('setColumnsWidth', [80, ['A', 'B:D', 'Sheet2!G:I']]);
-            let col: HTMLElement = helper.invoke('getContentTable').querySelector('colgroup col');
-            expect(col.style.width).toBe('80px');
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            expect(spreadsheet.sheets[0].columns[0].width).toBe(80);
-            expect(spreadsheet.sheets[0].columns[1].width).toBe(80);
-            expect(spreadsheet.sheets[0].columns[2].width).toBe(80);
-            expect(spreadsheet.sheets[0].columns[3].width).toBe(80);
-            expect(spreadsheet.sheets[1].columns[6].width).toBe(80);
-            expect(spreadsheet.sheets[1].columns[8].width).toBe(80);
-            helper.invoke('setColumnsWidth');
-            expect(spreadsheet.sheets[0].columns[0].width).toBe(64);
-            expect(spreadsheet.sheets[0].columns[1].width).toBe(64);
-            expect(spreadsheet.sheets[0].columns[2].width).toBe(64);
-            expect(spreadsheet.sheets[0].columns[3].width).toBe(64);
-            done();
-        });
-        it('I489622 -> setColumnsWidth without passing ranges ', (done: Function) => {
-            helper.invoke('setColumnsWidth', [130]);
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            expect(spreadsheet.sheets[0].columns[0].width).toBe(130);
-            expect(spreadsheet.sheets[0].columns[1].width).toBe(130);
-            expect(spreadsheet.sheets[0].columns[2].width).toBe(130);
-            expect(spreadsheet.sheets[0].columns[3].width).toBe(130);
-            expect(spreadsheet.sheets[0].columns[4].width).toBe(130);
-            expect(spreadsheet.sheets[0].columns[5].width).toBe(130);
-            expect(spreadsheet.sheets[0].columns[6].width).toBe(130);
-            expect(spreadsheet.sheets[0].columns[7].width).toBe(130);
             done();
         });
     });
@@ -1240,7 +1249,7 @@ describe('Spreadsheet base module ->', () => {
             spreadsheet.selectRange('D2');
             spreadsheet.replace({ replaceValue: '100', replaceBy: 'One', value: '10', sheetIndex: 0, findOpt: 'previous', mode: 'Workbook', isCSen: true, isEMatch: true, searchBy: 'By Column' });
             setTimeout((): void => {
-                expect((spreadsheet.getCell(1,3) as any).innerText).toBe('100');
+                expect(helper.invoke('getCell', [1, 3]).textContent).toBe('100');
                 done();
             });
         });
@@ -1570,7 +1579,7 @@ describe('Spreadsheet base module ->', () => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 spreadsheet.addFileMenuItems([{text: 'Print'}], 'Save As');
                 let menuElemCount:number = document.getElementsByClassName('e-menu-parent e-ul')[0].querySelectorAll('.e-menu-item').length;
-                expect(menuElemCount).toBe(4);
+                expect(menuElemCount).toBe(5);
                 (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
                 done(); 
            });
@@ -2503,6 +2512,828 @@ describe('Spreadsheet base module ->', () => {
                 expect(spreadsheet.sheets[0].rows[2].height).toBe(60);
                 spreadsheet.setRowHeight(70, 2, 0, undefined, false);
                 expect(spreadsheet.sheets[0].rows[2].height).toBe(70);
+                done();
+            });
+        });
+    });
+    describe('Null or Undefined values testing for public properties ->', () => {
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('div', { id: 'spreadsheet' });
+            document.body.appendChild(ele);
+        });
+        describe('Null or Undefined values checking for autofill, chart, dataValidation and delete ->', () => {
+            it('allowAutoFill', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowAutoFill: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowAutoFill).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowAutoFill: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowAutoFill).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowCellFormatting', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowCellFormatting: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowCellFormatting).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowCellFormatting: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowCellFormatting).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowChart', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowChart: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowChart).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowChart: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowChart).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowConditionalFormat', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowConditionalFormat: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowConditionalFormat).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowConditionalFormat: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowConditionalFormat).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowDataValidation', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowDataValidation: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowDataValidation).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowDataValidation: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowDataValidation).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowDelete', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowDelete: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowDelete).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowDelete: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowDelete).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined value checking for edit, filtering, hyperlink, image and insert -> ', () => {
+            it('allowEditing', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowEditing: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowEditing).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowEditing: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowEditing).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowFiltering', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowFiltering: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowFiltering).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowFiltering: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowFiltering).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowFindAndReplace', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowFindAndReplace: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowFindAndReplace).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowFindAndReplace: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowFindAndReplace).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowFreezePane', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowFreezePane: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowFreezePane).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowFreezePane: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowFreezePane).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowHyperlink', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowHyperlink: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowHyperlink).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowHyperlink: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowHyperlink).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowImage', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowImage: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowImage).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowImage: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowImage).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowInsert', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowInsert: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowInsert).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowInsert: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowInsert).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values checking for merge, scrolling, open, save and resizing -> ', () => {
+            it('allowMerge', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowMerge: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowMerge).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowMerge: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowMerge).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowNumberFormatting', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowNumberFormatting: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowNumberFormatting).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowNumberFormatting: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowNumberFormatting).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowOpen', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowOpen: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowOpen).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowOpen: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowOpen).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowResizing', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowResizing: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowResizing).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowResizing: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowResizing).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowSave', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowSave: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowSave).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowSave: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowSave).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowScrolling', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowScrolling: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowScrolling).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowScrolling: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowScrolling).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values testing for sorting, wrap ,clipboard, contextMenu -> ', () => {
+            it('allowSorting', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowSorting: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowSorting).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowSorting: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowSorting).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowUndoRedo', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowUndoRedo: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowUndoRedo).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowUndoRedo: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowUndoRedo).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('allowWrap', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ allowWrap: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowWrap).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ allowWrap: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.allowWrap).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('enableClipboard', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ enableClipboard: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableClipboard).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ enableClipboard: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableClipboard).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('enableContextMenu', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ enableContextMenu: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableContextMenu).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ enableContextMenu: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableContextMenu).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('enableKeyboardNavigation', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ enableKeyboardNavigation: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableKeyboardNavigation).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ enableKeyboardNavigation: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableKeyboardNavigation).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values checking for keyboardShortcut, enableRtl and aggregate ->', () => {
+            it('enableKeyboardShortcut', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ enableKeyboardShortcut: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableKeyboardShortcut).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ enableKeyboardShortcut: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableKeyboardShortcut).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('enablePersistence', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ enablePersistence: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enablePersistence).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ enablePersistence: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enablePersistence).toBe(false);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('enableRtl', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ enableRtl: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableRtl).toBe(false);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ enableRtl: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.enableRtl).toBe(false);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('isProtected', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ isProtected: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.isProtected).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ isProtected: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.isProtected).toBe(false);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('showAggregate', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ showAggregate: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.showAggregate).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ showAggregate: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.showAggregate).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values checking for formulaBar, ribbon, sheetTabs ->', () => {
+            it('showFormulaBar', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ showFormulaBar: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.showFormulaBar).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ showFormulaBar: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.showFormulaBar).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('showRibbon', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ showRibbon: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.showRibbon).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ showRibbon: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.showRibbon).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('showSheetTabs', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ showSheetTabs: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.showSheetTabs).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ showSheetTabs: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.showSheetTabs).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('listSeparator', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ listSeparator: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.listSeparator).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ listSeparator: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.listSeparator).toBe(',');
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined checks for locale, openUrl and saveUrl ->', () => {
+            it('locale', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ locale: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.locale).toBe('en-US');
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ locale: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.locale).toBe('en-US');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('openUrl', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ openUrl: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.openUrl).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ openUrl: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.openUrl).toBe('');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('saveUrl', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ saveUrl: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.saveUrl).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ saveUrl: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.saveUrl).toBe('');
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values checking for cellStyle ->', () => {
+            it('cellStyle', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ cellStyle: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.cellStyle.backgroundColor).toBe('#ffffff');
+                expect(spreadsheetEle.cellStyle.border).toBe('');
+                expect(spreadsheetEle.cellStyle.borderBottom).toBe('');
+                expect(spreadsheetEle.cellStyle.borderLeft).toBe('');
+                expect(spreadsheetEle.cellStyle.borderRight).toBe('');
+                expect(spreadsheetEle.cellStyle.borderTop).toBe('');
+                expect(spreadsheetEle.cellStyle.color).toBe('#000000');
+                expect(spreadsheetEle.cellStyle.fontFamily).toBe('Calibri');
+                expect(spreadsheetEle.cellStyle.fontSize).toBe('11pt');
+                expect(spreadsheetEle.cellStyle.fontStyle).toBe('normal');
+                expect(spreadsheetEle.cellStyle.fontWeight).toBe('normal');
+                expect(spreadsheetEle.cellStyle.textAlign).toBe('left');
+                expect(spreadsheetEle.cellStyle.textDecoration).toBe('none');
+                expect(spreadsheetEle.cellStyle.textIndent).toBe('0pt');
+                expect(spreadsheetEle.cellStyle.verticalAlign).toBe('bottom');
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ cellStyle: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.cellStyle.backgroundColor).toBe('#ffffff');
+                expect(spreadsheetEle.cellStyle.border).toBe('');
+                expect(spreadsheetEle.cellStyle.borderBottom).toBe('');
+                expect(spreadsheetEle.cellStyle.borderLeft).toBe('');
+                expect(spreadsheetEle.cellStyle.borderRight).toBe('');
+                expect(spreadsheetEle.cellStyle.borderTop).toBe('');
+                expect(spreadsheetEle.cellStyle.color).toBe('#000000');
+                expect(spreadsheetEle.cellStyle.fontFamily).toBe('Calibri');
+                expect(spreadsheetEle.cellStyle.fontSize).toBe('11pt');
+                expect(spreadsheetEle.cellStyle.fontStyle).toBe('normal');
+                expect(spreadsheetEle.cellStyle.fontWeight).toBe('normal');
+                expect(spreadsheetEle.cellStyle.textAlign).toBe('left');
+                expect(spreadsheetEle.cellStyle.textDecoration).toBe('none');
+                expect(spreadsheetEle.cellStyle.textIndent).toBe('0pt');
+                expect(spreadsheetEle.cellStyle.verticalAlign).toBe('bottom');
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values testing for cssClass and password', () => {
+            it("cssClass", (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ cssClass: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.cssClass).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ cssClass: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.cssClass).toBe('');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('password', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ password: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.password).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ password: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.password).toBe('');
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values checking for height, width.', () => {
+            it('width', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ width: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.width).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ width: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.width).toBe('100%');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('height', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ height: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.height).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ height: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.height).toBe('100%');
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values testing for autoFillSettings and definedNames ->', () => {
+            it('autoFillSettings', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ autoFillSettings: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.autoFillSettings.fillType).toBe('FillSeries');
+                expect(spreadsheetEle.autoFillSettings.showFillOptions).toBe(true);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ autoFillSettings: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.autoFillSettings.fillType).toBe('FillSeries');
+                expect(spreadsheetEle.autoFillSettings.showFillOptions).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('definedNames', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ definedNames: null });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.definedNames).toEqual([]);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ definedNames: undefined });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.definedNames).toEqual([]);
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values testing for scrollSettings and selectionSettings ->', () => {
+            it('scrollSettings', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ scrollSettings: { isFinite: null, enableVirtualization: null } });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.scrollSettings.enableVirtualization).toBe(null);
+                expect(spreadsheetEle.scrollSettings.isFinite).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ scrollSettings: { isFinite: undefined, enableVirtualization: undefined } });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.scrollSettings.enableVirtualization).toBe(true);
+                expect(spreadsheetEle.scrollSettings.isFinite).toBe(false);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('selectionSettings', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ selectionSettings: { mode: null } });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.selectionSettings.mode).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ selectionSettings: { mode: undefined } });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.selectionSettings.mode).toBe('Multiple');
+                spreadsheetEle.destroy();
+                done();
+            });
+        });
+        describe('Null or Undefined values testing for sheet related properties ->', () => {
+            it('Testing activeCell and selectedRange', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ activeCell: undefined, selectedRange: undefined }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].activeCell).toBe('A1');
+                expect(spreadsheetEle.sheets[0].selectedRange).toBe('A1:A1');
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ activeCell: null, selectedRange: null }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].activeCell).toBe('A1');
+                expect(spreadsheetEle.sheets[0].selectedRange).toBe('A1:A1');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing usedRange', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ usedRange: { rowIndex: null, colIndex: null } }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].usedRange.rowIndex).toBe(0);
+                expect(spreadsheetEle.sheets[0].usedRange.colIndex).toBe(0);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ usedRange: { rowIndex: undefined, colIndex: undefined } }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].usedRange.rowIndex).toBe(0);
+                expect(spreadsheetEle.sheets[0].usedRange.colIndex).toBe(0);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing showHeaders and showGridLines', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ showGridLines: null, showHeaders: null }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].showGridLines).toBe(null);
+                expect(spreadsheetEle.sheets[0].showHeaders).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ showGridLines: undefined, showHeaders: undefined }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].showGridLines).toBe(true);
+                expect(spreadsheetEle.sheets[0].showHeaders).toBe(true);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing rowCount and colCount', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ rowCount: null, colCount: null }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].rowCount).toBe(null);
+                expect(spreadsheetEle.sheets[0].colCount).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ rowCount: undefined, colCount: undefined }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].rowCount).toBe(100);
+                expect(spreadsheetEle.sheets[0].colCount).toBe(100);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing sheetName and isProtected', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ name: null, isProtected: null }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].name).toBe('Sheet1');
+                expect(spreadsheetEle.sheets[0].isProtected).toBeFalsy();
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ name: undefined, isProtected: undefined }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].name).toBe('Sheet1');
+                expect(spreadsheetEle.sheets[0].isProtected).toBe(false);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing index and password', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ index: null, password: null }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].index).toBe(null);
+                expect(spreadsheetEle.sheets[0].password).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ index: undefined, password: undefined }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].index).toBe(0);
+                expect(spreadsheetEle.sheets[0].password).toBe('');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing Protect Settings', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ protectSettings: { selectCells: null, selectUnLockedCells: null, formatCells: null, formatRows: null, formatColumns: null, insertLink: null } }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].protectSettings.formatCells).toBe(null);
+                expect(spreadsheetEle.sheets[0].protectSettings.formatColumns).toBe(null);
+                expect(spreadsheetEle.sheets[0].protectSettings.formatRows).toBe(null);
+                expect(spreadsheetEle.sheets[0].protectSettings.insertLink).toBe(null);
+                expect(spreadsheetEle.sheets[0].protectSettings.selectCells).toBe(null);
+                expect(spreadsheetEle.sheets[0].protectSettings.selectUnLockedCells).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ protectSettings: { selectCells: undefined, selectUnLockedCells: undefined, formatCells: undefined, formatRows: undefined, formatColumns: undefined, insertLink: undefined } }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].protectSettings.formatCells).toBe(false);
+                expect(spreadsheetEle.sheets[0].protectSettings.formatColumns).toBe(false);
+                expect(spreadsheetEle.sheets[0].protectSettings.formatRows).toBe(false);
+                expect(spreadsheetEle.sheets[0].protectSettings.insertLink).toBe(false);
+                expect(spreadsheetEle.sheets[0].protectSettings.selectCells).toBe(false);
+                expect(spreadsheetEle.sheets[0].protectSettings.selectUnLockedCells).toBe(false);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing sheet state', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ state: undefined }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].state).toBe('Visible');
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ state: null }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].state).toBe('Visible');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing paneTopLeftCell and topLeftCell', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ paneTopLeftCell: undefined, topLeftCell: undefined }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].paneTopLeftCell).toBe('A1');
+                expect(spreadsheetEle.sheets[0].topLeftCell).toBe('A1');
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ paneTopLeftCell: null, topLeftCell: null }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].paneTopLeftCell).toBe('A1');
+                expect(spreadsheetEle.sheets[0].topLeftCell).toBe('A1');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing frozenRows and frozenColumns', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ frozenRows: null, frozenColumns: null }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].frozenRows).toBe(0);
+                expect(spreadsheetEle.sheets[0].frozenColumns).toBe(0);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ frozenRows: undefined, frozenColumns: undefined }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].frozenRows).toBe(0);
+                expect(spreadsheetEle.sheets[0].frozenColumns).toBe(0);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing ranges', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ ranges: [{ dataSource: null, address: null, query: null, showFieldAsHeader: null, startCell: null, template: null }] }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].ranges[0].dataSource).toBe(null);
+                expect(spreadsheetEle.sheets[0].ranges[0].address).toBe(null);
+                expect(spreadsheetEle.sheets[0].ranges[0].query).toBe(null);
+                expect(spreadsheetEle.sheets[0].ranges[0].showFieldAsHeader).toBe(null);
+                expect(spreadsheetEle.sheets[0].ranges[0].startCell).toBe(null);
+                expect(spreadsheetEle.sheets[0].ranges[0].template).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ ranges: [{ dataSource: undefined, address: undefined, query: undefined, showFieldAsHeader: undefined, startCell: undefined, template: undefined }] }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].ranges[0].dataSource).toBe(null);
+                expect(spreadsheetEle.sheets[0].ranges[0].address).toBe('A1');
+                expect(spreadsheetEle.sheets[0].ranges[0].query).toBe(null);
+                expect(spreadsheetEle.sheets[0].ranges[0].showFieldAsHeader).toBe(true);
+                expect(spreadsheetEle.sheets[0].ranges[0].startCell).toBe('A1');
+                expect(spreadsheetEle.sheets[0].ranges[0].template).toBe('');
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing rows', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ rows: [{ cells: null, customHeight: null, format: null, height: null, hidden: null, index: null }] }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].rows[0].cells).toBe(null);
+                expect(spreadsheetEle.sheets[0].rows[0].customHeight).toBe(null);
+                expect(spreadsheetEle.sheets[0].rows[0].format).toBe(null);
+                expect(spreadsheetEle.sheets[0].rows[0].height).toBe(null);
+                expect(spreadsheetEle.sheets[0].rows[0].hidden).toBe(null);
+                expect(spreadsheetEle.sheets[0].rows[0].index).toBe(undefined);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ rows: [{ cells: undefined, customHeight: undefined, format: undefined, height: undefined, hidden: undefined, index: undefined }] }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].rows[0].cells).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].rows[0].customHeight).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].rows[0].format).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].rows[0].height).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].rows[0].hidden).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].rows[0].index).toBe(undefined);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing columns', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ columns: [{ index: null, width: null, customWidth: null, hidden: null, format: null, isLocked: null, validation: null }] }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].columns[0].index).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].columns[0].width).toBe(null);
+                expect(spreadsheetEle.sheets[0].columns[0].customWidth).toBe(null);
+                expect(spreadsheetEle.sheets[0].columns[0].hidden).toBe(null);
+                expect(spreadsheetEle.sheets[0].columns[0].format).toBe(null);
+                expect(spreadsheetEle.sheets[0].columns[0].isLocked).toBe(null);
+                expect(spreadsheetEle.sheets[0].columns[0].validation).toBe(null);
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ columns: [{ index: undefined, width: undefined, customWidth: undefined, hidden: undefined, format: undefined, isLocked: undefined, validation: undefined }] }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].columns[0].index).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].columns[0].width).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].columns[0].customWidth).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].columns[0].hidden).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].columns[0].format).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].columns[0].isLocked).toBe(undefined);
+                expect(spreadsheetEle.sheets[0].columns[0].validation).toBe(undefined);
+                spreadsheetEle.destroy();
+                done();
+            });
+            it('Testing Conditional Formats', (done: Function) => {
+                spreadsheetEle = new Spreadsheet({ sheets: [{ conditionalFormats: [{ cFColor: null, format: null, range: null, type: null, value: null }] }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].cFColor).toBe(null);
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].range).toBe(null);
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].type).toBe(null);
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].value).toBe(null);
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.format).toBe('General');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.isLocked).toBe(true);
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.backgroundColor).toBe('#ffffff');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.border).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.borderBottom).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.borderLeft).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.borderRight).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.borderTop).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.color).toBe('#000000');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.fontFamily).toBe('Calibri');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.fontSize).toBe('11pt');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.fontStyle).toBe('normal');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.fontWeight).toBe('normal');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.textAlign).toBe('left');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.textDecoration).toBe('none');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.textIndent).toBe('0pt');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.verticalAlign).toBe('bottom');
+                spreadsheetEle.destroy();
+                spreadsheetEle = new Spreadsheet({ sheets: [{ conditionalFormats: [{ cFColor: undefined, format: undefined, range: undefined, type: undefined, value: undefined }] }] });
+                spreadsheetEle.appendTo('#spreadsheet');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].cFColor).toBe('RedFT');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].range).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].type).toBe('GreaterThan');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].value).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.format).toBe('General');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.isLocked).toBe(true);
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.backgroundColor).toBe('#ffffff');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.border).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.borderBottom).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.borderLeft).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.borderRight).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.borderTop).toBe('');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.color).toBe('#000000');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.fontFamily).toBe('Calibri');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.fontSize).toBe('11pt');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.fontStyle).toBe('normal');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.fontWeight).toBe('normal');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.textAlign).toBe('left');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.textDecoration).toBe('none');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.textIndent).toBe('0pt');
+                expect(spreadsheetEle.sheets[0].conditionalFormats[0].format.style.verticalAlign).toBe('bottom');
+                spreadsheetEle.destroy();
                 done();
             });
         });

@@ -21,11 +21,11 @@ describe('RTE SELECTION BASED - fontFamily - ', () => {
             expect(rteObj.fontFamily.default === null).toBe(true);
         });
         it(' Test the default value of width ', () => {
-            expect(rteObj.fontFamily.width === "65px").toBe(true);
+            expect(rteObj.fontFamily.width === "72px").toBe(true);
         });
 
         it(' Test the default value of items ', () => {
-            expect(rteObj.fontFamily.items.length === 7).toBe(true);
+            expect(rteObj.fontFamily.items.length === 8).toBe(true);
         });
 
     });

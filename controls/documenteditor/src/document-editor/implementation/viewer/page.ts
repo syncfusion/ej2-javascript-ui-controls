@@ -18,6 +18,7 @@ import { LayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { Revision } from '../track-changes/track-changes';
 import { Layout } from './layout';
 import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
+import { trackChanges } from '../../base';
 /**
  * @private
  */
@@ -1117,10 +1118,6 @@ export class ParagraphWidget extends BlockWidget {
      * @private
      */
     public isChangeDetected: boolean = false;
-    /**
-     * @private
-     */
-    public isCreatedUsingHtmlSpanTag: boolean = undefined;
     /**
      * @private
      * The clientX having previous left value of empty paragraph
@@ -4384,7 +4381,7 @@ export class LineWidget implements IWidget {
     /**
     * @private
     */
-        public skipClipImage: boolean = false;
+    public skipClipImage: boolean = false;
     /**
      * Rendered elements contains reordered element for RTL layout 
      */
@@ -5230,6 +5227,9 @@ export class FieldElementBox extends ElementBox {
         } else {
             if (this.revisions.length > 0) {
                 field.removedIds = Revision.cloneRevisions(this.revisions);
+                if (this.fieldEnd) {
+                    field.hasFieldEnd = this.hasFieldEnd;
+                }
             } else {
                 field.removedIds = this.removedIds.slice();
             }
@@ -5594,10 +5594,15 @@ export class TextElementBox extends ElementBox {
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                textEle.removedIds = Revision.cloneRevisions(this.revisions);
+            // Copy the revisions when cloning the header row.
+            if (this.paragraph && this.paragraph.isInsideTable && this.paragraph.containerWidget instanceof TableCellWidget && this.paragraph.containerWidget.ownerRow.rowFormat.isHeader) {
+                textEle.revisions = this.revisions;
             } else {
-                textEle.removedIds = this.removedIds.slice();
+                if (this.revisions.length > 0) {
+                    textEle.removedIds = Revision.cloneRevisions(this.revisions);
+                } else {
+                    textEle.removedIds = this.removedIds.slice();
+                }
             }
         }
         textEle.width = this.width;
@@ -5756,8 +5761,31 @@ export class FootnoteElementBox extends TextElementBox {
         span.footnoteType = this.footnoteType;
         span.width = this.width;
         span.symbolCode = this.symbolCode;
-        span.bodyWidget.childWidgets = this.bodyWidget.childWidgets;
+        // span.bodyWidget.childWidgets = this.bodyWidget.childWidgets;
+        for(let i=0;i<this.bodyWidget.childWidgets.length;i++){
+            let element=this.bodyWidget.childWidgets[i];
+            if(element instanceof ParagraphWidget){
+                element=(this.bodyWidget.childWidgets[i] as ParagraphWidget).clone();
+            }else if(element instanceof TableWidget){
+                element=(this.bodyWidget.childWidgets[i] as TableWidget).clone();
+            }
+            span.bodyWidget.childWidgets.push(element);
+        }
         span.bodyWidget.page = this.bodyWidget.page;
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    span.revisions.push(revision.clone());
+                }
+            }
+        } else {
+            if (this.revisions.length > 0) {
+                span.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                span.removedIds = this.removedIds.slice();
+            }
+        }
         if (this.margin) {
             span.margin = this.margin.clone();
         }
@@ -8894,11 +8922,12 @@ export class CommentCharacterElementBox extends ElementBox {
                     if(commentMarkDictionary.get(element)[0].commentMark.firstElementChild.classList.contains('e-de-multi-cmt-mark')){
                         classList(commentMarkDictionary.get(element)[0].commentMark.firstElementChild,['e-de-cmt-mark-icon'],['e-de-multi-cmt-mark']);
                     } else if(commentMarkDictionary.get(element)[0].commentInternal.isResolved && commentMarkDictionary.get(element)[0].commentMark.firstElementChild.classList.contains('e-de-cmt-mark-icon')) {    
-                        classList(commentMarkDictionary.get(element)[0].commentMark.firstElementChild,['e-de-cmt-resolve-icon'],['e-de-cmt-mark-icon']);                       
+                        classList(commentMarkDictionary.get(element)[0].commentMark.
+                        firstElementChild,['e-de-cmt-resolve-icon'],['e-de-cmt-mark-icon']);               
                    } else if(!commentMarkDictionary.get(element)[0].commentInternal.isResolved && commentMarkDictionary.get(element)[0].commentMark.firstElementChild.classList.contains('e-de-cmt-resolve-icon')){
                         classList(commentMarkDictionary.get(element)[0].commentMark.firstElementChild,['e-de-cmt-mark-icon'],['e-de-cmt-resolve-icon']);
                       }
-                } 
+                }
             }
 
             if(commentMarkDictionary.get(element).length>1){

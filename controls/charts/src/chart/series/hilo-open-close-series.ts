@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { withInRange, ChartLocation, pathAnimation, getElement } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
@@ -13,7 +10,7 @@ import { BorderModel } from '../../common/model/base-model';
  * `HiloOpenCloseSeries` module is used to render the hiloOpenClose series.
  */
 export class HiloOpenCloseSeries extends ColumnBase {
-
+    public sideBySideInfo: DoubleRange[] = [];
     /**
      * Render HiloOpenCloseSeries series.
      *
@@ -22,58 +19,82 @@ export class HiloOpenCloseSeries extends ColumnBase {
      */
 
     public render(series: Series): void {
+        this.sideBySideInfo[series.index] = this.getSideBySideInfo(series);
+        const borderWidth: number = Math.max(series.border.width, 2);
+        for (const point of series.points) {
+            this.renderPoint(series, point, this.sideBySideInfo[series.index], borderWidth);
+        }
+    }
+
+    public renderPoint(series: Series, point: Points, sideBySideInfo: DoubleRange, borderWidth: number): void {
+        point.symbolLocations = [];
+        point.regions = [];
         let highLowRect: Rect;
         let index1: number;
         let index2: number;
-        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
-        let argsData: IPointRenderEventArgs;
+        if (point.visible &&
+            withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
+            //highlow
+            highLowRect = this.getRectangle(
+                point.xValue + sideBySideInfo.start, <number>Math.max(<number>point.high, <number>point.low),
+                point.xValue + sideBySideInfo.end, <number>Math.min(<number>point.high, <number>point.low), series);
+
+            point.regions.push(this.getRectangle(
+                point.xValue + sideBySideInfo.median, <number>Math.max(<number>point.high, <number>point.low),
+                point.xValue + sideBySideInfo.median, <number>Math.min(<number>point.high, <number>point.low), series
+            ));
+
+            this.updateTickRegion(!series.chart.requireInvertedAxis, point.regions[0], borderWidth);
+            //open
+            point.regions.push(this.getRectangle(
+                point.xValue + sideBySideInfo.start, <number>Math.max(<number>point.open, <number>point.close),
+                point.xValue + sideBySideInfo.median, <number>Math.max(<number>point.open, <number>point.close), series
+            ));
+
+            //close
+            point.regions.push(this.getRectangle(
+                point.xValue + sideBySideInfo.median, <number>Math.min(<number>point.open, <number>point.close),
+                point.xValue + sideBySideInfo.end, <number>Math.min(<number>point.open, <number>point.close), series
+            ));
+
+            const argsData: IPointRenderEventArgs = this.triggerPointRenderEvent(series, point);
+            if (!argsData.cancel) {
+                this.updateSymbolLocation(point, point.regions[0], series);
+                index1 = point.open > point.close ? 1 : 2;
+                index2 = point.open > point.close ? 2 : 1;
+                const open: ChartLocation = { x: point.regions[index1 as number].x, y: point.regions[index1 as number].y };
+                const close: ChartLocation = { x: point.regions[index2 as number].x, y: point.regions[index2 as number].y };
+                this.drawHiloOpenClosePath(series, point, open, close, highLowRect, argsData);
+            }
+
+            this.updateTickRegion(series.chart.requireInvertedAxis, point.regions[1], borderWidth);
+            this.updateTickRegion(series.chart.requireInvertedAxis, point.regions[2], borderWidth);
+
+        }
+    }
+
+    public updateDirection(series: Series, point: number[]): void {
         const borderWidth: number = Math.max(series.border.width, 2);
-        for (const point of series.points) {
-            point.symbolLocations = [];
-            point.regions = [];
-            if (point.visible &&
-                withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
-                //highlow
-                highLowRect = this.getRectangle(
-                    point.xValue + sideBySideInfo.start, <number>Math.max(<number>point.high, <number>point.low),
-                    point.xValue + sideBySideInfo.end, <number>Math.min(<number>point.high, <number>point.low), series);
-
-                point.regions.push(this.getRectangle(
-                    point.xValue + sideBySideInfo.median, <number>Math.max(<number>point.high, <number>point.low),
-                    point.xValue + sideBySideInfo.median, <number>Math.min(<number>point.high, <number>point.low), series
-                ));
-
-                this.updateTickRegion(!series.chart.requireInvertedAxis, point.regions[0], borderWidth);
-                //open
-                point.regions.push(this.getRectangle(
-                    point.xValue + sideBySideInfo.start, <number>Math.max(<number>point.open, <number>point.close),
-                    point.xValue + sideBySideInfo.median, <number>Math.max(<number>point.open, <number>point.close), series
-                ));
-
-                //close
-                point.regions.push(this.getRectangle(
-                    point.xValue + sideBySideInfo.median, <number>Math.min(<number>point.open, <number>point.close),
-                    point.xValue + sideBySideInfo.end, <number>Math.min(<number>point.open, <number>point.close), series
-                ));
-
-                argsData = this.triggerPointRenderEvent(series, point);
-                if (!argsData.cancel) {
-                    this.updateSymbolLocation(point, point.regions[0], series);
-                    index1 = point.open > point.close ? 1 : 2;
-                    index2 = point.open > point.close ? 2 : 1;
-                    const open: ChartLocation = { x: point.regions[index1 as number].x, y: point.regions[index1 as number].y };
-                    const close: ChartLocation = { x: point.regions[index2 as number].x, y: point.regions[index2 as number].y };
-                    this.drawHiloOpenClosePath(series, point, open, close, highLowRect, argsData);
+        for (let i: number = 0; i < point.length; i++) {
+            this.renderPoint(series, series.points[point[i as number]], this.sideBySideInfo[series.index], borderWidth);
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
                 }
-
-                this.updateTickRegion(series.chart.requireInvertedAxis, point.regions[1], borderWidth);
-                this.updateTickRegion(series.chart.requireInvertedAxis, point.regions[2], borderWidth);
-
             }
         }
     }
+
     /**
-     * Updates the tick region
+     * Updates the tick region based on the specified parameters.
+     *
+     * @param {boolean} horizontal - Specifies whether the tick region is horizontal.
+     * @param {Rect} region - The region to update.
+     * @param {number} borderWidth - The width of the border.
+     * @returns {void}
      */
     private updateTickRegion(horizontal: boolean, region: Rect, borderWidth: number): void {
         if (horizontal) {
@@ -87,20 +108,29 @@ export class HiloOpenCloseSeries extends ColumnBase {
     }
 
     /**
-     * Trigger point rendering event
+     * Triggers the point render event and returns the event arguments.
+     *
+     * @param {Series} series - The series associated with the point.
+     * @param {Points} point - The data point.
+     * @returns {IPointRenderEventArgs} The event arguments.
      */
     private triggerPointRenderEvent(series: Series, point: Points): IPointRenderEventArgs {
-        const fill: string = (point.open <= point.close) ? series.bearFillColor || series.chart.themeStyle.bearFillColor : 
-        series.bullFillColor || series.chart.themeStyle.bullFillColor;
+        const fill: string = (point.open <= point.close) ? series.bearFillColor || series.chart.themeStyle.bearFillColor :
+            series.bullFillColor || series.chart.themeStyle.bullFillColor;
         const border: BorderModel = { color: series.border.color, width: Math.max(series.border.width, 1) };
         return this.triggerEvent(series, point, fill, border);
     }
 
     /**
-     * To draw the rectangle for points.
+     * Draws the path for high, low, open, and close values in the series.
      *
+     * @param {Series} series - The series associated with the point.
+     * @param {Points} point - The data point.
+     * @param {ChartLocation} open - The location of the open value.
+     * @param {ChartLocation} close - The location of the close value.
+     * @param {Rect} rect - The rectangle bounds.
+     * @param {IPointRenderEventArgs} argsData - The event arguments.
      * @returns {void}
-     * @private
      */
     protected drawHiloOpenClosePath(
         series: Series, point: Points, open: ChartLocation, close: ChartLocation, rect: Rect, argsData: IPointRenderEventArgs
@@ -128,11 +158,14 @@ export class HiloOpenCloseSeries extends ColumnBase {
         }
 
         const options: PathOption = new PathOption(
-            series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index,
+            series.chart.element.id + '_Series_' + series.index + '_Point_' + ((series.removedPointIndex !== null && series.removedPointIndex <= point.index) ? (point.index + 1) : point.index),
             argsData.fill, argsData.border.width, argsData.fill, series.opacity, series.dashArray, direction);
-        pathAnimation(getElement(options.id), direction, series.chart.redraw);
+        pathAnimation(getElement(options.id), direction, series.chart.redraw, null, series.chart.duration);
         const element: HTMLElement =
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
+        if (series.removedPointIndex !== null && series.removedPointIndex <= point.index) {
+            element.id = series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
+        }
         element.setAttribute('role', 'img');
         element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
@@ -143,11 +176,13 @@ export class HiloOpenCloseSeries extends ColumnBase {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'HiloOpenCloseSeries';
         /**
-         * return the module name
+         * return the module name.
          */
     }
 
@@ -157,7 +192,6 @@ export class HiloOpenCloseSeries extends ColumnBase {
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
      */
-
     public doAnimation(series: Series): void {
         this.animate(series);
     }
@@ -168,10 +202,9 @@ export class HiloOpenCloseSeries extends ColumnBase {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroy method performed here
+         * Destroy method performed here.
          */
     }
 }

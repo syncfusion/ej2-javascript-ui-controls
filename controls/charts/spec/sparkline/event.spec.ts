@@ -56,7 +56,7 @@ describe('Sparkline Component Base Spec', () => {
         });
         afterAll(() => {
             sparkline.destroy();
-            sparkline.sparklineResize(null);
+            sparkline.sparklineResize();
             removeElement(id);
         });
         it('Checking withseries event', (done: Function) => {
@@ -142,7 +142,7 @@ describe('Sparkline Component Base Spec', () => {
         });
         afterAll(() => {
             sparkline.destroy();
-            sparkline.sparklineResize(null);
+            sparkline.sparklineResize();
             removeElement(id);
         });
         it('Checking with  point event', (done: Function) => {
@@ -236,7 +236,7 @@ describe('Sparkline Component Base Spec', () => {
         });
         afterAll(() => {
             sparkline.destroy();
-            sparkline.sparklineResize(null);
+            sparkline.sparklineResize();
             removeElement(id);
         });
         it('Checking with  datalabel Text', (done: Function) => {
@@ -390,7 +390,7 @@ describe('Sparkline Component Base Spec', () => {
         });
         afterAll(() => {
             sparkline.destroy();
-            sparkline.sparklineResize(null);
+            sparkline.sparklineResize();
             removeElement(id);
         });
         it('Checking with Marker event XY Location', (done: Function) => {
@@ -486,7 +486,7 @@ describe('Sparkline Component Base Spec', () => {
         });
         afterAll(() => {
             sparkline.destroy();
-            sparkline.sparklineResize(null);
+            sparkline.sparklineResize();
             removeElement(id);
         });
         it('Checking with axis label event maxY', (done: Function) => {

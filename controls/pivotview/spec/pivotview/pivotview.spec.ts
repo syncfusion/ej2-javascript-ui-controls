@@ -4,7 +4,7 @@ import { PivotUtil } from '../../src/base/util';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { closest, createElement, EmitType, remove } from '@syncfusion/ej2-base';
+import { closest, createElement, EmitType, getInstance, remove } from '@syncfusion/ej2-base';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { NumberFormatting } from '../../src/common/popups/formatting-dialog';
 import { VirtualScroll } from '../../src/pivotview/actions';
@@ -2188,6 +2188,117 @@ describe('PivotView spec', () => {
                 }, 3000);
             });
         });
+
+        describe('- Report management', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    pending(); //Skips test (in Chai)
+                    return;
+                }
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll, ExcelExport);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivotDatas as IDataSet[],
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        expandAll: false
+                    },
+                    height: 800,
+                    width: '100%',
+                    dataBound: dataBound,
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 100);
+            });
+            it('- Persist and dynamically load the data', (done: Function) => {
+                (document.querySelectorAll('.e-expand')[0] as HTMLElement).click();
+                let layout: string = pivotGridObj.getPersistData();
+                setTimeout(() => {
+                    pivotGridObj.loadPersistData(layout);
+                    pivotGridObj['mergePersistPivotData']();
+                    expect(document.querySelectorAll('.e-collapse').length).toBe(1);
+                    (document.querySelectorAll('.e-collapse')[0] as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+        });
+
+        describe('- Report management with diaplay option chart', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    pending(); //Skips test (in Chai)
+                    return;
+                }
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll, ExcelExport);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivotDatas as IDataSet[],
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        expandAll: false
+                    },
+                    displayOption: { view: 'Both', primary: 'Chart' },
+                    height: 800,
+                    width: '100%',
+                    dataBound: dataBound,
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 100);
+            });
+            it('- Save and load chart data', (done: Function) => {
+                document.getElementById('PivotGrid_chart0_Axis_MultiLevelLabel_Level_0_Text_0').dispatchEvent(new MouseEvent("click", { view: window, bubbles: true, cancelable: true }))
+                let layout: string = pivotGridObj.getPersistData();
+                setTimeout(() => {
+                    pivotGridObj.loadPersistData(layout);
+                    expect(document.querySelectorAll('#PivotGrid_chart0_Axis_MultiLevelLabel_Level_0_Text_0')[0].textContent).toBe('green');
+                    done();
+                }, 1000);
+            });
+        });
     });
 
     /**
@@ -2207,15 +2318,7 @@ describe('PivotView spec', () => {
             });
         });
     });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    });
+
     describe('Date-Filtering', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
@@ -2265,5 +2368,15 @@ describe('PivotView spec', () => {
             done();
             }, 400);
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

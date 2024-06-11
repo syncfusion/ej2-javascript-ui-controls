@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 26.1.35 (2024-06-11)
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I590334` - Now, the pie legend highlight works properly.
+- `#I590334` - Now, the legend highlight will work properly even disabling selection in the pie chart.
+
+### Chart
+
+#### Bug Fixes
+
+- `#I591823` - Now, the legend doesn't gets overlapped when resizing the pie chart to minimal size.
+
+#### Features
+
+- `#I539415` - Provided support for animations when adding, removing, or updating data for all chart types, ranging from line charts to financial charts.
+- `#I539415` - Provided smooth transition support for axis elements like gridlines, tick lines, and labels when data is updated in the chart.
+- `#I539415` - Provided smooth transition support for annotations when data is updated in the chart.
+- Improved the animation of stacking series when clicking on the legend.
+- Provided highlight support for chart series when clicking on the legend.
+- Users can now access point information based on the pointer coordinates during chart mouse events and use this information to add or remove points on the chart.
+
 ## 25.2.6 (2024-05-28)
 
 ### Chart

@@ -1,3 +1,10 @@
+@mixin stepper-text-label-colors($step-label-text-color) {
+  .e-text,
+  .e-label {
+    color: $step-label-text-color;
+  }
+}
+
 @include export-module('stepper-theme') {
   .e-stepper {
     .e-step-notstarted:not(.e-step-disabled) .e-step,
@@ -37,20 +44,11 @@
         background: $step-error-completed-bg-color;
         color: $step-error-icon-color;
       }
-      .e-text,
-      .e-label {
-        color: $step-error-completed-color;
-      }
+      @include stepper-text-label-colors($step-error-completed-color);
     }
     .e-step-valid:not(.e-step-notstarted) .e-indicator:hover,
     .e-step-error .e-indicator:hover {
       color: $step-color;
-    }
-    .e-step-selected {
-      .e-text,
-      .e-label {
-        font-weight: $stepper-font-weight;
-      }
     }
     .e-step-valid.e-step-text-only,
     .e-step-valid.e-step-label-only {
@@ -64,18 +62,12 @@
         color: $step-error-icon-only-color;
       }
     }
-    .e-text,
-    .e-label {
-      color: $stepper-text-color;
-    }
+    @include stepper-text-label-colors($stepper-text-color);
     .e-step-selected:not(.e-step-error),
     .e-step-completed:not(.e-step-error) {
-      .e-text,
-      .e-label {
-        color: $step-completed-bg-color;
-      }
+      @include stepper-text-label-colors($step-completed-bg-color);
     }
-    .e-step-label:not(.e-step-icon) .e-step-label-container {
+    .e-step-label:not(.e-step-item) .e-step-label-container {
       background-color: $stepper-outline-color;
     }
     .e-step-text-container {
@@ -93,7 +85,7 @@
     }
     &.e-vertical .e-step-text-only.e-step-text .e-step-label-optional,
     &.e-vertical .e-step-label-only.e-step-label .e-step-label-optional,
-    &.e-vertical .e-step-icon:not(.e-step-text):not(.e-step-label) .e-step-label-optional,
+    &.e-vertical .e-step-item:not(.e-step-text):not(.e-step-label) .e-step-label-optional,
     &.e-vertical.e-label-top .e-step-label-optional,
     &.e-vertical.e-label-bottom .e-step-label-optional {
       background-color: $stepper-outline-color;

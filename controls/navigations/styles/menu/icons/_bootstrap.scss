@@ -1,6 +1,4 @@
 @include export-module('menu-bootstrap-icons') {
-
-  /*! menu layout */
   .e-menu-wrapper,
   .e-menu-container {
     @at-root {
@@ -32,9 +30,7 @@
     }
 
     &.e-hamburger {
-
       & .e-menu-header {
-
         & .e-menu-icon::before {
           content: '\e941';
         }
@@ -42,7 +38,6 @@
 
       &.e-close-icon {
         & .e-menu-header {
-
           & .e-menu-icon::before {
             content: '\e60a';
           }
@@ -79,36 +74,12 @@
   }
 
   .e-rtl.e-menu-wrapper ul,
-  .e-rtl.e-menu-container ul {
-    &.e-vertical {
-      & .e-caret {
-        &::before {
-          content: '\e937';
-        }
-      }
-    }
-
-    &.e-ul {
-      & .e-caret {
-        &::before {
-          content: '\e937';
-        }
-      }
-    }
-  }
-
+  .e-rtl.e-menu-container ul,
   .e-bigger .e-rtl.e-menu-wrapper ul,
   .e-bigger.e-rtl.e-menu-wrapper ul,
   .e-bigger .e-rtl.e-menu-container ul,
   .e-bigger.e-rtl.e-menu-container ul {
-    &.e-vertical {
-      & .e-caret {
-        &::before {
-          content: '\e937';
-        }
-      }
-    }
-
+    &.e-vertical,
     &.e-ul {
       & .e-caret {
         &::before {
@@ -122,7 +93,6 @@
   .e-bigger.e-rtl.e-menu-wrapper.e-hamburger ul,
   .e-bigger .e-rtl.e-menu-container.e-hamburger ul,
   .e-bigger.e-rtl.e-menu-container.e-hamburger ul {
-
     &.e-ul {
       & .e-caret {
         &::before {

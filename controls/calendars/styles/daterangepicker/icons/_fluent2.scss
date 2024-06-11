@@ -1,0 +1,132 @@
+@include export-module('daterangepicker-fluent2-icons') {
+
+  /*! component icons */
+  .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-icon-font-size;
+    margin: $range-icon-margin;
+    min-height: $range-icon-container-min-height;
+    min-width: $range-icon-container-min-width;
+    outline: none;
+    border-radius: $range-icon-mouse-border-radius;
+  
+    #{if(&, '&', '*')}::before {
+      content: '\e7da';
+      font-family: 'e-icons';
+    }
+  
+    #{if(&, '&', '*')}:focus {
+      background: $range-icon-hover-color;
+      border-radius: $range-icon-border-radius;
+    }
+  }
+  
+  .e-daterangepicker {
+    #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-next::before {
+      content: '\e7d8';
+    }
+    #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-prev::before {
+      content: '\e7df';
+    }
+    #{if(&, '&', '*')} .e-change-icon::before {
+      content: '\e7f9';
+    }
+    #{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-next::before {
+      content: '\e7df';
+    }
+    #{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
+      content: '\e7d8';
+    }
+    #{if(&, '&', '*')}.e-rtl .e-start-end .e-change-icon::before {
+      content: '\e773';
+    }
+  }
+  
+  .e-bigger {
+    #{if(&, '&', '*')} .e-input-group-icon.e-range-icon,
+    #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-range-icon,
+    #{if(&, '&', '*')} .e-control-wrapper .e-input-group-icon.e-range-icon {
+      font-size: $range-bigger-icon-font-size;
+      margin: $range-icon-bigger-margin;
+      padding: $zero-value;
+      min-height: $range-icon-bigger-container-min-height;
+      min-width: $range-icon-bigger-container-min-width;
+      outline: none;
+      border-radius: $range-icon-bigger-border-radius;
+    }
+  }
+  
+  // mouse small icon
+  .e-small .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-small .e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-small-icon-font-size;
+    min-width: $range-small-icon-container-min-width;
+    min-height: $range-small-icon-container-min-height;
+    border-radius: $range-small-icon-border-radius;
+    margin: 0;
+    padding: $zero-value;
+  }
+  
+  // Touch small icon
+  .e-small.e-bigger .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-bigger-small-icon-font-size;
+    min-width: $range-bigger-small-icon-container-min-width;
+    min-height: $range-bigger-small-icon-container-min-height;
+    border-radius: $range-bigger-small-icon-border-radius;
+    margin: $zero-value;
+    padding: $zero-value;
+  }
+  
+  // Outline textbox configuration
+  
+  .e-date-range-wrapper.e-outline .e-input-group-icon.e-range-icon,
+  .e-date-range-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-range-icon {
+    min-height: $zero-value;
+    min-width: 20px;
+  }
+  
+  .e-bigger .e-date-range-wrapper.e-outline .e-input-group-icon.e-range-icon,
+  .e-date-range-wrapper.e-control-wrapper.e-bigger.e-outline .e-input-group-icon.e-range-icon,
+  .e-bigger .e-date-range-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-range-icon {
+    min-height: $zero-value;
+    min-width: 24px;
+  }
+  
+  .e-small .e-date-range-wrapper.e-outline .e-input-group-icon.e-range-icon,
+  .e-date-range-wrapper.e-control-wrapper.e-small.e-outline .e-input-group-icon.e-range-icon,
+  .e-small .e-date-range-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-range-icon {
+    min-height: $zero-value;
+    min-width: 18px;
+  }
+  
+  .e-bigger.e-small .e-outline.e-date-range-wrapper .e-input-group-icon.e-range-icon,
+  .e-bigger.e-small.e-outline.e-date-range-wrapper .e-input-group-icon.e-range-icon,
+  .e-date-range-wrapper.e-control-wrapper.e-bigger.e-small.e-outline .e-input-group-icon.e-range-icon,
+  .e-bigger.e-small .e-date-range-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-range-icon {
+    min-height: $zero-value;
+    min-width: 20px;
+  }
+  
+  .e-daterangepick-mob-popup-wrap {
+      
+    #{if(&, '&', '*')} .e-daterangepicker.e-popup-expand {
+    
+      #{if(&, '&', '*')} .e-range-header,
+      #{if(&, '&', '*')} .e-model-header {
+    
+        #{if(&, '&', '*')} .e-popup-close::before {
+          content: '\e7e7';
+          font-family: 'e-icons';
+        }
+  
+        #{if(&, '&', '*')} .e-apply::before {
+          content: '\e774';
+          font-family: 'e-icons';
+        }
+      }
+    }
+  }
+}

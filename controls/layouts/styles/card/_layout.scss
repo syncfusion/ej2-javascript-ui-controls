@@ -1,6 +1,4 @@
 @include export-module('card-layout') {
-
-  /*! card layout */
   .e-bigger .e-card,
   .e-bigger.e-card {
     line-height: $card-bigger-lheight;
@@ -41,7 +39,6 @@
 
     &.e-card-horizontal,
     .e-card-horizontal {
-
       .e-card-image,
       img {
         margin: $card-hor-image-bigger-margin;

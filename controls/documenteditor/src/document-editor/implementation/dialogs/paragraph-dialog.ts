@@ -701,12 +701,12 @@ export class ParagraphDialog {
         }
         const alignValue: number = this.getAlignmentValue(selectionFormat.textAlignment);
         this.alignment.index = alignValue;
-        const outlineValue: number= this.getOutlineValue(selectionFormat.outlineLevel);
-        this.outlineLevel.index=outlineValue;
-        if(this.isHeadingStyle()){
-            this.outlineLevel.readonly=true;
+        const outlineValue: number = this.getOutlineValue(selectionFormat.outlineLevel);
+        this.outlineLevel.index = outlineValue;
+        if (this.isHeadingStyle()){
+            this.outlineLevel.readonly = true;
         }else{
-            this.outlineLevel.readonly=false;
+            this.outlineLevel.readonly = false;
         }
         if (selectionFormat.spaceBeforeAuto) {
             this.beforeSpacingIn.value = -1;
@@ -796,8 +796,8 @@ export class ParagraphDialog {
     }
 
     private isHeadingStyle(): boolean{
-        let parastyle: string = this.documentHelper.selection.paragraphFormat.styleName;
-        if(parastyle== "Heading 1" || parastyle== "Heading 2" || parastyle== "Heading 3" || parastyle== "Heading 4" || parastyle== "Heading 5" || parastyle== "Heading 6" || parastyle== "Heading 7" || parastyle== "Heading 8" || parastyle== "Heading 9" )
+        const parastyle: string = this.documentHelper.selection.paragraphFormat.styleName;
+        if (parastyle === 'Heading 1' || parastyle === 'Heading 2' || parastyle === 'Heading 3' || parastyle === 'Heading 4' || parastyle === 'Heading 5' || parastyle === 'Heading 6' || parastyle === 'Heading 7' || parastyle === 'Heading 8' || parastyle === 'Heading 9' )
         {
             return true;
         }else{
@@ -877,8 +877,8 @@ export class ParagraphDialog {
                 paraFormat.leftIndent = this.leftIndentIn.value + this.byIn.value;
             }
         }
-        if(!isNullOrUndefined(this.paraOutlineLevel)) {
-            paraFormat.outlineLevel=this.paraOutlineLevel;
+        if (!isNullOrUndefined(this.paraOutlineLevel)) {
+            paraFormat.outlineLevel = this.paraOutlineLevel;
         }
         if (!isNullOrUndefined(this.bidi)) {
             paraFormat.bidi = this.bidi;
@@ -964,7 +964,7 @@ export class ParagraphDialog {
         this.beforeSpacing = undefined;
         this.firstLineIndent = undefined;
         this.textAlignment = undefined;
-        this.paraOutlineLevel=undefined;
+        this.paraOutlineLevel = undefined;
         this.rightIndent = undefined;
         this.lineSpacingIn = undefined;
         this.lineSpacingType = undefined;
@@ -994,30 +994,30 @@ export class ParagraphDialog {
         this.documentHelper.dialog.height = 'auto';
         this.documentHelper.dialog.width = 'auto';
         this.documentHelper.dialog.buttons = [
-        {
-            click: this.openTabDialog,
-            buttonModel: { content: local.getConstant('Tabs') + '....', cssClass: 'e-flat e-de-para-tab', enableRtl: this.documentHelper.owner.enableRtl }
-        },
-        {
-            click: this.applyParagraphFormat,
-            buttonModel: { content: local.getConstant('Ok'), cssClass: 'e-flat e-para-okay', isPrimary: true }
-        },
-        {
-            click: this.closeParagraphDialog,
-            buttonModel: { content: local.getConstant('Cancel'), cssClass: 'e-flat e-para-cancel' }
-        }
-    ];
+            {
+                click: this.openTabDialog,
+                buttonModel: { content: local.getConstant('Tabs') + '....', cssClass: 'e-flat e-de-para-tab', enableRtl: this.documentHelper.owner.enableRtl }
+            },
+            {
+                click: this.applyParagraphFormat,
+                buttonModel: { content: local.getConstant('Ok'), cssClass: 'e-flat e-para-okay', isPrimary: true }
+            },
+            {
+                click: this.closeParagraphDialog,
+                buttonModel: { content: local.getConstant('Cancel'), cssClass: 'e-flat e-para-cancel' }
+            }
+        ];
         this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
         this.documentHelper.dialog.close = this.documentHelper.updateFocus;
         this.documentHelper.dialog.dataBind();
-        this.alignment.focusIn();        
+        this.alignment.focusIn();
         this.documentHelper.dialog.show();
         const dialogElement: HTMLElement = this.documentHelper.dialog.element;
         if (dialogElement) {
-             let width: number= this.documentHelper.updateDialogTabHeight(dialogElement,this.target);
-             this.paginationDiv.style.width = width.toString() + 'px';
+            const width: number = this.documentHelper.updateDialogTabHeight(dialogElement, this.target);
+            this.paginationDiv.style.width = width.toString() + 'px';
         }
-        
+
     }
     /**
      * @private
@@ -1057,11 +1057,11 @@ export class ParagraphDialog {
             this.alignment.destroy();
         }
         this.alignment = undefined;
-        if(this.outlineLevel){
-            this.outlineLevel.change=undefined;
+        if (this.outlineLevel){
+            this.outlineLevel.change = undefined;
             this.outlineLevel.destroy();
         }
-        this.outlineLevel=undefined;
+        this.outlineLevel = undefined;
         if (this.lineSpacing) {
             this.lineSpacing.change = undefined;
             this.lineSpacing.destroy();

@@ -983,7 +983,7 @@ export class DateTimePicker extends DatePicker {
     private listCreation(): void {
         let dateObject: Date;
         if (this.calendarMode === 'Gregorian') {
-            this.cldrDateTimeFormat().replace(this.formatRegex, this.TimePopupFormat())
+            this.cldrDateTimeFormat().replace(this.formatRegex, this.TimePopupFormat());
             if (this.dateFormatString === '') {
                 this.dateFormatString = this.cldrDateTimeFormat();
             }
@@ -1043,11 +1043,11 @@ export class DateTimePicker extends DatePicker {
                 if (!Browser.isDevice || (Browser.isDevice && !this.fullScreenMode)) {
                     this.popupObject.refreshPosition(this.inputElement);
                 }
-                if(Browser.isDevice && this.fullScreenMode){
+                if (Browser.isDevice && this.fullScreenMode){
                     this.dateTimeWrapper.style.left = '0px';
                 }
                 if (Browser.isDevice) {
-                    var dlgOverlay = this.createElement('div', { className: 'e-dlg-overlay'});
+                    const dlgOverlay: HTMLElement = this.createElement('div', { className: 'e-dlg-overlay'});
                     dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
                     this.timeModal.appendChild(dlgOverlay);
                 }
@@ -1067,7 +1067,7 @@ export class DateTimePicker extends DatePicker {
             if (!this.preventArgs.cancel && !this.readonly) {
                 const openAnimation: AnimationModel = {
                     name: 'FadeIn',
-                    duration: ANIMATIONDURATION,
+                    duration: ANIMATIONDURATION
                 };
                 if (this.zIndex === 1000) {
                     this.popupObject.show(new Animation(openAnimation), this.element);
@@ -1155,10 +1155,10 @@ export class DateTimePicker extends DatePicker {
                 }
             }
         });
-        if(Browser.isDevice && this.fullScreenMode){
-            this.popupObject.element.style.display = "flex";
-            this.popupObject.element.style.maxHeight = "100%";
-            this.popupObject.element.style.width = "100%";
+        if (Browser.isDevice && this.fullScreenMode){
+            this.popupObject.element.style.display = 'flex';
+            this.popupObject.element.style.maxHeight = '100%';
+            this.popupObject.element.style.width = '100%';
         } else {
             this.popupObject.element.style.maxHeight = POPUPDIMENSION;
         }
@@ -1166,11 +1166,11 @@ export class DateTimePicker extends DatePicker {
         if (Browser.isDevice && this.fullScreenMode) {
             const modelWrapper: HTMLElement = createElement('div', { className: 'e-datetime-mob-popup-wrap' });
             const modelHeader: HTMLElement = this.createElement('div', { className: 'e-model-header' });
-            const modelTitleSpan = this.createElement("span", { className: "e-model-title" });
-            modelTitleSpan.textContent = "Select time";
-            const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+            const modelTitleSpan: HTMLElement = this.createElement('span', { className: 'e-model-title' });
+            modelTitleSpan.textContent = 'Select time';
+            const modelCloseIcon: HTMLElement = this.createElement('span', { className: 'e-popup-close' });
             EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.dateTimeCloseHandler, this);
-            const timeContent: HTMLElement = this.dateTimeWrapper.querySelector(".e-content");
+            const timeContent: HTMLElement = this.dateTimeWrapper.querySelector('.e-content');
             modelHeader.appendChild(modelCloseIcon);
             modelHeader.appendChild(modelTitleSpan);
             modelWrapper.appendChild(modelHeader);
@@ -1235,7 +1235,7 @@ export class DateTimePicker extends DatePicker {
     protected getPopupHeight(): number {
         const height: number = parseInt(<string>POPUPDIMENSION, 10);
         const popupHeight: number = this.dateTimeWrapper.getBoundingClientRect().height;
-        if( Browser.isDevice && this.fullScreenMode){
+        if ( Browser.isDevice && this.fullScreenMode){
             return popupHeight;
         } else {
             return popupHeight > height ? height : popupHeight;
@@ -1276,8 +1276,8 @@ export class DateTimePicker extends DatePicker {
         const height: number = nextElement ? (<HTMLElement>nextElement).offsetTop : element.offsetTop;
         const lineHeight: number = element.getBoundingClientRect().height;
         if ((height + element.offsetTop) > listHeight) {
-            if(Browser.isDevice && this.fullScreenMode){
-                const listContent = this.dateTimeWrapper.querySelector('.e-content');
+            if (Browser.isDevice && this.fullScreenMode){
+                const listContent: Element = this.dateTimeWrapper.querySelector('.e-content');
                 listContent.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION + lineHeight / HALFPOSITION)) : height;
             } else {
                 this.dateTimeWrapper.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION + lineHeight / HALFPOSITION)) : height;
@@ -1465,31 +1465,38 @@ export class DateTimePicker extends DatePicker {
     }
 
     private TimePopupFormat(): any {
-        var format: string = '';
-        var formatCount: number = 0;
-        const proxy: this = this;
+        let format: string = '';
+        let formatCount: number = 0;
+        const proxy: DateTimePicker = null || this;
+
+        /**
+         * Formats the value specifier.
+         *
+         * @param {string} formattext - The format text.
+         * @returns {string} The formatted value specifier.
+         */
         function formatValueSpecifier(formattext: string): string {
-            switch(formattext) {
-                case 'd':
-                case 'dd':
-                case 'ddd':
-                case 'dddd':
-                case 'M':
-                case 'MM':
-                case 'MMM':
-                case 'MMMM':
-                case 'y':
-                case 'yy':
-                case 'yyy':
-                case 'yyyy':
-                    if (format == '') {
-                        format = format + formattext;
-                    }
-                    else {
-                        format = format + "/" + formattext;
-                    }
-                    formatCount = formatCount + 1;
-                    break;
+            switch (formattext) {
+            case 'd':
+            case 'dd':
+            case 'ddd':
+            case 'dddd':
+            case 'M':
+            case 'MM':
+            case 'MMM':
+            case 'MMMM':
+            case 'y':
+            case 'yy':
+            case 'yyy':
+            case 'yyyy':
+                if (format === '') {
+                    format = format + formattext;
+                }
+                else {
+                    format = format + '/' + formattext;
+                }
+                formatCount = formatCount + 1;
+                break;
             }
             if (formatCount > 2) {
                 proxy.dateFormatString = format;

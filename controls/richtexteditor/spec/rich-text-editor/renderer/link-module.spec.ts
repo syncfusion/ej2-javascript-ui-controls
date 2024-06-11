@@ -368,7 +368,7 @@ describe('Link Module', () => {
         });
 
         it('link dialog', () => {
-            expect(rteObj.toolbarSettings.items[9]).toBe("CreateLink");
+            expect(rteObj.toolbarSettings.items[10]).toBe("CreateLink");
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
             let event: any = { preventDefault: function () { } };
@@ -385,9 +385,9 @@ describe('Link Module', () => {
             evnArg.args.item = {command: 'Links', subCommand: 'CreateLink'};
             (<any>rteObj).linkModule.editLink(evnArg);
             expect(isNullOrUndefined((<any>rteObj).linkModule.dialogObj)).toBe(true);
-            (rteObj.toolbarModule.getToolbarElement().querySelectorAll('.e-toolbar-item button')[7] as HTMLElement).click();
+            (rteObj.toolbarModule.getToolbarElement().querySelectorAll('.e-toolbar-item button')[8] as HTMLElement).click();
             expect((<any>rteObj).linkModule.dialogObj.headerEle.innerHTML === 'Insert Link').toBe(true);
-            (rteObj.toolbarModule.getToolbarElement().querySelectorAll('.e-toolbar-item button')[7] as HTMLElement).click();
+            (rteObj.toolbarModule.getToolbarElement().querySelectorAll('.e-toolbar-item button')[8] as HTMLElement).click();
             expect((<any>rteObj).linkModule.dialogObj).toBe(null);
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
@@ -400,7 +400,7 @@ describe('Link Module', () => {
                 target: '', args: args,
                 selfLink: (<any>rteObj).linkModule, selection: save, selectParent: selectParent, selectNode: selectNode
             };
-            (rteObj.toolbarModule.getToolbarElement().querySelectorAll('.e-toolbar-item button')[7] as HTMLElement).click();
+            (rteObj.toolbarModule.getToolbarElement().querySelectorAll('.e-toolbar-item button')[8] as HTMLElement).click();
             (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://data';
             (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'data';
             (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value = 'data';

@@ -532,7 +532,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     }
                     if (newProp.palettes[parseInt(index.toString(), 10)].expanded !== undefined && !isBlazor()) {
                         if (!(this.palettes[parseInt(index.toString(), 10)] as Palette).isInteraction) {
-                            this.accordionElement.items[parseInt(index.toString(), 10)].expanded = newProp.palettes[parseInt(index.toString(), 10)].expanded;
+                            this.accordionElement.items[parseInt(index.toString(), 10)].expanded
+                                = newProp.palettes[parseInt(index.toString(), 10)].expanded;
                             this.isExpand = true;
                         } else {
                             (this.palettes[parseInt(index.toString(), 10)] as Palette).isInteraction = false;
@@ -540,10 +541,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                         if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
                             this.isExpand = true;
                         }
-                    }
-                    if (isBlazor() && newProp.palettes[parseInt(index.toString(), 10)].symbols !== null) { refresh = true; }
-                    if (isBlazor() && newProp.palettes[parseInt(index.toString(), 10)].symbols === null) {
-                        this.updateBlazorProperties(newProp);
                     }
                 }
                 break;
@@ -600,17 +597,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      *
      * @private
      */
-    public updateBlazorProperties(newProp: SymbolPaletteModel): void {
-        const blazorInterop: string = 'sfBlazor';
-        const blazor: string = 'Blazor';
-        if (window && window[`${blazor}`]) {
+    // public updateBlazorProperties(newProp: SymbolPaletteModel): void {
+    //     const blazorInterop: string = 'sfBlazor';
+    //     const blazor: string = 'Blazor';
+    //     if (window && window[`${blazor}`]) {
 
-            const palObj: object = { palette: newProp.palettes };
+    //         const palObj: object = { palette: newProp.palettes };
 
-            const obj: object = { 'methodName': 'UpdateBlazorProperties', 'paletteobj': palObj };
-            window[`${blazorInterop}`].updateBlazorProperties(obj, this);
-        }
-    }
+    //         const obj: object = { 'methodName': 'UpdateBlazorProperties', 'paletteobj': palObj };
+    //         window[`${blazorInterop}`].updateBlazorProperties(obj, this);
+    //     }
+    // }
 
     /**
      * Get the properties to be maintained in the persisted state.
@@ -684,9 +681,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
     /**
      * EJ2-61531- Localization support for the symbol palette search box placeholder.
-     * @returns defaultLocale
+     * @returns {Object} defaultLocale
      */
-    private defaultLocale()
+    private defaultLocale(): Object
     {
         return{ SearchShapes: 'Search Shapes'};
     }
@@ -704,9 +701,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.accordionElement.appendTo('#' + this.element.id + '_container');
         }
         this.renderComplete();
-        if (isBlazor()) {
-            this.element.classList.remove('e-symbolpalette-hidden');
-        }
     }
 
     /**
@@ -891,73 +885,79 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 }
             }
             //Rendering the UML node as an HTML group node ensures that it is visually represented exactly as intended in the diagram
-            if(symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship){
+            if (symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship) {
                 const umlObj: NodeModel = symbol as NodeModel;
-                let newObj:NodeModel;
-                let getStyle:object;
-                if(symbol.style.fill === "white"){
+                let newObj: NodeModel;
+                let getStyle: object;
+                if (symbol.style.fill === 'white') {
                     getStyle = {
-                        fill : "#26A0DA"
+                        fill: '#26A0DA'
                     };
                 }
-                else{
+                else {
                     getStyle = {
-                        fill : symbol.style.fill
+                        fill: symbol.style.fill
                     };
                 }
-                if((symbol.shape as UmlClassifierShapeModel).classifier=== 'Class'){
+                if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Class') {
                     newObj = {
-                        id: 'node' + randomId(), shape: { type: 'HTML',   content:
-                        '<div id="parentDiv" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv" style="font-size:0.7vw;">class</div></div>'},
+                        id: 'node' + randomId(), shape: {
+                            type: 'HTML', content:
+                                '<div id="parentDiv" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv" style="font-size:0.7vw;">class</div></div>'
+                        },
                         width: umlObj.width ? umlObj.width : 100,
                         height: umlObj.height ? umlObj.height : 100,
                         style: getStyle,
                         offsetX: umlObj.width ? umlObj.width / 2 : 50,
-                        offsetY: umlObj.height ? umlObj.height / 2 : 50,
+                        offsetY: umlObj.height ? umlObj.height / 2 : 50
                     };
                     this.addPaletteItem(symbolGroup.id, newObj);
                 }
-                else if((symbol.shape as UmlClassifierShapeModel).classifier==='Enumeration'){
+                else if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Enumeration') {
                     newObj = {
-                        id: 'node' + randomId(), shape: { type: 'HTML', content:
-                        '<div id="parentDiv2" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv2" style="font-size:0.5vw;">Enumeration</div></div>'},
+                        id: 'node' + randomId(), shape: {
+                            type: 'HTML', content:
+                                '<div id="parentDiv2" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv2" style="font-size:0.5vw;">Enumeration</div></div>'
+                        },
                         width: umlObj.width ? umlObj.width : 100,
                         height: umlObj.height ? umlObj.height : 100,
                         style: getStyle,
                         offsetX: umlObj.width ? umlObj.width / 2 : 50,
-                        offsetY: umlObj.height ? umlObj.height / 2 : 50,
+                        offsetY: umlObj.height ? umlObj.height / 2 : 50
                     };
                     this.addPaletteItem(symbolGroup.id, newObj);
                 }
-                else if((symbol.shape as UmlClassifierShapeModel).classifier==='Interface'){
+                else if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Interface') {
                     newObj = {
-                        id: 'node' + randomId(), shape: { type: 'HTML', content:
-                        '<div id="parentDiv3" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv3" style="font-size:0.7vw;">Interface</div></div>'},
+                        id: 'node' + randomId(), shape: {
+                            type: 'HTML', content:
+                                '<div id="parentDiv3" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv3" style="font-size:0.7vw;">Interface</div></div>'
+                        },
                         width: umlObj.width ? umlObj.width : 100,
                         height: umlObj.height ? umlObj.height : 100,
                         style: getStyle,
                         offsetX: umlObj.width ? umlObj.width / 2 : 50,
-                        offsetY: umlObj.height ? umlObj.height / 2 : 50,
+                        offsetY: umlObj.height ? umlObj.height / 2 : 50
                     };
                     this.addPaletteItem(symbolGroup.id, newObj);
                 }
-                const memberObj:NodeModel = {
-                    id: 'member' + randomId(), shape: { type: 'HTML', content:'<div style="width:100%;height:100%;border:1px solid #000;background:white"></div>'},
+                const memberObj: NodeModel = {
+                    id: 'member' + randomId(), shape: { type: 'HTML', content: '<div style="width:100%;height:100%;border:1px solid #000;background:white"></div>' },
                     width: umlObj.width ? umlObj.width : 100,
                     height: umlObj.height ? umlObj.height : 100,
                     offsetX: umlObj.width ? umlObj.width / 2 : 50,
-                    offsetY: umlObj.height ? umlObj.height / 2 + (newObj.height / 2) : 50 + (newObj.height / 2),
+                    offsetY: umlObj.height ? umlObj.height / 2 + (newObj.height / 2) : 50 + (newObj.height / 2)
                 };
                 this.addPaletteItem(symbolGroup.id, memberObj);
-                umlObj.children = [newObj.id,memberObj.id];
+                umlObj.children = [newObj.id, memberObj.id];
             }
             //Set the strokeDashArray for specific connectors to ensure that it is visually represented exactly as intended in the diagram
             if (symbol.shape.type === 'UmlClassifier' && (symbol.shape as RelationShipModel).relationship) {
-                if((symbol.shape as RelationShipModel).relationship == 'Inheritance'){
-                    symbol.style.strokeDashArray = symbol.style.strokeDashArray? symbol.style.strokeDashArray: "4 4"
+                if ((symbol.shape as RelationShipModel).relationship === 'Inheritance') {
+                    symbol.style.strokeDashArray = symbol.style.strokeDashArray ? symbol.style.strokeDashArray : '4 4';
                 }
-                if((symbol.shape as RelationShipModel).relationship == 'Dependency'){
-                    symbol.style.strokeDashArray = symbol.style.strokeDashArray? symbol.style.strokeDashArray: "4 4"
+                if ((symbol.shape as RelationShipModel).relationship === 'Dependency') {
+                    symbol.style.strokeDashArray = symbol.style.strokeDashArray ? symbol.style.strokeDashArray : '4 4';
                 }
             }
             if (symbol instanceof Node) {
@@ -1000,19 +1000,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
 
     private renderPalette(symbolGroup: PaletteModel): void {
-        let style: string = (isBlazor()) ? 'overflow:auto;' : 'display:none;overflow:auto;';
+        let style: string = 'display:none;overflow:auto;';
         if (symbolGroup.height) {
             style += 'height:' + symbolGroup.height + 'px';
         }
         const paletteParentDiv: HTMLElement = document.getElementById(symbolGroup.id);
-        let paletteDiv: HTMLElement;
-        if (isBlazor() && paletteParentDiv != null) {
-            paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id + '_content', style: style, class: 'e-remove-palette' });
-            paletteParentDiv.appendChild(paletteDiv);
-        } else {
-            paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id, style: style, class: 'e-remove-palette' });
-            this.element.appendChild(paletteDiv);
-        }
+        const paletteDiv: HTMLElement = createHtmlElement('div', { 'id': symbolGroup.id, style: style, class: 'e-remove-palette' });
+        this.element.appendChild(paletteDiv);
         if (!isBlazor()) {
             const item: AccordionItemModel = {
                 header: symbolGroup.title, expanded: symbolGroup.expanded,
@@ -1044,7 +1038,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 for (let i: number = 0; i < Object.keys(paletteSymbol).length; i++) {
                     const isEnableServerDatabind: boolean = this.allowServerDataBinding;
                     this.allowServerDataBinding = false;
-                    obj[Object.keys(paletteSymbol)[parseInt(i.toString(), 10)]] = paletteSymbol[Object.keys(paletteSymbol)[parseInt(i.toString(), 10)]];
+                    obj[Object.keys(paletteSymbol)[parseInt(i.toString(), 10)]]
+                        = paletteSymbol[Object.keys(paletteSymbol)[parseInt(i.toString(), 10)]];
                     this.allowServerDataBinding = isEnableServerDatabind;
                 }
                 updateDefaultValues(obj, paletteSymbol, obj instanceof Node ? this.nodeDefaults : this.connectorDefaults);
@@ -1057,12 +1052,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 if (isChild) {
                     this.childTable[obj.id] = obj;
                 } else {
-                    let paletteDiv: HTMLElement;
-                    if (isBlazor()) {
-                        paletteDiv = document.getElementById(symbolPaletteGroup.id + '_content');
-                    } else {
-                        paletteDiv = document.getElementById(symbolPaletteGroup.id);
-                    }
+                    const paletteDiv: HTMLElement = document.getElementById(symbolPaletteGroup.id);
                     if (paletteDiv) {
                         paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
                     }
@@ -1125,18 +1115,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (obj.children) {
                 content = this.getContainer(obj as Node, container);
             } else {
-               if(symbol instanceof Connector && symbol.shape.type === 'UmlClassifier' && (symbol.shape as RelationShipModel).relationship){
+                if (symbol instanceof Connector && symbol.shape.type === 'UmlClassifier' && (symbol.shape as RelationShipModel).relationship) {
                     content = (symbol as Connector).init(this);
-                    for(let i:number = (content as Canvas).children.length-1; i >= 0; i--) {
+                    for (let i: number = (content as Canvas).children.length - 1; i >= 0; i--) {
                         if ((content as Canvas).children[parseInt(i.toString(), 10)] instanceof TextElement) {
-                            (content as Canvas).children.splice(i,1);
+                            (content as Canvas).children.splice(i, 1);
                         }
                     }
                 }
-                else{
+                else {
                     content = (symbol as Node).init(this);
                 }
-               
+
                 if (symbol instanceof Node && symbol.parentId) { container.children.push(content); }
             }
         }
@@ -1145,8 +1135,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             const getSymbolInfo: Function = getFunction(this.getSymbolInfo);
             if (getSymbolInfo) {
                 symbolInfo = getSymbolInfo(symbol);
-            } else if (isBlazor()) {
-                symbolInfo = this.getBlazorSymbolInfo(symbol, symbolInfo);
             }
             symbolInfo = symbolInfo || this.symbolInfo || {};
             if (symbol.shape && (symbol.shape as SwimLaneModel).isPhase) {
@@ -1178,7 +1166,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 } else {
                     height += obj.style.strokeWidth;
                 }
-                //Bug 873843: Issue with node height and width in the symbol palette. Checked !== Bpmn to avoid the actual height decrement for bpmn nodes 
+                //Bug 873843: Issue with node height and width in the symbol palette. Checked !== Bpmn to avoid the actual height decrement for bpmn nodes
                 if (symbol.shape && symbol.shape.type !== 'Bpmn' && symbolInfo.description && symbolInfo.description.text !== '') {
                     actualHeight -= 20; // default height of the text have been reduced from the container.
                 }
@@ -1209,9 +1197,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 stackPanel.offsetY = 0.5;
             }
             //symbol description-textElement
-            this.getSymbolDescription(symbolInfo, width, stackPanel,symbol);
-            //EJ2-867827 - In diagram palette symbols, part of the symbol is not visible in left and top side 
-            stackPanel.padding={left:1,right:1,bottom:1,top:1};
+            this.getSymbolDescription(symbolInfo, width, stackPanel, symbol);
+            //EJ2-867827 - In diagram palette symbols, part of the symbol is not visible in left and top side
+            stackPanel.padding = { left: 1, right: 1, bottom: 1, top: 1 };
             stackPanel.measure(new Size());
             stackPanel.arrange(stackPanel.desiredSize);
             symbolInfo.width = symbolInfo.width || content.actualSize.width;
@@ -1223,19 +1211,19 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             container.arrange(container.desiredSize);
         }
     }
-    private getBlazorSymbolInfo(symbol: NodeModel | ConnectorModel, symbolInfo: SymbolInfo): SymbolInfo {
-        const node: NodeModel | ConnectorModel = symbol as NodeModel | ConnectorModel;
-        const shapeSymbolInfo: SymbolPaletteInfoModel = node.symbolInfo;
-        if (shapeSymbolInfo) {
-            symbolInfo.description = shapeSymbolInfo.description || this.symbolInfo.description;
-            symbolInfo.fit = shapeSymbolInfo.fit || this.symbolInfo.fit;
-            symbolInfo.height = shapeSymbolInfo.height || this.symbolInfo.height;
-            symbolInfo.width = shapeSymbolInfo.width || this.symbolInfo.width;
-            symbolInfo.tooltip = shapeSymbolInfo.tooltip || this.symbolInfo.tooltip;
-            symbolInfo.template = shapeSymbolInfo.template || this.symbolInfo.template;
-        }
-        return symbolInfo;
-    }
+    // private getBlazorSymbolInfo(symbol: NodeModel | ConnectorModel, symbolInfo: SymbolInfo): SymbolInfo {
+    //     const node: NodeModel | ConnectorModel = symbol as NodeModel | ConnectorModel;
+    //     const shapeSymbolInfo: SymbolPaletteInfoModel = node.symbolInfo;
+    //     if (shapeSymbolInfo) {
+    //         symbolInfo.description = shapeSymbolInfo.description || this.symbolInfo.description;
+    //         symbolInfo.fit = shapeSymbolInfo.fit || this.symbolInfo.fit;
+    //         symbolInfo.height = shapeSymbolInfo.height || this.symbolInfo.height;
+    //         symbolInfo.width = shapeSymbolInfo.width || this.symbolInfo.width;
+    //         symbolInfo.tooltip = shapeSymbolInfo.tooltip || this.symbolInfo.tooltip;
+    //         symbolInfo.template = shapeSymbolInfo.template || this.symbolInfo.template;
+    //     }
+    //     return symbolInfo;
+    // }
     private getContainer(obj: Node, container: Container): Container {
         container.measureChildren = false;
         let bounds: Rect;
@@ -1259,9 +1247,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Feature [EJ2- 47318] - Support for the change of the symbol description
      * Feature [EJ2- 50705] - Support to add margin between the text and symbols
-    */
+     */
 
-    private getSymbolDescription(symbolInfo: SymbolInfo, width: number, parent: StackPanel | Container, symbol:NodeModel|ConnectorModel): void {
+    private getSymbolDescription(symbolInfo: SymbolInfo, width: number, parent: StackPanel | Container,
+                                 symbol: NodeModel | ConnectorModel): void {
         if (symbolInfo && symbolInfo.description && symbolInfo.description.text) {
             const textElement: TextElement = new TextElement();
             //symbol description-textElement
@@ -1283,10 +1272,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             textElement.style.textWrapping = symbolInfo.description.wrap;
             textElement.style.textOverflow = symbolInfo.description.overflow;
             //Bug 873843: Issue with node height and width in the symbol palette. Added below to set margin bottom value for bpmn symbol with description.
-            if(symbol.shape && symbol.shape.type === 'Bpmn'){
-                textElement.margin = {left : 0, right : 0, top : symbolInfo.description.margin ? symbolInfo.description.margin.top : 0, bottom : symbolInfo.description.margin ? symbolInfo.description.margin.bottom : this.symbolMargin.bottom};
-            }else{
-                textElement.margin = {left : 0, right : 0, top : symbolInfo.description.margin ? symbolInfo.description.margin.top : 0, bottom : symbolInfo.description.margin ? symbolInfo.description.margin.bottom : 5};
+            if (symbol.shape && symbol.shape.type === 'Bpmn') {
+                textElement.margin = {
+                    left: 0, right: 0,
+                    top: symbolInfo.description.margin ? symbolInfo.description.margin.top : 0,
+                    bottom: symbolInfo.description.margin ? symbolInfo.description.margin.bottom : this.symbolMargin.bottom
+                };
+            } else {
+                textElement.margin = {
+                    left: 0, right: 0,
+                    top: symbolInfo.description.margin ? symbolInfo.description.margin.top : 0,
+                    bottom: symbolInfo.description.margin ? symbolInfo.description.margin.bottom : 5
+                };
             }
             parent.children.push(textElement);
         }
@@ -1365,11 +1362,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             div = this.getHtmlSymbol(symbol, canvas, previewContainer, symbolPreviewHeight, symbolPreviewWidth, true);
             //EJ2-838575 - for refreshing the symbols after dragged
             this.prepareSymbol(symbol);
-        } 
-        else if(symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship){
+        }
+        else if (symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship) {
             if ((symbol as NodeModel).children &&
-            (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable))  {
-                div = this.getHtmlSymbol(symbol, canvas, previewContainer, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, true);
+                (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable)) {
+                div = this.getHtmlSymbol(symbol, canvas, previewContainer, symbol.wrapper.actualSize.height,
+                                         symbol.wrapper.actualSize.width, true);
                 this.prepareSymbol(symbol);
             }
         }
@@ -1379,8 +1377,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 div = this.getGroupParent(
                     symbol, canvas, previewContainer, symbol.wrapper.actualSize.height,
                     symbol.wrapper.actualSize.width, true);
-                    //EJ2-838575 - for refreshing the symbols after dragged
-                    this.prepareSymbol(symbol);
+                //EJ2-838575 - for refreshing the symbols after dragged
+                this.prepareSymbol(symbol);
             } else {
                 canvas = CanvasRenderer.createCanvas(
                     symbol.id + '_preview',
@@ -1441,12 +1439,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
         // If the shape is to be rendered in search palette, then the id of the shape is appended with 'SearchSymbol'
         // To create a unique id for the shape in search palette to avoid tooltip issue.
-        const symbolId = parentDiv.id === 'SearchPalette' ? symbol.id+'SearchSymbol':symbol.id;
+        const symbolId: string = parentDiv.id === 'SearchPalette' ? symbol.id + 'SearchSymbol' : symbol.id;
         const container: HTMLElement = createHtmlElement(
             'div', {
                 id: symbolId + '_container',
-                style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
-                // title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
+                style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden'
+            // title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
             });
         parentDiv.appendChild(container);
         let canvas: HTMLCanvasElement | SVGElement;
@@ -1467,11 +1465,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         } else if (symbol.shape.type === 'HTML') {
             div = this.getHtmlSymbol(
                 symbol, canvas, container, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, false, parentDiv.id === 'SearchPalette');
-        } 
+        }
         //This method is responsible for rendering the UML node, as the UML node is displayed as an HTML group node.
-        else if(symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship){
+        else if (symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship) {
             if ((symbol as NodeModel).children &&
-            (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable))  {
+                (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable)) {
                 div = this.getHtmlSymbol(
                     symbol, canvas, container, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, false);
             }
@@ -1564,7 +1562,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
         // If the shape is to be rendered in search palette, then the id of the shape is appended with 'SearchSymbol'
         // To create a unique id for the shape in search palette to avoid tooltip issue.
-        const symbolId = isSearchSymbol ? symbol.id + 'SearchSymbol' : symbol.id;
+        const symbolId: string = isSearchSymbol ? symbol.id + 'SearchSymbol' : symbol.id;
         const div: HTMLElement = createHtmlElement(
             'div', {
                 'id': symbolId + (isPreview ? '_html_div_preview' : '_html_div')
@@ -1599,25 +1597,25 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             Math.ceil((symbol.wrapper.actualSize.height + symbol.style.strokeWidth) * 2) + 1);
         container.appendChild(canvas);
         canvas.getContext('2d').setTransform(2, 0, 0, 2, 0, 0);
-        applyStyleAgainstCsp(canvas,style);
+        applyStyleAgainstCsp(canvas, style);
         container.appendChild(div);
         //EJ2-70280 - Text description in symbol palette for HTML nodes is not visible.
-        if(isPreview){
+        if (isPreview) {
             //When dragging the UML node from the palette, set the preview specifically for that UML node
-            if(symbol.shape.type=="UmlClassifier"){
-                if((symbol.shape as UmlClassifierShapeModel).classifier=== 'Class'){
-                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content = '<div id="parentDiv" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv" style="font-size:1vw;">class</div></div>'
+            if (symbol.shape.type === 'UmlClassifier') {
+                if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Class') {
+                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content = '<div id="parentDiv" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv" style="font-size:1vw;">class</div></div>';
                 }
-                else if((symbol.shape as UmlClassifierShapeModel).classifier==='Enumeration'){
-                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content  = '<div id="parentDiv2" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv2" style="font-size:0.8vw;">Enumeration</div></div>'
+                else if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Enumeration') {
+                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content = '<div id="parentDiv2" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv2" style="font-size:0.8vw;">Enumeration</div></div>';
                 }
-                else if((symbol.shape as UmlClassifierShapeModel).classifier==='Interface'){
-                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content  = '<div id="parentDiv3" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv3" style="font-size:0.9vw;">Interface</div></div>'
+                else if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Interface') {
+                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content = '<div id="parentDiv3" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv3" style="font-size:0.9vw;">Interface</div></div>';
                 }
             }
             this.diagramRenderer.renderElement((symbol.wrapper.children[0] as Container).children[0], canvas, htmlLayer);
         }
-        else{
+        else {
             this.diagramRenderer.renderElement(symbol.wrapper, canvas, htmlLayer);
         }
         return div;
@@ -1660,7 +1658,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
     private hoverElement: NodeModel | ConnectorModel;
 
-    /** Gets the default content of the Tooltip*/
+    /** Gets the default content of the Tooltip
+     *
+     * @returns {string | HTMLElement} Returns the default content of the Tooltip.\
+     * @param {object} obj - provide the Symbol object.
+     */
     private getContent(obj: object): string | HTMLElement {
         const isPrivateTooltip: number = ((this.hoverElement instanceof Node) &&
             (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
@@ -1672,8 +1674,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
 
     /**
-    * Initialize the basic properties of Toolip object 
-    */
+     * Initialize the basic properties of Toolip object
+     *
+     * @returns {Tooltip | BlazorTooltip} Returns the basic properties of Toolip object.\
+     * @param {NodeModel | ConnectorModel} element - provide the Symbol object.
+     */
     private initTooltip(element: NodeModel | ConnectorModel): Tooltip | BlazorTooltip {
         let tooltip: Tooltip | BlazorTooltip;
         if (!isBlazor()) {
@@ -1684,30 +1689,41 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             tooltip.opensOn = 'custom';
             tooltip.appendTo('#' + element.id);
             tooltip.close();
-        } else {
-            tooltip = this.updateTooltipContent(this.hoverElement.tooltip, tooltip) as BlazorTooltip;
         }
         return tooltip;
     }
 
-    /**Method to update Tooltip Content*/
+    /**Method to update Tooltip Content
+     *
+     * @returns { Tooltip | BlazorTooltip} Returns the basic properties of Toolip object.\
+     *
+     * @param {TooltipModel} tooltip - provide the Symbol object.
+     * @param {Tooltip | BlazorTooltip} tooltipObject - provide the Symbol object.
+     */
     private updateTooltipContent(tooltip: TooltipModel, tooltipObject: Tooltip | BlazorTooltip): Tooltip | BlazorTooltip {
-            tooltipObject.content = tooltip.content;
-            tooltipObject.position = 'BottomRight';
-            tooltipObject.showTipPointer = tooltip.showTipPointer;
-            tooltipObject.width = tooltip.width;
-            tooltipObject.height = tooltip.height;
-            if (!tooltip.animation) {
-                tooltipObject.animation = { close: { effect: 'None' } };
-            } else {
-                tooltipObject.animation = tooltip.animation;
-            }
+        tooltipObject.content = tooltip.content;
+        tooltipObject.position = 'BottomRight';
+        tooltipObject.showTipPointer = tooltip.showTipPointer;
+        tooltipObject.width = tooltip.width;
+        tooltipObject.height = tooltip.height;
+        if (!tooltip.animation) {
+            tooltipObject.animation = { close: { effect: 'None' } };
+        } else {
+            tooltipObject.animation = tooltip.animation;
+        }
         return tooltipObject as Tooltip;
     }
 
     /**
-     * To open the Tooltip element relevant to the target and relative mode */ 
-    private elementEnter(mousePosition: PointModel, elementOver: boolean, isSearchSymbol?:boolean): void {
+     * To open the Tooltip element relevant to the target and relative mode
+     *
+     * @returns { void} opens the Tooltip element relevant to the target and relative mode.\
+     *
+     * @param {PointModel} mousePosition - provide the mousePosition value.
+     * @param {boolean} elementOver - provide the elementOver value.
+     * @param {boolean} isSearchSymbol - provide the isSearchSymbol value.
+     */
+    private elementEnter(mousePosition: PointModel, elementOver: boolean, isSearchSymbol?: boolean): void {
         if (!elementOver) {
             //set the collision target element to given position if enabled
             (this.symbolTooltipObject as Tooltip).windowCollision = true;
@@ -1719,12 +1735,16 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 if (!(this.hoverElement.constraints & (NodeConstraints.Default && NodeConstraints.Tooltip))) {
                     this.hoverElement.tooltip.content = this.hoverElement.id;
                     //Task 834121: Content-Security-Policy support for diagram
-                    this.symbolTooltipObject.content = initializeCSPTemplate(function() {return this.hoverElement.id;},this);
+                    this.symbolTooltipObject.content = initializeCSPTemplate(function (): string | HTMLElement {
+                        return this.hoverElement.id;
+                    }, this);
                 }
             } else if (this.hoverElement instanceof Connector) {
                 if (!(this.hoverElement.constraints & (ConnectorConstraints.Default && ConnectorConstraints.Tooltip))) {
                     this.hoverElement.tooltip.content = this.hoverElement.id;
-                    this.symbolTooltipObject.content = initializeCSPTemplate(function() {return this.hoverElement.id;},this);
+                    this.symbolTooltipObject.content = initializeCSPTemplate(function (): string | HTMLElement {
+                        return this.hoverElement.id;
+                    }, this);
                 }
             }
             if (this.hoverElement.tooltip.content) {
@@ -1741,16 +1761,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             }
             //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
             // To render tooltip for the symbol in search palette, the id of the shape is appended with 'SearchSymbol'.
-            const targetId = isSearchSymbol ? this.hoverElement.id + 'SearchSymbol' : this.hoverElement.id;
-            const targetEle = document.getElementById(targetId);
+            const targetId: string = isSearchSymbol ? this.hoverElement.id + 'SearchSymbol' : this.hoverElement.id;
+            const targetEle: HTMLElement = document.getElementById(targetId);
             if (this.hoverElement.tooltip.openOn === 'Auto' && this.hoverElement.tooltip.content !== '') {
                 (this.symbolTooltipObject as Tooltip).close();
                 (this.symbolTooltipObject as TooltipModel).opensOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
-                if (isBlazor()) {
-                    (this.symbolTooltipObject as BlazorTooltip).open(targetEle, {});
-                } else {
-                    (this.symbolTooltipObject as Tooltip).dataBind();
-                }
+                (this.symbolTooltipObject as Tooltip).dataBind();
             }
             if (this.hoverElement.tooltip.openOn === 'Auto') {
                 (this.symbolTooltipObject as Tooltip).target = this.hoverElement.id;
@@ -1775,11 +1791,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.highlightedSymbol = container;
         }
         e.preventDefault();
-        let isSearchSymbol = false;
-        if(e.target && (e.target as HTMLElement).id.includes('SearchSymbol')){
+        let isSearchSymbol: boolean = false;
+        if (e.target && (e.target as HTMLElement).id.includes('SearchSymbol')) {
             isSearchSymbol = true;
-            id = id.split('SearchSymbol')[0]
-        };
+            id = id.split('SearchSymbol')[0];
+        }
         //EJ2-66311-tooltip support for Symbolpalette
         const obj: any = this.symbolTable[`${id}`];
         if (this.symbolTable[`${id}`] && obj !== this.hoverElement) {
@@ -1805,6 +1821,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * When Mouse pointer leaves the symbol palette object Mouse leave event is called and closes Tooltip
+     * @returns {void} Function to close symbol tooltip on mouse leave.
      */
     private elementLeave(): void {
         if (this.symbolTooltipObject && (this.symbolTooltipObject as TooltipModel).opensOn !== 'Custom') {
@@ -1812,9 +1829,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
     }
 
-    /** @private 
+    /** @private
+     * @returns {void} Handles mouse leave events
      * @param {PointerEvent} evt - provide event name
-    */
+     */
     public mouseLeave(evt: PointerEvent): void {
         this.elementLeave();
         evt.preventDefault();
@@ -1830,9 +1848,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 if (element.classList.contains('e-clear-searchtext')) {
                     element.className = 'e-input-group-icon e-search e-icons';
                     (document.getElementById('textEnter') as HTMLInputElement).value = '';
-                    if (isBlazor()) {
-                        document.getElementById(this.element.id + '_search_content').classList.add('e-symbolpalette-search-hidden');
-                    }
                     this.searchPalette('');
                 }
             } else {
@@ -1856,13 +1871,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             const palette: SymbolPalette = this;
             const element: HTMLElement = document.getElementById('iconSearch');
             element.className = 'e-input-group-icon e-clear-searchtext e-icons';
-            if (isBlazor() && evt.target instanceof HTMLInputElement) {
-                if (evt.target.value === '') {
-                    document.getElementById(this.element.id + '_search_content').classList.add('e-symbolpalette-search-hidden');
-                } else {
-                    document.getElementById(this.element.id + '_search_content').classList.remove('e-symbolpalette-search-hidden');
-                }
-            }
             if (evt && (evt.key === 'Enter' || evt.keyCode === 13)) {
                 if (evt.target instanceof HTMLInputElement) {
                     this.searchPalette(evt.target.value);
@@ -1885,21 +1893,21 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     private mouseDown(evt: PointerEvent): void {
         let id: string = (<HTMLElement>evt.target).id.split('_container')[0];
-        var isSearchSymbol = false;
+        let isSearchSymbol: boolean = false;
         //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
         // To split the original id of shape to find it in symbol table.
-        if(id.includes('SearchSymbol')){
+        if (id.includes('SearchSymbol')) {
             id = id.split('SearchSymbol')[0];
             isSearchSymbol = true;
         }
         if (this.selectedSymbol) {
             const oldSymbol: HTMLElement = document.getElementById(this.selectedSymbol.id + '_container');
-             //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
+            //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
             // To highlight and remove highlight of the selected symbol in search palette on mouse down.
-            const oldSearchSymbol = document.getElementById(this.selectedSymbol.id + 'SearchSymbol' + '_container');
+            const oldSearchSymbol: HTMLElement = document.getElementById(this.selectedSymbol.id + 'SearchSymbol' + '_container');
             if ((oldSymbol || oldSearchSymbol)) {
                 oldSymbol.classList.remove('e-symbol-selected');
-                if(oldSearchSymbol){
+                if (oldSearchSymbol) {
                     oldSearchSymbol.classList.remove('e-symbol-selected');
                 }
             }
@@ -1910,9 +1918,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.selectedSymbol = null;
         }
         if (this.symbolTable[`${id}`]) {
-            let containerId = id;
-            if(isSearchSymbol){
-                containerId = id+'SearchSymbol';
+            let containerId: string = id;
+            if (isSearchSymbol) {
+                containerId = id + 'SearchSymbol';
             }
             const container: HTMLElement = document.getElementById(containerId + '_container');
             container.classList.add('e-symbol-selected');
@@ -1982,9 +1990,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         const element: HTMLElement = this.helper[0];
         if (element) {
             element.setAttribute('paletteId', this.element.id);
-        }
-        if (isBlazor()) {
-            e.bindEvents(e.dragElement);
         }
     }
 
@@ -2138,12 +2143,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private updatePalettes(): void {
         for (let i: number = 0; i < this.palettes.length; i++) {
             const symGroup: PaletteModel = this.palettes[parseInt(i.toString(), 10)];
-             //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
+            //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
             //To remove search palette from palette collection.
-            if(symGroup.id === 'search_palette'){
+            if (symGroup.id === 'search_palette') {
                 this.palettes.splice(i, 1);
                 i--;
-            }else{
+            } else {
                 this.initSymbols(symGroup);
                 this.renderPalette(symGroup);
             }
@@ -2166,15 +2171,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         searchDiv.appendChild(span);
     }
 
-    private getFilterSymbol(symbol: (NodeModel | ConnectorModel)[]): NodeModel[] | ConnectorModel[] {
-        const items: NodeModel[] = [];
-        for (let i: number = 0; i < symbol.length; i++) {
-            for (let j: number = 0; j < this.ignoreSymbolsOnSearch.length; j++) {
-                if (this.ignoreSymbolsOnSearch[parseInt(j.toString(), 10)] !== symbol[parseInt(i.toString(), 10)].id) {
-                    items.push(symbol[0] as NodeModel);
-                }
-            }
-        }
+    private getFilterSymbol(symbol: (NodeModel | ConnectorModel)[]): (NodeModel | ConnectorModel)[] {
+        let items: (NodeModel | ConnectorModel)[] = [];
+        //884490: filter the symbol based on ignoreSymbolsOnSearch property
+        items = symbol.filter((element: NodeModel | ConnectorModel) => !(this.ignoreSymbolsOnSearch as any).includes(element.id));
         return items;
     }
 
@@ -2188,7 +2188,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 element.removeChild(element.children[parseInt(i.toString(), 10)]);
             }
             //Bug-857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
-            //To remove search palette from palette collection. 
+            //To remove search palette from palette collection.
             this.palettes.splice(0, 1);
         }
         //add the searched item in array collection
@@ -2209,10 +2209,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             symbolGroup = this.getFilterSymbol(symbolGroup);
         }
         //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
-        //To render search palette and add it to the palettes collection. 
-        if(value !== ''){
-            const searchPalette = { id: 'search_palette', expanded: true, symbols: symbolGroup, title: 'Search Shapes' };
-            const palette = new Palette(this, 'palettes', searchPalette, true);
+        //To render search palette and add it to the palettes collection.
+        if (value !== '') {
+            const searchPalette: object = { id: 'search_palette', expanded: true, symbols: symbolGroup, title: 'Search Shapes' };
+            const palette: Palette = new Palette(this, 'palettes', searchPalette, true);
             this.palettes.splice(0, 0, palette);
         }
         //create a palette collection
@@ -2423,8 +2423,9 @@ export interface SymbolDescription {
      */
     textDecoration?: TextDecoration;
     /**
-	 * Sets/Gets the margin of the element
-	 * The margin top and bottom alone works for the symbol description
-	 */
+     *
+     * Sets/Gets the margin of the element
+     * The margin top and bottom alone works for the symbol description
+     */
     margin?: MarginModel;
 }

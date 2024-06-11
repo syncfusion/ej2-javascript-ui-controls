@@ -45,7 +45,7 @@ export class AutoComplete extends ComboBox {
      * @default { value: null, iconCss: null, groupBy: null}
      * @deprecated
      */
-    @Complex<FieldSettingsModel>({ value: null, iconCss: null, groupBy: null }, FieldSettings)
+    @Complex<FieldSettingsModel>({ value: null, iconCss: null, groupBy: null, disabled: null }, FieldSettings)
     public fields: FieldSettingsModel;
     /**
      * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering/#case-sensitive-filtering)

@@ -12,11 +12,10 @@ import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, Crossha
 import { ConnectorType } from '../../accumulation-chart/model/enum';
 import { CornerRadius, Animation } from '../../common/model/base';
 import { TextOverflow, Alignment, Regions, Units, Position, FlagType, LabelPlacement, EmptyPointMode, LegendShape, ChartTheme, ValueType, EdgeLabelPlacement, ChartRangePadding, IntervalType, SkeletonType, LabelIntersectAction } from '../../common/utils/enum';
-import { Theme } from '../../common/model/theme';
 import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs, Font, FontModel, Border, BorderModel } from '../../chart/index';
 import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel, StockSeriesModel } from './base-model';
 import { StockChartFontModel } from './base-model';
-
+import { stockEventFont } from '../../common/model/theme';
 export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
@@ -377,7 +376,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
     /**
      * Options to customize the strip line text.
      */
-    @Complex<StockChartFontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, StockChartFont)
+    @Complex<StockChartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, StockChartFont)
     public textStyle: StockChartFontModel;
 
 
@@ -1215,7 +1214,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Options to customize the axis label.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public labelStyle: FontModel;
 
     /**
@@ -1231,7 +1230,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Options for customizing the axis title.
      */
 
-    @Complex<StockChartFontModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, StockChartFont)
+    @Complex<StockChartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, StockChartFont)
     public titleStyle: StockChartFontModel;
 
     /**
@@ -2015,7 +2014,7 @@ export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
     /**
      * Options to customize the styles for stock events text.
      */
-    @Complex<StockChartFontModel>(Theme.stockEventFont, StockChartFont)
+    @Complex<StockChartFontModel>(stockEventFont, StockChartFont)
     public textStyle: StockChartFontModel;
 
     /**

@@ -112,7 +112,7 @@ export class CircularChart3DLegendSettings extends ChildProperty<CircularChart3D
     /**
      * Options to customize the legend text.
      */
-    @Complex<FontModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '400', color: null }, Font)
+    @Complex<FontModel>({ fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -216,7 +216,7 @@ export class CircularChart3DLegendSettings extends ChildProperty<CircularChart3D
     /**
      * Options to customize the legend title.
      */
-    @Complex<FontModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '600', color: null }, Font)
+    @Complex<FontModel>({ fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null }, Font)
     public titleStyle: FontModel;
 
     /**
@@ -484,8 +484,7 @@ export class CircularChartLegend3D extends BaseLegend {
                         }
                         columnWidth.push(maximumWidth);
                         maximumWidth = 0;
-                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                        columnHeight = legendOption.textSize.height + padding; legendOption.textSize.height + padding;
+                        columnHeight = legendOption.textSize.height + padding;
                         columnCount++;
                     }
                     this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ?
@@ -726,7 +725,7 @@ export class CircularChartLegend3D extends BaseLegend {
         availablewidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availablewidth) : availablewidth;
         if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
             legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text,
-                                         this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
+                                         this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
         }
     }
 

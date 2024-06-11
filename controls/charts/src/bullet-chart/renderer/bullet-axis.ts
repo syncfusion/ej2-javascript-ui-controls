@@ -1,5 +1,3 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { BulletChart } from '../bullet-chart';
 import { measureText, TextOption, Rect, textElement } from '@syncfusion/ej2-svg-base';
 import { Orientation } from '../../common/utils/enum';
@@ -65,6 +63,10 @@ export class BulletChartAxis {
 
     /**
      * To render grid lines of bullet chart axis.
+     *
+     * @param {number} intervalValue - The interval value between minor grid lines.
+     * @param {Element} scale - The scale element to which the minor grid lines will be appended.
+     * @returns {void}
      */
     public renderXMajorTickLines(intervalValue: number, scale: Element): void {
         const bullet: BulletChart = this.bulletChart;
@@ -102,6 +104,10 @@ export class BulletChartAxis {
     }
     /**
      * To render grid lines of bullet chart axis.
+     *
+     * @param {number} intervalValue - The interval value between minor grid lines.
+     * @param {Element} scale - The scale element to which the minor grid lines will be appended.
+     * @returns {void}
      */
     public renderYMajorTickLines(intervalValue: number, scale: Element): void {
         const bulletChart: BulletChart = this.bulletChart;
@@ -164,6 +170,10 @@ export class BulletChartAxis {
 
     /**
      * To render minor tick lines of bullet chart.
+     *
+     * @param {number} intervalValue - The interval value between minor tick lines.
+     * @param {Element} scaleGroup - The group element to which the minor tick lines will be appended.
+     * @returns {void}
      */
     public renderXMinorTickLines(intervalValue: number, scaleGroup: Element): void {
         const minorTickGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
@@ -202,6 +212,10 @@ export class BulletChartAxis {
 
     /**
      * To render minor tick lines of bullet chart.
+     *
+     * @param {number} intervalValue - The interval value between minor tick lines.
+     * @param {Element} scaleGroup - The group element to which the minor tick lines will be appended.
+     * @returns {void}
      */
     public renderYMinorTickLines(intervalValue: number, scaleGroup: Element): void {
         const minorTickGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
@@ -284,6 +298,10 @@ export class BulletChartAxis {
 
     /**
      * To render axis labels of bullet chart.
+     *
+     * @param {number} intervalValue - The interval value between axis labels.
+     * @param {Element} scaleGroup - The group element to which the axis labels will be appended.
+     * @returns {void}
      */
     public renderXAxisLabels(intervalValue: number, scaleGroup: Element): void {
         const axisLabelGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
@@ -306,7 +324,8 @@ export class BulletChartAxis {
             format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
         });
         const size: number = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
-        y += measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bullet.labelStyle, this.bulletChart.themeStyle.axisLabelFont).height / 3;
+        y += measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum),
+                         bullet.labelStyle, this.bulletChart.themeStyle.axisLabelFont).height / 3;
         for (let i: number = min; i <= max; i += interval) {
             condition = (!bullet.enableRtl) ? (i === max) : (i === min);
             if (bullet.labelStyle.useRangeColor) {
@@ -316,10 +335,10 @@ export class BulletChartAxis {
             }
             text = localizedText ? i.toLocaleString(locale) : this.formatValue(this, isCustomFormat, format, i);
             const labelOptions: TextOption = this.labelXOptions(x, y, text, i);
-            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily || this.bulletChart.themeStyle.axisLabelFont.fontFamily;
-            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily || this.bulletChart.themeStyle.axisLabelFont.fontFamily;
+            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily ||
+                this.bulletChart.themeStyle.axisLabelFont.fontFamily;
             const label: Element = textElement(
-                labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup
+                labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup, this.bulletChart.themeStyle.axisLabelFont
             );
             axisLabelGroup.appendChild(label);
             x += (enableRtl) ? -intervalValue : intervalValue;
@@ -343,6 +362,10 @@ export class BulletChartAxis {
 
     /**
      * To render axis labels of bullet chart.
+     *
+     * @param {number} intervalValue - The interval value between the axis labels.
+     * @param {Element} scaleGroup - The scale group element to render the axis labels.
+     * @returns {void}
      */
     public renderYAxisLabels(intervalValue: number, scaleGroup: Element): void {
         const axisLabelGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
@@ -369,9 +392,11 @@ export class BulletChartAxis {
         });
         const size: number = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
         const labelWidth: number = measureText(
-            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle, this.bulletChart.themeStyle.axisLabelFont).width / 2;
+            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle,
+            this.bulletChart.themeStyle.axisLabelFont).width / 2;
         const height: number = measureText(
-            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle, this.bulletChart.themeStyle.axisLabelFont).height / 3;
+            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle,
+            this.bulletChart.themeStyle.axisLabelFont).height / 3;
         y += height;
         for (let i: number = min; i <= max; i += interval) {
             condition = (bulletChart.enableRtl) ? (i === max) : (i === min);
@@ -384,10 +409,10 @@ export class BulletChartAxis {
             //labelWidth = measureText(text, bullet.labelStyle).width / 2;
             const labelOptions: TextOption = this.labelXOptions(
                 x - (!this.bulletChart.opposedPosition ? labelWidth : -labelWidth), y, text, i);
-            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily || this.bulletChart.themeStyle.axisLabelFont.fontFamily;
-            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily || this.bulletChart.themeStyle.axisLabelFont.fontFamily;
+            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily ||
+                this.bulletChart.themeStyle.axisLabelFont.fontFamily;
             const label: Element = textElement(
-                labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup
+                labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup, bulletChart.themeStyle.axisLabelFont
             );
             axisLabelGroup.appendChild(label);
             y += (!enableRtl) ? -intervalValue : intervalValue;

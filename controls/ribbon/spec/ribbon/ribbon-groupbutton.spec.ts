@@ -33,7 +33,7 @@ describe('Ribbon', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -2019,6 +2019,71 @@ describe('Ribbon', () => {
             expect((document.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[1]).classList.contains('e-active')).toBe(false);
             expect((document.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2]).classList.contains('e-active')).toBe(false);
             (ribbon.element.querySelector('#item1') as HTMLElement).click();
+        });
+        it('in aria-label attribute', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    items: [{
+                                        iconCss: 'e-icons e-copy',
+                                        content: 'copy',
+                                        selected: true,
+                                        htmlAttributes: { 'data-id': 'group_copy', 'class': 'copy_class', 'style': 'color: red' }
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste',
+                                        selected: true,
+                                        htmlAttributes: { 'data-id': 'group_paste' }
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut',
+                                        content: 'cut',
+                                        htmlAttributes: { 'data-id': 'group_cut' }
+                                    }]
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }, {
+                            id: "collection3",
+                            items: [{
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                dropDownSettings: {
+                                    content: 'Edit1',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            const groupButton = ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button');
+            expect(groupButton[0].hasAttribute('aria-label')).toBe(true);
+            expect(groupButton[0].getAttribute('aria-label')).toBe('copy');
+            expect(groupButton[1].hasAttribute('aria-label')).toBe(true);
+            expect(groupButton[1].getAttribute('aria-label')).toBe('groupbuttonitem');
         });
     });
 });

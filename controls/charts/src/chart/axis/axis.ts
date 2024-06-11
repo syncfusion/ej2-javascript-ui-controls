@@ -1,14 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Property, Complex, ChildProperty, Collection, extend, Browser } from '@syncfusion/ej2-base';
 import { FontModel, BorderModel } from '../../common/model/base-model';
 import { Font, Border } from '../../common/model/base';
 import { AxisPosition } from '../utils/enum';
 import { EdgeLabelPlacement, ValueType, IntervalType, LabelIntersectAction, Orientation, ChartRangePadding, SkeletonType } from '../../common/utils/enum';
-import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle } from '../../common/utils/helper';
+import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle, getElement, appendChildElement } from '../../common/utils/helper';
 import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
 import { Chart } from '../chart';
@@ -19,7 +14,6 @@ import { Double } from '../axis/double-axis';
 import { DateTime } from '../axis/date-time-axis';
 import { Category } from '../axis/category-axis';
 import { DateTimeCategory } from '../axis/date-time-category-axis';
-import { Theme } from '../../common/model/theme';
 import { LabelPlacement, TextAlignment } from '../../common/utils/enum';
 import { IAxisRangeCalculatedEventArgs } from '../../chart/model/chart-interface';
 import { axisRangeCalculated } from '../../common/model/constants';
@@ -29,6 +23,7 @@ import { textWrap } from '../../common/utils/helper';
 import { ScrollBar } from '../../common/scrollbar/scrollbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { VisibleRangeModel } from '../../common/model/interface';
+import { CartesianAxisLayoutPanel } from './cartesian-panel';
 
 /**
  * Configures the `rows` of the chart.
@@ -67,8 +62,12 @@ export class Row extends ChildProperty<Row> {
     /** @private */
     public insideNearSizes: number[] = [];
     /**
-     * Measure the row size
+     * Measure the row size.
      *
+     * @param {Axis} axis - The axis for which to measure the row size.
+     * @param {number} scrollBarHeight - The height of the scrollbar.
+     * @param {Row | Column} definition - The definition of the row or column.
+     * @param {Chart} chart - The chart instance.
      * @returns {void}
      * @private
      */
@@ -319,7 +318,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
      */
 
     @Property(false)
-    public enable: Boolean;
+    public enable: boolean;
 
     /**
      * The fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
@@ -334,7 +333,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
      * Options to customize the crosshair ToolTip text.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
 }
@@ -350,7 +349,7 @@ export class Axis extends ChildProperty<Axis> {
      * Options to customize the axis label.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public labelStyle: FontModel;
 
     /**
@@ -373,7 +372,7 @@ export class Axis extends ChildProperty<Axis> {
      * Options for customizing the axis title.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public titleStyle: FontModel;
 
     /**
@@ -1026,7 +1025,6 @@ export class Axis extends ChildProperty<Axis> {
      * @private */
     public isRTLEnabled: boolean = false;
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
         this.angle = this.labelRotation;
@@ -1034,7 +1032,8 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * The function used to find tick size.
      *
-     * @returns {number} tick line size
+     * @param {Axis} crossAxis - The cross axis for which to find the tick size.
+     * @returns {number} - The tick line size.
      * @private
      */
     public findTickSize(crossAxis: Axis): number {
@@ -1062,7 +1061,11 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * The function used to find label Size.
      *
-     * @returns {number} labelSize
+     * @param {Axis} crossAxis - The cross axis for which to find the label size.
+     * @param {number} innerPadding - The inner padding.
+     * @param {Row | Column} definition - The row or column definition.
+     * @param {Chart} chart - The chart instance.
+     * @returns {number} - The label size.
      * @private
      */
     public findLabelSize(crossAxis: Axis, innerPadding: number, definition: Row | Column, chart: Chart): number {
@@ -1074,12 +1077,12 @@ export class Axis extends ChildProperty<Axis> {
                 titleSize = this.titleSize.height + innerPadding;
             }
             else {
-                this.titleSize = rotateTextSize(this.titleStyle, this.title, angle, chart);
+                this.titleSize = rotateTextSize(this.titleStyle, this.title, angle, chart, chart.themeStyle.axisTitleFont);
                 titleSize = (this.orientation === 'Vertical' ? this.titleSize.width : this.titleSize.height) + innerPadding;
             }
             if (this.rect.width || this.rect.height) {
                 const length: number = isHorizontal ? this.rect.width : this.rect.height;
-                this.titleCollection = getTitle(this.title, this.titleStyle, length, chart.enableRtl, chart.themeStyle.legendLabelFont);
+                this.titleCollection = getTitle(this.title, this.titleStyle, length, chart.enableRtl, chart.themeStyle.axisTitleFont);
                 titleSize = (titleSize * this.titleCollection.length);
             }
         }
@@ -1153,12 +1156,12 @@ export class Axis extends ChildProperty<Axis> {
     }
 
     /**
-     * Calculate visible range for axis.
+     * Calculate the visible range for the axis.
      *
      * @returns {void}
      * @private
      */
-    public calculateVisibleRangeOnZooming(size: Size): void {
+    public calculateVisibleRangeOnZooming(): void {
         if (isZoomSet(this)) {
             const baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
@@ -1237,6 +1240,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * Calculate maximum label width for the axis.
      *
+     * @param {Chart} chart - The chart for which to calculate the maximum label width.
      * @returns {void}
      * @private
      */
@@ -1298,13 +1302,14 @@ export class Axis extends ChildProperty<Axis> {
                         isIntersect = true;
                     }
                     break;
-                default:
+                default: {
                     if (isAxisLabelBreak) {
                         let result: string[]; const result1: string[] = []; let str: string;
                         for (let index: number = 0; index < label.text.length; index++) {
                             result = textWrap(
                                 label.text[index as number],
-                                this.rect.width / this.visibleLabels.length, this.labelStyle, chart.enableRtl, null, null, chart.themeStyle.axisLabelFont);
+                                this.rect.width / this.visibleLabels.length, this.labelStyle, chart.enableRtl,
+                                null, null, chart.themeStyle.axisLabelFont);
                             if (result.length > 1) {
                                 for (let j: number = 0; j < result.length; j++) {
                                     str = result[j as number]; result1.push(str);
@@ -1317,15 +1322,16 @@ export class Axis extends ChildProperty<Axis> {
                     } else {
                         label.text = textWrap(
                                 <string>label.text,
-                                this.rect.width / this.visibleLabels.length, this.labelStyle, chart.enableRtl, null, null, chart.themeStyle.axisLabelFont
+                                this.rect.width / this.visibleLabels.length, this.labelStyle, chart.enableRtl,
+                                null, null, chart.themeStyle.axisLabelFont
                         );
                     }
-                    // eslint-disable-next-line no-case-declarations
                     const height: number = (label.size.height * label.text.length);
                     if (height > this.maxLabelSize.height) {
                         this.maxLabelSize.height = height;
                     }
                     break;
+                }
                 }
                 previousEnd = this.isAxisInverse ? pointX : pointX + width1;
             }
@@ -1339,7 +1345,7 @@ export class Axis extends ChildProperty<Axis> {
             if (this.labelPosition === 'Outside' && !isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
             } else {
-                this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+                this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart, chart.themeStyle.axisLabelFont);
             }
         } else if (this.angle !== 0 && this.orientation === 'Vertical') {
             //I264474: Fix for datasource bind im mounted console error ocurred
@@ -1350,7 +1356,7 @@ export class Axis extends ChildProperty<Axis> {
             if (this.labelPosition === 'Outside' && !isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
             } else {
-                this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+                this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart, chart.themeStyle.axisLabelFont);
             }
         }
         if (chart.multiLevelLabelModule && this.multiLevelLabels.length > 0) {
@@ -1407,6 +1413,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * Set the axis `opposedPosition` and `isInversed` properties.
      *
+     * @param {boolean} isPolar - Indicates whether the axis is polar or not.
      * @returns {void}
      * @private
      */
@@ -1418,6 +1425,27 @@ export class Axis extends ChildProperty<Axis> {
         this.isAxisInverse = this.isInversed || (this.isRTLEnabled && this.orientation === 'Horizontal');
         if (this.isInversed && (!isPolar && this.isRTLEnabled && this.orientation === 'Horizontal')) {
             this.isAxisInverse = false;
+        }
+    }
+
+    /**
+     * Updates the axis within the chart.
+     *
+     * @returns {void}
+     * @private
+     */
+    public updateAxis(): void {
+        const chart: Chart = this.baseModule.chart;
+        const chartAxisLayoutPanel: CartesianAxisLayoutPanel = chart.chartAxisLayoutPanel as CartesianAxisLayoutPanel;
+        const index: number = chart.axisCollections.indexOf(this);
+        const axisElement: Element = getElement(chart.element.id + 'AxisInsideCollection');
+        const axisLineElement: Element = getElement(chart.element.id + 'AxisOutsideCollection');
+        chartAxisLayoutPanel.element = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + index + 'Inside' });
+        const outsideElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + index + 'Outside' });
+        const isInside: boolean = chartAxisLayoutPanel.findAxisPosition(this);
+        chartAxisLayoutPanel.drawAxis(this, index, isInside, outsideElement, axisElement, axisLineElement);
+        if (!chart.enableCanvas) {
+            appendChildElement(chart.enableCanvas, axisElement, chartAxisLayoutPanel.element, chart.redraw);
         }
     }
 }

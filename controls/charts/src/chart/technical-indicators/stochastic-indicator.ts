@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -12,9 +9,12 @@ import { Chart } from '../chart';
 export class StochasticIndicator extends TechnicalAnalysis {
 
     /**
-     * Defines the collection of series that represents the stochastic indicator
+     * Defines the collection of series that represents the stochastic indicator.
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the series collection is initialized.
+     * @param {Chart} chart - The chart associated with the technical indicator.
+     * @returns {void}
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         super.initSeriesCollection(indicator, chart);
@@ -35,9 +35,11 @@ export class StochasticIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Defines the predictions based on stochastic approach
+     * Defines the predictions based on stochastic approach.
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         let signalCollection: Points[] = [];
@@ -75,9 +77,14 @@ export class StochasticIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Calculates the SMA Values
+     * Calculates the Simple Moving Average (SMA) for the given period.
      *
      * @private
+     * @param {number} period - The period for the SMA calculation.
+     * @param {number} kPeriod - The 'k' period used in the calculation.
+     * @param {Points[]} data - The array of data points.
+     * @param {Series} sourceSeries - The series associated with the data.
+     * @returns {Points[]} - An array containing the calculated SMA points.
      */
     private smaCalculation(period: number, kPeriod: number, data: Points[], sourceSeries: Series): Points[] {
         const pointCollection: Points[] = [];
@@ -114,9 +121,14 @@ export class StochasticIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * Calculates the period line values.
+     * Calculates the period for the indicator.
      *
      * @private
+     * @param {number} period - The period for the calculation.
+     * @param {number} kPeriod - The 'k' period used in the calculation.
+     * @param {Points[]} data - The array of data points.
+     * @param {Series} series - The series associated with the data.
+     * @returns {Points[]} - An array containing the calculated points for the period.
      */
     private calculatePeriod(
         period: number, kPeriod: number, data: Points[], series: Series): Points[] {
@@ -167,15 +179,16 @@ export class StochasticIndicator extends TechnicalAnalysis {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys the stochastic indicator
+         * Destroys the stochastic indicator.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**

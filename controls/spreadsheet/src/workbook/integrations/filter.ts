@@ -1,6 +1,6 @@
 import { Workbook, SheetModel, CellModel, getData, getSheet } from '../base/index';
-import { DataManager, Query, Deferred, Predicate } from '@syncfusion/ej2-data';
-import { getIndexesFromAddress, getSwapRange, getRangeAddress, getRangeIndexes, skipHiddenIdx, getSheetIndexFromAddress } from '../common/index';
+import { DataManager, Deferred, Predicate } from '@syncfusion/ej2-data';
+import { getIndexesFromAddress, getSwapRange, getRangeAddress, getRangeIndexes, skipHiddenIdx, getSheetIndexFromAddress, applyPredicates } from '../common/index';
 import { BeforeFilterEventArgs, FilterOptions, FilterEventArgs, setRow, ExtendedRowModel, getSheetIndex } from '../index';
 import { initiateFilter, hideShow } from '../common/event';
 
@@ -56,7 +56,8 @@ export class WorkbookFilter {
         const filterOptions: FilterOptions = args.filterOptions || {};
         eventArgs.promise = deferred.promise;
         if (filterOptions.datasource) {
-            this.setFilter(filterOptions.datasource, filterOptions.predicates, args.range, eventArgs.refresh);
+            this.setFilter(
+                filterOptions.datasource, filterOptions.predicates, args.range, eventArgs.refresh, filterOptions.equalOrPredicates);
             const filterEventArgs: FilterEventArgs = { range: args.range, filterOptions: filterOptions };
             deferred.resolve(filterEventArgs);
         } else {
@@ -87,16 +88,14 @@ export class WorkbookFilter {
      * @param {Predicate[]} predicates - Specify the predicates.
      * @param {string} range - Specify the range.
      * @param {boolean} refresh - Specify the refresh.
+     * @param {Predicate[]} equalOrPredicates - Specify the equal condition or predicates.
      * @returns {void} - Hides or unhides the rows based on the filter predicates.
      */
-    private setFilter(dataManager: DataManager, predicates: Predicate[], range: string, refresh: boolean): void {
+    private setFilter(
+        dataManager: DataManager, predicates: Predicate[], range: string, refresh: boolean, equalOrPredicates?: Predicate[][]): void {
         if (dataManager && predicates) {
-            const jsonData: {[key: string]: CellModel}[] = dataManager.dataSource.json as {[key: string]: CellModel}[];
-            const query: Query = new Query();
-            if (predicates.length) {
-                query.where(Predicate.and(predicates));
-            }
-            const result: { [key: string]: CellModel }[] = dataManager.executeLocal(query) as { [key: string]: CellModel }[];
+            const jsonData: Object[] = dataManager.dataSource.json;
+            const result: Object[] = applyPredicates(dataManager, predicates, equalOrPredicates);
             const rowKey: string = '__rowIndex';
             let sheet: SheetModel;
             let sheetIdx: number;

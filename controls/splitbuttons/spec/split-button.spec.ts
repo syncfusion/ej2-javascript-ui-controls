@@ -12,7 +12,7 @@ describe('Split Button', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -229,4 +229,103 @@ describe('Split Button', () => {
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    describe('Null or undefined Property testing', () => {
+
+        afterEach(() => {
+            button.destroy();
+        });    
+
+        it('SplitButton with content', () => {
+            button = new SplitButton({ content: null }, '#splitbtn');
+            expect(button.content).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ content: undefined }, '#splitbtn');
+            expect(button.content).toEqual("");
+        });
+
+        it('SplitButton with cssClass', () => {
+            button = new SplitButton({ cssClass: null }, '#splitbtn');
+            expect(button.cssClass).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ cssClass: undefined }, '#splitbtn');
+            expect(button.cssClass).toEqual("");
+        });
+
+        it('SplitButton with iconCss', () => {
+            button = new SplitButton({ iconCss: null }, '#splitbtn');
+            expect(button.iconCss).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ iconCss: undefined }, '#splitbtn');
+            expect(button.iconCss).toEqual("");
+        });
+
+        it('SplitButton with iconPosition', () => {
+            button = new SplitButton({ iconPosition: null }, '#splitbtn');
+            expect(button.iconPosition).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ iconPosition: undefined }, '#splitbtn');
+            expect(button.iconPosition).toEqual("Left");
+        });
+
+        it('SplitButton with target', () => {
+            button = new SplitButton({ target: null }, '#splitbtn');
+            expect(button.target).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ target: undefined }, '#splitbtn');
+            expect(button.target).toEqual("");
+        });
+
+        it('SplitButton with enableRtl', () => {
+            button = new SplitButton({ enableRtl: null }, '#splitbtn');
+            expect(button.enableRtl).toEqual(false);
+            button.destroy();
+            button = new SplitButton({ enableRtl: undefined }, '#splitbtn');
+            expect(button.enableRtl).toEqual(false);
+        });
+
+        it('SplitButton with createPopupOnClick', () => {
+            button = new SplitButton({ createPopupOnClick: null }, '#splitbtn');
+            expect(button.createPopupOnClick).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ createPopupOnClick: undefined }, '#splitbtn');
+            expect(button.createPopupOnClick).toEqual(false);
+        });
+
+        it('SplitButton with enableHtmlSanitizer', () => {
+            button = new SplitButton({ enableHtmlSanitizer: null }, '#splitbtn');
+            expect(button.enableHtmlSanitizer).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ enableHtmlSanitizer: undefined }, '#splitbtn');
+            expect(button.enableHtmlSanitizer).toEqual(true);
+        });
+
+        it('SplitButton with createPopupOnClick', () => {
+            button = new SplitButton({ createPopupOnClick: null }, '#splitbtn');
+            expect(button.createPopupOnClick).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ createPopupOnClick: undefined }, '#splitbtn');
+            expect(button.createPopupOnClick).toEqual(false);
+        });
+
+        it('SplitButton with enablePersistence', () => {
+            button = new SplitButton({ enablePersistence: null }, '#splitbtn');
+            expect(button.enablePersistence).toEqual(null);
+            button.destroy();
+            button = new SplitButton({ enablePersistence: undefined }, '#splitbtn');
+            expect(button.enablePersistence).toEqual(false);
+        });
+
+        it('SplitButton with items', () => {
+            button = new SplitButton({ items: null }, '#splitbtn');
+            expect(button.items).toEqual([]);
+            button.destroy();
+            button = new SplitButton({ items: undefined }, '#splitbtn');
+            expect(button.items).toEqual([]);
+        });
+
+    });
+
+
+
 });

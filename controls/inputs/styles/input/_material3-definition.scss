@@ -241,16 +241,12 @@ $input-icon-inner-width: 10px !default;
 $input-icon-inner-height: 10px !default;
 $input-readonly-bg-color: none !default;
 $input-child-small-margin: 0 !default;
-
-// Icon hover
 $input-icon-hover-border: 1px !default;
 $input-icon-hover-border-radius: 16px !default;
 $input-icon-hover-bg-color: rgba($content-text-color, .08) !default;
 $input-clear-icon-hover-border: 1px !default;
 $input-clear-icon-hover-border-radius: 16px !default;
 $input-clear-icon-hover-bg-color: rgba($content-text-color, .08) !default;
-
-// Outline textbox
 $outline-border-color: rgba($border) !default;
 $outline-input-font-color: rgba($content-text-color) !default;
 $outline-input-label-font-color: rgba($placeholder-text-color) !default;
@@ -345,6 +341,7 @@ $small-outline-float-label-font-size: 13px !default;
 $outline-float-label-disbale-font-color: rgba($content-text-color-alt1, .38) !default;
 $outline-disabled-input-font-color: rgba($content-text-color, .38) !default;
 $outline-input-group-disabled-color: rgba($content-text-color) !default;
+$textarea-float-top: -22px !default;
 @mixin input-sizing {
   box-sizing: content-box;
 }
@@ -424,8 +421,6 @@ $outline-input-group-disabled-color: rgba($content-text-color) !default;
   from{ transform: translate3d($zero-value, $zero-value, $zero-value) scale(1); }
   to{ transform: translate3d($zero-value, $zero-value, $zero-value) scale(1); }
 }
-
-//Filled input configuration
 $filled-input-font-size: 14px !default;
 $bigger-filled-input-font-size: 16px !default;
 $bigger-small-filled-input-font-size: 14px !default;
@@ -479,12 +474,12 @@ $filled-float-input-rtl-padding: 14px $zero-value 5px 2px !default;
 $filled-bigger-float-input-rtl-padding: 20px $zero-value 6px 4px !default;
 $filled-bigger-small-float-input-rtl-padding: 14px $zero-value 5px 2px !default;
 $filled-small-float-input-rtl-padding: 12px $zero-value 4px 2px !default;
-$filled-textarea-padding: $zero-value 12px 10px !default;
-$filled-bigger-textarea-padding: $zero-value 16px 16px !default;
+$filled-textarea-padding: $zero-value 12px 9px !default;
+$filled-bigger-textarea-padding: $zero-value 16px 8px !default;
 $filled-bigger-small-textarea-padding: $zero-value 12px 10px !default;
 $filled-small-textarea-padding: $zero-value 8px 7px !default;
 $filled-float-textarea-padding: 4px 12px 5px !default;
-$filled-bigger-float-textarea-padding: $zero-value 16px 5px !default;
+$filled-bigger-float-textarea-padding: $zero-value 16px 8px !default;
 $filled-bigger-small-float-textarea-padding: $zero-value 12px 5px !default;
 $filled-small-float-textarea-padding: $zero-value 8px 4px !default;
 $filled-textarea-wrapper-padding: 10px $zero-value $zero-value !default;

@@ -17,9 +17,10 @@ export class Common implements IAction {
         this.addEventListener();
     }
 
-    /* eslint-disable-next-line */
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - It returns string
      * @private
      */
     protected getModuleName(): string {
@@ -28,8 +29,7 @@ export class Common implements IAction {
 
     private initiateCommonModule(): void {
         if (!this.parent.pivotCommon) {
-            /* eslint-disable */
-            let args: CommonArgs = {
+            const args: CommonArgs = {
                 pivotEngine: this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule,
                 dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties ?
                     (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties : this.parent.dataSourceSettings,
@@ -44,7 +44,6 @@ export class Common implements IAction {
                 dataType: this.parent.dataType,
                 cssClass: this.parent.cssClass
             };
-            /* eslint-enable */
             this.parent.pivotCommon = new PivotCommon(args);
         } else {
             this.parent.pivotCommon.element = this.parent.element;
@@ -64,8 +63,8 @@ export class Common implements IAction {
         this.parent.pivotCommon.control = this.parent;
     }
 
-    /* eslint-disable-next-line */
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -76,8 +75,8 @@ export class Common implements IAction {
         this.parent.on(events.uiUpdate, this.initiateCommonModule, this);
     }
 
-    /* eslint-disable-next-line */
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {

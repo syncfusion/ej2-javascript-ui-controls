@@ -93,10 +93,10 @@ export class WallRenderer {
     private updateBackWall(chart: Chart3D): void {
         const areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
         const topLeftFrontVector: Chart3DVector = chart.vector.vector3D(areaBounds.x, areaBounds.y,
-                                                                   chart.depth === 0 ? 1.5 : chart.depth + chart.wallSize);
+                                                                        chart.depth === 0 ? 1.5 : chart.depth + chart.wallSize);
         const bottomRightBackVector: Chart3DVector = chart.vector.vector3D(
             (areaBounds.x + areaBounds.width), areaBounds.y + areaBounds.height, chart.depth === 0 ? 1.5 : chart.depth);
-        chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.backWallColor, chart.wallColor || chart.themeStyle.backWallColor, 0, 0.25, false, 'back-wall-brush', chart.chart3D);
+        chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.backWallColor, chart.wallColor || chart.themeStyle.backWallColor, 0, chart.theme.indexOf('Fluent2') > -1 ? 0.3 : 0.25, false, 'back-wall-brush', chart.chart3D);
     }
 
     /**
@@ -110,7 +110,7 @@ export class WallRenderer {
         const leftRect: Chart3DWallRect = { left: -chart.depth, top: areaBounds.y, bottom: areaBounds.height + areaBounds.y, right: 0 };
         const offset: number = areaBounds.x;
         const topLeftFrontVector: Chart3DVector = chart.vector.vector3D(leftRect.left, leftRect.top, offset - 0.1);
-        const bottomRightBackVector: Chart3DVector= chart.vector.vector3D(leftRect.right, leftRect.bottom, offset - chart.wallSize);
+        const bottomRightBackVector: Chart3DVector = chart.vector.vector3D(leftRect.right, leftRect.bottom, offset - chart.wallSize);
         const leftSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, 0.5, false, 'left-wall-brush', chart.chart3D);
         for (let i: number = 0; i < leftSideWallPlans.length; i++) {
             chart.polygon.transform(chart.matrixObj.turn(-Math.PI / 2), leftSideWallPlans[i as number]);
@@ -126,7 +126,8 @@ export class WallRenderer {
     private updateBottomWall(chart: Chart3D): void {
         const areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
         const y: number = areaBounds.y + areaBounds.height;
-        const topLeftFrontVector: Chart3DVector = chart.vector.vector3D((areaBounds.x + areaBounds.width), -chart.depth, chart.wallSize + y);
+        const topLeftFrontVector: Chart3DVector = chart.vector.vector3D((areaBounds.x + areaBounds.width),
+                                                                        -chart.depth, chart.wallSize + y);
         const bottomRightBackVector: Chart3DVector = chart.vector.vector3D(areaBounds.x, -0.1, y + 1);
 
         const bottomSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(bottomRightBackVector, topLeftFrontVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, 0.5, false, 'bottom-wall-brush', chart.chart3D);
@@ -171,11 +172,11 @@ export class AxisRenderer {
      */
     private drawAxisTitle(axis: Chart3DAxis, chart: Chart3D, index: number): void {
         if (axis.title) {
-            let font: Chart3DTextFontModel = {
-                size: axis.titleStyle.size,
-                fontWeight: axis.titleStyle.fontWeight,
-                fontStyle: axis.titleStyle.fontStyle,
-                fontFamily: axis.titleStyle.fontFamily,
+            const font: Chart3DTextFontModel = {
+                size: axis.titleStyle.size || chart.themeStyle.axisTitleFont.size,
+                fontWeight: axis.titleStyle.fontWeight || chart.themeStyle.axisTitleFont.fontWeight,
+                fontStyle: axis.titleStyle.fontStyle || chart.themeStyle.axisTitleFont.fontStyle,
+                fontFamily: axis.titleStyle.fontFamily || chart.themeStyle.axisTitleFont.fontFamily,
                 color: axis.titleStyle.color,
                 opacity: axis.titleStyle.opacity
             };
@@ -192,14 +193,14 @@ export class AxisRenderer {
             const elementSpacing: number = 10;
             if (orientation === 'horizontal') {
                 let padding: number = 0;
-                const titlesize: number = (measureText(axis.title, axis.titleStyle, chart.themeStyle.axisLabelFont).height / 2);
+                const titlesize: number = (measureText(axis.title, axis.titleStyle, chart.themeStyle.axisTitleFont).height / 2);
                 if (axis.titleRotation) {
                     padding = axis.titlePadding + (elementSpacing) + axis.labelPadding + (axis.titleSize.height / 2);
                 }
                 else {
                     padding = axis.titlePadding + titlesize + axis.labelPadding + elementSpacing;
                 }
-                const xtitleLocation: number = axis.maxLabelSize.height + padding
+                const xtitleLocation: number = axis.maxLabelSize.height + padding;
                 const data: Chart3DDataElement = {
                     text: axis.title,
                     location: {
@@ -211,11 +212,11 @@ export class AxisRenderer {
                 const y1: number = (opposedPosition) ? (axis.rect.y - data.location.y) : (data.location.y + axis.rect.y);
                 const element: Chart3DLabelElement = { width: 0, height: 0, angle: axis.titleRotation ? axis.titleRotation : 0, label: data, textAnchor: 'middle', tag: 'text', font: font, id: chart.element.id + '-svg-axis-title-' + index, child: chart.chart3D };
                 element.font.color = element.font.color ? element.font.color : chart.themeStyle.axisTitle;
-                element.font.fontFamily = element.font.fontFamily ? element.font.fontFamily : chart.themeStyle.axisTitleFont.fontFamily; 
+                element.font.fontFamily = element.font.fontFamily ? element.font.fontFamily : chart.themeStyle.axisTitleFont.fontFamily;
                 chart.graphics.addVisual(chart.polygon.createTextElement(chart.vector.vector3D(x1, y1, 0), element, 10, 10), chart);
             }
             else {
-                const titleSize: Size = measureText(axis.title, axis.titleStyle, chart.themeStyle.axisLabelFont);
+                const titleSize: Size = measureText(axis.title, axis.titleStyle, chart.themeStyle.axisTitleFont);
                 let padding: number = 0;
                 if (axis.titleRotation) {
                     padding = axis.labelPadding + axis.titlePadding + axis.titleSize.width / 2;
@@ -237,7 +238,7 @@ export class AxisRenderer {
                 const y1: number = data.location.y + (axis.rect.y + axis.rect.height) + (((axis.rect.height) / 2) * -1);
                 const element: Chart3DLabelElement = { width: titleSize.width, height: titleSize.height, angle: angle, label: data, textAnchor: 'middle', tag: 'text', font: font, id: chart.element.id + '-svg-axis-title-' + index, child: chart.chart3D };
                 element.font.color = element.font.color ? element.font.color : chart.themeStyle.axisTitle;
-                element.font.fontFamily = element.font.fontFamily ? element.font.fontFamily : chart.themeStyle.axisTitleFont.fontFamily; 
+                element.font.fontFamily = element.font.fontFamily ? element.font.fontFamily : chart.themeStyle.axisTitleFont.fontFamily;
                 chart.graphics.addVisual(chart.polygon.createTextElement(chart.vector.vector3D(x1, y1, 0), element, 10, 10), chart);
             }
         }
@@ -281,7 +282,8 @@ export class AxisRenderer {
      * @param {Chart3DTextFontModel} font - The font settings to be applied.
      * @returns {void}
      */
-    private multipleRows(length: number, currentX: number, currentLabel: Visible3DLabels, axis: Chart3DAxis, font: Chart3DTextFontModel): void {
+    private multipleRows(length: number, currentX: number,
+                         currentLabel: Visible3DLabels, axis: Chart3DAxis, font: Chart3DTextFontModel): void {
         let label: Visible3DLabels;
         let pointX: number;
         let labelSize: Size;
@@ -341,8 +343,9 @@ export class AxisRenderer {
                     textAnchor = 'middle';
                 } else {
                     y1 = Math.round(axis.plotOffset + axis.rect.y + (textSize.height / 4) + (axis.rect.height * (1 - value)));
-                    let padding: number = 0; 
-                    if (axis.labelRotation == 90 || axis.labelRotation == -90 || axis.labelRotation == 270 || axis.labelRotation == -270) {
+                    let padding: number = 0;
+                    if (axis.labelRotation === 90 || axis.labelRotation === -90 ||
+                        axis.labelRotation === 270 || axis.labelRotation === -270) {
                         padding = elementSpacing * 2;
                     }
                     else {
@@ -375,7 +378,8 @@ export class AxisRenderer {
                     if (axis.labelRotation) {
                         angleValue = axis.labelRotation;
                         const rotatedSize: Size = rotateTextSize(axis.labelStyle,
-                                                                 axis.visibleLabels[i as number].text as string, angleValue, chart);
+                                                                 axis.visibleLabels[i as number].text as string, angleValue,
+                                                                 chart, chart.themeStyle.axisLabelFont);
                         y1 += rotatedSize.height / 2;
                     } else {
                         if (axis.labelIntersectAction === 'Trim') {
@@ -384,7 +388,7 @@ export class AxisRenderer {
                         }
                         else if (axis.angle && (axis.labelIntersectAction === 'Rotate45' || axis.labelIntersectAction === 'Rotate90')) {
                             const rotatedSize: Size = rotateTextSize(axis.labelStyle, axis.visibleLabels[i as number].text as string,
-                                                                     axis.angle, chart);
+                                                                     axis.angle, chart, chart.themeStyle.axisLabelFont);
                             y1 += rotatedSize.height / 2;
                         } else if (axis.labelIntersectAction === 'MultipleRows') {
                             pointX = label.x;
@@ -395,7 +399,8 @@ export class AxisRenderer {
                         } else if (axis.labelIntersectAction === 'Hide') {
                             let isAxisLabelHidden: boolean = false;
                             for (let j: number = 0; j < i; j++) {
-                                if (labels[j as number].x + (labels[j as number].size.width / 2) >= labels[i as number].x - (labels[i as number].size.width / 2)) {
+                                if (labels[j as number].x + (labels[j as number].size.width / 2) >=
+                                 labels[i as number].x - (labels[i as number].size.width / 2)) {
                                     isAxisLabelHidden = true;
                                     break;
                                 }
@@ -406,7 +411,7 @@ export class AxisRenderer {
                         }
                     }
                 }
-                let font: Chart3DTextFontModel = {
+                const font: Chart3DTextFontModel = {
                     size: axis.visibleLabels[i as number].labelStyle.size,
                     fontWeight: axis.visibleLabels[i as number].labelStyle.fontWeight,
                     fontStyle: axis.visibleLabels[i as number].labelStyle.fontStyle,

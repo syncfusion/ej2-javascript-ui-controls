@@ -72,7 +72,7 @@ describe('Filtering module => ', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending; //Skips test (in Chai)
             }
             gridObj = createGrid(
                 {
@@ -3210,5 +3210,45 @@ describe('EJ2-849870 - Checkbox filtering is not working properly while cancelin
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionBegin = actionComplete = null;
+    });
+});
+
+// code coverage
+describe('EJ2-880709 - In ODataV4Adaptor, the filter menu shows "No matches found" after searching a record in Grid search bar.', () => {
+    let gridObj: Grid;
+    let remoteData: DataManager = new DataManager({
+        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+        adaptor: new ODataV4Adaptor
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 5),
+                allowPaging: true,
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox' },
+                searchSettings: { key: 'a' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', width: 120 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                ],
+            }, done);
+    });
+    it('Click the checkbox filter ', function () {
+        (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[0] as HTMLElement).click();
+    });
+    it('Close the filter dialog', function () {
+        (gridObj.element.getElementsByClassName('e-rowcell')[1] as HTMLElement).click();
+
+    });
+    it('Execute the query generate method', function () {
+        (<any>gridObj).filterModule.filterModule.checkBoxBase.options.dataManager = remoteData;
+        (<any>gridObj).filterModule.filterModule.checkBoxBase.queryGenerate(gridObj.query);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = remoteData = null;
     });
 });

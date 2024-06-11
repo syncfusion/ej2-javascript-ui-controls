@@ -1,6 +1,4 @@
 @include export-module('dialog-layout') {
-
-  /*! dialog layout */
   /* stylelint-disable property-no-vendor-prefix */
   .e-dialog {
     -webkit-flex-direction: column;
@@ -44,6 +42,9 @@
       width: 80%;
       @if $skin-name == 'Material3' {
         line-height: 30px;
+      }
+      @if $skin-name == 'fluent2' {
+        line-height: 32px;
       }
 
       &.e-hide {
@@ -152,7 +153,6 @@
     }
   }
 
-  //Bigger Style
   .e-bigger.e-dialog,
   #{if(&, '&', '*')}.e-bigger .e-dialog {
     #{if(&, '&', '*')} .e-dlg-header-content {
@@ -176,7 +176,9 @@
     }
 
     & .e-footer-content .e-btn {
-      margin-left: $dialog-bigger-footer-button-margin-left;
+      @if $skin-name != 'fluent2' {
+        margin-left: $dialog-bigger-footer-button-margin-left;
+      }
     }
 
     & .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
@@ -207,8 +209,6 @@
   .e-bigger .e-dlg-header-content + .e-dlg-content {
     padding-top: $dialog-bigger-content-padding-top;
   }
-
-  //Normal Style
 
   .e-dialog {
     & .e-dlg-header-content {
@@ -300,9 +300,7 @@
   }
 
   .e-rtl {
-
     &.e-dialog {
-
       .e-resize-handle {
         &.e-south-west {
           bottom: $dialog-resize-handler-position;
@@ -321,7 +319,6 @@
     overflow: hidden !important;
   }
   /* stylelint-enable declaration-no-important */
-
   .e-dlg-overlay {
     height: 100%;
     left: 0;
@@ -430,13 +427,17 @@
   .e-dialog .e-btn.e-dlg-closeicon-btn:hover,
   .e-dialog .e-btn.e-dlg-closeicon-btn:focus,
   .e-dialog .e-btn.e-dlg-closeicon-btn:active {
-    background-color: $dialog-hover-focus-btn-bg-color;
-    border-color: $dialog-active-btn-border-color;
-    box-shadow: 0 0 0 transparent;
+    @if $skin-name != 'fluent2' {
+      background-color: $dialog-hover-focus-btn-bg-color;
+      border-color: $dialog-active-btn-border-color;
+      box-shadow: 0 0 0 transparent;
+    }
   }
 
   .e-dialog .e-btn.e-dlg-closeicon-btn:active {
-    background-color: $dialog-active-btn-bg-color;
+    @if $skin-name != 'fluent2' {
+      background-color: $dialog-active-btn-bg-color;
+    }
   }
 }
 

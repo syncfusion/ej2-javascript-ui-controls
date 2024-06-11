@@ -165,8 +165,8 @@ export class Resize implements IAction {
             columnbyindex.width = colMaxWidth;
         }
         this.widthService.setColumnWidth(gObj.getColumns()[parseInt(columnIndexByField.toString(), 10)] as Column);
-        const result: boolean = gObj.getColumns().some((x: Column) => x.width === null
-            || x.width === undefined || (x.width as string).length <= 0);
+        const result: boolean = gObj.getColumns().some((x: Column) => (x.visible || gObj.groupSettings.columns.length) && (x.width === null
+            || x.width === undefined || (x.width as string).length <= 0));
         if (result === false) {
             const element: Column[] = gObj.getColumns() as Column[];
             for (let i: number = 0; i < element.length; i++) {

@@ -1,5 +1,14 @@
-@import 'avatar/fluent.scss';
-@import 'card/fluent.scss';
-@import 'splitter/fluent.scss';
-@import 'dashboard-layout/fluent.scss';
-@import 'timeline/fluent.scss';
+@import 'ej2-base/styles/definition/fluent.scss';
+@import 'avatar/fluent-definition.scss';
+@import 'avatar/all.scss';
+
+@import 'card/fluent-definition.scss';
+@import 'card/all.scss';
+@import 'splitter/fluent-definition.scss';
+@import 'splitter/icons/fluent.scss';
+@import 'splitter/all.scss';
+@import 'dashboard-layout/fluent-definition.scss';
+@import 'dashboard-layout/icons/fluent.scss';
+@import 'dashboard-layout/all.scss';
+@import 'timeline/fluent-definition.scss';
+@import 'timeline/all.scss';

@@ -98,7 +98,7 @@ export class CellOptionsDialog {
         const sameAsTableCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_sameAsCheckBox'
         });
-        sameAsTableCheckBox.setAttribute('aria-label',localValue.getConstant('Same as the whole table'));
+        sameAsTableCheckBox.setAttribute('aria-label', localValue.getConstant('Same as the whole table'));
         td.appendChild(sameAsTableCheckBox);
         tr.appendChild(td); table.appendChild(tr);
         innerDiv.appendChild(table);
@@ -110,7 +110,7 @@ export class CellOptionsDialog {
             change: this.changeSameAsTable,
             enableRtl: isRtl
         });
-        sameAsTableCheckBox.setAttribute('aria-label',localValue.getConstant('Same as the whole table'));
+        sameAsTableCheckBox.setAttribute('aria-label', localValue.getConstant('Same as the whole table'));
         this.sameAsTableCheckBox.appendTo(sameAsTableCheckBox);
         this.sameAsTableCheckBox.addEventListener('change', this.changeSameAsTable);
     }
@@ -311,6 +311,7 @@ export class CellOptionsDialog {
      * @param {CellOptionsDialog | TableOptionsDialog} dialog - Specifies cell options dialog.
      * @param {HTMLDivElement} div - Specifies the html element.
      * @param {L10n} locale - Specifies the locale
+     * @param {boolean} cellOptions - Specifies is cell options.
      * @returns {void}
      */
     public static getCellMarginDialogElements(dialog: CellOptionsDialog | TableOptionsDialog, div: HTMLDivElement, locale: L10n, cellOptions: boolean): void {
@@ -373,10 +374,10 @@ export class CellOptionsDialog {
                 floatLabelType: 'Always'
             });
             dialog.rightMarginBox.appendTo(rightTextBox);
-            rightTextBox.setAttribute('aria-labelledby',locale.getConstant('Right'));
-            leftTextBox.setAttribute('aria-labelledby',locale.getConstant('Left'));
-            bottomTextBox.setAttribute('aria-labelledby',locale.getConstant('Bottom'));
-            topTextBox.setAttribute('aria-labelledby',locale.getConstant('Top'));
+            rightTextBox.setAttribute('aria-labelledby', locale.getConstant('Right'));
+            leftTextBox.setAttribute('aria-labelledby', locale.getConstant('Left'));
+            bottomTextBox.setAttribute('aria-labelledby', locale.getConstant('Bottom'));
+            topTextBox.setAttribute('aria-labelledby', locale.getConstant('Top'));
         }
     }
 }

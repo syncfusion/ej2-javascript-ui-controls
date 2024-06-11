@@ -367,6 +367,8 @@ export interface IThemeStyle {
     titleFontColor: string;
     /** Specifies the color for the tooltip in circular gauge. */
     tooltipFillColor: string;
+    /** Specifies the border color for the tooltip in circular gauge. */
+    tooltipBorderColor?: string;
     /** Specifies the font color for tooltip of the circular gauge. */
     tooltipFontColor: string;
     /** Specifies the font size for tooltip of the circular gauge. */
@@ -401,7 +403,10 @@ export interface IThemeStyle {
     tooltipTextOpacity?: number;
     /** Specifies the font weight for the text in title in circular gauge. */
     titleFontWeight?: string;
-
+    /** Specifies the border color for the legend in circular gauge. */
+    legendBorderColor?: string;
+    /** Specifies the border width for the legend in circular gauge. */
+    legendBorderWidth?: number;
 }
 
 

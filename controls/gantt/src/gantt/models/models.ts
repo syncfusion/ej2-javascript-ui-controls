@@ -36,3 +36,5 @@ export * from './resource-fields';
 export * from './resource-fields-model';
 export * from './loading-indicator';
 export * from './loading-indicator-model';
+export * from './week-working-time';
+export * from './week-working-time-model';

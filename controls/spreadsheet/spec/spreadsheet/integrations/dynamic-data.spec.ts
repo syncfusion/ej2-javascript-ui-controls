@@ -182,4 +182,73 @@ describe('Dynamic data binding - ', () => {
         expect(dataChangeArgs.data[2]['Item Name']).toBe('Formal Shoes');
         done();
     });
+    it('Checking fieldsOrder property with data source', (done: Function) => {
+        const spreadsheet: any = helper.getInstance();
+        expect(spreadsheet.sheets[0].ranges[0].info.flds.length).toBe(8);
+        const ranges: RangeModel[] = spreadsheet.sheets[0].ranges;
+        ranges[0].fieldsOrder = ['1', '2', '11', '15'];
+        spreadsheet.sheets[0].ranges = ranges;
+        spreadsheet.dataBind();
+        expect(spreadsheet.sheets[0].rows[1].cells[0]).toBeUndefined();
+        expect(spreadsheet.sheets[0].rows[1].cells[3]).toBeUndefined();
+        expect(spreadsheet.sheets[0].rows[5].cells[0]).toBeUndefined();
+        expect(spreadsheet.sheets[0].rows[6].cells[3]).toBeUndefined();
+        expect(spreadsheet.sheets[0].rows[8].cells[7]).toBeUndefined();
+        setTimeout((): void => {
+            expect(spreadsheet.sheets[0].ranges[0].info.flds.length).toBe(4);
+            expect(spreadsheet.sheets[0].ranges[0].info.flds[1]).toBe('2');
+            expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('1');
+            expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[5].cells[0].value).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[6].cells[3].value).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[8].cells[7]).toBeUndefined();
+            done();
+        });
+    });
+    it('Changing data source with respect to the fieldsOrder', (done: Function) => {
+        const spreadsheet: any = helper.getInstance();
+        const data: Object[] = [{ 'Customer Name': 'Julius Gorner', '1': 31, '2': 33, '11': '34', '2024': '35', '15': '38529.22', '2023': '13', '2022': '33' },
+            { 'Customer Name': 'Jenna Schoolfield', '1': 32, '2': 33, '11': '34', '2024': '35', '15': '38529.22', '2023': '31', '2022': '33' },
+            { 'Customer Name': 'Vilhelmina Leipelt', '1': 33, '2': 53, '11': '54', '2024': '55', '15': '58529.22', '2023': '15', '2022': '53' }];
+        const ranges: RangeModel[] = spreadsheet.sheets[0].ranges;
+        ranges[0].dataSource = data;
+        spreadsheet.sheets[0].ranges = ranges;
+        spreadsheet.dataBind();
+        setTimeout((): void => {
+            expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('1');
+            expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[5].cells[0]).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[6].cells[3]).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe(31);
+            expect(spreadsheet.sheets[0].rows[2].cells[3].value).toBe('38529.22');
+            expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe(33);
+            expect(spreadsheet.sheets[0].rows[4].cells[3].value).toBe('58529.22');
+            done();
+        });
+    });
+    it('Changing fieldsOrder property with data source', (done: Function) => {
+        const spreadsheet: any = helper.getInstance();
+        const ranges: RangeModel[] = spreadsheet.sheets[0].ranges;
+        ranges[0].fieldsOrder = ['Customer Name', '2024', '2023'];
+        spreadsheet.sheets[0].ranges = ranges;
+        spreadsheet.dataBind();
+        expect(spreadsheet.sheets[0].rows[1].cells[0]).toBeUndefined();
+        expect(spreadsheet.sheets[0].rows[1].cells[3]).toBeUndefined();
+        expect(spreadsheet.sheets[0].rows[5].cells[0]).toBeUndefined();
+        expect(spreadsheet.sheets[0].rows[6].cells[3]).toBeUndefined();
+        expect(spreadsheet.sheets[0].rows[8].cells[7]).toBeUndefined();
+        setTimeout((): void => {
+            expect(spreadsheet.sheets[0].ranges[0].info.flds[0]).toBe('Customer Name');
+            expect(spreadsheet.sheets[0].ranges[0].info.flds[1]).toBe('2024');
+            expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('Customer Name');
+            expect(spreadsheet.sheets[0].rows[1].cells[2].value).toBe('2023');
+            expect(spreadsheet.sheets[0].rows[1].cells[3]).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Julius Gorner');
+            expect(spreadsheet.sheets[0].rows[2].cells[3]).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[2].cells[2].value).toBe('13');
+            expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Vilhelmina Leipelt');
+            expect(spreadsheet.sheets[0].rows[4].cells[2].value).toBe('15');
+            done();
+        });
+    });
 });

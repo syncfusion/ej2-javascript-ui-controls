@@ -4,13 +4,48 @@ import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRa
 import { CFColor, Workbook, PdfPageOrientation } from '../index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 import { Internationalization } from '@syncfusion/ej2-base';
+import { PrintType } from '../../spreadsheet';
 
+/**
+ * Specify the options for saving a document, such as the file name, save type, and save action URL.
+ */
 export interface SaveOptions {
+    /**
+     * Specify the URL path for the save action.
+     */
     url?: string;
+    /**
+     * Specify the name of the file to be saved.
+     */
     fileName?: string;
+    /**
+     * Specify the file type for saving. By default, the file will be saved in Excel format.
+     */
     saveType?: SaveType;
-    //passWord?: string;
+    /**
+     * Specify the PDF layout options such as orientation and fit-to-one-page.
+     */
     pdfLayoutSettings?: pdfLayoutSettings;
+}
+
+/**
+ * Specifies the options for the printing functionality in the spreadsheet.
+ */
+export interface PrintOptions {
+    /**
+     * Specifies whether to print the active worksheet or the entire workbook.
+     */
+    type?: PrintType;
+
+    /**
+     * Specifies whether to print the sheet with row and column headers or not.
+     */
+    allowRowColumnHeader?: boolean;
+
+    /**
+     * Specifies whether to print the sheet with gridlines or not.
+     */
+    allowGridLines?: boolean;
 }
 
 /**
@@ -287,6 +322,7 @@ export interface FilterEventArgs {
 export interface FilterOptions {
     datasource?: DataManager;
     predicates?: Predicate[];
+    equalOrPredicates?: Predicate[][];
 }
 
 /**
@@ -598,6 +634,7 @@ export interface FindArgs {
 }
 /**
  * Specifies the arguments for `setVisibleMergeIndex` method.
+ *
  * @hidden
  */
 export interface VisibleMergeIndexArgs {
@@ -617,4 +654,28 @@ export interface LocaleNumericSettings {
     am?: string;
     pm?: string;
     percentSign?: string;
+}
+
+/**@hidden */
+export interface FilterPredicateOptions {
+    predicates: Predicate[];
+    equalOrPredicates: Predicate[][];
+}
+
+/**
+ * Options for excluding specific features from JSON.
+ *
+ */
+export interface SerializationOptions {
+    onlyValues?: boolean;
+    ignoreStyle?: boolean;
+    ignoreFormula?: boolean;
+    ignoreFormat?: boolean;
+    ignoreConditionalFormat?: boolean;
+    ignoreValidation?: boolean;
+    ignoreFreezePane?: boolean;
+    ignoreWrap?: boolean;
+    ignoreChart?: boolean;
+    ignoreImage?: boolean;
+    ignoreNote?: boolean;
 }

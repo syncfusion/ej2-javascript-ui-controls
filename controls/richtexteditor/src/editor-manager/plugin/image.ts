@@ -110,17 +110,16 @@ export class ImageCommand {
             const selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
             const imgElm: Element = (e.value === 'Replace' || isReplaced) ? (e.item.selectParent[0] as Element) :
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
-            let imageInstance = this;
-            const onImageLoadEvent = () => {
+            const onImageLoadEvent: () => void = () => {
                 e.callBack({
-                    requestType: (e.value === 'Replace') ? (e.item.subCommand = 'Replace', "Replace") : 'Images',
+                    requestType: (e.value === 'Replace') ? (e.item.subCommand = 'Replace', 'Replace') : 'Images',
                     editorMode: 'HTML',
                     event: e.event,
-                    range: imageInstance.parent.nodeSelection.getRange(imageInstance.parent.currentDocument),
+                    range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
                     elements: [imgElm]
                 });
                 imgElm.removeEventListener('load', onImageLoadEvent);
-            }
+            };
             imgElm.addEventListener('load', onImageLoadEvent);
         }
     }
@@ -136,19 +135,16 @@ export class ImageCommand {
                 'e-imgleft': 'e-imgleft'
             };
             const imgClassList: DOMTokenList = imgElement.classList;
-            const classArray: string[] = [];
             for (let i: number = 0; i < imgClassList.length; i++) {
-                // eslint-disable-next-line
-                if (!isNOU(alignClass[imgClassList[i]])) {
-                    // eslint-disable-next-line
-                    alignClassName = alignClass[imgClassList[i]];
+                if (!isNOU(alignClass[imgClassList[i as number]])) {
+                    alignClassName = alignClass[imgClassList[i as number]];
                 }
             }
         }
         imgElement.setAttribute('class', 'e-rte-image' + (isNOU(e.item.cssClass) ? '' :  ' ' + e.item.cssClass)
         + (isNOU(alignClassName) ? '' : ' ' + alignClassName));
         if (!isNOU(e.item.altText)) {
-            imgElement.setAttribute('alt', e.item.altText);
+            imgElement.setAttribute('alt', e.item.altText.replace(/\.[a-zA-Z0-9]+$/, ''));
         }
         if (!isNOU(e.item.width) && !isNOU(e.item.width.width)) {
             imgElement.setAttribute('width', this.calculateStyleValue(e.item.width.width));
@@ -232,7 +228,7 @@ export class ImageCommand {
             (e.item.selectNode[0].parentElement as HTMLAnchorElement).removeAttribute('aria-label');
         } else {
             (e.item.selectNode[0].parentElement as HTMLAnchorElement).target = e.item.target;
-            (e.item.selectNode[0].parentElement as any).ariaLabel = e.item.ariaLabel;
+            (e.item.selectNode[0].parentElement as HTMLElement).setAttribute('aria-label', e.item.ariaLabel);
         }
         this.callBack(e);
     }

@@ -34,8 +34,10 @@ export class AxisFields {
             new PivotButton(this.parent);
         }
         this.createPivotButtons();
-        let pivotButtons: HTMLElement[] = []; // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const element of this.parent.element.querySelectorAll('.' + cls.GROUP_ROW_CLASS) as any) {
+        let pivotButtons: HTMLElement[] = [];
+        const elements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.GROUP_ROW_CLASS);
+        for (let i: number = 0; i < elements.length; i++) {
+            const element: HTMLElement = elements[i as number];
             if (!element.classList.contains(cls.GROUP_CHART_ROW)) {
                 pivotButtons = pivotButtons.concat([].slice.call(element.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS)));
             }
@@ -54,10 +56,10 @@ export class AxisFields {
         const fields: IFieldOptions[][] =
             [this.parent.dataSourceSettings.rows, this.parent.dataSourceSettings.columns,
                 this.parent.dataSourceSettings.values, this.parent.dataSourceSettings.filters];
-        for (const element of this.parent.element.querySelectorAll(
-            '.' + cls.GROUP_ALL_FIELDS_CLASS + ',.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.'
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS) as any) {
+        const elements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.GROUP_ALL_FIELDS_CLASS +
+            ',.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.' + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS);
+        for (let i: number = 0; i < elements.length; i++) {
+            const element: HTMLElement = elements[i as number];
             if ((this.parent.dataSourceSettings.values.length > 0 ? !element.classList.contains(cls.GROUP_CHART_VALUE) : true) ||
                 (this.parent.dataSourceSettings.columns.length > 0 ? !element.classList.contains(cls.GROUP_CHART_COLUMN) : true)) {
                 element.innerHTML = '';
@@ -71,7 +73,6 @@ export class AxisFields {
                     this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '') ||
             (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url &&
                 this.parent.dataSourceSettings.url !== '')) {
-            /* eslint-enable @typescript-eslint/no-explicit-any */
             const axis: string[] = ['rows', 'columns', 'values', 'filters'];
             if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings.showFieldsPanel) {
                 axis.push('all-fields');

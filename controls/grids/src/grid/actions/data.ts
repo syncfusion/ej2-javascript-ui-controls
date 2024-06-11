@@ -71,7 +71,7 @@ export class Data implements IDataProcessor {
         const gObj: IGrid = this.parent;
         this.dataManager = gObj.dataSource instanceof DataManager ? <DataManager>gObj.dataSource :
             (isNullOrUndefined(gObj.dataSource) ? new DataManager() : new DataManager(gObj.dataSource));
-        if ((<{ isAngular?: boolean }>gObj).isAngular && !(gObj.query instanceof Query)) {
+        if (gObj.isAngular && !(gObj.query instanceof Query)) {
             gObj.setProperties({ query: new Query() }, true);
         } else {
             this.isQueryInvokedFromData = true;
@@ -91,7 +91,7 @@ export class Data implements IDataProcessor {
      */
     public generateQuery(skipPage?: boolean, isAutoCompleteCall?: boolean): Query {
         const gObj: IGrid = this.parent;
-        const query: Query = gObj.getQuery().clone();
+        const query: Query = !isNullOrUndefined(gObj.getQuery()) ? gObj.getQuery().clone() : new Query();
         if (this.parent.columnQueryMode === 'ExcludeHidden') {
             query.select((<Column[]>this.parent.getColumns()).filter(
                 (column: Column) => !(column.isPrimaryKey !== true && column.visible === false || column.field === undefined)
@@ -265,10 +265,10 @@ export class Data implements IDataProcessor {
      */
     public searchQuery(query: Query, fcolumn?: Column, isForeignKey?: boolean): Query {
         const sSettings: SearchSettingsModel = this.parent.searchSettings;
-        let fields: string[] = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
+        let fields: string[] = (!isNullOrUndefined(sSettings.fields) && sSettings.fields.length) ? sSettings.fields : this.getSearchColumnFieldNames();
         let predicateList: Predicate[] = [];
         let needForeignKeySearch: boolean = false;
-        if (this.parent.searchSettings.key.length) {
+        if (!isNullOrUndefined(this.parent.searchSettings.key) && this.parent.searchSettings.key.length) {
             needForeignKeySearch = this.parent.getForeignKeyColumns().some((col: Column) => fields.indexOf(col.field) > -1);
             const adaptor: AdaptorOptions = !isForeignKey ? this.dataManager.adaptor : (fcolumn.dataSource as DataManager).adaptor;
             if (needForeignKeySearch || ((<{ getModuleName?: Function }>adaptor).getModuleName &&

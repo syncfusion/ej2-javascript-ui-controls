@@ -109,7 +109,7 @@ export class Column {
      * Defines the custom sort comparer function.
      */
     public sortComparer: SortComparer | string;
-    
+
     /**
      * Defines the field name of column which is mapped with mapping name of DataSource.
      * The `field` name must be a valid JavaScript identifier,
@@ -289,7 +289,7 @@ export interface ColumnModel {
      * @default null
      */
     validationRules?: Object;
-    
+
     /**
      * It is used to customize the default filter options for a specific columns.
      * * ui - to render custom component for specific column it has following functions.
@@ -478,5 +478,5 @@ export interface ColumnModel {
      *
      * @default null
      */
-     sortComparer?: SortComparer | string;
+    sortComparer?: SortComparer | string;
 }

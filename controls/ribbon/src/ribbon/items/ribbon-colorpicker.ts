@@ -10,7 +10,7 @@ import { ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
  * Defines the items of Ribbon.
  */
 export class RibbonColorPicker {
-    private parent: Ribbon
+    private parent: Ribbon;
 
     constructor(parent: Ribbon) {
         this.parent = parent;
@@ -103,7 +103,7 @@ export class RibbonColorPicker {
      * @hidden
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
-        let colorPickerSettings: RibbonColorPickerSettingsModel = item.colorPickerSettings;
+        const colorPickerSettings: RibbonColorPickerSettingsModel = item.colorPickerSettings;
         if (colorPickerSettings.label && this.parent.activeLayout === 'Simplified') {
             const label: HTMLElement = this.parent.createElement('div', {
                 className: 'e-ribbon-colorpicker-label',
@@ -141,7 +141,7 @@ export class RibbonColorPicker {
      * @hidden
      */
     public removeOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement): void {
-        let colorPickerSettings: RibbonColorPickerSettingsModel = item.colorPickerSettings;
+        const colorPickerSettings: RibbonColorPickerSettingsModel = item.colorPickerSettings;
         if (colorPickerSettings.label) {
             const label: HTMLElement = itemEle.querySelector('#' + item.id + '_label');
             if (label) {

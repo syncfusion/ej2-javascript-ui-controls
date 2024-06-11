@@ -75,7 +75,7 @@ export class Print {
                 if (contentCellScroll) {
                     contentCellScroll.scrollLeft = scrollableEle.scrollLeft;
                     contentCellScroll.scrollTop = scrollableEle.scrollTop;
-                }                    
+                }
                 printWindow.print();
                 printWindow.close();
             }

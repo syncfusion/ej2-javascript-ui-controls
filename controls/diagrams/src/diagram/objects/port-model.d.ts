@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { ShapeStyle, Margin } from '../core/appearance';import { ShapeStyleModel, MarginModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility, PortAlignment } from '../enum/enum';import { DiagramTooltip } from './tooltip';import { DiagramTooltipModel } from './tooltip-model';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { ShapeStyle, Margin } from '../core/appearance';import { ShapeStyleModel, MarginModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility, PortAlignment, PortConnectionDirection } from '../enum/enum';import { DiagramTooltip } from './tooltip';import { DiagramTooltipModel } from './tooltip-model';
 
 /**
  * Interface for a class Port
@@ -91,6 +91,18 @@ export interface PortModel {
      * @default 'Square'
      */
     shape?: PortShapes;
+
+    /**
+     * Defines the allowed direction for connections to the port
+     * * Auto - Maintains the default behavior of automatic direction calculation.
+     * * Left - Restricts connections to only connect to the left side of the port.
+     * * Top - Restricts connections to only connect to the top side of the port.
+     * * Right - Restricts connections to only connect to the right side of the port.
+     * * Bottom - Restricts connections to only connect to the bottom side of the port.
+     *
+     * @default 'Auto'
+     */
+    connectionDirection?: PortConnectionDirection;
 
     /**
      * Defines the type of the port visibility

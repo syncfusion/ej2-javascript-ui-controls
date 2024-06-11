@@ -50,9 +50,9 @@ export class Toolbar {
             for (const item of preItems) {
                 let itemStr: string;
                 let localeName: string;
-                if(item === 'CriticalPath') {
-                    itemStr =  "critical-path";
-                    localeName = "criticalPath";
+                if (item === 'CriticalPath') {
+                    itemStr =  'critical-path';
+                    localeName = 'criticalPath';
                 }
                 else {
                     itemStr =  item.toLowerCase();
@@ -74,8 +74,8 @@ export class Toolbar {
                     }
                     if (item === 'NextTimeSpan') {
                         this.predefinedItems[item as string].prefixIcon = 'e-prevtimespan';
+                    }
                 }
-            }
             }
             const searchLocalText: string = this.parent.localeObj.getConstant('search');
             if (this.parent.isAdaptive) {
@@ -104,12 +104,12 @@ export class Toolbar {
     }
 
     private addReactToolbarPortals(args: Object[]): void {
-        if ((this.parent as any).isReact && args) {
-            (<{ portals?: Object[] }>this.parent).portals = (<{ portals?: Object[] }>this.parent).portals.concat(args);
+        if ((this.parent as Gantt).isReact && args) {
+            this.parent.portals = this.parent.portals.concat(args);
             this.parent.renderTemplates();
         }
     }
-    
+
     private createToolbar(): void {
         const items: ItemModel[] = this.getItems();
         this.toolbar = new NavToolbar({
@@ -119,11 +119,11 @@ export class Toolbar {
             height: this.parent.isAdaptive ? 48 : 'auto'
         });
         this.toolbar.isStringTemplate = true;
-        (<{ isReact?: boolean }>this.toolbar).isReact = (this.parent as any).isReact;
+        this.toolbar.isReact = (this.parent as Gantt).isReact;
         this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
         this.toolbar.appendTo(this.element);
-        if (this.parent.treeGrid.grid && (this.parent as any).isReact) {
-           (this.parent.treeGrid.grid as any).portals = (this.parent as any).portals;
+        if (this.parent.treeGrid.grid && (this.parent as Gantt).isReact) {
+            (this.parent.treeGrid.grid).portals = (this.parent as Gantt).portals;
         }
         const cancelItem: Element = this.element.querySelector('#' + this.parent.element.id + '_cancel');
         const updateItem: Element = this.element.querySelector('#' + this.parent.element.id + '_update');
@@ -133,13 +133,12 @@ export class Toolbar {
         if (updateItem) {
             addClass([updateItem], cls.focusCell);
         }
-        let template :boolean = false;
-
-        this.parent.toolbar.map((e: any) => {
+        let template: boolean = false;
+        this.parent.toolbar.map((e: string | ItemModel) => {
             if (e === 'Search') {
                 template = true;
             }
-        })    
+        });
         if (this.parent.isAdaptive && template) {
             this.element.insertBefore(this.getSearchBarElement(), this.element.childNodes[0]);
             this.searchElement = this.element.querySelector('#' + this.parent.element.id + '_searchbar');
@@ -159,7 +158,7 @@ export class Toolbar {
                 this.updateSearchTextBox();
             }
         }
-        this.enableItems([this.parent.controlId + '_redo',this.parent.controlId + '_undo'], false); // disable toolbar items.
+        this.enableItems([this.parent.controlId + '_redo', this.parent.controlId + '_undo'], false); // disable toolbar items.
         if (this.parent.readOnly) {
             this.enableItems(
                 [this.parent.element.id + '_add', this.parent.element.id + '_update', this.parent.element.id + '_delete'
@@ -265,10 +264,10 @@ export class Toolbar {
     private toolbarClickHandler(arg: ClickEventArgs): void {
         const gObj: Gantt = this.parent;
         const gID: string = this.id;
-        this.parent.isToolBarClick = false
+        this.parent.isToolBarClick = false;
         extend(arg, { cancel: false });
-        if (arg.item['properties'].id === this.parent.element.id+"_pdfexport" || arg.item['properties'].id === this.parent.element.id+"_critical-path") {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+        if (arg.item['properties'].id === this.parent.element.id + '_pdfexport' || arg.item['properties'].id === this.parent.element.id + '_critical-path') {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.showMaskRow();
             } else {
                 this.parent.showSpinner();
@@ -457,12 +456,14 @@ export class Toolbar {
                 disableItems.push(gID + '_indent');
                 disableItems.push(gID + '_outdent');
             } else {
-                if ( !isNullOrUndefined(gObj.updatedRecords[ind as number]) && gObj.updatedRecords[ind as number].level === 0 && hasData && !touchEdit) {
+                if (!isNullOrUndefined(gObj.updatedRecords[ind as number]) &&
+                gObj.updatedRecords[ind as number].level === 0 && hasData && !touchEdit) {
                     enableItems.push(gID + '_indent');
                     disableItems.push(gID + '_outdent');
                 } else {
                     previousGanttRecord = gObj.updatedRecords[ind - 1];
-                    if (!isNullOrUndefined(gObj.updatedRecords[ind as number]) && (gObj.updatedRecords[ind as number].level - previousGanttRecord.level === 1) && ind !== -1) {
+                    if (!isNullOrUndefined(gObj.updatedRecords[ind as number]) &&
+                    (gObj.updatedRecords[ind as number].level - previousGanttRecord.level === 1) && ind !== -1) {
                         disableItems.push(gID + '_indent');
                         enableItems.push(gID + '_outdent');
                     } else if (ind !== -1) {

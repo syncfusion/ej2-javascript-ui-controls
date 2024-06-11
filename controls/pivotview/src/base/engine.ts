@@ -153,8 +153,8 @@ export class PivotEngine {
     private getHeaderSortInfo: Function;
     private fieldsType: IStringIndex;
     private columnKeys: { [key: string]: IFieldOptions } = {};
-    private fieldDrillCollection: { [key: string]: string } = {}; // eslint-disable-next-line security/detect-unsafe-regex
-    private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
+    private fieldDrillCollection: { [key: string]: string } = {};
+    private formatRegex: RegExp = /^(?:[ncpae])(?:([0-9]|1[0-9]|20))?$/i;
     private clonedReport: IDataOptions;
     private measureNames: { [key: string]: string } = {};
     private currencyCode: string;
@@ -272,17 +272,24 @@ export class PivotEngine {
         this.enableHtmlSanitizer = customProperties.enableHtmlSanitizer;
         this.isPagingOrVirtualizationEnabled = this.enablePaging || this.enableVirtualization;
         this.enableSort = dataSource.enableSorting;
-        this.dataSourceSettings.alwaysShowValueHeader = dataSource.alwaysShowValueHeader; // eslint-disable-next-line max-len
-        this.dataSourceSettings.showHeaderWhenEmpty = isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true : dataSource.showHeaderWhenEmpty;
+        this.dataSourceSettings.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
+        this.dataSourceSettings.showHeaderWhenEmpty = isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true :
+            dataSource.showHeaderWhenEmpty;
         this.dataSourceSettings.showSubTotals = isNullOrUndefined(dataSource.showSubTotals) ? true : dataSource.showSubTotals;
-        this.dataSourceSettings.showRowSubTotals = isNullOrUndefined(dataSource.showRowSubTotals) ? true : dataSource.showRowSubTotals; // eslint-disable-next-line max-len
-        this.dataSourceSettings.showColumnSubTotals = isNullOrUndefined(dataSource.showColumnSubTotals) ? true : dataSource.showColumnSubTotals;
+        this.dataSourceSettings.showRowSubTotals = isNullOrUndefined(dataSource.showRowSubTotals) ? true : dataSource.showRowSubTotals;
+        this.dataSourceSettings.showColumnSubTotals = isNullOrUndefined(dataSource.showColumnSubTotals) ? true :
+            dataSource.showColumnSubTotals;
         this.dataSourceSettings.showGrandTotals = isNullOrUndefined(dataSource.showGrandTotals) ? true : dataSource.showGrandTotals;
-        this.dataSourceSettings.grandTotalsPosition = isNullOrUndefined(dataSource.grandTotalsPosition) ? 'Bottom' : dataSource.grandTotalsPosition; // eslint-disable-next-line max-len
-        this.dataSourceSettings.showRowGrandTotals = isNullOrUndefined(dataSource.showRowGrandTotals) ? true : dataSource.showRowGrandTotals; // eslint-disable-next-line max-len
-        this.dataSourceSettings.showColumnGrandTotals = isNullOrUndefined(dataSource.showColumnGrandTotals) ? true : dataSource.showColumnGrandTotals;
-        this.showSubTotalsAtTop = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals && dataSource.subTotalsPosition === 'Top';
-        this.showSubTotalsAtBottom = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showRowSubTotals && dataSource.subTotalsPosition === 'Bottom';
+        this.dataSourceSettings.grandTotalsPosition = isNullOrUndefined(dataSource.grandTotalsPosition) ? 'Bottom' :
+            dataSource.grandTotalsPosition;
+        this.dataSourceSettings.showRowGrandTotals = isNullOrUndefined(dataSource.showRowGrandTotals) ? true :
+            dataSource.showRowGrandTotals;
+        this.dataSourceSettings.showColumnGrandTotals = isNullOrUndefined(dataSource.showColumnGrandTotals) ? true :
+            dataSource.showColumnGrandTotals;
+        this.showSubTotalsAtTop = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals &&
+            dataSource.subTotalsPosition === 'Top';
+        this.showSubTotalsAtBottom = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showRowSubTotals &&
+            dataSource.subTotalsPosition === 'Bottom';
         this.allowValueFilter = dataSource.allowValueFilter;
         this.isValueFilterEnabled = false;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
@@ -348,8 +355,9 @@ export class PivotEngine {
             this.filterMembers = [];
             let columnLength: number = this.dataSourceSettings.columns.length - 1;
             this.columnKeys = {};
-            while (columnLength > -1) { // eslint-disable-next-line max-len
-                this.columnKeys[this.dataSourceSettings.columns[columnLength as number].name] = this.dataSourceSettings.columns[columnLength as number];
+            while (columnLength > -1) {
+                this.columnKeys[this.dataSourceSettings.columns[columnLength as number].name] = this.dataSourceSettings
+                    .columns[columnLength as number];
                 columnLength--;
             }
             this.updateFilterMembers(dataSource);
@@ -366,8 +374,9 @@ export class PivotEngine {
         while (pos < 4) {
             if (report[pos as number]) {
                 for (let cnt: number = 0; cnt < report[pos as number].length; cnt++) {
-                    const fieldName: string = report[pos as number][cnt as number].name; // eslint-disable-next-line max-len
-                    if ((this.dataSourceSettings.excludeFields.indexOf(fieldName) > -1) || (!isNullOrUndefined(fields) && fields.indexOf(fieldName) === -1)) {
+                    const fieldName: string = report[pos as number][cnt as number].name;
+                    if ((this.dataSourceSettings.excludeFields.indexOf(fieldName) > -1) || (!isNullOrUndefined(fields)
+                        && fields.indexOf(fieldName) === -1)) {
                         report[pos as number].splice(cnt, 1);
                         cnt--;
                     } else if (pos === 2) {
@@ -391,16 +400,22 @@ export class PivotEngine {
             this.colValuesLength = this.valueAxis === 0 ? this.dataSourceSettings.values.length : 1;
             this.measureIndex = !isNullOrUndefined(dataSource.valueIndex) ? dataSource.valueIndex : -1;
             this.enableSort = dataSource.enableSorting;
-            this.dataSourceSettings.alwaysShowValueHeader = dataSource.alwaysShowValueHeader; // eslint-disable-next-line max-len
-            this.dataSourceSettings.showHeaderWhenEmpty = isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true : dataSource.showHeaderWhenEmpty;
+            this.dataSourceSettings.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
+            this.dataSourceSettings.showHeaderWhenEmpty = isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true :
+                dataSource.showHeaderWhenEmpty;
             this.dataSourceSettings.showSubTotals = isNullOrUndefined(dataSource.showSubTotals) ? true : dataSource.showSubTotals;
-            this.dataSourceSettings.showRowSubTotals = isNullOrUndefined(dataSource.showRowSubTotals) ? true : dataSource.showRowSubTotals; // eslint-disable-next-line max-len
-            this.dataSourceSettings.showColumnSubTotals = isNullOrUndefined(dataSource.showColumnSubTotals) ? true : dataSource.showColumnSubTotals;
+            this.dataSourceSettings.showRowSubTotals = isNullOrUndefined(dataSource.showRowSubTotals) ? true : dataSource.showRowSubTotals;
+            this.dataSourceSettings.showColumnSubTotals = isNullOrUndefined(dataSource.showColumnSubTotals) ? true :
+                dataSource.showColumnSubTotals;
             this.dataSourceSettings.showGrandTotals = isNullOrUndefined(dataSource.showGrandTotals) ? true : dataSource.showGrandTotals;
-            this.dataSourceSettings.grandTotalsPosition = isNullOrUndefined(dataSource.grandTotalsPosition) ? 'Bottom' : dataSource.grandTotalsPosition; // eslint-disable-next-line max-len
-            this.dataSourceSettings.showRowGrandTotals = isNullOrUndefined(dataSource.showRowGrandTotals) ? true : dataSource.showRowGrandTotals; // eslint-disable-next-line max-len
-            this.dataSourceSettings.showColumnGrandTotals = isNullOrUndefined(dataSource.showColumnGrandTotals) ? true : dataSource.showColumnGrandTotals;
-            this.showSubTotalsAtTop = this.dataSourceSettings.showSubTotals && dataSource.subTotalsPosition === 'Top' && dataSource.showColumnSubTotals;
+            this.dataSourceSettings.grandTotalsPosition = isNullOrUndefined(dataSource.grandTotalsPosition) ? 'Bottom' :
+                dataSource.grandTotalsPosition;
+            this.dataSourceSettings.showRowGrandTotals = isNullOrUndefined(dataSource.showRowGrandTotals) ? true :
+                dataSource.showRowGrandTotals;
+            this.dataSourceSettings.showColumnGrandTotals = isNullOrUndefined(dataSource.showColumnGrandTotals) ? true :
+                dataSource.showColumnGrandTotals;
+            this.showSubTotalsAtTop = this.dataSourceSettings.showSubTotals && dataSource.subTotalsPosition === 'Top' &&
+                dataSource.showColumnSubTotals;
             this.showSubTotalsAtBottom = this.dataSourceSettings.showSubTotals && dataSource.subTotalsPosition === 'Bottom' && dataSource.showRowSubTotals;
             this.allowValueFilter = dataSource.allowValueFilter;
             this.dataSourceSettings.formatSettings = dataSource.formatSettings ? dataSource.formatSettings : [];
@@ -414,8 +429,8 @@ export class PivotEngine {
 
     private getGroupedRawData(dataSourceSettings: IDataOptions): IDataSet[] | string[][] {
         this.data = [];
-        for (const data of this.actualData as IDataSet[]) { // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            this.data[this.data.length] = PivotUtil.frameHeaderWithKeys(data) as any;
+        for (const data of this.actualData as IDataSet[]) {
+            this.data[this.data.length] = PivotUtil.frameHeaderWithKeys(data) as IDataSet | string[];
         }
         const countFields: string[] = dataSourceSettings.values.filter((item: IFieldOptions) => {
             return item.type === 'Count' || item.type === 'DistinctCount';
@@ -431,25 +446,25 @@ export class PivotEngine {
         this.groupRawIndex = {};
         const groupKeys: { [key: string]: number } = {};
         let indexLength: number = 0;
-        /* eslint-disable @typescript-eslint/no-explicit-any */
         for (let i: number = 0; i < realData.length; i++) {
             const currData: IDataSet | string[] = realData[i as number];
             const members: string[] = [];
             if (hasCountField) {
                 for (let vPos: number = 0; vPos < countFields.length; vPos++) {
-                    (currData as any)[this.fieldKeys[countFields[vPos as number]] as any] =
-                        isNullOrUndefined((currData as any)[this.fieldKeys[countFields[vPos as number]] as any]) ?
-                            (currData as any)[this.fieldKeys[countFields[vPos as number]] as any] : 1;
+                    (currData as IDataSet)[this.fieldKeys[countFields[vPos as number]] as string | number] =
+                        isNullOrUndefined((currData as IDataSet)[this.fieldKeys[countFields[vPos as number]] as string | number]) ?
+                            (currData as IDataSet)[this.fieldKeys[countFields[vPos as number]] as string | number] : 1;
                 }
             }
             for (let hPos: number = 0; hPos < headerFields.length; hPos++) {
-                members.push((currData as any)[this.fieldKeys[headerFields[hPos as number]] as any]);
+                members.push((currData as string[])[this.fieldKeys[headerFields[hPos as number]] as number]);
             }
             const memberJoin: string = members.join('-');
             if (groupRawData[memberJoin as string]) {
                 for (let vPos: number = 0; vPos < dataSourceSettings.values.length; vPos++) {
                     const currFieldName: string = dataSourceSettings.values[vPos as number].name;
-                    const currValue: any = (currData as any)[this.fieldKeys[currFieldName as string] as any];
+                    const currValue: string | number | Date = (currData as IDataSet)[this.fieldKeys[
+                        currFieldName as string] as string | number];
                     const savedData: IDataSet = groupRawData[memberJoin as string];
                     let summType: SummaryTypes = dataSourceSettings.values[vPos as number].type;
                     if (!isNullOrUndefined(currValue)) {
@@ -463,7 +478,7 @@ export class PivotEngine {
                             savedData[currFieldName as string] = 1;
                         }
                         if (summType === 'Count') {
-                            (savedData[currFieldName as string] as any) += 1;
+                            (savedData[currFieldName as string] as number) += 1;
                         } else if (summType === 'Min') {
                             if (!isNullOrUndefined(savedData[currFieldName as string])) {
                                 savedData[currFieldName as string] = savedData[currFieldName as string] > currValue ?
@@ -475,9 +490,9 @@ export class PivotEngine {
                                     currValue : savedData[currFieldName as string];
                             }
                         } else if (summType === 'Product') {
-                            (savedData[currFieldName as string] as number) *= currValue;
+                            (savedData[currFieldName as string] as number) *= currValue as number;
                         } else {
-                            (savedData[currFieldName as string] as number) += currValue;
+                            (savedData[currFieldName as string] as number) += currValue as number;
                         }
                     }
                 }
@@ -485,15 +500,15 @@ export class PivotEngine {
                     this.groupRawIndex[groupKeys[memberJoin as string]].push(i);
                 }
             } else {
-                (groupRawData as any)[memberJoin as string] = currData;
-                finalData.push(currData as any);
+                (groupRawData)[memberJoin as string] = currData as IDataSet;
+                finalData.push(currData as IDataSet);
                 if (this.isDrillThrough) {
                     this.groupRawIndex[indexLength as number] = [i as number];
                     groupKeys[memberJoin as string] = indexLength;
                     indexLength++;
                 }
             }
-        } /* eslint-enable @typescript-eslint/no-explicit-any */
+        }
         return finalData;
     }
     private getGroupData(data: IDataSet[]): IDataSet {
@@ -510,13 +525,12 @@ export class PivotEngine {
                 } else if (group.type === 'Number') {
                     if (PivotUtil.getType(fieldkeySet[fieldName as string] as Date) === 'number' ||
                     !this.groupingFields[fieldName as string]) {
-                        /* eslint-disable @typescript-eslint/no-explicit-any */
                         if (group.rangeInterval) {
-                            data.sort((a: IDataSet, b: IDataSet) => (Number(a[this.fieldKeys[fieldName as string] as any]) >
-                                Number(b[this.fieldKeys[fieldName as string] as any])) ? 1 :
-                                ((Number(b[this.fieldKeys[fieldName as string] as any]) >
-                            Number(a[this.fieldKeys[fieldName as string] as any])) ? -1 : 0));
-                        } /* eslint-enable @typescript-eslint/no-explicit-any */
+                            data.sort((a: IDataSet, b: IDataSet) => (Number(a[this.fieldKeys[fieldName as string] as string | number]) >
+                                Number(b[this.fieldKeys[fieldName as string] as string | number])) ? 1 :
+                                ((Number(b[this.fieldKeys[fieldName as string] as string | number]) >
+                            Number(a[this.fieldKeys[fieldName as string] as string | number])) ? -1 : 0));
+                        }
                     } else {
                         return fieldkeySet;
                     }
@@ -526,9 +540,9 @@ export class PivotEngine {
                 // }
                 let len: number = data.length;
                 while (len--) {
-                    const item: IDataSet = data[len as number];    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    if (item[this.fieldKeys[fieldName as string] as any] && group.type === 'Date') {   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const date: Date = new Date(item[this.fieldKeys[fieldName as string] as any].toString());
+                    const item: IDataSet = data[len as number];
+                    if (item[this.fieldKeys[fieldName as string] as string | number] && group.type === 'Date') {
+                        const date: Date = new Date(item[this.fieldKeys[fieldName as string] as string | number].toString());
                         if (!isNullOrUndefined(date) && group.groupInterval.length > 0) {
                             for (let i: number = 0, len: number = group.groupInterval.length; i < len; i++) {
                                 const interval: DateGroup = group.groupInterval[i as number];
@@ -545,8 +559,8 @@ export class PivotEngine {
                                                 this.fields.length) : newFieldName;
                                         if (this.fields.indexOf(newFieldName) === -1) {
                                             this.fields.push(newFieldName);
-                                        }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        item[this.fieldKeys[newFieldName as string] as any] = (isInRangeAvail ? undefined :
+                                        }
+                                        item[this.fieldKeys[newFieldName as string] as string | number] = (isInRangeAvail ? undefined :
                                             new Date(newDate.setFullYear(date.getFullYear())).toString());
                                     }
                                     break;
@@ -561,8 +575,8 @@ export class PivotEngine {
                                                 this.fields.length) : newFieldName;
                                         if (this.fields.indexOf(newFieldName) === -1) {
                                             this.fields.push(newFieldName);
-                                        }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        item[this.fieldKeys[newFieldName as string] as any] = (isInRangeAvail ? undefined :
+                                        }
+                                        item[this.fieldKeys[newFieldName as string] as string | number] = (isInRangeAvail ? undefined :
                                             ((this.localeObj ? this.localeObj.getConstant('qtr') : 'Qtr') + month.toString()));
                                     }
                                     break;
@@ -577,8 +591,8 @@ export class PivotEngine {
                                                 this.fields.length) : newFieldName;
                                         if (this.fields.indexOf(newFieldName) === -1) {
                                             this.fields.push(newFieldName);
-                                        }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        item[this.fieldKeys[newFieldName as string] as any] = (isInRangeAvail ? undefined :
+                                        }
+                                        item[this.fieldKeys[newFieldName as string] as string | number] = (isInRangeAvail ? undefined :
                                             ((this.localeObj ? this.localeObj.getConstant('qtr') : 'Qtr') + month.toString() + ' '
                                                 + (this.localeObj ? this.localeObj.getConstant('of') : 'of') + ' '
                                                 + date.getFullYear().toString()));
@@ -594,8 +608,8 @@ export class PivotEngine {
                                                 this.fields.length) : newFieldName;
                                         if (this.fields.indexOf(newFieldName) === -1) {
                                             this.fields.push(newFieldName);
-                                        }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        item[this.fieldKeys[newFieldName as string] as any] = (isInRangeAvail ? undefined :
+                                        }
+                                        item[this.fieldKeys[newFieldName as string] as string | number] = (isInRangeAvail ? undefined :
                                             new Date(newDate.setMonth(date.getMonth(), 1)).toString());
                                     }
                                     break;
@@ -609,8 +623,8 @@ export class PivotEngine {
                                                 this.fields.length) : newFieldName;
                                         if (this.fields.indexOf(newFieldName) === -1) {
                                             this.fields.push(newFieldName);
-                                        }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        item[this.fieldKeys[newFieldName as string] as any] = (isInRangeAvail ? undefined :
+                                        }
+                                        item[this.fieldKeys[newFieldName as string] as string | number] = (isInRangeAvail ? undefined :
                                             new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString());
                                     }
                                     break;
@@ -624,8 +638,8 @@ export class PivotEngine {
                                                 this.fields.length) : newFieldName;
                                         if (this.fields.indexOf(newFieldName) === -1) {
                                             this.fields.push(newFieldName);
-                                        }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        item[this.fieldKeys[newFieldName as string] as any] = (isInRangeAvail ? undefined :
+                                        }
+                                        item[this.fieldKeys[newFieldName as string] as string | number] = (isInRangeAvail ? undefined :
                                             new Date(newDate.setHours(date.getHours())).toString());
                                     }
                                     break;
@@ -638,8 +652,8 @@ export class PivotEngine {
                                                 this.fields.length) : newFieldName;
                                         if (this.fields.indexOf(newFieldName) === -1) {
                                             this.fields.push(newFieldName);
-                                        }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        item[this.fieldKeys[newFieldName as string] as any] = (isInRangeAvail ? undefined :
+                                        }
+                                        item[this.fieldKeys[newFieldName as string] as string | number] = (isInRangeAvail ? undefined :
                                             new Date(newDate.setMinutes(date.getMinutes())).toString());
                                     }
                                     break;
@@ -652,19 +666,20 @@ export class PivotEngine {
                                                 this.fields.length) : newFieldName;
                                         if (this.fields.indexOf(newFieldName) === -1) {
                                             this.fields.push(newFieldName);
-                                        }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        item[this.fieldKeys[newFieldName as string] as any] = (isInRangeAvail ? undefined :
+                                        }
+                                        item[this.fieldKeys[newFieldName as string] as string | number] = (isInRangeAvail ? undefined :
                                             new Date(newDate.setSeconds(date.getSeconds())).toString());
                                     }
                                     break;
                                 }
                             }
-                        }   /* eslint-disable @typescript-eslint/no-explicit-any */
-                    } else if (!isNaN(Number(item[this.fieldKeys[fieldName as string] as any])) && group.type === 'Number') {
-                        const isInRangeAvail: boolean = this.getRange(group, Number(item[this.fieldKeys[fieldName as string] as any]));
-                        item[this.fieldKeys[fieldName as string] as any] = isInRangeAvail ? undefined :
-                            item[this.fieldKeys[fieldName as string] as any];
-                    } else if (item[this.fieldKeys[fieldName as string] as any] && group.type === 'Custom' &&
+                        }
+                    } else if (!isNaN(Number(item[this.fieldKeys[fieldName as string] as string | number])) && group.type === 'Number') {
+                        const isInRangeAvail: boolean = this.getRange(group, Number(item[this.fieldKeys[
+                            fieldName as string] as string | number]));
+                        item[this.fieldKeys[fieldName as string] as string | number] = isInRangeAvail ? undefined :
+                            item[this.fieldKeys[fieldName as string] as string | number];
+                    } else if (item[this.fieldKeys[fieldName as string] as string | number] && group.type === 'Custom' &&
                         group.customGroups && group.customGroups.length > 0) {
                         const newFieldName: string = fieldName + '_custom_group';
                         const customGroups: ICustomGroups[] = group.customGroups;
@@ -681,18 +696,17 @@ export class PivotEngine {
                                 if (this.fields.indexOf(newFieldName) === -1) {
                                     this.fields.push(newFieldName);
                                 }
-                                const isDataMatch: boolean =
-                                    PivotUtil.inArray(item[this.fieldKeys[fieldName as string] as any].toString(), cGroup.items) === -1 ?
-                                        false : true;
-                                item[this.fieldKeys[newFieldName as string] as any] =
+                                const isDataMatch: boolean = PivotUtil.inArray(item[this.fieldKeys[
+                                    fieldName as string] as string | number].toString(), cGroup.items) === -1 ? false : true;
+                                item[this.fieldKeys[newFieldName as string] as string | number] =
                                     (isDataMatch ? (cGroup.groupName && cGroup.groupName !== '') ? cGroup.groupName :
-                                        this.localeObj.getConstant('group') + ' ' + i :
-                                        (groupValue && groupValue !== item[this.fieldKeys[fieldName as string] as any].toString()) ?
-                                            groupValue : item[this.fieldKeys[fieldName as string] as any].toString());
-                                groupValue = item[this.fieldKeys[newFieldName as string] as any] as string;
+                                        this.localeObj.getConstant('group') + ' ' + i : (groupValue &&
+                                            groupValue !== item[this.fieldKeys[fieldName as string] as string | number].toString()) ?
+                                        groupValue : item[this.fieldKeys[fieldName as string] as string | number].toString());
+                                groupValue = item[this.fieldKeys[newFieldName as string] as string | number] as string;
                             }
                         }
-                    }   /* eslint-enable @typescript-eslint/no-explicit-any */
+                    }
                     const keys: string[] = Object.keys(item);
                     const isCompleteSet: boolean[] = [];
                     for (const key of keys) { isCompleteSet.push((item[key as string]) ? true : false); }
@@ -701,8 +715,9 @@ export class PivotEngine {
                     //this.fields = Object.keys(fieldkeySet);
                 }
                 if (group.type === 'Date') {
-                    let isDataSource: boolean = false; // eslint-disable-next-line max-len
-                    const axisFields: IFieldOptions[][] = [this.dataSourceSettings.rows, this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters];
+                    let isDataSource: boolean = false;
+                    const axisFields: IFieldOptions[][] = [this.dataSourceSettings.rows, this.dataSourceSettings.columns,
+                        this.dataSourceSettings.values, this.dataSourceSettings.filters];
                     const groupKeys: string[] = Object.keys(groupFields);
                     let gCnt: number = Object.keys(groupKeys).length;
                     let groupField: string;
@@ -715,8 +730,10 @@ export class PivotEngine {
                                     isDataSource = true;
                                     const actualField: IFieldOptions = axis[i as number];
                                     axis.splice(i, 1);
-                                    let dataFields: IFieldOptions[] = this.dataSourceSettings.rows; // eslint-disable-next-line max-len
-                                    dataFields = dataFields.concat(this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters);
+                                    let dataFields: IFieldOptions[] = this.dataSourceSettings.rows;
+                                    dataFields = dataFields.concat(
+                                        this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters
+                                    );
                                     while (gCnt--) {
                                         let caption: string = actualField.caption ? actualField.caption : actualField.name;
                                         if (this.clonedReport) {
@@ -771,8 +788,8 @@ export class PivotEngine {
                         }
                     }
                     gCnt = Object.keys(groupKeys).length;
-                    const field: IFieldOptions = // eslint-disable-next-line max-len
-                        this.getMappingField(fieldName, this.clonedReport ? this.clonedReport.fieldMapping : this.dataSourceSettings.fieldMapping);
+                    const field: IFieldOptions = this.getMappingField(fieldName, this.clonedReport ? this.clonedReport.fieldMapping
+                        : this.dataSourceSettings.fieldMapping);
                     const caption: string = field.caption ? field.caption : fieldName;
                     while (gCnt--) {
                         groupField = groupFields[groupKeys[gCnt as number]];
@@ -792,8 +809,10 @@ export class PivotEngine {
                             };
                             this.dataSourceSettings.formatSettings.push(formatSettings);
                         }
-                        if (!isDataSource) { // eslint-disable-next-line max-len
-                            const mappingField: IFieldOptions = this.getMappingField(groupKeys[gCnt as number], this.dataSourceSettings.fieldMapping);
+                        if (!isDataSource) {
+                            const mappingField: IFieldOptions = this.getMappingField(
+                                groupKeys[gCnt as number], this.dataSourceSettings.fieldMapping
+                            );
                             if (groupKeys[gCnt as number] !== fieldName && isNullOrUndefined(mappingField.name)) {
                                 const newField: IFieldOptions = {
                                     name: groupKeys[gCnt as number],
@@ -882,8 +901,9 @@ export class PivotEngine {
                                 currentData : fieldkeySet);
                         }
                         cnt++;
-                    } // eslint-disable-next-line max-len
-                    const axisFields: IFieldOptions[][] = [this.dataSourceSettings.rows, this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters];
+                    }
+                    const axisFields: IFieldOptions[][] = [this.dataSourceSettings.rows, this.dataSourceSettings.columns,
+                        this.dataSourceSettings.values, this.dataSourceSettings.filters];
                     for (const fields of axisFields) {
                         let field: IFieldOptions = PivotUtil.getFieldByName(fieldName, fields) as IFieldOptions;
                         if (field) {
@@ -900,10 +920,13 @@ export class PivotEngine {
                 } else if (group.type === 'Custom' && customGroupFieldName) {
                     const customFieldName: string = customGroupFieldName;
                     // this.groupingFields[customFieldName] = customFieldName;
-                    let isDataSource: boolean = false; // eslint-disable-next-line max-len
-                    const axisFields: IFieldOptions[][] = [this.dataSourceSettings.rows, this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters];
-                    let dataFields: IFieldOptions[] = this.dataSourceSettings.rows; // eslint-disable-next-line max-len
-                    dataFields = dataFields.concat(this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters);
+                    let isDataSource: boolean = false;
+                    const axisFields: IFieldOptions[][] = [this.dataSourceSettings.rows, this.dataSourceSettings.columns,
+                        this.dataSourceSettings.values, this.dataSourceSettings.filters];
+                    let dataFields: IFieldOptions[] = this.dataSourceSettings.rows;
+                    dataFields = dataFields.concat(
+                        this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters
+                    );
                     let pattern: string[] = [];
                     if (!caption || caption === '') {
                         pattern = customFieldName.match(/_custom_group/g);
@@ -968,8 +991,8 @@ export class PivotEngine {
                             }
                         }
                     }
-                    const formatfield: IFormatSettings = // eslint-disable-next-line max-len
-                        PivotUtil.getFieldByName(fieldName, PivotUtil.cloneFormatSettings(this.dataSourceSettings.formatSettings)) as IFormatSettings;
+                    const formatfield: IFormatSettings = PivotUtil.getFieldByName(
+                        fieldName, PivotUtil.cloneFormatSettings(this.dataSourceSettings.formatSettings)) as IFormatSettings;
                     if (formatfield) {
                         formatfield.name = customFieldName;
                         this.dataSourceSettings.formatSettings.push(formatfield);
@@ -1013,11 +1036,13 @@ export class PivotEngine {
         }
         return isRangeAvail;
     }
-    private getPercentFormat(formatField: { [key: string]: IFormatSettings }, currentField: string): number {   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const isHavingFormat: any = (!isNullOrUndefined(formatField[currentField as string]) && !isNullOrUndefined(this.formatFields[currentField as string].format)) ? (this.formatFields[currentField as string].format).toLowerCase().match(/p[0-9]/) : undefined;
+    private getPercentFormat(formatField: { [key: string]: IFormatSettings }, currentField: string): number {
+        const isHavingFormat: RegExpMatchArray = (!isNullOrUndefined(formatField[currentField as string]) &&
+            !isNullOrUndefined(this.formatFields[currentField as string].format)) ?
+            (this.formatFields[currentField as string].format).toLowerCase().match(/p[0-9]/) : undefined;
         return !isNullOrUndefined(isHavingFormat) ? (Number((this.formatFields[currentField as string].format).replace(/[^0-9]/g, ''))) : 2;
-    } // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private getFormattedFields(dataSourceSettings: IDataOptions, fields?: IFieldOptions[]): void {
+    }
+    private getFormattedFields(dataSourceSettings: IDataOptions): void {
         this.formatFields = this.setFormattedFields(dataSourceSettings.formatSettings);
         // for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
         // if (fields[len as number] && fields[len as number].name === this.dataSourceSettings.formatSettings[cnt as number].name) {
@@ -1025,15 +1050,15 @@ export class PivotEngine {
         // }
         // }
     }
-    /* eslint-disable */
+
     /**
      * It is used to update the format fields.
      *
-     * @param {IFormatSettings[]} formatSettings -  It contains the formatSettings.
-     * @returns {[key: string]: IFormatSettings} - It return the formattted fields.
+     * @param {IFormatSettings[]} formatSettings -  It contains the format settings.
+     * @returns {Object} - An object mapping keys to format settings.
      * @hidden
      */
-    public setFormattedFields(formatSettings: IFormatSettings[]): { [key: string]: IFormatSettings } { /* eslint-enable */
+    public setFormattedFields(formatSettings: IFormatSettings[]): { [key: string]: IFormatSettings } {
         let cnt: number = formatSettings.length;
         const formatFields: { [key: string]: IFormatSettings } = {};
         while (cnt--) {
@@ -1067,7 +1092,7 @@ export class PivotEngine {
         let keys: string[] = this.fields;
         let dataFields: IFieldOptions[] = extend([], this.dataSourceSettings.rows, null, true) as IFieldOptions[];
         dataFields = dataFields.concat(this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters);
-        this.getFormattedFields(this.dataSourceSettings, dataFields);
+        this.getFormattedFields(this.dataSourceSettings);
         this.getCalculatedField(keys);
         keys = this.fields;
         let len: number = keys.length;
@@ -1165,7 +1190,7 @@ export class PivotEngine {
                 const key: string = keys[len as number];
                 const field: IFieldOptions = this.getMappingField(key, this.dataSourceSettings.fieldMapping);
                 type = (field && 'dataType' in field && field.dataType && dataTypes.indexOf(field.dataType.toLowerCase()) > -1) ?
-                    field.dataType.toLowerCase() : PivotUtil.getType(fields[this.fieldKeys[key as string] as any] as Date); // eslint-disable-line @typescript-eslint/no-explicit-any
+                    field.dataType.toLowerCase() : PivotUtil.getType(fields[this.fieldKeys[key as string] as string | number] as Date);
                 this.fieldList[key as string] = {
                     id: key,
                     pid: (field && 'groupName' in field && field.groupName) ? field.groupName :
@@ -1303,11 +1328,11 @@ export class PivotEngine {
             } else {
                 keys = keys.filter((key: string) => { return key !== field.name; });
                 keys.push(field.name);
-            } // eslint-disable-next-line no-useless-escape
-            const formulaType: string[] = actualFormula.split('\"');
+            }
+            const formulaType: string[] = actualFormula.split('"');
             for (let len: number = 0, lmt: number = formulaType.length; len < lmt; len++) {
-                const type: string = formulaType[len as number].trim(); // eslint-disable-next-line no-useless-escape
-                const aggregateValue: string[] = type.split(/[ .:;?!~,`"&|()<>{}\[\]\r\n/\\]+/);
+                const type: string = formulaType[len as number].trim();
+                const aggregateValue: string[] = type.split(/[ .:;?!~,`"&|()<>{}[\]\r\n/\\]+/);
                 const matchStrings: string[] = type.match(/^([^()]+)\((.*)\)$/);
                 const selectedString: string = (aggregateValue[0] === 'DistinctCount' ?
                     'DistinctCount' : aggregateValue[0] === 'PopulationStDev' ?
@@ -1395,7 +1420,7 @@ export class PivotEngine {
             const isDateType: boolean = PivotUtil.isDateField(key as string, this);
             //let sort: string[] = [];
             for (let dl: number = 0; dl < dlen; dl++) {
-                const memberkey: any = (this.data as IDataSet[])[dl as number][this.fieldKeys[key as string] as string]; // eslint-disable-line @typescript-eslint/no-explicit-any
+                const memberkey: string | number | Date = (this.data as IDataSet[])[dl as number][this.fieldKeys[key as string] as string];
                 let mkey: string = memberkey as string;
                 mkey = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(mkey) : mkey;
                 // if (!isNullOrUndefined(mkey)) {
@@ -1409,7 +1434,7 @@ export class PivotEngine {
                             (key in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
                                 this.localeObj.getConstant('undefined') : String(mkey)) : mkey
                     });
-                    if (!members.hasOwnProperty(mkey)) {    // eslint-disable-line no-prototype-builtins
+                    if (!Object.prototype.hasOwnProperty.call(members, mkey)) {
                         membersCnt++;
                         members[mkey as string] = {
                             index: [dl as number], ordinal: membersCnt,
@@ -1423,11 +1448,11 @@ export class PivotEngine {
                         members[mkey as string].index.push(dl);
                     }
                 }
-                const memberName: number = isNullOrUndefined(memberkey) ? memberkey : fList[key as string].type === 'number' ?
+                const memberName: string | number | Date = isNullOrUndefined(memberkey) ? memberkey : fList[key as string].type === 'number' ?
                     (!isNaN(Number(memberkey)) ? Number(memberkey) : undefined) : 1;
                 const valueMatrixInfo: ValueMatrixInfo = {
                     ordinal: members[mkey as string].ordinal,
-                    member: memberName
+                    member: memberName as number
                 };
                 if (!(this.valueMatrix[dl as number])) {
                     this.valueMatrix[dl as number] = [];
@@ -1477,15 +1502,16 @@ export class PivotEngine {
             //if (isNullOrUndefined(vMat[len as number])) {
             //}
             while (tkln--) {
-                const key: string = keys[tkln as number]; /* eslint-disable @typescript-eslint/no-explicit-any */
+                const key: string = keys[tkln as number];
                 const field: IField = flList[key as string];
                 if (field.isMembersFilled) {
-                    const fieldValue: any = (this.data as any)[len as number][this.fieldKeys[key as string] as any];
+                    const fieldValue: string | number | Date = (this.data as IDataSet[])[len as number][
+                        this.fieldKeys[key as string] as string | number];
                     this.valueMatrix[len as number][tkln as number].member =
-                        isNullOrUndefined(fieldValue) ? fieldValue : (field.type === 'number' ?
+                        isNullOrUndefined(fieldValue) ? fieldValue as number : (field.type === 'number' ?
                             (!isNaN(Number(fieldValue)) ? Number(fieldValue) : undefined) : 1);
                 }
-            }   /* eslint-enable @typescript-eslint/no-explicit-any */
+            }
         }
     }
     private updateSortSettings(sortSettings: ISort[], isSort: boolean): void {
@@ -1604,8 +1630,10 @@ export class PivotEngine {
                 const date1: Date = typeof (filterElement.value1) === 'string' ?
                     new Date(filterElement.value1) : filterElement.value1;
                 const date2: Date = typeof (filterElement.value2) === 'string' ?
-                    new Date(filterElement.value2) : filterElement.value2;  // eslint-disable-next-line max-len
-                filterElement.items = this.getDateFilterMembers(members, filterElement.name, filterElement.condition as DateOperators, date1, date2);
+                    new Date(filterElement.value2) : filterElement.value2;
+                filterElement.items = this.getDateFilterMembers(
+                    members, filterElement.name, filterElement.condition as DateOperators, date1, date2
+                );
             } else {
                 filterElement.showNumberFilter = true;
                 filterElement.items = [];
@@ -1969,7 +1997,7 @@ export class PivotEngine {
                     } else {
                         const index: INumberIndex = row.indexObject;
                         for (const key of Object.keys(index)) {
-                            if (index.hasOwnProperty(key)) { // eslint-disable-line no-prototype-builtins
+                            if (Object.prototype.hasOwnProperty.call(index, key)) {
                                 delete (<{ [key: string]: Object }>allMemberData.indexObject)[key as string];
                                 if (((row.valueSort.levelName.toString()).indexOf(rowFilteredData.valueSort.levelName.toString()) >= 0) &&
                                     rowFilteredData.level !== level) {
@@ -1995,7 +2023,7 @@ export class PivotEngine {
             } else {
                 const index: INumberIndex = row.indexObject;
                 for (const key of Object.keys(index)) {
-                    if (index.hasOwnProperty(key)) {    // eslint-disable-line no-prototype-builtins
+                    if (Object.prototype.hasOwnProperty.call(index, key)) {
                         delete (<{ [key: string]: Object }>allMemberData.indexObject)[key as string];
                     }
                 }
@@ -2255,17 +2283,19 @@ export class PivotEngine {
             this.rMembers = this.rMembers.slice(0, this.rMembers.length - 1);
         }
         /* removing the column gran-total members */
-        // eslint-disable-next-line max-len
-        columnFlag = (isNullOrUndefined(columnFlag) ? (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) ?
-            true : (this.dataSourceSettings.columns.length > 0) ? false : true : columnFlag);
+        columnFlag = (isNullOrUndefined(columnFlag) ? (this.dataSourceSettings.showGrandTotals &&
+            this.dataSourceSettings.showColumnGrandTotals) ? true : (this.dataSourceSettings.columns.length > 0) ? false : true :
+            columnFlag);
         if (((this.pageSettings && (this.removeColumnGrandTotal)) || (!columnFlag && !this.columnGrandTotal)) &&
             this.cMembers[this.cMembers.length - 1].type === 'grand sum') {
             this.cMembers = this.cMembers.slice(0, this.cMembers.length - 1);
         }
     }
-    private updatePivotValues(updateHeaders?: boolean): void { // eslint-disable-next-line max-len
-        const rowFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) ? true : (this.dataSourceSettings.rows.length > 0) ? false : true; // eslint-disable-next-line max-len
-        const columnFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) ? true : (this.dataSourceSettings.columns.length > 0) ? false : true;
+    private updatePivotValues(updateHeaders?: boolean): void {
+        const rowFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) ?
+            true : (this.dataSourceSettings.rows.length > 0) ? false : true;
+        const columnFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) ?
+            true : (this.dataSourceSettings.columns.length > 0) ? false : true;
         if (updateHeaders) {
             this.updateHeaders(rowFlag, columnFlag);
         }
@@ -2419,8 +2449,9 @@ export class PivotEngine {
      * @returns {void}
      * @hidden
      */
-    public onCalcOperation(field: ICalculatedFields, dataSourceSettings: IDataOptions): void { // eslint-disable-next-line max-len
-        this.dataSourceSettings.calculatedFieldSettings = dataSourceSettings.calculatedFieldSettings ? dataSourceSettings.calculatedFieldSettings : [];
+    public onCalcOperation(field: ICalculatedFields, dataSourceSettings: IDataOptions): void {
+        this.dataSourceSettings.calculatedFieldSettings = dataSourceSettings.calculatedFieldSettings ?
+            dataSourceSettings.calculatedFieldSettings : [];
         this.dataSourceSettings.values = dataSourceSettings.values ? dataSourceSettings.values : [];
         this.rMembers = this.headerCollection.rowHeaders;
         this.cMembers = this.headerCollection.columnHeaders;
@@ -2471,9 +2502,9 @@ export class PivotEngine {
                             sortedHeaders = this.applyValueSorting(headers[count as number].members, this.cMembers);
                             headers[count as number].members = sortedHeaders.rMembers;
                             this.rowCount += (this.showSubTotalsAtBottom ? 1 : 0);
-                        } else { // eslint-disable-next-line max-len
-                            const showSubTotals: boolean = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals &&
-                                fields[position as number].showSubTotals;
+                        } else {
+                            const showSubTotals: boolean = this.dataSourceSettings.showSubTotals &&
+                                this.dataSourceSettings.showColumnSubTotals && fields[position as number].showSubTotals;
                             this.columnCount -= !showSubTotals ? this.colValuesLength : 0;
                             sortedHeaders = this.applyValueSorting(this.rMembers, headers[count as number].members);
                             headers[count as number].members = sortedHeaders.cMembers;
@@ -2517,7 +2548,7 @@ export class PivotEngine {
         let loopIn: boolean = true;
         while (count < headers.length && loopIn) {
             if (headersInfo.position === currentPosition) {
-                const engine: PivotEngine = this;   // eslint-disable-line @typescript-eslint/no-this-alias
+                const engine: PivotEngine = this as PivotEngine;
                 headers = headers.filter((item: IAxisSet) => {
                     return engine.fieldFilterMem[filterItem.name].memberObj[item.formattedText] === '' ? false :
                         !engine.fieldFilterMem[filterItem.name].memberObj[item.formattedText] || item.type === 'grand sum';
@@ -2528,8 +2559,8 @@ export class PivotEngine {
                     headers[count as number].members, filterItem, headersInfo, filterObjects, currentPosition + 1);
             }
             count++;
-        }   // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const engine: PivotEngine = this;
+        }
+        const engine: PivotEngine = this as PivotEngine;
         return headers.filter((item: IAxisSet) => {
             return (item.members.length > 0 || item.type === 'grand sum') ? true : engine.matchIndexes(item.indexObject, filterObjects);
         });
@@ -2589,7 +2620,6 @@ export class PivotEngine {
                     for (let i: number = 0; i < this.data.length; i++) {
                         addPos.push(i);
                     }
-                    //addPos = (this.data as any).map((item, pos) => { return pos; });
                 }
                 this.headerObjectsCollection['parent'] = this.getIndexedHeaders(headersInfo.fields, this.data, 0, addPos, headersInfo.axis, '');
                 rawHeaders = this.performFilterAddition(rawHeaders, headersInfo.fields, headersInfo);
@@ -2685,11 +2715,14 @@ export class PivotEngine {
         this.pivotValues = []; this.headerContent = []; this.valueContent = [];
         const rowheads: IAxisSet[] = []; const colheads: IAxisSet[] = [];
         const updatedRowMembers: IAxisSet[] = [];
-        const valuesCount: number = (this.dataSourceSettings.values.length); // eslint-disable-next-line max-len
-        this.getAggregatedHeaders(this.dataSourceSettings.rows, this.dataSourceSettings.columns, this.rMembers, this.cMembers, this.dataSourceSettings.values);
-        this.getHeaderData( // eslint-disable-next-line max-len
-            this.dataSourceSettings.rows, this.dataSourceSettings.columns, this.dataSourceSettings.values, updatedRowMembers, this.cMembers, colheads, this.pivotValues, 0,
-            this.valueAxis ? 1 : valuesCount);
+        const valuesCount: number = (this.dataSourceSettings.values.length);
+        this.getAggregatedHeaders(
+            this.dataSourceSettings.rows, this.dataSourceSettings.columns, this.rMembers, this.cMembers, this.dataSourceSettings.values
+        );
+        this.getHeaderData(
+            this.dataSourceSettings.rows, this.dataSourceSettings.columns, this.dataSourceSettings.values, updatedRowMembers,
+            this.cMembers, colheads, this.pivotValues, 0, this.valueAxis ? 1 : valuesCount
+        );
         this.insertSubTotals();
         this.getTableData(
             (updatedRowMembers.length > 0 ? updatedRowMembers : this.rMembers), rowheads, colheads, 0, this.pivotValues,
@@ -2762,8 +2795,9 @@ export class PivotEngine {
      * @returns {IAxisSet[]} - return sorted headers as IAxisSet[].
      * @hidden
      */
-    private getSortedHeaders(headers: IAxisSet[], sortOrder: string): IAxisSet[] {   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fieldName: string = headers[0].actualText !== 'Grand Total' ? (headers[0].valueSort as any).axis : (headers[1].valueSort as any).axis;
+    private getSortedHeaders(headers: IAxisSet[], sortOrder: string): IAxisSet[] {
+        const fieldName: string | number | Date = headers[0].actualText !== 'Grand Total' ? headers[0].valueSort.axis :
+            headers[1].valueSort.axis;
         const isNotDateType: boolean = !(this.formatFields && this.formatFields[fieldName as string] &&
             this.formatFields[fieldName as string].type);
         const childrens: IField = this.fieldList[fieldName as string];
@@ -2772,8 +2806,8 @@ export class PivotEngine {
                 const stringValue: IAxisSet[] = [];
                 let alphaNumbervalue: IAxisSet[] = [];
                 const nullValue: IAxisSet[] = [];
-                for (let i: number = 0; i < headers.length; i++) {   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    if (isNaN(headers[i as number].actualText.toString().charAt(0) as any)) {
+                for (let i: number = 0; i < headers.length; i++) {
+                    if (isNaN(Number(headers[i as number].actualText.toString().charAt(0)))) {
                         stringValue.push(headers[i as number]);
                     } else if (headers[i as number].actualText === '') {
                         nullValue.push(headers[i as number]);
@@ -2783,14 +2817,14 @@ export class PivotEngine {
                     }
                 }
                 if (alphaNumbervalue.length > 0) {
-                    alphaNumbervalue = this.sortHeaders(fieldName, childrens, headers, childrens.sort, childrens.isAlphanumeric);
+                    alphaNumbervalue = this.sortHeaders(fieldName as string, childrens, headers, childrens.sort, childrens.isAlphanumeric);
                 }
                 return headers;
             } else {
-                return this.sortHeaders(fieldName, childrens, headers, sortOrder, childrens.type);
+                return this.sortHeaders(fieldName as string, childrens, headers, sortOrder, childrens.type);
             }
         } else {
-            return this.sortHeaders(fieldName, childrens, headers, sortOrder, childrens.type);
+            return this.sortHeaders(fieldName as string, childrens, headers, sortOrder, childrens.type);
         }
     }
     private sortHeaders(
@@ -2880,9 +2914,9 @@ export class PivotEngine {
                 } else {
                     caption = textArray[textArray.length - 1];
                 }
-            } // eslint-disable-next-line max-len
-            if (((this.dataSourceSettings.values.length === 1 && this.dataSourceSettings.columns.length === 0) || this.dataSourceSettings.values.length > 1) &&
-                caption && this.fieldList[caption as string]) {
+            }
+            if (((this.dataSourceSettings.values.length === 1 && this.dataSourceSettings.columns.length === 0) ||
+                this.dataSourceSettings.values.length > 1) && caption && this.fieldList[caption as string]) {
                 for (let i: number = 0; i < textArray.length - 1; i++) {
                     hText = hText === '' ? textArray[i as number] : (hText + this.valueSortSettings.headerDelimiter + textArray[i as number]);
                 }
@@ -2974,9 +3008,11 @@ export class PivotEngine {
         return rMembers;
     }
     private insertAllMembersCommon(): void {
-        this.rowGrandTotal = this.columnGrandTotal = null; // eslint-disable-next-line max-len
-        const rowFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) ? true : (this.dataSourceSettings.rows.length > 0) ? false : true; // eslint-disable-next-line max-len
-        const columnFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) ? true : (this.dataSourceSettings.columns.length > 0) ? false : true;
+        this.rowGrandTotal = this.columnGrandTotal = null;
+        const rowFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) ? true :
+            (this.dataSourceSettings.rows.length > 0) ? false : true;
+        const columnFlag: boolean = (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) ?
+            true : (this.dataSourceSettings.columns.length > 0) ? false : true;
         if (this.isValueHasAdvancedAggregate) {
             /* inserting the row grant-total members */
             this.insertAllMember(this.rMembers, this.filterMembers, '', 'row');
@@ -3133,9 +3169,9 @@ export class PivotEngine {
             const field: IField = this.fieldList[drillOption.name];
             const isDrillMemberExpand: boolean = (field && field.expandAll);
             for (let i: number = 0; i < this.dataSourceSettings.rows.length; i++) {
-                if (this.dataSourceSettings.rows[i as number].name === drillOption.name) { // eslint-disable-next-line max-len
-                    const hasMeasureIndex: boolean = this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) &&
-                        this.measureIndex > -1 && this.measureIndex <= i;
+                if (this.dataSourceSettings.rows[i as number].name === drillOption.name) {
+                    const hasMeasureIndex: boolean = this.valueAxis && (this.isMultiMeasures ||
+                        this.dataSourceSettings.alwaysShowValueHeader) && this.measureIndex > -1 && this.measureIndex <= i;
                     levelCount = (hasMeasureIndex ? (i + 1) : i) + 1;
                     hasValueField = hasMeasureIndex ? true : false;
                     isFieldAvail = true;
@@ -3144,9 +3180,9 @@ export class PivotEngine {
             }
             if (!isFieldAvail) {
                 for (let i: number = 0; i < this.dataSourceSettings.columns.length; i++) {
-                    if (this.dataSourceSettings.columns[i as number].name === drillOption.name) { // eslint-disable-next-line max-len
-                        const hasMeasureIndex: boolean = !this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) &&
-                            this.measureIndex > -1 && this.measureIndex <= i;
+                    if (this.dataSourceSettings.columns[i as number].name === drillOption.name) {
+                        const hasMeasureIndex: boolean = !this.valueAxis && (this.isMultiMeasures ||
+                            this.dataSourceSettings.alwaysShowValueHeader) && this.measureIndex > -1 && this.measureIndex <= i;
                         levelCount = (hasMeasureIndex ? (i + 1) : i) + 1;
                         hasValueField = hasMeasureIndex ? true : false;
                         isFieldAvail = true;
@@ -3252,8 +3288,8 @@ export class PivotEngine {
                 member.colSpan = 1;
                 const memInd: number = isNoData ? childrens.members[Object.keys(savedMembers)[0]].ordinal :
                     this.valueMatrix[position[pos as number]][childrens.index].ordinal;
-                let headerValue: string = isNoData ? Object.keys(savedMembers)[0] :   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (data as any)[position[pos as number]][this.fieldKeys[fieldName as string] as any] as string;
+                let headerValue: string = isNoData ? Object.keys(savedMembers)[0] :
+                    (data as IDataSet[])[position[pos as number]][this.fieldKeys[fieldName as string] as string | number] as string;
                 headerValue = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(headerValue) : headerValue;
                 if ((isNullOrUndefined(headerValue) || (this.localeObj && headerValue === this.localeObj.getConstant('undefined')))
                     && !this.dataSourceSettings.showHeaderWhenEmpty) {
@@ -3369,8 +3405,8 @@ export class PivotEngine {
                         const hIndLen: number = hierarchy[iln as number].index.length;
                         let count: number = 0;
                         for (let len: number = 0; len < hIndLen; len++) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any, max-len
-                            const headerValue: string = (data as any)[hierarchy[iln as number].index[len as number]][this.fieldKeys[keys[keyInd + 1].name] as any] as string;
+                            const headerValue: string = (data as IDataSet[])[hierarchy[iln as number].index[len as number]][
+                                this.fieldKeys[keys[keyInd + 1].name] as string | number] as string;
                             if ((isNullOrUndefined(headerValue) || (this.localeObj &&
                                 headerValue === this.localeObj.getConstant('undefined')))) {
                                 count++;
@@ -3477,8 +3513,9 @@ export class PivotEngine {
             for (let pos: number = 0, lt: number = position.length; pos < lt; pos++) {
                 const member: IAxisSet = {};
                 const memInd: number = this.valueMatrix[position[pos as number]][childrens.index].ordinal;
-                const slicedHeader: IAxisSet = slicedHeaders[orderedIndex[memInd as number]]; // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let value: string = (data as any)[position[pos as number]][this.fieldKeys[field as string] as any];
+                const slicedHeader: IAxisSet = slicedHeaders[orderedIndex[memInd as number]];
+                let value: string | number | Date = (data as IDataSet[])[position[pos as number]][
+                    this.fieldKeys[field as string] as number | string];
                 value = value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value;
                 const formattedValue: IAxisSet = (this.formatFields[field as string] &&
                     (['date', 'dateTime', 'time'].indexOf(this.formatFields[field as string].type) > -1)) ?
@@ -3653,11 +3690,12 @@ export class PivotEngine {
                 }
             }
             slicedHeaders.push(headers[pos as number].members.length > 0 ?
-                this.removeChildMembers(headers[pos as number]) : headers[pos as number]);
+                this.removeChildMembers(headers[pos as number] as { [key: string]: Object }) : headers[pos as number]);
             if (headers[pos as number].members.length > 0) {
                 if (axis === 'column') {
-                    this.memberCnt -= !(this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals && // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        this.columnKeys[(headers[pos as number].valueSort as any).axis].showSubTotals) ? this.colValuesLength : 0;
+                    this.memberCnt -= !(this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals &&
+                        this.columnKeys[(headers[pos as number].valueSort as { [key: string]: number }).axis].showSubTotals) ?
+                        this.colValuesLength : 0;
                 } else if (this.showSubTotalsAtBottom) {
                     this.memberCnt++;
                 }
@@ -3678,11 +3716,11 @@ export class PivotEngine {
             pos++;
         }
         return slicedHeaders;
-    }   /* eslint-disable @typescript-eslint/no-explicit-any */
-    private removeChildMembers(member: any): IAxisSet {
+    }
+    private removeChildMembers(member: { [key: string]: Object }): IAxisSet {
         const keys: string[] = Object.keys(member);
         let keyPos: number = 0;
-        const framedMember: any = {};
+        const framedMember: { [key: string]: Object } = {};
         while (keyPos < keys.length) {
             framedMember[keys[keyPos as number]] = member[keys[keyPos as number]];
             if (keys[keyPos as number] === 'members') {
@@ -3691,7 +3729,7 @@ export class PivotEngine {
             keyPos++;
         }
         return framedMember;
-    }   /* eslint-enable @typescript-eslint/no-explicit-any */
+    }
     private insertAllMember(set: IAxisSet[], filter: number[], customText?: string, axis?: string): IAxisSet[] {
         const len: number = set.length;
         customText = ' Total';
@@ -3731,9 +3769,9 @@ export class PivotEngine {
     private getTableData(
         rows: IAxisSet[], reformAxis: IAxisSet[], columns: IAxisSet[], pIndex: number, data: IAxisSet[][],
         vlt: number, level: number, rTotal?: IAxisSet, cTotal?: IAxisSet, valueParentIndex?: number): void {
-        for (let rlt: number = rows.length, rln: number = 0; rln < rlt; rln++) { // eslint-disable-next-line max-len
-            const tnum: number = (!this.valueAxis && !this.isLastHeaderHasMeasures && data.length < (this.dataSourceSettings.columns.length + 1)) ?
-                (this.dataSourceSettings.columns.length + 1) : data.length;
+        for (let rlt: number = rows.length, rln: number = 0; rln < rlt; rln++) {
+            const tnum: number = (!this.valueAxis && !this.isLastHeaderHasMeasures && data.length <
+                (this.dataSourceSettings.columns.length + 1)) ? (this.dataSourceSettings.columns.length + 1) : data.length;
             const row: IAxisSet = rows[rln as number];
             reformAxis[tnum as number] = row;
             const actCnt: number = tnum - Number(Object.keys(reformAxis)[0]);
@@ -3845,8 +3883,7 @@ export class PivotEngine {
         vlt: number, level: number, rTotal: IAxisSet, cTotal: IAxisSet): void {
         const isValueAxis: boolean = reformAxis[tnum as number].type ? reformAxis[tnum as number].type === 'value' &&
             (reformAxis[tnum as number].valueSort.levelName as string) !== reformAxis[tnum as number].actualText : false;
-        if ((reformAxis[tnum as number].hasChild && reformAxis[tnum as number].isDrilled) &&
-            reformAxis[tnum as number].members.length > 0) {
+        if (reformAxis[tnum as number].hasChild && reformAxis[tnum as number].members.length > 0) {
             let parentIndexes: number[] = [];
             const subTotal: IAxisSet = PivotUtil.frameHeaderWithKeys(reformAxis[tnum as number]);
             if (reformAxis[tnum as number].members[0].type === 'value') {
@@ -3857,8 +3894,8 @@ export class PivotEngine {
                     if (axis.type === 'value') {
                         valueCells[valueCells.length] = axis;
                     }
-                }   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                while (startIndex < (valueCells as any[]).length) {
+                }
+                while (startIndex < (valueCells as IAxisSet[]).length) {
                     const valueCell: IAxisSet = PivotUtil.frameHeaderWithKeys(valueCells[startIndex as number]);
                     let index: number;
                     for (i; i < reformAxis.length; i++) {
@@ -3916,8 +3953,9 @@ export class PivotEngine {
                     this.selectedHeaders.values.push(values[vln as number].name);
                     if (values[vln as number].baseField && values[vln as number].baseItem) {
                         baseField = values[vln as number].baseField;
-                        baseItem = values[vln as number].baseItem; // eslint-disable-next-line max-len
-                    } else if (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) && columns.length > 0) {
+                        baseItem = values[vln as number].baseItem;
+                    } else if (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) &&
+                        columns.length > 0) {
                         baseField = columns[0].name;
                         baseItem = Object.keys(this.fieldList[columns[0].name].members)[0];
                     } else if (rows.length > 0) {
@@ -3960,8 +3998,9 @@ export class PivotEngine {
                     let baseField: string;
                     this.selectedHeaders.values.push(values[vln as number].name);
                     if (values[vln as number].baseField) {
-                        baseField = values[vln as number].baseField; // eslint-disable-next-line max-len
-                    } else if (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) && columns.length > 0) {
+                        baseField = values[vln as number].baseField;
+                    } else if (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) &&
+                        columns.length > 0) {
                         baseField = columns[0].name;
                     } else if (rows.length > 0) {
                         baseField = rows[0].name;
@@ -4529,8 +4568,9 @@ export class PivotEngine {
                                 let cVal: number = 0;
                                 for (const item of selectedHeaderCollection) {
                                     const subTotal: boolean = (rowheads[rln as number].hasChild && rowheads[rln as number].isDrilled &&
-                                        ((!isNullOrUndefined(rowheads[rln as number].showSubTotals) && // eslint-disable-next-line max-len
-                                            !rowheads[rln as number].showSubTotals) || !this.dataSourceSettings.showSubTotals || !this.dataSourceSettings.showRowSubTotals));
+                                        ((!isNullOrUndefined(rowheads[rln as number].showSubTotals) &&
+                                            !rowheads[rln as number].showSubTotals) || !this.dataSourceSettings.showSubTotals ||
+                                            !this.dataSourceSettings.showRowSubTotals));
                                     for (let clt: number = activeColumn.length, cln: number = 0; cln < clt; cln++) {
                                         const currentSet: IAxisSet = data[rln as number][cln as number] as IAxisSet;
                                         if (activeColumn[cln as number] !== undefined &&
@@ -4663,8 +4703,9 @@ export class PivotEngine {
             }
             break;
         }
-        const cellDetails: AggregateEventArgs = { // eslint-disable-next-line max-len
-            fieldName: this.dataSourceSettings.values[vln as number].name, row: rows[rln as number], column: columns[cln as number], value: value,
+        const cellDetails: AggregateEventArgs = {
+            fieldName: this.dataSourceSettings.values[vln as number].name, row: rows[rln as number], column: columns[cln as number],
+            value: value,
             cellSets: this.getValueCellInfo ? this.getCellSet(this.rawIndexObject) : [],
             rowCellType: (rows[rln as number].hasChild && rows[rln as number].isDrilled ? 'subTotal' : rows[rln as number].type === 'grand sum' ? 'grandTotal' : 'value'),
             columnCellType: (columns[cln as number].hasChild && columns[cln as number].isDrilled ? 'subTotal' : columns[cln as number].type === 'grand sum' ? 'grandTotal' : 'value'),
@@ -4711,8 +4752,8 @@ export class PivotEngine {
         const currentCellSets: IDataSet[] = [];
         const keys: string[] = Object.keys(rawIndexObject);
         for (const index of keys) {
-            if (this.data[parseInt(index, 10)]) {   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                currentCellSets.push(this.data[parseInt(index, 10) as any] as any);
+            if (this.data[parseInt(index, 10)]) {
+                currentCellSets.push(this.data[parseInt(index, 10)] as IDataSet);
             }
         }
         return currentCellSets;
@@ -4786,8 +4827,9 @@ export class PivotEngine {
                         this.measureIndex === (levelIndex + 1), header, hData, columnHeaders[columnHeaders.length - 1].members,
                         axis[rln as number].members, vcnt, levelIndex + 1);
                     if (!this.valueAxis && levelIndex < this.measureIndex && this.measureIndex !== (levelIndex + 1) &&
-                    (!(axis[rln as number].hasChild && ((!isNullOrUndefined( axis[rln as number].showSubTotals) && // eslint-disable-next-line max-len
-                    !axis[rln as number].showSubTotals) || !this.dataSourceSettings.showSubTotals || !this.dataSourceSettings.showColumnSubTotals)))) {
+                        (!(axis[rln as number].hasChild && ((!isNullOrUndefined(axis[rln as number].showSubTotals) &&
+                            !axis[rln as number].showSubTotals) || !this.dataSourceSettings.showSubTotals ||
+                            !this.dataSourceSettings.showColumnSubTotals)))) {
                         this.updateValueMembers(true, header, hData, columnHeaders[columnHeaders.length - 1].members, [], vcnt, levelIndex);
                     }
                 }
@@ -4916,8 +4958,9 @@ export class PivotEngine {
             }
             this.frameDefinedHeaderData(columnHeaders, reformAxis, data, 0, this.showSubTotalsAtTop ? 0 : 1, vcnt);
             return;
-        } else if (rowAxis.length === 0 && ( // eslint-disable-next-line max-len
-            this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader)) && this.dataSourceSettings.values.length > 0) {
+        } else if (rowAxis.length === 0 && (
+            this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader)) &&
+            this.dataSourceSettings.values.length > 0) {
             if (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals &&
                 this.rMembers[this.rMembers.length - 1].type === 'grand sum') {
                 this.updateValueMembers(
@@ -4934,8 +4977,10 @@ export class PivotEngine {
                         1, this.rMembers.length), this.dataSourceSettings.values.length, 0);
             } else {
                 const hasRowTotal: boolean = rows.length === 0 && this.rMembers.length === 1 && this.rMembers[0].type === 'grand sum';
-                this.updateValueMembers( // eslint-disable-next-line max-len
-                    !hasRowTotal && this.measureIndex === 0, null, null, rowAxis, this.rMembers, this.dataSourceSettings.values.length, hasRowTotal ? -1 : 0);
+                this.updateValueMembers(
+                    !hasRowTotal && this.measureIndex === 0, null, null, rowAxis, this.rMembers, this.dataSourceSettings.values.length,
+                    hasRowTotal ? -1 : 0
+                );
             }
             this.getAggregatedHeaders(rows, columns, rowAxis, axis, values);
             if (this.selectedHeaders.values.length > 0) {
@@ -5018,11 +5063,13 @@ export class PivotEngine {
             if (!data[lvl as number]) {
                 data[lvl as number] = [];
                 this.headerContent[lvl as number] = {} as IAxisSet[];
-            } // eslint-disable-next-line max-len
-            data[lvl as number][index as number] = this.headerContent[lvl as number][index as number] = PivotUtil.getFormattedHeader(axis[rln as number], this); // eslint-disable-next-line max-len
-            const isSingleMeasure: boolean = (this.dataSourceSettings.columns.length === 0 && this.dataSourceSettings.values.length === 1) ? true : false;
-            // eslint-disable-next-line max-len
-            if ((this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader || isSingleMeasure) && !this.valueAxis && isTotalHide) {
+            }
+            data[lvl as number][index as number] = this.headerContent[lvl as number][index as number] =
+                PivotUtil.getFormattedHeader(axis[rln as number], this);
+            const isSingleMeasure: boolean = (this.dataSourceSettings.columns.length === 0 &&
+                this.dataSourceSettings.values.length === 1) ? true : false;
+            if ((this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader || isSingleMeasure) &&
+                !this.valueAxis && isTotalHide) {
                 for (let vln: number = 0; vln < vcnt; vln++) {
                     const name: string = this.dataSourceSettings.values[vln as number].caption ?
                         this.dataSourceSettings.values[vln as number].caption : this.dataSourceSettings.values[vln as number].name;
@@ -5124,8 +5171,8 @@ export class PivotEngine {
                     if (columnIndex[rowIndex[ri as number]] !== undefined) {
                         this.rawIndexObject[rowIndex[ri as number]] = rowIndex[ri as number];
                         isValueExist = true;
-                        const val: string | number | Date =  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            ((this.data as any)[rowIndex[ri as number]][this.fieldKeys[this.fields[value as number]] as any]);
+                        const val: string | number | Date = ((this.data as IDataSet[])[rowIndex[ri as number]][
+                            this.fieldKeys[this.fields[value as number]] as string | number]);
                         // let currentVal: number = this.valueMatrix[rowIndex[ri as number]][value as number];
                         if (!isNullOrUndefined(val)) {
                             const currentVal: string = val.toString();
@@ -5366,9 +5413,6 @@ export class PivotEngine {
                 } else {
                     delete formatSetting.type;
                     if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
-                        // eslint-disable-next-line security/detect-unsafe-regex
-                        let pattern: string[] = formatSetting.format.match(/^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/);
-                        let flag: boolean = true;
                         if (isNullOrUndefined(formatSetting.minimumFractionDigits)) {
                             delete formatSetting.minimumFractionDigits;
                         }
@@ -5377,18 +5421,6 @@ export class PivotEngine {
                         }
                         if (isNullOrUndefined(formatSetting.minimumIntegerDigits)) {
                             delete formatSetting.minimumIntegerDigits;
-                        }
-                        if (isNullOrUndefined(pattern)) {
-                            // eslint-disable-next-line security/detect-unsafe-regex
-                            pattern = formatSetting.format.match(/^(('[^']+'|''|[^*@0])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@,.E])*)$/);
-                            delete formatSetting.useGrouping;
-                            flag = false;
-                        }
-                        if (pattern && pattern.length > 5) {
-                            const integerPart: string = pattern[6];
-                            if (flag) {
-                                formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
-                            }
                         }
                     }
                     formattedValue.formattedText =
@@ -5426,8 +5458,7 @@ export class PivotEngine {
         if (formula.indexOf('^') > -1) {
             const items: string[] = [];
             while (formula.indexOf('(') > -1) {
-                // eslint-disable-next-line no-useless-escape
-                formula = formula.replace(/(\([^\(\)]*\))/g, (text: string, item: string): string => {
+                formula = formula.replace(/(\([^()]*\))/g, (text: string, item: string): string => {
                     items.push(item);
                     return ('~' + (items.length - 1));
                 });

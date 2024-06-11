@@ -251,9 +251,9 @@ export class CollaborativeEditing {
         if (isNullOrUndefined(timeOut)) {
             timeOut = 3000;
         }
-        this.saveTimer = setTimeout(() => {
+        this.saveTimer = Number(setTimeout(() => {
             this.saveContentInternal();
-        }, timeOut);
+        }, timeOut));
     }
 
     private saveContentInternal(): void {
@@ -359,7 +359,7 @@ export class CollaborativeEditing {
     }
 
     private insertElements(start: TextPosition, end: TextPosition, endElements: ElementBox[], startElements?: ElementBox[]): void {
-        let isSamePara: boolean = start.paragraph.equals(end.paragraph);
+        const isSamePara: boolean = start.paragraph.equals(end.paragraph);
         if (!isNullOrUndefined(startElements)) {
             this.insertElementsInternal(start, startElements);
         }

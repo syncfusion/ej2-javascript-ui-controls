@@ -56,6 +56,8 @@ const IFRAMEHEADER: string = `
                     border-radius: 15px; height: 20px; width: 20px; }
                 .e-mob-rte.e-mob-span span.e-rte-imageboxmark, .e-mob-rte.e-mob-span span.e-rte-videoboxmark { background: #4a90e2; border: 1px solid #fff; }
                 .e-rte-content .e-content img.e-resize, .e-rte-content .e-content video.e-resize { z-index: 1000; }
+                .e-rte-content { font-size: 14px; }
+                .e-content { font-weight: normal; line-height: 1.5; font-size: 1em; }
                 .e-img-caption .e-img-inner { outline: 0; }
                 .e-rte-img-caption.e-imgleft .e-img-inner { float: left; text-align: left; }
                 .e-rte-img-caption.e-imgright .e-img-inner { float: right; text-align: right; }
@@ -68,12 +70,12 @@ const IFRAMEHEADER: string = `
                 p{margin: 0 0 10px;margin-bottom: 10px;}
                 li{margin-bottom: 10px;}
                 table{margin-bottom: 10px;}
-                h1{font-size: 2.17em;font-weight: 400;line-height: 1;margin: 10px 0;}
-                h2{font-size: 1.74em;font-weight: 400;margin: 10px 0;}
-                h3{font-size: 1.31em;font-weight: 400;margin: 10px 0;}
-                h4{font-size: 16px;font-weight: 400;line-height: 1.5;margin: 0;}
-                h5{font-size: 00.8em;font-weight: 400;margin: 0;}
-                h6{font-size: 00.65em;font-weight: 400;margin: 0;}
+                h1{ font-size: 2.857em; font-weight: 600; line-height: 1.2; margin: 10px 0; }
+                h2{ font-size: 2.285em; font-weight: 600; line-height: 1.2; margin: 10px 0; }
+                h3{ font-size: 2em; font-weight: 600; line-height: 1.2; margin: 10px 0; }
+                h4{ font-size: 1.714em; font-weight: 600; line-height: 1.2; margin: 10px 0; }
+                h5{ font-size: 1.428em; font-weight: 600; line-height: 1.2; margin: 10px 0; }
+                h6{ font-size: 1.142em; line-height: 600; line-height: 1.5; margin: 10px 0; }
                 blockquote{margin: 10px 0;margin-left: 0;padding-left: 5px;border-left: solid 2px #5c5c5c;}
                 pre{background-color: inherit;border: 0;border-radius: 0;color: #333;
                     font-size: inherit;line-height: inherit;margin: 0 0 10px;overflow: visible;padding: 0;
@@ -90,6 +92,11 @@ const IFRAMEHEADER: string = `
                 table th {background-color: #E0E0E0;}
                 table.e-dashed-border td,table.e-dashed-border th { border: 1px dashed #BDBDBD} 
                 table .e-cell-select {border: 1px double #4a90e2;}
+                table.e-cell-select {position: relative;}
+                table.e-cell-select::after { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 2px solid #4a90e2; pointer-events: none;}
+                table td.e-cell-select.e-multi-cells-select, table th.e-cell-select.e-multi-cells-select {border: 1px solid #dee2e6; position: relative; }
+                table td.e-cell-select.e-multi-cells-select::after, table th.e-cell-select.e-multi-cells-select::after {background-color: rgba(13, 110, 253, 0.08); content: "";
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%; bottom: 0; pointer-events: none; right: 0;}
                 span.e-table-box { cursor: nwse-resize; display: block; height: 10px; position: absolute; width: 10px; }
                 span.e-table-box.e-rmob {height: 14px;width: 14px;}
                 .e-row-resize, .e-column-resize { background-color: transparent; background-repeat: repeat;
@@ -112,6 +119,9 @@ const IFRAMEHEADER: string = `
                 .e-rtl { direction: rtl; }
                 .e-rte-placeholder::before { content: attr(placeholder); opacity: 0.54; overflow: hidden; padding-top: 16px; position: absolute; text-align: start; top: 0; z-index: 1; }
                 li ol, li ul { margin-block-start: 10px;}
+                .e-resize-enabled, .e-count-enabled { padding-bottom: 0px; }
+                td.e-multi-cells-select ::selection, th.e-multi-cells-select ::selection { background-color: transparent; }
+                td.e-multi-cells-select, th.e-multi-cells-select { user-select: none !important; }
             </style>
         </head>`;
 
@@ -140,12 +150,11 @@ export class IframeContentRender extends ContentRender {
             {
                 id: this.parent.getID() + '_rte-view',
                 className: 'e-rte-content',
-                styles: 'display:block;',
                 attrs: { 'srcdoc': iFrameContent }
             });
-        iframe.setAttribute("role", "none");
+        iframe.setAttribute('role', 'none');
         this.setPanel(iframe);
-        rteObj.element.appendChild(iframe);
+        rteObj.rootContainer.appendChild(iframe);
         iframe.contentDocument.body.id = this.parent.getID() + '_rte-edit-view';
         iframe.contentDocument.body.setAttribute('aria-owns', this.parent.getID());
         iframe.contentDocument.open();

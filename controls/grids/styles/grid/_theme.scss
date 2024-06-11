@@ -1,3 +1,31 @@
+@mixin background-color-styles($grid-skin, $bg, $bgcolor) {
+  @if $grid-skin == 'material3' {
+    background: $bg;
+  }
+  @else {
+    background-color: $bgcolor;
+  }
+}
+
+@mixin bgcolor-color-styles($bgcolor, $color) {
+  background-color: $bgcolor;
+  color: $color;
+}
+
+@mixin bgcolor-bordercolor-styles($bgcolor, $bordercolor) {
+  background-color: $bgcolor;
+  border-color: $bordercolor;
+}
+
+@mixin hover-color-styles($grid-skin, $material, $bootstrap) {
+  @if $grid-skin == 'material3' {
+    background-color: $material;
+  }
+  @if $grid-skin == 'bootstrap4' {
+    background-color: $bootstrap;
+  }
+}
+
 @include export-module('grid-theme') {
 
   /*! Grid theme */
@@ -8,17 +36,20 @@
       background-color: $grid-rows-bg-color;
     }
 
+    .e-gridpopup span:hover,
+    .e-gridpopup .e-spanclicked,
     .e-icons:not(.e-btn-icon) {
       color: $grid-icon-color;
     }
 
-    .e-unboundcelldiv .e-icons:not(.e-btn-icon) {
-      color: $grid-command-icon-color;
-    }
-
-    .e-unboundcelldiv .e-btn:hover .e-icons {
-      @if $grid-skin == 'bootstrap5' {
-        color: $white;
+    .e-unboundcelldiv {
+      .e-icons:not(.e-btn-icon) {
+        color: $grid-command-icon-color;
+      }
+      .e-btn:hover .e-icons {
+        @if $grid-skin == 'bootstrap5' {
+          color: $white;
+        }
       }
     }
 
@@ -34,8 +65,8 @@
       box-shadow: none;
     }
 
-    &.e-left-shadow .e-leftfreeze.e-freezeleftborder.e-focused:not(.e-menu-item,.e-xlsel-top-border,.e-xlsel-left-border,.e-xlsel-bottom-border,.e-xlsel-right-border),
-    &.e-right-shadow .e-rightfreeze.e-freezerightborder.e-focused:not(.e-menu-item,.e-xlsel-top-border,.e-xlsel-left-border,.e-xlsel-bottom-border,.e-xlsel-right-border) {
+    &.e-left-shadow .e-leftfreeze.e-freezeleftborder.e-focused:not(.e-menu-item, .e-xlsel-top-border, .e-xlsel-left-border, .e-xlsel-bottom-border, .e-xlsel-right-border),
+    &.e-right-shadow .e-rightfreeze.e-freezerightborder.e-focused:not(.e-menu-item, .e-xlsel-top-border, .e-xlsel-left-border, .e-xlsel-bottom-border, .e-xlsel-right-border) {
       border-color: $grid-cell-focus-border-color;
     }
 
@@ -43,14 +74,16 @@
       color: $grid-icon-default-color;
     }
 
-    .e-gridheader .e-headercontent .e-icon-reorderuparrow,
-    .e-gridheader .e-headercontent .e-icon-reorderdownarrow {
-      color: $grid-column-reorder-icon-color;
+    .e-gridheader .e-headercontent {
+      .e-icon-reorderuparrow,
+      .e-icon-reorderdownarrow {
+        color: $grid-column-reorder-icon-color;
+      }
     }
 
     .e-groupdroparea .e-icons {
       color: $grid-header-icon-color;
-      @if $grid-skin == 'material3' {
+      @if $grid-skin == 'material3' or $grid-skin == 'fluent2' {
         border-radius: 4px;
       }
     }
@@ -62,15 +95,23 @@
       }
     }
 
+    &.e-rtl .e-tableborder,
+    tr th.e-firstcell {
+      border-left-color: $grid-header-border-color;
+    }
+
+    tr th.e-firstcell,
     .e-tableborder {
       border-right-color: $grid-header-border-color;
     }
 
+    .e-xlselaf,
     .e-autofill {
       background-color: $grid-autofill-color;
     }
 
     .e-autofill,
+    .e-xlselaf,
     .e-xlsel {
       border-color: $grid-autofill-color;
       z-index: 1;
@@ -88,8 +129,6 @@
     }
 
     .e-xlselaf {
-      background-color: $grid-autofill-color;
-      border-color: $grid-autofill-color;
       position: absolute;
       z-index: 3;
     }
@@ -107,40 +146,46 @@
       z-index: $grid-dragborder-z-index;
     }
 
-    .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder.e-leftfreeze,
-    .e-gridcontent .e-rowcell.e-dragborder.e-leftfreeze,
-    .e-gridcontent .e-groupcaption.e-dragborder.e-leftfreeze,
-    .e-gridcontent .e-summarycell.e-dragborder.e-leftfreeze,
-    .e-gridcontent .e-rowdragdrop.e-dragborder.e-leftfreeze,
-    & .e-gridheader thead tr th.e-firstrowdragborder.e-leftfreeze,
-    &.e-rtl .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder.e-leftfreeze,
-    &.e-rtl .e-gridcontent .e-rowcell.e-dragborder.e-leftfreeze,
-    &.e-rtl .e-gridcontent .e-rowdragdrop.e-dragborder.e-leftfreeze {
-      z-index: 6;
+    .e-gridcontent {
+      tr.e-row:first-child .e-rowcell.e-dragborder.e-fixedfreeze,
+      .e-rowcell.e-dragborder.e-fixedfreeze,
+      .e-groupcaption.e-dragborder.e-fixedfreeze,
+      .e-summarycell.e-dragborder.e-fixedfreeze,
+      .e-rowdragdrop.e-dragborder.e-fixedfreeze,
+      tr.e-row:first-child .e-rowcell.e-dragborder.e-rightfreeze,
+      .e-rowcell.e-dragborder.e-rightfreeze,
+      .e-groupcaption.e-dragborder.e-rightfreeze,
+      .e-summarycell.e-dragborder.e-rightfreeze,
+      .e-rowdragdrop.e-dragborder.e-rightfreeze,
+      .tr.e-row:first-child .e-rowcell.e-dragborder.e-leftfreeze,
+      .e-rowcell.e-dragborder.e-leftfreeze,
+      .e-groupcaption.e-dragborder.e-leftfreeze,
+      .e-summarycell.e-dragborder.e-leftfreeze,
+      .e-rowdragdrop.e-dragborder.e-leftfreeze {
+        z-index: 6;
+      }
     }
 
-    .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder.e-rightfreeze,
-    .e-gridcontent .e-rowcell.e-dragborder.e-rightfreeze,
-    .e-gridcontent .e-groupcaption.e-dragborder.e-rightfreeze,
-    .e-gridcontent .e-summarycell.e-dragborder.e-rightfreeze,
-    .e-gridcontent .e-rowdragdrop.e-dragborder.e-rightfreeze,
-    & .e-gridheader thead tr th.e-firstrowdragborder.e-rightfreeze,
-    &.e-rtl .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder.e-rightfreeze,
-    &.e-rtl .e-gridcontent .e-rowcell.e-dragborder.e-rightfreeze,
-    &.e-rtl .e-gridcontent .e-rowdragdrop.e-dragborder.e-rightfreeze {
-      z-index: 6;
+    &.e-rtl .e-gridcontent {
+      tr.e-row:first-child .e-rowcell.e-dragborder.e-fixedfreeze,
+      .e-rowcell.e-dragborder.e-fixedfreeze,
+      .e-rowdragdrop.e-dragborder.e-fixedfreeze,
+      tr.e-row:first-child .e-rowcell.e-dragborder.e-rightfreeze,
+      .e-rowcell.e-dragborder.e-rightfreeze,
+      .e-rowdragdrop.e-dragborder.e-rightfreeze,
+      tr.e-row:first-child .e-rowcell.e-dragborder.e-leftfreeze,
+      .e-rowcell.e-dragborder.e-leftfreeze,
+      .e-rowdragdrop.e-dragborder.e-leftfreeze {
+        z-index: 6;
+      }
     }
 
-    .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder.e-fixedfreeze,
-    .e-gridcontent .e-rowcell.e-dragborder.e-fixedfreeze,
-    .e-gridcontent .e-groupcaption.e-dragborder.e-fixedfreeze,
-    .e-gridcontent .e-summarycell.e-dragborder.e-fixedfreeze,
-    .e-gridcontent .e-rowdragdrop.e-dragborder.e-fixedfreeze,
-    & .e-gridheader thead tr th.e-firstrowdragborder.e-fixedfreeze,
-    &.e-rtl .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder.e-fixedfreeze,
-    &.e-rtl .e-gridcontent .e-rowcell.e-dragborder.e-fixedfreeze,
-    &.e-rtl .e-gridcontent .e-rowdragdrop.e-dragborder.e-fixedfreeze {
-      z-index: 6;
+    & .e-gridheader thead tr {
+      th.e-firstrowdragborder.e-leftfreeze,
+      th.e-firstrowdragborder.e-rightfreeze,
+      th.e-firstrowdragborder.e-fixedfreeze {
+        z-index: 6;
+      }
     }
 
     .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder:not(.e-leftfreeze, .e-rightfreeze, .e-fixedfreeze),
@@ -156,19 +201,16 @@
     }
 
     .e-gridheader {
-      background-color: $grid-header-bg-color;
+      @include bgcolor-color-styles($grid-header-bg-color, $grid-header-color);
       border-bottom-color: $grid-outter-border;
       border-top-color: $grid-header-border-color;
-      color: $grid-header-color;
     }
 
     .e-gridcontent {
       & tr:first-child td {
         border-top-color: transparent;
       }
-    }
 
-    .e-gridcontent {
       & tr:first-child td.e-xlsel-top-border {
         border-top-color: $frozen-border-color;
       }
@@ -182,14 +224,22 @@
       opacity: 1;
     }
 
-    &.e-default.e-verticallines .e-headercell.e-stackedheadercell {
-      border-color: $grid-header-border-color;
-    }
-
-    &.e-default.e-horizontallines .e-grouptopleftcell {
-      border-color: $grid-header-border-color;
-    }
-
+    .e-verticallines tr th,
+    .e-grouptopleftcell,
+    .e-gridpopup .e-content,
+    .e-filterbarcell,
+    .e-filterbarcelldisabled,
+    &.e-default .e-grouptopleftcell,
+    .e-headercell,
+    .e-summarycell,
+    .e-detailheadercell,
+    [aria-selected] + tr .e-detailindentcell,
+    &.e-default .e-gridheader .e-headercell.e-firstheader,
+    &.e-default.e-horizontallines .e-headercell.e-firstheader,
+    .e-filterbarcell input,
+    .e-headercontent,
+    &.e-default.e-verticallines .e-headercell.e-stackedheadercell,
+    &.e-default.e-horizontallines .e-grouptopleftcell,
     &.e-default .e-gridheader.e-stackedfilter tr:last-child th.e-grouptopleftcell,
     &.e-default.e-horizontallines .e-gridheader.e-stackedfilter tr:last-child th.e-grouptopleftcell,
     &.e-default .e-gridheader.e-stackedfilter tr:first-child th.e-grouptopleftcell,
@@ -197,49 +247,15 @@
       border-color: $grid-header-border-color;
     }
 
-    &.e-default .e-gridheader .e-headercell.e-firstheader,
-    &.e-default.e-horizontallines .e-headercell.e-firstheader {
-      border-color: $grid-header-border-color;
-    }
-
-    .e-filterbarcell input {
-      border-color: $grid-header-border-color;
-    }
-
     .e-gridcontent {
       background-color: $grid-content-bg-color;
     }
 
-    .e-gridfooter {
-      @if $grid-skin == 'material3' {
-        background: $grid-summary-row-bg-color;
-      }
-      @else {
-        background-color: $grid-summary-row-bg-color;
-      }
-    }
-
-    .e-headercontent {
-      border-color: $grid-header-border-color;
-    }
-
-    .e-rowdragheader {
-      background-color: $grid-header-bg-color;
-    }
-
-    .e-headercell,
-    .e-detailheadercell {
-      background-color: $grid-header-bg-color;
-      border-color: $grid-header-border-color;
-    }
-
-    [aria-selected] + tr .e-detailindentcell {
-      border-color: $grid-header-border-color;
-    }
-
-    tr th.e-firstcell {
-      border-left-color: $grid-header-border-color;
-      border-right-color: $grid-header-border-color;
+    .e-gridfooter,
+    .e-gridfooter .e-leftfreeze,
+    .e-gridfooter .e-rightfreeze,
+    .e-gridfooter .e-fixedfreeze {
+      @include background-color-styles($grid-skin, $grid-summary-row-bg-color, $grid-summary-row-bg-color);
     }
 
     .e-rowcell,
@@ -253,28 +269,12 @@
       }
     }
 
-    .e-summarycell {
-      @if $grid-skin == 'material3' {
-        background: $group-row-bg-color;
-      }
-      @else {
-        background-color: $group-row-bg-color;
-      }
-      border-color: $grid-header-border-color;
-      color: $grid-header-color;
-    }
-
     .e-summaryrow .e-summarycell,
     .e-summaryrow .e-templatecell,
     .e-summarycontent .e-indentcell,
     .e-indentcell.e-detailindentcelltop,
     .e-groupfooterrow.e-summaryrow .e-indentcell.e-indentcelltop {
-      @if $grid-skin == 'material3' {
-        background: $grid-summary-row-bg-color;
-      }
-      @else {
-        background-color: $grid-summary-row-bg-color;
-      }
+      @include background-color-styles($grid-skin, $grid-summary-row-bg-color, $grid-summary-row-bg-color);
       border-color: $grid-header-border-color;
       color: $grid-header-color;
     }
@@ -293,97 +293,47 @@
       border-color: $grid-cell-border-color;
     }
 
-    &.e-default .e-grouptopleftcell {
-      border-color: $grid-header-border-color;
-    }
-
-    .e-frozenhdrcont .e-headercontent > .e-table,
-    .e-frozenhdrcont .e-frozenheader > .e-table,
-    .e-frozenhdrcont .e-movableheader > .e-table,
-    .e-frozenhdrcont .e-headercontent .e-virtualtable > .e-table {
+    .e-xlsel-bottom-border {
       border-bottom-color: $frozen-border-color;
     }
 
-    .e-frozencontent {
-      border-bottom-color: $grid-cell-border-color;
-    }
-
-    .e-frozenheader > .e-table,
-    .e-frozencontent > .e-table,
-    .e-frozencontent .e-virtualtable > .e-table,
-    .e-frozenheader .e-virtualtable > .e-table {
-      border-right-color: $frozen-border-color;
-    }
-
-    .e-frozenheader.e-frozenborderdisabled > .e-table,
-    .e-frozencontent.e-frozenborderdisabled > .e-table,
-    .e-frozencontent.e-frozenborderdisabled .e-virtualtable > .e-table,
-    .e-frozenheader.e-frozenborderdisabled .e-virtualtable > .e-table {
-      border-right-color: $grid-frozenborder-disabled-color;
-    }
-
-    &.e-rtl .e-leftfreeze.e-freezeleftborder {
-      border-left-color: $frozen-border-color;
-    }
-      
-    &.e-rtl .e-rightfreeze.e-freezerightborder {
-      border-right-color: $frozen-border-color;
-    }
-    
+    .e-xlsel-right-border,
+    &.e-lib:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
+    &:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
+    &.e-lib:not(.e-rtl) .e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder),
+    &:not(.e-rtl) .e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder),
+    &.e-lib .e-leftfreeze.e-freezeleftborder,
+    .e-leftfreeze.e-freezeleftborder,
+    &.e-rtl .e-rightfreeze.e-freezerightborder,
     &.e-rtl .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
     &.e-rtl .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezerightborder) {
       border-right-color: $frozen-border-color;
     }
-    
+
+    .e-rowcell .e-frozen-default-cursor,
+    .e-gridheader .e-headercell .e-frozen-default-cursor,
+    .e-gridheader .e-filterbarcell .e-frozen-default-cursor,
+    &.e-rtl .e-leftfreeze.e-freezeleftborder,
     &.e-rtl .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
-    &.e-rtl .e-fixedfreeze.e-freezerightborder:not(.e-removefreezeleftborder)  {
-      border-left-color: $frozen-border-color;
-    }
-
-    &.e-lib .e-leftfreeze.e-freezeleftborder,
-    .e-leftfreeze.e-freezeleftborder {
-      border-right-color: $frozen-border-color;
-    }
-
+    &.e-rtl .e-fixedfreeze.e-freezerightborder:not(.e-removefreezeleftborder),
     &.e-lib:not(.e-rtl) .e-rightfreeze.e-freezerightborder,
-    &:not(.e-rtl) .e-rightfreeze.e-freezerightborder {
-      border-left-color: $frozen-border-color;
-    }
-
+    &:not(.e-rtl) .e-rightfreeze.e-freezerightborder,
     &.e-lib:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
     &:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
     &.e-lib:not(.e-rtl) .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezeleftborder),
-    &:not(.e-rtl) .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezeleftborder) {
+    &:not(.e-rtl) .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezeleftborder),
+    .e-xlsel-left-border {
       border-left-color: $frozen-border-color;
-    }
-
-    &.e-lib:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
-    &:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
-    &.e-lib:not(.e-rtl) .e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder),
-    &:not(.e-rtl) .e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder) {
-      border-right-color: $frozen-border-color;
     }
 
     .e-xlsel-top-border {
       border-top-color: $frozen-border-color;
     }
 
-    .e-xlsel-left-border {
-      border-left-color: $frozen-border-color;
-    }
-
-    .e-xlsel-right-border {
-      border-right-color: $frozen-border-color;
-    }
-
-    .e-xlsel-bottom-border {
-      border-bottom-color: $frozen-border-color;
-    }
-
     .e-leftfreeze:not(.e-summarycell, .e-indentcell, .e-updatedtd, .e-selectionbackground, .e-columnselection, .e-groupcaption, .e-cellselectionbackground, .e-active),
     .e-rightfreeze:not(.e-summarycell, .e-updatedtd, .e-selectionbackground, .e-columnselection, .e-groupcaption, .e-cellselectionbackground, .e-active),
     .e-fixedfreeze:not(.e-summarycell, .e-selectionbackground, .e-updatedtd, .e-columnselection, .e-groupcaption, .e-cellselectionbackground, .e-active) {
-      @if $grid-skin == 'material' $grid-skin == 'highcontrast' {
+      @if $grid-skin == 'material' or $grid-skin == 'highcontrast' {
         background-color: $grid-rows-bg-color;
       }
       @else {
@@ -391,54 +341,16 @@
       }
     }
 
-    .e-gridcontent .e-groupcaptionrow .e-leftfreeze.e-groupcaption,
-    .e-gridcontent .e-groupcaptionrow .e-leftfreeze.e-recordplusexpand,
-    .e-gridcontent .e-groupcaptionrow .e-leftfreeze.e-recordpluscollapse,
-    .e-gridcontent .e-groupcaptionrow .e-leftfreeze.ee-indentcell {
-      @if $grid-skin == 'material3' {
-        background: $group-row-bg-color;
-      }
-      @else {
-        background-color: $group-row-bg-color;
+    .e-gridcontent .e-groupcaptionrow {
+      .e-leftfreeze.e-groupcaption,
+      .e-leftfreeze.e-recordplusexpand,
+      .e-leftfreeze.e-recordpluscollapse,
+      .e-leftfreeze.ee-indentcell {
+        @include background-color-styles($grid-skin, $group-row-bg-color, $group-row-bg-color);
       }
     }
 
-    .e-gridfooter .e-leftfreeze,
-    .e-gridfooter .e-rightfreeze,
-    .e-gridfooter .e-fixedfreeze {
-      @if $grid-skin == 'material3' {
-        background: $grid-summary-row-bg-color;
-      }
-      @else {
-        background-color: $grid-summary-row-bg-color;
-      }
-    }
-
-    .e-frozenheader.e-frozen-right-header > .e-table,
-    .e-frozencontent.e-frozen-right-content > .e-table,
-    .e-rowcell .e-frozen-default-cursor,
-    .e-gridheader .e-headercell .e-frozen-default-cursor,
-    .e-gridheader .e-filterbarcell .e-frozen-default-cursor {
-      border-left-color: $frozen-border-color;
-    }
-
-    .e-frozenheader.e-frozen-right-header.e-frozenborderdisabled > .e-table,
-    .e-frozencontent.e-frozen-right-content.e-frozenborderdisabled > .e-table {
-      border-left-color: $grid-frozenborder-disabled-color;
-    }
-
-    &.e-rtl .e-frozenheader > .e-table,
-    &.e-rtl .e-frozencontent > .e-table,
-    &.e-rtl .e-frozenheader .e-virtualtable > .e-table,
-    &.e-rtl .e-frozencontent .e-virtualtable > .e-table {
-      border-left-color: $frozen-border-color;
-    }
-
-    &.e-rtl .e-frozenheader.e-frozen-right-header > .e-table,
-    &.e-rtl .e-frozencontent.e-frozen-right-content > .e-table {
-      border-right-color: $frozen-border-color;
-    }
-
+    &.e-gridhover .e-frozenhover,
     &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
     &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
     &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse,
@@ -447,39 +359,51 @@
     &.e-gridhover .e-row.e-addedrow:not(.e-disable-gridhover):not(.e-detailrow):hover .e-dragindentcell,
     &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
       &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-        background-color: $grid-hover-bg-color;
-        color: $grid-hover-content-font-color;
+        @include bgcolor-color-styles($grid-hover-bg-color, $grid-hover-content-font-color);
       }
     }
 
-    &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-leftfreeze,
-    &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-rightfreeze,
-    &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-unfreeze,
-    &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-fixedfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-leftfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-rightfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-unfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-fixedfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse.e-leftfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse.e-rightfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse.e-unfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse.e-fixedfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-leftfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-rightfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-unfreeze,
-    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-fixedfreeze,
-    &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-leftfreeze,
-    &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-rightfreeze,
-    &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-unfreeze,
-    &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-fixedfreeze,
+    &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover,
+    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover {
+      .e-rowcell.e-leftfreeze,
+      .e-rowcell.e-rightfreeze,
+      .e-rowcell.e-unfreeze,
+      .e-rowcell.e-fixedfreeze {
+        &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+          @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+        }
+      }
+    }
+
+    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover {
+      .e-detailrowcollapse.e-leftfreeze,
+      .e-detailrowcollapse.e-rightfreeze,
+      .e-detailrowcollapse.e-unfreeze,
+      .e-detailrowcollapse.e-fixedfreeze,
+      .e-rowdragdrop.e-leftfreeze,
+      .e-rowdragdrop.e-rightfreeze,
+      .e-rowdragdrop.e-unfreeze,
+      .e-rowdragdrop.e-fixedfreeze {
+        &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+          @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+        }
+      }
+    }
+
+    &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover {
+      .e-rowdragdrop.e-leftfreeze,
+      .e-rowdragdrop.e-rightfreeze,
+      .e-rowdragdrop.e-unfreeze,
+      .e-rowdragdrop.e-fixedfreeze {
+        &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+          @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+        }
+      }
+    }
+
     &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
       &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-        @if $grid-skin == 'material3' {
-          background-color: rgb(250 244 244);
-        }
-        @if $grid-skin == 'bootstrap4' {
-          background-color: rgb(236 233 233);
-        }
+        @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
       }
     }
 
@@ -511,34 +435,47 @@
         }
       }
 
-      &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-leftfreeze,
-      &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-rightfreeze,
-      &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-unfreeze,
-      &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-fixedfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-leftfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-rightfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-unfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell.e-fixedfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse.e-leftfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse.e-rightfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse.e-unfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse.e-fixedfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-leftfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-rightfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-unfreeze,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-fixedfreeze,
-      &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-leftfreeze,
-      &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-rightfreeze,
-      &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-unfreeze,
-      &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop.e-fixedfreeze,
+      &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover,
+      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover {
+        .e-rowcell.e-leftfreeze,
+        .e-rowcell.e-rightfreeze,
+        .e-rowcell.e-unfreeze,
+        .e-rowcell.e-fixedfreeze {
+          &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+          }
+        }
+      }
+
+      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover {
+        .e-detailrowcollapse.e-leftfreeze,
+        .e-detailrowcollapse.e-rightfreeze,
+        .e-detailrowcollapse.e-unfreeze,
+        .e-detailrowcollapse.e-fixedfreeze,
+        .e-rowdragdrop.e-leftfreeze,
+        .e-rowdragdrop.e-rightfreeze,
+        .e-rowdragdrop.e-unfreeze,
+        .e-rowdragdrop.e-fixedfreeze {
+          &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+          }
+        }
+      }
+
+      &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover {
+        .e-rowdragdrop.e-leftfreeze,
+        .e-rowdragdrop.e-rightfreeze,
+        .e-rowdragdrop.e-unfreeze,
+        .e-rowdragdrop.e-fixedfreeze {
+          &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+          }
+        }
+      }
+
       &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
         &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-          @if $grid-skin == 'material3' {
-            background-color: rgb(250 244 244);
-          }
-          @if $grid-skin == 'bootstrap4' {
-            background-color: rgb(236 233 233);
-          }
+          @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
         }
       }
     }
@@ -552,17 +489,11 @@
     }
 
     .e-sortnumber {
-      @if $grid-skin == 'material3' {
-        background: $grid-sortnumber-bg-color;
-      }
-      @else {
-        background-color: $grid-sortnumber-bg-color;
-      }
+      @include background-color-styles($grid-skin, $grid-sortnumber-bg-color, $grid-sortnumber-bg-color);
       color: $grid-sortnumber-color;
     }
 
     &.e-gridhover .e-frozenhover {
-      background-color: $grid-hover-bg-color;
       color: $grid-hover-content-font-color;
     }
 
@@ -570,13 +501,13 @@
       box-shadow: $grid-column-menu-sub-menu-box-shadow;
     }
 
+    td.e-active,
     & td.e-active .e-icon-rowdragicon::before {
       color: $grid-row-selection-color;
     }
 
     td.e-active {
       background: $grid-row-selection-bg-color;
-      color: $grid-row-selection-color;
     }
 
     td.e-active.e-leftfreeze:not(.e-updatedtd),
@@ -617,49 +548,37 @@
     .e-filterbarcelldisabled {
       background-color: $grid-header-bg-color;
       background-image: none;
-      border-color: $grid-header-border-color;
     }
 
     .e-filtered::before {
       color: $grid-filtered-color;
     }
 
-    .e-gridpopup .e-content {
-      background-color: $grid-popup-bg-color;
-      border-color: $grid-header-border-color;
-    }
-
-    .e-gridpopup span:hover,
-    .e-gridpopup .e-spanclicked {
-      border-color: $grid-icon-color;
-    }
-
-    .e-gridpopup .e-downtail::before,
-    .e-gridpopup .e-downtail {
-      border-top-color: $grid-header-border-color;
-    }
-
-    .e-gridpopup .e-downtail::after {
-      border-top-color: $grid-popup-bg-color;
-    }
-
-    .e-gridpopup .e-uptail::before,
-    .e-gridpopup .e-uptail {
-      border-bottom-color: $grid-header-border-color;
-    }
-
-    .e-gridpopup .e-uptail::after {
-      border-bottom-color: $grid-popup-bg-color;
+    .e-gridpopup {
+      .e-content {
+        background-color: $grid-popup-bg-color;
+      }
+  
+      .e-downtail::after {
+        border-top-color: $grid-popup-bg-color;
+      }
+  
+      .e-uptail::after {
+        border-bottom-color: $grid-popup-bg-color;
+      }
     }
 
     .e-cloneproperties {
       @if $grid-skin == 'material3' {
         background: $grid-drag-clone-bg-color;
         border: none;
+
+        .e-dragclone {
+          background-color: $grid-clone-dragdrop-bg-color;
+        }
       }
       @else {
-        background-color: $grid-drag-clone-bg-color;
-        border-color: $grid-drag-clone-border-color;
+        @include bgcolor-bordercolor-styles($grid-drag-clone-bg-color, $grid-drag-clone-border-color);
       }
       color: $grid-drag-clone-color;
     }
@@ -680,46 +599,32 @@
       opacity: $grid-conent-font-opacity;
     }
 
-    &.e-resize-lines .e-headercell .e-rhandler,
-    &.e-resize-lines .e-headercell .e-rsuppress {
-      border-right: 1px solid $grid-header-border-color;
+    &.e-resize-lines {
+      .e-headercell {
+        .e-rhandler,
+        .e-rsuppress {
+          border-right: 1px solid $grid-header-border-color;
+        }
+      }
+
+      .e-focused .e-rhandler,
+      .e-focused .e-rsuppress {
+        border: 0 none;
+      }
+
+      .e-headercell.e-stackedheadercell:not(.e-freezerightborder, .e-freezeleftborder) {
+        border-bottom: 1px solid $grid-header-border-color;
+        border-right: 1px solid $grid-header-border-color;
+      }
     }
 
-    &.e-resize-lines .e-frozen-right-header .e-headercell .e-rhandler,
-    &.e-resize-lines .e-frozen-right-header .e-headercell .e-rsuppress {
-      border-left: 1px solid $grid-header-border-color;
-    }
-
-    &.e-resize-lines .e-focused .e-rhandler {
-      border: 0 none;
-    }
-
-    &.e-resize-lines .e-headercell.e-stackedheadercell:not(.e-freezerightborder, .e-freezeleftborder) {
-      border-bottom: 1px solid $grid-header-border-color;
-      border-right: 1px solid $grid-header-border-color;
-    }
-
-    &.e-resize-lines .e-frozen-right-header .e-headercell.e-stackedheadercell {
-      border-left: 1px solid $grid-header-border-color;
-    }
-
-    &.e-rtl.e-resize-lines .e-headercell.e-stackedheadercell,
-    &.e-rtl.e-resize-lines .e-headercell .e-rhandler,
-    &.e-rtl.e-resize-lines .e-headercell .e-rsuppress {
-      border-left: 1px solid $grid-header-border-color;
-      border-right-width: 0;
-    }
-
-    &.e-rtl.e-resize-lines .e-frozen-right-header .e-headercell.e-stackedheadercell,
-    &.e-rtl.e-resize-lines .e-frozen-right-header .e-headercell .e-rhandler,
-    &.e-rtl.e-resize-lines .e-frozen-right-header .e-headercell .e-rsuppress {
-      border-left-width: 0;
-      border-right: 1px solid $grid-header-border-color;
-    }
-
-    &.e-resize-lines .e-filterbarcell,
-    &.e-rtl.e-resize-lines .e-filterbarcell {
-      border-top: 1px solid $grid-header-border-color;
+    &.e-rtl.e-resize-lines {
+      .e-headercell.e-stackedheadercell,
+      .e-headercell .e-rhandler,
+      .e-headercell .e-rsuppress {
+        border-left: 1px solid $grid-header-border-color;
+        border-right-width: 0;
+      }
     }
 
     .e-cloneproperties.e-draganddrop {
@@ -730,29 +635,28 @@
       overflow: visible;
     }
 
-    & .e-row .e-dragstartrow::before,
-    & .e-row .e-selectionbackground .e-dragstartrow::before {
-      color: $grid-clone-dropitemscount-bg-color;
+    & .e-row {
+      .e-dragstartrow::before,
+      .e-selectionbackground .e-dragstartrow::before {
+        color: $grid-clone-dropitemscount-bg-color;
+      }
     }
 
     .e-griddragarea {
       @if $grid-skin == 'material3' {
         background: rgba($primary, .18);
       }
+      @else if $grid-skin == 'fluent2' {
+        @include bgcolor-bordercolor-styles($grid-drag-selection-bg-color, $grid-autofill-color);
+      }
       @else {
-        background-color: $grid-drag-clone-bg-color;
-        border-color: $grid-drag-clone-bg-color;
+        @include bgcolor-bordercolor-styles($grid-drag-clone-bg-color, $grid-drag-clone-bg-color);
       }
       color: $grid-row-selection-color;
     }
 
     .e-groupdroparea {
-      @if $grid-skin == 'material3' {
-        background: $group-droparea-bg-color;
-      }
-      @else {
-        background-color: $group-droparea-bg-color;
-      }
+      @include background-color-styles($grid-skin, $group-droparea-bg-color, $group-droparea-bg-color);
       border-top-color: $grid-header-border-color;
       color: $group-droparea-color;
     }
@@ -765,12 +669,7 @@
     }
 
     .e-groupdroparea.e-grouped {
-      @if $grid-skin == 'material3' {
-        background: $grouped-droparea-bg-color;
-      }
-      @else {
-        background-color: $grouped-droparea-bg-color;
-      }
+      @include background-color-styles($grid-skin, $grouped-droparea-bg-color, $grouped-droparea-bg-color);
     }
 
     .e-groupheadercell {
@@ -784,11 +683,13 @@
       border-color: $grid-group-broder-color;
       border-radius: $group-header-border-radius;
       color: $group-header-color;
+      @if $grid-skin == 'fluent2' {
+        border-color: $tooltip-border;
+      }
     }
 
     .e-groupheadercell:hover {
-      background-color: $group-header-hover-bg-color;
-      border-color: $grid-group-hover-broder-color;
+      @include bgcolor-bordercolor-styles($group-header-hover-bg-color, $grid-group-hover-broder-color);
       @if $grid-skin == 'material3' {
         border-style: solid;
       }
@@ -803,41 +704,42 @@
       opacity: $grid-ungroup-icon-opactiy;
     }
 
+    .e-summarycell {
+      color: $grid-header-color;
+    }
+
+    .e-summarycell,
     .e-groupcaption,
     .e-indentcell,
     .e-recordplusexpand,
     .e-recordpluscollapse {
-      @if $grid-skin == 'material3' {
-        background: $group-row-bg-color;
-      }
-      @else {
-        background-color: $group-row-bg-color;
-      }
+      @include background-color-styles($grid-skin, $group-row-bg-color, $group-row-bg-color);
       color: $group-caption-font-color;
     }
 
+    .e-rowdragheader,
     .e-grouptopleftcell {
       background-color: $grid-header-bg-color;
-      border-color: $grid-header-border-color;
     }
 
+    .e-gridpopup .e-uptail::before,
+    .e-gridpopup .e-uptail,
     .e-stackedheadercell {
       border-bottom-color: $grid-header-border-color;
     }
 
-    .e-verticallines tr th {
-      border-color: $grid-header-border-color;
-    }
-
     td.e-updatedtd {
-      background-color: $grid-batch-updated-bg-color;
-      color: $grid-content-batch-font-color;
+      @include bgcolor-color-styles($grid-batch-updated-bg-color, $grid-content-batch-font-color);
     }
 
+    .e-gridpopup .e-downtail::before,
+    .e-gridpopup .e-downtail,
     .e-gridcontent table tbody .e-normaledit .e-rowcell {
       border-top-color: $grid-header-border-color;
     }
 
+    &.e-resize-lines .e-filterbarcell,
+    &.e-rtl.e-resize-lines .e-filterbarcell,
     .e-gridcontent table tbody tr:not(:first-child) .e-normaledit .e-dragindentcell,
     .e-gridcontent table tbody tr:not(:first-child) .e-normaledit .e-detailrowcollapse,
     .e-gridheader table tbody .e-normaledit .e-dragindentcell,
@@ -893,11 +795,7 @@
     }
 
     &.e-rtl {
-
-      & .e-verticallines tr th:first-child:not(.e-firstcell) {
-        border-color: $grid-header-border-color;
-      }
-
+      & .e-verticallines tr th:first-child:not(.e-firstcell),
       &.e-default .e-gridheader .e-headercell.e-firstheader,
       &.e-default.e-horizontallines .e-headercell.e-firstheader,
       &.e-default.e-verticallines .e-gridheader .e-headercell.e-firstheader,
@@ -908,10 +806,6 @@
       &.e-default.e-bothlines .e-gridheader .e-headercell.e-firstheader,
       &.e-default.e-bothlines .e-gridheader th.e-grouptopleftcell.e-lastgrouptopleftcell {
         border-color: $grid-header-border-color;
-      }
-
-      .e-tableborder {
-        border-left-color: $grid-header-border-color;
       }
 
       .e-filterbardropdown {
@@ -939,30 +833,39 @@
 
   .e-tooltip-wrap.e-griderror,
   .e-control.e-tooltip-wrap.e-popup.e-griderror {
-    background-color: $grid-val-error-bg-color;
-    border-color: $grid-val-error-bg-color;
+    @include bgcolor-bordercolor-styles($grid-val-error-bg-color, $grid-val-error-bg-color);
+    @if $grid-skin == 'fluent2' {
+      border-color: $tooltip-border;
+    }
   }
 
-  .e-tooltip-wrap.e-griderror .e-arrow-tip-inner.e-tip-top,
-  .e-tooltip-wrap.e-griderror .e-arrow-tip-outer.e-tip-top {
-    border-bottom: 8px solid $grid-val-error-bg-color;
-    color: $grid-val-error-bg-color;
-  }
+  .e-tooltip-wrap.e-griderror {
+    .e-arrow-tip-inner.e-tip-top,
+    .e-arrow-tip-outer.e-tip-top {
+      border-bottom: 8px solid $grid-val-error-bg-color;
+      color: $grid-val-error-bg-color;
+      @if $grid-skin == 'fluent2' {
+        border-bottom: 8px solid $tooltip-border;
+      }
+    }
 
-  .e-tooltip-wrap.e-griderror .e-arrow-tip-outer.e-tip-bottom,
-  .e-tooltip-wrap.e-griderror .e-arrow-tip-inner.e-tip-bottom {
-    border-top: 8px solid $grid-val-error-bg-color;
-    color: $grid-val-error-bg-color;
-  }
+    .e-arrow-tip-outer.e-tip-bottom,
+    .e-arrow-tip-inner.e-tip-bottom {
+      border-top: 8px solid $grid-val-error-bg-color;
+      color: $grid-val-error-bg-color;
+      @if $grid-skin == 'fluent2' {
+        border-bottom: 8px solid $tooltip-border;
+      }
+    }
 
-  .e-tooltip-wrap.e-griderror .e-tip-content,
-  .e-tooltip-wrap.e-griderror .e-tip-content label {
-    color: $grid-val-error-color;
+    .e-tip-content,
+    .e-tip-content label {
+      color: $grid-val-error-color;
+    }
   }
 
   .e-dropitemscount {
-    background-color: $grid-clone-dropitemscount-bg-color;
-    color: $grid-dropitemscount-color;
+    @include bgcolor-color-styles($grid-clone-dropitemscount-bg-color, $grid-dropitemscount-color);
   }
 
   .e-filterbaroperator.e-dropdownlist {

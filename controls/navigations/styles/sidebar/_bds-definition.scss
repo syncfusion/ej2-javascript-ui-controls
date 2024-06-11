@@ -43,3 +43,11 @@ $sidebar-overlay: $overlay-bg-color !default;
     top: 0;
   }
 }
+
+.e-backdrop {
+  filter: blur(2px) !important;
+}
+
+.e-sidebar-overlay {
+  backdrop-filter: blur(2px) !important;
+}

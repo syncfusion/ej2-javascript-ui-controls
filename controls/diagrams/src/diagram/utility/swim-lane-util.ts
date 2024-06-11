@@ -1070,7 +1070,8 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
             laneCollection(grid, diagram, swimLane, index, laneIndex, orientation);
             redoObj = (shape.orientation === 'Horizontal') ?
                 diagram.nameTable[grid.rows[parseInt(index.toString(), 10)].cells[0].children[0].id] :
-                ((shape.header && (shape as SwimLane).hasHeader) ? diagram.nameTable[grid.rows[1].cells[parseInt(index.toString(), 10)].children[0].id] :
+                ((shape.header && (shape as SwimLane).hasHeader) ?
+                    diagram.nameTable[grid.rows[1].cells[parseInt(index.toString(), 10)].children[0].id] :
                     diagram.nameTable[grid.rows[0].cells[parseInt(index.toString(), 10)].children[0].id]);
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
                 entry = {
@@ -1085,28 +1086,34 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
             swimLaneMeasureAndArrange(swimLane);
             updateHeaderMaxWidth(diagram, swimLane);
             children = lane.children;
-            let childAdded = false;
+            let childAdded: boolean = false;
             if (children && children.length > 0) {
                 for (j = 0; j < children.length; j++) {
                     childAdded = false;
                     child = children[parseInt(j.toString(), 10)];
                     point = { x: child.wrapper.offsetX, y: child.wrapper.offsetY };
-                    let padding: MarginModel = {left:0,right:0,top:0,bottom:0};
+                    const padding: MarginModel = { left: 0, right: 0, top: 0, bottom: 0 };
                     if (shape.orientation === 'Horizontal') {
                         padding.bottom = bounds.y - grid.bounds.y;
                         //839579 - swimlane delete Lane and perform undo redo issue
                         cell = grid.rows[parseInt(index.toString(), 10)].cells[parseInt(j.toString(), 10)];
                         for (i = 0; i < grid.rows[parseInt(index.toString(), 10)].cells.length; i++) {
-                            addChildNodeToNewLane(diagram, grid.rows[parseInt(index.toString(), 10)].cells[parseInt(i.toString(), 10)], point, child,padding);
+                            addChildNodeToNewLane(diagram, grid.rows[parseInt(index.toString(), 10)].cells[parseInt(i.toString(), 10)],
+                                                  point, child, padding);
                         }
                     } else {
+                        //Bug 876330: After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly.
+                        // To iterate the lane and check whether the child node is inside the vertical lane. If so then we cut the loop.
+                        // eslint-disable-next-line no-labels
                         childAddBreak:
-                        for(let r = 0; r <= grid.rows.length;r++){
+                        for (let r: number = 0; r <= grid.rows.length; r++) {
                             for (c = 0; c < grid.rows[parseInt(r.toString(), 10)].cells.length; c++) {
+                                //Padding to compensate the original position of swimlane before drag.
                                 padding.right = bounds.x - grid.bounds.x;
                                 cell = grid.rows[parseInt(r.toString(), 10)].cells[parseInt(c.toString(), 10)];
                                 childAdded = addChildNodeToNewLane(diagram, cell, point, child, padding);
-                                if(childAdded){
+                                if (childAdded) {
+                                    // eslint-disable-next-line no-labels
                                     break childAddBreak;
                                 }
                             }
@@ -1129,14 +1136,16 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
  * @param {GridCell} cell - provide the cell  value.
  * @param {PointModel} point - provide the point  value.
  * @param {NodeModel} child - provide the child  value.
+ * @param {MarginModel | number} padding - provide the padding value.
  * @private
  */
-function addChildNodeToNewLane(diagram: Diagram, cell: GridCell, point: PointModel, child: NodeModel,padding?: MarginModel | number): boolean {
-    let childAdded = false;
+function addChildNodeToNewLane(diagram: Diagram, cell: GridCell, point: PointModel, child: NodeModel,
+                               padding?: MarginModel | number): boolean {
+    let childAdded: boolean = false;
     if (cell.children && cell.children.length > 0) {
         const canvas: Canvas = cell.children[0] as Canvas;
         const parent: NodeModel = diagram.nameTable[canvas.id];
-        if (containsChildPoint(canvas.bounds,point,padding as MarginModel)) {
+        if (containsChildPoint(canvas.bounds, point, padding as MarginModel)) {
             diagram.addChild(parent, child);
             childAdded = true;
         }
@@ -1152,14 +1161,13 @@ function addChildNodeToNewLane(diagram: Diagram, cell: GridCell, point: PointMod
  * @param {MarginModel} padding - provide the padding  value.
  * @private
  */
-function containsChildPoint(bounds:Rect,point:PointModel, padding:MarginModel): boolean {
-    let leftPadding: number, rightPadding: number, topPadding: number, bottomPadding: number;
-    leftPadding = padding.left || 0;
-    rightPadding = padding.right || 0;
-    topPadding = padding.top || 0;
-    bottomPadding = padding.bottom || 0;
+function containsChildPoint(bounds: Rect, point: PointModel, padding: MarginModel): boolean {
+    const leftPadding: number = padding.left || 0;
+    const rightPadding: number = padding.right || 0;
+    const topPadding: number = padding.top || 0;
+    const bottomPadding: number = padding.bottom || 0;
     return bounds.left - leftPadding <= point.x && bounds.right + rightPadding >= point.x
-    && bounds.top - topPadding <= point.y && bounds.bottom + bottomPadding >= point.y;
+        && bounds.top - topPadding <= point.y && bounds.bottom + bottomPadding >= point.y;
 }
 
 /**
@@ -1223,7 +1231,8 @@ export function addPhase(diagram: Diagram, parent: NodeModel, newPhase: PhaseMod
             shape.phases.splice(phaseIndex, 0, phaseObj);
             phaseDefine(grid, diagram, parent, gridRowIndex, orientation, phaseIndex);
             if (orientation) {
-                phaseNode = diagram.nameTable[grid.rows[parseInt(gridRowIndex.toString(), 10)].cells[parseInt(phaseIndex.toString(), 10)].children[0].id];
+                phaseNode = diagram.nameTable[grid.rows[parseInt(
+                    gridRowIndex.toString(), 10)].cells[parseInt(phaseIndex.toString(), 10)].children[0].id];
                 if (phaseIndex === 0 && shape.header && (shape as SwimLane).hasHeader) {
                     grid.rows[0].cells[0].children = grid.rows[0].cells[1].children; grid.rows[0].cells[1].children = [];
                     const fristRow: GridRow = grid.rows[0];
@@ -1239,7 +1248,8 @@ export function addPhase(diagram: Diagram, parent: NodeModel, newPhase: PhaseMod
                 grid.updateColumnWidth(phaseIndex, col[parseInt(phaseIndex.toString(), 10)].width, true, padding);
                 phaseNode.maxWidth = phaseNode.wrapper.maxWidth = col[parseInt(phaseIndex.toString(), 10)].width;
                 if (col.length > phaseIndex + 1) {
-                    const nextPhaseNode: NodeModel = diagram.nameTable[grid.rows[parseInt(gridRowIndex.toString(), 10)].cells[phaseIndex + 1].children[0].id];
+                    const nextPhaseNode: NodeModel
+                        = diagram.nameTable[grid.rows[parseInt(gridRowIndex.toString(), 10)].cells[phaseIndex + 1].children[0].id];
                     grid.updateColumnWidth(phaseIndex + 1, col[phaseIndex + 1].width, true, padding);
                     nextPhaseNode.maxWidth = nextPhaseNode.wrapper.maxWidth = col[phaseIndex + 1].width;
                 }
@@ -1462,7 +1472,7 @@ export function arrangeChildInGrid(
                 (gridCell.children[0] as Container).children.push(child);
                 (changeCell.children[0] as Container).children.splice(j, 1);
                 j--;
-                diagram.deleteChild(childNode,undefined, true);
+                diagram.deleteChild(childNode, undefined, true);
                 if (!(childNode as Node).isLane) {
                     (childNode as Node).parentId = parentWrapper.id;
                 }
@@ -1824,15 +1834,15 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             if (!args.cancel) {
-                let removableLane = shape.lanes[parseInt(laneIndex.toString(), 10)];
+                const removableLane: LaneModel = shape.lanes[parseInt(laneIndex.toString(), 10)];
                 //Bug 876330: After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly.
                 //Here we are removing the children from lane and re-adding it to the lane after getting it from diagram nodes collection.
                 //Because the wrapper of nodes are not updated properly after undo operation.
-                let removableLaneChild = removableLane.children;
+                const removableLaneChild: NodeModel[] = removableLane.children;
                 removableLane.children = [];
-                for(let i = 0; i < removableLaneChild.length; i++) {
-                    let child = diagram.getObject(removableLaneChild[parseInt(i.toString(), 10)].id);
-                    if(child){
+                for (let i: number = 0; i < removableLaneChild.length; i++) {
+                    const child: object = diagram.getObject(removableLaneChild[parseInt(i.toString(), 10)].id);
+                    if (child) {
                         removableLane.children.push(child);
                     }
                 }

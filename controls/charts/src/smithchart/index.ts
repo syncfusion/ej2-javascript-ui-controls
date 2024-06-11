@@ -14,4 +14,3 @@ export * from './utils/utils';
 export * from './utils/utils-model';
 export * from './utils/enum';
 export * from './legend/legendrender';
-

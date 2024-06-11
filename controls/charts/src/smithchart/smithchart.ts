@@ -1,12 +1,9 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { Component, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, Browser, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { createElement, remove, Event, EmitType, EventHandler } from '@syncfusion/ej2-base';
 import { createSvg, RectOption, measureText, TextOption, renderTextElement } from '../smithchart/utils/helper';
 import { removeElement, textTrim } from '../smithchart/utils/helper';
-import { ClosestPoint, Point, SmithchartRect, SmithchartSize } from '../smithchart/utils/utils';
+import { SmithchartRect, SmithchartSize } from '../smithchart/utils/utils';
 import { SmithchartMarginModel, SmithchartBorderModel, SmithchartFontModel } from '../smithchart/utils/utils-model';
 import { SmithchartMargin, SmithchartBorder, SmithchartFont } from '../smithchart/utils/utils';
 import { TitleModel, SubtitleModel } from '../smithchart/title/title-model';
@@ -313,9 +310,10 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     public tooltipRender: EmitType<ISmithChartTooltipEventArgs>;
 
     /**
-     * Get component name
+     * Get component name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     public getModuleName(): string {
         return 'smithchart';
     }
@@ -324,6 +322,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Get the properties to be maintained in the persisted state.
      *
      * @private
+     * @returns {string} - The persisted state data.
      */
     public getPersistData(): string {
         return '';
@@ -374,7 +373,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 options = new TextOption(
                     this.element.id + '_Smithchart_' + type, args.x, args.y, 'start', args.text
                 );
-                const element: Element = renderTextElement(options, font, font.color || this.themeStyle.smithchartTitleFont.color, groupEle, this.themeStyle.smithchartTitleFont);
+                const element: Element = renderTextElement(options, font, font.color || this.themeStyle.smithchartTitleFont.color,
+                                                           groupEle, this.themeStyle.smithchartTitleFont);
                 element.setAttribute('tabindex', '0');
                 const titleLocation: { x: number, y: number, textSize: SmithchartSize } = { x: args.x, y: args.y, textSize: textSize };
                 this.svgObject.appendChild(groupEle);
@@ -417,7 +417,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 const options: TextOption = new TextOption(
                     this.element.id + '_Smithchart_' + type, args.x, args.y, textAnchor, args.text
                 );
-                const element: Element = renderTextElement(options, font, font.color || this.themeStyle.smithchartSubtitleFont.color, groupEle, this.themeStyle.smithchartSubtitleFont);
+                const element: Element = renderTextElement(options, font, font.color || this.themeStyle.smithchartSubtitleFont.color,
+                                                           groupEle, this.themeStyle.smithchartSubtitleFont);
                 element.setAttribute('aria-label', subTitle.description || args.text);
                 groupEle.appendChild(element);
             }
@@ -426,9 +427,10 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         this.trigger(subtitleRender, subtitleEventArgs, subtitleRenderSuccess);
     }
     /**
-     * Render the smithchart border
+     * Render the smithchart border.
      *
      * @private
+     * @returns {void}
      */
     private renderBorder(): void {
         const border: SmithchartBorderModel = this.border;
@@ -445,9 +447,10 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * Called internally if any of the property value changed.
      *
      * @private
+     * @param {SmithchartModel} newProp - The new properties for configuring the SmithChart.
+     * @returns {void}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public onPropertyChanged(newProp: SmithchartModel, oldProp: SmithchartModel): void {
+    public onPropertyChanged(newProp: SmithchartModel): void {
         let renderer: boolean = false;
         if (!this.delayRedraw) {
             for (const prop of Object.keys(newProp)) {
@@ -478,7 +481,10 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
 
     /**
-     * Constructor for creating the Smithchart widget
+     * Constructor for creating the Smithchart widget.
+     *
+     * @param {SmithchartModel} options - The options for configuring the SmithChart.
+     * @param {string | HTMLElement} element - The element where the SmithChart will be created.
      */
     constructor(options?: SmithchartModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -504,6 +510,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     /**
      * To Initialize the control rendering.
+     *
+     * @returns {void}
      */
     private setTheme(): void {
         /*! Set theme */
@@ -524,7 +532,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         // }
     }
     protected render(): void {
-
         this.createChartSvg();
         this.element.appendChild(this.svgObject);
         this.setTheme();
@@ -569,7 +576,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         }
     }
     /**
-     * To destroy the widget
+     * To destroy the widget.
      *
      * @returns {void}.
      */
@@ -588,6 +595,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     /**
      * To bind event handlers for smithchart.
+     *
+     * @returns {void}
      */
     private wireEVents(): void {
 
@@ -634,6 +643,9 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * To handle the click event for the smithchart.
+     *
+     * @param {Event | PointerEvent} e - The event.
+     * @returns {void}
      */
     public smithchartOnClick(e: Event | PointerEvent): void {
         const targetEle: Element = <Element>e.target;
@@ -667,6 +679,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     /**
      * To unbind event handlers from smithchart.
+     *
+     * @returns {void}
      */
     private unWireEVents(): void {
 
@@ -685,16 +699,22 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         exportChart.print(id);
     }
     /**
-     * Handles the export method for chart control.
+     * Handles the export method for the smith chart control.
+     *
+     * @param {SmithchartExportType} type - The smith chart export type.
+     * @param {string} fileName - The filename of the exported smith chart.
+     * @param {PdfPageOrientation} orientation - The page orientation for PDF export.
+     * @returns {void}
      */
     public export(type: SmithchartExportType, fileName: string, orientation?: PdfPageOrientation): void {
         const exportMap: ExportUtils = new ExportUtils(this);
         exportMap.export(type, fileName, orientation);
     }
     /**
-     * Handles the keyboard onkeydown on smith chart.
+     * Handles the keyboard onkeydown event on the smith chart.
      *
-     * @returns {boolean} false
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {boolean} - Indicates whether the keydown event is handled.
      * @private
      */
     public chartKeyDown(e: KeyboardEvent): boolean {
@@ -709,9 +729,10 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
 
     /**
-     * Handles the keyboard onkeydown on  smith chart.
+     * Handles the keyboard keyup event on the smith chart.
      *
-     * @returns {boolean} false
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {boolean} - Indicates whether the keyup event is handled.
      * @private
      */
     public chartKeyUp(e: KeyboardEvent): boolean {
@@ -825,11 +846,11 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             if (targetId.indexOf('_Points') > -1) {
                 const seriesIndex: number = +(targetId.split('_Series')[1].split('_Points')[0]);
                 const pointIndex: number = +(targetId.split('_Series')[1].split('_Marker')[0].split('_Points')[1]);
-                const pointRegion: Point = this.seriesrender.location[seriesIndex as number][pointIndex as number];
+                // const pointRegion: Point = this.seriesrender.location[seriesIndex as number][pointIndex as number];
                 if (this.tooltipRenderModule && this.series[seriesIndex as number].tooltip.visible) {
-                    let closestPoint: ClosestPoint = new ClosestPoint();
-                    closestPoint = this.tooltipRenderModule.closestPointXY(this, pointRegion.x, pointRegion.y,
-                                                                           this.series[seriesIndex as number], seriesIndex);
+                    // let closestPoint: ClosestPoint = new ClosestPoint();
+                    // closestPoint = this.tooltipRenderModule.closestPointXY(this, pointRegion.x, pointRegion.y,
+                    //                                                        this.series[seriesIndex as number], seriesIndex);
                     this.tooltipRenderModule.createTooltip(this, e, pointIndex, seriesIndex, this.series[seriesIndex as number]);
                 }
             }
@@ -878,6 +899,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * To handle the window resize event on smithchart.
+     *
+     * @returns {boolean} - Indicates whether the resize event is handled.
      */
     public smithchartOnResize(): boolean {
 
@@ -893,9 +916,10 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         return false;
     }
     /**
-     * To provide the array of modules needed for smithchart rendering
+     * To provide the array of modules needed for smithchart rendering.
      *
      * @private
+     * @returns {ModuleDeclaration[]} - The array of required modules.
      */
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
@@ -922,6 +946,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * To Remove the SVG.
      *
      * @private
+     * @returns {void}
      */
     public removeSvg(): void {
         removeElement(this.element.id + '_Secondary_Element');
@@ -937,4 +962,3 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
 
 }
-

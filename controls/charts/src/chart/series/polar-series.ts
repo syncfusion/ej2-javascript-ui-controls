@@ -1,6 +1,3 @@
-/* eslint-disable prefer-const */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { withInRange, logBase, markerAnimate, PolarArc, firstToLowerCase, ChartLocation } from '../../common/utils/helper';
 import { valueToCoefficient, CoefficientToVector, valueToPolarCoefficient } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
@@ -19,16 +16,19 @@ import { Axis } from '../axis/axis';
 
 export class PolarSeries extends PolarRadarPanel {
     /**
-     * Render Polar Series.
+     * Renders the provided polar series on the chart based on the given x-axis, y-axis, and inversion status.
      *
+     * @param {Series} series - The series to render.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
+     * @param {boolean} inverted - A flag indicating whether the chart is inverted or not.
      * @returns {void}
-     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
-        let seriesType: string = firstToLowerCase(series.drawType);
-        let yAxisMin: number =  <number>yAxis.minimum;
-        let yAxisMax: number = <number>yAxis.maximum;
-        for (let visiblePoint of series.points)  {
+        const seriesType: string = firstToLowerCase(series.drawType);
+        const yAxisMin: number =  <number>yAxis.minimum;
+        const yAxisMax: number = <number>yAxis.maximum;
+        for (const visiblePoint of series.points)  {
             visiblePoint.visible = visiblePoint.visible && !((!isNullOrUndefined(yAxisMin) && visiblePoint.yValue < yAxisMin) ||
             (!isNullOrUndefined(yAxisMax) && visiblePoint.yValue > yAxisMax));
         }
@@ -42,32 +42,34 @@ export class PolarSeries extends PolarRadarPanel {
     }
 
     /**
-     * Render Column DrawType.
+     * Renders the column draw type for the provided series based on the given x-axis and y-axis.
      *
+     * @param {Series} series - The series for which the column draw type should be rendered.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
      * @returns {void}
-     * @private
      */
     public columnDrawTypeRender(series: Series, xAxis: Axis, yAxis: Axis): void {
         let options: PathOption; let argsData: IPointRenderEventArgs;
         let startAngle: number; let endAngle: number; let itemCurrentXPos: number; let radius: number; let inversedValue: number;
         let pointStartAngle: number; let pointEndAngle: number; let x1: number; let x2: number; let y1: number; let y2: number;
         let startValue: number; let endValue: number; let innerRadius: number; let min: number = xAxis.actualRange.min;
-        let centerX: number = (series.clipRect.width / 2) + series.clipRect.x; let dStartX: number; let dStartY: number;
-        let centerY: number = (series.clipRect.height / 2) + series.clipRect.y; let dEndX: number; let dEndY: number;
-        let isRangeColumn: boolean = series.drawType === 'RangeColumn'; let isPolar: boolean = series.type === 'Polar';
-        let isLogAxis: boolean = yAxis.valueType === 'Logarithmic'; let isStacking: boolean = series.drawType === 'StackingColumn';
+        const centerX: number = (series.clipRect.width / 2) + series.clipRect.x; let dStartX: number; let dStartY: number;
+        const centerY: number = (series.clipRect.height / 2) + series.clipRect.y; let dEndX: number; let dEndY: number;
+        const isRangeColumn: boolean = series.drawType === 'RangeColumn'; const isPolar: boolean = series.type === 'Polar';
+        const isLogAxis: boolean = yAxis.valueType === 'Logarithmic'; const isStacking: boolean = series.drawType === 'StackingColumn';
         let direction: string = ''; let sumofYValues: number = 0; let arcValue: string ;
-        let interval: number = (series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) - series.points[0].xValue;
+        const interval: number = (series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) - series.points[0].xValue;
         const isInverse: boolean = xAxis.isAxisInverse;
         //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis
-        let ticks: number = (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') ? 0 :
+        const ticks: number = (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') ? 0 :
             isInverse ? -interval / 2 : interval / 2;
-        let rangeInterval: number = xAxis.valueType === 'DateTime' ? xAxis.dateTimeInterval : 1; this.getSeriesPosition(series);
-        let position: number = isInverse ? (series.rectCount - 1 - series.position) : series.position;
+        const rangeInterval: number = xAxis.valueType === 'DateTime' ? xAxis.dateTimeInterval : 1; this.getSeriesPosition(series);
+        const position: number = isInverse ? (series.rectCount - 1 - series.position) : series.position;
         do {
             sumofYValues += rangeInterval; min += rangeInterval;
         } while (min <= xAxis.actualRange.max - (xAxis.valueType === 'Category' ? 0 : 1));
-        for (let point of series.points) {
+        for (const point of series.points) {
             point.symbolLocations = []; point.regions = [];
             if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
                 inversedValue = isInverse ? (xAxis.visibleRange.max - point.xValue) : point.xValue - xAxis.visibleRange.min;
@@ -136,13 +138,15 @@ export class PolarSeries extends PolarRadarPanel {
     }
 
     /**
-     * To trigger the point rendering event.
+     * Triggers the point render event for the provided chart, series, and point.
      *
-     * @returns {void}
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Series} series - The series to which the point belongs.
+     * @param {Points} point - The point for which the event should be triggered.
+     * @returns {IPointRenderEventArgs} - The point render event arguments.
      */
     public triggerEvent(chart: Chart, series: Series, point: Points): IPointRenderEventArgs {
-        let argsData: IPointRenderEventArgs = {
+        const argsData: IPointRenderEventArgs = {
             cancel: false, name: pointRender, series: series, point: point,
             fill: series.setPointColor(point, series.interior),
             border: series.setBorderColor(point, { width: series.border.width, color: series.border.color })
@@ -152,23 +156,24 @@ export class PolarSeries extends PolarRadarPanel {
         return argsData;
     }
 
-    /** get position for column drawtypes
+    /**
+     * Gets the position of the series.
      *
+     * @param {Series} series - The series for which to get the position.
      * @returns {void}
-     * @private
      */
     public getSeriesPosition(series: Series): void {
-        let chart: Chart = series.chart;
-        let seriesCollection: Series[] = [];
-        let stackingGroup: string[] = [];
-        let vSeries: RectPosition = { rectCount: 0, position: null };
-        for (let series of chart.visibleSeries) {
+        const chart: Chart = series.chart;
+        const seriesCollection: Series[] = [];
+        const stackingGroup: string[] = [];
+        const vSeries: RectPosition = { rectCount: 0, position: null };
+        for (const series of chart.visibleSeries) {
             if (series.visible && (series.type === 'Polar' || series.type === 'Radar') && series.drawType.indexOf('Column') !== -1) {
                 seriesCollection.push(series);
             }
         }
         for (let i: number = 0; i < seriesCollection.length; i++) {
-            let series: Series = seriesCollection[i as number];
+            const series: Series = seriesCollection[i as number];
             if (series.drawType.indexOf('Stacking') !== -1) {
                 if (series.stackingGroup) {
                     if (stackingGroup[series.stackingGroup] === undefined) {
@@ -190,7 +195,7 @@ export class PolarSeries extends PolarRadarPanel {
             }
         }
         for (let i: number = 0; i < seriesCollection.length; i++) {
-            let value: Series = seriesCollection[i as number];
+            const value: Series = seriesCollection[i as number];
             value.rectCount = vSeries.rectCount;
         }
     }
@@ -203,12 +208,12 @@ export class PolarSeries extends PolarRadarPanel {
      */
 
     public doAnimation(series: Series): void {
-        let duration: number = series.animation.duration;
-        let delay: number = series.animation.delay;
-        let rectElements: NodeList = series.seriesElement.childNodes;
+        const duration: number = series.animation.duration;
+        const delay: number = series.animation.delay;
+        const rectElements: NodeList = series.seriesElement.childNodes;
         let count: number = 1;
         if (series.drawType === 'Scatter') {
-            for (let point of series.points) {
+            for (const point of series.points) {
                 if (!point.symbolLocations.length || !rectElements[count as number]) {
                     continue;
                 }
@@ -223,14 +228,17 @@ export class PolarSeries extends PolarRadarPanel {
         }
     }
     /**
-     * To do the Polar Radar draw type column animation.
+     * Performs animation for polar/radar series.
      *
+     * @param {Element} animateElement - The element to animate.
+     * @param {number} delay - The delay for animation.
+     * @param {number} duration - The duration of animation.
+     * @param {Series} series - The series for which to perform animation.
      * @returns {void}
-     * @private
      */
     public doPolarRadarAnimation(animateElement: Element, delay: number, duration: number, series: Series): void {
-        let chartcenterX: number = series.clipRect.width / 2 + series.clipRect.x;
-        let chartcenterY: number = series.clipRect.height / 2 + series.clipRect.y;
+        const chartcenterX: number = series.clipRect.width / 2 + series.clipRect.x;
+        const chartcenterY: number = series.clipRect.height / 2 + series.clipRect.y;
         let elementHeight: number = 0;
         (<HTMLElement>animateElement).style.visibility = 'hidden';
         new Animation({}).animate(<HTMLElement>animateElement, {
@@ -255,27 +263,28 @@ export class PolarSeries extends PolarRadarPanel {
     // path calculation for isInversed polar area series
 
     public getPolarIsInversedPath( xAxis: Axis, endPoint: string): string {
-        let vector: ChartLocation;
-        let x1: number;
-        let y1: number;
-        let chart: Chart = this.chart;
-        let radius: number = chart.radius;
+        // let vector: ChartLocation;
+        // let x1: number;
+        // let y1: number;
+        const chart: Chart = this.chart;
+        const radius: number = chart.radius;
         let direction: string = endPoint;
-        let circleRotate: string = xAxis.isAxisInverse ? '1 1 ' : '1 0 ';
-        vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
-        x1 = this.centerX + radius * vector.x;
-        y1 = this.centerY + radius * vector.y;
+        const circleRotate: string = xAxis.isAxisInverse ? '1 1 ' : '1 0 ';
+        const vector: ChartLocation = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
+        const x1: number = this.centerX + radius * vector.x;
+        const y1: number = this.centerY + radius * vector.y;
         return direction += 'L ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + circleRotate +
             x1 + ' ' + (this.centerY + radius) + ' A ' + radius + ' ' + radius + ' 0 ' + circleRotate + x1 + ' ' + y1 + ' ';
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'PolarSeries';
     }
@@ -286,10 +295,9 @@ export class PolarSeries extends PolarRadarPanel {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroy method performed here
+         * Destroy method performed here.
          */
     }
 }

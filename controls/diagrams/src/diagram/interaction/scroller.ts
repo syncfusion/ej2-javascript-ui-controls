@@ -10,6 +10,7 @@ import { updateRuler } from '../ruler/ruler';
 import { canZoom, canPan, canVitualize } from './../utility/constraints-util';
 import { NodeModel } from '../objects/node-model';
 import { ConnectorModel } from '../objects/connector-model';
+import { Overview, OverviewModel } from '../../overview';
 /**
  */
 export class DiagramScroller {
@@ -174,7 +175,7 @@ export class DiagramScroller {
 
     // Method added to get bounds value if diagram is loaded from negative axis.
     // SF-359118 implemented for this ticket requirement.
-    private getBounds() {
+    private getBounds(): Rect {
         let pageBounds: Rect;
         const postion: Rect = this.diagram.spatialSearch.getPageBounds(0, 0);
         if ((postion.x < 0 || postion.y < 0) && !this.diagram.pageSettings.multiplePage) {
@@ -352,10 +353,10 @@ export class DiagramScroller {
         let oObjectsID: string[] = [];
         const renderOrder: string[] = [];
 
-        for (let j = 0; j < oObjects.length; j++) {
+        for (let j: number = 0; j < oObjects.length; j++) {
             const bpmnShape: any = oObjects[parseInt(j.toString(), 10)].shape;
             if (bpmnShape.type === 'Bpmn' && bpmnShape && bpmnShape.activity && bpmnShape.activity.subProcess && bpmnShape.activity.subProcess.processes && bpmnShape.activity.subProcess.processes.length > 0) {
-                for (var k = 0; k < bpmnShape.activity.subProcess.processes.length; k++) {
+                for (let k: number = 0; k < bpmnShape.activity.subProcess.processes.length; k++) {
                     renderOrder.push(bpmnShape.activity.subProcess.processes[parseInt(k.toString(), 10)]);
                 }
                 renderOrder.push(oObjects[parseInt(j.toString(), 10)].id);
@@ -368,11 +369,11 @@ export class DiagramScroller {
 
         const zindexOrder: string[] = [];
 
-        for (let j = 0; j < oObjects.length; j++) {
+        for (let j: number = 0; j < oObjects.length; j++) {
             const items: any = oObjects[parseInt(j.toString(), 10)].shape;
             if (items.type === 'Bpmn' && items && items.activity && items.activity.subProcess && items.activity.subProcess.processes && items.activity.subProcess.processes.length > 0) {
                 zindexOrder.push(oObjects[parseInt(j.toString(), 10)].id);
-                for (let t = 0; t < items.activity.subProcess.processes.length; t++) {
+                for (let t: number = 0; t < items.activity.subProcess.processes.length; t++) {
                     zindexOrder.push(items.activity.subProcess.processes[parseInt(t.toString(), 10)]);
                 }
             } else if ((oObjects[parseInt(j.toString(), 10)] as any).processId === '' || (oObjects[parseInt(j.toString(), 10)] as any).processId === undefined) {
@@ -380,8 +381,8 @@ export class DiagramScroller {
             }
         }
 
-        for (let j = 0; j < oObjects.length; j++) {
-            for (let k = 0; k < zindexOrder.length; k++) {
+        for (let j: number = 0; j < oObjects.length; j++) {
+            for (let k: number = 0; k < zindexOrder.length; k++) {
                 if (oObjects[parseInt(j.toString(), 10)].id === zindexOrder[parseInt(k.toString(), 10)]) {
                     oObjects[parseInt(j.toString(), 10)].zIndex = k;
                     break;
@@ -631,10 +632,13 @@ export class DiagramScroller {
      * @param {PointModel} focusPoint - provide the bounds value.
      * @param {boolean} isInteractiveZoomPan - provide the isInteractiveZoomPan value.
      * @param {boolean} isBringIntoView - provide the isBringIntoView value.
+     * @param {boolean} isTrackpadScroll - provide the isTrackpadScroll value.
+     * @param {boolean} canZoomOut - provide the canZoomOut value.
      *
      * @private
      */
-    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean, isBringIntoView?: boolean,isTrackpadScroll?:boolean, canZoomOut?: boolean): void {
+    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean,
+                isBringIntoView?: boolean, isTrackpadScroll?: boolean, canZoomOut?: boolean): void {
         if (canZoom(this.diagram) && factor !== 1 || (canPan(this.diagram) && factor === 1)) {
             const matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
@@ -646,8 +650,8 @@ export class DiagramScroller {
             focusPoint = transformPointByMatrix(matrix, focusPoint);
             //Bug 853566: Fit to page is not working when zoom value less than minZoom.
             // Removed minZoom calculation to call fitToPage even if currentZoom less than minZoom.
-            //Bug 878703: ZoomIn and ZoomOut not working properly when canZoomOut set to true. Added factor >= 1 condition to zoom in the diagram even when the currentZoom less than minZoom.
-            if ((this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom && ( (this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom || (canZoomOut || factor >= 1))) {
+            if ((this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom &&
+                ((this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom || (canZoomOut || factor >= 1))) {
                 this.currentZoom *= factor;
                 const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
                 pageBounds.x *= this.currentZoom;
@@ -666,10 +670,10 @@ export class DiagramScroller {
                 }
                 // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
                 // The below condition is used to avoid the flickering of the scroll bar on scrolling the diagram using trackpad.
-                (-(pageBounds.y) >= newOffset.y && -(pageBounds.x) >= newOffset.x && isTrackpadScroll) ? isTrackpadScroll = true: isTrackpadScroll = false;
+                isTrackpadScroll = (-(pageBounds.y) >= newOffset.y && -(pageBounds.x) >= newOffset.x && isTrackpadScroll);
                 if ((this.diagram.scrollActions & ScrollActions.PropertyChange ||
                     !(this.diagram.scrollActions & ScrollActions.Interaction)) ||
-                    this.diagram.scrollSettings.scrollLimit !== 'Diagram'|| isTrackpadScroll) {
+                    this.diagram.scrollSettings.scrollLimit !== 'Diagram' || isTrackpadScroll) {
                     this.transform = {
                         tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
                         ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
@@ -689,9 +693,11 @@ export class DiagramScroller {
                 updateRuler(this.diagram);
                 //Bug 863516: Overview is not synced with diagram content while zoom-out the diagram.
                 //Updating overview after the page scrolled or zoomed.
-                if(this.diagram.views && (this.diagram.views as any).overview){
-                    let overview = (this.diagram.views as any).overview;
-                    var bounds = overview.scrollOverviewRect(overview.parent.scroller.horizontalOffset, overview.parent.scroller.verticalOffset, overview.parent.scroller.currentZoom, true);
+                if (this.diagram.views && (this.diagram.views as any).overview) {
+                    const overview: any = (this.diagram.views as any).overview;
+                    const bounds: Rect = overview.scrollOverviewRect(overview.parent.scroller.horizontalOffset,
+                                                                     overview.parent.scroller.verticalOffset,
+                                                                     overview.parent.scroller.currentZoom, true);
                     overview.updateOverviewrect(-bounds.x, -bounds.y, bounds.width, bounds.height);
                     overview.updateView(overview);
                 }
@@ -734,22 +740,22 @@ export class DiagramScroller {
             const scale: PointModel = { x: 0, y: 0 };
             //Bug 853566: Fit to page is not working when zoom value less than minZoom.
             // Resetting margin value if the margin value is greater than the viewport size to avoid scale value in negative.
-            if((margin.left + margin.right) > this.viewPortWidth){
-                if(this.viewPortWidth <= 100){
+            if ((margin.left + margin.right) > this.viewPortWidth) {
+                if (this.viewPortWidth <= 100) {
                     margin.left = 5;
                     margin.right = 5;
-                }else{
+                } else {
                     margin.left = 25;
                     margin.right = 25;
                 }
             }
-            if((margin.top + margin.bottom) > this.viewPortHeight){
-                if(this.viewPortHeight <= 100){
+            if ((margin.top + margin.bottom) > this.viewPortHeight) {
+                if (this.viewPortHeight <= 100) {
                     margin.top = 5;
                     margin.bottom = 5;
-                }else{
+                } else {
                     margin.top = 25;
-                    margin.bottom = 25
+                    margin.bottom = 25;
                 }
             }
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);
@@ -792,11 +798,10 @@ export class DiagramScroller {
             /**
              * EJ2-62912 - fit to page is not working properly when call it multiple times.
              */
-
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true,undefined,undefined,canZoomOut);
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true, undefined, undefined, canZoomOut);
         } else {
             factor = 1 / this.currentZoom;
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true,undefined,undefined,canZoomOut);
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true, undefined, undefined, canZoomOut);
         }
     }
     /**
@@ -810,27 +815,27 @@ export class DiagramScroller {
      */
     public bringIntoView(rect: Rect, isBringIntoView?: boolean): void {
     // EJ2-68130-Bringintoview shows the object outside the viewport
-        var x = 0;
-        var y = 0;
-        var scale = this.currentZoom;
-        var bounds = rect;
-        var hoffset = -this.horizontalOffset;
-        var voffset = -this.verticalOffset;
+        let x: number = 0;
+        let y: number = 0;
+        const scale: number = this.currentZoom;
+        let bounds: Rect = rect;
+        const hoffset: number = -this.horizontalOffset;
+        const voffset: number = -this.verticalOffset;
         bounds = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
-        var view = new Rect(hoffset, voffset, this.viewPortWidth, this.viewPortHeight);
+        const view: Rect = new Rect(hoffset, voffset, this.viewPortWidth, this.viewPortHeight);
         //To prevent nodes from being cut off in the horizontal and vertical scrollbars when calling the "bring into view" function, a padding value is added.
-        const nodePadding = 20;
+        const nodePadding: number = 20;
         if (!(view.containsRect(bounds))) {
             if (bounds.right > (-hoffset + this.viewPortWidth)) {
                 x = bounds.right - this.viewPortWidth;
-                x+=nodePadding
+                x += nodePadding;
             }
             if (bounds.x < -hoffset) {
                 x = bounds.x;
             }
             if (bounds.bottom > (-voffset + this.viewPortHeight)) {
                 y = bounds.bottom - this.viewPortHeight;
-                y+=nodePadding;
+                y += nodePadding;
             }
             if (bounds.y < -voffset) {
                 y = bounds.y;
@@ -861,7 +866,8 @@ export class DiagramScroller {
         this.zoom(1, -this.horizontalOffset - hoffset, -this.verticalOffset - voffset, null);
     }
 
-    private applyScrollLimit(hOffset: number, vOffset: number, isInteractiveZoomPan: boolean, isBringIntoView?: boolean, isTrackpadScroll?:boolean): PointModel {
+    private applyScrollLimit(hOffset: number, vOffset: number, isInteractiveZoomPan: boolean,
+                             isBringIntoView?: boolean, isTrackpadScroll?: boolean): PointModel {
         /**
          * EJ2-60980- ScrollOffset is not updated properly in runtime.
          * EJ2-62524 - panning is not working properly in diagram.

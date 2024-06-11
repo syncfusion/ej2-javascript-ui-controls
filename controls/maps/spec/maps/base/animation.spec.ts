@@ -49,7 +49,11 @@ describe('Maps Component Base Spec', () => {
             maps = new Maps({
                 zoomSettings: {
                     enable: true,
-                    toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset'],
+                    toolbarSettings: {
+                        buttonSettings: {
+                            toolbarItems: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                        }
+                    },
                     zoomOnClick: true,
                     doubleClickZoom: false,
                     zoomFactor: 6

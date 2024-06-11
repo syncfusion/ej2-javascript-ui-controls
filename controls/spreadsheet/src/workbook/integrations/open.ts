@@ -99,7 +99,7 @@ export class WorkbookOpen {
         const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword',
             'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded', 'ExternalWorkbook'];
         const workbookData: { Workbook?: WorkbookModel, Guid?: string } = typeof data === 'string' ? JSON.parse(data) : data;
-        const impData: WorkbookModel= workbookData.Workbook;
+        const impData: WorkbookModel = workbookData.Workbook;
         if (openError.indexOf(impData as string) > -1) {
             if (file) {
                 eventArgs.file = file;
@@ -121,13 +121,13 @@ export class WorkbookOpen {
         }
     }
 
-    private updateModel(workbookModel: WorkbookModel, isOpenFromJson: boolean, isImport?:boolean): void {
+    private updateModel(workbookModel: WorkbookModel, isOpenFromJson: boolean, isImport?: boolean): void {
         this.parent.notify(workbookFormulaOperation, { action: 'unRegisterSheet' });
         this.setSelectAllRange(workbookModel.sheets, isOpenFromJson);
         this.parent.sheetNameCount = 1;
         this.parent.sheets = [];
         this.parent.notify(sheetsDestroyed, {});
-        workbookModel.activeSheetIndex  = workbookModel.activeSheetIndex  || workbookModel.sheets.findIndex(sheet => sheet.state !== 'Hidden');
+        workbookModel.activeSheetIndex = workbookModel.activeSheetIndex || workbookModel.sheets.findIndex((sheet: SheetModel) => sheet.state !== 'Hidden');
         this.parent.setProperties(
             {
                 'isProtected': workbookModel.isProtected || false,
@@ -172,8 +172,7 @@ export class WorkbookOpen {
                 }
                 sheet.selectedRange = getRangeAddress(selectedIndex);
             }
-            // eslint-disable-next-line
-            if (isOpenFromJson && (this.parent as any).isAngular) {
+            if (isOpenFromJson && this.parent.isAngular) {
                 for (let i: number = 0; i < this.parent.sheets.length; i++) {
                     curSheet = getSheet(this.parent, i);
                     if (sheet.name === curSheet.name) {

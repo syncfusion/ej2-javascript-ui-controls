@@ -96,6 +96,7 @@ describe('Range navigator', () => {
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, null, null, null, null, xValue + cx, cy));
                 range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, xValue + cx + 100, cy));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, xValue + cx + 100, cy));
+                expect(cy !== null).toBe(true);
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -121,6 +122,7 @@ describe('Range navigator', () => {
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, null, null, null, null, xValue + cx, cy));
                 range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, xValue + 100, cy));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, xValue + 120, cy));
+                expect(cy !== null).toBe(true);
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -151,6 +153,7 @@ describe('Range navigator', () => {
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, null, null, null, null, xValue - 500, cy));
                 range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, xValue - 500, cy));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, xValue - 500, cy));
+                expect(cy !== null).toBe(true);
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -177,6 +180,7 @@ describe('Range navigator', () => {
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, null, null, null, null, xValue + cx, cy));
                 range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, xValue + cx + 100, cy));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, xValue + cx + 100, cy));
+                expect(cy !== null).toBe(true);
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -199,6 +203,7 @@ describe('Range navigator', () => {
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, null, null, null, null, 200, 20));
                 range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, 100, 20));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, 400, 20));
+                expect(element !== null).toBe(true);
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -220,6 +225,7 @@ describe('Range navigator', () => {
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, pageX, pageY));
                 range.mouseMove(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, 0, pageY));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, 0, pageY));
+                expect(element !== null).toBe(true);
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {

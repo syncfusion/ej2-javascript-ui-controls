@@ -2,94 +2,13 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
+## 26.1.35 (2024-06-11)
 
 ### Tree Grid
 
-#### Bug Fixes
+#### Features
 
-- `#F56915` - Fixed an issue where adding an action while data is being fetched and re-rendered would throw a script error.
-
-## 25.2.5 (2024-05-21)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I585943` - Resolved border not showing on Row Drag and Drop when the height exceeds the current view port.
-
-## 25.2.4 (2024-05-14)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I585348` - Record gets disappeared when adding new record in last page issue has been fixed.
-- `#I575018` - Resolved `frozenColumns` with virtualization leads to missing records on scrolling.
-- `#F187800` - Resolved exception on passing the `collpaseRow` and `expandRow` method without parameters.
-- `#F53252` - Fixed issue where newly added row to the bottom was indented to the selected child record.
-- `#F53285` - Fixed issue where server request was not updated properly during export with filtering and sorting action in remote data.
-- `#F53846` - Fixed issue where unnecessary requests were being sent for custom local data source during excel export in remote data sample.
-- `#F53930` - Fixed a script error that occurred when navigating through cells using the keyboard after updating the state in the treegrid.
-- `#F54026` - Fixed a bug where a warning message was being thrown after injecting freeze modules when frozen was enabled.
-
-## 25.1.42 (2024-04-30)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I582383` - Fixed script error that occurred when reloading the page while using persistence along with frozen column in treegrid.
-
-## 25.1.41 (2024-04-23)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I578431` - Last page index issue in virtualization when adding new record after scrolling issue has been fixed.
-- `#I570787` - Fixed issue with Excel exporting in remote data with custom datasource.
-- `#I575019` - Resolved white space issue on scrolling to the bottom when virtualization enabled with `frozenColumns`.
-- `#I575021` - Resolved bottom scrolling issue when virtualization enabled with `frozenColumns` and column template.
-- `#I571916` - Resolved exception while showing tooltip when the `treeColumnIndex` greater than overall columns.
-
-## 25.1.39 (2024-04-09)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I558418` - Resolved data re-rendering on scrolling up in virtualization.
-- `#F187000` - Nested parent remains the expanded property when its root parent is collapsed in remote data with loadChildOnDemand.
-- `#I572093` - `onclick` event of button bound properly while creating a button component in treegrid with HtmlEncode enabled.
-
-## 25.1.38 (2024-04-02)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I560767` - Resolved exception on initial rendering with column template in remote data.
-
-## 25.1.37 (2024-03-26)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F187000` - Resolved exception when the dataSource and the columns were not defined.
-- `#I560889` - Added dropPosition in `RowDragEventArgs` of `rowDrop` event.
-- `#I567688` - Resolved exception on refreshing the browser when persistence enabled.
-
-## 25.1.35 (2024-03-15)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F50891` - Fixed issue where react template disappears in tree grid column while using `useState()`.
-
-## 23.1.36 (2022-09-15)
+- Improved support for the [ActionFailure](https://ej2.syncfusion.com/documentation/api/treegrid#actionfailure) event to better handle exceptions and provide detailed error information.
 
 ### Tree Grid
 

@@ -59,7 +59,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private cloneElement: HTMLInputElement;
     private globalize: Internationalization;
     private preventChange: boolean;
-    private isAngular: boolean = false;
     private isHiddenInput: boolean = false;
     private textarea: HTMLTextAreaElement;
     private respectiveElement: HTMLInputElement | HTMLTextAreaElement;
@@ -68,8 +67,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private initialValue: string;
     private textboxOptions: TextBoxModel;
     private inputPreviousValue: string = null;
-    private isVue: boolean = false;
-    private isReact: boolean = false;
     private clearButton: HTMLElement;
 
     /**
@@ -295,7 +292,14 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.updateHTMLAttributesToElement();
                 this.updateHTMLAttributesToWrapper();
                 this.checkAttributes(true);
-                this.multiline && !isNullOrUndefined(this.textarea) ? Input.validateInputType(this.textboxWrapper.container, this.textarea) : Input.validateInputType(this.textboxWrapper.container, this.element);
+                if (this.multiline && !isNullOrUndefined(this.textarea))
+                {
+                    Input.validateInputType(this.textboxWrapper.container, this.textarea);
+                }
+                else
+                {
+                    Input.validateInputType(this.textboxWrapper.container, this.element);
+                }
             }
                 break;
             case 'readonly':
@@ -309,8 +313,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 }
                 break;
             case 'showClearButton':
-                    Input.setClearButton(this.showClearButton, this.respectiveElement, this.textboxWrapper);
-                    this.bindClearEvent();
+                Input.setClearButton(this.showClearButton, this.respectiveElement, this.textboxWrapper);
+                this.bindClearEvent();
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
@@ -386,7 +390,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
-        if (this.type === 'text' || (this.element.tagName === 'INPUT' && this.multiline && this.isReact)){
+        if (this.type === 'text' || (this.element.tagName === 'INPUT' && this.multiline && this.isReact) ){
             this.element.setAttribute('role', 'textbox');
         }
         this.globalize = new Internationalization(this.locale);
@@ -524,6 +528,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
+        if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder')) {
+            this.element.setAttribute('aria-label', 'textbox');
+        }
         this.renderComplete();
     }
 
@@ -532,7 +539,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private updateHTMLAttributesToElement(): void {
-        Input.updateHTMLAttributesToElement(this.htmlAttributes, this.respectiveElement ? this.respectiveElement : (this.multiline && !isNullOrUndefined(this.textarea) ? this.textarea : this.element));
+        Input.updateHTMLAttributesToElement(this.htmlAttributes, this.respectiveElement ? this.respectiveElement :
+            (this.multiline && !isNullOrUndefined(this.textarea) ? this.textarea : this.element));
     }
 
     private setInitialValue() : void {
@@ -620,14 +628,13 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private keydownHandler (args: KeyboardEvent): void {
-        if ((args.keyCode === 13 || args.keyCode === 9) && !((this.previousValue === null || this.previousValue === "") && (this.value === null || this.value === "") && this.respectiveElement.value === "")) {
+        if ((args.keyCode === 13 || args.keyCode === 9) && !((this.previousValue === null || this.previousValue === '') && (this.value === null || this.value === '') && this.respectiveElement.value === '')) {
             this.setProperties({ value: this.respectiveElement.value }, true);
         }
     }
 
     private inputHandler(args: KeyboardEvent): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias
-        const textboxObj: any = this;
+        const textboxObj: any = null || this;
         const eventArgs: InputEventArgs = {
             event: args,
             value: this.respectiveElement.value,
@@ -649,7 +656,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private changeHandler(args: Event): void {
         this.setProperties({value: this.respectiveElement.value}, true);
-        if(this.previousValue != this.value)
+        if (this.previousValue !== this.value)
         {
             this.raiseChangeEvent(args, true);
         }
@@ -771,16 +778,17 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     public addIcon(position: string, icons: string | string[]): void {
         Input.addIcon(position, icons, this.textboxWrapper.container, this.respectiveElement, this.createElement);
     }
-    /* eslint-disable valid-jsdoc, jsdoc/require-returns */
+
     /**
      * Gets the properties to be maintained in the persisted state.
      *
+     * @returns {string} Returns the persisted data.
      */
     public getPersistData(): string {
         const keyEntity: string[] = ['value'];
         return this.addOnPersist(keyEntity);
     }
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns */
+
     /**
      * Adding the multiple attributes as key-value pair to the TextBox element.
      *

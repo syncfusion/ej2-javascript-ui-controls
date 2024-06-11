@@ -410,7 +410,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * * If the popup content overflows the height of the page, the rest of the elements will be hidden.
      *
      * {% codeBlock src='toolbar/scrollStep/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      */
     @Property()
@@ -918,9 +918,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             itemObj = tempItem;
         }
         const eventArgs: ClickEventArgs = { originalEvent: e, item: itemObj };
-        let isClickBinded = itemObj && !isNOU(itemObj.click) && typeof itemObj.click == 'object' ? !isNOU((itemObj as any).click.observers) && (itemObj as any).click.observers.length > 0 : !isNOU(itemObj) && !isNOU(itemObj.click);
+        const isClickBinded: boolean = itemObj && !isNOU(itemObj.click) && typeof itemObj.click == 'object' ?
+            !isNOU((itemObj as any).click.observers) && (itemObj as any).click.observers.length > 0 :
+            !isNOU(itemObj) && !isNOU(itemObj.click);
         if (isClickBinded) {
-           this.trigger('items[' + this.tbarEle.indexOf(clst) + '].click', eventArgs);
+            this.trigger('items[' + this.tbarEle.indexOf(clst) + '].click', eventArgs);
         }
         if (!eventArgs.cancel) {
             this.trigger('clicked', eventArgs, (clickedArgs: ClickEventArgs) => {
@@ -957,9 +959,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             popObj.show({ name: 'FadeIn', duration: 100 });
         }
     }
-    
-    private getToolbarPopupWidth(ele: HTMLElement) { 
-        var eleStyles = window.getComputedStyle(ele);
+
+    private getToolbarPopupWidth(ele: HTMLElement): number {
+        const eleStyles: CSSStyleDeclaration = window.getComputedStyle(ele);
         return parseFloat(eleStyles.width) + ((parseFloat(eleStyles.borderRightWidth)) * 2);
     }
 
@@ -1330,7 +1332,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 addClass([ele], this.cssClass.split(' '));
             }
             setStyle(this.element, { overflow: '' });
-            const eleStyles: CSSStyleDeclaration = window.getComputedStyle(this.element);
             const popup: Popup = new Popup(null, {
                 relateTo: this.element,
                 offsetY: (this.isVertical) ? 0 : this.getElementOffsetY(),
@@ -1544,6 +1545,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         element.appendChild(nav);
     }
 
+    // eslint-disable-next-line max-len
     private tbarPriRef(inEle: HTEle, indx: number, sepPri: number, el: HTEle, des: boolean, elWid: number, wid: number, ig: number, eleStyles: Record<string, any>): void {
         const ignoreCount: number = ig;
         const popEle: HTEle = this.popObj.element;
@@ -1681,7 +1683,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             }
             el.style.position = '';
             if (elWidth < width || destroy) {
-                const inlineStyles: Record<string, any> = { minWidth: el.style.minWidth, height: el.style.height, minHeight: el.style.minHeight };
+                const inlineStyles: Record<string, any> = {
+                    minWidth: el.style.minWidth, height: el.style.height,
+                    minHeight: el.style.minHeight
+                };
                 setStyle(el, { minWidth: '', height: '', minHeight: '' });
                 if (!el.classList.contains(CLS_POPOVERFLOW)) {
                     el.classList.remove(CLS_POPUP);
@@ -2113,10 +2118,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             eleObj.appendTo(ele);
         }
         this.add(innerEle, CLS_TEMPLATE);
-        const firstChild = innerEle.firstElementChild as HTMLElement;
-        if(!isNOU(firstChild)) {
-            firstChild.setAttribute('tabindex', isNOU(firstChild.getAttribute("tabIndex")) ? '-1' : this.getDataTabindex(firstChild));
-            firstChild.setAttribute('data-tabindex', isNOU(firstChild.getAttribute("tabIndex")) ? '-1' : this.getDataTabindex(firstChild));
+        const firstChild: HTMLElement = innerEle.firstElementChild as HTMLElement;
+        if (!isNOU(firstChild)) {
+            firstChild.setAttribute('tabindex', isNOU(firstChild.getAttribute('tabIndex')) ? '-1' : this.getDataTabindex(firstChild));
+            firstChild.setAttribute('data-tabindex', isNOU(firstChild.getAttribute('tabIndex')) ? '-1' : this.getDataTabindex(firstChild));
         }
         this.tbarEle.push(innerEle);
     }
@@ -2236,7 +2241,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.activeEle.focus();
     }
     private activeEleRemove(curEle: HTEle): void {
-        let previousEle: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE + ' ):not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_HIDDEN + ' )')
+        let previousEle: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE + ' ):not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_HIDDEN + ' )');
         if (!isNOU(this.activeEle)) {
             this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
             if (previousEle) {
@@ -2249,15 +2254,15 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (isNOU(this.trgtEle) && !(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
                 if (!isNOU(this.element.querySelector('.e-hor-nav')) && this.element.querySelector('.e-hor-nav').classList.contains('e-nav-active')) {
                     this.updateTabIndex('0');
-                    this.getDataTabindex(previousEle) === '-1' ? previousEle.setAttribute('tabindex', '0') :
-                        previousEle.setAttribute('tabindex', this.getDataTabindex(previousEle));
+                    const tabindexValue: string = this.getDataTabindex(previousEle) === '-1' ? '0' : this.getDataTabindex(previousEle);
+                    previousEle.setAttribute('tabindex', tabindexValue);
                 }
                 else {
-                    this.updateTabIndex('-1');  
+                    this.updateTabIndex('-1');
                 }
                 curEle.removeAttribute('tabindex');
             } else {
-                let tabIndex = parseInt(this.getDataTabindex(this.activeEle)) + 1;
+                const tabIndex: number = parseInt(this.getDataTabindex(this.activeEle), 10) + 1;
                 this.activeEle.setAttribute('tabindex', tabIndex.toString());
             }
         }
@@ -2402,7 +2407,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public onPropertyChanged(newProp: ToolbarModel, oldProp: ToolbarModel): void {
         const tEle: HTEle = this.element;
-        const wid: number = tEle.offsetWidth;
         this.extendedOpen();
         for (const prop of Object.keys(newProp)) {
             switch (prop) {

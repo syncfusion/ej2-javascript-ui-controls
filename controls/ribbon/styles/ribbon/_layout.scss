@@ -1,6 +1,56 @@
+@mixin ribbon-backstage-border($width) {
+  border-style: solid;
+  border-width: $width;
+}
+
+@mixin ribbon-tab-text-height($height) {
+  .e-toolbar-item .e-tab-wrap:focus .e-text-wrap {
+    height: $height;
+  }
+}
+
+@mixin ribbon-item-padding($btn-padding, $icon-padding) {
+  &.e-ribbon-small-item,
+  &.e-ribbon-medium-item {
+    .e-btn {
+      &:not(.e-icon-btn, .e-dropdown-btn) {
+        padding: $btn-padding;
+      }
+    }
+  }
+
+  &.e-ribbon-medium-item {
+    .e-btn .e-btn-icon.e-icon-left {
+      padding: $icon-padding;
+    }
+  }
+}
+
+@mixin ribbon-font-styles($font-size, $font-weight, $line-height) {
+  font-size: $font-size;
+  font-weight: $font-weight;
+  line-height: $line-height;
+}
+
+@mixin ribbon-font-props($font-size, $line-height) {
+  font-size: $font-size;
+  line-height: $line-height;
+}
+
+@mixin ribbon-items-height($height, $min-height) {
+  height: $height;
+  min-height: $min-height;
+}
+
+@mixin ribbon-display($rb-display, $rb-flex-direction) {
+  display: $rb-display;
+  flex-direction: $rb-flex-direction;
+}
+
 @include export-module('ribbon-layout') {
   .e-ribbon.e-rbn {
     display: block;
+    border-radius: $ribbon-border-radius;
 
     .e-ribbon-tab {
       .e-toolbar {
@@ -14,13 +64,11 @@
 
       .e-ribbon-file-menu,
       .e-ribbon-backstage {
+        @include ribbon-font-styles($ribbon-file-menu-size, $ribbon-file-menu-weight, $ribbon-file-menu-height);
         position: absolute;
-        line-height: $ribbon-file-menu-height;
         padding: $ribbon-file-menu-padding;
         border: $ribbon-file-menu-border;
         border-width: $ribbon-file-menu-border-width;
-        font-size: $ribbon-file-menu-size;
-        font-weight: $ribbon-file-menu-weight;
         box-shadow: none;
         text-transform: none;
 
@@ -49,8 +97,7 @@
         border-bottom: $ribbon-tab-border;
 
         .e-hor-nav {
-          height: $ribbon-horizontal-nav-height;
-          min-height: $ribbon-horizontal-nav-height;
+          @include ribbon-items-height($ribbon-horizontal-nav-height, $ribbon-horizontal-nav-height);
         }
 
         &::before {
@@ -63,11 +110,9 @@
         }
 
         .e-toolbar-items {
-          min-height: auto;
-          height: $ribbon-toolbar-items-height;
+          @include ribbon-items-height($ribbon-toolbar-items-height, auto);
 
           &:not(.e-tbar-pos) {
-
             .e-toolbar-item:first-child,
             .e-toolbar-item:last-child {
               margin: 0;
@@ -79,6 +124,11 @@
           vertical-align: unset;
           margin: 0;
           border: none;
+          border-radius: $ribbon-tab-border-radius;
+
+          &:not(.e-separator) {
+            @include ribbon-items-height(auto, auto);
+          }
 
           &.e-active {
             border: none;
@@ -95,12 +145,10 @@
           }
 
           .e-tab-text {
+            @include ribbon-font-styles($ribbon-tab-text-size, $ribbon-tab-text-weight, $ribbon-tab-text-height);
             padding: $ribbon-tab-text-padding;
-            line-height: $ribbon-tab-text-height;
             text-transform: none;
             margin: 0;
-            font-size: $ribbon-tab-text-size;
-            font-weight: $ribbon-tab-text-weight;
           }
 
           .e-text-wrap {
@@ -111,27 +159,22 @@
             &::before {
               display: none;
             }
+            .e-tab-text {
+              font-weight: $ribbon-active-tab-text-weight;
+            }
           }
-        }
-
-        .e-toolbar-item:not(.e-separator) {
-          height: auto;
-          min-height: auto;
         }
       }
 
-      .e-hscroll.e-scroll-device {
-        .e-scroll-nav.e-scroll-right-nav {
-          box-shadow: none;
-        }
+      .e-hscroll.e-scroll-device .e-scroll-nav.e-scroll-right-nav {
+        box-shadow: none;
       }
 
       .e-hscroll {
         padding: $ribbon-hscroll-padding;
 
         .e-scroll-nav {
-          height: auto;
-          min-height: auto;
+          @include ribbon-items-height(auto, auto);
           min-width: auto;
           width: auto;
           border-style: solid;
@@ -145,33 +188,26 @@
           }
 
           .e-nav-arrow {
-            font-size: $ribbon-nav-arrow-size;
+            @include ribbon-font-styles($ribbon-nav-arrow-size, $ribbon-hscroll-nav-arrow-weight, $ribbon-nav-arrow-height);
             height: auto;
             transform: none;
-            line-height: $ribbon-nav-arrow-height;
             padding: $ribbon-hscroll-nav-arrow-padding;
             width: auto;
             letter-spacing: unset;
-            font-weight: $ribbon-hscroll-nav-arrow-weight;
           }
 
           .e-nav-arrow::before {
-            font-size: $ribbon-nav-arrow-size;
-            line-height: $ribbon-nav-arrow-height;
+            @include ribbon-font-props($ribbon-nav-arrow-size, $ribbon-nav-arrow-height);
           }
         }
       }
 
       &.e-focused .e-tab-header {
-        .e-toolbar-item .e-tab-wrap:focus .e-text-wrap {
-          height: $ribbon-toolbar-items-height;
-        }
+        @include ribbon-tab-text-height($ribbon-toolbar-items-height);
       }
       
       .e-tab-header {
-        .e-toolbar-item .e-tab-wrap:focus .e-text-wrap {
-          height: auto;
-        }
+        @include ribbon-tab-text-height(auto);
       }
     }
 
@@ -233,14 +269,14 @@
       .e-ribbon-overall-of-btn {
         bottom: $ribbon-overall-overflow-btn-position;
         position: absolute;
+
+        &.e-ribbon-hide {
+          display: none;
+        }
       }
 
       .e-ribbon-group-container {
         display: inline-flex;
-      }
-
-      .e-ribbon-overall-of-btn.e-ribbon-hide {
-        display: none;
       }
     }
 
@@ -251,14 +287,19 @@
     }
 
     &.e-ribbon-simplified-mode {
-
+      .e-ribbon-item {
+        &:has(.e-ribbon-gallery-container:not(.e-hidden)) {
+          height: $ribbon-gallery-simplified-wrapper-height;
+        }
+      }
       .e-ribbon-item .e-ribbon-gallery-wrapper {
-        height: $ribbon-gallery-simplified-wrapper-height;
+        margin: $ribbon-simplified-wrapper-margin;
+
         .e-ribbon-gallery-container {
           .e-ribbon-gallery-item {
-            padding: $ribbon-gallery-simplified-items-padding;
             width: $ribbon-gallery-simplified-items-width;
-            margin: 2px;
+            margin: $ribbon-simplified-wrapper-item-margin;
+            border-radius: $ribbon-simplified-wrapper-item-border-radius;
             max-height: $ribbon-gallery-simplified-items-wrapper-height;
             &.e-disabled {
               pointer-events: none;
@@ -348,11 +389,8 @@
         right: 0;
       }
 
-      &.e-ribbon-collapsible {
-
-        .e-ribbon-overall-of-btn {
-          right: $ribbon-overflow-collapse-btn-right;
-        }
+      &.e-ribbon-collapsible .e-ribbon-overall-of-btn {
+        right: $ribbon-overflow-collapse-btn-right;
       }
 
       .e-tab-header {
@@ -376,11 +414,8 @@
         left: 0;
       }
 
-      &.e-ribbon-collapsible {
-
-        .e-ribbon-overall-of-btn {
-          left: $ribbon-overflow-collapse-btn-right;
-        }
+      &.e-ribbon-collapsible .e-ribbon-overall-of-btn {
+        left: $ribbon-overflow-collapse-btn-right;
       }
 
       .e-tab-header {
@@ -393,18 +428,16 @@
     }
   }
 
-  .e-ribbon-backstage-popup.e-ribbon-backstage-open {
-    display: flex;
-  }
-
   .e-ribbon-backstage-popup {
-    .e-ribbon-backstage-wrapper {
+    &.e-ribbon-backstage-open {
       display: flex;
-      flex-direction: column;
+    }
+
+    .e-ribbon-backstage-wrapper {
+      @include ribbon-display(flex, column);
 
       .e-ribbon-backstage-items-wrapper {
-        display: flex;
-        flex-direction: column;
+        @include ribbon-display(flex, column);
         justify-content: space-between;
         height: 100%;
       }
@@ -420,26 +453,22 @@
         line-height: $ribbon-backstage-btn-line-height;
 
         .e-btn-icon {
+          @include ribbon-font-props($ribbon-backstage-btn-icon-font-size, $ribbon-backstage-btn-icon-line-height);
           width: auto;
           margin: 0;
-          font-size: $ribbon-backstage-btn-icon-font-size;
-          line-height: $ribbon-backstage-btn-icon-line-height;
           padding: $ribbon-backstage-btn-icon-padding;
         }
 
         &:focus {
-          border-style: solid;
-          border-width: $ribbon-backstage-btn-focus-border;
+          @include ribbon-backstage-border($ribbon-backstage-btn-focus-border);
         }
 
         &:hover {
-          border-style: solid;
-          border-width: $ribbon-backstage-btn-hover-border;
+          @include ribbon-backstage-border($ribbon-backstage-btn-hover-border);
         }
 
         &:focus:hover {
-          border-style: solid;
-          border-width: $ribbon-backstage-btn-focus-border;
+          @include ribbon-backstage-border($ribbon-backstage-btn-focus-border);
         }
       }
 
@@ -451,10 +480,8 @@
         &.e-menu-wrapper ul.e-ul {
           min-width: 135px;
 
-          &.e-menu .e-menu-item {
-            &.e-separator {
-              margin: 4px 20px;
-            }
+          &.e-menu .e-menu-item.e-separator {
+            margin: 4px 20px;
           }
 
           .e-menu-item:not(.e-separator) {
@@ -463,26 +490,22 @@
             padding: 0;
 
             &:focus {
-              border-style: solid;
-              border-width: $ribbon-backstage-menu-hover-border;
+              @include ribbon-backstage-border($ribbon-backstage-menu-hover-border);
             }
 
             &.e-selected,
             &:hover {
-              border-style: solid;
-              border-width: $ribbon-backstage-menu-active-border;
+              @include ribbon-backstage-border($ribbon-backstage-menu-active-border);
             }
 
             &.e-selected:focus {
-              border-style: solid;
-              border-width: $ribbon-backstage-menu-hover-border;
+              @include ribbon-backstage-border($ribbon-backstage-menu-hover-border);
             }
 
             .e-menu-icon {
+              @include ribbon-font-props($ribbon-backstage-menu-icon-font-size, $ribbon-backstage-menu-icon-line-height);
               width: auto;
               margin-right: unset;
-              font-size: $ribbon-backstage-menu-icon-font-size;
-              line-height: $ribbon-backstage-menu-icon-line-height;
               padding: $ribbon-backstage-menu-icon-padding;
             }
 
@@ -511,31 +534,29 @@
   .e-ribbon-group-overflow-ddb {
     border: $ribbon-border;
 
+    .e-disabled {
+      opacity: $ribbon-disabled-opacity;
+    }
+
     .e-input-group {
       height: $ribbon-input-group-height;
       border-radius: $ribbon-input-group-border-radius;
-      margin-bottom: $ribbon-input-group-margin;
+      margin: $ribbon-input-group-margin;
 
       input.e-input {
+        @include ribbon-font-styles($ribbon-input-size, $ribbon-input-weight, $ribbon-input-height);
+        @include ribbon-items-height(auto, auto);
         padding: $ribbon-input-padding;
-        font-size: $ribbon-input-size;
-        line-height: $ribbon-input-height;
-        font-weight: $ribbon-input-weight;
-        height: auto;
-        min-height: auto;
       }
 
       &.e-control-wrapper {
         .e-input-group-icon {
-          font-size: $ribbon-input-icon-size;
-          line-height: $ribbon-input-icon-height;
-          height: auto;
+          @include ribbon-font-styles($ribbon-input-icon-size, $ribbon-input-icon-weight, $ribbon-input-icon-height);
+          @include ribbon-items-height(auto, auto);
           padding: $ribbon-input-icon-padding;
           margin: 0;
-          font-weight: $ribbon-input-icon-weight;
           border: none;
           min-width: auto;
-          min-height: auto;
           border-radius: unset;
 
           &.e-ddl-icon {
@@ -564,13 +585,12 @@
     }
 
     .e-ribbon-group-header {
+      @include ribbon-font-props($ribbon-group-header-font-size, $ribbon-group-header-height);
       align-items: center;
       display: flex;
       justify-content: center;
       white-space: nowrap;
       padding: $ribbon-group-header-padding;
-      line-height: $ribbon-group-header-height;
-      font-size: $ribbon-group-header-font-size;
     }
 
     .e-ribbon-launcher-icon {
@@ -603,13 +623,11 @@
     }
 
     .e-ribbon-column {
-      display: inline-flex;
-      flex-direction: row;
+      @include ribbon-display(inline-flex, row);
     }
 
     .e-ribbon-row {
-      display: inline-flex;
-      flex-direction: column;
+      @include ribbon-display(inline-flex, column);
     }
 
     .e-ribbon-group-overflow,
@@ -619,19 +637,23 @@
       vertical-align: middle;
 
       .e-ribbon-gallery-wrapper {
-        height: $ribbon-gallery-wrapper-height;
         display: flex;
-        .e-ribbon-gallery-container {
-          .e-ribbon-gallery-item {
-            max-height: $ribbon-gallery-wrapper-height;
-          }
+        margin: $ribbon-wrapper-margin;
+        
+        .e-ribbon-gallery-container .e-ribbon-gallery-item {
+          max-height: $ribbon-gallery-items-wrapper-height;
+          margin: $ribbon-wrapper-item-margin;
+          border-radius: $ribbon-wrapper-item-border-radius;
         }
       }
 
       .e-ribbon-gallery-button {
-        padding: 0;
+        padding: $ribbon-gallery-button-icon-padding;
         border-width: 0 0 0 1px;
         border-radius: 0 4px 4px 0;
+        line-height: $ribbon-gallery-button-icon-line-height;
+        font-weight: $ribbon-gallery-button-icon-font-weight;
+        font-size: $ribbon-gallery-button-icon-font-size;
       }
 
       &.e-hidden {
@@ -658,15 +680,13 @@
 
       &.e-ribbon-large-item {
         .e-btn {
+          @include ribbon-items-height(100%, inherit);
+          @include ribbon-display(flex, column);
           max-width: $ribbon-large-items-max-width;
-          min-height: inherit;
           min-width: fit-content;
           white-space: normal;
           padding: $ribbon-large-items-btn-padding;
           line-height: $ribbon-large-items-btn-height;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
           justify-content: flex-start;
           align-items: center;
 
@@ -692,14 +712,15 @@
         & > .e-split-btn-wrapper.e-vertical .e-btn {
           justify-content: space-evenly;
           height: 50%;
+
+          .e-icon-top {
+            height: 100%;
+          }
         }
 
-        .e-dropdown-btn {
-          .e-caret {
-            font-size: $ribbon-dropdown-caret-btn-size;
-            padding: $ribbon-overflow-dropdown-btn-padding;
-            line-height: $ribbon-dropdown-caret-btn-height;
-          }
+        .e-dropdown-btn .e-caret {
+          @include ribbon-font-props($ribbon-dropdown-caret-btn-size, $ribbon-dropdown-caret-btn-height);
+          padding: $ribbon-overflow-dropdown-btn-padding;
         }
       }
     }
@@ -717,7 +738,10 @@
         padding: 0;
         border-style: solid;
         border-width: 1px;
-        border-radius: 4px;
+      }
+      &:has(.e-ribbon-gallery-container:not(.e-hidden)) {
+        height: $ribbon-gallery-wrapper-height;
+        border-radius: $ribbon-wrapper-border-radius;
       }
 
       .e-btn-group {
@@ -725,6 +749,9 @@
       }
 
       .e-checkbox-wrapper {
+        height: fit-content;
+        margin: auto 0;
+        width: max-content;
         padding: $ribbon-items-checkbox-padding;
 
         .e-label {
@@ -740,20 +767,12 @@
         }
       }
 
-      .e-checkbox-wrapper {
-        height: fit-content;
-        margin: auto 0;
-        width: max-content;
-      }
-
       .e-colorpicker-wrapper {
         border: 1px solid transparent;
         border-radius: $ribbon-items-border-radius;
 
-        .e-split-btn-wrapper.e-rtl .e-split-colorpicker {
-          &.e-split-btn {
-            padding: 0;
-          }
+        .e-split-btn-wrapper.e-rtl .e-split-colorpicker.e-split-btn {
+          padding: 0;
         }
       }
 
@@ -788,12 +807,11 @@
       &.e-ribbon-medium-item {
         .e-btn {
           white-space: nowrap;
-          padding: $ribbon-items-btn-padding;
+          padding: 0;
           line-height: $ribbon-items-height;
 
           .e-btn-icon {
-            font-size: 16px;
-            line-height: 16px;
+            @include ribbon-font-props(16px, 16px);
             margin: $ribbon-items-margin;
           }
         }
@@ -814,9 +832,8 @@
         }
 
         .e-dropdown-btn .e-caret {
-          font-size: $ribbon-dropdown-caret-btn-size;
+          @include ribbon-font-props($ribbon-dropdown-caret-btn-size, $ribbon-dropdown-caret-btn-height);
           padding: $ribbon-dropdown-caret-btn-padding;
-          line-height: $ribbon-dropdown-caret-btn-height;
           margin: 0;
           width: auto;
         }
@@ -843,49 +860,12 @@
       }
     }
 
-    .e-ribbon-vertical-center:not(.e-ribbon-large-item) {
-      margin-bottom: auto;
-      margin-top: auto;
-    }
-
     &:not(.e-rtl) .e-ribbon-item {
-
-      &.e-ribbon-small-item,
-      &.e-ribbon-medium-item {
-        .e-btn {
-          &:not(.e-icon-btn, .e-dropdown-btn) {
-            padding: 0 4px 0 0;
-          }
-        }
-      }
-
-      &.e-ribbon-medium-item {
-        .e-btn {
-          .e-btn-icon.e-icon-left {
-            padding: 0 2px 0 0;
-          }
-        }
-      }
+      @include ribbon-item-padding(0 4px 0 0, 0 2px 0 0);
     }
 
     &.e-rtl .e-ribbon-item {
-
-      &.e-ribbon-small-item,
-      &.e-ribbon-medium-item {
-        .e-btn {
-          &:not(.e-icon-btn, .e-dropdown-btn) {
-            padding: 0 0 0 4px;
-          }
-        }
-      }
-
-      &.e-ribbon-medium-item {
-        .e-btn {
-          .e-btn-icon.e-icon-left {
-            padding: 0 0 0 2px;
-          }
-        }
-      }
+      @include ribbon-item-padding(0 0 0 4px, 0 0 0 2px);
     }
   }
 
@@ -898,7 +878,6 @@
     }
 
     .e-ribbon-overflow-target {
-
       .e-ribbon-item:has(.e-ribbon-gallery-container) {
         border: 0;
       }
@@ -919,28 +898,17 @@
       }
       .e-ribbon-gallery-wrapper.e-hidden,
       .e-ribbon-gallery-container.e-hidden,
-      .e-ribbon-gallery-button.e-hidden {
-        display: none;
-      }
-
+      .e-ribbon-gallery-button.e-hidden,
+      .e-ribbon-of-tab .e-ribbon-of-group-container.e-hidden,
+      .e-ribbon-of-tab .e-ribbon-of-group-container.e-hide-group,
       &.e-hidden,
       &.e-hide-group {
         display: none;
       }
 
-      &.e-disabled {
+      &.e-disabled,
+      .e-ribbon-of-tab .e-ribbon-of-group-container.e-disabled {
         pointer-events: none;
-      }
-
-      .e-ribbon-of-tab .e-ribbon-of-group-container {
-        &.e-hidden,
-        &.e-hide-group {
-          display: none;
-        }
-
-        &.e-disabled {
-          pointer-events: none;
-        }
       }
 
       .e-ribbon-item {
@@ -967,10 +935,8 @@
         .e-ribbon-template {
           margin: $ribbon-overflow-wrapper-item-margin;
         }
-        .e-btn {
-          .e-btn-icon {
-            font-size: $ribbon-items-btn-icon-size;
-          }
+        .e-btn .e-btn-icon {
+          font-size: $ribbon-items-btn-icon-size;
         }
       }
 
@@ -984,10 +950,8 @@
         width: 100%;
         height: $ribbon-medium-item-height;
 
-        .e-btn {
-          .e-btn-icon.e-icon-left {
-            margin: 0;
-          }
+        .e-btn .e-btn-icon.e-icon-left {
+          margin: 0;
         }
 
         > .e-split-btn-wrapper .e-btn,
@@ -1008,10 +972,8 @@
       }
 
       .e-ribbon-overflow-header {
+        @include ribbon-font-styles($ribbon-overflow-header-font-size, $ribbon-overflow-header-weight, $ribbon-overflow-header-line-height);
         padding: $ribbon-overflow-header-padding;
-        font-size: $ribbon-overflow-header-font-size;
-        font-weight: $ribbon-overflow-header-weight;
-        line-height: $ribbon-overflow-header-line-height;
         height: $ribbon-overflow-header-height;
       }
     }
@@ -1019,21 +981,25 @@
 
   .e-ribbon-group-overflow-ddb:not(.e-rtl) {
     .e-ribbon-overflow-target .e-ribbon-item {
-
       .e-ribbon-combobox-label,
       .e-ribbon-colorpicker-label {
         margin-left: $ribbon-items-label;
       }
 
       &.e-ribbon-medium-item {
-        .e-btn {
-          .e-btn-icon.e-icon-left {
-            padding: $ribbon-button-icon-padding;
+        .e-btn .e-btn-icon.e-icon-left {
+          padding: $ribbon-button-icon-padding;
+        }
+
+        &:not(:has(.e-colorpicker-wrapper)) .e-btn {
+          &:not(:has(.e-btn-icon.e-icon-left)) {
+            padding-left: $ribbon-items-label;
           }
         }
       }
 
-      &:not(:has(.e-ribbon-colorpicker-label)) .e-colorpicker-wrapper {
+      &:not(:has(.e-ribbon-colorpicker-label)) .e-colorpicker-wrapper,
+      &:not(:has(.e-ribbon-combobox-label)) .e-input-group.e-control-wrapper {
         margin-left: $ribbon-items-label;
       }
 
@@ -1054,21 +1020,25 @@
         padding: $ribbon-rtl-overflow-header-padding;
       }
       .e-ribbon-item {
-
         .e-ribbon-combobox-label,
         .e-ribbon-colorpicker-label {
           margin-right: $ribbon-items-label;
         }
         
         &.e-ribbon-medium-item {
-          .e-btn {
-            .e-btn-icon.e-icon-left {
-              padding: $ribbon-rtl-button-icon-padding;
+          .e-btn .e-btn-icon.e-icon-left {
+            padding: $ribbon-rtl-button-icon-padding;
+          }
+
+          &:not(:has(.e-colorpicker-wrapper)) .e-btn {
+            &:not(:has(.e-btn-icon.e-icon-left)) {
+              padding-right: $ribbon-items-label;
             }
           }
         }
 
-        &:not(:has(.e-ribbon-colorpicker-label)) .e-colorpicker-wrapper {
+        &:not(:has(.e-ribbon-colorpicker-label)) .e-colorpicker-wrapper,
+        &:not(:has(.e-ribbon-combobox-label)) .e-input-group.e-control-wrapper {
           margin-right: $ribbon-items-label;
         }
   
@@ -1087,10 +1057,6 @@
     }
   }
 
-  .e-dropdown-popup.e-ribbon-dropdown-group-button.e-ribbon-group-button-overflow-popup .e-btn-group:not(.e-icon-btn) {
-    flex-direction: column;
-  }
-
   .e-dropdown-popup.e-ribbon-dropdown-group-button {
     border-radius: $ribbon-group-button-ddb-border-radius;
     border: $ribbon-group-button-ddb-border;
@@ -1103,25 +1069,30 @@
       white-space: nowrap;
     }
 
-    &.e-ribbon-group-button-overflow-popup .e-btn-group {
-      .e-btn.e-ribbon-group-button:not(.e-icon-btn) {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-      }
-      &:has(.e-ribbon-group-button-content) .e-btn.e-ribbon-group-button {
-        &:first-of-type {
-          border-top-right-radius: 4px;
-          border-top-left-radius: 4px;
-          border-bottom-right-radius: 0;
-          border-bottom-left-radius: 0;
+    &.e-ribbon-group-button-overflow-popup {
+      .e-btn-group {
+        .e-btn.e-ribbon-group-button:not(.e-icon-btn) {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
         }
-        &:last-of-type {
-          border-top-right-radius: 0;
-          border-top-left-radius: 0;
-          border-bottom-right-radius: 4px;
-          border-bottom-left-radius: 4px;
+        &:has(.e-ribbon-group-button-content) .e-btn.e-ribbon-group-button {
+          &:first-of-type {
+            border-top-right-radius: 4px;
+            border-top-left-radius: 4px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+          }
+          &:last-of-type {
+            border-top-right-radius: 0;
+            border-top-left-radius: 0;
+            border-bottom-right-radius: 4px;
+            border-bottom-left-radius: 4px;
+          }
+        }
+        &:not(.e-icon-btn) {
+          flex-direction: column;
         }
       }
     }
@@ -1131,9 +1102,7 @@
       border-radius: $ribbon-group-button-ddb-border-radius;
       
       .e-btn-icon {
-        font-size: 16px;
-        line-height: 16px;
-        font-weight: $ribbon-items-font-weight;
+        @include ribbon-font-styles(16px, $ribbon-items-font-weight, 16px);
         margin: $ribbon-group-button-icon-margin;
         width: auto;
         &.e-icon-left {
@@ -1144,7 +1113,7 @@
         padding: 0;
         font-weight: $ribbon-items-font-weight;
         font-size: $ribbon-items-btn-size;
-        border: 1px solid $ribbon-group-button-border-color;
+        border: $ribbon-group-button-item-border;
         text-transform: none;
 
         &:not(.e-icon-btn) {
@@ -1162,28 +1131,29 @@
 
   .e-ribbon-gallery-popup.e-popup,
   .e-ribbon-gallery-dropdown.e-popup {
+    .e-ribbon-popup-container .e-ribbon-gallery-header:first-child {
+      padding-top: 0;
+    }
+  }
+  .e-ribbon-gallery-popup.e-popup,
+  .e-ribbon-gallery-dropdown.e-popup {
     border-radius: 4px;
     padding: $ribbon-gallery-popup-padding;
     overflow: auto;
+
     .e-ribbon-gallery-header {
+      @include ribbon-font-styles($ribbon-gallery-header-fontsize, $ribbon-gallery-header-font-weight, $ribbon-gallery-header-line-height);
       padding: $ribbon-gallery-header-padding;
-      font-size: $ribbon-gallery-header-fontsize;
-      font-weight: $ribbon-gallery-header-font-weight;
-      line-height: $ribbon-gallery-header-line-height;
     }
     .e-ribbon-gallery-container .e-ribbon-gallery-item {
-      margin: 4px;
+      margin: 2px;
       height: 54px;
       width: $ribbon-gallery-popup-items-width;
     }
   }
 
-  .e-ribbon-item {
-    .e-ribbon-gallery-container {
-      .e-ribbon-gallery-item {
-        width: $ribbon-gallery-items-width;
-      }
-    }
+  .e-ribbon-item .e-ribbon-gallery-container .e-ribbon-gallery-item {
+    width: $ribbon-gallery-items-width;
   }
 
   .e-ribbon-gallery-popup.e-popup,
@@ -1195,14 +1165,14 @@
       margin: 0;
       display: flex;
       align-content: space-around;
+
       .e-ribbon-gallery-item {
-        display: inherit;
+        @include ribbon-display(inherit, column);
         align-items: center;
         justify-content: center;
         text-align: center;
         list-style-type: none;
         padding: $ribbon-gallery-popup-items-padding;
-        flex-direction: column;
         cursor: pointer;
         border-width: 2px;
         border-style: solid;
@@ -1216,19 +1186,8 @@
           display: none;
         }
 
-        .e-ribbon-gallery-text {
-          font-size: $ribbon-gallery-text-size;
-          font-weight: $ribbon-gallery-text-weight;
-          line-height: $ribbon-gallery-text-line-height;
-          width: inherit;
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-        }
         .e-ribbon-gallery-icons {
-          font-size: $ribbon-gallery-icons-size;
-          font-weight: $ribbon-gallery-icons-weight;
-          line-height: $ribbon-gallery-icons-height;
+          @include ribbon-font-styles($ribbon-gallery-icons-size, $ribbon-gallery-icons-weight, $ribbon-gallery-icons-height);
           padding: 3px;
           background-size: cover;
         }
@@ -1240,11 +1199,19 @@
     }
   }
 
+  .e-ribbon-gallery-text {
+    @include ribbon-font-styles($ribbon-gallery-text-size, $ribbon-gallery-text-weight, $ribbon-gallery-text-line-height);
+    width: inherit;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   .e-ribbon-keytip {
-    min-width: 20px;
-    height: 20px;
-    line-height: 18px;
-    font-size: 14px;
+    @include ribbon-font-props($ribbon-keytip-font-size, $ribbon-keytip-line-height);
+    min-width: $ribbon-keytip-min-width;
+    height: $ribbon-keytip-height;
+    border-radius: $ribbon-keytip-border-radius;
 
     &.e-popup-open {
       display: flex;
@@ -1283,8 +1250,7 @@
     align-items: center;
 
     .e-menu-icon {
-      font-size: 16px;
-      line-height: 16px;
+      @include ribbon-font-props(16px, 16px);
     }
   }
 
@@ -1293,8 +1259,7 @@
       padding: 4px;
 
       .e-ribbon-tooltip-title {
-        font-size: 12px;
-        line-height: 18px;
+        @include ribbon-font-props(12px, 18px);
         padding: 4px 4px 0;
       }
 
@@ -1303,13 +1268,11 @@
         display: flex;
 
         .e-ribbon-tooltip-content {
-          font-size: 10px;
-          line-height: 15px;
+          @include ribbon-font-props(10px, 15px);
         }
 
         .e-ribbon-tooltip-icon {
-          font-size: 32px;
-          line-height: 32px;
+          @include ribbon-font-props(32px, 32px);
           padding-right: 8px;
         }
       }
@@ -1318,7 +1281,6 @@
 
   .e-bigger.e-ribbon.e-rbn,
   .e-bigger .e-ribbon.e-rbn {
-
     .e-ribbon-group {
       height: $ribbon-bigger-group-height;
     }
@@ -1326,9 +1288,8 @@
     .e-ribbon-tab {
       .e-ribbon-file-menu,
       .e-ribbon-backstage {
-        line-height: $ribbon-bigger-file-menu-height;
+        @include ribbon-font-props($ribbon-bigger-file-menu-size, $ribbon-bigger-file-menu-height);
         padding: $ribbon-bigger-file-menu-padding;
-        font-size: $ribbon-bigger-file-menu-size;
       }
 
       .e-ribbon-help-template {
@@ -1342,8 +1303,7 @@
 
       .e-tab-header {
         .e-hor-nav {
-          height: $ribbon-bigger-horizontal-nav-height;
-          min-height: $ribbon-bigger-horizontal-nav-height;
+          @include ribbon-items-height($ribbon-bigger-horizontal-nav-height, $ribbon-bigger-horizontal-nav-height);
         }
 
         .e-toolbar-items {
@@ -1354,20 +1314,16 @@
           margin-right: 0;
 
           .e-tab-text {
-            font-size: $ribbon-bigger-tab-text-size;
+            @include ribbon-font-props($ribbon-bigger-tab-text-size, $ribbon-bigger-tab-text-height);
             padding: $ribbon-bigger-tab-text-padding;
-            line-height: $ribbon-bigger-tab-text-height;
           }
         }
       }
 
-      &.e-focused .e-tab-header {
-        .e-toolbar-item .e-tab-wrap {
-
-          &:focus,
-          &:focus .e-text-wrap {
-            height: $ribbon-bigger-toolbar-items-height;
-          }
+      &.e-focused .e-tab-header .e-toolbar-item .e-tab-wrap {
+        &:focus,
+        &:focus .e-text-wrap {
+          height: $ribbon-bigger-toolbar-items-height;
         }
       }
     }
@@ -1378,8 +1334,7 @@
       }
 
       .e-ribbon-collapse-btn {
-        line-height: $ribbon-bigger-collapse-btn-height;
-        font-size: $ribbon-bigger-collapse-btn-font-size;
+        @include ribbon-font-props($ribbon-bigger-collapse-btn-font-size, $ribbon-bigger-collapse-btn-height);
         padding: $ribbon-bigger-collapse-btn-padding;
       }
 
@@ -1393,9 +1348,8 @@
           height: $ribbon-bigger-overall-overflow-btn-height;
 
           .e-btn-icon {
-            font-size: $ribbon-bigger-overflow-btn-font-size;
+            @include ribbon-font-props($ribbon-bigger-overflow-btn-font-size, $ribbon-bigger-overflow-btn-height);
             padding: $ribbon-bigger-overflow-btn-icon-padding;
-            line-height: $ribbon-bigger-overflow-btn-height;
           }
         }
 
@@ -1412,17 +1366,40 @@
         }
       }
     }
+    .e-ribbon-item {
+      &:has(.e-ribbon-gallery-container:not(.e-hidden)) {
+        height: $ribbon-bigger-gallery-wrapper-height;
+      }
+      &:has(.e-ribbon-gallery-container) {
+        padding: 0;
+      }
+
+      .e-ribbon-gallery-wrapper .e-ribbon-gallery-container .e-ribbon-gallery-item {
+        max-height: $ribbon-bigger-gallery-items-wrapper-height;
+        width: $ribbon-bigger-gallery-items-wrapper-width;
+      }
+    }
+    
+    &.e-ribbon-simplified-mode {
+      .e-ribbon-item {
+        &:has(.e-ribbon-gallery-container:not(.e-hidden)) {
+          height: $ribbon-bigger-gallery-simplified-wrapper-height;
+        }
+
+        .e-ribbon-gallery-wrapper .e-ribbon-gallery-container .e-ribbon-gallery-item {
+          max-height: $ribbon-bigger-gallery-simplified-items-wrapper-height;
+        }
+      }
+    }
   }
 
   .e-bigger.e-ribbon.e-rbn,
   .e-bigger .e-ribbon.e-rbn,
   .e-bigger .e-ribbon-group-overflow-ddb,
   .e-bigger.e-ribbon-group-overflow-ddb {
-
     .e-ribbon-group-header {
+      @include ribbon-font-props($ribbon-bigger-group-header-font-size, $ribbon-bigger-group-header-height);
       padding: $ribbon-bigger-group-header-padding;
-      line-height: $ribbon-bigger-group-header-height;
-      font-size: $ribbon-bigger-group-header-font-size;
     }
 
     .e-ribbon-launcher-icon {
@@ -1434,7 +1411,6 @@
     }
 
     &.e-ribbon-simplified-mode {
-
       .e-ribbon-group {
         height: auto;
       }
@@ -1458,23 +1434,21 @@
 
     .e-input-group {
       height: $ribbon-bigger-input-group-height;
-      margin-bottom: $ribbon-bigger-input-group-margin;
+      margin: $ribbon-bigger-input-group-margin;
 
       &:not(.e-float-input) .e-input {
         min-height: auto;
       }
 
       input.e-input {
+        @include ribbon-font-props($ribbon-bigger-input-items-size, $ribbon-bigger-input-items-height);
         padding: $ribbon-bigger-input-padding;
-        font-size: $ribbon-bigger-input-items-size;
-        line-height: $ribbon-bigger-input-items-height;
         height: auto;
       }
 
       &.e-control-wrapper {
         .e-input-group-icon {
-          font-size: $ribbon-bigger-input-items-btn-size;
-          line-height: $ribbon-bigger-input-items-btn-height;
+          @include ribbon-font-props($ribbon-bigger-input-items-btn-size, $ribbon-bigger-input-items-btn-height);
           padding: $ribbon-bigger-input-icon-padding;
 
           &.e-ddl-icon {
@@ -1500,9 +1474,9 @@
     .e-ribbon-item {
       &.e-ribbon-large-item {
         .e-btn {
+          @include ribbon-font-props($ribbon-bigger-large-items-btn-size, $ribbon-bigger-large-items-btn-height);
           padding: $ribbon-bigger-large-items-btn-padding;
-          font-size: $ribbon-bigger-large-items-btn-size;
-          line-height: $ribbon-bigger-large-items-btn-height;
+          max-width: $ribbon-bigger-large-items-max-width;
 
           .e-btn-icon:not(.e-caret) {
             font-size: $ribbon-bigger-large-items-icon-size;
@@ -1514,35 +1488,27 @@
           }
         }
 
-        .e-dropdown-btn {
-          .e-caret {
-            font-size: $ribbon-bigger-dropdown-btn-size;
-            line-height: $ribbon-bigger-dropdown-btn-line-height;
-            padding: $ribbon-bigger-caret-dropdown-btn-padding;
-          }
+        .e-dropdown-btn .e-caret {
+          @include ribbon-font-props($ribbon-bigger-dropdown-btn-size, $ribbon-bigger-dropdown-btn-line-height);
+          padding: $ribbon-bigger-caret-dropdown-btn-padding;
         }
       }
 
       .e-split-btn-wrapper {
-        .e-dropdown-btn {
-          .e-caret {
-            font-size: $ribbon-bigger-dropdown-btn-size;
-            line-height: $ribbon-bigger-dropdown-btn-line-height;
-            padding: $ribbon-bigger-dropdown-btn-padding;
-          }
+        .e-dropdown-btn .e-caret {
+          @include ribbon-font-props($ribbon-bigger-dropdown-btn-size, $ribbon-bigger-dropdown-btn-line-height);
+          padding: $ribbon-bigger-dropdown-btn-padding;
         }
       }
 
       &.e-ribbon-medium-item,
       &.e-ribbon-small-item {
         .e-btn {
-          font-size: $ribbon-bigger-items-btn-size;
-          line-height: $ribbon-bigger-items-height;
+          @include ribbon-font-props($ribbon-bigger-items-btn-size, $ribbon-bigger-items-height);
 
           .e-btn-icon {
-            font-size: $ribbon-bigger-items-icon-size;
+            @include ribbon-font-props($ribbon-bigger-items-icon-size, $ribbon-bigger-items-icon-height);
             margin: $ribbon-bigger-items-margin;
-            line-height: $ribbon-bigger-items-icon-height;
           }
         }
 
@@ -1557,9 +1523,8 @@
         }
 
         .e-dropdown-btn .e-caret {
-          font-size: $ribbon-bigger-dropdown-caret-btn-size;
+          @include ribbon-font-props($ribbon-bigger-dropdown-caret-btn-size, $ribbon-bigger-dropdown-caret-btn-height);
           padding: $ribbon-bigger-dropdown-caret-btn-padding;
-          line-height: $ribbon-bigger-dropdown-caret-btn-height;
           margin: 0;
         }
       }
@@ -1579,11 +1544,9 @@
   .e-bigger .e-ribbon-group-overflow-ddb,
   .e-bigger.e-ribbon-group-overflow-ddb {
     .e-ribbon-overflow-target {
-
       .e-ribbon-overflow-header {
-        line-height: $ribbon-bigger-overflow-header-line-height;
+        @include ribbon-font-props($ribbon-bigger-overflow-header-font-size, $ribbon-bigger-overflow-header-line-height);
         height: $ribbon-bigger-overflow-header-height;
-        font-size: $ribbon-bigger-overflow-header-font-size;
       }
 
       .e-ribbon-item {
@@ -1596,12 +1559,10 @@
         &.e-ribbon-medium-item {
           height: $ribbon-bigger-medium-item-height;
         }
-        .e-btn {
-          .e-btn-icon {
-            font-size: $ribbon-bigger-items-btn-icon-size;
-            &.e-icon-left {
-              margin: 0;
-            }
+        .e-btn .e-btn-icon {
+          font-size: $ribbon-bigger-items-btn-icon-size;
+          &.e-icon-left {
+            margin: 0;
           }
         }
         &:has(.e-colorpicker-wrapper) {
@@ -1624,74 +1585,78 @@
       }
     }
 
-    &:not(.e-rtl) {
-      .e-ribbon-overflow-target {
-        .e-ribbon-overflow-header {
-          padding: $ribbon-bigger-overflow-header-padding;
+    &:not(.e-rtl) .e-ribbon-overflow-target {
+      .e-ribbon-overflow-header {
+        padding: $ribbon-bigger-overflow-header-padding;
+      }
+      .e-ribbon-item {
+        .e-ribbon-combobox-label,
+        .e-ribbon-colorpicker-label {
+          margin-left: $ribbon-bigger-items-label;
         }
-        .e-ribbon-item {
 
-          .e-ribbon-combobox-label,
-          .e-ribbon-colorpicker-label {
-            margin-left: $ribbon-bigger-items-label;
+        &.e-ribbon-medium-item {
+          .e-btn .e-btn-icon.e-icon-left {
+            padding: $ribbon-bigger-button-icon-padding;
           }
-  
-          &.e-ribbon-medium-item {
-            .e-btn {
-              .e-btn-icon.e-icon-left {
-                padding: $ribbon-bigger-button-icon-padding;
-              }
+          
+          &:not(:has(.e-colorpicker-wrapper)) .e-btn {
+            &:not(:has(.e-btn-icon.e-icon-left)) {
+              padding-left: $ribbon-bigger-items-label;
             }
           }
-  
-          &:not(:has(.e-ribbon-colorpicker-label)) .e-colorpicker-wrapper {
-            margin-left: $ribbon-bigger-items-label;
-          }
-  
-          >.e-split-btn-wrapper,
-          >.e-dropdown-btn {
-            .e-icons.e-caret {
-              padding: $ribbon-bigger-caret-icon-padding;
-            }
+        }
+
+        &:not(:has(.e-ribbon-colorpicker-label)) .e-colorpicker-wrapper,
+        &:not(:has(.e-ribbon-combobox-label)) .e-input-group.e-control-wrapper {
+          margin-left: $ribbon-bigger-items-label;
+        }
+
+        >.e-split-btn-wrapper,
+        >.e-dropdown-btn {
+          .e-icons.e-caret {
+            padding: $ribbon-bigger-caret-icon-padding;
           }
         }
       }
     }
 
-    &.e-rtl {
-      .e-ribbon-overflow-target {
-        .e-ribbon-overflow-header {
-          padding: $ribbon-bigger-rtl-overflow-header-padding;
+    &.e-rtl .e-ribbon-overflow-target {
+      .e-ribbon-overflow-header {
+        padding: $ribbon-bigger-rtl-overflow-header-padding;
+      }
+      .e-ribbon-item {
+        .e-ribbon-combobox-label,
+        .e-ribbon-colorpicker-label {
+          margin-right: $ribbon-bigger-items-label;
         }
-        .e-ribbon-item {
 
-          .e-ribbon-combobox-label,
-          .e-ribbon-colorpicker-label {
-            margin-right: $ribbon-bigger-items-label;
+        &.e-ribbon-medium-item {
+          .e-btn .e-btn-icon.e-icon-left {
+            padding: $ribbon-bigger-rtl-button-icon-padding;
           }
-  
-          &.e-ribbon-medium-item {
-            .e-btn {
-              .e-btn-icon.e-icon-left {
-                padding: $ribbon-bigger-rtl-button-icon-padding;
-              }
-            }
-          }
-  
-          &:not(:has(.e-ribbon-colorpicker-label)) .e-colorpicker-wrapper {
-            margin-right: $ribbon-bigger-items-label;
-          }
-  
-          >.e-split-btn-wrapper,
-          >.e-dropdown-btn {
-            .e-icons.e-caret {
-              padding: $ribbon-bigger-rtl-caret-icon-padding;
+            
+          &:not(:has(.e-colorpicker-wrapper)) .e-btn {
+            &:not(:has(.e-btn-icon.e-icon-left)) {
+              padding-right: $ribbon-bigger-items-label;
             }
           }
         }
-        .e-ribbon-item > .e-checkbox-wrapper {
-          margin: $ribbon-bigger-rtl-checkbox-margin;
+
+        &:not(:has(.e-ribbon-colorpicker-label)) .e-colorpicker-wrapper,
+        &:not(:has(.e-ribbon-combobox-label)) .e-input-group.e-control-wrapper {
+          margin-right: $ribbon-bigger-items-label;
         }
+
+        >.e-split-btn-wrapper,
+        >.e-dropdown-btn {
+          .e-icons.e-caret {
+            padding: $ribbon-bigger-rtl-caret-icon-padding;
+          }
+        }
+      }
+      .e-ribbon-item > .e-checkbox-wrapper {
+        margin: $ribbon-bigger-rtl-checkbox-margin;
       }
     }
   }
@@ -1701,8 +1666,7 @@
     height: $ribbon-bigger-ddb-popup-height;
 
     .e-menu-icon {
-      font-size: 20px;
-      line-height: 20px;
+      @include ribbon-font-props(20px, 20px);
     }
   }
 
@@ -1710,26 +1674,18 @@
   .e-bigger.e-ribbon-menu.e-menu-wrapper ul.e-vertical,
   .e-bigger .e-ribbon-menu.e-menu-wrapper ul.e-ul,
   .e-bigger.e-ribbon-menu.e-menu-wrapper ul.e-ul {
-    .e-menu-item {
-
-      &.e-blankicon {
-        padding-left: $ribbon-bigger-menu-blank-icon-padding !important; /* stylelint-disable-line declaration-no-important */
-      }
+    .e-menu-item.e-blankicon {
+      padding-left: $ribbon-bigger-menu-blank-icon-padding !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 
-  .e-bigger .e-ribbon-backstage-popup {
-    .e-ribbon-backstage-wrapper {
-      .e-btn {
-        height: $ribbon-bigger-backstage-btn-height;
-        line-height: $ribbon-bigger-backstage-btn-line-height;
+  .e-bigger .e-ribbon-backstage-popup .e-ribbon-backstage-wrapper .e-btn {
+    height: $ribbon-bigger-backstage-btn-height;
+    line-height: $ribbon-bigger-backstage-btn-line-height;
 
-        .e-btn-icon {
-          font-size: $ribbon-bigger-backstage-btn-icon-font-size;
-          line-height: $ribbon-bigger-backstage-btn-icon-line-height;
-          padding: $ribbon-bigger-backstage-btn-icon-padding;
-        }
-      }
+    .e-btn-icon {
+      @include ribbon-font-props($ribbon-bigger-backstage-btn-icon-font-size, $ribbon-bigger-backstage-btn-icon-line-height);
+      padding: $ribbon-bigger-backstage-btn-icon-padding;
     }
   }
 
@@ -1741,8 +1697,7 @@
       height: $ribbon-bigger-backstage-menu-item-height;
 
       .e-menu-icon {
-        font-size: $ribbon-bigger-backstage-menu-icon-font-size;
-        line-height: $ribbon-bigger-backstage-menu-icon-line-height;
+        @include ribbon-font-props($ribbon-bigger-backstage-menu-icon-font-size, $ribbon-bigger-backstage-menu-icon-line-height);
         padding: $ribbon-bigger-backstage-menu-icon-padding;
       }
 
@@ -1757,8 +1712,7 @@
     padding: $ribbon-group-button-ddb-padding;
     .e-btn-group {
       .e-btn-icon {
-        font-size: $ribbon-bigger-items-icon-size;
-        line-height: $ribbon-bigger-items-icon-height;
+        @include ribbon-font-props($ribbon-bigger-items-icon-size, $ribbon-bigger-items-icon-height);
         margin: $ribbon-bigger-group-button-icon-margin;
         &.e-icon-left {
           padding: $ribbon-bigger-group-button-icon-padding;
@@ -1779,9 +1733,15 @@
   .e-bigger .e-ribbon-gallery-dropdown.e-popup {
     padding: $ribbon-bigger-gallery-popup-padding;
     .e-ribbon-gallery-header {
-      padding-bottom: $ribbon-bigger-gallery-header-padding;
-      font-size: $ribbon-bigger-gallery-header-fontsize;
-      line-height: $ribbon-bigger-gallery-header-line-height;
+      @include ribbon-font-props($ribbon-bigger-gallery-header-fontsize, $ribbon-bigger-gallery-header-line-height);
+      padding: $ribbon-bigger-gallery-header-padding;
     }
+  }
+
+  .e-bigger.e-ribbon-keytip,
+  .e-bigger .e-ribbon-keytip {
+    @include ribbon-font-props($ribbon-bigger-keytip-font-size, $ribbon-bigger-keytip-line-height);
+    min-width: $ribbon-bigger-keytip-min-width;
+    height: $ribbon-bigger-keytip-height;
   }
 }

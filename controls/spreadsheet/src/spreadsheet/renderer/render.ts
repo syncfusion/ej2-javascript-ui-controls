@@ -1,12 +1,12 @@
-﻿import { ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, JsonData } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
 import { extend, remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook } from '../../workbook/index';
 import { getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, skipHiddenIdx } from '../../workbook/index';
-import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, updateTranslate, OpenArgs } from '../common/index';
+import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, updateTranslate } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit } from '../common/index';
 import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus, getUpdatedScrollPosition } from '../common/index';
+import { ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, JsonData } from '../common/index';
 
 /**
  * Render module is used to render the spreadsheet
@@ -43,7 +43,7 @@ export class Render {
             this.parent.notify(formulaBar, null);
             this.parent.notify(ribbon, null);
         }
-        if (this.parent.password.length > 0 || this.parent.isProtected) {
+        if (this.parent.password && (this.parent.password.length > 0 || this.parent.isProtected)) {
             this.parent.isProtected = true;
             if (this.parent.showSheetTabs) {
                 this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
@@ -325,7 +325,7 @@ export class Render {
                 });
                 break;
             }
-            if (this.parent && (this.parent as { isReact?: boolean }).isReact) {
+            if (this.parent && this.parent.isReact) {
                 this.parent['renderReactTemplates']();
             }
         });
@@ -340,20 +340,22 @@ export class Render {
             const frozenRow: number = this.parent.frozenRowCount(args.sheet);
             if (paneTopLeftCell[0] > frozenRow) { args.top = getRowsHeight(args.sheet, frozenRow, paneTopLeftCell[0] - 1, true); }
         } else {
-            args.rowIndex && (args.rowIndex = 0);
+            if (args.rowIndex) { args.rowIndex = 0; }
             if (topLeftCell[0] !== 0) { args.top = getRowsHeight(args.sheet, 0, topLeftCell[0] - 1, true); }
         }
         if (args.sheet.frozenColumns) {
             const frozenCol: number = this.parent.frozenColCount(args.sheet);
             if (paneTopLeftCell[1] > frozenCol) { args.left = getColumnsWidth(args.sheet, frozenCol, paneTopLeftCell[1] - 1, true); }
         } else {
-            args.colIndex && (args.colIndex = 0);
+            if (args.colIndex) { args.colIndex = 0; }
             if (topLeftCell[1] !== 0) { args.left = getColumnsWidth(args.sheet, 0, topLeftCell[1] - 1, true); }
         }
     }
 
     private removeSheet(): void {
-        remove(document.getElementById(this.parent.element.id + '_sheet'));
+        if (document.getElementById(this.parent.element.id + '_sheet')) {
+            remove(document.getElementById(this.parent.element.id + '_sheet'));
+        }
     }
 
     /**
@@ -390,6 +392,7 @@ export class Render {
     /**
      * Used to set sheet panel size.
      *
+     * @param {number} colMinWidth - Specifies column minimum width value.
      * @returns {void}
      */
     public setSheetPanelSize(colMinWidth?: number): void {

@@ -426,7 +426,7 @@ export class CircularChartSelection3D extends BaseSelection {
                 let seriesElements: Element[] = [];
                 seriesElements = this.getElementByIndex(index);
                 if (seriesElements.length > 0) {
-                    this.checkSelectionElements(seriesElements, seriesStyle, false, true, index.point);
+                    this.checkSelectionElements(seriesElements, seriesStyle, false, index.point);
                     this.selection(chart, index, seriesElements);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
@@ -486,7 +486,7 @@ export class CircularChartSelection3D extends BaseSelection {
             let pointElements: Element[] = [];
             if (point.visible) {
                 pointElements = this.getElementByIndex({ series: 0, point: point.index });
-                this.checkSelectionElements(pointElements, this.generateStyle(visibleSeries[0], point.index), visibility, true,
+                this.checkSelectionElements(pointElements, this.generateStyle(visibleSeries[0], point.index), visibility,
                                             point.index);
             }
         }
@@ -498,13 +498,12 @@ export class CircularChartSelection3D extends BaseSelection {
      * @param {Element[] | Element} element - The element or array of elements to be checked for selection.
      * @param {string} className - The style class name used for identifying selection elements.
      * @param {boolean} visibility - The visibility status of the selection elements.
-     * @param {boolean} [isLegend=true] - Flag indicating whether the elements belong to a legend.
      * @param {number} [point=0] - The point value associated with the selection elements.
      * @returns {void}
      * @public
      */
     public checkSelectionElements(
-        element: Element[] | Element, className: string, visibility: boolean, isLegend: boolean = true, point: number = 0): void {
+        element: Element[] | Element, className: string, visibility: boolean, point: number = 0): void {
         let children: HTMLCollection | Element[] = <Element[]>element;
         if (this.circular3D.selectionMode !== 'None' && (this.circular3D.highlightMode !== 'None' || this.circular3D.legendSettings.enableHighlight)) {
             children = element as Element[];
@@ -636,7 +635,7 @@ export class CircularChartSelection3D extends BaseSelection {
                 seriesStyle = this.generateStyle(chart.visibleSeries[0], value.index);
                 if (document.querySelectorAll('.' + seriesStyle).length > 0) {
                     for (const element of elements) {
-                        this.checkSelectionElements(element, seriesStyle, true, true, index.point);
+                        this.checkSelectionElements(element, seriesStyle, true, index.point);
                     }
                     isBlurEffectNeeded = false;
                     break;

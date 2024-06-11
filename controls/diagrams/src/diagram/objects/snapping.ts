@@ -75,7 +75,7 @@ export class Snapping {
      */
     public snapPoint(
         diagram: Diagram, selectedObject: SelectorModel, towardsLeft: boolean, towardsTop: boolean, delta: PointModel,
-        startPoint: PointModel, endPoint: PointModel,dragWrapper?:Container): PointModel {
+        startPoint: PointModel, endPoint: PointModel, dragWrapper?: Container): PointModel {
         const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
         const zoomFactor: number = this.diagram.scroller.currentZoom;
         const offset: PointModel = { x: 0, y: 0 };
@@ -182,7 +182,8 @@ export class Snapping {
             if (value >= 0) {
                 for (i = 0; i < snapIntervals.length; i++) {
                     if (bal <= snapIntervals[parseInt(i.toString(), 10)] / scale) {
-                        return prev + (bal < (snapIntervals[parseInt(i.toString(), 10)] / (2 * scale)) ? 0 : snapIntervals[parseInt(i.toString(), 10)] / scale);
+                        return prev + (bal < (snapIntervals[parseInt(i.toString(), 10)] / (2 * scale))
+                            ? 0 : snapIntervals[parseInt(i.toString(), 10)] / scale);
                     } else {
                         prev += snapIntervals[parseInt(i.toString(), 10)] / scale;
                         bal -= snapIntervals[parseInt(i.toString(), 10)] / scale;
@@ -192,7 +193,8 @@ export class Snapping {
                 prev = prev * -1;
                 for (i = snapIntervals.length - 1; i >= 0; i--) {
                     if (Math.abs(bal) <= snapIntervals[parseInt(i.toString(), 10)] / scale) {
-                        return prev - (Math.abs(bal) < (snapIntervals[parseInt(i.toString(), 10)] / (2 * scale)) ? 0 : snapIntervals[parseInt(i.toString(), 10)] / scale);
+                        return prev - (Math.abs(bal) < (snapIntervals[parseInt(i.toString(), 10)] / (2 * scale))
+                            ? 0 : snapIntervals[parseInt(i.toString(), 10)] / scale);
                     } else {
                         prev -= snapIntervals[parseInt(i.toString(), 10)] / scale;
                         bal += snapIntervals[parseInt(i.toString(), 10)] / scale;
@@ -781,7 +783,8 @@ export class Snapping {
         if (!ended) {
             for (i = 0; i < equallySpaced.length - 1; i++) {
                 const crnt: Rect = equallySpaced[parseInt(i.toString(), 10)].obj instanceof Selector ?
-                    getBounds(((equallySpaced[parseInt(i.toString(), 10)].obj) as SelectorModel).wrapper) : ((equallySpaced[parseInt(i.toString(), 10)].obj).bounds);
+                    getBounds(((equallySpaced[parseInt(i.toString(), 10)].obj) as SelectorModel).wrapper)
+                    : ((equallySpaced[parseInt(i.toString(), 10)].obj).bounds);
                 const next: Rect = equallySpaced[i + 1].obj instanceof Selector ?
                     getBounds(((equallySpaced[i + 1].obj) as SelectorModel).wrapper) : ((equallySpaced[i + 1].obj).bounds);
                 start = { x: crnt.x + crnt.width, y: top - 15 };
@@ -798,7 +801,8 @@ export class Snapping {
         if (!ended) {
             for (let i: number = 0; i < equallySpacedObjects.length - 1; i++) {
                 const crnt: Rect = equallySpacedObjects[parseInt(i.toString(), 10)].obj instanceof Selector ?
-                    getBounds(((equallySpacedObjects[parseInt(i.toString(), 10)].obj) as SelectorModel).wrapper) : ((equallySpacedObjects[parseInt(i.toString(), 10)].obj).bounds);
+                    getBounds(((equallySpacedObjects[parseInt(i.toString(), 10)].obj) as SelectorModel).wrapper)
+                    : ((equallySpacedObjects[parseInt(i.toString(), 10)].obj).bounds);
                 const next: Rect = equallySpacedObjects[i + 1].obj instanceof Selector ?
                     getBounds(((equallySpacedObjects[i + 1].obj) as SelectorModel).wrapper) :
                     ((equallySpacedObjects[i + 1].obj).bounds);

@@ -43,7 +43,8 @@ export class Delete {
                                 null, 'col');
                             this.parent.renderModule.refreshSheet(false, false, true);
                         } else {
-                            if (args.freezePane || (this.parent.scrollSettings.isFinite && this.parent.viewport.bottomIndex >= skipHiddenIdx(sheet, sheet.rowCount - 1, false))) {
+                            if (args.freezePane || (this.parent.scrollSettings.isFinite &&
+                                this.parent.viewport.bottomIndex >= skipHiddenIdx(sheet, sheet.rowCount - 1, false))) {
                                 this.parent.renderModule.refreshSheet(false, false, true);
                             } else {
                                 const frozenIndexes: number[] = [];
@@ -83,9 +84,8 @@ export class Delete {
                     if (this.parent.scrollSettings.enableVirtualization) {
                         if (args.startIndex < getCellIndexes(sheet.paneTopLeftCell)[1]) {
                             this.parent.updateTopLeftCell(
-                                null, skipHiddenIdx(
-                                    sheet, args.startIndex - 1 < frozenCol ? frozenCol : args.startIndex - 1, true, 'columns') - frozenCol,
-                                    'row');
+                                null, skipHiddenIdx(sheet, args.startIndex - 1 < frozenCol ? frozenCol :
+                                    args.startIndex - 1, true, 'columns') - frozenCol, 'row');
                             this.parent.renderModule.refreshSheet(false, false, true);
                         } else {
                             if (args.freezePane || args.refreshSheet === true) {
@@ -100,8 +100,8 @@ export class Delete {
                                 }
                                 this.parent.renderModule.refreshUI(
                                     { rowIndex: rowIndex, refresh: 'Column', colIndex: this.parent.viewport.leftIndex, insertDelete: true,
-                                    skipUpdateOnFirst: this.parent.viewport.leftIndex + frozenCol === skipHiddenIdx(
-                                        sheet, frozenCol, true, 'columns'), frozenIndexes: frozenIndexes });
+                                        skipUpdateOnFirst: this.parent.viewport.leftIndex + frozenCol === skipHiddenIdx(
+                                            sheet, frozenCol, true, 'columns'), frozenIndexes: frozenIndexes });
                                 if (frozenRow) {
                                     this.parent.viewport.topIndex = viewportRowIdx;
                                 }

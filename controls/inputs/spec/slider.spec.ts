@@ -207,6 +207,12 @@ describe('Slider Control', () => {
             expect((<HTMLElement>document.getElementsByClassName('e-slider-container')[0]).offsetWidth).toBe(100);
         });
 
+        it('Slider Width:string testing without any unit indication (px, %, or em)', () => {
+            slider = new Slider({ width: "100" });
+            slider.appendTo('#slider');
+            expect((<HTMLElement>document.getElementsByClassName('e-slider-container')[0]).offsetWidth).toBe(100);
+        });
+
         it('Slider Width:string dynamic testing', () => {
             slider = new Slider({ width: "100px" });
             slider.appendTo('#slider');
@@ -2594,7 +2600,7 @@ describe('Slider Control', () => {
         });
     });
 
-    describe('Slider bootstrap/material theme testing', () => {
+    describe('Slider bootstrap/bootstrap4/material theme testing', () => {
         let slider: any;
         let element: HTMLElement;
         let eventArgs: any;
@@ -2644,6 +2650,62 @@ describe('Slider Control', () => {
             element = createElement('div', { id: 'slider' });
             document.body.appendChild(element);
             setTheme('bootstrap');
+            slider = new Slider({ value: 10, min: 0, max: 100, type: 'Range', orientation: 'Vertical', tooltip: { isVisible: true, placement: 'After'} }, '#slider');
+            eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
+            slider.keyDown(eventArgs);
+            expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('0 - 100');
+            slider.tooltipBeforeOpen(eventArgs);
+            slider.type = 'Default';
+            slider.dataBind();
+            slider.tooltipBeforeOpen(eventArgs);
+        });
+
+        it('Before tooltip test', () => {
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            setTheme('bootstrap4');
+            slider = new Slider({ value: 10, min: 0, max: 100, type: 'Range', tooltip: { isVisible: true, placement: 'Before'} }, '#slider');
+            eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
+            slider.keyDown(eventArgs);
+            expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('0 - 100');
+            slider.tooltipBeforeOpen(eventArgs);
+            slider.type = 'Default';
+            slider.dataBind();
+            slider.tooltipBeforeOpen(eventArgs);
+        });
+
+        it('After tooltip test', () => {
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            setTheme('bootstrap4');
+            slider = new Slider({ value: 10, min: 0, max: 100, type: 'Range', tooltip: { isVisible: true, placement: 'After'} }, '#slider');
+            eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
+            slider.keyDown(eventArgs);
+            expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('0 - 100');
+            slider.tooltipBeforeOpen(eventArgs);
+            slider.type = 'Default';
+            slider.dataBind();
+            slider.tooltipBeforeOpen(eventArgs);
+        });
+
+        it('Before tooltip test in vertical', () => {
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            setTheme('bootstrap4');
+            slider = new Slider({ value: 10, min: 0, max: 100, type: 'Range', orientation: 'Vertical', tooltip: { isVisible: true, placement: 'Before'} }, '#slider');
+            eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
+            slider.keyDown(eventArgs);
+            expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('0 - 100');
+            slider.tooltipBeforeOpen(eventArgs);
+            slider.type = 'Default';
+            slider.dataBind();
+            slider.tooltipBeforeOpen(eventArgs);
+        });
+
+        it('After tooltip test in vertical', () => {
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            setTheme('bootstrap4');
             slider = new Slider({ value: 10, min: 0, max: 100, type: 'Range', orientation: 'Vertical', tooltip: { isVisible: true, placement: 'After'} }, '#slider');
             eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
             slider.keyDown(eventArgs);
@@ -2933,6 +2995,17 @@ describe('Slider Control', () => {
                 (slider as any).keyDown(eventArgs);
             }
             expect(slider.value).toBe(0);
+        });
+
+        it('MinRange slider Orientation:vertical with limits enabled - min is greater than max value', () => {
+            slider = new Slider({ min: 12, max: 10, value: 5,  type: 'MinRange', limits: { enabled: true, minEnd: 7 }, showButtons: true, orientation: 'Vertical'});
+            slider.appendTo('#slider');
+            expect(slider.value).toBe(7);
+        });
+        it('Range slider Orientation:vertical with limits enabled - min is greater than max value', () => {
+            slider = new Slider({ min: 12, max: 10, value: [2, 5],  type: 'Range', limits: { enabled: true, minEnd: 7 }, showButtons: true, orientation: 'Vertical'});
+            slider.appendTo('#slider');
+            expect(slider.max).toBe(10);
         });
 
         it('Range slider with limits enabled - RTL Mode', () => {
@@ -4289,6 +4362,38 @@ describe('Slider Control', () => {
             expect(slider.value).toBe(20);
             slider.min = 1000;
         })
+        it('When min is greater than max horizontal slider with key value 35', () => {
+            let slider: any;
+            let element: HTMLElement;
+            let eventArgs: any;
+            element = createElement('div', { id: 'slider' });
+            setTheme('material');
+            document.body.appendChild(element);
+            slider = new Slider({ min: 10, max: 100, type: 'Range', tooltip: { isVisible: true, placement: 'Before'} }, '#slider');
+            expect(slider.min).toBe(10);
+            // Set min to a value greater than current max
+            slider.min = 200;
+            eventArgs = { keyCode: 35, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
+            slider.keyDown(eventArgs);
+            // Now assert that min is greater than max
+            expect(slider.max).toBeLessThan(slider.min);
+        });
+        it('When min is greater than max horizontal slider with key value 36', () => {
+            let slider: any;
+            let element: HTMLElement;
+            let eventArgs: any;
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            setTheme('material');
+            slider = new Slider({ min: 10, max: 100, type: 'Range', tooltip: { isVisible: true, placement: 'Before'} }, '#slider');
+            expect(slider.min).toBe(10);
+            // Set min to a value greater than current max
+            slider.min = 200;
+            eventArgs = { keyCode: 36, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
+            slider.keyDown(eventArgs);
+            // Now assert that min is greater than max
+            expect(slider.max).toBeLessThan(slider.min);
+        });
         afterEach(() => {
             document.body.innerHTML = '';
         })
@@ -4680,3 +4785,233 @@ describe('Slider showOn property change Testing', () => {
     });
 });
 
+describe('Range Slider materialChange method testing', () => {
+    let slider: any;
+    let dragEle: HTMLElement;
+    let targetEle: HTMLElement;
+    let mousemove: any;
+    let mouseUp: any;
+    beforeEach(() => {
+        dragEle = createElement('div', { id: 'slider' });
+        targetEle = createElement('div', {
+            id: 'target', styles: 'top: 150px;left: 300px;height: 300px;width: 500px;position: absolute;'
+        });
+        document.body.appendChild(targetEle);
+        targetEle.appendChild(dragEle);
+        slider = new Slider({ type: 'Range', orientation: 'Vertical' }, '#slider');
+        slider.getTheme = () => 'material';
+    });
+    it('Range Slider:vertical trigger materialChange', () => {
+        slider.materialChange();
+        expect(slider.type).toBe('Range');
+    });
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+});
+
+describe('Slider render function', () => {
+    it('should call refresh method if element tag name is "EJS-SLIDER" and theme is "none"', () => {
+        let slider: any;
+        let element: HTMLElement;
+        element = createElement('EJS-SLIDER', { id: 'rangeslider' });
+        document.body.appendChild(element);
+        slider = new Slider({ value: 10, min: 0, max: 100, type: 'Range', tooltip: { isVisible: true, placement: 'Before'} });
+        slider.getTheme = () => 'none';
+        slider.appendTo('#rangeslider');
+        expect(slider.min).toBe(0);
+    });
+
+    afterEach((): void => {
+        setTimeout(() => {
+            document.body.innerHTML = '';
+        }, 0);
+    });
+});
+
+describe('Slider Null or undefined value testing ', () => {
+    let slider: Slider;
+    let ele: HTMLElement;
+    beforeEach((): void => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
+        slider = undefined;
+        ele = createElement('div', { id: 'slider' });
+        ele.style.height = '10px';
+        ele.style.width = '10px';
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        ele.remove();
+        document.body.innerHTML = '';
+    });
+
+    it('value', () => {
+        slider = new Slider({
+            value: null,
+        },'#slider');
+        expect(slider.value).toBe(0);
+        slider.destroy();
+        slider = new Slider({
+            value: undefined,
+        }, '#slider');
+        expect(slider.value).toBe(0);
+        slider.destroy();
+    });
+    it('customValues', () => {
+        slider = new Slider({
+            customValues: null,
+        },'#slider');
+        expect(slider.customValues).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            customValues: undefined,
+        },'#slider');
+        expect(slider.customValues).toBe(null);
+        slider.destroy();
+    });
+    it('tooltip', () => {
+        slider = new Slider({
+            tooltip: null,
+        },'#slider');
+        expect(slider.tooltip.isVisible).toBe(false);
+        slider.destroy();
+        slider = new Slider({
+            tooltip: undefined,
+        },'#slider');
+        expect(slider.tooltip.isVisible).toBe(false);
+        slider.destroy();
+    });
+    it('ticks', () => {
+        slider = new Slider({
+            ticks: null,
+        },'#slider');
+        expect(slider.ticks.showSmallTicks).toBe(false);
+        slider.destroy();
+        slider = new Slider({
+            ticks: undefined,
+        },'#slider');
+        expect(slider.ticks.showSmallTicks).toBe(false);
+        slider.destroy();
+    });
+    it('limits', () => {
+        slider = new Slider({
+            limits: null,
+        },'#slider');
+        expect(slider.limits.enabled).toBe(false);
+        slider.destroy();
+        slider = new Slider({
+            limits: undefined,
+        },'#slider');
+        expect(slider.limits.enabled).toBe(false);
+        slider.destroy();
+    });
+    it('showButtons', () => {
+        slider = new Slider({
+            showButtons: null,
+        },'#slider');
+        expect(slider.showButtons).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            showButtons: undefined,
+        },'#slider');
+        expect(slider.showButtons).toBe(false);
+        slider.destroy();
+    });
+    it('enabled', () => {
+        slider = new Slider({
+            enabled: null,
+        },'#slider');
+        expect(slider.enabled).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            enabled: undefined,
+        },'#slider');
+        expect(slider.enabled).toBe(true);
+        slider.destroy();
+    });
+    it('readOnly', () => {
+        slider = new Slider({
+            readonly: null,
+        },'#slider');
+        expect(slider.readonly).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            readonly: undefined,
+        },'#slider');
+        expect(slider.readonly).toBe(false);
+        slider.destroy();
+    });
+    it('orientation', () => {
+        slider = new Slider({
+            orientation: null,
+        },'#slider');
+        expect(slider.orientation).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            orientation: undefined,
+        },'#slider');
+        expect(slider.orientation).toBe('Horizontal');
+        slider.destroy();
+    });
+    it('type', () => {
+        slider = new Slider({
+            type: null,
+        },'#slider');
+        expect(slider.type).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            type: undefined,
+        },'#slider');
+        expect(slider.type).toBe('Default');
+        slider.destroy();
+    });
+    it('min', () => {
+        slider = new Slider({
+            min: null,
+        },'#slider');
+        expect(slider.min).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            min: undefined,
+        },'#slider');
+        expect(slider.min).toBe(0);
+        slider.destroy();
+    });
+    it('max', () => {
+        slider = new Slider({
+            max: null,
+        },'#slider');
+        expect(slider.max).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            max: undefined,
+        },'#slider');
+        expect(slider.max).toBe(100);
+        slider.destroy();
+    });
+    it('step', () => {
+        slider = new Slider({
+            step: null,
+        },'#slider');
+        expect(slider.step).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            step: undefined,
+        },'#slider');
+        expect(slider.step).toBe(1);
+        slider.destroy();
+    });
+    it('cssClass', () => {
+        slider = new Slider({
+            cssClass: null,
+        },'#slider');
+        expect(slider.cssClass).toBe(null);
+        slider.destroy();
+        slider = new Slider({
+            cssClass: undefined,
+        },'#slider');
+        expect(slider.cssClass).toBe('');
+        slider.destroy();
+    });
+});

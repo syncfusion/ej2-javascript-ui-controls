@@ -1,8 +1,5 @@
 @include export-module('card-theme') {
-
-  /*! card theme */
   /* stylelint-disable property-no-vendor-prefix */
-
   .e-card {
     -webkit-tap-highlight-color: $card-highlight-color;
     background: $card-bg-color;
@@ -32,18 +29,14 @@
     .e-card-separator {
       border-bottom: $card-sep-brdr-size $card-sep-brdr-type $card-sep-brdr-color;
     }
-
     .e-card-header-caption {
-
       .e-card-header-title {
         color: $card-header-txt-title-color;
       }
-
       .e-card-sub-title {
         color: $card-header-txt-subtitle-color;
       }
     }
-
     .e-card-image {
 
       .e-card-title {
@@ -51,17 +44,15 @@
         color: $card-image-title-color;
       }
     }
-
     .e-card-actions {
 
       .e-card-btn span,
       .e-card-btn span.e-icons {
         color: $card-action-btn-icon-color;
       }
-
       .e-card-btn,
       a {
-        @if $skin-name == 'Material3' {
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
           background: $card-action-btn-bg-color;
         }
         @else {
@@ -70,9 +61,8 @@
         border: $card-action-btn-border;
         color: $card-action-btn-font-color;
         outline: 0;
-
         &:hover {
-          @if $skin-name == 'Material3' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             background: $card-action-btn-hover-bg;
           }
           @else {
@@ -81,9 +71,8 @@
           border: $card-action-btn-hover-border;
           color: $card-action-btn-hover-font;
         }
-
         &:focus {
-          @if $skin-name == 'Material3' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             background: $card-action-btn-focus-bg;
           }
           @else {
@@ -92,9 +81,8 @@
           border: $card-action-btn-focus-border;
           color: $card-action-btn-focus-font;
         }
-
         &:active {
-          @if $skin-name == 'Material3' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             background: $card-action-btn-pressed-bg;
           }
           @else {

@@ -1,0 +1,67 @@
+@include export-module('otp-input-theme') {
+  .e-otpinput {
+    .e-otp-input-field {
+      color: $otp-input-text-color;
+      background: $otp-background-color;
+    }
+    .e-otp-separator {
+      color: $otp-input-separator-color;
+    }
+    &.e-outline {
+      .e-otp-input-field {
+        border: 2px solid $otp-input-border-color;
+      }
+    }
+    &.e-outline,
+    &.e-underlined,
+    &.e-filled {
+      .e-otp-input-field {
+        border-bottom: 2px solid $otp-input-border-bottom-color;
+      }
+      .e-otp-input-field:disabled {
+        border-color: $otp-input-disabled-border-color;
+        color: $otp-input-disabled-color;
+      }
+    }
+    &.e-filled {
+      .e-otp-input-field {
+        background: $otp-input-filled-bg-color;
+      }
+    }
+    &.e-underlined {
+      .e-otp-input-field {
+        background: $otp-input-underlined-bg-color;
+      }
+    }
+    &.e-error {
+      &.e-outline,
+      &.e-underlined,
+      &.e-filled  {
+        .e-otp-input-field,
+        .e-otp-input-field.e-otp-input-focus {
+          border-color: $otp-input-error-color;
+        }
+      }
+    }
+    &.e-success {
+      &.e-outline,
+      &.e-underlined,
+      &.e-filled {
+        .e-otp-input-field,
+        .e-otp-input-field.e-otp-input-focus {
+          border-color: $otp-input-success-color;
+        }
+      }
+    }
+    &.e-warning {
+      &.e-outline,
+      &.e-underlined,
+      &.e-filled {
+        .e-otp-input-field,
+        .e-otp-input-field.e-otp-input-focus {
+          border-color: $otp-input-warning-color;
+        }
+      }
+    }
+  }
+}

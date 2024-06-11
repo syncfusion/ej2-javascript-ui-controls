@@ -4,7 +4,6 @@ import { FadeOutMode, TooltipPosition } from '../../chart/utils/enum';
 import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';
 import { Alignment, EmptyPointMode, TextOverflow, TitlePosition} from '../utils/enum';
 import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
-import {  Theme } from '../model/theme';
 
 /**
  * Defines the appearance of the connectors
@@ -336,12 +335,13 @@ export class Border extends ChildProperty<Border> {
 
     @Property(1)
     public width: number;
-    	
+
     /**
      * Sets the length of dashes in the stroke of border.
      *
      * @default ''
      */
+
     @Property('')
     public dashArray: string;
 
@@ -706,7 +706,7 @@ export class CenterLabel extends ChildProperty<CenterLabel> {
      * Defines the font style of the center label.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: '16px', fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -783,7 +783,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Options for customizing the tooltip text appearance.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: null, color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -866,23 +866,23 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
 
-    /** 
-     * Specifies the location of the tooltip, relative to the chart. 
-     * If x is 20, tooltip moves by 20 pixels to the right of the chart 
-     * ```html 
-     * <div id='Chart'></div> 
-     * ``` 
-     * ```typescript 
-     * let chart: Chart = new Chart({ 
-     * ... 
-     * tooltipSettings: { 
-     * enable: true, 
-     * location: { x: 100, y: 150 }, 
-     *   }, 
-     * ... 
-     * }); 
-     * chart.appendTo('#Chart'); 
-     * ``` 
+    /**
+     * Specifies the location of the tooltip, relative to the chart.
+     * If x is 20, tooltip moves by 20 pixels to the right of the chart
+     * ```html
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let chart: Chart = new Chart({
+     * ...
+     * tooltipSettings: {
+     * enable: true,
+     * location: { x: 100, y: 150 },
+     *   },
+     * ...
+     * });
+     * chart.appendTo('#Chart');
+     * ```
      */
 
     @Complex<LocationModel>({ x: null, y: null }, Location)
@@ -890,7 +890,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
 }
 
-export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {    
+export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {
     /**
      * Enables / Disables the visibility of the tooltip.
      *
@@ -949,7 +949,7 @@ export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {
      * Options to customize the ToolTip text.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: null, color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -1032,17 +1032,17 @@ export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {
     @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
 
-    /** 
-     * Specifies the tooltip position. They are, 
-     * * fixed - Place the tooltip in the fixed position. 
-     * * nearest- Tooltip moves along with the mouse. 
-     * 
-     * @default 'Fixed' 
+    /**
+     * Specifies the tooltip position. They are,
+     * * fixed - Place the tooltip in the fixed position.
+     * * nearest- Tooltip moves along with the mouse.
+     *
+     * @default 'Fixed'
      */
 
     @Property('Fixed')
-    public position: TooltipPosition; 
-    
+    public position: TooltipPosition;
+
 }
 
 /**

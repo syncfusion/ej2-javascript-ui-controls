@@ -7,14 +7,12 @@ import { PdfViewerBase } from './pdfviewer-base';
  * @hidden
  */
 export class BlazorContextMenu implements IContextMenu {
-
     /**
      * @private
      */
     public contextMenuElement: HTMLElement;
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
-    // eslint-disable-next-line
     public currentTarget: any;
 
     /**
@@ -33,6 +31,7 @@ export class BlazorContextMenu implements IContextMenu {
     }
     /**
      * Create the context menu.
+     *
      * @returns {void}
      */
     public createContextMenu(): void {
@@ -47,6 +46,7 @@ export class BlazorContextMenu implements IContextMenu {
     }
     /**
      * open the context menu.
+     *
      * @param {number} top - The top.
      * @param {number} left - The left.
      * @param {HTMLElement} target - The target.
@@ -57,6 +57,7 @@ export class BlazorContextMenu implements IContextMenu {
     }
     /**
      * close the context menu.
+     *
      * @returns {void}
      */
     public close(): void {
@@ -64,6 +65,7 @@ export class BlazorContextMenu implements IContextMenu {
     }
     /**
      * destroy the context menu.
+     *
      * @returns {void}
      */
     public destroy(): void {
@@ -71,7 +73,6 @@ export class BlazorContextMenu implements IContextMenu {
         this.contextMenuElement =  null;
     }
 
-    // eslint-disable-next-line
     public OnItemSelected(selectedMenu: any): void {
         if (typeof selectedMenu === 'string') {
             this.pdfViewerBase.OnItemSelected(selectedMenu);

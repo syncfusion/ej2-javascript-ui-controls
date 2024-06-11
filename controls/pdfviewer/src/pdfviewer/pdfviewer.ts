@@ -1,19 +1,14 @@
-/* eslint-disable */
-// eslint-disable-next-line max-len
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-// eslint-disable-next-line max-len
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel, KeyGestureModel, KeyboardCommandModel, CommandManagerModel } from './pdfviewer-model';
-// eslint-disable-next-line max-len
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
-import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner } from './index';
+import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 import { PdfRenderer } from './index';
-// eslint-disable-next-line max-len
 import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
@@ -26,12 +21,9 @@ import { FormFields } from './index';
 import { FormDesigner } from './index';
 import { Print, CalibrationUnit } from './index';
 import { PageOrganizer } from './index';
-// eslint-disable-next-line max-len
-import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs,PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs,PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';
+import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';
-// eslint-disable-next-line max-len
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';
-// eslint-disable-next-line max-len
 import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';
 import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';
 import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';
@@ -39,21 +31,20 @@ import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-ann
 import { Drawing, ClipBoardObject } from './drawing/drawing';
 import { Selector } from './drawing/selector';
 import { SelectorModel } from './drawing/selector-model';
-import { PointModel, IElement, Rect, cornersPointsBeforeRotation, Point } from '@syncfusion/ej2-drawings';
+import { PointModel, IElement, Rect, Point } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
-// eslint-disable-next-line max-len
+
 import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs } from './base';
-// eslint-disable-next-line max-len
-import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
+
+import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs, SignatureUnselectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
 import { IFormField, IFormFieldBound } from './form-designer/form-designer';
-import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';
 import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -145,7 +136,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     public formDesignerToolbarItems: FormDesignerToolbarItem[];
 }
 
-/** 
+/**
  * Defines customized toolbar items.
  */
 export class CustomToolbarItem extends ChildProperty<CustomToolbarItem> {
@@ -168,7 +159,7 @@ export class CustomToolbarItem extends ChildProperty<CustomToolbarItem> {
      */
     @Property('')
     public id: string;
-    
+
     /**
      * Specifies the text to be displayed on the Toolbar button.
      */
@@ -179,7 +170,7 @@ export class CustomToolbarItem extends ChildProperty<CustomToolbarItem> {
      * Defines single/multiple classes (separated by space) to be used for customization of commands.
      */
     @Property('')
-    public cssClass: string; 
+    public cssClass: string;
 
     /**
      * Define which side(right/left) to use for customizing the icon.
@@ -199,28 +190,28 @@ export class CustomToolbarItem extends ChildProperty<CustomToolbarItem> {
     @Property('Button')
     public type: string;
 
-}    
+}
 /**
  * The `AjaxRequestSettings` module is used to set the ajax Request Headers of PDF viewer.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // HTTP header "X-Custom-Header": "Custom header value" // Custom HTTP header
- *  viewer.ajaxRequestSettings = { 
+ *  viewer.ajaxRequestSettings = {
  *      ajaxHeaders: [
- *          { 
- *              headerName : "Authorization", 
- *              headerValue : "Bearer" 
- *          } 
- *      ], 
- *      withCredentials: false 
+ *          {
+ *              headerName : "Authorization",
+ *              headerValue : "Bearer"
+ *          }
+ *      ],
+ *      withCredentials: false
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class AjaxRequestSettings extends ChildProperty<AjaxRequestSettings> {
 
@@ -251,7 +242,7 @@ export interface IAjaxHeaders {
 }
 /**
  * The `CustomStamp` module is used to provide the custom stamp added in stamp menu of the PDF Viewer toolbar.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -259,14 +250,14 @@ export interface IAjaxHeaders {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Add your custom stamp image source as base64 image.
  *  viewer.customStamp = [
- *       { 
- *          customStampName: 'Sample', 
+ *       {
+ *          customStampName: 'Sample',
  *          customStampImageSource: "data:image/png;base64, Syncfusion pdf viewer"
  *      }
- *  ]; 
+ *  ];
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class CustomStamp extends ChildProperty<CustomStamp> {
     /**
@@ -284,7 +275,7 @@ export class CustomStamp extends ChildProperty<CustomStamp> {
 
 /**
  * The `AnnotationToolbarSettings` module is used to provide the annotation toolbar settings of the PDF viewer.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -336,7 +327,7 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
 
 /**
  * The `FormDesignerToolbarSettings` module is used to provide the Form designer toolbar settings of the PDF viewer.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -360,7 +351,7 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
  * ```
  *
  */
- export class FormDesignerToolbarSettings extends ChildProperty<FormDesignerToolbarSettings> {
+export class FormDesignerToolbarSettings extends ChildProperty<FormDesignerToolbarSettings> {
     /**
      * Enable or disables the tooltip of the toolbar.
      */
@@ -376,7 +367,7 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
 
 /**
  * The `SignatureFieldSettings` module is used to set the properties of signature field in PDF Viewer
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -398,7 +389,7 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
  *          height: 10,
  *          fontSize: 10,
  *          text: null,
- *          color: "black"  
+ *          color: "black"
  *      },
  *      signatureDialogSettings: {
  *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload,
@@ -407,7 +398,7 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings> {
 
@@ -422,38 +413,38 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
      */
     @Property('')
     public name: string;
-     
+
     /**
      * Specifies whether the signature field is in read-only or read-write mode. FALSE by default.
      */
     @Property(false)
     public isReadOnly: boolean;
-     
+
     /**
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
     public visibility: Visibility;
-     
+
     /**
      * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
      */
     @Property(false)
     public isRequired: boolean;
-    
+
     /**
      * Get or set the boolean value to print the signature field. TRUE by default.
      */
     @Property(false)
     public isPrint: boolean;
-     
+
     /**
      * Get or set the text to be displayed as tooltip. By default it is empty.
      */
     @Property('')
     public tooltip: string;
 
-   /**
+    /**
      * Get or set the thickness of the Signature field. Default value is 1. To hide the borders, set the value to 0 (zero).
      */
     @Property(1)
@@ -476,11 +467,17 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
      */
     @Property()
     public signatureIndicatorSettings: SignatureIndicatorSettingsModel;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    @Property(null)
+    public customData: object;
 }
 
 /**
  * The `InitialFieldSettings` module is used to set the properties of initial field in PDF Viewer
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -511,7 +508,7 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
 
@@ -557,7 +554,7 @@ export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
     @Property('')
     public tooltip: string;
 
-     /**
+    /**
      * Get or set the thickness of the Initial field. Default value is 1. To hide the borders, set the value to 0 (zero).
      */
     @Property(1)
@@ -586,11 +583,17 @@ export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
      */
     @Property()
     public initialIndicatorSettings: SignatureIndicatorSettingsModel;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    @Property(null)
+    public customData: object;
 }
 
 /**
  * The `SignatureIndicatorSettings` module is used to provide the properties of signature Indicator in the signature field.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -599,18 +602,18 @@ export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
  *  // Change the signature indicator settings.
  *  viewer.signatureFieldSettings = {
  *      signatureIndicatorSettings: {
- *          opacity: 1, 
- *          backgroundColor: 'orange', 
- *          width: 19, 
- *          height: 10, 
- *          fontSize: 10, 
- *          text: null, 
- *          color: 'black' 
- *      } 
+ *          opacity: 1,
+ *          backgroundColor: 'orange',
+ *          width: 19,
+ *          height: 10,
+ *          fontSize: 10,
+ *          text: null,
+ *          color: 'black'
+ *      }
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class SignatureIndicatorSettings extends ChildProperty<SignatureIndicatorSettings> {
 
@@ -662,21 +665,21 @@ export class SignatureIndicatorSettings extends ChildProperty<SignatureIndicator
 
 /**
  * The `SignatureDialogSettings` module is used to customize the signature dialog box.
- * 
- * 
+ *
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the signature dialog settings.
- *  viewer.signatureDialogSettings = { 
- *      displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, 
+ *  viewer.signatureDialogSettings = {
+ *      displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload,
  *      hideSaveSignature: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class SignatureDialogSettings extends ChildProperty<SignatureDialogSettings> {
     /**
@@ -693,7 +696,7 @@ export class SignatureDialogSettings extends ChildProperty<SignatureDialogSettin
 }
 /**
  * The `ServerActionSettings` module is used to provide the server action methods of PDF viewer.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -716,7 +719,7 @@ export class SignatureDialogSettings extends ChildProperty<SignatureDialogSettin
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
     /**
@@ -795,45 +798,45 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 
 /**
  * The `StrikethroughSettings` module is used to provide the properties to Strikethrough annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the strike through annotation settings.
- *  viewer.strikethroughSettings = { 
- *      opacity: 1, 
- *      color: '#ff0000', 
- *      author: 'Guest', 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges 
- *      }, 
- *      isLock: false, 
- *      enableMultiPageAnnotation: false, 
- *      enableTextMarkupResizer: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.strikethroughSettings = {
+ *      opacity: 1,
+ *      color: '#ff0000',
+ *      author: 'Guest',
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
+ *      },
+ *      isLock: false,
+ *      enableMultiPageAnnotation: false,
+ *      enableTextMarkupResizer: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> {
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
-    
+    @Property(1)
+    public pageNumber: number;
+
     /**
      * Get or set bounds of the annotation.
      *
@@ -907,7 +910,7 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -917,52 +920,52 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
 
 /**
  * The `UnderlineSettings` module is used to provide the properties to Underline annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the underline annotation settings.
- *  viewer.underlineSettings = { 
- *      opacity: 1, 
- *      color: '#9c2592', 
- *      author: 'Guest', 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges 
- *      }, 
- *      isLock: false, 
- *      enableMultiPageAnnotation: false, 
- *      enableTextMarkupResizer: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.underlineSettings = {
+ *      opacity: 1,
+ *      color: '#9c2592',
+ *      author: 'Guest',
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
+ *      },
+ *      isLock: false,
+ *      enableMultiPageAnnotation: false,
+ *      enableTextMarkupResizer: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * Get or set bounds of the annotation.
      *
      * @default []
      */
-     public bounds: IAnnotationPoint[];
-    
+    public bounds: IAnnotationPoint[];
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -1029,7 +1032,7 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -1039,51 +1042,51 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
 
 /**
  * The `HighlightSettings` module is used to provide the properties to Highlight annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the highlight annotation settings.
- *  viewer.highlightSettings = { 
- *      opacity: 1, 
- *      color: '#ff0000', 
- *      author: 'Guest', 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges 
- *      }, 
- *      isLock: false, 
- *      enableMultiPageAnnotation: false, 
- *      enableTextMarkupResizer: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.highlightSettings = {
+ *      opacity: 1,
+ *      color: '#ff0000',
+ *      author: 'Guest',
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
+ *      },
+ *      isLock: false,
+ *      enableMultiPageAnnotation: false,
+ *      enableTextMarkupResizer: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class HighlightSettings extends ChildProperty<HighlightSettings> {
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * Get or set bounds of the annotation.
      *
      * @default []
      */
-     public bounds: IAnnotationPoint[];
+    public bounds: IAnnotationPoint[];
 
     /**
      * specifies the opacity of the annotation.
@@ -1151,7 +1154,7 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -1161,36 +1164,36 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
 
 /**
  * The `LineSettings` module is used to provide the properties to line annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the line annotation settings.
- *  viewer.lineSettings = { 
- *      opacity: 1, 
- *      color: '#9c2592', 
- *      author: 'Guest', 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges 
- *      }, 
- *      isLock: false, 
- *      enableMultiPageAnnotation: false, 
- *      enableTextMarkupResizer: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.lineSettings = {
+ *      opacity: 1,
+ *      color: '#9c2592',
+ *      author: 'Guest',
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
+ *      },
+ *      isLock: false,
+ *      enableMultiPageAnnotation: false,
+ *      enableTextMarkupResizer: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class LineSettings extends ChildProperty<LineSettings> {
     /**
@@ -1316,7 +1319,7 @@ export class LineSettings extends ChildProperty<LineSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -1326,44 +1329,44 @@ export class LineSettings extends ChildProperty<LineSettings> {
 
 /**
  * The `ArrowSettings` module is used to provide the properties to arrow annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the arrow annotation settings.
- *  viewer.arrowSettings = { 
- *      opacity: 1, 
- *      fillColor: '#9c2592', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
- *      thickness: 1, 
- *      borderDashArray: 0, 
- *      lineHeadStartStyle: 'Closed', 
- *      lineHeadEndStyle: 'Closed', 
- *      annotationSelectorSettings: { 
+ *  viewer.arrowSettings = {
+ *      opacity: 1,
+ *      fillColor: '#9c2592',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      borderDashArray: 0,
+ *      lineHeadStartStyle: 'Closed',
+ *      lineHeadEndStyle: 'Closed',
+ *      annotationSelectorSettings: {
  *          selectionBorderColor: '',
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class ArrowSettings extends ChildProperty<ArrowSettings> {
     /**
@@ -1371,10 +1374,10 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
      */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
- 
+
     /**
-      * Get or set page number of the annotation.
-      */
+     * Get or set page number of the annotation.
+     */
     @Property(1)
     public pageNumber: number;
 
@@ -1489,7 +1492,7 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -1499,66 +1502,66 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
 
 /**
  * The `RectangleSettings` module is used to provide the properties to rectangle annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the rectangle annotation settings.
- *  viewer.rectangleSettings = { 
- *      opacity: 1, 
- *      fillColor: '#9c2592', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
- *      thickness: 1, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.rectangleSettings = {
+ *      opacity: 1,
+ *      fillColor: '#9c2592',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class RectangleSettings extends ChildProperty<RectangleSettings> {
     /**
      * Get or set offset of the annotation.
      */
-     @Property({ x: 0, y: 0})
-     public offset: IPoint;
- 
-     /**
-      * Get or set page number of the annotation.
-      */
-     @Property(1)
-     public pageNumber: number;
- 
-     /**
-      * specifies the width of the annotation.
-      */
-     @Property(100)
-     public width: number;
-  
-     /**
-      * specifies the height of the annotation.
-      */
-     @Property(50)
-     public height: number;
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+    @Property(100)
+    public width: number;
+
+    /**
+     * specifies the height of the annotation.
+     */
+    @Property(50)
+    public height: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -1646,7 +1649,7 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -1656,48 +1659,48 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
 
 /**
  * The `CircleSettings` module is used to provide the properties to circle annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the circle annotation settings.
- *  viewer.circleSettings = { 
- *      opacity: 1, 
- *      fillColor: '#9c2592', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
- *      thickness: 1, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.circleSettings = {
+ *      opacity: 1,
+ *      fillColor: '#9c2592',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class CircleSettings extends ChildProperty<CircleSettings> {
     /**
      * Get or set offset of the annotation.
      */
-     @Property({ x: 0, y: 0})
-     public offset: IPoint;
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
 
     /**
      * Get or set page number of the annotation.
@@ -1803,7 +1806,7 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -1813,26 +1816,26 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
 
 /**
  * The `ShapeLabelSettings` module is used to provide the properties to rectangle annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the shape label settings.
- *  viewer.shapeLabelSettings = { 
- *      opacity: 1, 
- *      fillColor: '#9c2592', 
- *      borderColor: '#ff0000', 
- *      fontColor: '#000', 
- *      fontSize: 16, 
- *      labelHeight: 24.6, 
- *      labelMaxWidth: 151, 
- *      labelContent: 'Label' 
+ *  viewer.shapeLabelSettings = {
+ *      opacity: 1,
+ *      fillColor: '#9c2592',
+ *      borderColor: '#ff0000',
+ *      fontColor: '#000',
+ *      fontSize: 16,
+ *      labelHeight: 24.6,
+ *      labelMaxWidth: 151,
+ *      labelContent: 'Label'
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
     /**
@@ -1876,48 +1879,48 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
 
 /**
  * The `PolygonSettings` module is used to provide the properties to polygon annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the polygon annotation settings.
- *  viewer.polygonSettings = { 
- *      opacity: 1, 
- *      fillColor: '#4070FF', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
- *      thickness: 1, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.polygonSettings = {
+ *      opacity: 1,
+ *      fillColor: '#4070FF',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class PolygonSettings extends ChildProperty<PolygonSettings> {
     /**
      * Get or set offset of the annotation.
      */
-     @Property({ x: 0, y: 0})
-     public offset: IPoint;
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
 
     /**
      * Get or set page number of the annotation.
@@ -2018,7 +2021,7 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -2028,72 +2031,72 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
 
 /**
  * The `stampSettings` module is used to provide the properties to stamp annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the stamp annotation settings.
- *  viewer.stampSettings = { 
- *      opacity: 1, 
- *      author: 'Guest', 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'red', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 5, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
+ *  viewer.stampSettings = {
+ *      opacity: 1,
+ *      author: 'Guest',
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'red',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 5,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
  *      dynamicStamps: [
- *          DynamicStampItem.Revised, 
- *          DynamicStampItem.Reviewed, 
- *          DynamicStampItem.Received, 
- *          DynamicStampItem.Confidential, 
- *          DynamicStampItem.Approved, 
+ *          DynamicStampItem.Revised,
+ *          DynamicStampItem.Reviewed,
+ *          DynamicStampItem.Received,
+ *          DynamicStampItem.Confidential,
+ *          DynamicStampItem.Approved,
  *          DynamicStampItem.NotApproved
- *      ], 
+ *      ],
  *      signStamps: [
- *          SignStampItem.Witness, 
- *          SignStampItem.InitialHere, 
- *          SignStampItem.SignHere, 
- *          SignStampItem.Accepted, 
+ *          SignStampItem.Witness,
+ *          SignStampItem.InitialHere,
+ *          SignStampItem.SignHere,
+ *          SignStampItem.Accepted,
  *          SignStampItem.Rejected
- *      ], 
+ *      ],
  *      standardBusinessStamps: [
- *          StandardBusinessStampItem.Approved, 
- *          StandardBusinessStampItem.NotApproved, 
- *          StandardBusinessStampItem.Draft, 
- *          StandardBusinessStampItem.Final, 
- *          StandardBusinessStampItem.Completed, 
- *          StandardBusinessStampItem.Confidential, 
- *          StandardBusinessStampItem.ForPublicRelease, 
- *          StandardBusinessStampItem.NotForPublicRelease, 
- *          StandardBusinessStampItem.ForComment, 
- *          StandardBusinessStampItem.Void, 
- *          StandardBusinessStampItem.PreliminaryResults, 
+ *          StandardBusinessStampItem.Approved,
+ *          StandardBusinessStampItem.NotApproved,
+ *          StandardBusinessStampItem.Draft,
+ *          StandardBusinessStampItem.Final,
+ *          StandardBusinessStampItem.Completed,
+ *          StandardBusinessStampItem.Confidential,
+ *          StandardBusinessStampItem.ForPublicRelease,
+ *          StandardBusinessStampItem.NotForPublicRelease,
+ *          StandardBusinessStampItem.ForComment,
+ *          StandardBusinessStampItem.Void,
+ *          StandardBusinessStampItem.PreliminaryResults,
  *          StandardBusinessStampItem.InformationOnly
- *      ], 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *      ],
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class StampSettings extends ChildProperty<StampSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
@@ -2108,13 +2111,13 @@ export class StampSettings extends ChildProperty<StampSettings> {
      */
     @Property(150)
     public width: number;
- 
+
     /**
      * specifies the height of the annotation.
      */
     @Property(50)
     public height: number;
-     
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -2201,7 +2204,7 @@ export class StampSettings extends ChildProperty<StampSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -2211,38 +2214,38 @@ export class StampSettings extends ChildProperty<StampSettings> {
 
 /**
  * The `CustomStampSettings` module is used to provide the properties to customstamp annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
- * 
+ *
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the custom stamp annotation settings.
- *  viewer.customStampSettings = { 
- *      opacity: 1, 
- *      author: 'Guest', 
- *      width: 0, 
- *      height: 0, 
- *      left: 0, 
- *      top: 0, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      enableCustomStamp: true, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.customStampSettings = {
+ *      opacity: 1,
+ *      author: 'Guest',
+ *      width: 0,
+ *      height: 0,
+ *      left: 0,
+ *      top: 0,
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      enableCustomStamp: true,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
@@ -2348,7 +2351,7 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -2359,60 +2362,60 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
 
 /**
  * The `DistanceSettings` module is used to provide the properties to distance calibrate annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
- * 
+ *
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the distance annotation settings.
- *  viewer.distanceSettings = { 
- *      opacity: 1, 
- *      fillColor: '#4070FF', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
- *      thickness: 1, 
- *      borderDashArray: 0, 
+ *  viewer.distanceSettings = {
+ *      opacity: 1,
+ *      fillColor: '#4070FF',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      borderDashArray: 0,
  *      lineHeadStartStyle: 'Closed',
- *      lineHeadEndStyle: 'Closed', 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Square', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      leaderLength: 40, 
- *      resizeCursorType: CursorType.move, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *      lineHeadEndStyle: 'Closed',
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      leaderLength: 40,
+ *      resizeCursorType: CursorType.move,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class DistanceSettings extends ChildProperty<DistanceSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * Get or set vertex points of the annotation.
@@ -2537,7 +2540,7 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-     /**
+    /**
      * specifies the subject of the annotation.
      */
     @Property('')
@@ -2546,56 +2549,56 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
 
 /**
  * The `PerimeterSettings` module is used to provide the properties to perimeter calibrate annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the perimeter annotation settings.
- *  viewer.perimeterSettings = { 
- *      opacity: 1, 
- *      fillColor: '#4070FF', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
- *      thickness: 1, 
- *      borderDashArray: 0, 
- *      lineHeadStartStyle: 'Open', 
- *      lineHeadEndStyle: 'Open', 
- *      minHeight: 0, minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#4070FF', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.perimeterSettings = {
+ *      opacity: 1,
+ *      fillColor: '#4070FF',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      borderDashArray: 0,
+ *      lineHeadStartStyle: 'Open',
+ *      lineHeadEndStyle: 'Open',
+ *      minHeight: 0, minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#4070FF',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * Get or set vertex points of the annotation.
@@ -2702,7 +2705,7 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -2712,54 +2715,54 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
 
 /**
  * The `AreaSettings` module is used to provide the properties to area calibrate annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the area annotation settings.
- *  viewer.areaSettings = { 
- *      opacity: 1, 
- *      fillColor: '#4070FF', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
- *      thickness: 1, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#4070FF', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.areaSettings = {
+ *      opacity: 1,
+ *      fillColor: '#4070FF',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#4070FF',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class AreaSettings extends ChildProperty<AreaSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * Get or set vertex points of the annotation.
@@ -2848,7 +2851,7 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -2858,60 +2861,60 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
 
 /**
  * The `RadiusSettings` module is used to provide the properties to radius calibrate annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the radius annotation settings.
- *  viewer.radiusSettings = { 
- *      opacity: 1, 
- *      fillColor: '#4070FF', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
- *      thickness: 1, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'red', 
- *          resizerFillColor: '#4070FF', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.radiusSettings = {
+ *      opacity: 1,
+ *      fillColor: '#4070FF',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'red',
+ *          resizerFillColor: '#4070FF',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class RadiusSettings extends ChildProperty<RadiusSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * specifies the width of the annotation.
      */
-     @Property(100)
-     public width: number;
+    @Property(100)
+    public width: number;
 
     /**
      * specifies the height of the annotation.
@@ -3005,7 +3008,7 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -3015,52 +3018,52 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
 
 /**
  * The `VolumeSettings` module is used to provide the properties to volume calibrate annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the volume annotation settings.
- *  viewer.volumeSettings = { 
+ *  viewer.volumeSettings = {
  *      opacity: 1,
- *      fillColor: '#4070FF', 
- *      strokeColor: '#ff0000', 
- *      author: 'Guest', 
+ *      fillColor: '#4070FF',
+ *      strokeColor: '#ff0000',
+ *      author: 'Guest',
  *      thickness: 1,
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#4070FF', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#4070FF',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class VolumeSettings extends ChildProperty<VolumeSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
     /**
-    * Get or set page number of the annotation.
-    */
+     * Get or set page number of the annotation.
+     */
     @Property(1)
     public pageNumber: number;
 
@@ -3151,7 +3154,7 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -3160,55 +3163,55 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
 }
 /**
  * The `Ink` module is used to provide the properties to Ink annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the ink annotation settings.
- *  viewer.inkAnnotationSettings = { 
- *      author: 'Guest', 
- *      opacity: 1, 
- *      strokeColor: '#ff0000', 
- *      thickness: 1, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      isLock: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.inkAnnotationSettings = {
+ *      author: 'Guest',
+ *      opacity: 1,
+ *      strokeColor: '#ff0000',
+ *      thickness: 1,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * specifies the width of the annotation.
      */
-     @Property(0)
-     public width: number;
+    @Property(0)
+    public width: number;
 
     /**
      * specifies the height of the annotation.
@@ -3217,10 +3220,10 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
     public height: number;
 
     /**
-      * Gets or sets the path of the ink annotation.
-      */
-     @Property(0)
-     public path: string;
+     * Gets or sets the path of the ink annotation.
+     */
+    @Property(0)
+    public path: string;
 
     /**
      * Sets the opacity value for ink annotation.By default value is 1. It range varies from 0 to 1.
@@ -3277,7 +3280,7 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -3287,48 +3290,48 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
 }
 /**
  * The `stickyNotesSettings` module is used to provide the properties to sticky notes annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the sticky notes annotation settings.
- *  viewer.stickyNotesSettings = { 
- *      author: 'Guest', 
- *      opacity: 1, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'red', 
- *          resizerFillColor: '#4070FF', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      isLock: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true 
+ *  viewer.stickyNotesSettings = {
+ *      author: 'Guest',
+ *      opacity: 1,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'red',
+ *          resizerFillColor: '#4070FF',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * specifies the author of the annotation.
@@ -3374,7 +3377,7 @@ export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -3384,22 +3387,22 @@ export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
 
 /**
  * The `MeasurementSettings` module is used to provide the settings to measurement annotations.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the measurement annotation settings.
- *  viewer.measurementSettings = { 
- *      conversionUnit: 'cm', 
- *      displayUnit: 'cm', 
- *      scaleRatio: 1, 
- *      depth: 96 
+ *  viewer.measurementSettings = {
+ *      conversionUnit: 'cm',
+ *      displayUnit: 'cm',
+ *      scaleRatio: 1,
+ *      depth: 96
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
     /**
@@ -3429,65 +3432,65 @@ export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
 
 /**
  * The `FreeTextSettings` module is used to provide the properties to free text annotation.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the free text annotation settings.
- *  viewer.freeTextSettings = { 
- *      opacity: 1, 
- *      fillColor: '#4070FF', 
- *      borderColor: '#4070FF', 
- *      author: 'Guest', 
- *      borderWidth: 1, 
- *      width: 151, 
- *      fontSize: 16, 
- *      height: 24.6, 
- *      fontColor: '#000', 
- *      fontFamily: 'Courier', 
- *      defaultText: 'Type Here', 
- *      textAlignment: 'Right', 
- *      fontStyle: FontStyle.Italic, 
- *      allowTextOnly: false, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      allowedInteractions: ['None'], 
- *      isPrint: true, 
- *      isReadonly: false, 
- *      enableAutoFit: false 
+ *  viewer.freeTextSettings = {
+ *      opacity: 1,
+ *      fillColor: '#4070FF',
+ *      borderColor: '#4070FF',
+ *      author: 'Guest',
+ *      borderWidth: 1,
+ *      width: 151,
+ *      fontSize: 16,
+ *      height: 24.6,
+ *      fontColor: '#000',
+ *      fontFamily: 'Courier',
+ *      defaultText: 'Type Here',
+ *      textAlignment: 'Right',
+ *      fontStyle: FontStyle.Italic,
+ *      allowTextOnly: false,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true,
+ *      isReadonly: false,
+ *      enableAutoFit: false
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
-     /**
+    /**
      * Get or set page number of the annotation.
      */
-     @Property(1)
-     public pageNumber: number;
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -3657,27 +3660,27 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
 
 /**
  * The `AnnotationSelectorSettings` module is used to provide the properties to annotation selectors.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the annotation selector settings.
- *  viewer.annotationSelectorSettings = { 
- *      selectionBorderColor: '', 
- *      resizerBorderColor: 'Circle', 
+ *  viewer.annotationSelectorSettings = {
+ *      selectionBorderColor: '',
+ *      resizerBorderColor: 'Circle',
  *      resizerFillColor: '#4070FF',
- *      resizerSize: 8, 
- *      selectionBorderThickness: 1, 
- *      resizerShape: 'Square', 
- *      selectorLineDashArray: [], 
- *      resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *      resizerCursorType: null 
+ *      resizerSize: 8,
+ *      selectionBorderThickness: 1,
+ *      resizerShape: 'Square',
+ *      selectorLineDashArray: [],
+ *      resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *      resizerCursorType: null
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelectorSettings> {
     /**
@@ -3743,20 +3746,20 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
 
 /**
  * The `TextSearchColorSettings` module is used to set the settings for the color of the text search highlight.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the text search color settings.
- *  viewer.textSearchColorSettings = { 
- *      searchHighlightColor: '#4070FF', 
- *      searchColor: '#FF4081' 
+ *  viewer.textSearchColorSettings = {
+ *      searchHighlightColor: '#4070FF',
+ *      searchColor: '#FF4081'
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class TextSearchColorSettings extends ChildProperty<TextSearchColorSettings> {
     /**
@@ -3774,48 +3777,48 @@ export class TextSearchColorSettings extends ChildProperty<TextSearchColorSettin
 
 /**
  * The `HandWrittenSignatureSettings` module is used to provide the properties to handwritten signature.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the hand written signature settings.
- *  viewer.handWrittenSignatureSettings = { 
+ *  viewer.handWrittenSignatureSettings = {
  *      signatureItem: [
- *          'Signature', 
+ *          'Signature',
  *          'Initial'
- *      ], 
- *      saveSignatureLimit: 1, 
- *      saveInitialLimit: 1, 
- *      opacity: 1, 
- *      strokeColor: '#000000', 
- *      width: 150, 
- *      height: 100, 
- *      thickness: 1, 
- *      annotationSelectorSettings: { 
- *          selectionBorderColor: '', 
- *          resizerBorderColor: 'black', 
- *          resizerFillColor: '#FF4081', 
- *          resizerSize: 8, 
- *          selectionBorderThickness: 1, 
- *          resizerShape: 'Circle', 
- *          selectorLineDashArray: [], 
- *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
- *          resizerCursorType: null 
- *      }, 
- *      allowedInteractions: ['None'], 
+ *      ],
+ *      saveSignatureLimit: 1,
+ *      saveInitialLimit: 1,
+ *      opacity: 1,
+ *      strokeColor: '#000000',
+ *      width: 150,
+ *      height: 100,
+ *      thickness: 1,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Circle',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      allowedInteractions: ['None'],
  *      signatureDialogSettings: {
- *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false 
- *      }, 
+ *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false
+ *      },
  *      initialDialogSettings: {
- *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, 
+ *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload,
  *      hideSaveSignature: false
- *      } 
+ *      }
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSignatureSettings> {
     /**
@@ -3860,13 +3863,13 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
     @Property(1)
     public saveInitialLimit: number;
 
-    /** 
+    /**
      * Provide option to define the required signature items to be displayed in signature menu.
      */
     @Property([])
     public signatureItem: SignatureItem[];
 
-    /** 
+    /**
      * Options to set the type signature font name with respective index and maximum font name limit is 4 so key value should be 0 to 3.
      */
     @Property()
@@ -3883,7 +3886,7 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
      */
     @Property()
     public signatureDialogSettings: SignatureDialogSettingsModel;
-    
+
     /**
      * Get or set the initialDialogSettings for Handwritten initial.
      */
@@ -3894,27 +3897,27 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
 
 /**
  * The `AnnotationSettings` module is used to provide the properties to annotations.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the annotation settings.
- *  viewer.annotationSettings = { 
- *      author: 'Guest', 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      skipPrint: false, 
- *      skipDownload: false, 
- *      allowedInteractions: ['None'] 
+ *  viewer.annotationSettings = {
+ *      author: 'Guest',
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      skipPrint: false,
+ *      skipDownload: false,
+ *      allowedInteractions: ['None']
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
     /**
@@ -3979,7 +3982,7 @@ export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
      */
     @Property(['None'])
     public allowedInteractions: AllowedInteraction[];
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -4084,21 +4087,21 @@ export class RectangleBounds extends ChildProperty<RectangleBounds> {
 
 /**
  * The `TileRenderingSettings` module is used to provide the tile rendering settings of the PDF viewer.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the tile rendering settings.
- *  viewer.tileRenderingSettings = { 
- *      enableTileRendering: false, 
- *      x: 0, 
+ *  viewer.tileRenderingSettings = {
+ *      enableTileRendering: false,
+ *      x: 0,
  *      y: 0
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class TileRenderingSettings extends ChildProperty<TileRenderingSettings> {
     /**
@@ -4121,19 +4124,19 @@ export class TileRenderingSettings extends ChildProperty<TileRenderingSettings> 
 }
 /**
  * The `ScrollSettings` module is used to provide the settings of the scroll of the PDF viewer.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the scroll settings.
- *  viewer.scrollSettings = { 
- *      delayPageRequestTimeOnScroll: 150 
+ *  viewer.scrollSettings = {
+ *      delayPageRequestTimeOnScroll: 150
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class ScrollSettings extends ChildProperty<ScrollSettings> {
     /**
@@ -4157,7 +4160,7 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(false)
     public isChecked: boolean;
-    
+
     /**
      * Specifies whether the radio button is in checked state or not.
      */
@@ -4217,7 +4220,7 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(10)
     public fontSize: number;
-   
+
     /**
      * Get or set the font Style of form field.
      */
@@ -4289,7 +4292,7 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(1)
     public thickness: number;
-     
+
     /**
      * Get or set the border color of the form field.
      */
@@ -4303,9 +4306,9 @@ export class FormField extends ChildProperty<FormField> {
     public isMultiline: boolean;
 
     /**
-     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false. 
+     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false.
      * If set, the field is automatically divided into as many equally spaced position, or  combs, as the value of MaxLength, and the text is laid out into the combs.
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -4316,7 +4319,7 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(-1)
     public pageIndex: number;
-    
+
     /**
      * Get the pageNumber of the form field. Default value is 1.
      */
@@ -4347,34 +4350,40 @@ export class FormField extends ChildProperty<FormField> {
     @Property(0)
     public zIndex: number;
 
+    /**
+     * specifies the custom data of the form field.
+     */
+    @Property(null)
+    public customData: object;
+
 }
 /**
  * The `ContextMenuSettings` is used to show the context menu of PDF document.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the settings of the context menu option.
- *  viewer.contextMenuSettings = { 
- *      contextMenuAction: 'RightClick', 
+ *  viewer.contextMenuSettings = {
+ *      contextMenuAction: 'RightClick',
  *      contextMenuItems: [
- *          ContextMenuItem.Comment, 
- *          ContextMenuItem.Copy, 
- *          ContextMenuItem.Cut, 
- *          ContextMenuItem.Delete, 
- *          ContextMenuItem.Highlight, 
- *          ContextMenuItem.Paste, 
- *          ContextMenuItem.Properties, 
- *          ContextMenuItem.ScaleRatio, 
- *          ContextMenuItem.Strikethrough, 
+ *          ContextMenuItem.Comment,
+ *          ContextMenuItem.Copy,
+ *          ContextMenuItem.Cut,
+ *          ContextMenuItem.Delete,
+ *          ContextMenuItem.Highlight,
+ *          ContextMenuItem.Paste,
+ *          ContextMenuItem.Properties,
+ *          ContextMenuItem.ScaleRatio,
+ *          ContextMenuItem.Strikethrough,
  *          ContextMenuItem.Underline
- *         ] 
+ *         ]
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
@@ -4396,35 +4405,35 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
 
 /**
  * The `TextFieldSettings` is used to to show and customize the appearance of text box HTML element.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the text field settings.
- *  viewer.textFieldSettings = { 
- *      name: '', 
- *      value: '', 
- *      fontFamily: 'Courier', 
- *      fontSize: 10, 
- *      fontStyle: 'None', 
- *      color: 'black', 
- *      borderColor: 'black', 
- *      backgroundColor: 'white', 
- *      alignment: 'Right', 
- *      isReadOnly: false, 
- *      visibility: 'visible', 
- *      maxLength: 0, 
- *      isRequired: false, 
- *      isPrint: true, 
- *      tooltip: '', 
- *      thickness: 1, 
- *      isMultiline: false 
+ *  viewer.textFieldSettings = {
+ *      name: '',
+ *      value: '',
+ *      fontFamily: 'Courier',
+ *      fontSize: 10,
+ *      fontStyle: 'None',
+ *      color: 'black',
+ *      borderColor: 'black',
+ *      backgroundColor: 'white',
+ *      alignment: 'Right',
+ *      isReadOnly: false,
+ *      visibility: 'visible',
+ *      maxLength: 0,
+ *      isRequired: false,
+ *      isPrint: true,
+ *      tooltip: '',
+ *      thickness: 1,
+ *      isMultiline: false
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
 
@@ -4457,7 +4466,7 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      */
     @Property(10)
     public fontSize: number;
-    
+
     /**
      * specifies the page number of the form field.
      */
@@ -4539,48 +4548,54 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
     /**
      * Allows multiline input in the text field. FALSE, by default.
      */
-     @Property(false)
-     public isMultiline: boolean;
+    @Property(false)
+    public isMultiline: boolean;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    @Property(null)
+    public customData: object;
 }
 
 /**
  * The `PasswordFieldSettings` is used to to show and customize the appearance of password input HTML element.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the password field settings.
- *  viewer.passwordFieldSettings = { 
- *      name: '', 
- *      value: '', 
- *      fontFamily: 'Courier', 
- *      fontSize: 10, 
- *      fontStyle: 'None', 
- *      color: 'black', 
- *      borderColor: 'black', 
- *      backgroundColor: 'white', 
+ *  viewer.passwordFieldSettings = {
+ *      name: '',
+ *      value: '',
+ *      fontFamily: 'Courier',
+ *      fontSize: 10,
+ *      fontStyle: 'None',
+ *      color: 'black',
+ *      borderColor: 'black',
+ *      backgroundColor: 'white',
  *      alignment: 'Right',
- *      isReadOnly: false, 
- *      visibility: 'visible', 
- *      maxLength: 0, 
- *      isRequired: false, 
- *      isPrint: true, 
- *      tooltip: '', 
- *      thickness: 1 
+ *      isReadOnly: false,
+ *      visibility: 'visible',
+ *      maxLength: 0,
+ *      isRequired: false,
+ *      isPrint: true,
+ *      tooltip: '',
+ *      thickness: 1
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
- export class PasswordFieldSettings extends ChildProperty<PasswordFieldSettings> {
+export class PasswordFieldSettings extends ChildProperty<PasswordFieldSettings> {
 
     /**
      * Get or set the form field bounds.
      */
-     @Property({ x: 0, y: 0, width: 0, height: 0 })
-     public bounds: IFormFieldBound;
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
 
     /**
      * Get or set the name of the form field element.
@@ -4683,35 +4698,41 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      */
     @Property('#303030')
     public borderColor: string;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    @Property(null)
+    public customData: object;
 }
 
 /**
  * The `CheckBoxFieldSettings` is used to to show and customize the appearance of check box element.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the check box field settings.
- *  viewer.checkBoxFieldSettings = { 
- *      name: '', 
- *      isChecked: true, 
- *      backgroundColor: 'white', 
- *      isReadOnly: false, 
- *      visibility: 'visible',  
- *      isPrint: true, 
- *      tooltip: '', 
- *      isRequired: false, 
- *      thickness: 5, 
- *      borderColor: 'black' 
+ *  viewer.checkBoxFieldSettings = {
+ *      name: '',
+ *      isChecked: true,
+ *      backgroundColor: 'white',
+ *      isReadOnly: false,
+ *      visibility: 'visible',
+ *      isPrint: true,
+ *      tooltip: '',
+ *      isRequired: false,
+ *      thickness: 5,
+ *      borderColor: 'black'
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
- export class CheckBoxFieldSettings extends ChildProperty<CheckBoxFieldSettings> {
-   
+export class CheckBoxFieldSettings extends ChildProperty<CheckBoxFieldSettings> {
+
     /**
      * Get or set the form field bounds.
      */
@@ -4790,40 +4811,46 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      */
     @Property('#303030')
     public borderColor: string;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    @Property(null)
+    public customData: object;
 }
 
 /**
  * The `RadioButtonFieldSettings` is used to to show and customize the appearance of radio button element.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the radio button field settings.
- *  viewer.radioButtonFieldSettings = { 
+ *  viewer.radioButtonFieldSettings = {
  *      name: '',
- *      isSelected: false, 
- *      backgroundColor: 'white', 
- *      isReadOnly: false, 
- *      visibility: 'visible',  
- *      isPrint: true, 
- *      tooltip: '', 
- *      isRequired: false, 
- *      thickness: 1, 
- *      borderColor: 'black' 
+ *      isSelected: false,
+ *      backgroundColor: 'white',
+ *      isReadOnly: false,
+ *      visibility: 'visible',
+ *      isPrint: true,
+ *      tooltip: '',
+ *      isRequired: false,
+ *      thickness: 1,
+ *      borderColor: 'black'
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
- export class RadioButtonFieldSettings extends ChildProperty<RadioButtonFieldSettings> {
+export class RadioButtonFieldSettings extends ChildProperty<RadioButtonFieldSettings> {
 
     /**
      * Get or set the form field bounds.
      */
-     @Property({ x: 0, y: 0, width: 0, height: 0 })
-     public bounds: IFormFieldBound;
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
 
     /**
      * Get or set the name of the form field element.
@@ -4896,40 +4923,46 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      */
     @Property('#303030')
     public borderColor: string;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    @Property(null)
+    public customData: object;
 }
 
 /**
  * The `DropdownFieldSettings` is used to to show and customize the appearance of drop down element.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the drop down field settings.
- *  viewer.DropdownFieldSettings = { 
- *      name: '', 
- *      isSelected: false, 
- *      backgroundColor: 'white', 
- *      isReadOnly: true, 
- *      visibility: 'visible', 
- *      isPrint: true,  
- *      tooltip: '', 
- *      isRequired: false, 
- *      thickness: 5, 
- *      borderColor: 'blue' 
+ *  viewer.DropdownFieldSettings = {
+ *      name: '',
+ *      isSelected: false,
+ *      backgroundColor: 'white',
+ *      isReadOnly: true,
+ *      visibility: 'visible',
+ *      isPrint: true,
+ *      tooltip: '',
+ *      isRequired: false,
+ *      thickness: 5,
+ *      borderColor: 'blue'
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
- export class DropdownFieldSettings extends ChildProperty<DropdownFieldSettings> {
+export class DropdownFieldSettings extends ChildProperty<DropdownFieldSettings> {
 
     /**
      * Get or set the form field bounds.
      */
-     @Property({ x: 0, y: 0, width: 0, height: 0 })
-     public bounds: IFormFieldBound;
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
 
     /**
      * Get or set the name of the dropdown.
@@ -5032,45 +5065,51 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      */
     @Property('#303030')
     public borderColor: string;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    @Property(null)
+    public customData: object;
 }
 
 /**
  * The `ListBoxFieldSettings` is used to to show and customize the appearance of list box element.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the list box field settings.
- *  viewer.listBoxFieldSettings = { 
- *      name: '', 
- *      fontFamily: 'Courier', 
- *      fontSize: 5, 
- *      fontStyle: 'None', 
- *      color: 'black', 
- *      backgroundColor: 'white', 
- *      alignment: 'Right', 
- *      isReadOnly: false, 
- *      visibility: 'visible', 
- *      isRequired: false, 
- *      isPrint: false, 
- *      tooltip: '', 
- *      options: [], 
- *      thickness: 1, 
- *      borderColor: 'black' 
+ *  viewer.listBoxFieldSettings = {
+ *      name: '',
+ *      fontFamily: 'Courier',
+ *      fontSize: 5,
+ *      fontStyle: 'None',
+ *      color: 'black',
+ *      backgroundColor: 'white',
+ *      alignment: 'Right',
+ *      isReadOnly: false,
+ *      visibility: 'visible',
+ *      isRequired: false,
+ *      isPrint: false,
+ *      tooltip: '',
+ *      options: [],
+ *      thickness: 1,
+ *      borderColor: 'black'
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class ListBoxFieldSettings extends ChildProperty<ListBoxFieldSettings> {
 
     /**
      * Get or set the form field bounds.
      */
-     @Property({ x: 0, y: 0, width: 0, height: 0 })
-     public bounds: IFormFieldBound;
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
 
     /**
      * Get or set the name of the form field element.
@@ -5179,14 +5218,14 @@ export class Item extends ChildProperty<Item> {
     /**
      * Get or set the name.
      */
-     @Property('')
-     public itemName: string;
+    @Property('')
+    public itemName: string;
 
     /**
      * Get or set the value.
      */
-      @Property('')
-      public itemValue: string;
+    @Property('')
+    public itemValue: string;
 }
 
 /**
@@ -5309,7 +5348,7 @@ export class KeyboardCommand extends ChildProperty<KeyboardCommand> {
 
     /**
      * Defines a combination of keys and key modifiers, on recognition of which the command will be executed.
-     * 
+     *
      * ```html
      * <div id='pdfViewer'></div>
      * ```
@@ -5328,7 +5367,7 @@ export class KeyboardCommand extends ChildProperty<KeyboardCommand> {
      * });
      * pdfViewer.appendTo('#pdfViewer');
      * ```
-     * 
+     *
      * @default {}
      */
     @Complex<KeyGestureModel>({}, KeyGesture)
@@ -5348,7 +5387,7 @@ export class KeyboardCommand extends ChildProperty<KeyboardCommand> {
  *          gesture: {
  *              pdfKeys: PdfKeys.G,
  *              modifierKeys: ModifierKeys.Shift | ModifierKeys.Alt
- *          }          
+ *          }
  *       },
  *       {
  *          name: 'customPaste',
@@ -5364,7 +5403,8 @@ export class KeyboardCommand extends ChildProperty<KeyboardCommand> {
 export class CommandManager extends ChildProperty<CommandManager> {
     /**
      * Defines the multiple command names with the corresponding command objects.
-     * @default [] 
+     *
+     * @default []
      */
     @Collection<KeyboardCommandModel>([], KeyboardCommand)
     public keyboardCommand: KeyboardCommandModel[];
@@ -5372,7 +5412,7 @@ export class CommandManager extends ChildProperty<CommandManager> {
 
 /**
  * The `PageOrganizerSettings` is allows pages to be deleted, inserted and rotated in the PDF viewer.
- * 
+ *
  * ```html
  * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
  * ```
@@ -5380,21 +5420,23 @@ export class CommandManager extends ChildProperty<CommandManager> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the page organizer settings.
  *  viewer.pageOrganizerSettings = {
-*           canDelete: true, 
-*           canInsert: true, 
-*           canRotate: true
-*   };
+ *           canDelete: true,
+ *           canInsert: true,
+ *           canRotate: true,
+ *           canCopy: true,
+ *           canRearrange: true
+ *   };
  *  viewer.appendTo("#pdfViewer");
  * ```
- * 
+ *
  */
 export class PageOrganizerSettings extends ChildProperty<PageOrganizerSettings> {
 
     /**
      * Specifies whether the pages can be deleted.
      */
-     @Property(true)
-     public canDelete: boolean;
+    @Property(true)
+    public canDelete: boolean;
 
     /**
      * Specifies whether the pages can be inserted.
@@ -5407,6 +5449,19 @@ export class PageOrganizerSettings extends ChildProperty<PageOrganizerSettings> 
      */
     @Property(true)
     public canRotate: boolean;
+
+    /**
+     * Specifies whether the pages can be copied.
+     */
+    @Property(true)
+    public canCopy: boolean;
+
+    /**
+     * Specifies whether the pages can be rearranged.
+     */
+    @Property(true)
+    public canRearrange: boolean;
+
 }
 
 /**
@@ -5425,16 +5480,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the service url of the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/serviceUrl/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property()
     public serviceUrl: string;
 
     /**
      * gets the page count of the document loaded in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/pageCount/index.md' %}{% endcodeBlock %}
      *
      * @default 0
@@ -5450,17 +5505,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(1)
     public printScaleRatio: number;
- 
+
     /**
-      * Get File byte array of the PDF document.
-      * 
-      * @private
-      */
+     * Get File byte array of the PDF document.
+     *
+     * @private
+     */
     public fileByteArray: Uint8Array;
 
     /**
      * Checks whether the PDF document is edited.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isDocumentEdited/index.md' %}{% endcodeBlock %}
      *
      * @asptype bool
@@ -5471,7 +5526,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/currentPageNumber/index.md' %}{% endcodeBlock %}
      *
      * @default 0
@@ -5481,9 +5536,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Sets the PDF document path for initial loading.
-     * 
+     *
      * {% codeBlock src='pdfviewer/documentPath/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property()
     public documentPath: string;
@@ -5493,6 +5548,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype int
      * @blazorType int
+     * @returns {number} - number
      */
     public get zoomPercentage(): number {
         return this.magnificationModule.zoomFactor * 100;
@@ -5500,60 +5556,56 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Get the Loaded document annotation Collections in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/annotationCollection/index.md' %}{% endcodeBlock %}
      *
      */
-    // eslint-disable-next-line
     public annotationCollection: any[];
 
     /**
      * Get the Loaded document formField Collections in the PdfViewer control.
-     * 
+     *
      * @private
      */
-    // eslint-disable-next-line
     public formFieldCollection: any[];
-
 
     /**
      * Get the Loaded document signature Collections in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/signatureCollection/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line
     public signatureCollection: any[] = [];
 
     /**
      * Gets or sets the document name loaded in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/fileName/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     public fileName: string = null;
 
     /**
      * Gets or sets the export annotations JSON file name in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/exportAnnotationFileName/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property(null)
     public exportAnnotationFileName: string;
 
     /**
      * Gets or sets the download file name in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/downloadFileName/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property()
     public downloadFileName: string;
 
     /**
      * Defines the scrollable height of the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/height/index.md' %}{% endcodeBlock %}
      *
      * @default 'auto'
@@ -5563,7 +5615,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the scrollable width of the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/width/index.md' %}{% endcodeBlock %}
      *
      * @default 'auto'
@@ -5573,7 +5625,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the toolbar of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableToolbar/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5583,7 +5635,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the retry count for the failed requests.
-     * 
+     *
      * {% codeBlock src='pdfviewer/retryCount/index.md' %}{% endcodeBlock %}
      *
      * @default 1
@@ -5594,7 +5646,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Specifies the response status codes for retrying a failed request with a "3xx", "4xx", or "5xx" response status code.
      * The value can have multiple values, such as [500, 401, 400], and the default value is 500.
-     * 
+     *
      * {% codeBlock src='pdfviewer/retryStatusCodes/index.md' %}{% endcodeBlock %}
      *
      * @default [500]
@@ -5604,7 +5656,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets or sets the timeout for retries in seconds.
-     * 
+     *
      * {% codeBlock src='pdfviewer/retryTimeout/index.md' %}{% endcodeBlock %}
      *
      * @default 0
@@ -5614,7 +5666,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Initially renders the first N pages of the PDF document when the document is loaded.
-     * 
+     *
      * {% codeBlock src='pdfviewer/initialRenderPages/index.md' %}{% endcodeBlock %}
      *
      * @default 2
@@ -5624,7 +5676,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * If it is set as false then error message box is not displayed in PDF viewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/showNotificationDialog/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5634,7 +5686,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the Navigation toolbar of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableNavigationToolbar/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5644,7 +5696,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the Comment Panel of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableCommentPanel/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5654,7 +5706,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * If it set as true, then the command panel show at initial document loading in the PDF viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/isCommandPanelOpen/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5664,7 +5716,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableTextMarkupResizer/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5674,7 +5726,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the multi line text markup annotations in overlapping collections.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableMultiLineOverlap/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5684,7 +5736,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Checks if the freeText value is valid or not.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isValidFreeText/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5704,7 +5756,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
      * and get the annotation Toolbar Visible status.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isAnnotationToolbarVisible/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5715,7 +5767,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
      * and get the annotation Toolbar Visible status.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isFormDesignerToolbarVisible/index.md' %}{% endcodeBlock %}
      *
      * @public
@@ -5726,7 +5778,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableMultiPageAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5736,7 +5788,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the download option of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableDownload/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5746,7 +5798,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the print option of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enablePrint/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5758,7 +5810,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * If it is set as FALSE, will suppress the page rotation of Landscape document on print action. By default it is TRUE.
      *
      * {% codeBlock src='pdfviewer/enablePrintRotation/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     @Property(true)
@@ -5766,7 +5818,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the thumbnail view in the PDF viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableThumbnail/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5776,36 +5828,36 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the page organizer in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enablePageOrganizer/index.md' %}{% endcodeBlock %}
      *
      * @default true
      */
     @Property(true)
-    public enablePageOrganizer: boolean;    
+    public enablePageOrganizer: boolean;
 
-   /**
-    * Specifies whether the page organizer dialog will be displayed upon the initial document loading in the PDF Viewer.
-    * 
-    * {% codeBlock src='pdfviewer/isPageOrganizerOpen/index.md' %}{% endcodeBlock %}
-    *
-    * @default false
-    */
+    /**
+     * Specifies whether the page organizer dialog will be displayed upon the initial document loading in the PDF Viewer.
+     *
+     * {% codeBlock src='pdfviewer/isPageOrganizerOpen/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
     @Property(false)
     public isPageOrganizerOpen: boolean;
 
     /**
-     * This property allows for control over various page management functionalities within the PDF Viewer. By setting it to `true`, users will be able to delete, insert and rotate pages. Conversely, setting it to `false` will disable these actions.
-     * 
+     * This property allows for control over various page management functionalities within the PDF Viewer. By setting it to `true`, users will be able to delete, insert, rotate pages, rearrange pages. Conversely, setting it to `false` will disable these actions.
+     *
      * {% codeBlock src='pdfviewer/pageOrganizerSettings/index.md' %}{% endcodeBlock %}
      *
      */
-    @Property({canDelete: true, canInsert: true, canRotate: true})
+    @Property({canDelete: true, canInsert: true, canRotate: true, canCopy: true, canRearrange: true})
     public pageOrganizerSettings: PageOrganizerSettingsModel;
 
     /**
      * If it set as true, then the thumbnail view show at initial document loading in the PDF Viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/isThumbnailViewOpen/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5815,7 +5867,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disable saving Hand Written signature as editable in the PDF.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isSignatureEditable/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5825,7 +5877,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the bookmark view in the PDF viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableBookmark/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5835,7 +5887,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the bookmark styles in the PDF viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableBookmarkStyles/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5845,7 +5897,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the hyperlinks in PDF document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableHyperlink/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5855,7 +5907,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables or disables the handwritten signature in PDF document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableHandwrittenSignature/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5866,14 +5918,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * If it is set as false, then the ink annotation support in the PDF Viewer will be disabled. By default it is true.
      *
      * {% codeBlock src='pdfviewer/enableInkAnnotation/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     @Property(true)
     public enableInkAnnotation: boolean;
     /**
      * restrict zoom request.
-     * 
+     *
      * {% codeBlock src='pdfviewer/restrictZoomRequest/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5882,7 +5934,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public restrictZoomRequest: boolean;
     /**
      * Specifies the open state of the hyperlink in the PDF document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/hyperlinkOpenState/index.md' %}{% endcodeBlock %}
      *
      * @default CurrentTab
@@ -5892,9 +5944,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the state of the ContextMenu in the PDF document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/contextMenuOption/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default RightClick
      */
     @Property('RightClick')
@@ -5902,7 +5954,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Disables the menu items in the context menu.
-     * 
+     *
      * {% codeBlock src='pdfviewer/disableContextMenuItems/index.md' %}{% endcodeBlock %}
      *
      * @default []
@@ -5912,17 +5964,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
-     * 
+     *
      * {% codeBlock src='pdfviewer/formFieldCollections/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ name: '', id: '', type: '', isReadOnly: false, isSelected: false, isChecked: false, value: '', signatureType: [''], fontName: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '', pageIndex: -1, options: [], signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' } })
+
+    @Property({ name: '', id: '', type: '', isReadOnly: false, isSelected: false, isChecked: false, value: '', signatureType: [''], fontName: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '', pageIndex: -1, options: [], signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black', customData: '' } })
     public formFieldCollections: FormFieldModel[];
 
     /**
      * Enable or disable the Navigation module of PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableNavigation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5932,7 +5984,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the auto complete option in form documents.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableAutoComplete/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5942,7 +5994,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the Magnification module of PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableMagnification/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5952,7 +6004,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the Label for shapeAnnotations of PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableShapeLabel/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -5962,7 +6014,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the customization of measure values in PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableImportAnnotationMeasurement/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5972,7 +6024,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the pinch zoom option in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enablePinchZoom/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5982,7 +6034,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the text selection in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableTextSelection/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -5992,7 +6044,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the text search in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableTextSearch/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6002,7 +6054,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6012,7 +6064,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the form fields in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFormFields/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6022,7 +6074,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Show or hide the form designer tool in the main toolbar of the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFormDesigner/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6032,7 +6084,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the interaction of form fields in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/designerMode/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -6042,7 +6094,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the form fields validation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFormFieldsValidation/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -6052,7 +6104,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable if the PDF document contains form fields.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isFormFieldDocument/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -6064,7 +6116,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Gets or sets a boolean value to show or hide desktop toolbar in mobile devices.
      *
      * {% codeBlock src='pdfviewer/enableDesktopMode/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -6082,7 +6134,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the free text annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFreeText/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6092,7 +6144,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the text markup annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableTextMarkupAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6102,7 +6154,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the shape annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableShapeAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6112,7 +6164,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the calibrate annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableMeasureAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6122,7 +6174,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables and disable the stamp annotations when the PDF viewer control is loaded initially.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableStampAnnotations/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6132,7 +6184,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enables and disable the stickyNotes annotations when the PDF viewer control is loaded initially.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableStickyNotesAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6142,7 +6194,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableAnnotationToolbar/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6152,7 +6204,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Opens the form designer toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFormDesignerToolbar/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6162,7 +6214,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets or sets a boolean value to show or hide the bookmark panel while loading a document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isBookmarkPanelOpen/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -6181,7 +6233,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Sets the interaction mode of the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/interactionMode/index.md' %}{% endcodeBlock %}
      *
      * @default TextSelection
@@ -6191,7 +6243,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the rendering mode in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/zoomMode/index.md' %}{% endcodeBlock %}
      *
      * @default Default
@@ -6201,7 +6253,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the signature mode in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/signatureFitMode/index.md' %}{% endcodeBlock %}
      *
      * @default Default
@@ -6211,7 +6263,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the print mode in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/printMode/index.md' %}{% endcodeBlock %}
      *
      * @default Default
@@ -6221,7 +6273,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Sets the initial loading zoom value from 10 to 400 in the PDF Viewer Control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/zoomValue/index.md' %}{% endcodeBlock %}
      *
      * @default 0
@@ -6230,8 +6282,28 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public zoomValue: number;
 
     /**
+     * Specifies the minimum acceptable zoom level for the control, with a default value of 10.
+     *
+     * {% codeBlock src='pdfviewer/minZoom/index.md' %}{% endcodeBlock %}
+     *
+     * @default 10
+     */
+    @Property(10)
+    public minZoom: number;
+
+    /**
+     * Specifies the maximum allowable zoom level for the control, with a default value of 400.
+     *
+     * {% codeBlock src='pdfviewer/maxZoom/index.md' %}{% endcodeBlock %}
+     *
+     * @default 400
+     */
+    @Property(400)
+    public maxZoom: number;
+
+    /**
      *  Enable or disable the zoom optimization mode in PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableZoomOptimization/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6241,7 +6313,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disable the text extract from the PDF viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isExtractText/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -6251,7 +6323,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Maintain the selection of text markup annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isMaintainSelection/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -6259,7 +6331,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(false)
     public isMaintainSelection: boolean;
 
-     /**
+    /**
      *  Get or set the flag to hide the digitally signed field on document loading.
      *
      * @private
@@ -6268,9 +6340,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(false)
     public hideEmptyDigitalSignatureFields: boolean;
 
-     /**
+    /**
      *  Show or hide the digital signature appearance in the document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/showDigitalSignatureAppearance/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -6279,11 +6351,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public showDigitalSignatureAppearance: boolean;
 
     /**
-     *  Determines whether accessibility tags are enabled or disabled. 
+     *  Determines whether accessibility tags are enabled or disabled.
      *  Accessibility tags can help make web content more accessible to users with disabilities.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableAccessibilityTags/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     @Property(true)
@@ -6291,7 +6363,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies whether to display or remove the untrusted HTML values in the PDF Viewer component.
-     * 
+     *
      * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
      * @private
@@ -6302,26 +6374,26 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Customize desired date and time format
-     * 
+     *
      * {% codeBlock src='pdfviewer/dateTimeFormat/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property('M/d/yyyy h:mm:ss a')
     public dateTimeFormat: string;
 
     /**
      * Set the resource URL for assets or the public directory. The standalone PDF Viewer will load its custom resources from this URL.
-     * 
+     *
      * {% codeBlock src='pdfviewer/resourceUrl/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @remarks
-     * 
-     * Users incorporating custom assets, public directories, or routing setups into their 
-     * Standalone PDF Viewer applications may face challenges when loading the PDF Viewer 
-     * libraries from the default assets location. This property addresses these issues by allowing 
-     * resource URL customization, guaranteeing a smooth integration process for loading libraries 
+     *
+     * Users incorporating custom assets, public directories, or routing setups into their
+     * Standalone PDF Viewer applications may face challenges when loading the PDF Viewer
+     * libraries from the default assets location. This property addresses these issues by allowing
+     * resource URL customization, guaranteeing a smooth integration process for loading libraries
      * in the Standalone PDF Viewer.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -6329,426 +6401,426 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the settings of the PDF Viewer toolbar.
-     * 
+     *
      * {% codeBlock src='pdfviewer/toolbarSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FormDesignerEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'], formDesignerToolbarItems: ['TextboxTool', 'PasswordTool', 'CheckBoxTool', 'RadioButtonTool', 'DropdownTool', 'ListboxTool', 'DrawSignatureTool', 'DeleteTool'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
      * Defines the ajax Request settings of the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/ajaxRequestSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ ajaxHeaders: [], withCredentials: false })
     public ajaxRequestSettings: AjaxRequestSettingsModel;
 
     /**
      * Defines the stamp items of the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/customStamp/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ customStampName: '', customStampImageSource: '' })
     public customStamp: CustomStampModel[];
 
     /**
      * Defines the settings of the PDF Viewer service.
-     * 
+     *
      * {% codeBlock src='pdfviewer/serverActionSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields', renderTexts: 'RenderPdfTexts' })
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
      * Get or set the signature field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/signatureFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ name: '', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', thickness: 1, signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, signatureDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
     public signatureFieldSettings: SignatureFieldSettingsModel;
 
     /**
      * Get or set the initial field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/initialFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ name: '', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', thickness: 1, initialIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, initialDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
     public initialFieldSettings: InitialFieldSettingsModel;
 
     /**
      * Defines the settings of highlight annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/highlightSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: "Highlight" })
+
+    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: 'Highlight' })
     public highlightSettings: HighlightSettingsModel;
 
     /**
      * Defines the settings of strikethrough annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/strikethroughSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: "Strikethrough" })
+
+    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: 'Strikethrough' })
     public strikethroughSettings: StrikethroughSettingsModel;
 
     /**
      * Defines the settings of underline annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/underlineSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: "Underline" })
+
+    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: 'Underline' })
     public underlineSettings: UnderlineSettingsModel;
 
     /**
      * Defines the settings of line annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/lineSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Line" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Line' })
     public lineSettings: LineSettingsModel;
 
     /**
      * Defines the settings of arrow annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/arrowSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Arrow" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Arrow' })
     public arrowSettings: ArrowSettingsModel;
 
     /**
      * Defines the settings of rectangle annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/rectangleSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Rectangle" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Rectangle' })
     public rectangleSettings: RectangleSettingsModel;
 
     /**
      * Defines the settings of shape label.
-     * 
+     *
      * {% codeBlock src='pdfviewer/shapeLabelSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ff0000', fontColor: '#000', fontSize: 16, labelHeight: 24.6, labelMaxWidth: 151, labelContent: 'Label' })
     public shapeLabelSettings: ShapeLabelSettingsModel;
 
     /**
      * Defines the settings of circle annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/circleSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Circle" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Circle' })
     public circleSettings: CircleSettingsModel;
 
     /**
      * Defines the settings of polygon annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/polygonSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Polygon" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Polygon' })
     public polygonSettings: PolygonSettingsModel;
 
     /**
      * Defines the settings of stamp annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/stampSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly], allowedInteractions: ['None'], isPrint: true, subject: "" })
+
+    @Property({ opacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly], allowedInteractions: ['None'], isPrint: true, subject: '' })
     public stampSettings: StampSettingsModel;
 
     /**
      * Defines the settings of customStamp annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/customStampSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, author: 'Guest', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, enableCustomStamp: true, allowedInteractions: ['None'], isPrint: true, subject: "" })
+
+    @Property({ opacity: 1, author: 'Guest', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, enableCustomStamp: true, allowedInteractions: ['None'], isPrint: true, subject: '' })
     public customStampSettings: CustomStampSettingsModel;
 
     /**
      * Defines the settings of distance annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/distanceSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move, allowedInteractions: ['None'], isPrint: true, subject: "Distance calculation" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move, allowedInteractions: ['None'], isPrint: true, subject: 'Distance calculation' })
     public distanceSettings: DistanceSettingsModel;
 
     /**
      * Defines the settings of perimeter annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/perimeterSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: "Perimeter calculation" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: 'Perimeter calculation' })
     public perimeterSettings: PerimeterSettingsModel;
 
     /**
      * Defines the settings of area annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/areaSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: "Area calculation" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: 'Area calculation' })
     public areaSettings: AreaSettingsModel;
 
     /**
      * Defines the settings of radius annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/radiusSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Radius calculation" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Radius calculation' })
     public radiusSettings: RadiusSettingsModel;
 
     /**
      * Defines the settings of volume annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/volumeSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: "Volume calculation" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: 'Volume calculation' })
     public volumeSettings: VolumeSettingsModel;
 
     /**
      * Defines the settings of stickyNotes annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/stickyNotesSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ author: 'Guest', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Sticky Note" })
+
+    @Property({ author: 'Guest', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Sticky Note' })
     public stickyNotesSettings: StickyNotesSettingsModel;
     /**
      * Defines the settings of free text annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/freeTextSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false, enableAutoFit: false, subject: "Text Box" })
+
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false, enableAutoFit: false, subject: 'Text Box' })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**
      * Defines the settings of measurement annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/measurementSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property({ conversionUnit: 'in', displayUnit: 'in', scaleRatio: 1, depth: 96 })
     public measurementSettings: MeasurementSettingsModel;
 
     /**
      * Defines the settings of annotation selector.
-     * 
+     *
      * {% codeBlock src='pdfviewer/annotationSelectorSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null })
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * Sets the settings for the color of the text search highlight.
-     * 
+     *
      * {% codeBlock src='pdfviewer/textSearchColorSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property({ searchHighlightColor: '#fdd835', searchColor: '#8b4c12' })
     public textSearchColorSettings: TextSearchColorSettingsModel;
 
     /**
      * Get or set the signature dialog settings for signature field.
-     * 
+     *
      * {% codeBlock src='pdfviewer/signatureDialogSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-     @Property({ displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false })
+    @Property({ displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false })
     public signatureDialogSettings: SignatureDialogSettingsModel;
 
     /**
      * Get or set the signature dialog settings for initial field.
-     * 
+     *
      * {% codeBlock src='pdfviewer/initialDialogSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property({ displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false })
     public initialDialogSettings: SignatureDialogSettingsModel;
 
     /**
      * Defines the settings of handWrittenSignature.
-     * 
+     *
      * {% codeBlock src='pdfviewer/handWrittenSignatureSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ signatureItem: ['Signature', 'Initial'], saveSignatureLimit: 1, saveInitialLimit: 1, opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], signatureDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false }, initialDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
      * Defines the ink annotation settings for PDF Viewer.It used to customize the strokeColor, thickness, opacity of the ink annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/inkAnnotationSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ author: 'Guest', opacity: 1, strokeColor: '#ff0000', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Ink" })
+
+    @Property({ author: 'Guest', opacity: 1, strokeColor: '#ff0000', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Ink' })
     public inkAnnotationSettings: InkAnnotationSettingsModel;
 
     /**
      * Defines the settings of the annotations.
-     * 
+     *
      * {% codeBlock src='pdfviewer/annotationSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
-    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, skipPrint: false, skipDownload: false, allowedInteractions: ['None'], subject: "" })
+
+    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, skipPrint: false, skipDownload: false, allowedInteractions: ['None'], subject: '' })
     public annotationSettings: AnnotationSettingsModel;
 
     /**
      * Defines the tile rendering settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/tileRenderingSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property({ enableTileRendering: true, x: 0, y: 0 })
     public tileRenderingSettings: TileRenderingSettingsModel;
 
     /**
      * Defines the scroll settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/scrollSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     @Property({ delayPageRequestTimeOnScroll: 100 })
     public scrollSettings: ScrollSettingsModel;
 
     /**
      * Get or set the text field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/textFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', borderColor: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', maxLength: 0, isRequired: false, isPrint: true, tooltip: '', thickness: 1, isMultiline: false })
+    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', borderColor: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', maxLength: 0, isRequired: false, isPrint: true, tooltip: '', thickness: 1, isMultiline: false, customData: '' })
     public textFieldSettings: TextFieldSettingsModel;
 
     /**
      * Get or set the password field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/passwordFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', borderColor: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', maxLength: 0, isRequired: false, isPrint: true, tooltip: '', thickness: 1 })
+    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', borderColor: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', maxLength: 0, isRequired: false, isPrint: true, tooltip: '', thickness: 1, customData: '' })
     public passwordFieldSettings: PasswordFieldSettingsModel;
 
     /**
      * Get or set the check box field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/checkBoxFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    @Property({ name: '', value: '', isChecked: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black' })
+    @Property({ name: '', value: '', isChecked: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black', customData: '' })
     public checkBoxFieldSettings: CheckBoxFieldSettingsModel;
 
     /**
      * Get or set the radio button field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/radioButtonFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    @Property({ name: '', value: '', isSelected: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black' })
+    @Property({ name: '', value: '', isSelected: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black', customData: '' })
     public radioButtonFieldSettings: RadioButtonFieldSettingsModel;
 
     /**
      * Get or set the dropdown field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/DropdownFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    @Property({ name: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', options: [], thickness: 1, borderColor: 'black' })
+    @Property({ name: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', options: [], thickness: 1, borderColor: 'black', customData: '' })
     public DropdownFieldSettings: DropdownFieldSettingsModel;
 
     /**
      * Get or set the listbox field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/listBoxFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    @Property({ name: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: false, tooltip: '', options: [], thickness: 1, borderColor: 'black' })
+    @Property({ name: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: false, tooltip: '', options: [], thickness: 1, borderColor: 'black', customData: '' })
     public listBoxFieldSettings: ListBoxFieldSettingsModel;
 
     /**
      * Defines the context menu settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/contextMenuSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline] })
     public contextMenuSettings: ContextMenuSettingsModel;
     /**
      * Defines the custom context menu items.
-     * 
+     *
      * @private
-    */
+     */
     @Property([])
     public customContextMenuItems: MenuItemModel[];
     /**
      * Defines the custom context menu items.
-     * 
+     *
      * @private
-    */
+     */
     @Property(false)
     public disableDefaultContextMenu: boolean;
     /**
      * Defines the custom context menu items.
-     * 
+     *
      * @private
-    */
+     */
     @Property(false)
     public showCustomContextMenuBottom: boolean;
     /**
      * Defines a set of custom commands and binds them with a set of desired key gestures.
-     * 
+     *
      * {% codeBlock src='pdfviewer/commandManager/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default {}
      */
     @Complex<CommandManagerModel>({}, CommandManager)
@@ -6842,7 +6914,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public formDesignerModule: FormDesigner;
-     /**
+    /**
      * @private
      */
     public accessibilityTagsModule: AccessibilityTags;
@@ -6853,19 +6925,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    public pageOrganizerModule: PageOrganizer; 
+    public pageOrganizerModule: PageOrganizer;
     private isTextSelectionStarted: boolean = false;
     /**
      * @private
      */
-    // eslint-disable-next-line
+
     public _dotnetInstance: any;
     /**
      * Gets the bookmark view object of the pdf viewer.
      *
      * @asptype BookmarkView
      * @blazorType BookmarkView
-     * @returns { BookmarkView }
+     * @returns { BookmarkView } - Bookmark view module
      */
     public get bookmark(): BookmarkView {
         return this.bookmarkViewModule;
@@ -6876,7 +6948,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype Print
      * @blazorType Print
-     * @returns { Print }
+     * @returns { Print } - Print module
      */
     public get print(): Print {
         return this.printModule;
@@ -6887,7 +6959,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype Magnification
      * @blazorType Magnification
-     * @returns { Magnification }
+     * @returns { Magnification } - Magnification module
      */
     public get magnification(): Magnification {
         return this.magnificationModule;
@@ -6897,7 +6969,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype Navigation
      * @blazorType Navigation
-     * @returns { Navigation }
+     * @returns { Navigation } - Navigation module
      */
     public get navigation(): Navigation {
         return this.navigationModule;
@@ -6908,7 +6980,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype TextSearch
      * @blazorType TextSearch
-     * @returns { TextSearch }
+     * @returns { TextSearch } - Text search module
      */
     public get textSearch(): TextSearch {
         return this.textSearchModule;
@@ -6919,7 +6991,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype Toolbar
      * @blazorType Toolbar
-     * @returns { Toolbar }
+     * @returns { Toolbar } - Toolbar module
      */
     public get toolbar(): Toolbar {
         return this.toolbarModule;
@@ -6930,7 +7002,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype ThumbnailView
      * @blazorType ThumbnailView
-     * @returns { ThumbnailView }
+     * @returns { ThumbnailView } - Thumbnail view module
      */
     public get thumbnailView(): ThumbnailView {
         return this.thumbnailViewModule;
@@ -6941,7 +7013,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype Annotation
      * @blazorType Annotation
-     * @returns { Annotation }
+     * @returns { Annotation } - Annotation module
      */
     public get annotation(): Annotation {
         return this.annotationModule;
@@ -6951,7 +7023,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype FormDesigner
      * @blazorType FormDesigner
-     * @returns { FormDesigner }
+     * @returns { FormDesigner } - Form designer module
      */
     public get formDesigner(): FormDesigner {
         return this.formDesignerModule;
@@ -6962,7 +7034,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype TextSelection
      * @blazorType TextSelection
-     * @returns { TextSelection }
+     * @returns { TextSelection } - Text selection module
      */
     public get textSelection(): TextSelection {
         return this.textSelectionModule;
@@ -6973,7 +7045,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype AccessibilityTags
      * @blazorType AccessibilityTags
-     * @returns { AccessibilityTags }
+     * @returns { AccessibilityTags } - Accessibility tags module
      */
     public get accessibilityTags(): AccessibilityTags {
         return this.accessibilityTagsModule;
@@ -6984,7 +7056,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype PdfRenderer
      * @blazorType PdfRenderer
-     * @returns { PdfRenderer }
+     * @returns { PdfRenderer } - Pdf renderer module
      * @private
      */
     public get pdfRenderer(): PdfRenderer {
@@ -6996,7 +7068,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @asptype PageOrganizer
      * @blazorType PageOrganizer
-     * @returns { PageOrganizer }
+     * @returns { PageOrganizer } - Page organizer module
      */
     public get pageOrganizer(): PageOrganizer {
         return this.pageOrganizerModule;
@@ -7049,15 +7121,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers on successful AJAX request.
-     * 
+     *
      * @event ajaxRequestSuccess
      */
-     @Event()
-     public ajaxRequestSuccess: EmitType<AjaxRequestSuccessEventArgs>;
-     /**
+    @Event()
+    public ajaxRequestSuccess: EmitType<AjaxRequestSuccessEventArgs>;
+    /**
      * Triggers upon completion of page rendering.
-     * 
-     * @event pageRenderComplete 
+     *
+     * @event pageRenderComplete
      */
     @Event()
     public pageRenderComplete : EmitType<PageRenderCompleteEventArgs>;
@@ -7200,6 +7272,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public signatureSelect: EmitType<SignatureSelectEventArgs>;
 
     /**
+     * Triggers when signature is unselected over the page of the PDF document.
+     *
+     * @event signatureUnselect
+     */
+    @Event()
+    public signatureUnselect: EmitType<SignatureUnselectEventArgs>;
+
+    /**
      * Triggers when an annotation is selected over the page of the PDF document.
      *
      * @event annotationSelect
@@ -7241,9 +7321,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @event annotationMoving
      * @blazorProperty 'AnnotationMoving'
      */
-     @Event()
-     public annotationMoving: EmitType<AnnotationMovingEventArgs>;
- 
+    @Event()
+    public annotationMoving: EmitType<AnnotationMovingEventArgs>;
+
     /**
      * Triggers when the mouse is moved over the annotation object.
      *
@@ -7356,7 +7436,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @blazorProperty 'ToolbarClick'
      */
     @Event()
-    public toolbarClick: EmitType<ClickEventArgs>;    
+    public toolbarClick: EmitType<ClickEventArgs>;
 
     /**
      * Triggers when the text selection is initiated.
@@ -7468,7 +7548,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers upon the initiation of page rendering.
      *
-     * @event pageRenderInitiate 
+     * @event pageRenderInitiate
      */
     @Event()
     public pageRenderInitiate: EmitType<PageRenderInitiateEventArgs>;
@@ -7551,8 +7631,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @event formFieldRemove
      * @blazorProperty 'formFieldRemove'
      */
-     @Event()
-     public formFieldRemove: EmitType<FormFieldRemoveArgs>;
+    @Event()
+    public formFieldRemove: EmitType<FormFieldRemoveArgs>;
 
     /**
      * Triggers when a property of form field is changed.
@@ -7578,8 +7658,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @event formFieldMouseover
      * @blazorProperty 'formFieldMouseover'
      */
-     @Event()
-     public formFieldMouseover: EmitType<FormFieldMouseoverArgs>;
+    @Event()
+    public formFieldMouseover: EmitType<FormFieldMouseoverArgs>;
 
     /**
      * Triggers when a form field is moved.
@@ -7587,8 +7667,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @event formFieldMove
      * @blazorProperty 'formFieldMove'
      */
-     @Event()
-     public formFieldMove: EmitType<FormFieldMoveArgs>;
+    @Event()
+    public formFieldMove: EmitType<FormFieldMoveArgs>;
 
     /**
      * Triggers when a form field is resized.
@@ -7596,8 +7676,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @event formFieldResize
      * @blazorProperty 'formFieldResize'
      */
-     @Event()
-     public formFieldResize: EmitType<FormFieldResizeArgs>;
+    @Event()
+    public formFieldResize: EmitType<FormFieldResizeArgs>;
 
     /**
      * Triggers when a form field is selected.
@@ -7605,8 +7685,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @event formFieldSelect
      * @blazorProperty 'formFieldSelect'
      */
-     @Event()
-     public formFieldSelect: EmitType<FormFieldSelectArgs>;
+    @Event()
+    public formFieldSelect: EmitType<FormFieldSelectArgs>;
 
     /**
      * Triggers when a form field is unselected.
@@ -7642,21 +7722,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public customContextMenuBeforeOpen: EmitType<CustomContextMenuBeforeOpenEventArgs>
 
-     /**
+    /**
      * Triggers when the customized keyboard command keys are pressed.
      *
      * @event keyboardCustomCommands
      */
-     @Event()
-     public keyboardCustomCommands: EmitType<KeyboardCustomCommandsEventArgs>;
+    @Event()
+    public keyboardCustomCommands: EmitType<KeyboardCustomCommandsEventArgs>;
 
-     /**
+    /**
      * Triggers when the page organizer save as triggered.
      *
      * @event pageOrganizerSaveAs
      */
-     @Event()
-     public pageOrganizerSaveAs: EmitType<PageOrganizerSaveAsEventArgs>;
+    @Event()
+    public pageOrganizerSaveAs: EmitType<PageOrganizerSaveAsEventArgs>;
 
     /**
      * PDF document annotation collection.
@@ -7669,7 +7749,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * PDF document form fields collection.
-     * 
+     *
      * @private
      * @deprecated
      */
@@ -7685,7 +7765,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-     public touchPadding: number = 10;
+    public touchPadding: number = 10;
 
     /**
      * @private
@@ -7705,19 +7785,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         super(options, <HTMLElement | string>element);
         this.viewerBase = new PdfViewerBase(this);
         this.drawing = new Drawing(this);
-        this.pdfRendererModule = new PdfRenderer(this,this.viewerBase);
+        this.pdfRendererModule = new PdfRenderer(this, this.viewerBase);
     }
 
     protected preRender(): void {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
-        if(!isNullOrUndefined(this.element) && this.element.id == ""){
+        if (!isNullOrUndefined(this.element) && this.element.id === ''){
             //Set unique id, if id is empty
             this.element.id = this.getUniqueElementId();
         }
-        if(Browser.isDevice){
+        if (Browser.isDevice){
             //EJ2-63562 - Reduced the touchPadding of mobile devices to 16 to improve selection of fields without affecting resizing ability.
             this.touchPadding = 16;
-        } 
+        }
     }
     private getUniqueElementId(): string{
         return 'pdfViewer_' + Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -7725,26 +7805,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     protected render(): void {
         if (this.enableHtmlSanitizer && this.serviceUrl) {
-            this.serviceUrl = SanitizeHtmlHelper.sanitize(this.serviceUrl)
+            this.serviceUrl = SanitizeHtmlHelper.sanitize(this.serviceUrl);
         }
         if (isNullOrUndefined(this.serviceUrl) || this.serviceUrl === '') {
             this.viewerBase.clientSideRendering = true;
         }
         if (this.viewerBase.clientSideRendering) {
-            let proxy: any = this;
-            let workerBob = new Blob([PdfiumRunner.toString().replace(/^[^{]*{([\s\S]*)}$/m, '$1')], { type: 'text/javascript' });
-            let workerBlobUrl = URL.createObjectURL(workerBob);
+            // eslint-disable-next-line
+            const proxy: any = this;
+            const workerBob: any = new Blob([PdfiumRunner.toString().replace(/^[^{]*{([\s\S]*)}$/m, '$1')], { type: 'text/javascript' });
+            const workerBlobUrl: any = URL.createObjectURL(workerBob);
             (window as any)['pdfViewerRunner_' + this.element.id] = this.viewerBase.pdfViewerRunner = new Worker(workerBlobUrl);
 
             this.viewerBase.pdfViewerRunner.postMessage({
                 url: this.getScriptPathForPlatform(),
                 message: 'initialLoading'
             });
-            this.viewerBase.pdfViewerRunner.onmessage = function (event) {
+            this.viewerBase.pdfViewerRunner.onmessage = function (event: any): void {
                 if (event.data.message === 'loaded') {
                     proxy.renderComponent();
                 }
-            }
+            };
         } else {
             this.renderComponent();
         }
@@ -7752,40 +7833,41 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     private getScriptPathForPlatform(): string {
         if (this.enableHtmlSanitizer && this.resourceUrl) {
-            this.resourceUrl = SanitizeHtmlHelper.sanitize(this.resourceUrl)
+            this.resourceUrl = SanitizeHtmlHelper.sanitize(this.resourceUrl);
         }
         if (!isNullOrUndefined(this.resourceUrl) && this.resourceUrl !== '') {
             if (this.resourceUrl.indexOf('/ej2-pdfviewer-lib') !== -1) {
                 return this.resourceUrl;
             }
-            return this.resourceUrl + "/ej2-pdfviewer-lib";
+            return this.resourceUrl + '/ej2-pdfviewer-lib';
         }
         const { protocol, host, pathname } = document.location;
         // Remove trailing slashes from the pathname using a regular expression
-        const trimmedPathname = pathname.replace(/\/+$/, '');
-        const baseUrl = `${protocol}//${host}${trimmedPathname}`;
+        const trimmedPathname: string = pathname.replace(/\/+$/, '');
+        const baseUrl: string = `${protocol}//${host}${trimmedPathname}`;
         if ((this as any).isAngular || ((this as any).parent && (this as any).parent.isAngular)) {
             return baseUrl + '/assets/ej2-pdfviewer-lib';
-        } else if ((this as any).isReact || ((this as any).parent && (this as any).parent.isReact)) 
+        } else if ((this as any).isReact || ((this as any).parent && (this as any).parent.isReact))
         {
             return baseUrl + '/ej2-pdfviewer-lib';
         }
-        // eslint-disable-next-line max-len
-        else if (((this as any).isVue || ((this as any).parent && (this as any).parent.isVue)) || ((this as any).isVue3 || ((this as any).parent && (this as any).parent.isVue3))) {
+        else if (((this as any).isVue || ((this as any).parent && (this as any).parent.isVue)) ||
+        ((this as any).isVue3 || ((this as any).parent && (this as any).parent.isVue3))) {
             return baseUrl + '/public/js/ej2-pdfviewer-lib';
         }
         else {
             (window as any).getRunningScript = (): (() => string) => {
                 return (): string => {
-                    let stackTrace = new Error().stack;
-                    let match = stackTrace && stackTrace.match(/(?:http[s]?:\/\/(?:[^\/\s]+\/))(.*\.js)/);
-                    return match ? match[0] : "src/pdfviewer/pdfviewer.js";
+                    const stackTrace: string = new Error().stack;
+                    // eslint-disable-next-line
+                    const match: any = stackTrace && stackTrace.match(/(?:http[s]?:\/\/(?:[^\/\s]+\/))(.*\.js)/);
+                    return match ? match[0] : 'src/pdfviewer/pdfviewer.js';
                 };
             };
-            let scriptLinkURL: string = (window as any).getRunningScript()();
-            let splitURL: any = scriptLinkURL.split('/');
-            let path: string = scriptLinkURL.replace("/" + splitURL[splitURL.length - 1], "");
-            return path + "/ej2-pdfviewer-lib";
+            const scriptLinkURL: string = (window as any).getRunningScript()();
+            const splitURL: any = scriptLinkURL.split('/');
+            const path: string = scriptLinkURL.replace('/' + splitURL[splitURL.length - 1], '');
+            return path + '/ej2-pdfviewer-lib';
         }
     }
 
@@ -7810,6 +7892,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * @private
+     * @returns {Object} - Object
      */
     public getLocaleConstants(): Object {
         return this.defaultLocale;
@@ -7821,7 +7904,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param jsonData
      * @returns void
      */
-    // eslint-disable-next-line
+
     public setJsonData(jsonData: any): void {
         this.viewerBase.ajaxData = jsonData;
     }
@@ -7834,235 +7917,250 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         const properties: string[] = Object.keys(newProp);
         for (const prop of properties) {
             switch (prop) {
-                case 'locale':
-                    if (this.viewerBase.loadedData) {
-                        // eslint-disable-next-line
-                        let data: any = null;
-                        if (this.formFieldsModule) {
-                            data = this.viewerBase.getItemFromSessionStorage('_formfields');
-                        }
-                        if (data) {
-                            this.viewerBase.formfieldvalue = JSON.parse(data);
-                            // eslint-disable-next-line
-                            let annotCollection: any[] = this.annotationCollection;
-                            const filename: string = this.viewerBase.jsonDocumentId;
-                            super.refresh();
-                            this.load(this.viewerBase.loadedData, null);
-                            this.addAnnotation(annotCollection);
-                            this.viewerBase.loadedData = null;
-                            this.downloadFileName = filename;
-                            this.fileName = filename;
-                        }
+            case 'locale':
+                if (this.viewerBase.loadedData) {
+                    let data: any = null;
+                    if (this.formFieldsModule) {
+                        data = this.viewerBase.getItemFromSessionStorage('_formfields');
                     }
-                    break;
-                case 'toolbarSettings':
-                    if (!Browser.isDevice || this.enableDesktopMode) {
-                        this.toolbar.applyToolbarSettings();
-                        if (!isNullOrUndefined(this.toolbar.annotationToolbarModule)) {
-                            this.toolbar.annotationToolbarModule.applyAnnotationToolbarSettings();
-                        }
-                        if (!isNullOrUndefined(this.toolbar.formDesignerToolbarModule)) {
-                            this.toolbar.formDesignerToolbarModule.applyFormDesignerToolbarSettings();
-                        }
+                    if (data) {
+                        this.viewerBase.formfieldvalue = JSON.parse(data);
+                        const annotCollection: any[] = this.annotationCollection;
+                        const filename: string = this.viewerBase.jsonDocumentId;
+                        super.refresh();
+                        this.load(this.viewerBase.loadedData, null);
+                        this.addAnnotation(annotCollection);
+                        this.viewerBase.loadedData = null;
+                        this.downloadFileName = filename;
+                        this.fileName = filename;
                     }
-                    else {
-                        this.toolbar.applyToolbarSettingsForMobile();
-                        this.toolbar.annotationToolbarModule.applyMobileAnnotationToolbarSettings();
+                }
+                break;
+            case 'toolbarSettings':
+                if (!Browser.isDevice || this.enableDesktopMode) {
+                    this.toolbar.applyToolbarSettings();
+                    if (!isNullOrUndefined(this.toolbar.annotationToolbarModule)) {
+                        this.toolbar.annotationToolbarModule.applyAnnotationToolbarSettings();
                     }
-                    break;
-                case 'enableToolbar':
-                    this.notify('', { module: 'toolbar', enable: this.enableToolbar });
-                    requireRefresh = true;
-                    break;
-                case 'enableCommentPanel':
-                    this.notify('', { module: 'annotation', enable: this.enableCommentPanel });
-                    requireRefresh = true;
-                    if (this.toolbarModule && this.toolbarModule.annotationToolbarModule) {
-                        this.toolbarModule.annotationToolbarModule.enableCommentPanelTool(this.enableCommentPanel);
+                    if (!isNullOrUndefined(this.toolbar.formDesignerToolbarModule)) {
+                        this.toolbar.formDesignerToolbarModule.applyFormDesignerToolbarSettings();
                     }
-                    if (!this.enableCommentPanel) {
-                        if (this.viewerBase.navigationPane) {
-                            this.viewerBase.navigationPane.closeCommentPanelContainer();
-                        }
+                }
+                else {
+                    this.toolbar.applyToolbarSettingsForMobile();
+                    this.toolbar.annotationToolbarModule.applyMobileAnnotationToolbarSettings();
+                }
+                break;
+            case 'enableToolbar':
+                this.notify('', { module: 'toolbar', enable: this.enableToolbar });
+                requireRefresh = true;
+                break;
+            case 'enableCommentPanel':
+                this.notify('', { module: 'annotation', enable: this.enableCommentPanel });
+                requireRefresh = true;
+                if (this.toolbarModule && this.toolbarModule.annotationToolbarModule) {
+                    this.toolbarModule.annotationToolbarModule.enableCommentPanelTool(this.enableCommentPanel);
+                }
+                if (!this.enableCommentPanel) {
+                    if (this.viewerBase.navigationPane) {
+                        this.viewerBase.navigationPane.closeCommentPanelContainer();
                     }
-                    break;
-                case 'documentPath':
-                    if (!this.viewerBase.isSkipDocumentPath){
-                        if (!isBlazor()) {
-                            this.load(newProp.documentPath, null);
-                        }
-                        else {
-                            this._dotnetInstance.invokeMethodAsync('LoadDocumentFromClient', newProp.documentPath);
-                        }
+                }
+                break;
+            case 'documentPath':
+                if (!this.viewerBase.isSkipDocumentPath){
+                    if (!isBlazor()) {
+                        this.load(newProp.documentPath, null);
                     }
                     else {
-                        this.viewerBase.isSkipDocumentPath = false;
+                        this._dotnetInstance.invokeMethodAsync('LoadDocumentFromClient', newProp.documentPath);
                     }
-                    break;
-                case 'interactionMode':
-                    this.interactionMode = newProp.interactionMode;
-                    if (newProp.interactionMode === 'Pan') {
-                        this.viewerBase.initiatePanning();
-                        if (this.toolbar) {
-                            this.toolbar.updateInteractionTools(false);
-                        }
-                    } else if (newProp.interactionMode === 'TextSelection') {
-                        this.viewerBase.initiateTextSelectMode();
-                        if (this.toolbar) {
-                            this.toolbar.updateInteractionTools(true);
-                        }
+                }
+                else {
+                    this.viewerBase.isSkipDocumentPath = false;
+                }
+                break;
+            case 'interactionMode':
+                this.interactionMode = newProp.interactionMode;
+                if (newProp.interactionMode === 'Pan') {
+                    this.viewerBase.initiatePanning();
+                    if (this.toolbar) {
+                        this.toolbar.updateInteractionTools(false);
                     }
-                    break;
-                case 'height':
-                    this.height = newProp.height;
-                    this.viewerBase.updateHeight();
-                    this.viewerBase.onWindowResize();
-                    if (this.toolbar && this.toolbar.annotationToolbarModule) {
-                        if (this.toolbar.annotationToolbarModule.isToolbarHidden) {
-                            this.toolbar.annotationToolbarModule.adjustViewer(false);
-                        } else {
-                            this.toolbar.annotationToolbarModule.adjustViewer(true);
-                        }
+                } else if (newProp.interactionMode === 'TextSelection') {
+                    this.viewerBase.initiateTextSelectMode();
+                    if (this.toolbar) {
+                        this.toolbar.updateInteractionTools(true);
                     }
-                    break;
-                case 'width':
-                    this.width = newProp.width;
-                    this.viewerBase.updateWidth();
-                    this.viewerBase.onWindowResize();
-                    break;
-                case 'customStamp':
-                    this.renderCustomerStamp(this.customStamp[0]);
-                    break;
-                case 'customStampSettings':
-                    if (newProp.customStampSettings.customStamps) {
-                        for (let i: number = 0; i < newProp.customStampSettings.customStamps.length; i++) {
-                            this.viewerBase.customStampCollection.push({ customStampName: this.customStampSettings.customStamps[i].customStampName, customStampImageSource: this.customStampSettings.customStamps[i].customStampImageSource });
-                    }
-                    }
-                    break;
-                case 'enableFormFields':
-                    if (this.enableFormFields && this.formFieldsModule) {
-                        for (let m: number = 0; m < this.pageCount; m++) {
-                            this.formFieldsModule.renderFormFields(m, false);
-                        }
+                }
+                break;
+            case 'height':
+                this.height = newProp.height;
+                this.viewerBase.updateHeight();
+                this.viewerBase.onWindowResize();
+                if (this.toolbar && this.toolbar.annotationToolbarModule) {
+                    if (this.toolbar.annotationToolbarModule.isToolbarHidden) {
+                        this.toolbar.annotationToolbarModule.adjustViewer(false);
                     } else {
-                        this.formFieldsModule = new FormFields(this, this.viewerBase);
-                        this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
+                        this.toolbar.annotationToolbarModule.adjustViewer(true);
                     }
-                    break;
-                case 'designerMode':
-                    if (this.designerMode) {
-                        this.formDesignerModule.setMode('designer');
-                    } else {
-                        this.formDesignerModule.setMode('edit');
+                }
+                break;
+            case 'width':
+                this.width = newProp.width;
+                this.viewerBase.updateWidth();
+                this.viewerBase.onWindowResize();
+                break;
+            case 'customStamp':
+                this.renderCustomerStamp(this.customStamp[0]);
+                break;
+            case 'customStampSettings':
+                if (newProp.customStampSettings.customStamps) {
+                    for (let i: number = 0; i < newProp.customStampSettings.customStamps.length; i++) {
+                        this.viewerBase.customStampCollection.push({ customStampName: this.customStampSettings.
+                            customStamps[parseInt(i.toString(), 10)].customStampName, customStampImageSource:
+                             this.customStampSettings.customStamps[parseInt(i.toString(), 10)].customStampImageSource });
                     }
-                    break;
-                case 'highlightSettings':
-                case 'underlineSettings':
-                case 'strikethroughSettings':
-                    if (this.annotationModule && this.annotationModule.textMarkupAnnotationModule) {
-                        this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
+                }
+                break;
+            case 'enableFormFields':
+                if (this.enableFormFields && this.formFieldsModule) {
+                    for (let m: number = 0; m < this.pageCount; m++) {
+                        this.formFieldsModule.renderFormFields(m, false);
                     }
-                    break;
-                case 'signatureFieldSettings':
-                case 'initialFieldSettings':
-                    if (this.formDesignerModule) {
-                        let isInitialField: boolean = (prop === "initialFieldSettings");
-                        this.formDesignerModule.updateSignatureSettings(newProp[prop], isInitialField);
+                } else {
+                    this.formFieldsModule = new FormFields(this, this.viewerBase);
+                    this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
+                }
+                break;
+            case 'designerMode':
+                if (this.designerMode) {
+                    this.formDesignerModule.setMode('designer');
+                } else {
+                    this.formDesignerModule.setMode('edit');
+                }
+                break;
+            case 'highlightSettings':
+            case 'underlineSettings':
+            case 'strikethroughSettings':
+                if (this.annotationModule && this.annotationModule.textMarkupAnnotationModule) {
+                    this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
+                }
+                break;
+            case 'signatureFieldSettings':
+            case 'initialFieldSettings':
+                if (this.formDesignerModule) {
+                    const isInitialField: boolean = (prop === 'initialFieldSettings');
+                    // eslint-disable-next-line security/detect-object-injection
+                    this.formDesignerModule.updateSignatureSettings(newProp[prop], isInitialField);
+                }
+                break;
+            case 'textFieldSettings':
+                if (this.formDesignerModule) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    this.formDesignerModule.updateTextFieldSettings(newProp[prop]);
+                }
+                break;
+            case 'passwordFieldSettings':
+                if (this.formDesignerModule) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    this.formDesignerModule.updatePasswordFieldSettings(newProp[prop]);
+                }
+                break;
+            case 'checkBoxFieldSettings':
+                if (this.formDesignerModule) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    this.formDesignerModule.updateCheckBoxFieldSettings(newProp[prop]);
+                }
+                break;
+            case 'radioButtonFieldSettings':
+                if (this.formDesignerModule) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    this.formDesignerModule.updateRadioButtonFieldSettings(newProp[prop]);
+                }
+                break;
+            case 'DropdownFieldSettings':
+                if (this.formDesignerModule) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    this.formDesignerModule.updateDropDownFieldSettings(newProp[prop]);
+                }
+                break;
+            case 'listBoxFieldSettings':
+                if (this.formDesignerModule) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    this.formDesignerModule.updateListBoxFieldSettings(newProp[prop]);
+                }
+                break;
+            case 'isFormDesignerToolbarVisible':
+                if (!Browser.isDevice || this.enableDesktopMode) {
+                    if (this.toolbarModule && this.formDesignerModule && !oldProp.isFormDesignerToolbarVisible &&
+                         newProp.isFormDesignerToolbarVisible) {
+                        if (this.toolbarModule.annotationToolbarModule && this.isAnnotationToolbarVisible) {
+                            this.isAnnotationToolbarVisible = false;
+                            this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
+                        }
+                        this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
                     }
-                    break;
-                case 'textFieldSettings':
-                    if (this.formDesignerModule) {
-                        this.formDesignerModule.updateTextFieldSettings(newProp[prop]);
-                    }
-                    break;
-                case 'passwordFieldSettings':
-                    if (this.formDesignerModule) {
-                        this.formDesignerModule.updatePasswordFieldSettings(newProp[prop]);
-                    }
-                    break;
-                case 'checkBoxFieldSettings':
-                    if (this.formDesignerModule) {
-                        this.formDesignerModule.updateCheckBoxFieldSettings(newProp[prop]);
-                    }
-                    break;
-                case 'radioButtonFieldSettings':
-                    if (this.formDesignerModule) {
-                        this.formDesignerModule.updateRadioButtonFieldSettings(newProp[prop]);
-                    }
-                    break;
-                case 'DropdownFieldSettings':
-                    if (this.formDesignerModule) {
-                        this.formDesignerModule.updateDropDownFieldSettings(newProp[prop]);
-                    }
-                    break;
-                case 'listBoxFieldSettings':
-                    if (this.formDesignerModule) {
-                        this.formDesignerModule.updateListBoxFieldSettings(newProp[prop]);
-                    }
-                    break;
-                case 'isFormDesignerToolbarVisible':
-                    if (!Browser.isDevice || this.enableDesktopMode) {
-                        if (this.toolbarModule && this.formDesignerModule && !oldProp.isFormDesignerToolbarVisible && newProp.isFormDesignerToolbarVisible) {
-                            if (this.toolbarModule.annotationToolbarModule && this.isAnnotationToolbarVisible) {
-                                this.isAnnotationToolbarVisible = false;
-                                this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
-                            }
+                    else {
+                        if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.formDesignerModule) &&
+                         this.toolbarModule.formDesignerToolbarModule && !this.isFormDesignerToolbarVisible) {
+                            this.isFormDesignerToolbarVisible = false;
+                            this.formDesignerModule.setMode('edit');
                             this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
                         }
-                        else {
-                            if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.formDesignerModule) && this.toolbarModule.formDesignerToolbarModule && !this.isFormDesignerToolbarVisible) {
-                                this.isFormDesignerToolbarVisible = false;
-                                this.formDesignerModule.setMode('edit');
-                                this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
-                            }
-                        }
                     }
-                    break;
-                case 'isAnnotationToolbarVisible':
-                    if (!Browser.isDevice || this.enableDesktopMode) {
-                        if (this.toolbarModule && this.annotationModule && !oldProp.isAnnotationToolbarVisible && newProp.isAnnotationToolbarVisible) {
-                            if (this.toolbarModule.formDesignerToolbarModule && this.isFormDesignerToolbarVisible) {
-                                this.isFormDesignerToolbarVisible = false;
-                                this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
-                            }
-                            this.toolbarModule.annotationToolbarModule.resetToolbar();
+                }
+                break;
+            case 'isAnnotationToolbarVisible':
+                if (!Browser.isDevice || this.enableDesktopMode) {
+                    if (this.toolbarModule && this.annotationModule && !oldProp.isAnnotationToolbarVisible &&
+                         newProp.isAnnotationToolbarVisible) {
+                        if (this.toolbarModule.formDesignerToolbarModule && this.isFormDesignerToolbarVisible) {
+                            this.isFormDesignerToolbarVisible = false;
+                            this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
                         }
+                        this.toolbarModule.annotationToolbarModule.resetToolbar();
                     }
-                    break;
-                case 'serviceUrl':
-                    if (isNullOrUndefined(newProp.serviceUrl) || newProp.serviceUrl === '') {
-                        this.viewerBase.clientSideRendering = true;
+                }
+                break;
+            case 'serviceUrl':
+                if (isNullOrUndefined(newProp.serviceUrl) || newProp.serviceUrl === '') {
+                    this.viewerBase.clientSideRendering = true;
+                }
+                else {
+                    this.viewerBase.clientSideRendering = false;
+                }
+                break;
+            case 'pageOrganizerSettings':
+                if (!isNullOrUndefined(newProp.pageOrganizerSettings)){
+                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canDelete)){
+                        this.pageOrganizerSettings.canDelete = true;
                     }
-                    else {
-                        this.viewerBase.clientSideRendering = false;
+                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canRotate)){
+                        this.pageOrganizerSettings.canRotate = true;
                     }
-                    break;
-                case 'pageOrganizerSettings':
-                    if(!isNullOrUndefined(newProp.pageOrganizerSettings)){
-                        if(isNullOrUndefined(newProp.pageOrganizerSettings.canDelete)){
-                            this.pageOrganizerSettings.canDelete = true
-                        }
-                        if(isNullOrUndefined(newProp.pageOrganizerSettings.canRotate)){
-                            this.pageOrganizerSettings.canRotate = true
-                        }
-                        if(isNullOrUndefined(newProp.pageOrganizerSettings.canInsert)){
-                            this.pageOrganizerSettings.canInsert = true
-                        }
+                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canInsert)){
+                        this.pageOrganizerSettings.canInsert = true;
                     }
-                    break;
+                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canCopy)){
+                        this.pageOrganizerSettings.canCopy = true;
+                    }
+                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canRearrange)){
+                        this.pageOrganizerSettings.canRearrange = true;
+                    }
+                }
+                break;
             }
         }
     }
 
-    // eslint-disable-next-line
-    private renderCustomerStamp(customStamp: any) {
+    private renderCustomerStamp(customStamp: any): void {
         this.annotation.stampAnnotationModule.isStampAddMode = true;
         this.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
         this.viewerBase.stampAdded = true;
         this.viewerBase.isAlreadyAdded = false;
-        // eslint-disable-next-line max-len
-        this.annotation.stampAnnotationModule.createCustomStampAnnotation(customStamp.customStampImageSource, customStamp.customStampName);
+        this.annotation.stampAnnotationModule.createCustomStampAnnotation(customStamp.customStampImageSource,
+                                                                          customStamp.customStampName);
     }
 
     public getPersistData(): string {
@@ -8131,12 +8229,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 member: 'FormDesigner', args: [this, this.viewerBase]
             });
         }
-        if(this.enableAccessibilityTags){
+        if (this.enableAccessibilityTags){
             modules.push({
                 member: 'AccessibilityTags', args: [this, this.viewerBase]
             });
         }
-        if(isNullOrUndefined(this.serviceUrl) || this.serviceUrl === ''){
+        if (isNullOrUndefined(this.serviceUrl) || this.serviceUrl === ''){
             modules.push({
                 member: 'PdfRenderer', args: [this, this.viewerBase]
             });
@@ -8183,9 +8281,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Rotate Left': 'Rotate Left',
         'Delete Page': 'Delete Page',
         'Delete Pages': 'Delete Pages',
-        'Save':'Save',
-        'Save As':'Save As',
-        'Select All':'Select All',
+        'Copy Page': 'Copy Page',
+        'Copy Pages': 'Copy Pages',
+        'Save': 'Save',
+        'Save As': 'Save As',
+        'Select All': 'Select All',
         'Password Protected': 'Password Required',
         'Copy': 'Copy',
         'Text Selection': 'Text selection tool',
@@ -8195,7 +8295,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Match case': 'Match case',
         'Apply': 'Apply',
         'GoToPage': 'Go to Page',
-        // eslint-disable-next-line max-len
+
         'No matches': 'Viewer has finished searching the document. No more matches were found',
         'No Text Found': 'No Text Found',
         'Undo': 'Undo',
@@ -8212,9 +8312,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Highlight context': 'Highlight',
         'Underline context': 'Underline',
         'Strikethrough context': 'Strikethrough',
-        // eslint-disable-next-line max-len
+
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.',
-        // eslint-disable-next-line max-len
+
         'Client error': 'Client-side error is found. Please check the custom headers provided in the AjaxRequestSettings property and web action methods in the ServerActionSettings property.',
         'Open text': 'Open',
         'First text': 'First Page',
@@ -8397,7 +8497,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @param  {string} document - Specifies the document name for load
      * @param  {string} password - Specifies the Given document password
-     * @returns void
+     * @returns {void}
      */
     public load(document: string, password: string): void {
         if (this.pageCount !== 0) {
@@ -8419,9 +8519,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Loads the given PDF document in the PDF viewer control
+     *
+     * @param {string} documentId - It describes about the document Id value
+     * @param {boolean} isFileName - It ensures whether the file name is true or not
+     * @param {string} fileName - It describes about the file name
      * @private
+     * @returns {void}
      */
-     public loadDocument(documentId: string, isFileName: boolean, fileName: string): void {
+    public loadDocument(documentId: string, isFileName: boolean, fileName: string): void {
         if (this.pageCount !== 0) {
             this.viewerBase.clear(true);
         } else {
@@ -8437,18 +8542,25 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Loads the PDF document with the document details in the PDF viewer control
-    * @private
-    */
+     *
+     * @param {any} documentDetails - It describes about the document details
+     * @param {string} password - It describes about the password value
+     * @private
+     * @returns {void}
+     */
     public loadSuccess(documentDetails: any, password?: string): void {
         this.viewerBase.loadSuccess(documentDetails, password);
     }
 
     /**
      * Set the focus of the given element
-    * @private
-    */
+     *
+     * @param {string} elementId - It describes about the element id value
+     * @private
+     * @returns {void}
+     */
     public focusElement(elementId: string): void {
-        let element: HTMLElement = document.getElementById(elementId);
+        const element: HTMLElement = document.getElementById(elementId);
         if (element != null) {
             element.focus();
         }
@@ -8457,7 +8569,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Downloads the PDF document being loaded in the ejPdfViewer control.
      *
-     * @returns void
+     * @returns {void}
      */
     public download(): void {
         if (this.enableDownload) {
@@ -8468,7 +8580,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Saves the PDF document being loaded in the PDF Viewer control as blob.
      *
-     * @returns Promise<Blob>
+     * @returns {Promise<Blob>} - Promise
      */
     public saveAsBlob(): Promise<Blob> {
         if (this.enableDownload) {
@@ -8483,7 +8595,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * updates the PDF Viewer container width and height from externally.
      *
-     * @returns void
+     * @returns {void}
      */
     public updateViewerContainer(): void {
         this.viewerBase.updateViewerContainer();
@@ -8492,8 +8604,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Specifies the message to be displayed  in the popup.
      *
-     * @param errorString
-     * @returns void
+     * @param {string} errorString - It describes about the error string value
+     * @returns {void}
      */
     public showNotificationPopup(errorString: string): void {
         this.viewerBase.showNotificationPopup(errorString);
@@ -8502,15 +8614,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Focus a form field in a document by its field name or the field object.
      *
-     * @param field
-     * @returns void
+     * @param {any} field - It describes about the field value
+     * @returns {void}
      */
     public focusFormField(field: any): void {
-        if (typeof (field) === "string") {
-            let fieldCollections: any = this.retrieveFormFields();
+        if (typeof (field) === 'string') {
+            const fieldCollections: any = this.retrieveFormFields();
             for (let i: number = 0; i < fieldCollections.length; i++) {
-                if (fieldCollections[i].name === field) {
-                    field = fieldCollections[i];
+                if (fieldCollections[parseInt(i.toString(), 10)].name === field) {
+                    field = fieldCollections[parseInt(i.toString(), 10)];
                 }
             }
         }
@@ -8520,16 +8632,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             if (this.formDesignerModule) {
                 this.navigationModule.goToPage(field.pageIndex + 1);
             } else {
-                let pageIndex: number = parseFloat(field.id.split('_')[1]);
+                const pageIndex: number = parseFloat(field.id.split('_')[1]);
                 this.navigationModule.goToPage(pageIndex + 1);
             }
             setTimeout(() => {
                 let currentField: any = document.getElementById(field.id);
-                if (this.formDesignerModule && field.type === "Checkbox") {
-                    currentField = document.getElementById(field.id + "_input");
+                if (this.formDesignerModule && field.type === 'Checkbox') {
+                    currentField = document.getElementById(field.id + '_input');
                 }
                 if (currentField) {
-                    if (this.formDesignerModule && (field.type === "SignatureField" || field.type === "InitialField")) {
+                    if (this.formDesignerModule && (field.type === 'SignatureField' || field.type === 'InitialField')) {
                         currentField.parentElement.focus();
                     }
                     else {
@@ -8545,12 +8657,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Update the form field values from externally.
      *
-     * @param fieldValue
-     * @returns void
+     * @param {any} fieldValue - It describes about the field value
+     * @returns {void}
      */
-    // eslint-disable-next-line
+
     public updateFormFieldsValue(fieldValue: any): void {
-        // eslint-disable-next-line
+
         let target: any = document.getElementById(fieldValue.id);
         let isformDesignerModuleListBox: boolean = false;
         if (target) {
@@ -8564,27 +8676,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
                 if (this.formDesignerModule) {
                     if (fieldValue.type === 'RadioButton') {
-                        let radioButtonOption: any = { isSelected: fieldValue.isSelected };
+                        const radioButtonOption: any = { isSelected: fieldValue.isSelected };
                         this.formDesignerModule.updateFormField(fieldValue, radioButtonOption);
                     } else {
-                        let checkBoxOption: any = { isChecked: fieldValue.isChecked };
+                        const checkBoxOption: any = { isChecked: fieldValue.isChecked };
                         this.formDesignerModule.updateFormField(fieldValue, checkBoxOption);
                     }
                 } else {
                     if (fieldValue.type === 'RadioButton') {
-                        target.selected = fieldValue.isSelected
+                        target.selected = fieldValue.isSelected;
                     }
                     else {
                         target.checked = fieldValue.isChecked;
                     }
                 }
-                if(target.value != fieldValue.value){
+                if (target.value != fieldValue.value){
                     target.value = fieldValue.value;
                 }
             } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
                 if (this.formDesignerModule) {
                     isformDesignerModuleListBox = true;
-                    let dropDownListOption: any = { options: fieldValue.value };
+                    const dropDownListOption: any = { options: fieldValue.value };
                     this.formDesignerModule.updateFormField(fieldValue, dropDownListOption);
                 } else {
                     target.value = fieldValue.value;
@@ -8592,23 +8704,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
             }
             if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
-                if(fieldValue.signatureType || fieldValue.initialType){
-                    if (typeof fieldValue.signatureType === 'string') {
-                        fieldValue.signatureType = fieldValue.signatureType;
-                    }
-                    else {
+                if (fieldValue.signatureType || fieldValue.initialType){
+                    if (typeof fieldValue.signatureType !== 'string') {
                         fieldValue.signatureType = fieldValue.initialType;
                     }
                 }
                 fieldValue.fontName = fieldValue.fontName ? fieldValue.fontName : fieldValue.fontFamily;
-                let currentValue = fieldValue.value;
-                let signatureField = this.getFormFieldByID(fieldValue.id);
-                let isSameValue = this.formDesignerModule ? signatureField.value === fieldValue.value : signatureField.Value === fieldValue.value;
+                const currentValue: any = fieldValue.value;
+                const signatureField: any = this.getFormFieldByID(fieldValue.id);
+                const isSameValue: boolean = this.formDesignerModule ? signatureField.value === fieldValue.value :
+                    signatureField.Value === fieldValue.value;
                 if ((target as any).classList.contains('e-pdfviewer-signatureformfields-signature') && !isSameValue) {
                     if (this.formDesignerModule)
-                        this.annotation.deleteAnnotationById(fieldValue.id.split('_')[0] + '_content');
+                    {this.annotation.deleteAnnotationById(fieldValue.id.split('_')[0] + '_content'); }
                     else
-                        this.annotation.deleteAnnotationById(fieldValue.id);
+                    {this.annotation.deleteAnnotationById(fieldValue.id); }
                 }
                 if (!fieldValue.signatureType || !fieldValue.value) {
                     fieldValue.value = currentValue;
@@ -8629,15 +8739,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     target.tooltip = fieldValue.tooltip;
                 }
                 target.Required = fieldValue.isRequired ? fieldValue.isRequired : false;
-                if(!isSameValue)
-                    this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
+                if (!isSameValue)
+                {this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName); }
             } else {
                 if (!isformDesignerModuleListBox) {
                     this.formFieldsModule.updateDataInSession(target);
                 }
             }
         } else {
-            let data: any = this.viewerBase.getItemFromSessionStorage('_formfields');
+            const data: string = this.viewerBase.getItemFromSessionStorage('_formfields');
             if(isNullOrUndefined(data))
             {
                 const data_1: string = this.viewerBase.getItemFromSessionStorage('_formDesigner');
@@ -8645,7 +8755,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 const filteredCollection : any = this.viewerBase.formFieldCollection.filter((field: any) => {
                     return field.FormField.id.split("_")[0] === fieldValue.id;
                 });
-
+                
                 filteredCollection.forEach((field: any) => {
                     field.FormField.signatureType = fieldValue.signatureType;
                     field.FormField.value = fieldValue.value;
@@ -8658,11 +8768,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             }
-
+            
             else {
                 const FormFieldsData: any = JSON.parse(data);
-                for (var m = 0; m < FormFieldsData.length; m++) {
-                    let currentData: any = FormFieldsData[m];
+                for (let m: number = 0; m < FormFieldsData.length; m++) {
+                    let currentData: any = FormFieldsData[parseInt(m.toString(), 10)];
                     let fieldName: string;
                     if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
                         fieldName = currentData.FieldName;
@@ -8672,11 +8782,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         fieldName = currentData.FieldName;
                     }
                     //map the signature field and its data object to find the signature field name.
-                    let fieldData: any = FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0];});
+                    const fieldData: any = FormFieldsData.filter(function (item: any): boolean { return item.FieldName ===
+                         currentData.FieldName.split('_')[0]; });
                     if (!isNullOrUndefined(fieldData) && !isNullOrUndefined(fieldData[0])) {
-                        if (fieldData[0].Name === "SignatureField" || fieldData[0].Name === "InitialField") {
+                        if (fieldData[0].Name === 'SignatureField' || fieldData[0].Name === 'InitialField') {
                             fieldName = currentData.FieldName.split('_')[0];
-                            currentData.LineBounds = FormFieldsData.filter(function (item: any) { return item.FieldName === fieldName; })[0].LineBounds;
+                            currentData.LineBounds = FormFieldsData.filter(function (item: any): boolean { return item.FieldName ===
+                                 fieldName; })[0].LineBounds;
                         }
                     }
                     if (fieldName === fieldValue.name) {
@@ -8687,14 +8799,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                             }
                         }
                         else if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
-                            fieldValue.isSelected || fieldValue.isChecked ? currentData.Selected = true : currentData.Selected = false;
+                            if (fieldValue.isSelected || fieldValue.isChecked) {
+                                currentData.Selected = true;
+                            } else {
+                                currentData.Selected = false;
+                            }
                             currentData.Value = fieldValue.value;
                         }
                         else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
                             currentData.SelectedValue = fieldValue.value;
-                            let index: number = currentData.TextList ? currentData.TextList.indexOf(fieldValue.value) : 0
+                            const index: number = currentData.TextList ? currentData.TextList.indexOf(fieldValue.value) : 0;
                             currentData.selectedIndex = index > -1 ? index : 0;
-                            fieldValue.type === 'ListBox' ? currentData.SelectedListed = [currentData.selectedIndex] : [];
+                            if (fieldValue.type === 'ListBox') {
+                                currentData.SelectedListed = [currentData.selectedIndex];
+                            } else {
+                                currentData.SelectedListed = [];
+                            }
                         }
                         else if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
                             if (fieldValue.value) {
@@ -8710,35 +8830,34 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         }
     }
-    // eslint-disable-next-line
+
     private getFormFieldByID(id : string): any {
-        if(this.formDesignerModule){
+        if (this.formDesignerModule){
             return (this.nameTable as any)[id.split('_')[0]];
         }
-        let data = window.sessionStorage.getItem(this.viewerBase.documentId + '_formfields');
-        let formFieldsData = JSON.parse(data);
+        const data: string = window.sessionStorage.getItem(this.viewerBase.documentId + '_formfields');
+        const formFieldsData: any = JSON.parse(data);
         return formFieldsData[formFieldsData.findIndex((el: { uniqueID: any; }) => el.uniqueID === id)];
     }
 
     /**
-     * @param number
+     * @param {any} number - Gets the number value
+     * @returns {number} - number
      */
-    // eslint-disable-next-line
-    private ConvertPointToPixel(number: any): any {
+    private ConvertPointToPixel(number: any): number {
         return (number * (96 / 72));
     }
 
     /**
-     * @param currentData - Current form field data.
-     * @param fieldValue - Form Field.
-     * @returns - Returns the updated the current Data.
+     * @param {any} currentData - Current form field data.
+     * @param {any} fieldValue - Form Field.
+     * @returns {any} - Returns the updated the current Data.
      */
-    // eslint-disable-next-line
     private updateSignatureValue(currentData: any, fieldValue: any): any {
         if (!fieldValue.signatureType) {
-            fieldValue.signatureType = this.viewerBase.isSignatureImageData(fieldValue.value) ? 'Image' :(this.viewerBase.isSignaturePathData(fieldValue.value) ? 'Path' : 'Type');
+            fieldValue.signatureType = this.viewerBase.isSignatureImageData(fieldValue.value) ? 'Image' : (this.viewerBase.isSignaturePathData(fieldValue.value) ? 'Path' : 'Type');
         }
-        let bound: any = currentData.LineBounds;
+        const bound: any = currentData.LineBounds;
         const left: any = this.ConvertPointToPixel(bound.X);
         const top: any = this.ConvertPointToPixel(bound.Y);
         const width: any = this.ConvertPointToPixel(bound.Width);
@@ -8748,45 +8867,50 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             if (!currentData.FontFamily) {
                 currentData.FontFamily = 'Helvetica';
             }
-            // eslint-disable-next-line
-            bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
+            bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle,
+                                                         currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
             if (this.signatureFitMode === 'Default') {
                 bounds = this.formFieldsModule.getDefaultBoundsforSign(bounds);
             }
             currentData.Bounds = bounds;
-            var fontSize: number = bounds.height / 1.35;
-            let textWidth: number = this.formFieldsModule.getTextWidth(currentData.value, fontSize, currentData.FontFamily);
+            const fontSize: number = bounds.height / 1.35;
+            const textWidth: number = this.formFieldsModule.getTextWidth(currentData.value, fontSize, currentData.FontFamily);
             let widthRatio: number = 1;
             if (textWidth > bounds.width)
-                widthRatio = bounds.width / textWidth;
+            {widthRatio = bounds.width / textWidth; }
             currentData.FontSize = this.formFieldsModule.getFontSize(Math.floor((fontSize * widthRatio)));
         }
         else if (fieldValue.signatureType === 'Image') {
-            // eslint-disable-next-line
-            bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
-            let image: HTMLImageElement = new Image();
+            bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle,
+                                                         currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
+            const image: HTMLImageElement = new Image();
             image.src = currentData.Value;
-            let proxy: any = this;
-            image.onload = function(){
-               proxy.imageOnLoad(bounds,image,currentData);
-            }
+            // eslint-disable-next-line
+            const proxy: any = this;
+            image.onload = function(): void{
+                proxy.imageOnLoad(bounds, image, currentData);
+            };
         } else {
             if ((currentData.Value.indexOf('base64')) !== -1) {
-                // eslint-disable-next-line
-                bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
+                bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle,
+                                                             currentData.pageIndex, this.viewerBase.getZoomFactor(),
+                                                             left, top, width, height);
                 if (this.signatureFitMode === 'Default') {
                     bounds = this.formFieldsModule.getDefaultBoundsforSign(bounds);
                 }
             } else {
                 if (this.signatureFitMode === 'Default') {
-                    // eslint-disable-next-line
-                    let signBounds: any = this.viewerBase.signatureModule.updateSignatureAspectRatio(currentData.Value, false, null, currentData);
-                    // eslint-disable-next-line
-                    bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, signBounds.width, signBounds.height, true);
+                    const signBounds: any = this.viewerBase.signatureModule.updateSignatureAspectRatio(currentData.Value, false,
+                                                                                                       null, currentData);
+                    bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle,
+                                                                 currentData.pageIndex, this.viewerBase.getZoomFactor(),
+                                                                 left, top, signBounds.width, signBounds.height, true);
                     bounds.x = bounds.x + signBounds.left;
                     bounds.y = bounds.y + signBounds.top;
                 } else {
-                    bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
+                    bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle,
+                                                                 currentData.pageIndex, this.viewerBase.getZoomFactor(),
+                                                                 left, top, width, height);
                 }
             }
             currentData.Bounds = bounds;
@@ -8794,64 +8918,64 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return currentData;
     }
 
-    private imageOnLoad(bounds: any , image:HTMLImageElement, currentData: any){
+    private imageOnLoad(bounds: any , image: HTMLImageElement, currentData: any): void{
         if (this.signatureFitMode === 'Default') {
-            let padding = Math.min(bounds.height /this.paddingDifferenceValue, bounds.width / this.paddingDifferenceValue);
-            let maxHeight = bounds.height - padding;
-            let maxWidth = bounds.width - padding;
-            let imageWidth = image.width;
-            let imageHeight = image.height;
-            let beforeWidth = bounds.width;
-            let beforeHeight = bounds.height;
-            let ratio = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
+            const padding: number = Math.min(bounds.height / this.paddingDifferenceValue, bounds.width / this.paddingDifferenceValue);
+            const maxHeight: number = bounds.height - padding;
+            const maxWidth: number = bounds.width - padding;
+            const imageWidth: number = image.width;
+            const imageHeight: number = image.height;
+            const beforeWidth: any = bounds.width;
+            const beforeHeight: any = bounds.height;
+            const ratio: number = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
             bounds.width = imageWidth * ratio;
             bounds.height = imageHeight * ratio;
             bounds.x = bounds.x + (beforeWidth - bounds.width) / 2;
             bounds.y = bounds.y + (beforeHeight - bounds.height) / 2;
-           var data = this.viewerBase.getItemFromSessionStorage('_formfields');
-           if (data) {
-               var FormFieldsData = JSON.parse(data);
-               for(var i=0; i<FormFieldsData.length; i++){
-                   if(FormFieldsData[i].FieldName == currentData.FieldName){
-                       FormFieldsData[i].Bounds = bounds;
-                       this.formFieldsModule.updateFormFieldsCollection(FormFieldsData[i]);
-                   }
+            const data: string = this.viewerBase.getItemFromSessionStorage('_formfields');
+            if (data) {
+                const FormFieldsData: any = JSON.parse(data);
+                for (let i: number = 0; i < FormFieldsData.length; i++){
+                    if (FormFieldsData[parseInt(i.toString(), 10)].FieldName === currentData.FieldName){
+                        FormFieldsData[parseInt(i.toString(), 10)].Bounds = bounds;
+                        this.formFieldsModule.updateFormFieldsCollection(FormFieldsData[parseInt(i.toString(), 10)]);
+                    }
                 }
                 window.sessionStorage.removeItem(this.viewerBase.documentId + '_formfields');
                 this.viewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');
             }
-          }
+        }
     }
     /**
      * Perform undo action for the edited annotations
      *
-     * @returns void
+     * @returns {void}
      */
     public undo(): void {
         if (this.annotationModule) {
             this.annotationModule.undo();
         } else {
-            this.viewerBase.getModuleWarningMessage("Annotation")
+            this.viewerBase.getModuleWarningMessage('Annotation');
         }
     }
 
     /**
      * Perform redo action for the edited annotations
      *
-     * @returns void
+     * @returns {void}
      */
     public redo(): void {
         if (this.annotationModule) {
             this.annotationModule.redo();
         } else {
-            this.viewerBase.getModuleWarningMessage("Annotation")
+            this.viewerBase.getModuleWarningMessage('Annotation');
         }
     }
 
     /**
      * Unloads the PDF document being displayed in the PDF viewer.
      *
-     * @returns void
+     * @returns {void}
      */
     public unload(): void {
         this.viewerBase.clear(true);
@@ -8876,15 +9000,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (this.viewerBase.pageTextDetails) {
             this.viewerBase.pageTextDetails = {};
         }
-        if(this.textSearchModule){
+        if (this.textSearchModule){
             this.textSearchModule.showSearchBox(false);
         }
     }
 
     /**
      * Destroys all managed resources used by this object.
-     * 
-     * @returns void
+     *
+     * @returns {void}
      */
     public destroy(): void {
         super.destroy();
@@ -8894,26 +9018,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
             this.element.innerHTML = '';
         }
-        if(this.viewerBase.navigationPane){
+        if (this.viewerBase.navigationPane){
             this.viewerBase.navigationPane.restrictUpdateZoomValue = false;
         }
         this.viewerBase.destroy();
-        if(this.viewerBase.navigationPane){
-        this.viewerBase.navigationPane.restrictUpdateZoomValue = true;
+        if (this.viewerBase.navigationPane){
+            this.viewerBase.navigationPane.restrictUpdateZoomValue = true;
         }
     }
 
-    // eslint-disable-next-line
+
     /**
      * Perform imports annotations action in the PDF Viewer
-     * @param  {any} importData - Specifies the data for annotation imports
-     * @returns void
+     *
+     * @param {any} importData - Specifies the data for annotation imports
+     * @param {AnnotationDataFormat} annotationDataFormat - Specifies the annotation data format
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public importAnnotation(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
             if (typeof (importData) === 'string') {
-                let isXfdfFile: boolean = ((importData.indexOf('.xfdf') > -1) || (annotationDataFormat.indexOf('Xfdf') > -1)) ? true : false;
+                const isXfdfFile: boolean = ((importData.indexOf('.xfdf') > -1) || (annotationDataFormat.indexOf('Xfdf') > -1)) ? true : false;
                 if (annotationDataFormat) {
                     if (importData.indexOf('</xfdf>') > -1) {
                         this.viewerBase.importAnnotations(importData, annotationDataFormat, false);
@@ -8925,7 +9050,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                                 this.viewerBase.isPDFViewerJson = true;
                                 this.viewerBase.importAnnotations(importData, annotationDataFormat, isXfdfFile);
                             } else {
-                                let newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
+                                const newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
                                 importData = decodeURIComponent(escape(atob(newImportData)));
                                 this.importAnnotationsAsJson(importData);
                             }
@@ -8938,7 +9063,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         if (importData.includes('pdfAnnotation')) {
                             this.importAnnotationsAsJson(importData);
                         } else {
-                            let newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
+                            const newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
                             importData = decodeURIComponent(escape(atob(newImportData)));
                             this.importAnnotationsAsJson(importData);
                         }
@@ -8947,7 +9072,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             } else {
-                let imporedAnnotation: any = importData.pdfAnnotation;
+                const imporedAnnotation: any = importData.pdfAnnotation;
                 if (typeof (importData) === 'object' && !isNullOrUndefined(imporedAnnotation) && !isNullOrUndefined(Object.keys(imporedAnnotation)) && !isNullOrUndefined(Object.keys(imporedAnnotation)[0]) && Object.keys(imporedAnnotation[Object.keys(imporedAnnotation)[0]]).length > 1) {
                     this.viewerBase.importAnnotations(importData);
                 } else {
@@ -8957,15 +9082,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
             }
         } else {
-            this.viewerBase.getModuleWarningMessage("Annotation")
+            this.viewerBase.getModuleWarningMessage('Annotation');
         }
     }
 
-    // eslint-disable-next-line
+
     private importAnnotationsAsJson(importData: any): void {
-        let jsonData: any = JSON.parse(importData);
-        let firstAnnotation: any = jsonData.pdfAnnotation[Object.keys(jsonData.pdfAnnotation)[0]];
-        if ((Object.keys(jsonData.pdfAnnotation).length >= 1) && (firstAnnotation.textMarkupAnnotation || firstAnnotation.measureShapeAnnotation || firstAnnotation.freeTextAnnotation || firstAnnotation.stampAnnotations || firstAnnotation.signatureInkAnnotation || (firstAnnotation.shapeAnnotation && firstAnnotation.shapeAnnotation[0].Bounds))) {
+        const jsonData: any = JSON.parse(importData);
+        const firstAnnotation: any = jsonData.pdfAnnotation[Object.keys(jsonData.pdfAnnotation)[0]];
+        if ((Object.keys(jsonData.pdfAnnotation).length >= 1) && (firstAnnotation.textMarkupAnnotation ||
+            firstAnnotation.measureShapeAnnotation || firstAnnotation.freeTextAnnotation ||
+            firstAnnotation.stampAnnotations || firstAnnotation.signatureInkAnnotation ||
+            (firstAnnotation.shapeAnnotation && firstAnnotation.shapeAnnotation[0].Bounds))) {
             this.viewerBase.isPDFViewerJson = true;
             this.viewerBase.importAnnotations(jsonData, AnnotationDataFormat.Json);
         } else {
@@ -8977,8 +9105,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Perform export annotations action in the PDF Viewer
      *
-     * @param annotationDataFormat
-     * @returns void
+     * @param {AnnotationDataFormat} annotationDataFormat -Gets the annotation data format
+     * @returns {void}
      */
     public exportAnnotation(annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
@@ -8988,16 +9116,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 this.viewerBase.exportAnnotations(AnnotationDataFormat.Json);
             }
         } else {
-            this.viewerBase.getModuleWarningMessage("Annotation")
+            this.viewerBase.getModuleWarningMessage('Annotation');
         }
     }
 
     /**
      * Perform export annotations action in the PDF Viewer
-     * 
+     *
      *@param {AnnotationDataFormat} annotationDataFormat - Export the annotation based on the format.
-     
-     * @returns Promise<object>
+     * @returns {Promise<object>} - promise
      */
     public exportAnnotationsAsObject(annotationDataFormat: AnnotationDataFormat = AnnotationDataFormat.Json): Promise<object> {
         const isAnnotations: boolean = this.viewerBase.updateExportItem();
@@ -9008,6 +9135,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 });
             });
         } else {
+            // eslint-disable-next-line
             return new Promise((resolve) => { resolve(null); });
         }
     }
@@ -9015,13 +9143,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Export annotations and returns a base64 string for both Json and XFDF formats
      *
-     * @param {AnnotationDataFormat} annotationDataFormat
-     * @returns Promise<string>
+     * @param {AnnotationDataFormat} annotationDataFormat - Gets the annotation data format
+     * @returns {Promise<string>} - promise
      */
     public exportAnnotationsAsBase64String(annotationDataFormat: AnnotationDataFormat): Promise<string> {
         if (this.annotationModule) {
             return new Promise((resolve: Function, reject: Function) => {
-                this.viewerBase.createRequestForExportAnnotations(false, annotationDataFormat, true).then((value: string) => { 
+                this.viewerBase.createRequestForExportAnnotations(false, annotationDataFormat, true).then((value: string) => {
                     resolve(value);
                 });
             });
@@ -9033,34 +9161,30 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Perform to add annotations in the PDF Viewer
      *
-     * @param annotation
-     * @returns void
+     * @param {any} annotation - Specifies the annotation
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public addAnnotation(annotation: any): void {
         if (this.viewerBase) {
             this.viewerBase.addAnnotation(annotation);
         }
     }
 
-
-    // eslint-disable-next-line
     /**
      * Imports the form fields data into the current PDF document.
-     * 
+     *
      * @param {string} data - The path for importing the fields.
-     * @param {FormFieldDataFormat} formFieldDataFormat
-     * @returns void
+     * @param {FormFieldDataFormat} formFieldDataFormat - Gets the form field data format
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public importFormFields(data?: string, formFieldDataFormat?: FormFieldDataFormat): void {
         if (this.formFieldsModule) {
-            if(isNullOrUndefined(formFieldDataFormat)){
+            if (isNullOrUndefined(formFieldDataFormat)){
                 formFieldDataFormat = FormFieldDataFormat.Json;
             }
             this.viewerBase.importFormFields(data, formFieldDataFormat);
         } else {
-            this.viewerBase.getModuleWarningMessage("FormFields")
+            this.viewerBase.getModuleWarningMessage('FormFields');
         }
     }
 
@@ -9068,24 +9192,24 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Exports the form field data in the specified data format.
      *
      * @param {string} data - The path for exporting the fields.
-     * @param {FormFieldDataFormat} formFieldDataFormat
-     * @returns void
+     * @param {FormFieldDataFormat} formFieldDataFormat - Form field data format
+     * @returns {void}
      */
-     public exportFormFields(data?: string, formFieldDataFormat?: FormFieldDataFormat): void {
+    public exportFormFields(data?: string, formFieldDataFormat?: FormFieldDataFormat): void {
         if (this.formFieldsModule) {
             this.viewerBase.exportFormFields(data, formFieldDataFormat);
         } else {
-            this.viewerBase.getModuleWarningMessage("FormFields")
+            this.viewerBase.getModuleWarningMessage('FormFields');
         }
     }
 
     /**
      * Returns an object which represents the form field data in the specified data format.
      *
-     * @param {FormFieldDataFormat} formFieldDataFormat
-     * @returns Promise<object>
+     * @param {FormFieldDataFormat} formFieldDataFormat - Form field data format
+     * @returns {Promise<object>} - promise
      */
-     public exportFormFieldsAsObject(formFieldDataFormat: FormFieldDataFormat = FormFieldDataFormat.Json): Promise<object> {
+    public exportFormFieldsAsObject(formFieldDataFormat: FormFieldDataFormat = FormFieldDataFormat.Json): Promise<object> {
         if (this.formFieldsModule) {
             return new Promise((resolve: Function, reject: Function) => {
                 this.viewerBase.exportFormFieldsAsObject(formFieldDataFormat).then((value: object) => {
@@ -9100,39 +9224,40 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * reset all form fields data
      *
-     * @returns void
+     * @returns {void}
      */
     public resetFormFields(): void {
         this.formFieldsModule.resetFormFields();
     }
+
     /**
      * Clears data from the form fields.
      * Parameter - Specifies the form field object.
      *
-     * @param formField
-     * @returns void
+     * @param {any} formField - It describes about the form field
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public clearFormFields(formField?: any): void {
         this.formFieldsModule.clearFormFields(formField);
     }
+
     /**
      * To delete the annotation Collections in the PDF Document.
      *
-     * @returns void
+     * @returns {void}
      */
     public deleteAnnotations(): void {
         if (this.annotationModule) {
             this.viewerBase.deleteAnnotations();
         } else {
-            this.viewerBase.getModuleWarningMessage("Annotation")
+            this.viewerBase.getModuleWarningMessage('Annotation');
         }
     }
 
     /**
      * To retrieve the form fields in the PDF Document.
      *
-     * @returns void
+     * @returns {void}
      */
     public retrieveFormFields(): FormFieldModel[] {
         return this.formFieldCollections;
@@ -9141,51 +9266,53 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * To update the form fields in the PDF Document.
      *
-     * @param formFields
-     * @returns void
+     * @param {any} formFields - It describes about the form field
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public updateFormFields(formFields: any): void {
         this.updateFormFieldsValue(formFields);
         this.formFieldsModule.updateFormFieldValues(formFields);
     }
 
     /**
-     * @param JsonData
+     * @param {any} JsonData - It gives the json data values
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireAjaxRequestInitiate(JsonData: any): void {
         const eventArgs: AjaxRequestInitiateEventArgs = { name: 'ajaxRequestInitiate', JsonData: JsonData };
         this.trigger('ajaxRequestInitiate', eventArgs);
     }
+
     /**
-     * @param jsonData
+     * @param {any} jsonData - It gives the json data values
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public firePageRenderInitiate(jsonData: any): void {
         const eventArgs: PageRenderInitiateEventArgs = { name: 'pageRenderInitiate', jsonData: jsonData };
         this.trigger('pageRenderInitiate', eventArgs);
     }
+
     /**
-     * @param value
-     * @param fieldName
-     * @param id
+     * @param {string} value - The button field value
+     * @param {string} fieldName - It describes about the button field name
+     * @param {string} id - It describes about the id value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireButtonFieldClickEvent(value: string, fieldName: string, id: string): void {
         const eventArgs: ButtonFieldClickEventArgs = { name: 'buttonFieldClicked', buttonFieldValue: value, buttonFieldName: fieldName, id: id };
         this.trigger('buttonFieldClick', eventArgs);
     }
 
     /**
-     * @param name
-     * @param field
-     * @param cancel
-     * @param isLeftClick - becomes true on signature panel left click.
+     * @param {string} name - Form field name
+     * @param {FormFieldModel} field - It describes about the form field model
+     * @param {boolean} cancel - checks whether the cancel is true or not
+     * @param {boolean} isLeftClick - becomes true on signature panel left click.
      * @private
+     * @returns {Promise<void>} - returns promise
      */
     public async fireFormFieldClickEvent(name: string, field: FormFieldModel, cancel?: boolean, isLeftClick?: boolean): Promise<void> {
         let eventArgs: FormFieldClickArgs = { name: name, field: field, cancel: cancel };
@@ -9197,17 +9324,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         if (field.type === 'SignatureField' || field.type === 'InitialField') {
             if (field.type === 'InitialField')
-                this.viewerBase.isInitialField = true;
+            {this.viewerBase.isInitialField = true; }
             else
-                this.viewerBase.isInitialField = false;
+            {this.viewerBase.isInitialField = false; }
             let target: any = document.getElementById(field.id);
-            if (target.style.visibility === "hidden") {
+            if (target.style.visibility === 'hidden') {
                 target.disabled = true;
             }
             target = target ? target : (document.getElementById(field.id + '_content_html_element') ? document.getElementById(field.id + '_content_html_element').children[0].children[0] : null);
-            let formFieldCollectionsValue: any = this.formFieldCollections.filter(function (item) { return item.id === field.id; });
+            const formFieldCollectionsValue: any =
+            this.formFieldCollections.filter(function (item: any): boolean { return item.id === field.id; });
             if (formFieldCollectionsValue) {
-                let readOnly: boolean = formFieldCollectionsValue[0].isReadOnly;
+                const readOnly: boolean = formFieldCollectionsValue[0].isReadOnly;
                 if ((!readOnly) && !eventArgs.cancel && target && !target.disabled && (target as any).classList.contains('e-pdfviewer-signatureformfields') && (isLeftClick || isNullOrUndefined(isLeftClick))) {
                     this.viewerBase.signatureModule.showSignatureDialog(true);
                 }
@@ -9217,14 +9345,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         }
     }
-    
+
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field add event.
-     * @param pageIndex - Get the page number.
+     * @param { srting} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field add event.
+     * @param {number} pageIndex - Get the page number.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormFieldAddEvent(name: string, field: IFormField, pageIndex: number): void {
         const eventArgs: FormFieldAddArgs = { name: name, field: field, pageIndex: pageIndex };
         this.viewerBase.isFormFieldSelect = false;
@@ -9232,153 +9360,167 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field remove event.
-     * @param pageIndex - Get the page number.
+     * @param {string} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field remove event.
+     * @param {number} pageIndex - Get the page number.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormFieldRemoveEvent(name: string, field: IFormField, pageIndex: number): void {
         const eventArgs: FormFieldRemoveArgs = { name: name, field: field, pageIndex: pageIndex };
         this.trigger('formFieldRemove', eventArgs);
     }
 
     /**
-     * @param name - Returns the event name.
-     * @param field - Returns the double-clicked form field object.
-     * @param cancel - If TRUE, property panel of the form field does not open. FALSE by default.
+     * @param {FormFieldDoubleClickArgs} eventArgs - Returns the event args
      * @private
+     * @returns {FormFieldDoubleClickArgs} - FormFieldDoubleClickArgs
      */
-    // eslint-disable-next-line
     public fireFormFieldDoubleClickEvent(eventArgs: FormFieldDoubleClickArgs): FormFieldDoubleClickArgs {
         this.trigger('formFieldDoubleClick', eventArgs);
         return eventArgs;
     }
 
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field properties change event.
-     * @param pageIndex - Get the page number.
-     * @param isAlignmentChanged - Specifies whether the text alignment of the form field is changed or not.
-     * @param isBackgroundColorChanged - Specifies whether the background color of the form field is changed or not.
-     * @param isBorderColorChanged - Specifies whether the border color of the form field is changed or not.
-     * @param isBorderWidthChanged - Specifies whether the border width of the form field is changed or not.
-     * @param isColorChanged - Specifies whether the font color of the form field is changed or not.
-     * @param isFontFamilyChanged - Specifies whether the font family of the form field is changed or not.
-     * @param isFontSizeChanged - Specifies whether the font size of the form field is changed or not.
-     * @param isFontStyleChanged - Specifies whether the font style of the form field is changed or not.
-     * @param isMaxLengthChanged - Specifies whether the max length of the form field is changed or not.
-     * @param isPrintChanged - Specifies whether the print option of the form field is changed or not.
-     * @param isReadOnlyChanged - Specifies the Read Only of Form field is changed or not.
-     * @param isRequiredChanged - Specifies whether the is required option of the form field is changed or not.
-     * @param isToolTipChanged - Specifies whether the tool tip property is changed or not.
-     * @param isValueChanged - Specifies whether the form field value is changed or not.
-     * @param isVisibilityChanged - Specifies whether the form field visibility is changed or not.
-     * @param newValue - Specifies the new value of the form field.
-     * @param oldValue - Specifies the old value of the form field.
+     * @param {string} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field properties change event.
+     * @param {number} pageIndex - Get the page number.
+     * @param {boolean} isValueChanged - Specifies whether the form field value is changed or not.
+     * @param {boolean} isFontFamilyChanged - Specifies whether the font family of the form field is changed or not.
+     * @param {boolean} isFontSizeChanged - Specifies whether the font size of the form field is changed or not.
+     * @param {boolean} isFontStyleChanged - Specifies whether the font style of the form field is changed or not.
+     * @param {boolean} isColorChanged - Specifies whether the font color of the form field is changed or not.
+     * @param {boolean} isBackgroundColorChanged - Specifies whether the background color of the form field is changed or not.
+     * @param {boolean} isBorderColorChanged - Specifies whether the border color of the form field is changed or not.
+     * @param {boolean} isBorderWidthChanged - Specifies whether the border width of the form field is changed or not.
+     * @param {boolean} isAlignmentChanged - Specifies whether the text alignment of the form field is changed or not.
+     * @param {boolean} isReadOnlyChanged - Specifies the Read Only of Form field is changed or not.
+     * @param {boolean} isVisibilityChanged - Specifies whether the form field visibility is changed or not.
+     * @param {boolean} isMaxLengthChanged - Specifies whether the max length of the form field is changed or not.
+     * @param {boolean} isRequiredChanged - Specifies whether the is required option of the form field is changed or not.
+     * @param {boolean} isPrintChanged - Specifies whether the print option of the form field is changed or not.
+     * @param {boolean} isToolTipChanged - Specifies whether the tool tip property is changed or not.
+     * @param {any} oldValue - Specifies the old value of the form field.
+     * @param {any} newValue - Specifies the new value of the form field.
+     * @param {any} isNamechanged - Specifies whether the name changed property is changed or not.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireFormFieldPropertiesChangeEvent(name: string, field: IFormField, pageIndex: number, isValueChanged: boolean, isFontFamilyChanged: boolean,
-        isFontSizeChanged: boolean, isFontStyleChanged: boolean, isColorChanged: boolean, isBackgroundColorChanged: boolean, isBorderColorChanged: boolean, 
-        isBorderWidthChanged: boolean, isAlignmentChanged: boolean, isReadOnlyChanged: boolean, isVisibilityChanged: boolean, isMaxLengthChanged: boolean, 
-        isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean, oldValue?: any, newValue?: any, isNamechanged?: any): void {
+    public fireFormFieldPropertiesChangeEvent(name: string, field: IFormField, pageIndex: number, isValueChanged: boolean,
+                                              isFontFamilyChanged: boolean, isFontSizeChanged: boolean, isFontStyleChanged: boolean,
+                                              isColorChanged: boolean, isBackgroundColorChanged: boolean, isBorderColorChanged: boolean,
+                                              isBorderWidthChanged: boolean, isAlignmentChanged: boolean, isReadOnlyChanged: boolean,
+                                              isVisibilityChanged: boolean, isMaxLengthChanged: boolean,
+                                              isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean, isCustomDataChanged: boolean,
+                                              oldValue?: any, newValue?: any, isNamechanged?: any): void {
         const eventArgs: FormFieldPropertiesChangeArgs = {
-            name: name, field: field, pageIndex: pageIndex, isValueChanged: isValueChanged, isFontFamilyChanged: isFontFamilyChanged, isFontSizeChanged: isFontSizeChanged,
-            isFontStyleChanged: isFontStyleChanged, isColorChanged: isColorChanged, isBackgroundColorChanged: isBackgroundColorChanged, isBorderColorChanged: isBorderColorChanged, 
-            isBorderWidthChanged: isBorderWidthChanged, isAlignmentChanged: isAlignmentChanged, isReadOnlyChanged: isReadOnlyChanged, isVisibilityChanged: isVisibilityChanged, 
+            name: name, field: field, pageIndex: pageIndex, isValueChanged: isValueChanged,
+            isFontFamilyChanged: isFontFamilyChanged, isFontSizeChanged: isFontSizeChanged,
+            isFontStyleChanged: isFontStyleChanged, isColorChanged: isColorChanged,
+            isBackgroundColorChanged: isBackgroundColorChanged, isBorderColorChanged: isBorderColorChanged,
+            isBorderWidthChanged: isBorderWidthChanged, isAlignmentChanged: isAlignmentChanged,
+            isReadOnlyChanged: isReadOnlyChanged, isVisibilityChanged: isVisibilityChanged,
             isMaxLengthChanged: isMaxLengthChanged, isRequiredChanged: isRequiredChanged, isPrintChanged: isPrintChanged,
-            isToolTipChanged: isToolTipChanged, oldValue: oldValue, newValue: newValue, isNameChanged: !isNullOrUndefined(isNamechanged) ? isNamechanged: false
+            isToolTipChanged: isToolTipChanged, oldValue: oldValue, newValue: newValue,
+            isNameChanged: !isNullOrUndefined(isNamechanged) ? isNamechanged : false, isCustomDataChanged: isCustomDataChanged
         };
         this.trigger('formFieldPropertiesChange', eventArgs);
     }
 
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field mouse leave event.
-     * @param pageIndex - Get the page number.
+     * @param {string} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field mouse leave event.
+     * @param {number} pageIndex - Get the page number.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormFieldMouseLeaveEvent(name: string, field: IFormField, pageIndex: number): void {
         const eventArgs: FormFieldMouseLeaveArgs = { name: name, field: field, pageIndex: pageIndex };
         this.trigger('formFieldMouseLeave', eventArgs);
     }
 
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field mouse over event.
-     * @param pageIndex - Get the page number.
-     * @param pageX - Get the mouse over x position with respect to the page container.
-     * @param pageY - Get the mouse over y position with respect to the page container.
-     * @param X - Specifies the mouse over x position with respect to the viewer container.
-     * @param Y - Specifies the mouse over y position with respect to the viewer container.
+     * @param {string} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field mouse over event.
+     * @param {number} pageIndex - Get the page number.
+     * @param {number} pageX - Get the mouse over x position with respect to the page container.
+     * @param {number} pageY - Get the mouse over y position with respect to the page container.
+     * @param {number} X - Specifies the mouse over x position with respect to the viewer container.
+     * @param {number} Y - Specifies the mouse over y position with respect to the viewer container.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireFormFieldMouseoverEvent(name: string, field: IFormField, pageIndex: number, pageX: number, pageY: number, X: number, Y: number): void {
-        const eventArgs: FormFieldMouseoverArgs = { name: name, field: field, pageIndex: pageIndex, pageX: pageX, pageY: pageY, X: X, Y: Y };
+    public fireFormFieldMouseoverEvent(name: string, field: IFormField, pageIndex: number, pageX: number,
+                                       pageY: number, X: number, Y: number): void {
+        const eventArgs: FormFieldMouseoverArgs = { name: name, field: field, pageIndex: pageIndex, pageX: pageX,
+            pageY: pageY, X: X, Y: Y };
         this.trigger('formFieldMouseover', eventArgs);
     }
 
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field move event.
-     * @param pageIndex - Get the page number.
-     * @param previousPosition - Get the previous position of the form field in the page.
-     * @param currentPosition - Current position of form field in the page.
+     * @param {string} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field move event.
+     * @param {number} pageIndex - Get the page number.
+     * @param {IFormFieldBound} previousPosition - Get the previous position of the form field in the page.
+     * @param {IFormFieldBound} currentPosition - Current position of form field in the page.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireFormFieldMoveEvent(name: string, field: IFormField, pageIndex: number, previousPosition: IFormFieldBound, currentPosition: IFormFieldBound): void {
-        const eventArgs: FormFieldMoveArgs = { name: name, field: field, pageIndex: pageIndex, previousPosition: previousPosition, currentPosition: currentPosition };
+    public fireFormFieldMoveEvent(name: string, field: IFormField, pageIndex: number,
+                                  previousPosition: IFormFieldBound, currentPosition: IFormFieldBound): void {
+        const eventArgs: FormFieldMoveArgs = { name: name, field: field, pageIndex: pageIndex,
+            previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('formFieldMove', eventArgs);
     }
 
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field resize event.
-     * @param pageIndex - Get the page number.
-     * @param previousPosition - Get the previous position of the form field in the page.
-     * @param currentPosition - Current position of form field in the page.
+     * @param {string} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field move event.
+     * @param {number} pageIndex - Get the page number.
+     * @param {IFormFieldBound} previousPosition - Get the previous position of the form field in the page.
+     * @param {IFormFieldBound} currentPosition - Current position of form field in the page.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireFormFieldResizeEvent(name: string, field: IFormField, pageIndex: number, previousPosition: IFormFieldBound, currentPosition: IFormFieldBound): void {
-        const eventArgs: FormFieldResizeArgs = { name: name, field: field, pageIndex: pageIndex, previousPosition: previousPosition, currentPosition: currentPosition };
+    public fireFormFieldResizeEvent(name: string, field: IFormField, pageIndex: number,
+                                    previousPosition: IFormFieldBound, currentPosition: IFormFieldBound): void {
+        const eventArgs: FormFieldResizeArgs = { name: name, field: field, pageIndex: pageIndex,
+            previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('formFieldResize', eventArgs);
     }
 
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field select event.
-     * @param pageIndex - Get the page number.
-     * @param isProgrammaticSelection - Specifies whether the the form field is selected programmatically or by UI.
+     * @param {string} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field select event.
+     * @param {number} pageIndex - Get the page number.
+     * @param {boolean} isProgrammaticSelection - Specifies whether the the form field is selected programmatically or by UI.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireFormFieldSelectEvent(name: string, field: IFormField, pageIndex: number, isProgrammaticSelection: boolean): void {
-        const eventArgs: FormFieldSelectArgs = { name: name, field: field, pageIndex: pageIndex, isProgrammaticSelection: isProgrammaticSelection };
+    public fireFormFieldSelectEvent(name: string, field: IFormField, pageIndex: number,
+                                    isProgrammaticSelection: boolean): void {
+        const eventArgs: FormFieldSelectArgs = { name: name, field: field, pageIndex: pageIndex,
+            isProgrammaticSelection: isProgrammaticSelection };
         this.trigger('formFieldSelect', eventArgs);
     }
 
     /**
-     * @param name - Get the name of the event.
-     * @param field - Event arguments for the form field unselect event.
-     * @param pageIndex - Get the page number.
+     * @param {string} name - Get the name of the event.
+     * @param {IFormField} field - Event arguments for the form field unselect event.
+     * @param {number} pageIndex - Get the page number.
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormFieldUnselectEvent(name: string, field: IFormField, pageIndex: number): void {
         const eventArgs: FormFieldUnselectArgs = { name: name, field: field, pageIndex: pageIndex };
         this.trigger('formFieldUnselect', eventArgs);
     }
 
     /**
-     * @param pageData
+     * @param {any} pageData - It contains the page data
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireDocumentLoad(pageData: any): void {
         const eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName, pageData: pageData };
         this.trigger('documentLoad', eventArgs);
@@ -9389,8 +9531,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param fileName
+     * @param {string} fileName - Get the file name
      * @private
+     * @returns {void}
      */
     public fireDocumentUnload(fileName: string): void {
         const eventArgs: UnloadEventArgs = { name: 'documentUnload', documentName: fileName };
@@ -9398,26 +9541,30 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param isPasswordRequired
-     * @param password
+     * @param {boolean} isPasswordRequired - Checks whether the password required is true or not
+     * @param {string} password - Get the password value
      * @private
+     * @returns {void}
      */
     public fireDocumentLoadFailed(isPasswordRequired: boolean, password: string): void {
-        // eslint-disable-next-line max-len
-        const eventArgs: LoadFailedEventArgs = { name: 'documentLoadFailed', documentName: this.fileName, isPasswordRequired: isPasswordRequired, password: password };
+
+        const eventArgs: LoadFailedEventArgs = { name: 'documentLoadFailed', documentName: this.fileName,
+            isPasswordRequired: isPasswordRequired, password: password };
         this.trigger('documentLoadFailed', eventArgs);
     }
 
     /**
-     * @param errorStatusCode
-     * @param errorMessage
-     * @param action
-     * @param retryCount
+     * @param {number} errorStatusCode - It Gets the error status code
+     * @param {string} errorMessage - It Gets the error message
+     * @param {string} action - It describes the action
+     * @param {boolean} retryCount - checks whether retry count ie true or not
      * @private
+     * @returns {void}
      */
     public fireAjaxRequestFailed(errorStatusCode: number, errorMessage: string, action: string, retryCount?: boolean): void {
-        // eslint-disable-next-line max-len
-        const eventArgs: AjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName, errorStatusCode: errorStatusCode, errorMessage: errorMessage, action: action };
+
+        const eventArgs: AjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName,
+            errorStatusCode: errorStatusCode, errorMessage: errorMessage, action: action };
         if (retryCount) {
             eventArgs.retryCount = true;
         }
@@ -9425,39 +9572,45 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param action
-     * @param data
+     * @param {string} action - It describes the action
+     * @param {any} data - It describes the data
      * @private
+     * @returns {boolean} - boolean
      */
-    public fireAjaxRequestSuccess(action: string, data: any): any {
-        const eventArgs: AjaxRequestSuccessEventArgs = { name: 'ajaxRequestSuccess', documentName: this.fileName, action: action, data: data, cancel: false };
+    public fireAjaxRequestSuccess(action: string, data: any): boolean {
+        const eventArgs: AjaxRequestSuccessEventArgs = { name: 'ajaxRequestSuccess', documentName: this.fileName,
+            action: action, data: data, cancel: false };
         this.trigger('ajaxRequestSuccess', eventArgs);
-        if(eventArgs.cancel){
+        if (eventArgs.cancel){
             return true;
         } else {
-           return false;
+            return false;
         }
     }
+
     /**
-     * @param data
+     * @param {any} data - It describes the data
      * @private
+     * @returns {any} - any
      */
     public firePageRenderComplete(data: any): any {
         const eventArgs: PageRenderCompleteEventArgs = { name: 'pageRenderComplete', documentName: this.fileName, data: data};
         this.trigger('pageRenderComplete', eventArgs);
     }
+
     /**
-     * @param action
+     * @param {string} action - It describes the action
      * @private
+     * @returns {void}
      */
     public fireValidatedFailed(action: string): void {
         if (!isBlazor()) {
-            // eslint-disable-next-line max-len
-            const eventArgs: ValidateFormFieldsArgs = { formField: this.formFieldCollections, documentName: this.fileName, nonFillableFields: this.viewerBase.nonFillableFields };
+            const eventArgs: ValidateFormFieldsArgs = { formField: this.formFieldCollections,
+                documentName: this.fileName, nonFillableFields: this.viewerBase.nonFillableFields };
             this.trigger('validateFormFields', eventArgs);
         }   else {
-            // eslint-disable-next-line
-            let eventArgs: any = {};
+
+            const eventArgs: any = {};
             eventArgs.documentName = this.fileName;
             eventArgs.formFields = this.formFieldCollections;
             eventArgs.nonFillableFields = this.viewerBase.nonFillableFields;
@@ -9466,10 +9619,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param x
-     * @param y
-     * @param pageNumber
+     * @param {number} x - It Gets the x value
+     * @param {number} y - It Gets the y value
+     * @param {number} pageNumber - It Gets the page number value
      * @private
+     * @returns {void}
      */
     public firePageClick(x: number, y: number, pageNumber: number): void {
         const eventArgs: PageClickEventArgs = { name: 'pageClick', documentName: this.fileName, x: x, y: y, pageNumber: pageNumber };
@@ -9477,12 +9631,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param previousPageNumber
+     * @param {number} previousPageNumber - It Gets the previous page number
      * @private
+     * @returns {void}
      */
     public firePageChange(previousPageNumber: number): void {
-        // eslint-disable-next-line max-len
-        const eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.currentPageNumber, previousPageNumber: previousPageNumber };
+        const eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName,
+            currentPageNumber: this.currentPageNumber, previousPageNumber: previousPageNumber };
         this.trigger('pageChange', eventArgs);
         if (isBlazor()) {
             //this._dotnetInstance.invokeMethodAsync('OnPageChanged', this.currentPageNumber);
@@ -9492,74 +9647,80 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * @private
+     * @returns {void}
      */
     public fireZoomChange(): void {
-        // eslint-disable-next-line max-len
-        const eventArgs: ZoomChangeEventArgs = { name: 'zoomChange', zoomValue: this.magnificationModule.zoomFactor * 100, previousZoomValue: this.magnificationModule.previousZoomFactor * 100 };
+        const eventArgs: ZoomChangeEventArgs = { name: 'zoomChange', zoomValue: this.magnificationModule.zoomFactor * 100,
+            previousZoomValue: this.magnificationModule.previousZoomFactor * 100 };
         this.trigger('zoomChange', eventArgs);
     }
 
     /**
-     * @param hyperlink
-     * @param hyperlinkElement
+     * @param {string} hyperlink - Get the hyper link
+     * @param  {HTMLAnchorElement} hyperlinkElement - Get the hyper link element
      * @private
+     * @returns {Promise<boolean>} - Promise<boolean>
      */
     public async fireHyperlinkClick(hyperlink: string, hyperlinkElement: HTMLAnchorElement): Promise<boolean> {
-        // eslint-disable-next-line max-len
-        let eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink, hyperlinkElement: hyperlinkElement, cancel:false};
+        let eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink,
+            hyperlinkElement: hyperlinkElement, cancel: false};
         if (isBlazor()) {
             eventArgs = await this.triggerEvent('hyperlinkClick', eventArgs) as HyperlinkClickEventArgs || eventArgs;
-        } else { 
+        } else {
             this.triggerEvent('hyperlinkClick', eventArgs);
         }
-        if(eventArgs.hyperlinkElement.href != eventArgs.hyperlink){
+        if (eventArgs.hyperlinkElement.href !== eventArgs.hyperlink){
             hyperlinkElement.href = eventArgs.hyperlink;
         }
-        if(eventArgs.cancel){
+        if (eventArgs.cancel){
             return false;
         }else{
-           return true;
+            return true;
         }
     }
 
     /**
-     * @param hyperlinkElement
+     * @param {HTMLAnchorElement} hyperlinkElement - Gets the hyper link element
      * @private
+     * @returns {void}
      */
     public fireHyperlinkHover(hyperlinkElement: HTMLAnchorElement): void {
-        // eslint-disable-next-line max-len
         const eventArgs: HyperlinkMouseOverArgs = { name: 'hyperlinkMouseOver', hyperlinkElement: hyperlinkElement };
         this.trigger('hyperlinkMouseOver', eventArgs);
     }
 
     /**
-     * @param fieldName
-     * @param value
+     * @param {string} fieldName - Gets the field name
+     * @param {string} value - Gets the field value
      * @private
+     * @returns {void}
      */
     public fireFocusOutFormField(fieldName: string, value: string): void {
-        // eslint-disable-next-line max-len
         const eventArgs: FormFieldFocusOutEventArgs = { name: 'formFieldFocusOut', fieldName: fieldName, value: value};
-        // eslint-disable-next-line
         this.trigger('formFieldFocusOut', eventArgs);
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
+     * @param {number} pageNumber -- It Gets the page number value
+     * @param {string} index - It Gets the index value
+     * @param {AnnotationType} type - It Gets the annotation type
+     * @param {any} bounds - Gets the annotation bounds
+     * @param {any} settings - Gets the annotation settings
+     * @param {string} textMarkupContent - Gets the text markup content
+     * @param {number} tmStartIndex - Gets the text markup start index
+     * @param {number} tmEndIndex - Gets the text markup end index
+     * @param {ShapeLabelSettingsModel} labelSettings - Gets the label settings
+     * @param {any} multiPageCollection - Gets the multi page collection
+     * @param {string} customStampName - Gets the name of the custom stamp
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireAnnotationAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any, customStampName?: string): void {
-        const eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
+    public fireAnnotationAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any,
+                             textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number,
+                             labelSettings?: ShapeLabelSettingsModel,
+                             multiPageCollection?: any, customStampName?: string): void {
+        const eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber,
+            annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
         if (textMarkupContent) {
             if (isBlazor()) {
                 eventArgs.annotationSettings.textMarkupContent = textMarkupContent;
@@ -9589,20 +9750,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param multiPageCollection
+     * @param {number} pageNumber -- It Gets the page number value
+     * @param {string} index - It Gets the index value
+     * @param {AnnotationType} type - It Gets the annotation type
+     * @param {any} bounds - Gets the annotation bounds
+     * @param {string} textMarkupContent - Gets the text markup content
+     * @param {number} tmStartIndex - Gets the text markup start index
+     * @param {number} tmEndIndex - Gets the text markup end index
+     * @param {any} multiPageCollection - Gets the multi page collection
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireAnnotationRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, multiPageCollection?: any): void {
-        // eslint-disable-next-line max-len
-        const eventArgs: AnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBounds: bounds };
+    public fireAnnotationRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any, textMarkupContent?: string,
+                                tmStartIndex?: number, tmEndIndex?: number, multiPageCollection?: any): void {
+        const eventArgs: AnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index,
+            annotationType: type, annotationBounds: bounds };
         if (textMarkupContent) {
             eventArgs.textMarkupContent = textMarkupContent;
             eventArgs.textMarkupStartIndex = tmStartIndex;
@@ -9615,107 +9777,102 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param value
+     * @param {string} value - Gets the value of the free text annotation
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireBeforeAddFreeTextAnnotation(value: string): void {
-        // eslint-disable-next-line max-len
         const eventArgs: BeforeAddFreeTextEventArgs = { name: 'beforeAddFreeText', value: value };
-        // eslint-disable-next-line
         this.trigger('beforeAddFreeText', eventArgs);
     }
 
     /**
-     * @param id
-     * @param text
-     * @param annotation
+     * @param {string} id - Gets the id of the comment
+     * @param {string} text - Gets the text value
+     * @param {any} annotation - Gets the annotation value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireCommentAdd(id: string, text: string, annotation: any): void {
-        // eslint-disable-next-line max-len
         const eventArgs: CommentEventArgs = { name: 'CommentAdd', id: id, text: text, annotation: annotation };
-        // eslint-disable-next-line
         this.trigger('commentAdd', eventArgs);
     }
 
     /**
-     * @param id
-     * @param text
-     * @param annotation
+     * @param {string} id - Gets the id of the comment
+     * @param {string} text - Gets the text value
+     * @param {any} annotation - Gets the annotation value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireCommentEdit(id: string, text: string, annotation: any): void {
-        // eslint-disable-next-line max-len
         const eventArgs: CommentEventArgs = { name: 'CommentEdit', id: id, text: text, annotation: annotation };
-        // eslint-disable-next-line
         this.trigger('commentEdit', eventArgs);
     }
 
     /**
-     * @param id
-     * @param text
-     * @param annotation
+     * @param {string} id - Gets the id of the comment
+     * @param {string} text - Gets the text value
+     * @param {any} annotation - Gets the annotation value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireCommentDelete(id: string, text: string, annotation: any): void {
-        // eslint-disable-next-line max-len
         const eventArgs: CommentEventArgs = { name: 'CommentDelete', id: id, text: text, annotation: annotation };
-        // eslint-disable-next-line
         this.trigger('commentDelete', eventArgs);
     }
 
     /**
-     * @param id
-     * @param text
-     * @param annotation
+     * @param {string} id - Gets the id of the comment
+     * @param {string} text - Gets the text value
+     * @param {any} annotation - Gets the annotation value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireCommentSelect(id: string ,text: string, annotation: any): void {
-        // eslint-disable-next-line max-len
+    public fireCommentSelect(id: string , text: string, annotation: any): void {
+
         const eventArgs: CommentEventArgs = { name: 'CommentSelect', id: id, text: text, annotation: annotation };
-        // eslint-disable-next-line
+
         this.trigger('commentSelect', eventArgs);
     }
 
     /**
-     * @param id
-     * @param text
-     * @param annotation
-     * @param statusChange
+     * @param {string} id - Gets the id of the comment
+     * @param {string} text - Gets the text value
+     * @param {any} annotation - Gets the annotation value
+     * @param {CommentStatus} statusChange - Get the value of status change
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireCommentStatusChanged(id: string, text: string, annotation: any, statusChange: CommentStatus): void {
-        // eslint-disable-next-line max-len
+
         const eventArgs: CommentEventArgs = { name: 'CommentStatusChanged', id: id, text: text, annotation: annotation, status: statusChange};
-        // eslint-disable-next-line
+
         this.trigger('commentStatusChanged', eventArgs);
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param isColorChanged
-     * @param isOpacityChanged
-     * @param isTextChanged
-     * @param isCommentsChanged
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param multiPageCollection
+     * @param {number} pageNumber -- It Gets the page number value
+     * @param {string} index - It Gets the index value
+     * @param {AnnotationType} type - It Gets the annotation type
+     * @param {boolean} isColorChanged - check whetehr the color changed is true or not
+     * @param {boolean} isOpacityChanged - check's whether the opacity changed is true or not
+     * @param {boolean} isTextChanged - check's whether the text changed is true or not
+     * @param {boolean} isCommentsChanged - check's whether the comments changed is true or not
+     * @param {string} textMarkupContent - Gets the text markup content
+     * @param {number} tmStartIndex - Gets the text markup start index
+     * @param {number} tmEndIndex - Gets the text markup end index
+     * @param {any} multiPageCollection - Gets the multi page collection
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line max-len
-    // eslint-disable-next-line
-    public fireAnnotationPropertiesChange(pageNumber: number, index: string, type: AnnotationType, isColorChanged: boolean, isOpacityChanged: boolean, isTextChanged: boolean, isCommentsChanged: boolean, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, multiPageCollection?: any): void {
-        // eslint-disable-next-line max-len
-        const eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged, isTextChanged: isTextChanged, isCommentsChanged: isCommentsChanged };
+    public fireAnnotationPropertiesChange(pageNumber: number, index: string, type: AnnotationType,
+                                          isColorChanged: boolean, isOpacityChanged: boolean, isTextChanged: boolean,
+                                          isCommentsChanged: boolean, textMarkupContent?: string, tmStartIndex?: number,
+                                          tmEndIndex?: number, multiPageCollection?: any): void {
+        const eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber,
+            annotationId: index, annotationType: type, isColorChanged: isColorChanged,
+            isOpacityChanged: isOpacityChanged, isTextChanged: isTextChanged, isCommentsChanged: isCommentsChanged };
         if (textMarkupContent) {
             eventArgs.textMarkupContent = textMarkupContent;
             eventArgs.textMarkupStartIndex = tmStartIndex;
@@ -9728,18 +9885,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param data
+     * @param {number} pageNumber - Gets the page number value
+     * @param {string} index - Gets the index value
+     * @param {any} type - Gets the type of the signature
+     * @param {any} bounds - Gets the annotation bounda
+     * @param {number} opacity - Gets the opacity value
+     * @param {string} strokeColor - Gets the stroke color value
+     * @param {number} thickness - Gets the thickness value
+     * @param {string} data - Gets the data of the annotation
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireSignatureAdd(pageNumber: number, index: string, type: any, bounds: any, opacity: number, strokeColor?: string, thickness?: number, data?: string): void {
+    public fireSignatureAdd(pageNumber: number, index: string, type: any, bounds: any, opacity: number,
+                            strokeColor?: string, thickness?: number, data?: string): void {
         const eventArgs: AddSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds, opacity: opacity };
         if (thickness) {
             eventArgs.thickness = thickness;
@@ -9754,98 +9912,120 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
+     * @param {number} pageNumber - Gets the page number value
+     * @param {string} index - Gets the index value of the signature
+     * @param {AnnotationType} type - Gets the annotation type
+     * @param {any} bounds - Gets the bounds value of the annotation
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireSignatureRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any): void {
         const eventArgs: RemoveSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds };
         this.trigger('removeSignature', eventArgs);
     }
 
     /**
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param previousPosition
-     * @param currentPosition
+     * @param {number} pageNumber - Gets the page number value
+     * @param {string} id - Gets the id value of the signature
+     * @param {AnnotationType} type - Gets the annotation type
+     * @param {number} opacity - Gets the opacity value of the annotation
+     * @param {string} strokeColor - Gets the stroke color value
+     * @param {number} thickness - Gets the thickness value
+     * @param {object} previousPosition - Gets the previous position values
+     * @param {object} currentPosition - Gets the current position values
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireSignatureMove(pageNumber: number, id: string, type: AnnotationType, opacity: number, strokeColor: string, thickness: number, previousPosition: object, currentPosition: object): void {
-        const eventArgs: MoveSignatureEventArgs = { pageIndex: pageNumber, id: id, type: type, opacity: opacity, strokeColor: strokeColor, thickness: thickness, previousPosition: previousPosition, currentPosition: currentPosition };
+    public fireSignatureMove(pageNumber: number, id: string, type: AnnotationType, opacity: number,
+                             strokeColor: string, thickness: number, previousPosition: object, currentPosition: object): void {
+        const eventArgs: MoveSignatureEventArgs = { pageIndex: pageNumber, id: id, type: type, opacity: opacity,
+            strokeColor: strokeColor, thickness: thickness, previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('moveSignature', eventArgs);
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param isStrokeColorChanged
-     * @param isOpacityChanged
-     * @param isThicknessChanged
-     * @param oldProp
-     * @param newProp
+     * @param {number} pageNumber - Gets the current page number value
+     * @param {string} index - Gets the index value
+     * @param {AnnotationType} type - Gets the annotation type
+     * @param {boolean} isStrokeColorChanged - Check's whether the stroke color changes is true or not
+     * @param {boolean} isOpacityChanged - Check's whether the opacity change is true or not
+     * @param {boolean} isThicknessChanged - Check's whether the thickness change is true or not
+     * @param {any} oldProp - Gets the old prop value
+     * @param {any} newProp - Gets the new prop value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireSignaturePropertiesChange(pageNumber: number, index: string, type: AnnotationType, isStrokeColorChanged: boolean, isOpacityChanged: boolean, isThicknessChanged: boolean, oldProp: any, newProp: any): void {
-        const eventArgs: SignaturePropertiesChangeEventArgs = { pageIndex: pageNumber, id: index, type: type, isStrokeColorChanged: isStrokeColorChanged, isOpacityChanged: isOpacityChanged, isThicknessChanged: isThicknessChanged, oldValue: oldProp, newValue: newProp };
+    public fireSignaturePropertiesChange(pageNumber: number, index: string, type: AnnotationType,
+                                         isStrokeColorChanged: boolean, isOpacityChanged: boolean, isThicknessChanged: boolean,
+                                         oldProp: any, newProp: any): void {
+        const eventArgs: SignaturePropertiesChangeEventArgs = { pageIndex: pageNumber, id: index, type: type,
+            isStrokeColorChanged: isStrokeColorChanged, isOpacityChanged: isOpacityChanged,
+            isThicknessChanged: isThicknessChanged, oldValue: oldProp, newValue: newProp };
         this.trigger('signaturePropertiesChange', eventArgs);
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param currentPosition
-     * @param previousPosition
+     * @param {number} pageNumber - Gets the page number value
+     * @param {string} index - Gets the index value
+     * @param {AnnotationType} type - Gets the annotation type
+     * @param {number} opacity - Gets the opacity value
+     * @param {string} strokeColor - Gets the stroke color value
+     * @param {number} thickness - Gets the thickness value
+     * @param {any} currentPosition - Gets the current position of the signature
+     * @param {any} previousPosition - Gets the previous position of the signature
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireSignatureResize(pageNumber: number, index: string, type: AnnotationType, opacity: number, strokeColor: string, thickness: number, currentPosition: any, previousPosition: any): void {
-        const eventArgs: ResizeSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, opacity: opacity, strokeColor: strokeColor, thickness: thickness, currentPosition: currentPosition, previousPosition: previousPosition };
+    public fireSignatureResize(pageNumber: number, index: string, type: AnnotationType, opacity: number, strokeColor: string,
+                               thickness: number, currentPosition: any, previousPosition: any): void {
+        const eventArgs: ResizeSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, opacity: opacity,
+            strokeColor: strokeColor, thickness: thickness, currentPosition: currentPosition,
+            previousPosition: previousPosition };
         this.trigger('resizeSignature', eventArgs);
     }
 
     /**
-     * @param id
-     * @param pageNumber
-     * @param signature
+     * @param {string} id - Gets the id value
+     * @param {number} pageNumber - Gets the page number value
+     * @param {object} signature - Gets the signature object
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireSignatureSelect(id: string, pageNumber: number, signature: object) {
+    public fireSignatureSelect(id: string, pageNumber: number, signature: object): void {
         const eventArgs: SignatureSelectEventArgs = { id: id, pageIndex: pageNumber, signature: signature };
         this.trigger('signatureSelect', eventArgs);
     }
 
     /**
-     * @param id
-     * @param pageNumber
-     * @param annotation
-     * @param annotationCollection
-     * @param multiPageCollection
-     * @param isSelected
-     * @param annotationAddMode
+     * @param {string} id - Gets the id value
+     * @param {number} pageNumber - Gets the page number value
+     * @param {object} signature - Gets the signature object
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any, multiPageCollection?: any, isSelected?: boolean, annotationAddMode?: string): void {
-        // eslint-disable-next-line max-len
-        let eventArgs: AnnotationSelectEventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+    public fireSignatureUnselect(id: string, pageNumber: number, signature: object) {
+        const eventArgs: SignatureUnselectEventArgs = { id: id, pageIndex: pageNumber, signature: signature };
+        this.trigger('signatureUnselect', eventArgs);
+    }
+
+    /**
+     * @param {string} id - Gets the annotation id value
+     * @param {number} pageNumber - Gets the page number value
+     * @param {any} annotation - Gets the annotation
+     * @param {any} annotationCollection - Gets the annotation collection
+     * @param {any} multiPageCollection - Gets the multi page collection
+     * @param {boolean} isSelected - checks whether the selected is true or not
+     * @param {string} annotationAddMode - Gets the annotation add mode value
+     * @private
+     * @returns {void}
+     */
+    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any,
+                                multiPageCollection?: any, isSelected?: boolean, annotationAddMode?: string): void {
+        let eventArgs: AnnotationSelectEventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber,
+            annotation: annotation };
         if (annotationCollection) {
-            // eslint-disable-next-line max-len
-            eventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation, annotationCollection: annotationCollection };
+            eventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation,
+                annotationCollection: annotationCollection };
         }
         if (multiPageCollection) {
             eventArgs.multiplePageCollection = multiPageCollection;
@@ -9856,11 +10036,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (annotationAddMode) {
             eventArgs.annotationAddMode = annotationAddMode;
         }
-
         if (isBlazor()) {
             if (annotation.type === 'FreeText' ) {
-                // eslint-disable-next-line
-                let fontStyle: any  = { isBold : false, isItalic : false, isStrikeout : false, isUnderline : false };
+                const fontStyle: any  = { isBold : false, isItalic : false, isStrikeout : false, isUnderline : false };
                 if (annotation.fontStyle === 1 ) {
                     fontStyle.isBold = true;
                 } else if (annotation.fontStyle === 2) {
@@ -9879,37 +10057,38 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param id
-     * @param pageNumber
-     * @param annotation
+     * @param {string} id - Gets the annottion id value
+     * @param {number} pageNumber - Gets the page number value
+     * @param {any} annotation - Gets the annotation details
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireAnnotationUnSelect(id: string, pageNumber: number, annotation: any): void {
         if (isBlazor()) {
             this.viewerBase.blazorUIAdaptor.annotationUnSelect();
         }
-        // eslint-disable-next-line max-len
-        const eventArgs: AnnotationUnSelectEventArgs = { name: 'annotationUnSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+        const eventArgs: AnnotationUnSelectEventArgs = { name: 'annotationUnSelect', annotationId: id,
+            pageIndex: pageNumber, annotation: annotation };
         this.trigger('annotationUnSelect', eventArgs);
     }
 
     /**
-     * @param id
-     * @param pageNumber
-     * @param annotation
+     * @param {string} id - Gets the annottion id value
+     * @param {number} pageNumber - Gets the page number value
+     * @param {any} annotation - Gets the annotation details
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireAnnotationDoubleClick(id: string, pageNumber: number, annotation: any): void {
-        // eslint-disable-next-line max-len
-        const eventArgs: AnnotationDoubleClickEventArgs = { name: 'annotationDblClick', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+        const eventArgs: AnnotationDoubleClickEventArgs = { name: 'annotationDblClick', annotationId: id,
+            pageIndex: pageNumber, annotation: annotation };
         this.trigger('annotationDoubleClick', eventArgs);
     }
 
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - Gets the page number value
      * @private
+     * @returns {void}
      */
     public fireTextSelectionStart(pageNumber: number): void {
         this.isTextSelectionStarted = true;
@@ -9918,12 +10097,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param pageNumber
-     * @param text
-     * @param bound
+     * @param {number} pageNumber - Gets the page number value
+     * @param {string} text - Gets the selected text value
+     * @param {any[]} bound - Gets the annotation bounds
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireTextSelectionEnd(pageNumber: number, text: string, bound: any[]): void {
         if (this.isTextSelectionStarted) {
             const eventArgs: TextSelectionEndEventArgs = { pageIndex: pageNumber, textContent: text, textBounds: bound };
@@ -9931,11 +10110,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.isTextSelectionStarted = false;
         }
     }
-  
+
     /**
-     * @param canvas
-     * @param index
+     * @param {HTMLCanvasElement} canvas - Gets the canvas element
+     * @param {number} index - Gets the index value
      * @private
+     * @returns {void}
      */
     public renderDrawing(canvas?: HTMLCanvasElement, index?: number): void {
         if (isNullOrUndefined(index) && this.viewerBase.activeElements.activePageID && !this.viewerBase.isPrint) {
@@ -9943,26 +10123,30 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.annotation) {
             this.annotation.renderAnnotations(index, null, null, null, canvas);
-        } else if(this.formDesignerModule){
+        } else if (this.formDesignerModule){
             this.formDesignerModule.updateCanvas(index, canvas);
         }
     }
+
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
+     * @param {number} pageNumber -- It Gets the page number value
+     * @param {string} index - It Gets the index value
+     * @param {AnnotationType} type - It Gets the annotation type
+     * @param {any} bounds - Gets the annotation bounds
+     * @param {any} settings - Gets the settings of the annotation
+     * @param {string} textMarkupContent - Gets the text markup content
+     * @param {number} tmStartIndex - Gets the text markup start index
+     * @param {number} tmEndIndex - Gets the text markup end index
+     * @param {ShapeLabelSettingsModel} labelSettings - Gets the label settings
+     * @param {any} multiPageCollection - Gets the multi page collection
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireAnnotationResize(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any): void {
-        const eventArgs: AnnotationResizeEventArgs = { name: 'annotationResize', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
+    public fireAnnotationResize(pageNumber: number, index: string, type: AnnotationType, bounds: any,
+                                settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number,
+                                labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any): void {
+        const eventArgs: AnnotationResizeEventArgs = { name: 'annotationResize', pageIndex: pageNumber,
+            annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
         if (textMarkupContent) {
             eventArgs.textMarkupContent = textMarkupContent;
             eventArgs.textMarkupStartIndex = tmStartIndex;
@@ -9976,48 +10160,59 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         this.trigger('annotationResize', eventArgs);
     }
+
     /**
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param annotationSettings
-     * @param previousPosition
-     * @param currentPosition
+     * @param {number} pageNumber - Gets the page number value
+     * @param {string} id - Gets the id value of the annotation
+     * @param {AnnotationType} type - Gets the annotation type
+     * @param {any} annotationSettings - Gets the annotation settings
+     * @param {object} previousPosition - Gets the previous position of the annotation
+     * @param {object} currentPosition - Gets the current position of the annotation
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireAnnotationMoving(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any, previousPosition: object, currentPosition: object): void {
-        const eventArgs: AnnotationMovingEventArgs = { name: 'annotationMoving', pageIndex: pageNumber, annotationId: id, annotationType: type, annotationSettings: annotationSettings, previousPosition: previousPosition, currentPosition: currentPosition };
+    public fireAnnotationMoving(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any,
+                                previousPosition: object, currentPosition: object): void {
+        const eventArgs: AnnotationMovingEventArgs = { name: 'annotationMoving', pageIndex: pageNumber,
+            annotationId: id, annotationType: type, annotationSettings: annotationSettings,
+            previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('annotationMoving', eventArgs);
     }
 
-     /**
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param annotationSettings
-     * @param previousPosition
-     * @param currentPosition
+    /**
+     * @param {number} pageNumber - Gets the page number value
+     * @param {string} id - Gets the id value of the annotation
+     * @param {AnnotationType} type - Gets the annotation type
+     * @param {any} annotationSettings - Gets the annotation settings
+     * @param {object} previousPosition - Gets the previous position of the annotation
+     * @param {object} currentPosition - Gets the current position of the annotation
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireAnnotationMove(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any, previousPosition: object, currentPosition: object): void {
-        const eventArgs: AnnotationMoveEventArgs = { name: 'annotationMove', pageIndex: pageNumber, annotationId: id, annotationType: type, annotationSettings: annotationSettings, previousPosition: previousPosition, currentPosition: currentPosition };
+    public fireAnnotationMove(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any,
+                              previousPosition: object, currentPosition: object): void {
+        const eventArgs: AnnotationMoveEventArgs = { name: 'annotationMove', pageIndex: pageNumber,
+            annotationId: id, annotationType: type, annotationSettings: annotationSettings,
+            previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('annotationMove', eventArgs);
     }
     /**
-     * @param id
-     * @param pageNumber
-     * @param annotationType
-     * @param bounds
-     * @param annotation
-     * @param currentPosition
-     * @param mousePosition
+     * @param {string} id -Gets the id value of the annotation
+     * @param {number} pageNumber - Gets the page number value
+     * @param {AnnotationType} annotationType - Gets the annotation type
+     * @param {any} bounds - Gets the bounds values of the annotation
+     * @param {any} annotation - Gets the annotation
+     * @param {any} currentPosition - Gets the current position of the annotation
+     * @param {any} mousePosition - Gets the mouse position of the annotation
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireAnnotationMouseover(id: string, pageNumber: number, annotationType: AnnotationType, bounds: any, annotation: any, currentPosition: any, mousePosition: any) {
-        const eventArgs: AnnotationMouseoverEventArgs = { name: 'annotationMouseover', annotationId: id, pageIndex: pageNumber, annotationType: annotationType, annotationBounds: bounds, annotation: annotation, pageX: currentPosition.left, pageY: currentPosition.top, X: mousePosition.left, Y: mousePosition.top };
+    public fireAnnotationMouseover(id: string, pageNumber: number, annotationType: AnnotationType, bounds: any,
+                                   annotation: any, currentPosition: any, mousePosition: any): void {
+        const eventArgs: AnnotationMouseoverEventArgs = { name: 'annotationMouseover', annotationId: id,
+            pageIndex: pageNumber, annotationType: annotationType, annotationBounds: bounds,
+            annotation: annotation, pageX: currentPosition.left, pageY: currentPosition.top,
+            X: mousePosition.left, Y: mousePosition.top };
         if (isBlazor()) {
             if (annotation.subject === 'Perimeter calculation') {
                 eventArgs.annotationType = 'Perimeter';
@@ -10033,45 +10228,58 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         this.trigger('annotationMouseover', eventArgs);
     }
+
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - Gets the page number value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireAnnotationMouseLeave(pageNumber: number) {
+    public fireAnnotationMouseLeave(pageNumber: number): void {
         const eventArgs: AnnotationMouseLeaveEventArgs = { name: 'annotationMouseLeave', pageIndex: pageNumber };
         this.trigger('annotationMouseLeave', eventArgs);
     }
+
     /**
-     * @param pageX
-     * @param pageY
+     * @param {number} pageX - Gets the page X value
+     * @param {number} pageY - Gets the page Y value
      * @private
+     * @returns {void}
      */
     public firePageMouseover(pageX: number, pageY: number): void {
         const eventArgs: PageMouseoverEventArgs = { pageX: pageX, pageY: pageY };
         this.trigger('pageMouseover', eventArgs);
     }
+
     /**
-     * @param fileName
+     * @param {string} fileName - Gets the file name
      * @private
+     * @returns {void}
      */
-    public fireDownloadStart(fileName: string): void {
-        const eventArgs: DownloadStartEventArgs = { fileName: fileName };
+    public fireDownloadStart(fileName: string): boolean {
+        const eventArgs: DownloadStartEventArgs = { fileName: fileName, cancel: false };
         this.trigger('downloadStart', eventArgs);
+        if (eventArgs.cancel) {
+            return false;
+        } else {
+            return true;
+        }
     }
+
     /**
-     * @param fileName
-     * @param downloadData
+     * @param {string} fileName - Gets the file name value
+     * @param {string} downloadData - Gets the download data
      * @private
+     * @returns {void}
      */
     public fireDownloadEnd(fileName: string, downloadData: string): void {
         const eventArgs: DownloadEndEventArgs = { fileName: fileName, downloadDocument: downloadData };
         this.trigger('downloadEnd', eventArgs);
     }
+
     /**
      * @private
+     * @returns {Promise<void>} - Promise<void>
      */
-    // eslint-disable-next-line
     public async firePrintStart(): Promise<void> {
         let eventArgs: PrintStartEventArgs = { fileName: this.downloadFileName, cancel: false };
         if (isBlazor) {
@@ -10083,12 +10291,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.printModule.print();
         }
     }
+
     /**
-     * @param eventName
-     * @param args
-     * @param eventName
-     * @param args
+     * @param {string} eventName - Gets the name of the event
+     * @param {object} args - Gets the args object value
      * @private
+     * @returns {Promise<void | object>} - Returns a promise
      */
     public async triggerEvent(eventName: string, args: object): Promise<void | object> {
         let eventArgs: void | object = await this.trigger(eventName, args);
@@ -10097,17 +10305,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         return eventArgs;
     }
+
     /**
-     * @param fileName
+     * @param {string} fileName - Gets the name of the file
      * @private
+     * @returns {void}
      */
     public firePrintEnd(fileName: string): void {
         const eventArgs: PrintEndEventArgs = { fileName: fileName };
         this.trigger('printEnd', eventArgs);
     }
+
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - Gets the page number value
      * @private
+     * @returns {void}
      */
     public fireThumbnailClick(pageNumber: number): void {
         const eventArgs: ThumbnailClickEventArgs = { name: 'thumbnailClick', pageNumber: pageNumber };
@@ -10117,40 +10329,44 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Custom toolbar click event.
      *
-     * @param target
+     * @param {ClickEventArgs} target - Gets the click event args value
      * @private
+     * @returns {void}
      */
-    public async fireCustomToolbarClickEvent(target: ClickEventArgs) {
+    public async fireCustomToolbarClickEvent(target: ClickEventArgs): Promise<void> {
         this.trigger('toolbarClick', target);
     }
 
     /**
-     * @param pageNumber
-     * @param position
-     * @param text
-     * @param fileName
+     * @param {number} pageNumber - Gets the page number value
+     * @param {number} position - Gets the position of the book mark
+     * @param {string} text - Gets the text value
+     * @param {string} fileName - Gets the name of the file
      * @private
+     * @returns {void}
      */
     public fireBookmarkClick(pageNumber: number, position: number, text: string, fileName: string ): void {
-        // eslint-disable-next-line
-        let eventArgs: BookmarkClickEventArgs = { name: 'bookmarkClick', pageNumber: pageNumber , position: position, text: text, fileName: fileName};
+        const eventArgs: BookmarkClickEventArgs = { name: 'bookmarkClick', pageNumber: pageNumber ,
+            position: position, text: text, fileName: fileName};
         this.trigger('bookmarkClick', eventArgs);
     }
+
     /**
-     * @param importData
+     * @param {any} importData - Gets the imported data
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireImportStart(importData: any): void {
         const eventArgs: ImportStartEventArgs = { name: 'importAnnotationsStart', importData: importData, formFieldData: null};
         this.trigger('importStart', eventArgs);
     }
+
     /**
-     * @param exportData
+     * @param {any} exportData - Gets the exported data
      * @private
+     * @returns {boolean} - Returns boolean value
      */
-    // eslint-disable-next-line
-    public fireExportStart(exportData: any): any {
+    public fireExportStart(exportData: any): boolean {
         const eventArgs: ExportStartEventArgs = { name: 'exportAnnotationsStart', exportData: exportData, formFieldData: null, cancel: false };
         this.trigger('exportStart', eventArgs);
         if (eventArgs.cancel) {
@@ -10159,62 +10375,66 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             return true;
         }
     }
+
     /**
-     * @param importData
+     * @param {any} importData - Gets the imported data
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireImportSuccess(importData: any): void {
         const eventArgs: ImportSuccessEventArgs = { name: 'importAnnotationsSuccess', importData: importData, formFieldData: null };
         this.trigger('importSuccess', eventArgs);
     }
+
     /**
-     * @param exportData
-     * @param fileName
+     * @param {any} exportData - Gets the exported data
+     * @param {string} fileName - Gets the name of the file
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireExportSuccess(exportData: any, fileName: string): void {
         const eventArgs: ExportSuccessEventArgs = { name: 'exportAnnotationsSuccess', exportData: exportData, fileName: fileName, formFieldData: null };
         this.trigger('exportSuccess', eventArgs);
     }
+
     /**
-     * @param data
-     * @param errorDetails
+     * @param {any} data - Gets the imported data
+     * @param {string} errorDetails - Gets the error details
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireImportFailed(data: any, errorDetails: string): void {
-        // eslint-disable-next-line max-len
         const eventArgs: ImportFailureEventArgs = { name: 'importAnnotationsFailed', importData: data, errorDetails: errorDetails, formFieldData: null };
         this.trigger('importFailed', eventArgs);
     }
+
     /**
-     * @param data
-     * @param errorDetails
+     * @param {any} data - Gets the exported data
+     * @param {string} errorDetails - Gets the error details
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireExportFailed(data: any, errorDetails: string): void {
-        // eslint-disable-next-line max-len
         const eventArgs: ExportFailureEventArgs = { name: 'exportAnnotationsFailed', exportData: data, errorDetails: errorDetails, formFieldData: null };
         this.trigger('exportFailed', eventArgs);
     }
+
     /**
-     * @param data
+     * @param {any} data - Gets the imported data
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormImportStarted(data: any): void {
         const eventArgs: ImportStartEventArgs = { name: 'importFormFieldsStart', importData: null, formFieldData: data };
         this.trigger('importStart', eventArgs);
     }
+
     /**
-     * @param data
+     * @param {any} data - Gets the exported data
      * @private
+     * @returns {boolean} - boolean
      */
-    // eslint-disable-next-line
-    public fireFormExportStarted(data: any): any {
+    public fireFormExportStarted(data: any): boolean {
         const eventArgs: ExportStartEventArgs = { name: 'exportFormFieldsStart', exportData: null, formFieldData: data, cancel: false };
         this.trigger('exportStart', eventArgs);
         if (eventArgs.cancel) {
@@ -10223,124 +10443,132 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             return true;
         }
     }
+
     /**
-     * @param data
+     * @param {any} data - Gets the imported data
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormImportSuccess(data: any): void {
         const eventArgs: ImportSuccessEventArgs = { name: 'importFormFieldsSuccess', importData: data, formFieldData: data };
         this.trigger('importSuccess', eventArgs);
     }
+
     /**
-     * @param data
-     * @param fileName
+     * @param {any} data - Gets the exported data
+     * @param {string} fileName - Gets the name of the file
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormExportSuccess(data: any, fileName: string): void {
         const eventArgs: ExportSuccessEventArgs = { name: 'exportFormFieldsSuccess', exportData: data, fileName: fileName, formFieldData: data };
         this.trigger('exportSuccess', eventArgs);
     }
+
     /**
-     * @param data
-     * @param errorDetails
+     * @param {any} data - Gets the imported data
+     * @param {string} errorDetails - Gets the error details
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormImportFailed(data: any, errorDetails: string): void {
-        // eslint-disable-next-line max-len
         const eventArgs: ImportFailureEventArgs = { name: 'importFormFieldsfailed', importData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('importFailed', eventArgs);
     }
+
     /**
-     * @param data
-     * @param errorDetails
+     * @param {any} data - Gets the exported data
+     * @param {string} errorDetails - Gets the error details
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireFormExportFailed(data: any, errorDetails: string): void {
-        // eslint-disable-next-line max-len
         const eventArgs: ExportFailureEventArgs = { name: 'exportFormFieldsFailed', exportData: data, errorDetails: errorDetails, formFieldData: data };
         this.trigger('exportFailed', eventArgs);
     }
 
     /**
-     * @param documentCollection
+     * @param {DocumentTextCollectionSettingsModel} documentCollection - Gets the document collection values
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireTextExtractionCompleted(documentCollection: DocumentTextCollectionSettingsModel[][]): void {
         const eventArgs: ExtractTextCompletedEventArgs = { documentTextCollection: documentCollection };
         this.trigger('extractTextCompleted', eventArgs);
     }
+
     /**
-     * @param searchText
-     * @param isMatchcase
+     * @param {string} searchText - Gets the search text values
+     * @param {boolean} isMatchcase - Gets whether the match case is true or not
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireTextSearchStart(searchText: string, isMatchcase: boolean): void {
-        // eslint-disable-next-line max-len
         const eventArgs: TextSearchStartEventArgs = { name: 'textSearchStart', searchText: searchText, matchCase: isMatchcase };
         this.trigger('textSearchStart', eventArgs);
     }
+
     /**
-     * @param searchText
-     * @param isMatchcase
+     * @param {string} searchText - Gets the search text values
+     * @param {boolean} isMatchcase - Gets whether the match case is true or not
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireTextSearchComplete(searchText: string, isMatchcase: boolean): void {
-        // eslint-disable-next-line max-len
         const eventArgs: TextSearchCompleteEventArgs = { name: 'textSearchComplete', searchText: searchText, matchCase: isMatchcase };
         this.trigger('textSearchComplete', eventArgs);
     }
+
     /**
-     * @param searchText
-     * @param isMatchcase
-     * @param bounds
-     * @param pageNumber
+     * @param {string} searchText - Gets the search text values
+     * @param {boolean} isMatchcase - Gets whether the match case is true or not
+     * @param {RectangleBoundsModel} bounds - Gets the bounds values
+     * @param {number} pageNumber - Gets the page number value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public fireTextSearchHighlight(searchText: string, isMatchcase: boolean, bounds: RectangleBoundsModel, pageNumber: number): void {
-        // eslint-disable-next-line max-len
         const eventArgs: TextSearchHighlightEventArgs = { name: 'textSearchHighlight', searchText: searchText, matchCase: isMatchcase, bounds: bounds, pageNumber: pageNumber };
         this.trigger('textSearchHighlight', eventArgs);
     }
+
     /**
-     * @param id
+     * @param  {string} id - Gets the id value
      * @private
+     * @returns {void}
      */
     public firecustomContextMenuSelect(id: string): void{
         const eventArgs: CustomContextMenuSelectEventArgs = { id: id};
         this.trigger('customContextMenuSelect', eventArgs);
     }
+
     /**
-     * @param ids
+     * @param  {string[]} ids - Gets the id value
      * @private
+     * @returns {void}
      */
     public firecustomContextMenuBeforeOpen(ids: string[]): void{
         const eventArgs: CustomContextMenuBeforeOpenEventArgs = { ids: ids};
         this.trigger('customContextMenuBeforeOpen', eventArgs);
     }
+
     /**
-     * @param gesture
+     * @param {KeyboardCommandModel} gesture - Gets the keyboard command value
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
-    public fireKeyboardCustomCommands(gesture:KeyboardCommandModel): void {
+    public fireKeyboardCustomCommands(gesture: KeyboardCommandModel): void {
         const eventArgs: KeyboardCustomCommandsEventArgs = {keyboardCommand: gesture };
         this.trigger('keyboardCustomCommands', eventArgs);
     }
+
     /**
-     * @param fileName
-     * @param downloadData
+     * @param {string} fileName - Gets the name of the file
+     * @param {string} downloadData - Gets the downloaded data values
      * @private
+     * @returns {boolean} - boolean
      */
-    // eslint-disable-next-line
-    public firePageOrganizerSaveAsEventArgs(fileName: string, downloadData: string): any {
+    public firePageOrganizerSaveAsEventArgs(fileName: string, downloadData: string): boolean {
         const eventArgs: PageOrganizerSaveAsEventArgs = {fileName: fileName, downloadDocument: downloadData, cancel: false};
         this.trigger('pageOrganizerSaveAs', eventArgs);
         if (eventArgs.cancel) {
@@ -10349,43 +10577,47 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             return true;
         }
     }
+
     /**
-     * @param bounds
-     * @param commonStyle
-     * @param cavas
-     * @param index
+     * @param {ClientRect} bounds - Gets the bounds values
+     * @param {string} commonStyle - Gets the common style value
+     * @param {HTMLElement} cavas - Gets the canvas value
+     * @param {number} index - Gets the index values
      * @private
+     * @returns {void}
      */
     public renderAdornerLayer(bounds: ClientRect, commonStyle: string, cavas: HTMLElement, index: number): void {
         renderAdornerLayer(bounds, commonStyle, cavas, index, this);
     }
+
     /**
-     * @param index
-     * @param currentSelector
+     * @param {number} index - Gets the index value
+     * @param {AnnotationSelectorSettingsModel} currentSelector - Gets the current selector
      * @private
+     * @returns {void}
      */
     public renderSelector(index: number, currentSelector?: AnnotationSelectorSettingsModel): void {
         this.drawing.renderSelector(index, currentSelector);
     }
+
     /**
-     * @param objArray
-     * @param currentSelector
-     * @param multipleSelection
-     * @param preventUpdate
+     * @param {string[]} objArray - Gets the object array values
+     * @param {AnnotationSelectorSettingsModel} currentSelector - Gets the current selector
+     * @param {boolean} multipleSelection - Checks whether the multiple selection is true or not
+     * @param {boolean} preventUpdate - Checks whether the prevent update is true or not
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line max-len
-    public select(objArray: string[], currentSelector?: AnnotationSelectorSettingsModel, multipleSelection?: boolean, preventUpdate?: boolean): void {
-        let allowServerDataBind: boolean = this.allowServerDataBinding;
+    public select(objArray: string[], currentSelector?: AnnotationSelectorSettingsModel,
+                  multipleSelection?: boolean, preventUpdate?: boolean): void {
+        const allowServerDataBind: boolean = this.allowServerDataBinding;
         this.enableServerDataBinding(false);
         if (this.annotationModule) {
-            let module: any = this.annotationModule.textMarkupAnnotationModule;
+            const module: TextMarkupAnnotation = this.annotationModule.textMarkupAnnotationModule;
             const annotationSelect: number = module && module.selectTextMarkupCurrentPage;
-            // eslint-disable-next-line
-            let annotation: any = this.selectedItems.annotations[0];
+            const annotation: any = this.selectedItems.annotations[0];
             if (annotationSelect) {
-                // eslint-disable-next-line
-                let currentAnnot: any = this.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+                const currentAnnot: any = this.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
                 this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
                 this.fireAnnotationUnSelect(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot);
             }
@@ -10397,79 +10629,115 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
             }
         }
-        if (this.formDesignerModule) {
-            let formField: any = this.selectedItems.formFields[0];
-            if (formField) {
-                if (this.formDesignerModule && formField && formField.formFieldAnnotationType) {
-                    let field: IFormField = {
-                        name: (formField as any).name, id: (formField as any).id, value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
-                        color: (formField as PdfFormFieldBaseModel).color, backgroundColor: (formField as PdfFormFieldBaseModel).backgroundColor, borderColor: (formField as PdfFormFieldBaseModel).borderColor,
-                        thickness: (formField as PdfFormFieldBaseModel).thickness, alignment: (formField as PdfFormFieldBaseModel).alignment, isReadonly: (formField as any).isReadonly, visibility: (formField as any).visibility,
-                        maxLength: (formField as any).maxLength, isRequired: (formField as any).isRequired, isPrint: formField.isPrint, rotation: (formField as any).rotateAngle, tooltip: (formField as any).tooltip, options: (formField as any).options,
-                        isChecked: (formField as any).isChecked, isSelected: (formField as any).isSelected
-                    };
-                    this.fireFormFieldUnselectEvent("formFieldUnselect", field, formField.pageIndex);
+        if (this.viewerBase.signatureModule) {
+            const annotation : any = this.selectedItems.annotations[0];
+            if (!multipleSelection) {
+                const selectorModel : SelectorModel = this.selectedItems;
+                if (selectorModel.annotations.length) {
+                    for (let j : number = 0; j < selectorModel.annotations.length; j++) {
+                        const node : PdfAnnotationBaseModel = selectorModel.annotations[parseInt(j.toString(), 10)];
+                        if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {
+                            if (!this.viewerBase.isNewSignatureAdded && (annotation.shapeAnnotationType === 'HandWrittenSignature' || annotation.shapeAnnotationType === 'SignatureText' || annotation.shapeAnnotationType === 'SignatureImage')) {
+                                this.annotationModule.unselectSignature(node.signatureName, node.pageIndex, node);
+                            }
+                        }
+                    }
                 }
             }
         }
-        let proxy: any = this;
-        this.viewerBase.renderedPagesList.forEach(function (item) {
+        if (this.formDesignerModule) {
+            const formField: any = this.selectedItems.formFields[0];
+            if (formField) {
+                if (this.formDesignerModule && formField && formField.formFieldAnnotationType) {
+                    const field: IFormField = {
+                        name: (formField as any).name, id: (formField as any).id, value: (formField as any).value,
+                        fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
+                        color: (formField as PdfFormFieldBaseModel).color,
+                        backgroundColor: (formField as PdfFormFieldBaseModel).backgroundColor,
+                        borderColor: (formField as PdfFormFieldBaseModel).borderColor,
+                        thickness: (formField as PdfFormFieldBaseModel).thickness,
+                        alignment: (formField as PdfFormFieldBaseModel).alignment, isReadonly: (formField as any).isReadonly,
+                        visibility: (formField as any).visibility,
+                        maxLength: (formField as any).maxLength, isRequired: (formField as any).isRequired,
+                        isPrint: formField.isPrint, rotation: (formField as any).rotateAngle, tooltip: (formField as any).tooltip,
+                        options: (formField as any).options,
+                        isChecked: (formField as any).isChecked, isSelected: (formField as any).isSelected
+                    };
+                    this.fireFormFieldUnselectEvent('formFieldUnselect', field, formField.pageIndex);
+                }
+            }
+        }
+        // eslint-disable-next-line
+        const proxy: PdfViewer = this;
+        this.viewerBase.renderedPagesList.forEach(function (item: any): void {
             proxy.clearSelection(item);
         });
         this.drawing.select(objArray, currentSelector, multipleSelection, preventUpdate);
         this.enableServerDataBinding(allowServerDataBind, true);
     }
+
     /**
-     * @param pageId
+     * @param {number} pageId - Gets the page id value
      * @private
+     * @returns {ZOrderPageTable} - return
      */
     public getPageTable(pageId: number): ZOrderPageTable {
         return this.drawing.getPageTable(pageId);
     }
+
     /**
-     * @param diffX
-     * @param diffY
-     * @param pageIndex
-     * @param currentSelector
-     * @param helper
+     * @param {number} diffX - Gets the diffX value
+     * @param {number} diffY - Gets the diffY value
+     * @param {number} pageIndex - Gets the page index value
+     * @param {AnnotationSelectorSettingsModel} currentSelector - Gets the current selector
+     * @param {PdfAnnotationBaseModel} helper - Gets the helper value
      * @private
+     * @returns {boolean} - returns boolean
      */
-    // eslint-disable-next-line max-len
-    public dragSelectedObjects(diffX: number, diffY: number, pageIndex: number, currentSelector?: AnnotationSelectorSettingsModel, helper?: PdfAnnotationBaseModel): boolean {
+    public dragSelectedObjects(diffX: number, diffY: number, pageIndex: number,
+                               currentSelector?: AnnotationSelectorSettingsModel, helper?: PdfAnnotationBaseModel): boolean {
         return this.drawing.dragSelectedObjects(diffX, diffY, pageIndex, currentSelector, helper);
     }
+
     /**
-     * @param sx
-     * @param sy
-     * @param pivot
+     * @param {number} sx - Gets the sx value
+     * @param {number} sy - Gets the sy value
+     * @param {PointModel} pivot - Gets the pivot value
      * @private
+     * @returns {boolean} - return boolean
      */
     public scaleSelectedItems(sx: number, sy: number, pivot: PointModel): boolean {
         return this.drawing.scaleSelectedItems(sx, sy, pivot);
     }
+
     /**
-     * @param endPoint
-     * @param obj
-     * @param point
-     * @param segment
-     * @param target
-     * @param targetPortId
-     * @param currentSelector
+     * @param {string} endPoint - Gets the end point value
+     * @param {IElement} obj - Gets the object value
+     * @param {PointModel} point - Gets the point value
+     * @param {PointModel} segment - Gets the segment
+     * @param {IElement} target - Gets the target value
+     * @param {string} targetPortId - Gets the target port id value
+     * @param {AnnotationSelectorSettingsModel} currentSelector - Gets the current selector
      * @private
+     * @returns {boolean} -returns boolean value
      */
-    // eslint-disable-next-line max-len
-    public dragConnectorEnds(endPoint: string, obj: IElement, point: PointModel, segment: PointModel, target?: IElement, targetPortId?: string, currentSelector?: AnnotationSelectorSettingsModel): boolean {
+    public dragConnectorEnds(endPoint: string, obj: IElement, point: PointModel,
+                             segment: PointModel, target?: IElement, targetPortId?: string,
+                             currentSelector?: AnnotationSelectorSettingsModel): boolean {
         return this.drawing.dragConnectorEnds(endPoint, obj, point, segment, target, null, currentSelector);
     }
+
     /**
-     * @param pageId
+     * @param {number} pageId - Gets the page id value
      * @private
+     * @returns {void}
      */
     public clearSelection(pageId: number): void {
-        let allowServerDataBind: boolean = this.allowServerDataBinding;
+        const allowServerDataBind: boolean = this.allowServerDataBinding;
         this.enableServerDataBinding(false);
         const selectormodel: SelectorModel = this.selectedItems;
-        const node: PdfAnnotationBaseModel | PdfFormFieldBaseModel = selectormodel.annotations.length > 0 ? this.selectedItems.annotations[0]: this.selectedItems.formFields[0];
+        const node: PdfAnnotationBaseModel | PdfFormFieldBaseModel = selectormodel.annotations.length > 0 ?
+            this.selectedItems.annotations[0] : this.selectedItems.formFields[0];
         if (selectormodel.annotations.length > 0) {
             selectormodel.offsetX = 0;
             selectormodel.offsetY = 0;
@@ -10478,7 +10746,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             selectormodel.rotateAngle = 0;
             selectormodel.annotations = [];
             selectormodel.wrapper = null;
-        } else if(selectormodel.formFields.length > 0) {
+        } else if (selectormodel.formFields.length > 0) {
             selectormodel.offsetX = 0;
             selectormodel.offsetY = 0;
             selectormodel.width = 0;
@@ -10490,8 +10758,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.drawing.clearSelectorLayer(pageId);
         this.viewerBase.isAnnotationSelect = false;
         this.viewerBase.isFormFieldSelect = false;
-        if(this.annotationModule){
-            let module: any = this.annotationModule.textMarkupAnnotationModule;
+        if (this.annotationModule){
+            const module: TextMarkupAnnotation = this.annotationModule.textMarkupAnnotationModule;
             if (module) {
                 const annotationSelect: number = module.selectTextMarkupCurrentPage;
                 this.annotationModule.textMarkupAnnotationModule.clearCurrentSelectedAnnotation();
@@ -10499,17 +10767,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         }
         this.enableServerDataBinding(allowServerDataBind, true);
-    } 
+    }
 
     /**
      * Get page number from the user coordinates x and y.
      *
      * @param {Point} clientPoint - The user will provide a x, y coordinates.
-     * @returns number
+     * @returns {number} - number
      */
-
     public getPageNumberFromClientPoint(clientPoint: Point): number {
-        let pageNumber: number = this.viewerBase.getPageNumberFromClientPoint(clientPoint);
+        const pageNumber: number = this.viewerBase.getPageNumberFromClientPoint(clientPoint);
         return pageNumber;
     }
 
@@ -10518,11 +10785,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @param {Point} clientPoint - The user should provide a x, y coordinates.
      * @param {number} pageNumber - We need to pass pageNumber.
-     * @returns Point
+     * @returns {Point} - point
      */
-
     public convertClientPointToPagePoint(clientPoint: Point, pageNumber: number): Point {
-        let pagePoint: any = this.viewerBase.convertClientPointToPagePoint(clientPoint, pageNumber);
+        const pagePoint: Point = this.viewerBase.convertClientPointToPagePoint(clientPoint, pageNumber);
         return pagePoint;
     }
 
@@ -10531,11 +10797,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @param {Point} pagePoint - The user should provide a page x, y coordinates.
      * @param {number} pageNumber - We need to pass pageNumber.
-     * @returns Point
+     * @returns {Point} - point
      */
-
     public convertPagePointToClientPoint(pagePoint: Point, pageNumber: number): Point {
-        let clientPoint: any = this.viewerBase.convertPagePointToClientPoint(pagePoint, pageNumber);
+        const clientPoint: Point = this.viewerBase.convertPagePointToClientPoint(pagePoint, pageNumber);
         return clientPoint;
     }
 
@@ -10544,11 +10809,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @param {Point} pagePoint - The user should provide a page x, y coordinates.
      * @param {number} pageNumber - We need to pass pageNumber.
-     * @returns Point
+     * @returns {Point} - point
      */
-
     public convertPagePointToScrollingPoint(pagePoint: Point, pageNumber: number): Point {
-        let scrollingPoint: any = this.viewerBase.convertPagePointToScrollingPoint(pagePoint, pageNumber);
+        const scrollingPoint: Point = this.viewerBase.convertPagePointToScrollingPoint(pagePoint, pageNumber);
         return scrollingPoint;
     }
 
@@ -10556,46 +10820,56 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Brings the given rectangular region to view and zooms in the document to fit the region in client area (view port).
      *
      * @param {Rect} rectangle - Specifies the region in client coordinates that is to be brought to view.
+     * @returns {void}
      */
     public zoomToRect(rectangle: Rect) : void {
-        this.magnificationModule.zoomToRect(rectangle);   
+        this.magnificationModule.zoomToRect(rectangle);
     }
 
     /**
-     * @param obj
+     * @param {PdfAnnotationBase} obj - It describes about the object
      * @private
+     * @returns {PdfAnnotationBaseModel} - Pdf annotation base model
      */
     public add(obj: PdfAnnotationBase): PdfAnnotationBaseModel {
         return this.drawing.add(obj);
     }
+
     /**
-     * @param obj
+     * @param {PdfAnnotationBaseModel} obj - It describes about the object
      * @private
+     * @returns {void}
      */
     public remove(obj: PdfAnnotationBaseModel): void {
         return this.drawing.remove(obj);
     }
+
     /**
      * @private
+     * @returns {Object} - returns object
      */
     public copy(): Object {
-        if(this.annotation)
-          this.annotation.isShapeCopied = true;
-        else if(this.formDesigner && this.designerMode)
-          this.formDesigner.isShapeCopied = true;
+        if (this.annotation)
+        {this.annotation.isShapeCopied = true; }
+        else if (this.formDesigner && this.designerMode)
+        {this.formDesigner.isShapeCopied = true; }
         return this.drawing.copy();
     }
+
     /**
-     * @param angle
-     * @param currentSelector
+     * @param {number} angle - It describes about the angle value
+     * @param {AnnotationSelectorSettingsModel} currentSelector  - It describes about the current selector
      * @private
+     * @returns {boolean} - returns boolean value
      */
     public rotate(angle: number, currentSelector?: AnnotationSelectorSettingsModel): boolean {
         return this.drawing.rotate(this.selectedItems, angle, null, currentSelector);
     }
+
     /**
-     * @param obj
+     * @param {PdfAnnotationBaseModel[]} obj - It describes about the object
      * @private
+     * @returns {void}
      */
     public paste(obj?: PdfAnnotationBaseModel[]): void {
         let index: number;
@@ -10604,25 +10878,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         return this.drawing.paste(obj, index || 0);
     }
+
     /**
      * @private
+     * @returns {void}
      */
     public refresh(): void {
         for (let i: number = 0; i < this.annotations.length; i++) {
             if (this.zIndexTable.length !== undefined) {
                 const notFound: boolean = true;
                 for (let i: number = 0; i < this.zIndexTable.length; i++) {
-                    const objects: (PdfAnnotationBaseModel)[] = this.zIndexTable[i].objects;
+                    const objects: (PdfAnnotationBaseModel)[] = this.zIndexTable[parseInt(i.toString(), 10)].objects;
                     for (let j: number = 0; j < objects.length; j++) {
                         objects.splice(j, 1);
                     }
-                    delete this.zIndexTable[i];
+                    delete this.zIndexTable[parseInt(i.toString(), 10)];
                 }
-                if (this.annotations[i]) {
-                    delete this.annotations[i];
+                if (this.annotations[parseInt(i.toString(), 10)]) {
+                    delete this.annotations[parseInt(i.toString(), 10)];
                 }
-                if (this.selectedItems.annotations && this.selectedItems.annotations[i]) {
-                    delete this.selectedItems.annotations[i];
+                if (this.selectedItems.annotations && this.selectedItems.annotations[parseInt(i.toString(), 10)]) {
+                    delete this.selectedItems.annotations[parseInt(i.toString(), 10)];
                 }
                 this.zIndexTable = [];
                 this.renderDrawing();
@@ -10633,24 +10909,28 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         }
     }
+
     /**
      * @private
+     * @returns {void}
      */
     public cut(): void {
         let index: number;
         if (this.viewerBase.activeElements.activePageID) {
             index = this.viewerBase.activeElements.activePageID;
         }
-        if(this.annotation)
-          this.annotation.isShapeCopied = true;
-        else if(this.formDesigner && this.designerMode)
-          this.formDesigner.isShapeCopied = true;
+        if (this.annotation)
+        {this.annotation.isShapeCopied = true; }
+        else if (this.formDesigner && this.designerMode)
+        {this.formDesigner.isShapeCopied = true; }
         return this.drawing.cut(index || 0);
     }
+
     /**
-     * @param actualObject
-     * @param node
+     * @param {PdfAnnotationBaseModel} actualObject - It describes about the actual object value
+     * @param {PdfAnnotationBaseModel} node - It describes about the node value
      * @private
+     * @returns {void}
      */
     public nodePropertyChange(
         actualObject: PdfAnnotationBaseModel, node: PdfAnnotationBaseModel): void {
@@ -10658,11 +10938,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * enableServerDataBinding method 
+     * enableServerDataBinding method
      *
      * @returns { void }  enableServerDataBinding method.
      * @param {boolean} enable - provide the node value.
-     *
+     * @param {boolean} clearBulkChanges - checks whether the clear bulk changes true or not
      * @private
      */
     public enableServerDataBinding(enable: boolean, clearBulkChanges: boolean = false): void {
@@ -10675,33 +10955,34 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param tx
-     * @param ty
-     * @param pageIndex
-     * @param nodeBounds
-     * @param isStamp
-     * @param isSkip
+     * @param {number} tx - It describes about the tx value
+     * @param {number} ty - It describes about the ty value
+     * @param {number} pageIndex - It describes about the page index value
+     * @param {Rect} nodeBounds - It describes about the node bounds value
+     * @param {boolean} isStamp - It describes about the isStamp value
+     * @param {boolean} isSkip - It describes about the isSkip value
      * @private
+     * @returns {boolean} - boolean
      */
-    // eslint-disable-next-line max-len
-    public checkBoundaryConstraints(tx: number, ty: number, pageIndex: number, nodeBounds?: Rect, isStamp?: boolean, isSkip?: boolean): boolean {
+    public checkBoundaryConstraints(tx: number, ty: number, pageIndex: number,
+                                    nodeBounds?: Rect, isStamp?: boolean, isSkip?: boolean): boolean {
         return this.drawing.checkBoundaryConstraints(tx, ty, pageIndex, nodeBounds, isStamp, isSkip);
     }
 
     /**
      * Adds a custom menu item to the existing menu, with optional configurations.
-     * 
+     *
      * @param {MenuItemModel[]} menuItems - The custom menu item to be added.
      * @param {boolean} disableDefaultItems - Optional. When set to true, this parameter disables the inclusion of default items in the menu. Defaults to false, meaning default items will be included.
      * @param {boolean} appendToEnd - Optional. When set to true, the custom menu item will be added at the bottom of the existing menu list. If false or not provided, the item will be added at the default position.
      * @returns {void}
      */
-    public addCustomMenu(menuItems: MenuItemModel[], disableDefaultItems?: boolean, appendToEnd?: boolean): void  {         
-        if(!isNullOrUndefined(menuItems)){
-            this.customContextMenuItems.push(...menuItems);   
+    public addCustomMenu(menuItems: MenuItemModel[], disableDefaultItems?: boolean, appendToEnd?: boolean): void  {
+        if (!isNullOrUndefined(menuItems)){
+            this.customContextMenuItems.push(...menuItems);
             this.showCustomContextMenuBottom = appendToEnd;
         }
-        this.disableDefaultContextMenu = disableDefaultItems;             
+        this.disableDefaultContextMenu = disableDefaultItems;
     }
 
 }

@@ -73,7 +73,7 @@ export class TableDialog {
             placeholder: localValue.getConstant('Number of columns'),
             floatLabelType: 'Always'
         });
-        this.columnsCountBox.setAttribute('aria-labelledby',localValue.getConstant('Number of columns'));
+        this.columnsCountBox.setAttribute('aria-labelledby', localValue.getConstant('Number of columns'));
         parentDiv.setAttribute('aria-labelledby', localValue.getConstant('Insert Table'));
         parentDiv.setAttribute('aria-describedby', localValue.getConstant('Insert Table'));
         this.columnValueTexBox.appendTo(this.columnsCountBox);
@@ -125,17 +125,19 @@ export class TableDialog {
      * @returns {void}
      */
     public onInsertTableClick = (): void => {
-        if (this.columnValueTexBox.value < 1 || this.columnValueTexBox.value > this.documentHelper.owner.documentEditorSettings.maximumColumns) {
-            let columnAlertPopup: string = this.localeValue.getConstant('Number of columns must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+        if (this.columnValueTexBox.value < 1 || this.columnValueTexBox.value
+            > this.documentHelper.owner.documentEditorSettings.maximumColumns) {
+            const columnAlertPopup: string = this.localeValue.getConstant('Number of columns must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
             DialogUtility.alert(columnAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         if (this.rowValueTextBox.value < 1 || this.rowValueTextBox.value > this.documentHelper.owner.documentEditorSettings.maximumRows) {
-            let rowAlertPopup: string = this.localeValue.getConstant('Number of rows must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+            const rowAlertPopup: string = this.localeValue.getConstant('Number of rows must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
             DialogUtility.alert(rowAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
-        if (this.rowValueTextBox.value <= this.documentHelper.owner.documentEditorSettings.maximumRows && this.columnValueTexBox.value <= this.documentHelper.owner.documentEditorSettings.maximumColumns) {
+        if (this.rowValueTextBox.value <= this.documentHelper.owner.documentEditorSettings.maximumRows
+            && this.columnValueTexBox.value <= this.documentHelper.owner.documentEditorSettings.maximumColumns) {
             const rowCount: number = this.rowValueTextBox.value;
             const columnCount: number = this.columnValueTexBox.value;
             if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {

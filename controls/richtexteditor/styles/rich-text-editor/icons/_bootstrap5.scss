@@ -3,9 +3,14 @@
 
   /*! richtexteditor icons */
 
+  .e-toolbar-wrapper,
+  .e-toolbar-container,
   .e-rte-toolbar,
   .e-rte-dropdown-popup {
 
+    .e-blockquote::before {
+      content: '\e8f5';
+    }
     .e-alignments::before {
       content: '\e7b8';
     }
@@ -298,6 +303,18 @@
 
     .e-rte-format-painter::before {
       content: '\e8bd';
+    }
+    
+    .e-rte-export-pdf::before {
+      content: '\e8fb';
+    }
+
+    .e-rte-import-doc::before {
+      content: '\e8fc';
+    }
+
+    .e-rte-export-doc::before {
+      content: '\e8fd';
     }
   }
 

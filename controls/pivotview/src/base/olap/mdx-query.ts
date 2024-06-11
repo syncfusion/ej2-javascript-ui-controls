@@ -48,10 +48,9 @@ export class MDXQuery {
     private static allowLabelFilter: boolean;
     /** @hidden */
     private static allowValueFilter: boolean;
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     public static getCellSets(
         dataSourceSettings: IDataOptions, olapEngine: OlapEngine, refPaging?: boolean, drillInfo?: IDrilledItem, isQueryUpdate?: boolean
-    ): any { /* eslint-enable @typescript-eslint/no-explicit-any */
+    ): void {
         this.engine = olapEngine;
         this.isMondrian = olapEngine.isMondrian;
         this.isMeasureAvail = olapEngine.isMeasureAvail;
@@ -74,8 +73,8 @@ export class MDXQuery {
         this.fieldList = olapEngine.fieldList;
         this.cellSetInfo = '\nDIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         const measureQuery: string = this.getMeasuresQuery(this.values);
-        let rowQuery: string = this.getDimensionsQuery(this.rows, measureQuery, 'rows', drillInfo).replace(/\&/g, '&amp;').replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
-        let columnQuery: string = this.getDimensionsQuery(this.columns, measureQuery, 'columns', drillInfo).replace(/\&/g, '&amp;').replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
+        let rowQuery: string = this.getDimensionsQuery(this.rows, measureQuery, 'rows', drillInfo).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
+        let columnQuery: string = this.getDimensionsQuery(this.columns, measureQuery, 'columns', drillInfo).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
         if (this.isPaging && refPaging && this.pageSettings !== undefined) {
             const pagingQuery: PagingQuery = this.getPagingQuery(rowQuery, columnQuery);
             rowQuery = pagingQuery.rowQuery;
@@ -87,9 +86,9 @@ export class MDXQuery {
         }
         rowQuery = (rowQuery.length > 0 ? rowQuery + (this.isPaging && !refPaging ? '' : this.cellSetInfo + ' ON ROWS') : '');
         columnQuery = (columnQuery.length > 0 ? columnQuery + (this.isPaging && !refPaging ? '' : this.cellSetInfo + ' ON COLUMNS') : '');
-        const slicerQuery: string = this.getSlicersQuery(this.filters, 'filters').replace(/\&/g, '&amp;').replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
-        const filterQuery: string = this.getfilterQuery(this.filterMembers, dataSourceSettings.cube).replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
-        const caclQuery: string = this.getCalculatedFieldQuery(this.calculatedFieldSettings).replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
+        const slicerQuery: string = this.getSlicersQuery(this.filters, 'filters').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
+        const filterQuery: string = this.getfilterQuery(this.filterMembers, dataSourceSettings.cube).replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
+        const caclQuery: string = this.getCalculatedFieldQuery(this.calculatedFieldSettings).replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
         const query: string = this.frameMDXQuery(rowQuery, columnQuery, slicerQuery, filterQuery, caclQuery, refPaging);
         const args: ConnectionInfo = {
             catalog: dataSourceSettings.catalog,
@@ -98,8 +97,8 @@ export class MDXQuery {
             request: query,
             LCID: dataSourceSettings.localeIdentifier.toString(),
             roles: dataSourceSettings.roles
-        };  /* eslint-disable-next-line no-useless-escape*/
-        olapEngine.mdxQuery = query.replace(/\&amp;/g, '&').replace(/\&gt;/g, '>').replace(/\&lt;/g, '<').replace(/%280/g, '\"').replace(/\&apos;/g, '\'');
+        };
+        olapEngine.mdxQuery = query.replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/%280/g, '"').replace(/&apos;/g, '\'');
         // console.log(olapEngine.mdxQuery);
         if (drillInfo) {
             drillInfo.axis = drillInfo.axis === 'rows' ? 'row' : 'column';
@@ -176,10 +175,8 @@ export class MDXQuery {
         rowQuery = rowQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         columnQuery = columnQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         const rowQueryCpy: string = rowQuery;
-        'WITH SET [e16a30d0-2174-4874-8dae-a5085a75a3e2] as';   // eslint-disable-line @typescript-eslint/no-unused-expressions
-        'SET [d1876d2b-e50e-4547-85fe-5b8ed9d629de] as';    // eslint-disable-line @typescript-eslint/no-unused-expressions
         const axisQuery: PagingQuery = {
-            rowQuery: rowQuery !== '' ? ('\SET [d1876d2b-e50e-4547-85fe-5b8ed9d629de] as ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + rowQuery + (!this.isMondrian && columnQuery !== '' ? ',' + columnQuery : '') + ')\n') : '', /* eslint-disable-line */
+            rowQuery: rowQuery !== '' ? ('SET [d1876d2b-e50e-4547-85fe-5b8ed9d629de] as ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + rowQuery + (!this.isMondrian && columnQuery !== '' ? ',' + columnQuery : '') + ')\n') : '',
             columnQuery: columnQuery !== '' ? ('\nSET [e16a30d0-2174-4874-8dae-a5085a75a3e2] as ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + columnQuery + (!this.isMondrian && rowQueryCpy !== '' ? ',' + rowQueryCpy : '') + ')\n') : ''
         };
         return axisQuery;
@@ -546,8 +543,8 @@ export class MDXQuery {
             if (filters[field.name] && filters[field.name].length > 0) {
                 if (typeof filters[field.name][0] === 'string') {
                     columnFilter.push(filters[field.name] as string[]);
-                } else {  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const filter: any = filters[field.name];
+                } else {
+                    const filter: string[] | IFilter[] = filters[field.name];
                     filter[1] = (filter[0] as IFilter).type;
                     advancedFilters.push(filters[field.name] as IFilter[]);
                     delete filters[field.name];
@@ -622,52 +619,52 @@ export class MDXQuery {
     ): string {
         let advancedFilterQuery: string = '';
         switch (filterOperator) {
-        case 'Equals':  /* eslint-disable no-useless-escape */
-            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption =\"' + value1 + '\"') : (measures + ' = ' + value1));
+        case 'Equals':
+            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption ="' + value1 + '"') : (measures + ' = ' + value1));
             break;
         case 'DoesNotEquals':
-            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <>\"' + value1 + '\"') : (measures + ' <>' + value1));
+            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <>"' + value1 + '"') : (measures + ' <>' + value1));
             break;
         case 'Contains':
-            advancedFilterQuery = '( InStr (1,' + fieldName + '.CurrentMember.member_caption,\"' + value1 + '\") >0';
+            advancedFilterQuery = '( InStr (1,' + fieldName + '.CurrentMember.member_caption,"' + value1 + '") >0';
             break;
         case 'DoesNotContains':
-            advancedFilterQuery = '( InStr (1,' + fieldName + '.CurrentMember.member_caption,\"' + value1 + '\")=0';
+            advancedFilterQuery = '( InStr (1,' + fieldName + '.CurrentMember.member_caption,"' + value1 + '")=0';
             break;
         case 'BeginWith':
-            advancedFilterQuery = '( Left (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ')=\"' + value1 + '\"';
+            advancedFilterQuery = '( Left (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ')="' + value1 + '"';
             break;
         case 'DoesNotBeginWith':
-            advancedFilterQuery = '( Left (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ') <>\"' + value1 + '\"';
+            advancedFilterQuery = '( Left (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ') <>"' + value1 + '"';
             break;
         case 'EndsWith':
-            advancedFilterQuery = '( Right (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ')=\"' + value1 + '\"';
+            advancedFilterQuery = '( Right (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ')="' + value1 + '"';
             break;
         case 'DoesNotEndsWith':
-            advancedFilterQuery = '( Right (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ') <>\"' + value1 + '\"';
+            advancedFilterQuery = '( Right (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ') <>"' + value1 + '"';
             break;
         case 'GreaterThan':
-            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >\"' + value1 + '\"') : (measures + ' >' + value1 + ''));
+            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >"' + value1 + '"') : (measures + ' >' + value1 + ''));
             break;
         case 'GreaterThanOrEqualTo':
-            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"') : (measures + ' >=' + value1 + ''));
+            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >="' + value1 + '"') : (measures + ' >=' + value1 + ''));
             break;
         case 'LessThan':
-            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <\"' + value1 + '\"') : (measures + ' <' + value1 + ''));
+            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <"' + value1 + '"') : (measures + ' <' + value1 + ''));
             break;
         case 'LessThanOrEqualTo':
-            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <=\"' + value1 + '\"') : (measures + ' <=' + value1 + ''));
+            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <="' + value1 + '"') : (measures + ' <=' + value1 + ''));
             break;
         case 'Between':
-            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"AND ' + fieldName + '.CurrentMember.member_caption <=\"' + value2 + '\"') : (measures + ' >=' + value1 + ' AND ' + measures + ' <=' + value2));
+            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >="' + value1 + '"AND ' + fieldName + '.CurrentMember.member_caption <="' + value2 + '"') : (measures + ' >=' + value1 + ' AND ' + measures + ' <=' + value2));
             break;
         case 'NotBetween':
-            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"OR ' + fieldName + '.CurrentMember.member_caption <=\"' + value2 + '\"') : (measures + ' >=' + value1 + ' OR ' + measures + ' <=' + value2));
+            advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >="' + value1 + '"OR ' + fieldName + '.CurrentMember.member_caption <="' + value2 + '"') : (measures + ' >=' + value1 + ' OR ' + measures + ' <=' + value2));
             break;
         default:
-            advancedFilterQuery = '( InStr (1,' + fieldName + '.CurrentMember.member_caption,\"' + value1 + '\") >0';
+            advancedFilterQuery = '( InStr (1,' + fieldName + '.CurrentMember.member_caption,"' + value1 + '") >0';
             break;
-        }   /* eslint-enable no-useless-escape */
+        }
         return advancedFilterQuery;
     }
 
@@ -678,8 +675,8 @@ export class MDXQuery {
             for (const member of calcMembers) {
                 const prefixName: string = (member.formula.indexOf('Measure') > -1 ? '[Measures].' : member.hierarchyUniqueName + '.');
                 const aliasName: string = prefixName + '[' + member.name + ']';
-                const formatString: string = (!isNullOrUndefined(member.formatString) ? member.formatString : null);    // eslint-disable-next-line no-useless-escape
-                calcQuery += ('\nMEMBER ' + aliasName + 'as (' + member.formula + ') ' + (!isNullOrUndefined(formatString) ? ', FORMAT_STRING =\"' + formatString.trim() + '\"' : ''));
+                const formatString: string = (!isNullOrUndefined(member.formatString) ? member.formatString : null);
+                calcQuery += ('\nMEMBER ' + aliasName + 'as (' + member.formula + ') ' + (!isNullOrUndefined(formatString) ? ', FORMAT_STRING ="' + formatString.trim() + '"' : ''));
             }
         }
         return calcQuery;

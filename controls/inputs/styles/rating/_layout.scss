@@ -1,3 +1,21 @@
+@mixin rating-container-properties($svg-font-size, $svg-line-height, $label-font-size, $label-line-height, $reset-icon-font-size) {
+  .e-rating-item-container {
+    &:has(svg) {
+      line-height: $svg-line-height;
+    }
+    font-size: $svg-font-size;
+  }
+
+  .e-rating-label {
+    font-size: $label-font-size;
+    line-height: $label-line-height;
+  }
+
+  .e-reset {
+    font-size: $reset-icon-font-size;
+  }
+}
+
 @include export-module('rating-layout') {
   .e-rating-container {
     display: inline-flex;
@@ -76,7 +94,7 @@
         cursor: default;
       }
 
-      &:focus-visible{
+      &:focus-visible {
         outline: 1px solid;
         border-radius: $rating-focus-border-radius;
       }
@@ -162,60 +180,18 @@
 
   .e-small.e-rating-container,
   .e-small .e-rating-container {
-    .e-rating-item-container {
-      &:has(svg) {
-        line-height: $rating-small-li-line-height;
-      }
-      font-size: $rating-small-li-font-size;
-    }
-
-    .e-rating-label {
-      font-size: $rating-small-label-font-size;
-      line-height: $rating-small-label-line-height;
-    }
-
-    .e-reset {
-      font-size: $rating-small-reset-font-size;
-    }
+    @include rating-container-properties($rating-small-li-font-size, $rating-small-li-line-height, $rating-small-label-font-size, $rating-small-label-line-height, $rating-small-reset-font-size);
   }
 
   .e-bigger.e-rating-container,
   .e-bigger .e-rating-container {
-    .e-rating-item-container {
-      &:has(svg) {
-        line-height: $rating-bigger-li-line-height;
-      }
-      font-size: $rating-bigger-li-font-size;
-    }
-
-    .e-rating-label {
-      font-size: $rating-bigger-label-font-size;
-      line-height: $rating-bigger-label-line-height;
-    }
-
-    .e-reset {
-      font-size: $rating-bigger-reset-font-size;
-    }
+    @include rating-container-properties($rating-bigger-li-font-size, $rating-bigger-li-line-height, $rating-bigger-label-font-size, $rating-bigger-label-line-height, $rating-bigger-reset-font-size);
   }
 
   .e-bigger.e-small.e-rating-container,
   .e-bigger.e-small .e-rating-container,
   .e-bigger .e-small.e-rating-container,
   .e-small .e-bigger.e-rating-container {
-    .e-rating-item-container {
-      &:has(svg) {
-        line-height: $rating-bigger-small-li-line-height;
-      }
-      font-size: $rating-bigger-small-li-font-size;
-    }
-
-    .e-rating-label {
-      font-size: $rating-bigger-small-label-font-size;
-      line-height: $rating-bigger-small-label-line-height;
-    }
-
-    .e-reset {
-      font-size: $rating-bigger-small-reset-font-size;
-    }
+    @include rating-container-properties($rating-bigger-small-li-font-size, $rating-bigger-small-li-line-height, $rating-bigger-small-label-font-size, $rating-bigger-small-label-line-height, $rating-bigger-small-reset-font-size);
   }
 }

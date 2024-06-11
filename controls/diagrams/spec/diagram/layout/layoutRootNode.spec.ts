@@ -11,11 +11,14 @@ import {
     ChildArrangement,
     PathElement,
     LineDistribution,
+    ConnectionPointOrigin,
+    DiagramConstraints,
 } from '../../../src/diagram/index';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree,ComplexHierarchicalTree,LineDistribution);
 
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { MouseEvents } from '../interaction/mouseevents.spec';
 /**
  * Organizational Chart
  */
@@ -860,4 +863,193 @@ describe('Optimize the routing segment distance while using enableRouting in lay
              expect(isOverlap).toBe(false);
              done();
          });
+});
+
+describe('Code coverage line-distribution', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramLine' });
+        document.body.appendChild(ele);
+        let data: object[] = [
+            { "Name": "node11", "fillColor": "#ff6329" },
+            { "Name": "node12", "ReportingPerson": ["node114"], "fillColor": "#669be5" },
+            { "Name": "node13", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+            { "Name": "node14", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+            { "Name": "node15", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+            { "Name": "node16", "ReportingPerson": [], "fillColor": "#14ad85" },
+            { "Name": "node17", "ReportingPerson": ["node13", "node14", "node15"], "fillColor": "#ff9400" },
+            { "Name": "node18", "ReportingPerson": [], "fillColor": "#14ad85" },
+            { "Name": "node19", "ReportingPerson": ["node16", "node17", "node18"], "fillColor": "#99bb55" },
+            { "Name": "node110", "ReportingPerson": ["node16", "node17", "node18"], "fillColor": "#99bb55" },
+            { "Name": "node111", "ReportingPerson": ["node16", "node17", "node18", "node116"], "fillColor": "#99bb55" },
+            { "Name": "node21", "fillColor": "#ff6329" },
+            { "Name": "node22", "ReportingPerson": ["node114"], "fillColor": "#669be5" },
+            { "Name": "node23", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+            { "Name": "node24", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+            { "Name": "node25", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+            { "Name": "node26", "ReportingPerson": [], "fillColor": "#14ad85" },
+            { "Name": "node27", "ReportingPerson": ["node23", "node24", "node25"], "fillColor": "#ff9400" },
+            { "Name": "node28", "ReportingPerson": [], "fillColor": "#14ad85" },
+            { "Name": "node29", "ReportingPerson": ["node26", "node27", "node28", "node116"], "fillColor": "#99bb55" },
+            { "Name": "node210", "ReportingPerson": ["node26", "node27", "node28"], "fillColor": "#99bb55" },
+            { "Name": "node211", "ReportingPerson": ["node26", "node27", "node28"], "fillColor": "#99bb55" },
+            { "Name": "node31", "fillColor": "#ff6329" },
+            { "Name": "node114", "ReportingPerson": ["node11", "node21", "node31"], "fillColor": "#941100" },
+            { "Name": "node116", "ReportingPerson": ["node12", "node22"], "fillColor": "#30ab5c" },
+        ];
+        
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(25));
+        diagram = new Diagram({
+            width: 900, height: 1000,
+            layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 30, verticalSpacing: 30,connectionPointOrigin:ConnectionPointOrigin.DifferentPoint,
+            enableRouting:true,orientation:'BottomToTop' },
+            dataSourceSettings: {
+                id: 'Name', parentId: 'ReportingPerson', dataSource: items
+            },
+        
+            getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                obj.height = 40; obj.width = 40;
+                obj.backgroundColor = 'lightgrey';
+                obj.style = { fill: 'transparent', strokeWidth: 2 };
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.targetDecorator.shape = 'None';
+                connector.type = 'Orthogonal';
+                return connector;
+            },
+        });
+        diagram.appendTo('#diagramLine');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Changing layout at runtime from bottom to top orientation', (done: Function) => {
+        diagram.layout.orientation = 'RightToLeft';
+        diagram.dataBind();
+        expect(diagram.layout.orientation === 'RightToLeft').toBe(true);
+        done();
+    });
+    it('Changing enableRouting at runtime', (done: Function) => {
+        diagram.layout.enableRouting = false;
+        diagram.dataBind();
+        expect(diagram.layout.orientation === 'RightToLeft' && diagram.layout.enableRouting === false).toBe(true);
+        done();
+    });
+    it('Changing connection point origin at runtime', (done: Function) => {
+        diagram.layout.connectionPointOrigin = ConnectionPointOrigin.SamePoint;
+        diagram.dataBind();
+        expect(diagram.layout.orientation === 'RightToLeft').toBe(true);
+        done();
+    });
+    it('Checking tooltip render at runtime', (done: Function) => {
+        let node = diagram.nodes[0];
+        node.tooltip.content = 'node1';
+        node.tooltip.openOn = 'Custom';
+        diagram.showTooltip(node);
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        expect(node.tooltip.content === 'node1').toBe(true);
+        mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
+        done();
+    });
+    it('Checking startTextEdit without zoom constraints', (done: Function) => {
+        diagram.constraints = DiagramConstraints.Default | DiagramConstraints.ZoomTextEdit;
+        diagram.dataBind();
+        diagram.startTextEdit(diagram.nodes[0]);
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas,100,100);
+        expect(diagram.nodes[0].annotations[0].content === '').toBe(true);
+        done();
+    });
+});
+
+describe('Code coverage hierarchical tree', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    interface EmployeeInfo {
+        Name: string;
+    }
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramHierarchy' });
+        document.body.appendChild(ele);
+        let data = [
+            {
+                "Name": "Diagram",
+                "fillColor": "#916DAF"
+            },
+            {
+                "Name": "Layout",
+                "Category": "Diagram"
+            },
+            {
+                "Name": "Tree Layout",
+                "Category": "Layout"
+            },
+            {
+                "Name": "Organizational Chart",
+                "Category": "Layout"
+            },
+            {
+                "Name": "Hierarchical Tree",
+                "Category": "Tree Layout"
+            },
+            {
+                "Name": "Radial Tree",
+                "Category": "Tree Layout"
+            },
+            {
+                "Name": "Mind Map",
+                "Category": "Hierarchical Tree"
+            },
+            {
+                "Name": "Family Tree",
+                "Category": "Hierarchical Tree"
+            },
+            {
+                "Name": "Management",
+                "Category": "Organizational Chart"
+            },
+            {
+                "Name": "Human Resources",
+                "Category": "Management"
+            },
+            {
+                "Name": "University",
+                "Category": "Management"
+            },
+            {
+                "Name": "Business",
+                "Category": "Management"
+            }
+        ];
+        
+        diagram = new Diagram({
+            width: 1000, height: 1000, dataSourceSettings: {
+                //sets the fields to bind
+                id: 'Name', parentId: 'Category',
+                dataSource: new DataManager(data),
+            },
+            getNodeDefaults: (obj: NodeModel) => {
+                if((obj.data as EmployeeInfo).Name === 'Diagram' || (obj.data as EmployeeInfo).Name === 'diagram') {
+                    obj.isExpanded = false;
+                }
+            },
+            layout: { type: 'HierarchicalTree' , orientation: 'TopToBottom' },
+        });
+        diagram.appendTo('#diagramHierarchy');
+        
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking root node expanded', (done: Function) => {
+        let isExpanded = diagram.nodes[0].isExpanded;
+        expect(isExpanded === false).toBe(true);
+        done();
+    });
+   
 });

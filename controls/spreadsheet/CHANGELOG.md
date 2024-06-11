@@ -2,21 +2,21 @@
 
 ## [Unreleased]
 
-## 25.2.3 (2024-05-08)
+## 26.1.35 (2024-06-11)
 
 ### Spreadsheet
 
-#### Bug Fixes
+#### Features
 
-- `#I577454` - Issue with "cell values were not updating correctly in merged cells when scrolling through the spreadsheet content" has been resolved.
+- Now, added a `notes` option that allows users to provide additional cell information, with the ability to easily add, edit, and delete notes.
 
-## 25.1.41 (2024-04-23)
+- Now, added a printing option that enables users to `print` either the active worksheet or the entire workbook directly. Additionally, users can customize their printouts by choosing to display or hide row and column headers, as well as gridlines.
 
-### Spreadsheet
+- Now, provided support to specify the order in which the data source fields are populated into the cell.
 
-#### Bug fixes
+- `#I535379` - Now, introduced an option for locking and unlocking cells without need to protect the sheet.
 
-- `#I573941` - Issue with "chart is not properly shown when the chart range is pointed to another sheet range while importing a file" has been resolved.
+- `#I432805`, `#I558536`, `#I432808` - Now, introduced a new serialization option in the `saveAsJson` method, enabling users to extract cell values without formatting or formulas, like a `CSV` file.
 
 ## 25.1.35 (2024-03-15)
 

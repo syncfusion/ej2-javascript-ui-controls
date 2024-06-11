@@ -220,7 +220,7 @@ export class Toolbar {
             created: this.toolbarCreated.bind(this),
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
-        (<{ isReact?: boolean }>this.toolbar).isReact = this.parent.isReact;
+        this.toolbar.isReact = this.parent.isReact;
         this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
         const isStringTemplate: string = 'isStringTemplate';
         this.toolbar[`${isStringTemplate}`] = true;
@@ -272,7 +272,7 @@ export class Toolbar {
 
     private addReactToolbarPortals(args: Object[]): void {
         if (this.parent.isReact && args) {
-            (<{ portals?: Object[] }>this.parent).portals = (<{ portals?: Object[] }>this.parent).portals.concat(args);
+            this.parent.portals = this.parent.portals.concat(args);
             this.parent.renderTemplates();
         }
     }

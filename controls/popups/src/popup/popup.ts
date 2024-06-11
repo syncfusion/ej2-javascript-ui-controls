@@ -269,16 +269,16 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             case 'relateTo':
                 this.refreshPosition();
                 break;
-            case 'offsetX':
-                // eslint-disable-next-line
-                let x: number = newProp.offsetX - oldProp.offsetX;
+            case 'offsetX': {
+                const x: number = newProp.offsetX - oldProp.offsetX;
                 this.element.style.left = (parseInt(this.element.style.left, 10) + (x)).toString() + 'px';
                 break;
-            case 'offsetY':
-                // eslint-disable-next-line
-                let y: number = newProp.offsetY - oldProp.offsetY;
+            }
+            case 'offsetY': {
+                const y: number = newProp.offsetY - oldProp.offsetY;
                 this.element.style.top = (parseInt(this.element.style.top, 10) + (y)).toString() + 'px';
                 break;
+            }
             case 'content':
                 this.setContent();
                 break;
@@ -357,7 +357,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private wireEvents(): void {
         if (Browser.isDevice) {
-            EventHandler.add(<HTMLElement & Window>window, 'orientationchange', this.orientationOnChange, this);
+            EventHandler.add(<HTMLElement & Window><unknown>window, 'orientationchange', this.orientationOnChange, this);
         }
         if (this.actionOnScroll !== 'none') {
             this.wireScrollEvents();
@@ -373,7 +373,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private unwireEvents(): void {
         if (Browser.isDevice) {
-            EventHandler.remove(<HTMLElement & Window>window, 'orientationchange', this.orientationOnChange);
+            EventHandler.remove(<HTMLElement & Window><unknown>window, 'orientationchange', this.orientationOnChange);
         }
         if (this.actionOnScroll !== 'none') {
             this.unwireScrollEvents();
@@ -433,7 +433,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         for ( let parent: number = 0; parent < scrollParents.length; parent ++ ) {
             if (this.isElementVisible(relateToElement, scrollParents[parent as number])) {
                 continue;
-            }else {
+            } else {
                 return false;
             }
         }
@@ -491,8 +491,11 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private setEnableRtl(): void {
         this.reposition();
-        // eslint-disable-next-line
-        this.enableRtl ? this.element.classList.add(CLASSNAMES.RTL) : this.element.classList.remove(CLASSNAMES.RTL);
+        if (this.enableRtl) {
+            this.element.classList.add(CLASSNAMES.RTL);
+        } else {
+            this.element.classList.remove(CLASSNAMES.RTL);
+        }
     }
     private setContent(): void {
         if (!isNullOrUndefined(this.content)) {
@@ -517,10 +520,12 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             200
         );
     }
-    // eslint-disable-next-line
+
     /**
      * Based on the `relative` element and `offset` values, `Popup` element position will refreshed.
      *
+     * @param {HTMLElement} target - The target element.
+     * @param {boolean} collision - Specifies whether to check for collision.
      * @returns {void}
      */
     public refreshPosition(target?: HTMLElement, collision?: boolean): void {

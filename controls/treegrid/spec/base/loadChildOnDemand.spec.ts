@@ -68,7 +68,7 @@ describe('OnDemand load Child', () => {
               ]
             });
         gridObj.appendTo('#Grid');
-        this.request = window.fetch['calls'].mostRecent();
+        request = window.fetch['calls'].mostRecent();
     });
 
     it('Render the data with expaned state', () => {

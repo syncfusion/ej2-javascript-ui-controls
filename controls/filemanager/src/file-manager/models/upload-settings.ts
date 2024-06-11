@@ -42,8 +42,8 @@ export class UploadSettings extends ChildProperty<UploadSettings> {
      *
      * @default false
      */
-     @Property(false)
-     public directoryUpload: boolean;
+    @Property(false)
+    public directoryUpload: boolean;
 
     /**
      * Specifies the minimum file size to be uploaded in bytes.

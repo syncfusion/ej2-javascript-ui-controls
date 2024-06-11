@@ -1,7 +1,4 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-import { ChartLocation, getPoint, withInRange, TransformToVisible } from '../../common/utils/helper';
+import { ChartLocation, getPoint, withInRange, TransformToVisible, animateAddPoints } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from './chart-series';
 import { SplineBase } from './spline-base';
@@ -17,10 +14,15 @@ export class SplineAreaSeries extends SplineBase {
     /**
      * Render the splineArea series.
      *
+     * @param {Series} series - The series to be rendered.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
+     * @param {boolean} isInverted - Specifies whether the chart is inverted.
+     * @param {boolean} pointAnimate - Specifies whether the point has to be animated.
+     * @param {boolean} pointUpdate - Specifies whether the point has to be updated.
      * @returns {void}
-     * @private
      */
-    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate: boolean, pointUpdate?: boolean): void {
         let firstPoint: Points = null;
         let direction: string = '';
         let startPoint: ChartLocation = null;
@@ -86,21 +88,19 @@ export class SplineAreaSeries extends SplineBase {
                 direction = direction.concat('L ' + (startPoint.x) + ' ' + (startPoint.y) + ' ');
             }
         }
-        this.appendLinePath(
+        this[pointAnimate ? 'addPath' : 'appendLinePath'](
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index,
                 series.interior, 0, 'transparent',
                 series.opacity, series.dashArray, direction
-            ),
-            series, ''
-        );
+            ), series, '');
 
         /**
          * To draw border for the path directions of area
          */
         if (series.border.width !== 0) {
             emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
-            this.appendLinePath(
+            this[pointAnimate ? 'addPath' : 'appendLinePath'](
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index,
                     'transparent', series.border.width, series.border.color ? series.border.color : series.interior,
@@ -109,15 +109,127 @@ export class SplineAreaSeries extends SplineBase {
                 series, ''
             );
         }
-        this.renderMarker(series);
+        if (!pointUpdate) {this.renderMarker(series); }
     }
 
     /**
+     * To animate point for spline area series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
+        for (let i: number = 0; i < point.length; i++) {
+            if (series.marker && series.marker.visible) {
+                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
+                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
+    }
+    /**
+     * Adds a area path to equate the start and end paths.
+     *
+     * @param {PathOption} options - The options for the path.
+     * @param {Series} series - The series to which the path belongs.
+     * @param {string} clipRect - The clip rectangle for the path.
+     * * @param {ChartLocation[]} [firstSymbol] - The location of the first symbol.
+     * @returns {void}
+     */
+    public addPath(options: PathOption, series: Series, clipRect: string): void {
+        const points: { element: Element; previousDirection: string; } =
+            this.appendPathElement(options, series, clipRect);
+        if (points.previousDirection !== '' && options.d !== '') {
+            if (points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g).length === 2) {
+                points.previousDirection = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g)[0] + 'L ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2]
+                    + ' C ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2] + ' ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2] + ' ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2]
+                    + ' L ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2];
+            }
+            if ((options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g).length === 2) {
+                options.d = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g)[0] + 'L ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2]
+                    + ' C ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2] + ' ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2] + ' ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2]
+                    + ' L ' + points.previousDirection.split(' ')[1] + ' ' + points.previousDirection.split(' ')[2];
+            }
+            const startPathCommands: string[] = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (startPathCommands.length < endPathCommands.length) {
+                for (let i: number = startPathCommands.length; i < endPathCommands.length; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        let lastPointBeforeCurve: string;
+                        if ((startPathCommands[startPathCommands.length - 1]).split(' ').length === 4 && options.id.indexOf('border') !== -1) {
+                            lastPointBeforeCurve = startPathCommands[startPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)].split(' ').slice(1).join(' ');
+                        }
+                        else {
+                            lastPointBeforeCurve = startPathCommands[startPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)].split(' ').slice(5).join(' ');
+                        }
+
+                        const curveCommand: string = 'C ' + lastPointBeforeCurve + lastPointBeforeCurve + lastPointBeforeCurve;
+                        if (options.id.indexOf('border') !== -1) {
+                            startPathCommands.push(curveCommand);
+                        }
+                        else {
+                            startPathCommands.splice(startPathCommands.length - 1, 0, curveCommand);
+                        }
+                    }
+                }
+                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+            }
+            else if (startPathCommands.length > endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        let firstPointBeforeCurve: string;
+                        if (series.removedPointIndex === series.points.length) {
+                            if ((startPathCommands[startPathCommands.length - 1]).split(' ').length === 4 && options.id.indexOf('border') !== -1) {
+                                firstPointBeforeCurve = endPathCommands[endPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)].split(' ').slice(1).join(' ');
+                            }
+                            else {
+                                firstPointBeforeCurve = endPathCommands[endPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)].split(' ').slice(5).join(' ');
+                            }
+                            var curveCommand = 'C ' + firstPointBeforeCurve + firstPointBeforeCurve + firstPointBeforeCurve;
+                            if (options.id.indexOf('border') !== -1) {
+                                endPathCommands.push(curveCommand);
+                            }
+                            else {
+                                endPathCommands.splice(endPathCommands.length - 1, 0, curveCommand);
+                            }
+                        } else {
+                            if ((startPathCommands[startPathCommands.length - 1]).split(' ').length === 4) {
+                                firstPointBeforeCurve = 'C ' + endPathCommands[options.id.indexOf('border') !== -1 ? 0 : 1].split(' ').slice(-3).join(' ') + endPathCommands[options.id.indexOf('border') !== -1 ? 0 : 1].split(' ').slice(1).join(' ') + endPathCommands[options.id.indexOf('border') !== -1 ? 0 : 1].split(' ').slice(1).join(' ');
+                            }
+                            else {
+                                firstPointBeforeCurve = 'C ' + endPathCommands[options.id.indexOf('border') !== -1 ? 0 : 1].split(' ').slice(-3).join(' ') + endPathCommands[options.id.indexOf('border') !== -1 ? 0 : 1].split(' ').slice(-3).join(' ') + endPathCommands[options.id.indexOf('border') !== -1 ? 0 : 1].split(' ').slice(-3).join(' ');
+                            }
+                            endPathCommands.splice((options.id.indexOf('border') !== -1 ? 1 : 2), 0, firstPointBeforeCurve);
+                        }
+                    }
+                }
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
+            }
+            else {
+                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+            }
+        }
+    }
+    /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'SplineAreaSeries';
     }
@@ -130,7 +242,7 @@ export class SplineAreaSeries extends SplineBase {
      */
     public destroy(): void {
         /**
-         * Destroy method calling here
+         * Destroy method calling here.
          */
     }
 }

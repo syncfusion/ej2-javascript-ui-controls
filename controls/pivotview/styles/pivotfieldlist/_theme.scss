@@ -1,7 +1,17 @@
+@mixin wrap-styles {
+  float: right;
+  height: $field-list-adaptive-btn-size;
+  pointer-events: all;
+  width: $field-list-adaptive-btn-size;
+  z-index: 1000;
+
+  .e-add-icon {
+    font-size: $field-list-adaptive-btn-icon-size;
+    line-height: $field-list-adaptive-icon-height;
+  }
+}
+
 @include export-module('field-list-theme') {
-
-  /*! field-list theme */
-
   .e-pivotfieldlist {
 
     .e-member-editor-dialog,
@@ -24,31 +34,28 @@
       position: relative;
       width: $field-list-toggle-size;
       z-index: 1000;
-      @if ($skin-name == 'Material3') {
+
+      @if ($skin-name =='Material3') {
         border: none;
         border-radius: 4px;
         top: 1px;
       }
-      @if ($theme-name == 'Material3-dark') {
+
+      @if ($theme-name =='Material3-dark') {
         /* stylelint-disable */
         background: $field-list-toggle-bg-color-dark !important;
       }
+
       &.e-fieldlist-left {
-        @if ($skin-name == 'Material3') {
+        @if ($skin-name =='Material3') {
           left: 2px !important;
           /* stylelint-enable */
         }
-      }
-
-      &.e-fieldlist-left {
         box-shadow: $field-list-toggle-left-shadow-color;
       }
 
       &:focus,
-      &:active {
-        background-color: $field-list-toggle-hover-color;
-      }
-
+      &:active,
       &:hover {
         background-color: $field-list-toggle-hover-color;
       }
@@ -90,8 +97,8 @@
     font-size: $field-list-content-font-size;
     max-width: 700px;
     min-width: 300px;
-    
-    &.sf-pivotfieldlist-container {    
+
+    &.sf-pivotfieldlist-container {
       .e-field-list-container .e-field-table .e-field-list {
         display: block;
         overflow-y: auto;
@@ -102,7 +109,9 @@
           }
 
           li {
-            &.e-no-checkbox > .e-text-content > .e-checkbox-wrapper, .e-measure-icon {
+
+            &.e-no-checkbox>.e-text-content>.e-checkbox-wrapper,
+            .e-measure-icon {
               display: none;
             }
 
@@ -112,7 +121,7 @@
                 padding-right: 10px;
               }
             }
-          } 
+          }
         }
 
         li {
@@ -130,19 +139,21 @@
           .e-text-content {
             display: flex;
             align-items: center;
-            @if ($skin-name == 'FluentUI') {
-             padding-right: revert;
+
+            @if ($skin-name =='FluentUI') {
+              padding-right: revert;
             }
           }
 
           .e-list-text {
-            text-overflow: ellipsis;    
+            text-overflow: ellipsis;
             overflow-x: hidden;
             width: 100%;
             white-space: nowrap;
-          }        
-        }  
+          }
+        }
       }
+
       .e-field-list-container .e-field-table .e-field-list.e-treeview:not(.e-rtl) {
         .e-list-text {
           padding-right: revert;
@@ -154,9 +165,12 @@
           padding-left: revert;
         }
       }
+
       .e-adaptive-field-list-dialog .e-member-editor-container {
         li {
-          &.e-no-checkbox > .e-text-content > .e-checkbox-wrapper, .e-measure-icon {
+
+          &.e-no-checkbox>.e-text-content>.e-checkbox-wrapper,
+          .e-measure-icon {
             display: none;
           }
         }
@@ -192,6 +206,9 @@
 
       .e-checkbox-layout .e-label {
         padding-right: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis !important;
+        white-space: unset;
       }
 
       .e-checkbox-layout {
@@ -204,7 +221,7 @@
       float: left;
       margin-top: 6px;
 
-      @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') {
+      @if ($skin-name =='tailwind') or ($skin-name =='FluentUI') {
         margin-left: 0 !important;
         margin-right: 0 !important;
       }
@@ -238,14 +255,20 @@
       }
 
       .e-dlg-content ul li .e-text-content .e-checkbox-wrapper {
-        @if ($skin-name == 'Material3') {
+        @if ($skin-name =='Material3') or ($skin-name =='fluent2') {
           margin: 0 !important;
           /* stylelint-enable */
         }
 
         .e-ripple-container {
-          @if ($skin-name == 'Material3') {
+          @if ($skin-name =='Material3') {
             background: transparent;
+          }
+        }
+
+        .e-frame.e-icons{
+          @if ($skin-name =='fluent2') {
+            margin: 0;
           }
         }
       }
@@ -257,7 +280,7 @@
     }
 
     .e-dlg-header-content {
-      @if ($skin-name == 'bootstrap5') {
+      @if ($skin-name =='bootstrap5') {
         border-bottom: 1px solid $field-list-border;
       }
 
@@ -267,7 +290,7 @@
     }
 
     .e-footer-content {
-      @if ($skin-name == 'bootstrap5') {
+      @if ($skin-name =='bootstrap5') {
         border-top: 1px solid $field-list-border;
       }
     }
@@ -291,7 +314,8 @@
 
       .e-title-content {
         flex: auto;
-        @if ($skin-name == 'Material3') {
+
+        @if ($skin-name =='Material3') {
           font-size: 22px;
           font-weight: $field-list-button-font-weight;
         }
@@ -333,7 +357,8 @@
           text-overflow: ellipsis;
           white-space: nowrap;
           word-break: break-all;
-          @if ($field-list-skin == 'tailwind') {
+
+          @if ($field-list-skin =='tailwind') {
             text-transform: uppercase;
           }
         }
@@ -363,17 +388,14 @@
               color: $field-list-active-color;
             }
 
-            &:hover {
-              font-weight: bold;
-            }
-
+            &:hover,
             &:focus {
               font-weight: bold;
             }
           }
 
           /* stylelint-disable */
-          @if ($skin-name == 'FluentUI') {
+          @if ($skin-name =='FluentUI') or ($skin-name =='fluent2') {
             .e-sort-none {
               padding-right: 2px !important;
             }
@@ -394,16 +416,20 @@
           padding-left: 2px;
           width: 100%;
 
+          @if ($skin-name == 'fluent2'){
+            border: none;
+          }
+
           &:not(.e-olap-field-list-tree) {
             ul {
               padding-left: $field-list-treeview-ul-padding;
 
-              li.e-pivot-parent{
-                @if ($skin-name == 'bootstrap5') {
+              li.e-pivot-parent {
+                @if ($skin-name =='bootstrap5') {
                   padding-left: 10px;
                 }
 
-                @if ($skin-name == 'FluentUI') {
+                @if ($skin-name =='FluentUI') {
                   padding-left: 9px;
                 }
               }
@@ -437,12 +463,12 @@
                 vertical-align: bottom;
                 width: 20px;
 
-                @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+                @if ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
                   margin-right: 4px;
                   padding-left: 8px;
                 }
 
-                @if ($skin-name == 'tailwind') {
+                @if ($skin-name =='tailwind') {
                   margin-bottom: 0;
                   vertical-align: middle;
                 }
@@ -475,7 +501,6 @@
               }
 
               /* stylelint-enable */
-
               .e-list-selected {
                 opacity: .5;
               }
@@ -493,6 +518,7 @@
             li.e-disable {
               display: none !important;
             }
+
             /* stylelint-enable */
           }
 
@@ -558,7 +584,7 @@
             height: $field-list-header-height;
             padding: 0 $field-list-header-padding 0;
 
-            @if ($skin-name == 'Material3') {
+            @if ($skin-name =='Material3') {
               border-bottom: none;
             }
 
@@ -587,13 +613,17 @@
             text-transform: $field-list-text-transform;
             white-space: nowrap;
             width: 100%;
-            @if ($skin-name == 'Material3') {
+
+            @if ($skin-name =='Material3') {
               font-weight: $field-list-table-header-font-weight;
             }
           }
 
           .e-axis-content {
             cursor: default;
+            height: $field-list-axis-content-height;
+            overflow: auto;
+            scroll-behavior: smooth;
             width: 100%;
 
             &.e-drag-restrict {
@@ -611,7 +641,8 @@
                 &.e-drop-hover {
                   border-top: 2px dashed $field-list-drop-hover-color;
                   margin-top: -2px;
-                  @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') {
+
+                  @if ($skin-name =='tailwind') or ($skin-name =='bootstrap5') {
                     border-top: 2px solid $field-list-drop-hover-color;
                   }
                 }
@@ -642,11 +673,7 @@
                 text-transform: none;
                 width: 100%;
 
-                @if ($field-list-skin == 'bootstrap4') {
-                  color: $field-list-button-font-color;
-                }
-
-                @if ($skin-name == 'bootstrap5') {
+                @if ($field-list-skin =='bootstrap4') or ($skin-name =='bootstrap5') {
                   color: $field-list-button-font-color;
                 }
 
@@ -681,7 +708,7 @@
                   }
 
                   .e-drag {
-                    @if ($skin-name == 'tailwind') {
+                    @if ($skin-name =='tailwind') {
                       color: $field-list-button-active-color;
                     }
                   }
@@ -698,7 +725,8 @@
                   text-align: left;
                   text-overflow: ellipsis;
                   width: 70%;
-                  @if ($skin-name == 'tailwind') {
+
+                  @if ($skin-name =='tailwind') {
                     line-height: 1.2em;
                   }
                 }
@@ -781,12 +809,6 @@
             }
           }
 
-          .e-axis-content {
-            height: $field-list-axis-content-height;
-            overflow: auto;
-            scroll-behavior: smooth;
-          }
-
           .e-draggable-prompt {
             bottom: 32%;
             color: $field-list-default-prompt-color;
@@ -828,16 +850,21 @@
 
         .e-field-list-container {
           height: 369px;
-          @if ($skin-name == 'FluentUI') {
+
+          @if ($skin-name =='FluentUI') {
             height: 394px;
+          }
+
+          @if ($skin-name =='fluent2') {
+            height: 383px;
           }
 
           /* stylelint-disable */
           .e-field-table {
             height: $field-list-search-popup-table-height !important;
-            
+
             .e-field-list-tree-outer-div {
-              @if ($skin-name == 'Material3') {
+              @if ($skin-name =='Material3') {
                 height: $field-list-search-popup-table-outer-div-height !important;
               }
             }
@@ -902,7 +929,8 @@
       font-weight: $field-list-button-font-weight;
       max-width: 160px;
       min-width: 145px;
-      @if ($skin-name == 'Material3') {
+
+      @if ($skin-name =='Material3') {
         border: $field-list-calculated-field-border;
         box-shadow: none;
       }
@@ -913,7 +941,6 @@
     }
 
     /* stylelint-enable */
-
     &.e-rtl {
       .e-field-table {
         .e-field-list {
@@ -924,12 +951,12 @@
             ul {
               padding-right: $field-list-treeview-ul-padding;
 
-              li.e-pivot-parent{
-                @if ($skin-name == 'bootstrap5') {
+              li.e-pivot-parent {
+                @if ($skin-name =='bootstrap5') {
                   padding-right: 5px;
                 }
 
-                @if ($skin-name == 'FluentUI') {
+                @if ($skin-name =='FluentUI') {
                   padding-right: 9px;
                 }
               }
@@ -943,6 +970,7 @@
           }
 
           ul li {
+
             /* stylelint-disable */
             .e-list-text {
               font-family: $field-list-font-family;
@@ -951,7 +979,8 @@
             .e-drag {
               margin-left: 6px !important;
               margin-right: 0 !important;
-              @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+
+              @if ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
                 padding-right: 8px;
               }
             }
@@ -980,7 +1009,7 @@
           padding-right: $field-list-header-padding;
           text-align: right;
 
-          @if ($field-list-skin == 'bootstrap4') {
+          @if ($field-list-skin =='bootstrap4') {
             padding-right: 12px;
           }
         }
@@ -1096,13 +1125,13 @@
           margin-top: 0;
           overflow: hidden;
           width: 100%;
-  
+
           .e-checkbox-wrapper {
             width: 100%;
-  
+
             label {
               width: 100%;
-  
+
               .e-label {
                 overflow: hidden;
                 /* stylelint-disable */
@@ -1114,7 +1143,7 @@
             }
           }
         }
-  
+
         .e-button-layout {
           display: flex;
           justify-content: flex-end;
@@ -1136,7 +1165,7 @@
         color: $field-list-mobile-header-font-color;
         font-size: 14px;
 
-        @if ($skin-name == 'tailwind') {
+        @if ($skin-name =='tailwind') {
           padding-left: 16px;
           padding-right: 16px;
         }
@@ -1153,6 +1182,10 @@
         .e-dlg-content .e-field-list-tree-outer-div {
           height: 210px;
           overflow: auto;
+
+          @if ($skin-name == 'fluent2') {
+            height: 190px;
+          }
         }
       }
 
@@ -1226,7 +1259,7 @@
                 text-transform: none;
                 width: 100%;
 
-                @if ($skin-name == 'bootstrap5') {
+                @if ($skin-name =='bootstrap5') {
                   background-color: $field-list-default-bg-color;
                   color: $field-list-default-font-color;
                 }
@@ -1263,11 +1296,11 @@
                   width: 24px;
                   font-size: 14px !important;
 
-                  @if ($field-list-skin == 'bootstrap4') {
+                  @if ($field-list-skin =='bootstrap4') {
                     color: $white;
                   }
 
-                  @if ($skin-name == 'bootstrap5') {
+                  @if ($skin-name =='bootstrap5') {
                     color: $field-list-button-icon-color;
                     padding-left: 8px;
                   }
@@ -1282,7 +1315,6 @@
                 }
 
                 /* stylelint-enable */
-
                 .e-sort {
                   height: fit-content;
                   transform: rotateX(0deg);
@@ -1311,11 +1343,12 @@
                     padding-left: 0;
                     padding-right: 10px;
 
-                    @if ($skin-name == 'tailwind') {
+                    @if ($skin-name =='tailwind') {
                       margin-right: 8px;
                       padding-right: 0;
                     }
-                    @if ($skin-name == 'bootstrap5') {
+
+                    @if ($skin-name =='bootstrap5') {
                       padding-right: 8px;
                     }
                   }
@@ -1342,7 +1375,7 @@
               vertical-align: middle;
               width: 70%;
 
-              @if ($skin-name == 'bootstrap5') {
+              @if ($skin-name =='bootstrap5') {
                 color: $field-list-default-font-color;
               }
             }
@@ -1374,7 +1407,6 @@
             }
 
             /* stylelint-enable */
-
             .e-accordion {
               margin-top: 20px;
               overflow: auto;
@@ -1390,13 +1422,17 @@
                   padding: 0;
                   position: absolute;
                   right: 16px;
-  
+
                   .e-list-icon {
                     cursor: pointer;
                     display: table-cell;
                     padding-right: 6px;
                     text-align: center;
                     vertical-align: middle;
+
+                    &.e-remove-report.e-icons {
+                      padding-left: 10px;
+                    }
                   }
                 }
               }
@@ -1416,7 +1452,6 @@
                   margin-left: 12px !important;
                   margin-right: 0 !important;
                 }
-
                 /* stylelint-enable */
               }
             }
@@ -1519,16 +1554,7 @@
 
             .e-field-list-btn,
             .e-calculated-field-btn {
-              float: right;
-              height: $field-list-adaptive-btn-size;
-              pointer-events: all;
-              width: $field-list-adaptive-btn-size;
-              z-index: 1000;
-
-              .e-add-icon {
-                font-size: $field-list-adaptive-btn-icon-size;
-                line-height: $field-list-adaptive-icon-height;
-              }
+              @include wrap-styles;
             }
           }
         }
@@ -1548,20 +1574,11 @@
         .e-calculated-field-btn,
         .e-cancel-btn,
         .e-defer-apply-button {
-          float: right;
-          height: $field-list-adaptive-btn-size;
-          pointer-events: all;
-          width: $field-list-adaptive-btn-size;
-          z-index: 1000;
+          @include wrap-styles;
 
-          @if ($skin-name == 'Material3') {
+          @if ($skin-name =='Material3') {
             border-radius: $field-list-device-footer-button-border-radius;
             box-shadow: $field-list-device-footer-button-box-shadow;
-          }
-
-          .e-add-icon {
-            font-size: $field-list-adaptive-btn-icon-size;
-            line-height: $field-list-adaptive-icon-height;
           }
         }
 
@@ -1650,7 +1667,7 @@
         font-weight: normal;
         overflow: hidden;
 
-        @if ($field-list-skin == 'bootstrap4') {
+        @if ($field-list-skin =='bootstrap4') {
           padding-left: 16px;
         }
       }
@@ -1674,12 +1691,12 @@
           ul {
             padding-left: $field-list-treeview-bigger-ul-padding;
 
-            li.e-pivot-parent{
-              @if ($skin-name == 'bootstrap5') {
+            li.e-pivot-parent {
+              @if ($skin-name =='bootstrap5') {
                 padding-left: 7px;
               }
 
-              @if ($skin-name == 'FluentUI') {
+              @if ($skin-name =='FluentUI') {
                 padding-left: 8px;
               }
             }
@@ -1728,8 +1745,8 @@
           }
         }
       }
-      /* stylelint-enable */
 
+      /* stylelint-enable */
       .e-left-axis-fields .e-field-list-rows,
       .e-right-axis-fields .e-field-list-values {
         margin-top: $field-list-default-bigger-padding-size;
@@ -1737,6 +1754,7 @@
     }
 
     .e-axis-table {
+
       .e-left-axis-fields .e-field-list-filters,
       .e-left-axis-fields .e-field-list-rows,
       .e-right-axis-fields .e-field-list-columns,
@@ -1810,7 +1828,7 @@
         }
 
         .e-draggable-prompt {
-          @if ($field-list-skin == 'bootstrap4') {
+          @if ($field-list-skin =='bootstrap4') {
             font-size: 16px;
           }
         }
@@ -1870,12 +1888,12 @@
             ul {
               padding-right: $field-list-treeview-bigger-ul-padding;
 
-              li.e-pivot-parent{
-                @if ($skin-name == 'bootstrap5') {
+              li.e-pivot-parent {
+                @if ($skin-name =='bootstrap5') {
                   padding-right: 7px;
                 }
 
-                @if ($skin-name == 'FluentUI') {
+                @if ($skin-name =='FluentUI') {
                   padding-right: 8px;
                 }
               }
@@ -1907,7 +1925,6 @@
             margin-left: 0;
             margin-right: 10px;
           }
-
           /* stylelint-enable */
         }
 
@@ -1975,6 +1992,10 @@
         .e-field-list-container {
           height: 387px;
 
+          @if ($skin-name =='fluent2') {
+            height: 397px;
+          }
+          
           .e-field-table {
             height: $field-list-search-popup-table-bigger-height !important;
           }

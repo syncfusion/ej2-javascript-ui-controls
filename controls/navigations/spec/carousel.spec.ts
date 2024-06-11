@@ -410,6 +410,289 @@ describe('Carousel Testing', () => {
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(true);
         });
     });
+
+    describe('Carousel public properties null or undefined testing', () => {
+        beforeEach((): void => {
+            const carouselElement: HTMLElement = document.createElement('div');
+            carouselElement.id = 'carousel';
+            document.body.appendChild(carouselElement);
+        });
+        afterEach(() => {
+            carousel.destroy();
+            carousel.element.remove();
+            carousel = null;
+        });
+        it('animationEffect', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.animationEffect = null;
+            carousel.dataBind();
+            expect(carousel.animationEffect).toEqual(null);
+            carousel.animationEffect = undefined;
+            carousel.dataBind();
+            expect(carousel.animationEffect).toEqual(undefined);
+        });
+        it('autoPlay', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.autoPlay = null;
+            carousel.dataBind();
+            expect(carousel.autoPlay).toEqual(null);
+            carousel.autoPlay = undefined;
+            carousel.dataBind();
+            expect(carousel.autoPlay).toEqual(undefined);
+        });
+        it('buttonsVisibility', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.buttonsVisibility = null;
+            carousel.dataBind();
+            expect(carousel.buttonsVisibility).toEqual(null);
+            carousel.buttonsVisibility = undefined;
+            carousel.dataBind();
+            expect(carousel.buttonsVisibility).toEqual(undefined);
+        });
+        it('cssClass', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.cssClass = null;
+            carousel.dataBind();
+            expect(carousel.cssClass).toEqual(null);
+            carousel.cssClass = undefined;
+            carousel.dataBind();
+            expect(carousel.cssClass).toEqual(undefined);
+        });
+        it('dataSource', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.dataSource = null;
+            carousel.dataBind();
+            expect(carousel.dataSource).toEqual(null);
+            carousel.dataSource = undefined;
+            carousel.dataBind();
+            expect(carousel.dataSource).toEqual(undefined);
+        });
+        it('enablePersistence', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.enablePersistence = null;
+            carousel.dataBind();
+            expect(carousel.enablePersistence).toEqual(null);
+            carousel.enablePersistence = undefined;
+            carousel.dataBind();
+            expect(carousel.enablePersistence).toEqual(undefined);
+        });
+        it('enableRtl', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.enableRtl = null;
+            carousel.dataBind();
+            expect(carousel.enableRtl).toEqual(null);
+            carousel.enableRtl = undefined;
+            carousel.dataBind();
+            expect(carousel.enableRtl).toEqual(undefined);
+        });
+        it('enableTouchSwipe', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.enableTouchSwipe = null;
+            carousel.dataBind();
+            expect(carousel.enableTouchSwipe).toEqual(null);
+            carousel.enableTouchSwipe = undefined;
+            carousel.dataBind();
+            expect(carousel.enableTouchSwipe).toEqual(undefined);
+        });
+        it('height', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.height = null;
+            carousel.dataBind();
+            expect(carousel.height).toEqual(null);
+            carousel.height = undefined;
+            carousel.dataBind();
+            expect(carousel.height).toEqual(undefined);
+        });
+        it('htmlAttributes', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.htmlAttributes = null;
+            carousel.dataBind();
+            expect(carousel.htmlAttributes).toEqual(null);
+            carousel.htmlAttributes = undefined;
+            carousel.dataBind();
+            expect(carousel.htmlAttributes).toEqual(undefined);
+        });
+        it('indicatorsTemplate', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.indicatorsTemplate = null;
+            carousel.dataBind();
+            expect(carousel.indicatorsTemplate).toEqual(null);
+            carousel.indicatorsTemplate = undefined;
+            carousel.dataBind();
+            expect(carousel.indicatorsTemplate).toEqual(undefined);
+        });
+        it('indicatorsType', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.indicatorsType = null;
+            carousel.dataBind();
+            expect(carousel.indicatorsType).toEqual(null);
+            carousel.indicatorsType = undefined;
+            carousel.dataBind();
+            expect(carousel.indicatorsType).toEqual(undefined);
+        });
+        it('interval', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.interval = null;
+            carousel.dataBind();
+            expect(carousel.interval).toEqual(null);
+            carousel.interval = undefined;
+            carousel.dataBind();
+            expect(carousel.interval).toEqual(undefined);
+        });
+        it('itemTemplate', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.itemTemplate = null;
+            carousel.dataBind();
+            expect(carousel.itemTemplate).toEqual(null);
+            carousel.itemTemplate = undefined;
+            carousel.dataBind();
+            expect(carousel.itemTemplate).toEqual(undefined);
+        });
+        it('items', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.items = null;
+            carousel.dataBind();
+            expect(carousel.items.length).toEqual(0);
+            carousel.items = undefined;
+            carousel.dataBind();
+            expect(carousel.items.length).toEqual(0);
+        });
+        it('locale', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.locale = null;
+            carousel.dataBind();
+            expect(carousel.locale).toEqual(null);
+            carousel.locale = undefined;
+            carousel.dataBind();
+            expect(carousel.locale).toEqual(undefined);
+        });
+        it('loop', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.loop = null;
+            carousel.dataBind();
+            expect(carousel.loop).toEqual(null);
+            carousel.loop = undefined;
+            carousel.dataBind();
+            expect(carousel.loop).toEqual(undefined);
+        });
+        it('nextButtonTemplate', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.nextButtonTemplate = null;
+            carousel.dataBind();
+            expect(carousel.nextButtonTemplate).toEqual(null);
+            carousel.nextButtonTemplate = undefined;
+            carousel.dataBind();
+            expect(carousel.nextButtonTemplate).toEqual(undefined);
+        });
+        it('partialVisible', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.partialVisible = null;
+            carousel.dataBind();
+            expect(carousel.partialVisible).toEqual(null);
+            carousel.partialVisible = undefined;
+            carousel.dataBind();
+            expect(carousel.partialVisible).toEqual(undefined);
+        });
+        it('pauseOnHover', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.pauseOnHover = null;
+            carousel.dataBind();
+            expect(carousel.pauseOnHover).toEqual(null);
+            carousel.pauseOnHover = undefined;
+            carousel.dataBind();
+            expect(carousel.pauseOnHover).toEqual(undefined);
+        });
+        it('playButtonTemplate', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.playButtonTemplate = null;
+            carousel.dataBind();
+            expect(carousel.playButtonTemplate).toEqual(null);
+            carousel.playButtonTemplate = undefined;
+            carousel.dataBind();
+            expect(carousel.playButtonTemplate).toEqual(undefined);
+        });
+        it('previousButtonTemplate', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.previousButtonTemplate = null;
+            carousel.dataBind();
+            expect(carousel.previousButtonTemplate).toEqual(null);
+            carousel.previousButtonTemplate = undefined;
+            carousel.dataBind();
+            expect(carousel.previousButtonTemplate).toEqual(undefined);
+        });
+        it('selectedIndex', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.selectedIndex = null;
+            carousel.dataBind();
+            expect(carousel.selectedIndex).toEqual(0);
+            carousel.selectedIndex = undefined;
+            carousel.dataBind();
+            expect(carousel.selectedIndex).toEqual(undefined);
+        });
+        it('showIndicators', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.showIndicators = null;
+            carousel.dataBind();
+            expect(carousel.showIndicators).toEqual(null);
+            carousel.showIndicators = undefined;
+            carousel.dataBind();
+            expect(carousel.showIndicators).toEqual(undefined);
+        });
+        it('showPlayButton', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.showPlayButton = null;
+            carousel.dataBind();
+            expect(carousel.showPlayButton).toEqual(null);
+            carousel.showPlayButton = undefined;
+            carousel.dataBind();
+            expect(carousel.showPlayButton).toEqual(undefined);
+        });
+        it('swipeMode', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.swipeMode = null;
+            carousel.dataBind();
+            expect(carousel.swipeMode).toEqual(null);
+            carousel.swipeMode = undefined;
+            carousel.dataBind();
+            expect(carousel.swipeMode).toEqual(undefined);
+        });
+        it('width', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({items: items}, carouselElement);
+            carousel.width = null;
+            carousel.dataBind();
+            expect(carousel.width).toEqual(null);
+            carousel.width = undefined;
+            carousel.dataBind();
+            expect(carousel.width).toEqual(undefined);
+        });
+    });
     describe('test case for partialslide with loop', () => {
         beforeEach((): void => {
             const carouselElement: HTMLElement = document.createElement('div');

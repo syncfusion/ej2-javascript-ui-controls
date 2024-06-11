@@ -1,4 +1,3 @@
-//layout variables
 $qrybldr-width: auto !default;
 $qrybldr-height: auto !default;
 $qrybldr-brdr: 1px solid !default;
@@ -105,3 +104,10 @@ $qrybldr-bg-color: transparent !default;
 $qrybldr-val-error-bg-color: $danger-light !default;
 $qrybldr-val-error-color: $danger-bg-color !default;
 $qrybldr-collapse-brdr-color: $border-light !default;
+$qrybldr-drag-icon-font-size: 14px !default;
+$qrybldr-drag-icon-bigger-font-size: 14px !default;
+$qrybldr-drag-bg-color: $groupfill-bgcolor !default;
+$qrybldr-drag-grp-icon-pad: 10px 10px 10px 2px !default;
+$qrybldr-drag-grp-list-heg: 28px !default;
+$qrybldr-drag-grp-big-list-heg: 34px !default;
+$qrybldr-drag-grp-big-icon-pad: 10px 10px 10px 6px !default;

@@ -355,6 +355,14 @@ export interface IThemeStyle {
      * Specifies the border color of the container.
      */
     containerBorderColor?: string;
+    /**
+     * Specifies the border color of the tooltip.
+     */
+    tooltipBorderColor?: string;
+    /**
+     * Specifies the border width of the tooltip.
+     */
+    tooltipBorderWidth?: number;
 }
 
 

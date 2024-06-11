@@ -65,10 +65,13 @@ export class ExportUtils {
             const exportElement: HTMLElement = this.control.svgObject.cloneNode(true) as HTMLElement;
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
             const backgroundColor: string = backgroundElement.getAttribute('fill');
-            if ((this.control.theme === 'Tailwind' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Fluent' || this.control.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+            if ((this.control.theme === 'Tailwind' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Fluent' || this.control.theme === 'Material3' || this.control.theme === 'Fluent2')
+                && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 backgroundElement.setAttribute('fill', 'rgba(255,255,255, 1)');
             }
-            else if ((this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5Dark' || this.control.theme === 'FluentDark' || this.control.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+            else if ((this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5Dark' || this.control.theme === 'FluentDark' || this.control.theme === 'Material3Dark' ||
+                this.control.theme === 'Fluent2Dark' || this.control.theme === 'Fluent2HighContrast')
+                && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 backgroundElement.setAttribute('fill', 'rgba(0, 0, 0, 1)');
             }
             url = window.URL.createObjectURL(
@@ -102,12 +105,15 @@ export class ExportUtils {
         } else {
             const image: HTMLImageElement = new Image();
             const ctx: CanvasRenderingContext2D = element.getContext('2d');
-            let backgroundColor: string = ctx.shadowColor;
+            const backgroundColor: string = ctx.shadowColor;
             image.onload = (() => {
-                if ((this.control.theme === 'Tailwind' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Fluent' || this.control.theme === 'Material3') && (backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent')) {
+                if ((this.control.theme === 'Tailwind' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Fluent' || this.control.theme === 'Material3' || this.control.theme === 'Fluent2')
+                    && (backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent')) {
                     ctx.fillStyle = 'rgba(255,255,255, 1)';
                 }
-                else if ((this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5Dark' || this.control.theme === 'FluentDark' || this.control.theme === 'Material3Dark') && (backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent')) {
+                else if ((this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5Dark' || this.control.theme === 'FluentDark' || this.control.theme === 'Material3Dark' ||
+                    this.control.theme === 'Fluent2Dark' || this.control.theme === 'Fluent2HighContrast')
+                    && (backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent')) {
                     ctx.fillStyle = 'rgba(0, 0, 0, 1)';
                 }
                 ctx.fillRect(0, 0, element.width, element.height);

@@ -1146,7 +1146,7 @@ export class EventWindow {
 
     private getFormat(formatType: string): string {
         let format: string;
-        if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
+        if (isNullOrUndefined(this.parent.locale) || this.parent.locale === 'en' || this.parent.locale === 'en-US') {
             format = getValue(formatType + '.short', getDefaultDateObject(this.parent.getCalendarMode()));
         } else {
             format = getValue(`main.${this.parent.locale}.dates.calendars.${this.parent.getCalendarMode()}.${formatType}.short`, cldrData);

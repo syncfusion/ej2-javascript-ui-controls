@@ -79,14 +79,15 @@ export interface IToolbarStatus {
     lowercase?: boolean
     createlink?: boolean
     insertcode?: boolean
+    blockquote?: boolean
     numberFormatList?: string | boolean
     bulletFormatList?: string | boolean
 }
 /**
  * @deprecated
  * @private
- * 
- * 
+ *
+ *
  * */
 export interface IImageResizeFactor {
     // [x multiplier, y multiplier]

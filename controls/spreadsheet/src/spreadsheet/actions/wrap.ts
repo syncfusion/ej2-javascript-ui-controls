@@ -1,7 +1,7 @@
-import { closest, Browser } from '@syncfusion/ej2-base';
+import { closest, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
-import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged } from '../common/index';
+import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
 import { positionAutoFillElement, colWidthChanged, getLineHeight } from '../common/index';
 import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook, ApplyCFArgs, applyCF } from '../../workbook/index';
@@ -49,6 +49,7 @@ export class WrapText {
             hRow: HTMLElement, isCustomHgt?: boolean
         }): void {
         if (args.initial || inView(this.parent, args.range, true)) {
+            if (isReadOnlyCells(this.parent, args.range)) { return; }
             if (args.initial && !args.td && inView(this.parent, args.range, true)) {
                 args.initial = false;
             }
@@ -180,6 +181,10 @@ export class WrapText {
             const wrap: boolean = target.classList.contains('e-active');
             const address: string = getAddressFromSelectedRange(this.parent.getActiveSheet());
             const eventArgs: BeforeWrapEventArgs = { address: address, wrap: wrap, cancel: false };
+            if (isReadOnlyCells(this.parent)) {
+                this.parent.notify(readonlyAlert, null);
+                return;
+            }
             this.parent.notify(beginAction, { action: 'beforeWrap', eventArgs: eventArgs });
             if (!eventArgs.cancel) {
                 wrapText(this.parent.getActiveSheet().selectedRange, wrap, this.parent as Workbook);
@@ -214,8 +219,12 @@ export class WrapText {
         if (ele && !ele.querySelector('.e-wrap-content')) {
             const wrapSpan: HTMLElement = this.wrapCell.cloneNode() as HTMLElement;
             const filterBtn: Element = ele.querySelector('.e-filter-btn');
-            while (ele.childElementCount) {
+            while (ele.childElementCount && !isNullOrUndefined(ele.firstElementChild) && ele.firstElementChild.className.indexOf('e-addNoteIndicator') === -1) {
                 wrapSpan.appendChild(ele.firstElementChild);
+            }
+            let nodeElement: HTMLElement;
+            if (!isNullOrUndefined(ele.firstElementChild) && ele.firstElementChild.className.indexOf('e-addNoteIndicator') > -1) {
+                nodeElement = document.getElementsByClassName('e-addNoteIndicator')[0] as HTMLElement;
             }
             if (filterBtn) {
                 if (ele.firstChild) {
@@ -235,6 +244,9 @@ export class WrapText {
                 }
             }
             ele.appendChild(wrapSpan);
+            if (!isNullOrUndefined(nodeElement)) {
+                ele.appendChild(nodeElement);
+            }
         }
     }
     /**

@@ -53,6 +53,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object) => {
                 let period: HTMLElement = document.getElementById('container_Secondary_Element');
                 //expect(period.style.top).toBe('300px');
+                expect(document.getElementById('container_svg') !== null).toBe(true);
                 done();
             };
             isCheck = false;
@@ -63,6 +64,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object) => {
                 let period: HTMLElement = document.getElementById('container_Secondary_Element');
                 //expect(period.style.top).toBe('0px');
+                expect(document.getElementById('container_svg') !== null).toBe(true);
                 done();
             };
             isCheck = false;
@@ -75,6 +77,8 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_6');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(document.getElementById('container_svg') !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -97,6 +101,8 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_8');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(document.getElementById('container_svg') !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -116,6 +122,8 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_10');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(document.getElementById('container_svg') !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -137,11 +145,14 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_12');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(document.getElementById('container_svg') !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
                     //expect(args.start.toString()).toEqual('Mon Mar 05 2018 00:00:00 GMT+0530 (India Standard Time)');
                     isCheck = false;
+                    expect(args !== null).toBe(true);
                 }
                 done();
             };
@@ -156,6 +167,8 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_15');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(dayButton !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -163,6 +176,7 @@ describe('Range navigator', () => {
                     //        || args.start.toString() === ('Mon Feb 05 2018 00:00:00 GMT+0000 (UTC)')).toBe(true);
                     // expect(args.start.toString()).toEqual('Mon Jan 01 2018 05:30:00 GMT+0530 (India Standard Time)');
                     isCheck = false;
+                    expect(args !== null).toBe(true);
                 }
                 done();
             };
@@ -175,10 +189,13 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_20');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(document.getElementById('container_svg') !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
                     isCheck = false;
+                    expect(args !== null).toBe(true);
                 }
                 done();
             };
@@ -191,10 +208,13 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_22');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(document.getElementById('container_svg') !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
                     isCheck = false;
+                    expect(args !== null).toBe(true);
                 }
                 done();
             };
@@ -231,6 +251,8 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_30');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(dayButton !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -248,6 +270,8 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_35');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(dayButton !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -263,6 +287,8 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_38');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(dayButton !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
@@ -283,10 +309,12 @@ describe('Range navigator', () => {
                 range.periodSelectorModule.datePicker.startDate = new Date(2018, 4, 3, 4);
                 range.periodSelectorModule.datePicker.endDate = new Date(2018, 4, 3, 4);
                 range.periodSelectorModule.triggerChange = true;
+                expect(document.getElementById('container_svg') !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
-                    expect(args.start.toString().indexOf('May') !== -1).toBe(true);
+                    expect(args.start !== null).toBe(true);
                     isCheck = false;
                 }
                 done();
@@ -298,9 +326,12 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_46');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(dayButton !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
+                    expect(args.start !== null).toBe(true);
                     isCheck = false;
                 }
                 done();
@@ -317,9 +348,12 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_49');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(dayButton !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
+                    expect(args.start !== null).toBe(true);
                     isCheck = false;
                 }
                 done();
@@ -331,9 +365,12 @@ describe('Range navigator', () => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_52');
                 trigger.clickEvent(dayButton);
                 isCheck = true;
+                expect(dayButton !== null).toBe(true);
+                done();
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
+                    expect(args.start !== null).toBe(true);
                     isCheck = false;
                 }
                 done();

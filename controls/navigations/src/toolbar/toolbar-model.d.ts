@@ -236,7 +236,7 @@ export interface ToolbarModel extends ComponentModel{
      * * If the popup content overflows the height of the page, the rest of the elements will be hidden.
      *
      * {% codeBlock src='toolbar/scrollStep/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default null
      */
     scrollStep?: number;

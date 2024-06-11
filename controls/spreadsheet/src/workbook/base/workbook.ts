@@ -9,7 +9,7 @@ import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, locale
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
-import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange } from '../common/interface';
+import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange, SerializationOptions } from '../common/interface';
 import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType, dateToInt } from '../common/index';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
@@ -37,7 +37,7 @@ import { IFormulaColl } from '../../calculate/common/interface';
 export class Workbook extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Configures sheets and its options.
-     * 
+     *
      * {% codeBlock src='spreadsheet/sheets/index.md' %}{% endcodeBlock %}
      *
      * @default []
@@ -95,7 +95,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Defines the width of the Spreadsheet. It accepts width as pixels, number, and percentage.
-     * 
+     *
      * {% codeBlock src='spreadsheet/width/index.md' %}{% endcodeBlock %}
      *
      * @default '100%'
@@ -193,6 +193,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public allowHyperlink: boolean;
 
     /**
+     * Enables or disables the ability to add or show notes in the Spreadsheet. If the property is set to false, the Spreadsheet will not add notes in the cells and the notes in the existing cells will not be visible.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableNotes: boolean;
+
+    /**
      * It allows you to insert rows, columns, and sheets into the spreadsheet.
      *
      * @default true
@@ -249,19 +257,27 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public allowAutoFill: boolean;
 
     /**
+     * Enables or disables the printing functionality in the spreadsheet.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowPrint: boolean;
+
+    /**
      * Configures the auto fill settings.
-     * 
+     *
      * The autoFillSettings `fillType` property has FOUR types and it is described below:
      *
      * * CopyCells: To update the copied cells for the selected range.
      * * FillSeries: To update the filled series for the selected range.
      * * FillFormattingOnly: To fill the formats only for the selected range.
      * * FillWithoutFormatting: To fill without the format for the selected range.
-     * 
+     *
      * {% codeBlock src='spreadsheet/autoFillSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * > The `allowAutoFill` property should be `true`.
-     * 
+     *
      * @default { fillType: 'FillSeries', showFillOptions: true }
      */
 
@@ -278,7 +294,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the cell style options.
-     * 
+     *
      * {% codeBlock src='spreadsheet/cellStyle/index.md' %}{% endcodeBlock %}
      *
      * @default {}
@@ -320,7 +336,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Specifies the name of a range and uses it in a formula for calculation.
-     * 
+     *
      * {% codeBlock src='spreadsheet/definedNames/index.md' %}{% endcodeBlock %}
      *
      * @default []
@@ -497,6 +513,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     public chartColl: ChartModel[] = [];
+    /**
+     * @hidden
+     */
+    public isPrintingProcessing: boolean = false;
+    /**
+     * @hidden
+     */
+    public currentPrintSheetIndex: number = 0;
 
     /** @hidden */
     public formulaRefCell: string;
@@ -622,7 +646,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         return style;
     }
 
-    
+
     /**
      * Applies the number format (number, currency, percentage, short date, etc...) to the specified range of cells.
      *
@@ -757,6 +781,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {CellStyleModel} style - Specifies the style property which contains border value.
      * @param {string} range - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
      * @param {BorderType} type - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @param {boolean} isUndoRedo - Specifies is undo redo or not.
      * @returns {void} - To Sets the border to specified range of cells.
      */
     public setBorder(style: CellStyleModel, range?: string, type?: BorderType, isUndoRedo?: boolean): void {
@@ -829,6 +854,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public delete(startIndex?: number, endIndex?: number, model?: ModelType, sheet?: number | string): void {
         startIndex = startIndex || 0; let sheetModel: SheetModel | WorkbookModel;
         if (!model || model === 'Sheet') {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             sheetModel = this;
         } else {
             sheetModel = this.getSheetModel(sheet);
@@ -891,7 +917,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public merge(range?: string, type?: MergeType): void {
         let sheetIdx: number; let sheet: SheetModel;
         if (range) {
-            sheetIdx = getSheetIndexFromAddress(this, range); sheet = getSheet(this, sheetIdx);
+            sheetIdx = this.isPrintingProcessing ? this.currentPrintSheetIndex : getSheetIndexFromAddress(this, range);
+            sheet = getSheet(this, sheetIdx);
         } else {
             sheet = this.getActiveSheet(); range = sheet.selectedRange;
         }
@@ -943,7 +970,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * @returns {SheetModel} - To get Active Sheet.
      */
     public getActiveSheet(): SheetModel {
@@ -1043,10 +1071,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} colIndex - Specifies the colIndex.
      * @param {string} formulaCellReference - Specifies the formulaCellReference.
      * @param {boolean} refresh - Specifies the refresh.
+     * @param {boolean} isUnique - Specifies is unique formula or not.
+     * @param {boolean} isSubtotal - Specifies is from Subtotal formula or not.
      * @returns {string | number} - To set the value for row and col.
      */
     public getValueRowCol(
-        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean, isUnique?: boolean, isSubtotal?: boolean): string | number {
+        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string,
+        refresh?: boolean, isUnique?: boolean, isSubtotal?: boolean): string | number {
         const args: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
             action: 'getSheetInfo', sheetInfo: []
         };
@@ -1099,9 +1130,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} rowIndex - Specifies the rowIndex.
      * @param {number} colIndex - Specifies the colIndex.
      * @param {string} formula - Specifies the colIndex.
+     * @param {boolean} isRandomFormula - Specifies is random formula or not.
      * @returns {void} - To set the value for row and col.
      */
-    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string, isRandomFormula?: boolean): void {
+    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number,
+                          colIndex: number, formula?: string, isRandomFormula?: boolean): void {
         this.notify(
             workbookEditOperation,
             {
@@ -1133,11 +1166,54 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {Object} options - Options for opening the JSON object.
      * @param {string | object} options.file - Options for opening the JSON object.
      * @param {boolean} options.triggerEvent - Specifies whether to trigger the `openComplete` event or not.
+     * @param {SerializationOptions} jsonConfig - Specify the serialization options to customize the loading of the JSON data.
+     * @param {boolean} jsonConfig.onlyValues - If true, only the cell values will be loaded, excluding styles, formulas, etc.
+     * @param {boolean} jsonConfig.ignoreStyle - If true, styles will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreFormula - If true, formulas will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreFormat - If true, number formats will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreConditionalFormat - If true, conditional formatting will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreValidation - If true, data validation rules will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreFreezePane - If true, freeze panes will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreWrap - If true, text wrapping settings will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreChart - If true, charts will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreImage - If true, images will be excluded when loading the JSON data.
+     * @param {boolean} jsonConfig.ignoreNote -  If true, notes will be excluded when loading the JSON data.
      * @returns {void} - Opens the specified JSON object.
      */
-    public openFromJson(options: { file: string | object, triggerEvent?: boolean }): void {
+    public openFromJson(options: { file: string | object, triggerEvent?: boolean }, jsonConfig?: SerializationOptions): void {
         this.isOpen = true;
-        const jsonObject: string = typeof options.file === 'object' ? JSON.stringify(options.file) : options.file;
+        let jsonObject: string = typeof options.file === 'object' ? JSON.stringify(options.file) : options.file;
+        if (jsonObject !== '' && jsonConfig) {
+            const skipProps: string[] = [];
+            if (jsonConfig.onlyValues) {
+                skipProps.push(...['style', 'formula', 'format', 'conditionalFormats', 'validation',
+                    'hyperlink', 'wrap', 'chart', 'image', 'notes']);
+            } else {
+                const ignoreProps: { [key: string]: boolean } = {
+                    style: jsonConfig.ignoreStyle,
+                    formula: jsonConfig.ignoreFormula,
+                    format: jsonConfig.ignoreFormat,
+                    conditionalFormats: jsonConfig.ignoreConditionalFormat,
+                    validation: jsonConfig.ignoreValidation,
+                    wrap: jsonConfig.ignoreWrap,
+                    chart: jsonConfig.ignoreChart,
+                    image: jsonConfig.ignoreImage,
+                    notes: jsonConfig.ignoreNote
+                };
+                if (jsonConfig.ignoreFreezePane) { skipProps.push(...['frozenColumns', 'frozenRows']); }
+                for (const prop in ignoreProps) {
+                    if (ignoreProps[prop as string]) {
+                        skipProps.push(prop);
+                    }
+                }
+            }
+            jsonObject = JSON.stringify(JSON.parse(jsonObject), (key: string, value: { [key: string]: object }) => {
+                if (skipProps.indexOf(key) > -1) {
+                    return undefined;
+                }
+                return value;
+            });
+        }
         this.notify(events.workbookOpen, { jsonObject: jsonObject, triggerEvent: options.triggerEvent });
     }
 
@@ -1152,9 +1228,21 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * * saveType: Specifies the file type need to be saved.
      *
      * @param {SaveOptions} saveOptions - Options for saving the excel file.
+     * @param {SerializationOptions} jsonConfig - Specify the serialization options to customize the JSON output.
+     * @param {boolean} jsonConfig.onlyValues - If true, only the cell values will be included, excluding styles, formulas, etc.
+     * @param {boolean} jsonConfig.ignoreStyle - If true, styles will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreFormula - If true, formulas will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreFormat - If true, number formats will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreConditionalFormat - If true, conditional formatting will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreValidation - If true, data validation rules will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreFreezePane - If true, freeze panes will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreWrap - If true, text wrapping settings will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreChart - If true, charts will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreImage - If true, images will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreNote -  If true, notes will be excluded from the JSON output.
      * @returns {void} - To Saves the Spreadsheet data to Excel file.
      */
-    public save(saveOptions: SaveOptions = {}): void {
+    public save(saveOptions: SaveOptions = {}, jsonConfig?: SerializationOptions): void {
         if (this.allowSave) {
             const defaultProps: SaveOptions = {
                 url: this.saveUrl,
@@ -1176,8 +1264,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             this.notify(beginAction, { eventArgs: eventArgs, action: 'beforeSave' });
             if (!eventArgs.cancel) {
                 this.notify(
-                    events.beginSave, { saveSettings: eventArgs, isFullPost: eventArgs.isFullPost, needBlobData: eventArgs.needBlobData,
-                        customParams: eventArgs.customParams, pdfLayoutSettings: eventArgs.pdfLayoutSettings });
+                    events.beginSave, {
+                        saveSettings: eventArgs, isFullPost: eventArgs.isFullPost, needBlobData: eventArgs.needBlobData,
+                        customParams: eventArgs.customParams, pdfLayoutSettings: eventArgs.pdfLayoutSettings,
+                        jsonConfig: jsonConfig });
             }
         }
     }
@@ -1187,9 +1277,21 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      *
      * {% codeBlock src='spreadsheet/saveAsJson/index.md' %}{% endcodeBlock %}
      *
+     * @param {SerializationOptions} jsonConfig - Specify the serialization options to customize the JSON output.
+     * @param {boolean} jsonConfig.onlyValues - If true, only the cell values will be included, excluding styles, formulas, etc.
+     * @param {boolean} jsonConfig.ignoreStyle - If true, styles will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreFormula - If true, formulas will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreFormat - If true, number formats will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreConditionalFormat - If true, conditional formatting will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreValidation - If true, data validation rules will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreFreezePane - If true, freeze panes will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreWrap - If true, text wrapping settings will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreChart - If true, charts will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreImage - If true, images will be excluded from the JSON output.
+     * @param {boolean} jsonConfig.ignoreNote -  If true, notes will be excluded from the JSON output.
      * @returns {Promise<object>} - To Saves the Spreadsheet data as JSON object.
      */
-    public saveAsJson(): Promise<object> {
+    public saveAsJson(jsonConfig?: SerializationOptions): Promise<object> {
         return new Promise<object>((resolve: Function) => {
             this.on(events.onSave, (args: { cancel: boolean, jsonObject: object }) => {
                 args.cancel = true;
@@ -1197,7 +1299,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 resolve({ jsonObject: { Workbook: args.jsonObject } });
                 this.notify(events.saveCompleted, args);
             });
-            this.save();
+            this.save({}, jsonConfig);
         });
     }
 
@@ -1250,7 +1352,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         this.setSheetPropertyOnMute(sheetModel, 'isProtected', true);
         this.setSheetPropertyOnMute(sheetModel, 'password', password ? password : '');
         this.setSheetPropertyOnMute(sheetModel, 'protectSettings', protectSettings ? protectSettings : {});
-        this.notify(events.protectsheetHandler, { protectSettings: sheetModel.protectSettings, password: sheetModel.password, sheetIndex: sheet } );
+        this.notify(events.protectsheetHandler, {
+            protectSettings: sheetModel.protectSettings, password: sheetModel.password, sheetIndex: sheet
+        });
     }
 
     /**
@@ -1277,6 +1381,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param {SortOptions} sortOptions - options for sorting.
      * @param {string} range - address of the data range.
+     * @param {SortCollectionModel[]} previousSort - specifies previous sort collection.
      * @returns {Promise<SortEventArgs>} - Sorts the range of cells in the active Spreadsheet.
      */
     public sort(sortOptions?: SortOptions, range?: string, previousSort?: SortCollectionModel[]): Promise<SortEventArgs> {
@@ -1286,9 +1391,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             sortOptions: sortOptions || { sortDescriptors: {} },
             cancel: false
         };
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
-        const sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> | SortCollectionModel[] } = { args: eventArgs, promise: promise, previousSort: previousSort };
+        const promise: Promise<SortEventArgs> = new Promise((resolve: Function) => { resolve((() => { /** */ })()); });
+        const sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> | SortCollectionModel[] } =
+            { args: eventArgs, promise: promise, previousSort: previousSort };
         this.notify(events.initiateSort, sortArgs);
         return sortArgs.promise as Promise<SortEventArgs>;
     }
@@ -1318,13 +1423,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} cellAddress - Address of the cell.
      * @returns {boolean} - It return true if the cell value is valid; otherwise, false.
      */
-     public isValidCell(cellAddress?: string): boolean {
+    public isValidCell(cellAddress?: string): boolean {
         const range: number[] = getCellIndexes(cellAddress);
         const cell: CellModel = getCell(range[0], range[1], this.getActiveSheet());
         if (cell && cell.validation) {
-            const value = cell.value ? cell.value : '';
-            const sheetIdx = this.activeSheetIndex;
-            let validEventArgs: checkCellValid = { value, range, sheetIdx, isCell: false, td: null, isValid: true };
+            const value: string = cell.value ? cell.value : '';
+            const sheetIdx: number = this.activeSheetIndex;
+            const validEventArgs: checkCellValid = { value, range, sheetIdx, isCell: false, td: null, isValid: true };
             this.notify(events.isValidation, validEventArgs);
             return validEventArgs.isValid;
         } else {
@@ -1487,16 +1592,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         return <boolean>eventArgs.isRemoved;
     }
 
-    /** @hidden
-     * @param {string} address - Specifies the address.
-     * @param {number} sheetIndex - Specifies the sheetIndex.
-     * @param {boolean} valueOnly - Specifies the bool value.
-     * @returns {void} - To clear range.
-     */
-    public clearRange(address?: string, sheetIndex?: number, valueOnly?: boolean): void {
-        //** */
-    }
-
     /**
      * Used to set the image in spreadsheet.
      *
@@ -1565,8 +1660,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             filterOptions: filterOptions,
             cancel: false
         };
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const promise: Promise<FilterEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
+        const promise: Promise<FilterEventArgs> = new Promise((resolve: Function) => { resolve((() => { /** */ })()); });
         const filterArgs: { [key: string]: BeforeFilterEventArgs | Promise<FilterEventArgs> } = { args: eventArgs, promise: promise };
         this.notify(events.initiateFilter, filterArgs);
         return filterArgs.promise as Promise<FilterEventArgs>;
@@ -1577,6 +1671,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param {string} functionHandler - Custom function handler name
      * @param {string} functionName - Custom function name
+     * @param {string} formulaDescription - Specifies formula description.
      * {% codeBlock src='spreadsheet/addCustomFunction/index.md' %}{% endcodeBlock %}
      * @returns {void} - To add custom library function.
      */
@@ -1755,6 +1850,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param {InsertDeleteEventArgs} args - Insert / Detele event arguments.
      * @param {number[]} index - Existing range.
+     * @param {boolean} isRangeFormula - Specifies is range formula or not.
      * @returns {boolean} - It return `true`, if the insert / delete action happens between the provided range, otherwise `false`.
      * @hidden
      */
@@ -1764,10 +1860,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             diff = (args.endIndex - args.startIndex) + 1;
             if (args.modelType === 'Row') {
                 if (args.startIndex <= index[0]) { index[0] += diff; updated = true; }
-                if ((args.startIndex <= index[2]) || (isRangeFormula && args.startIndex === index[2] + 1)) { index[2] += diff; updated = true; }
+                if ((args.startIndex <= index[2]) || (isRangeFormula && args.startIndex === index[2] + 1)) {
+                    index[2] += diff; updated = true;
+                }
             } else {
                 if (args.startIndex <= index[1]) { index[1] += diff; updated = true; }
-                if (args.startIndex <= index[3] || (isRangeFormula && args.startIndex === index[3] + 1)) { index[3] += diff; updated = true; }
+                if (args.startIndex <= index[3] || (isRangeFormula && args.startIndex === index[3] + 1)) {
+                    index[3] += diff; updated = true;
+                }
             }
         } else {
             if (args.modelType === 'Row') {
@@ -1811,13 +1911,24 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         return updated;
     }
 
-    /** @hidden */
+    /**
+     * @param {number} rowIndex - Specifies the row index.
+     * @param {number} colIndex - Specifies the column index.
+     * @param {HTMLTableRowElement} row - Specifies the row.
+     * @returns {HTMLElement} - returns cell element.
+     * @hidden
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getCell(rowIndex: number, colIndex: number, row?: HTMLTableRowElement): HTMLElement {
         return null;
     }
 
     /**
      * Used in calculate to compute integer value of date
+     *
+     * @param {Date} date - Specifies the date value.
+     * @param {boolean} isTime -Specifies is Time or not.
+     * @returns {number} - Returns integer value of date.
      */
     private dateToInt(date: Date, isTime: boolean): number {
         return dateToInt(date, isTime);
@@ -1825,6 +1936,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Used to update format from calculate.
+     *
+     * @param {number} sheetId - Specifies the sheetId.
+     * @param {number} rowIndex - Specifies the row index.
+     * @param {number} colIndex - Specifies the col index.
+     * @returns {void} - Update format from calculate.
      */
     private setDateFormat(sheetId: number, rowIndex: number, colIndex: number): void {
         const sheet: SheetModel = getSheet(this, getSheetIndexFromId(this, sheetId));

@@ -79,12 +79,12 @@ export class MDSelectionFormats {
         return matchText;
     }
     private multiCharRegx(cmd: string): RegExp {
-        // eslint-disable-next-line
-        return new RegExp('(\\' + cmd + '\\' + cmd + ')', 'g');
+        const regExp: RegExpConstructor = RegExp;
+        return new regExp('(\\' + cmd + '\\' + cmd + ')', 'g');
     }
     private singleCharRegx(cmd: string): RegExp {
-        // eslint-disable-next-line
-        return new RegExp('(\\' + cmd + ')', 'g');
+        const regExp: RegExpConstructor = RegExp;
+        return new regExp('(\\' + cmd + ')', 'g');
     }
 
     public isAppliedCommand(cmd?: string): | boolean {
@@ -307,6 +307,7 @@ export class MDSelectionFormats {
     }
     private isApplied(line: { [key: string]: string | number }, command: string): boolean | void {
         let regx: RegExp = this.singleCharRegx(this.syntax[`${command}`]);
+        let regExp: RegExpConstructor;
         switch (command) {
         case 'SubScript':
         case 'SuperScript':
@@ -318,8 +319,8 @@ export class MDSelectionFormats {
             return regx.test(line.text as string);
         case 'UpperCase':
         case 'LowerCase':
-            // eslint-disable-next-line
-            regx = new RegExp('^[' + this.syntax[`${command}`] + ']*$', 'g');
+            regExp = RegExp;
+            regx = new regExp('^[' + this.syntax[`${command}`] + ']*$', 'g');
             return regx.test(line.text as string);
         case 'Italic': {
             let regTest: boolean;

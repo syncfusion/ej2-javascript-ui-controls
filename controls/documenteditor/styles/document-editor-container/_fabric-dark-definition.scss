@@ -38,12 +38,8 @@ $de-ruler-indent-hover:  $neutral-white !default;
 $de-ruler-indent-active: $theme-primary !default;
 $de-custom-treeview-text-size: 13px !default;
 $de-custom-treeview-text-size-bg: 14px !default;
-
-// Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 120px) !default;
 $de-tool-ctnr-editor-height-big: calc(100% - 122px) !default;
-
-// Subtract statusbar height
 $de-ctnr-editor-height: calc(100% - 40px) !default;
 $de-ctnr-editor-height-big: calc(100% - 40px) !default;
 $de-ctrnr-tblr-item-padding: 0 !default;
@@ -98,7 +94,6 @@ $de-pageweb-toggle-color: $neutral-quintenary !default;
 $de-pageweb-toggle-outline: #fafafa 0 solid !default;
 $de-layout-btn-font-size: 14px;
 $de-layout-btn-bgr-font-size: 14px;
-
 $de-pagenumber-text-border-radius: 0;
 $de-pagenumber-text-margin-top: -1px;
 $e-de-pagenumber-input-margin-left: -3px;

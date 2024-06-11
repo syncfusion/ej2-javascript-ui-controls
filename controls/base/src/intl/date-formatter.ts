@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DateFormatOptions } from '../internationalization';
 import { ParserBase as parser, NumberMapper } from './parser-base';
 import { IntlBase as base } from './intl-base';
@@ -53,8 +54,6 @@ export const datePartMatcher: { [key: string]: Object } = {
 };
 
 const timeSeparator: string = 'timeSeparator';
-
-/* tslint:disable no-any */
 /**
  * Date Format is a framework provides support for date formatting.
  *
@@ -102,32 +101,28 @@ export class DateFormat {
                 case 'E':
                 case 'c':
                     if (isBlazor()) {
-                        // eslint-disable-next-line
-                        formatOptions.weekday = getValue('days.' + (base as any).monthIndex[len], dateObject);
+                        formatOptions.weekday = getValue('days.' + (base as any).monthIndex[`${len}`], dateObject);
                     } else {
-                        // eslint-disable-next-line
-                        formatOptions.weekday = (<any>dependable.dateObject)[base.days][standalone][(<any>base).monthIndex[len]];
+                        formatOptions.weekday = (<any>dependable.dateObject)[`${base.days}`][`${standalone}`][(<any>base).monthIndex[`${len}`]];
                     }
                     break;
                 case 'M':
                 case 'L':
                     if (isBlazor()) {
-                        // eslint-disable-next-line
-                        formatOptions.month = getValue('months.' + (base as any).monthIndex[len], dateObject);
+                        formatOptions.month = getValue('months.' + (base as any).monthIndex[`${len}`], dateObject);
                     } else {
-                        // eslint-disable-next-line
-                        formatOptions.month = (<any>dependable.dateObject)[base.month][standalone][(<any>base.monthIndex)[len]];
+                        formatOptions.month = (<any>dependable.dateObject)[`${base.month}`][`${standalone}`][(<any>base.monthIndex)[`${len}`]];
                     }
                     break;
                 case 'a':
                     formatOptions.designator = isBlazor() ?
                         getValue('dayPeriods', dateObject) : getValue('dayPeriods.format.wide', dateObject);
                     break;
-                case 'G':
-                    // eslint-disable-next-line
+                case 'G': {
                     const eText: string = (len <= 3) ? 'eraAbbr' : (len === 4) ? 'eraNames' : 'eraNarrow';
                     formatOptions.era = isBlazor() ? getValue('eras', dateObject) : getValue('eras.' + eText, dependable.dateObject);
                     break;
+                }
                 case 'z':
                     formatOptions.timeZone = getValue('dates.timeZoneNames', dependable.parserObject);
                     break;
@@ -169,16 +164,14 @@ export class DateFormat {
             case 'L':
                 curval = dObject.month;
                 if (length > 2) {
-                    // eslint-disable-next-line
-                    ret += (<any>options.month)[curval];
+                    ret += (<any>options.month)[`${curval}`];
                 } else {
                     isNumber = true;
                 }
                 break;
             case 'E':
             case 'c':
-                // eslint-disable-next-line
-                ret += (<any>options.weekday)[weekdayKey[value.getDay()]];
+                ret += (<any>options.weekday)[`${weekdayKey[value.getDay()]}`];
                 break;
             case 'H':
             case 'h':
@@ -192,8 +185,7 @@ export class DateFormat {
                 } else if (char === 'f') {
                     isNumber = false;
                     processNumber = true;
-                    // eslint-disable-next-line
-                    curvalstr = (<any>value)[(<any>timeSetter)[char]]().toString();
+                    curvalstr = (<any>value)[`${(<any>timeSetter)[`${char}`]}`]().toString();
                     curvalstr = curvalstr.substring(0, length);
                     const curlength: number = curvalstr.length;
                     if (length !== curlength) {
@@ -206,8 +198,7 @@ export class DateFormat {
                     }
                     curstr += curvalstr;
                 } else {
-                    // eslint-disable-next-line
-                    curval = (<any>value)[(<any>timeSetter)[char]]();
+                    curval = (<any>value)[`${(<any>timeSetter)[`${char}`]}`]();
                 }
                 if (char === 'h') {
                     curval = curval % 12 || 12;
@@ -220,30 +211,25 @@ export class DateFormat {
                     curstr = curstr.substr(curstr.length - 2);
                 }
                 break;
-            case 'a':
-                // eslint-disable-next-line
-                let desig: string = value.getHours() < 12 ? 'am' : 'pm';
-                // eslint-disable-next-line
-                ret += (<any>options).designator[desig];
+            case 'a': {
+                const desig: string = value.getHours() < 12 ? 'am' : 'pm';
+                ret += (<any>options).designator[`${desig}`];
                 break;
-            case 'G':
-                // eslint-disable-next-line
-                let dec: number = value.getFullYear() < 0 ? 0 : 1;
-                // eslint-disable-next-line
-                let retu: String = (<any>options).era[dec];
+            }
+            case 'G': {
+                const dec: number = value.getFullYear() < 0 ? 0 : 1;
+                let retu: string = (<any>options).era[`${dec}`];
                 if (isNullOrUndefined(retu)) {
-                    // eslint-disable-next-line
                     retu = (<any>options).era[dec ? 0 : 1];
                 }
                 ret += retu || '';
                 break;
+            }
             case '\'':
                 ret += (match === '\'\'') ? '\'' : match.replace(/'/g, '');
                 break;
-            case 'z':
-                // eslint-disable-next-line
-                let timezone: number = value.getTimezoneOffset();
-                // eslint-disable-next-line
+            case 'z': {
+                const timezone: number = value.getTimezoneOffset();
                 let pattern: string = (length < 4) ? '+H;-H' : options.timeZone.hourFormat;
                 pattern = pattern.replace(/:/g, options.numMapper.timeSeparator);
                 if (timezone === 0) {
@@ -254,9 +240,9 @@ export class DateFormat {
                 }
                 curstr = options.timeZone.gmtFormat.replace(/\{0\}/, curstr);
                 break;
+            }
             case ':':
-                // eslint-disable-next-line
-                ret += (<any>options).numMapper.numberSymbols[timeSeparator];
+                ret += (<any>options).numMapper.numberSymbols[`${timeSeparator}`];
                 break;
             case '/':
                 ret += options.dateSeperator;

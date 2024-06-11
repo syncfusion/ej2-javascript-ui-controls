@@ -8,7 +8,7 @@ import * as CLS from '../base/classes';
 import * as events from '../base/constant';
 import { paste, rename } from '../common/operations';
 import { getLocaleText, getDuplicateData, objectToString, getCssClass } from '../common/utility';
-import { SelectedEventArgs, FileInfo, Input } from '@syncfusion/ej2-inputs';
+import { SelectedEventArgs, Input } from '@syncfusion/ej2-inputs';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 
 /**
@@ -17,13 +17,12 @@ import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
  * @param {string} text - specifies the text string.
  * @param {ReadArgs | SelectedEventArgs} e - specifies the type of event args.
  * @param {FileDetails} details - specifies the file details.
- * @param {string[]} replaceItems - specifies the replacement.
  * @returns {void}
  * @private
  */
 export function createDialog(parent: IFileManager,
-                             text: string, e?: ReadArgs | SelectedEventArgs, details?: FileDetails, replaceItems?: string[]): void {
-    const options: DialogOptions = getOptions(parent, text, e, details, replaceItems);
+                             text: string, e?: ReadArgs | SelectedEventArgs, details?: FileDetails): void {
+    const options: DialogOptions = getOptions(parent, text, e, details);
     if (isNOU(parent.dialogObj)) {
         parent.dialogObj = new Dialog({
             beforeOpen: keydownAction.bind(this, parent, options.dialogName),
@@ -529,12 +528,11 @@ function createInput(ele: HTMLInputElement, placeholder: string): void {
  * @param {string} text - specifies the text string.
  * @param {ReadArgs | SelectedEventArgs} e - specifies the event arguements.
  * @param {FileDetails} details - specifies the file details.
- * @param {string[]} replaceItems - specifies the replacement items.
  * @returns {DialogOptions} - specifies the dialog options.
  * @private
  */
 function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedEventArgs,
-                    details?: FileDetails, replaceItems?: string[]): DialogOptions {
+                    details?: FileDetails): DialogOptions {
     const options: DialogOptions = {
         header: '', content: '', buttons: [], dialogName: ''
     };
@@ -543,6 +541,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
     options.open = () => { triggerPopupOpen(parent, parent.dialogObj, options.dialogName); };
     options.close = () => { triggerPopupClose(parent, parent.dialogObj, options.dialogName); };
     text = (details && details.multipleFiles === true) ? 'MultipleFileDetails' : text;
+    let index: number;
     switch (text) {
     case 'NewFolder':
         options.dialogName = 'Create Folder';
@@ -572,7 +571,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
         options.buttons = [
             {
                 buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Yes') },
-                click: (e: KeyboardEvent) => {
+                click: () => {
                     onDeleteSubmit(parent);
                 }
             },
@@ -622,20 +621,19 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
         options.buttons = [
             {
                 buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Ok') },
-                click: (e: KeyboardEvent) => {
+                click: () => {
                     parent.dialogObj.hide();
                 }
             }
         ];
         break;
     case 'MultipleFileDetails':
-        let index: number;
         options.dialogName = 'File Details';
         strArr = parent.itemData.map((val: FileDetails) => {
             index = val.name.indexOf('.') + 1;
             return (index === 0 && (!val.isFile)) ? 'Folder' : ((index !== 0) ? val.name.substr(index).replace(' ', '') : 'undetermined');
         });
-        if (strArr[0] == undefined) {
+        if (strArr[0] === undefined) {
             strArr = details.name.split(',').map((val: string) => {
                 index = val.indexOf('.') + 1;
                 return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
@@ -675,7 +673,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
         options.buttons = [
             {
                 buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Ok') },
-                click: (e: KeyboardEvent) => {
+                click: () => {
                     parent.dialogObj.hide();
                 }
             }
@@ -732,28 +730,6 @@ function preventKeydown(btnElement: HTMLInputElement[]): void {
             }
         };
     }
-}
-
-/* istanbul ignore next */
-/**
- *
- * @param {SelectedEventArgs} data - specifies the data.
- * @returns {HTMLElement} - returns the HTML element.
- * @private
- */
-function getFilesName(data: SelectedEventArgs): HTMLElement {
-    const parent: HTMLElement = createElement('div', { id: 'uploadDialog' });
-    const ulElement: HTMLElement = createElement('ul');
-    const filesData: FileInfo[] = data.isModified ? data.modifiedFilesData : data.filesData;
-    for (let fileCount: number = 0; fileCount < filesData.length; fileCount++) {
-        const liElement: HTMLElement = createElement('li', { className: 'dialogFiles' });
-        liElement.innerHTML = filesData[fileCount as number].name;
-        ulElement.appendChild(liElement);
-    }
-    parent.appendChild(ulElement);
-    const errorTag: HTMLElement = createElement('div', { className: 'e-fe-error' });
-    parent.appendChild(errorTag);
-    return parent;
 }
 
 /**

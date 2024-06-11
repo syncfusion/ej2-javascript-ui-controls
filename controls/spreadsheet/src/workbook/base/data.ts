@@ -19,6 +19,7 @@ import { setCell, AutoDetectGeneralFormatArgs } from './../index';
  * @param {boolean} skipHiddenRows - Specifies the skipHiddenRows.
  * @param {string} commonAddr - Specifies the common address for the address parameter specified with list of range separated by ','.
  * @param {number} dateValueForSpecificColIdx - Specify the dateValueForSpecificColIdx.
+ * @param {Object} dateColData - Specify the dateColData.
  * @returns {Promise<Map<string, CellModel> | Object[]>} - To get the data
  * @hidden
  */
@@ -26,8 +27,7 @@ export function getData(
     context: Workbook, address: string, columnWiseData?: boolean, valueOnly?: boolean, frozenIndexes?: number[], filterDialog?: boolean,
     formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true, commonAddr?: string, dateValueForSpecificColIdx?: number,
     dateColData?: { [key: string]: Object }[]): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise((resolve: Function, reject: Function) => {
+    return new Promise((resolve: Function) => {
         resolve((() => {
             let sheetIdx: number;
             if (address.indexOf('!') > -1) {
@@ -42,7 +42,7 @@ export function getData(
             const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, formulaCellRef?: string, sheetIndex?: number,
                 isFinite?: boolean } = { sheet: sheet, indexes: indexes, formulaCellRef: formulaCellRef, sheetIndex: idx, isFinite:
                     (<any>context).scrollSettings && (<any>context).scrollSettings.isFinite,
-                    promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
+                    promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
             };
             /* eslint-enable */
             context.notify(updateSheetFromDataSource, args);

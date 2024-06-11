@@ -107,7 +107,6 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.intDrop, this);
     }
     // triggers when property changed
-    // eslint-disable-next-line
     public onPropertyChanged(newProp: DroppableModel, oldProp: DroppableModel): void {
         //No Code to handle
     }

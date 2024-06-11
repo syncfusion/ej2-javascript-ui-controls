@@ -1,6 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 /**
  * AccumulationChart DataLabel module file
  */
@@ -48,6 +45,11 @@ export class AccumulationDataLabel extends AccumulationBase {
      * Method to get datalabel text location.
      *
      * @private
+     * @param {AccPoints} point - The data point for which to calculate the label text location.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings for the series.
+     * @param {Size} textSize - The size of the text to be displayed.
+     * @param {AccPoints[]} points - The array of data points in the series.
+     * @returns {void}
      */
     public getDataLabelPosition(
         point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, textSize: Size,
@@ -58,7 +60,8 @@ export class AccumulationDataLabel extends AccumulationBase {
 
         //let radius: number = this.isCircular() ? this.labelRadius : this.getLabelDistance(point, dataLabel);
         if (this.accumulation.title) {
-            const titleSize: Size = measureText(this.accumulation.title, this.accumulation.titleStyle, this.accumulation.themeStyle.datalabelFont);
+            const titleSize: Size = measureText(this.accumulation.title, this.accumulation.titleStyle,
+                                                this.accumulation.themeStyle.datalabelFont);
             this.titleRect = new Rect(
                 this.accumulation.availableSize.width / 2 - titleSize.width / 2,
                 this.accumulation.margin.top,
@@ -101,9 +104,12 @@ export class AccumulationDataLabel extends AccumulationBase {
         }
     }
 
-    // eslint-disable-next-line jsdoc/require-returns
     /**
      * Method to get data label collection.
+     *
+     * @param {AccPoints} point - The data point for which to calculate the label collection.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings for the series.
+     * @returns {void}
      */
     public calculateLabelCollection(point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel): void {
         if (point.argsData.template !== null) {
@@ -113,7 +119,8 @@ export class AccumulationDataLabel extends AccumulationBase {
         const labelRadius : number = this.isCircular() ? (!this.isVariousRadius() ? this.accumulation.pieSeriesModule.labelRadius :
             this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], point)) :
             this.getLabelDistance(point, dataLabel);
-        const radius : number = (!this.isVariousRadius() ? (this.accumulation.pieSeriesModule.radius - this.accumulation.pieSeriesModule.innerRadius) :
+        const radius : number = (!this.isVariousRadius() ?
+            (this.accumulation.pieSeriesModule.radius - this.accumulation.pieSeriesModule.innerRadius) :
             this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], point));
         const location : ChartLocation = degreeToLocation(point.midAngle, labelRadius, this.isCircular() ? this.center :
             this.getLabelLocation(point, position));
@@ -121,8 +128,9 @@ export class AccumulationDataLabel extends AccumulationBase {
         let maxWidth : number = dataLabel.maxWidth;
         if (!maxWidth) {
             if (position === 'Outside') {
-                maxWidth = this.isCircular() ? (location.x >= this.center.x) ? (this.areaRect.x + this.areaRect.width - location.x) : (location.x  - this.areaRect.x) :
-                    (location.x >= point.region.x) ? (this.areaRect.x + this.areaRect.width - location.x) : (location.x  - this.areaRect.x);
+                maxWidth = this.isCircular() ? (location.x >= this.center.x) ? (this.areaRect.x + this.areaRect.width - location.x) :
+                    (location.x  - this.areaRect.x) : (location.x >= point.region.x) ?
+                    (this.areaRect.x + this.areaRect.width - location.x) : (location.x  - this.areaRect.x);
             }
             else {
                 maxWidth = this.isCircular() ? (radius - padding) : point.region.width;
@@ -132,7 +140,8 @@ export class AccumulationDataLabel extends AccumulationBase {
             point.labelCollection = point.label.split('<br>');
         }
         else if (dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Ellipsis') {
-            point.labelCollection[0] = textTrim(maxWidth, point.label, point.argsData.font, this.accumulation.enableRtl, this.accumulation.themeStyle.datalabelFont);
+            point.labelCollection[0] = textTrim(maxWidth, point.label, point.argsData.font, this.accumulation.enableRtl,
+                                                this.accumulation.themeStyle.datalabelFont);
         }
         else if (dataLabel.textWrap === 'Wrap' || dataLabel.textWrap === 'AnyWhere') {
             point.labelCollection = textWrap(point.label, maxWidth, point.argsData.font, this.accumulation.enableRtl, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip', this.accumulation.themeStyle.datalabelFont);
@@ -141,9 +150,12 @@ export class AccumulationDataLabel extends AccumulationBase {
             point.labelCollection[0] = point.label;
         }
     }
-    // eslint-disable-next-line jsdoc/require-returns
     /**
      * To calculate label collection text size.
+     *
+     * @param {string[]} labelCollection - The collection of label texts.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings for the series.
+     * @returns {Size} - The size of the label text collection.
      */
     public getTextSize(labelCollection : string[], dataLabel: AccumulationDataLabelSettingsModel): Size {
         let height : number = 0;
@@ -164,6 +176,12 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * Method to get datalabel smart position.
+     *
+     * @param {AccPoints} point - The data point for which to calculate the label smart position.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings for the series.
+     * @param {Size} textSize - The size of the text.
+     * @param {AccPoints[]} points - The collection of data points.
+     * @returns {void}
      */
     private getSmartLabel(
         point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, textSize: Size,
@@ -184,7 +202,8 @@ export class AccumulationDataLabel extends AccumulationBase {
             // `4` is padding adding to height and width of label region.
             point.labelRegion.height -= 4;
             point.labelRegion.width -= 4;
-            if (previousPoint && previousPoint.labelRegion && !dataLabel.enableRotation && (isOverlap(point.labelRegion, previousPoint.labelRegion)
+            if (previousPoint && previousPoint.labelRegion && !dataLabel.enableRotation &&
+                (isOverlap(point.labelRegion, previousPoint.labelRegion)
                 || this.isOverlapping(point, points)) || !circular && !containsRect(point.region, point.labelRegion)) {
                 point.labelPosition = 'Outside';
                 if (!circular) {
@@ -228,6 +247,10 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * To find trimmed datalabel tooltip needed.
      *
+     * @param {Event} e - The move event.
+     * @param {number} x - The x-coordinate.
+     * @param {number} y - The y-coordinate.
+     * @param {boolean} isTouch - Indicates if the interaction is touch-based.
      * @returns {void}
      * @private
      */
@@ -259,9 +282,12 @@ export class AccumulationDataLabel extends AccumulationBase {
         }
     }
     /**
-     * To find previous valid label point
+     * To find previous valid label point.
      *
-     * @returns {AccPoints} Find the previous value of accumulation point.
+     * @param {AccPoints[]} points - The array of accumulation points.
+     * @param {number} index - The index of the current point.
+     * @param {AccumulationLabelPosition} position - The position of the label.
+     * @returns {AccPoints} - Find the previous value of accumulation point.
      */
     private findPreviousPoint(points: AccPoints[], index: number, position: AccumulationLabelPosition): AccPoints {
         let point: AccPoints = points[0];
@@ -274,9 +300,11 @@ export class AccumulationDataLabel extends AccumulationBase {
         return null;
     }
     /**
-     * To find current point datalabel is overlapping with other points
+     * To find current point datalabel is overlapping with other points.
      *
-     * @returns {boolean} It returns boolean value of overlapping.
+     * @param {AccPoints} currentPoint - The current point.
+     * @param {AccPoints[]} points - The array of accumulation points.
+     * @returns {boolean} - It returns boolean value of overlapping.
      */
     private isOverlapping(currentPoint: AccPoints, points: AccPoints[]): boolean {
         for (let i: number = currentPoint.index - 1; i >= 0; i--) {
@@ -290,8 +318,16 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To get text trimmed while exceeds the accumulation chart area.
+     *
+     * @param {AccPoints} point - The accumulation point.
+     * @param {Rect} rect - The area of the accumulation chart.
+     * @param {FontModel} font - The font settings.
+     * @param {string} position - The position of the data label.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings.
+     * @returns {void}
      */
-    private textTrimming(point: AccPoints, rect: Rect, font: FontModel, position: string, dataLabel: AccumulationDataLabelSettingsModel): void {
+    private textTrimming(point: AccPoints, rect: Rect, font: FontModel, position: string,
+                         dataLabel: AccumulationDataLabelSettingsModel): void {
         if (isOverlap(point.labelRegion, rect)) {
             let size: number = point.labelRegion.width;
             if (position === 'Right') {
@@ -318,7 +354,8 @@ export class AccumulationDataLabel extends AccumulationBase {
                 }
                 else if (size < point.labelRegion.width) {
                     if (dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Ellipsis') {
-                        point.labelCollection[0] = textTrim(size - (this.marginValue * 2), point.label, font, this.accumulation.enableRtl, this.accumulation.themeStyle.datalabelFont);
+                        point.labelCollection[0] = textTrim(size - (this.marginValue * 2), point.label, font, this.accumulation.enableRtl,
+                                                            this.accumulation.themeStyle.datalabelFont);
                     }
                     else if (dataLabel.textWrap === 'Wrap' || dataLabel.textWrap === 'AnyWhere') {
                         point.labelCollection = textWrap(point.label, size - (this.marginValue * 2), font, this.accumulation.enableRtl, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip', this.accumulation.themeStyle.datalabelFont);
@@ -337,6 +374,9 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To set point label visible and region to disable.
+     *
+     * @param {AccPoints} point - The accumulation point.
+     * @returns {void}
      */
     private setPointVisibileFalse(point: AccPoints): void {
         point.labelVisible = false;
@@ -344,12 +384,23 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To set point label visible to enable.
+     *
+     * @param {AccPoints} point - The accumulation point.
+     * @returns {void}
      */
     private setPointVisibleTrue(point: AccPoints): void {
         point.labelVisible = true;
     }
     /**
-     * To set datalabel angle position for outside labels
+     * To set datalabel angle position for outside labels.
+     *
+     * @param {AccPoints} previousPoint - The previous accumulation point.
+     * @param {AccPoints} point - The accumulation point.
+     * @param {number} border - The border size.
+     * @param {number} labelRadius - The radius for the labels.
+     * @param {Size} textsize - The size of the labels.
+     * @param {number} margin - The margin value.
+     * @returns {void}
      */
     private setOuterSmartLabel(
         previousPoint: AccPoints, point: AccPoints, border: number, labelRadius: number,
@@ -378,8 +429,10 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * Sets smart label positions for funnel and pyramid series
+     * Sets smart label positions for funnel and pyramid series.
      *
+     * @param {AccPoints} point - The accumulation point.
+     * @param {AccPoints} prevPoint - The previous point.
      * @returns {void} setSmartLabelForSegments.
      */
     private setSmartLabelForSegments(
@@ -397,7 +450,9 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * To find connector line overlapping.
      *
-     * @returns {boolean} To find connector line overlapping or not.
+     * @param {AccPoints} point - The accumulation point.
+     * @param {AccPoints} previous - The previous point.
+     * @returns {boolean} - To find connector line overlapping or not.
      */
     private isConnectorLineOverlapping(point: AccPoints, previous: AccPoints): boolean {
         let position: string;
@@ -416,9 +471,12 @@ export class AccumulationDataLabel extends AccumulationBase {
             this.isLineRectangleIntersect(previousstart, previousend, point.labelRegion);
     }
     /**
-     * To find two rectangle intersect
+     * To find two rectangle intersect.
      *
-     * @returns {boolean} To find line rectangle intersect value.
+     * @param {ChartLocation} line1 - The first line.
+     * @param {ChartLocation} line2 - The second line.
+     * @param {Rect} rect - The rectangle to check against.
+     * @returns {boolean} - To find line rectangle intersect value.
      */
     private isLineRectangleIntersect(line1: ChartLocation, line2: ChartLocation, rect: Rect): boolean {
         const rectPoints: ChartLocation[] = [
@@ -439,9 +497,13 @@ export class AccumulationDataLabel extends AccumulationBase {
         return false;
     }
     /**
-     * To find two line intersect
+     * To find two line intersect.
      *
-     * @returns {boolean} To find line intersect or not.
+     * @param {ChartLocation} point1 - The first point of the first line.
+     * @param {ChartLocation} point2 - The second point of the first line.
+     * @param {ChartLocation} point11 - The first point of the second line.
+     * @param {ChartLocation} point12 - The second point of the second line.
+     * @returns {boolean} - To find line intersect or not.
      */
     private isLinesIntersect(point1: ChartLocation, point2: ChartLocation, point11: ChartLocation, point12: ChartLocation): boolean {
         const a1: number = point2.y - point1.y;
@@ -465,7 +527,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * To get two rectangle overlapping angles.
      *
-     * @returns {number} Get overlapped angle.
+     * @param {Rect} first - The first rectangle.
+     * @param {Rect} second - The second rectangle.
+     * @param {number} angle - The angle.
+     * @param {number} padding - The padding.
+     * @returns {number} - Get overlapped angle.
      */
     private getOverlappedAngle(first: Rect, second: Rect, angle: number, padding: number): number {
         let x: number = first.x;
@@ -479,9 +545,13 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * To get connector line path
+     * To get connector line path.
      *
-     * @returns {string} Get connector line path.
+     * @param {Rect} label - The label.
+     * @param {AccPoints} point - The accumulation point.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings.
+     * @param {number} end - The end.
+     * @returns {string} - Get connector line path.
      */
     private getConnectorPath(label: Rect, point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, end: number = 0): string {
         const connector: ConnectorModel = dataLabel.connectorStyle;
@@ -523,9 +593,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * Finds the curved path for funnel/pyramid data label connectors
+     * Finds the curved path for funnel/pyramid data label connectors.
      *
-     * @returns {string} Get poly line path.
+     * @param {ChartLocation} start - The start location.
+     * @param {ChartLocation} end - The end location.
+     * @returns {string} - Get poly line path.
      */
     private getPolyLinePath(start: ChartLocation, end: ChartLocation): string {
         const controlPoints: ChartLocation[] = [start, end];
@@ -545,9 +617,13 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * Finds the bezier point for funnel/pyramid data label connectors
+     * Finds the bezier point for funnel/pyramid data label connectors.
      *
-     * @returns {ChartLocation} Get bazier point.
+     * @param {number} t - The parameter value.
+     * @param {ChartLocation[]} controlPoints - The control points for the bezier point.
+     * @param {number} index - The index of the point.
+     * @param {number} count - The total count of points.
+     * @returns {ChartLocation} - Get bazier point.
      */
     private getBezierPoint(t: number, controlPoints: ChartLocation[], index: number, count: number): ChartLocation {
         if (count === 1) {
@@ -571,7 +647,12 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * To get label edges based on the center and label rect position.
      *
-     * @returns {ChartLocation} Get label edge value.
+     * @param {Rect} labelshape - The label shape.
+     * @param {number} angle - The angle of the label.
+     * @param {ChartLocation} middle - The middle point of the label.
+     * @param {number} border - The border value.
+     * @param {AccPoints} point - The accumulation point.
+     * @returns {ChartLocation} - Get label edge value.
      */
     private getEdgeOfLabel(labelshape: Rect, angle: number, middle: ChartLocation, border: number = 1, point?: AccPoints): ChartLocation {
         const edge: ChartLocation = new ChartLocation(labelshape.x, labelshape.y);
@@ -596,9 +677,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * Finds the distance between the label position and the edge/center of the funnel/pyramid
+     * Finds the distance between the label position and the edge/center of the funnel/pyramid.
      *
-     * @returns {number} Get label distance.
+     * @param {AccPoints} point - The accumulation point.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings.
+     * @returns {number} - Get label distance.
      */
     private getLabelDistance(point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel): number {
         if (point.labelPosition && dataLabel.position !== point.labelPosition || (dataLabel.connectorStyle.length && dataLabel.position === 'Outside')) {
@@ -623,9 +706,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * Finds the label position / beginning of the connector(ouside funnel labels)
+     * Finds the label position / beginning of the connector(ouside funnel labels).
      *
-     * @returns {ChartLocation} Get label location.
+     * @param {AccPoints} point - The accumulation point.
+     * @param {AccumulationLabelPosition | string} position - The data label position.
+     * @returns {ChartLocation} - Get label location.
      */
     private getLabelLocation(point: AccPoints, position: AccumulationLabelPosition | string = 'Outside'): ChartLocation {
         if (this.accumulation.type !== 'Pie') {
@@ -658,9 +743,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * Finds the beginning of connector line
+     * Finds the beginning of connector line.
      *
-     * @returns {ChartLocation} Staring point of connector line.
+     * @param {AccPoints} point - The accumulation point.
+     * @param {ConnectorModel} connector - The connector line.
+     * @returns {ChartLocation} - Staring point of connector line.
      */
     private getConnectorStartPoint(point: AccPoints, connector: ConnectorModel): ChartLocation {
         // return this.isCircular() ? degreeToLocation(point.midAngle, this.radius - connector.width, this.center) :
@@ -682,6 +769,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      * To find area rect based on margin, available size.
      *
      * @private
+     * @returns {void}
      */
     public findAreaRect(): void {
         this.areaRect = new Rect(0, 0, this.accumulation.availableSize.width, this.accumulation.availableSize.height);
@@ -690,6 +778,15 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To render the data labels from series points.
+     *
+     * @param {AccPoints} point - The point for which to render the data label.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The settings for the data labels.
+     * @param {Element} parent - The parent element to which the data labels are appended.
+     * @param {AccPoints[]} points - The collection of points in the series.
+     * @param {number} series - The index of the series.
+     * @param {HTMLElement} templateElement - The template element for the data label.
+     * @param {boolean} redraw - Indicates whether the data labels are being redrawn.
+     * @returns {void}
      */
     public renderDataLabel(
         point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, parent: Element,
@@ -714,7 +811,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         const childElement: HTMLElement = createElement('div', {
             id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
             styles: 'position: absolute;background-color:' + argsData.color + ';' +
-                getFontStyle(dataLabel.font) + ';border:' + argsData.border.width + 'px solid ' + argsData.border.color + ';'
+                getFontStyle(dataLabel.font, this.accumulation.themeStyle.datalabelFont) + ';border:' + argsData.border.width + 'px solid ' + argsData.border.color + ';'
         });
         this.calculateLabelSize(isTemplate, childElement, point, points, argsData, datalabelGroup, id, dataLabel, redraw);
     }
@@ -730,7 +827,20 @@ export class AccumulationDataLabel extends AccumulationBase {
         return labelText;
     }
     /**
-     * To calculate label size
+     * To calculate label size.
+     *
+     * @param {boolean} isTemplate - Indicates whether the label is a template.
+     * @param {HTMLElement} childElement - The child element of the label.
+     * @param {AccPoints} point - The point associated with the label.
+     * @param {AccPoints[]} points - The collection of points.
+     * @param {IAccTextRenderEventArgs} argsData - The arguments data for text rendering.
+     * @param {Element} datalabelGroup - The group element for data labels.
+     * @param {string} id - The id of the label.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The settings for the data labels.
+     * @param {boolean} redraw - Indicates whether the labels are being redrawn.
+     * @param {ClientRect} clientRect - The client rectangle.
+     * @param {boolean} isReactCallback - Indicates whether a React callback is being used.
+     * @returns {void}
      */
     public calculateLabelSize(
         isTemplate: boolean, childElement: HTMLElement, point: AccPoints, points: AccPoints[],
@@ -751,6 +861,14 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
+     * To draw a data label.
+     *
+     * @param {AccumulationSeries} series - The series associated with the data label.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The settings for the data labels.
+     * @param {HTMLElement} parent - The parent element of the data labels.
+     * @param {HTMLElement} templateElement - The template element for the data label.
+     * @param {boolean} redraw - Indicates whether the data labels are being redrawn.
+     * @returns {void}
      * @private
      */
     public drawDataLabels(series: AccumulationSeries, dataLabel: AccumulationDataLabelSettingsModel, parent: HTMLElement,
@@ -813,7 +931,8 @@ export class AccumulationDataLabel extends AccumulationBase {
                                 this.accumulation.enableRtl ? 'end' : 'start', point.labelCollection, rotate, 'auto', degree
                             ),
                             point.argsData.font, point.argsData.font.color || this.getSaturatedColor(point, point.argsData.color),
-                            datalabelGroup, false, redraw, true, false, this.accumulation.duration, null, null, null, null, true, this.accumulation.themeStyle.datalabelFont
+                            datalabelGroup, false, redraw, true, false, this.accumulation.duration,
+                            null, null, null, null, true, this.accumulation.themeStyle.datalabelFont
                         );
                         element = null;
                     }
@@ -844,7 +963,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * To calculate data label clip path
+     * To calculate data label clip path.
+     *
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The settings for the data labels.
+     * @param {HTMLElement} parent - The parent element of the data labels.
+     * @returns {void}
      */
     private dataLabelClipPath(dataLabel: AccumulationDataLabelSettingsModel, parent: HTMLElement) : void {
         const id : string = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
@@ -862,8 +985,10 @@ export class AccumulationDataLabel extends AccumulationBase {
             if (this.accumulation.legendSettings.visible) {
                 const legendModule: AccumulationLegend = this.accumulation.accumulationLegendModule;
                 if (legendModule.position === 'Left') {
-                    width = (legendModule.legendBounds.x + legendModule.legendBounds.width - x) > 0 ? (width - (legendModule.legendBounds.width - x)) : width;
-                    x = (legendModule.legendBounds.x + legendModule.legendBounds.width) < x ? x : (legendModule.legendBounds.x + legendModule.legendBounds.width);
+                    width = (legendModule.legendBounds.x + legendModule.legendBounds.width - x) > 0 ?
+                        (width - (legendModule.legendBounds.width - x)) : width;
+                    x = (legendModule.legendBounds.x + legendModule.legendBounds.width) < x ? x :
+                        (legendModule.legendBounds.x + legendModule.legendBounds.width);
                 }
                 else if (legendModule.position === 'Right') {
                     width = (x + width - legendModule.legendBounds.x) > 0 ? (width - (x + width - legendModule.legendBounds.x)) : width;
@@ -882,9 +1007,10 @@ export class AccumulationDataLabel extends AccumulationBase {
      * In this method datalabels region checked with legebdBounds and areaBounds.
      * Trimming of datalabel and point's visibility again changed here.
      *
-     * @param {AccPoints} point current point in which trimming and visibility to be checked
-     * @param {AccPoints[]} points finalized points
-     * @param {AccumulationDataLabelSettingsModel} dataLabel datalabel model
+     * @param {AccPoints} point - Current point in which trimming and visibility to be checked.
+     * @param {AccPoints[]} points - Finalized points.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - Datalabel model.
+     * @returns {void}
      */
     private finalizeDatalabels(point: AccPoints, points: AccPoints[], dataLabel: AccumulationDataLabelSettingsModel): void {
         if (this.isOverlapping(point, points) ||
@@ -919,13 +1045,18 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * To find the template element size
+     * To find the template element size.
      *
-     * @param {HTMLElement} element To get a template element.
-     * @param {AccPoints} point Template of accumulation points.
-     * @param {IAccTextRenderEventArgs} argsData Arguments of accumulation points.
-     * @param {boolean} redraw redraw value.
-     * @returns {Size} Size of a template.
+     * @param {HTMLElement} element - To get a template element.
+     * @param {AccPoints} point - The accumulation point for the template.
+     * @param {IAccTextRenderEventArgs} argsData - The arguments for the accumulation points.
+     * @param {boolean} redraw - Indicates whether to redraw the template.
+     * @param {boolean} isTemplate - Indicates whether the element is a template.
+     * @param {AccPoints[]} points - The accumulation points for the template.
+     * @param {Element} datalabelGroup - The group element for the data labels.
+     * @param {string} id - The identifier for the template.
+     * @param {AccumulationDataLabelSettingsModel} dataLabel - The settings for the data labels.
+     * @returns {Size} - The size of the template.
      */
     private getTemplateSize(
         element: HTMLElement, point: AccPoints, argsData: IAccTextRenderEventArgs, redraw: boolean,
@@ -942,13 +1073,15 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * To set the template element style
+     * To set the template element style.
      *
-     * @param {HTMLElement} childElement Set a child element of template.
-     * @param {AccPoints} point Template point.
-     * @param {parent} parent Parent element of template.
-     * @param {labelColor} labelColor Template label color.
-     * @param {string} fill Fill color of template.
+     * @param {HTMLElement} childElement - The child element of the template.
+     * @param {AccPoints} point - The point data for the template.
+     * @param {Element} parent - The parent element of the template.
+     * @param {string} labelColor - The color of the label in the template.
+     * @param {string} fill - The fill color of the template.
+     * @param {boolean} redraw - Indicates whether to redraw the template.
+     * @returns {void}
      */
     private setTemplateStyle(
         childElement: HTMLElement, point: AccPoints, parent: Element,
@@ -974,7 +1107,9 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * To find saturated color for datalabel
      *
-     * @returns {string} Get a saturated color.
+     * @param {AccPoints} point - The accumulation point.
+     * @param {string} color - The original color.
+     * @returns {string} - Get a saturated color.
      */
     private getSaturatedColor(point: AccPoints, color: string): string {
         let saturatedColor: string;
@@ -983,7 +1118,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         } else {
             saturatedColor = this.getLabelBackground(point);
         }
-        saturatedColor = (saturatedColor === 'transparent') ? ((this.accumulation.theme.indexOf('Dark') > -1 || this.accumulation.theme === 'HighContrast') ? 'black' : 'white') : saturatedColor;
+        saturatedColor = (saturatedColor === 'transparent') ? ((this.accumulation.theme.indexOf('Dark') > -1 || this.accumulation.theme.indexOf('HighContrast') > -1) ? 'black' : 'white') : saturatedColor;
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';
@@ -992,21 +1127,24 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * Animates the data label template.
      *
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {Element} element - The element to animate.
      * @returns {void}
      * @private
      */
     public doTemplateAnimation(accumulation: AccumulationChart, element: Element): void {
         const series: AccumulationSeries = accumulation.visibleSeries[0];
         const delay: number = series.animation.delay + series.animation.duration;
-        if (((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && accumulation.animateSeries) {
+        if (((series.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && accumulation.animateSeries) {
             (<HTMLElement>element).style.visibility = 'hidden';
             templateAnimate(element, delay, 200, 'ZoomIn');
         }
     }
     /**
-     * To find background color for the datalabel
+     * To find background color for the datalabel.
      *
-     * @returns {string} AccPoints
+     * @param {AccPoints} point - The data point for which to determine the background color.
+     * @returns {string} - The background color for the data label.
      */
     private getLabelBackground(point: AccPoints): string {
         return point.labelPosition === 'Outside' ?
@@ -1014,6 +1152,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     /**
      * To correct the padding between datalabel regions.
+     *
+     * @param {Rect} labelRegion - The region occupied by the data label.
+     * @param {Size} textSize - The size of the text within the data label.
+     * @param {number} padding - The padding value to adjust the spacing.
+     * @returns {void}
      */
     private correctLabelRegion(labelRegion: Rect, textSize: Size, padding: number = 4): void {
         labelRegion.height -= padding;
@@ -1024,9 +1167,9 @@ export class AccumulationDataLabel extends AccumulationBase {
         textSize.width -= padding;
     }
     /**
-     * To get the dataLabel module name
+     * To get the dataLabel module name.
      *
-     * @returns {string} module name
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'AccumulationDataLabel';
@@ -1041,7 +1184,7 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     public destroy(): void {
         /**
-         * Destroy method performed here
+         * Destroy method performed here.
          */
     }
 
@@ -1064,9 +1207,10 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * Rightside points alignments calculation
+     * Rightside points alignments calculation.
      *
-     * @param {AccumulationSeries} series To get a proper series.
+     * @param {AccumulationSeries} series - To get a proper series.
+     * @returns {void}
      */
     private arrangeRightSidePoints(series: AccumulationSeries): void {
         let startFresh: boolean;
@@ -1125,9 +1269,10 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * Leftside points alignments calculation
+     * Leftside points alignments calculation.
      *
-     * @param {AccumulationSeries} series To get a proper series.
+     * @param {AccumulationSeries} series - To get a proper series.
+     * @returns {void}
      */
     private arrangeLeftSidePoints(series: AccumulationSeries): void {
         const leftSideRenderPoints: AccPoints[] = series.leftSidePoints.filter(

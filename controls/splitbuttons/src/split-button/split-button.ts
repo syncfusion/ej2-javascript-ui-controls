@@ -310,7 +310,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             this.trigger('select', args);
         };
         dropDownBtnModel.beforeOpen = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
-            if (this.createPopupOnClick && this.items.length == 0) {
+            if (this.createPopupOnClick && this.items.length === 0) {
                 this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
                 this.dropDown = this.secondaryBtnObj.dropDown;
             }
@@ -398,6 +398,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         if (this.element && !this.element.getAttribute('class')) {
             this.element.removeAttribute('class');
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (this.refreshing && (this as any).isAngular) {
             this.element = this.wrapper as HTMLButtonElement;
             ['e-control', 'e-split-btn', 'e-lib'].forEach((key: string) => {

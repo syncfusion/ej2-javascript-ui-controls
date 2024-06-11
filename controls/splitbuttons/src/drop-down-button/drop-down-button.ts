@@ -371,10 +371,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             this.trigger('beforeItemRender', eventArgs);
             const afterDisabled: boolean = eventArgs.item.disabled;
             if (beforeDisabled !== afterDisabled) {
-                if (eventArgs.item.disabled) { 
+                if (eventArgs.item.disabled) {
                     li.classList.add('e-disabled');
                 } else {
-                    li.classList.remove('e-disabled'); 
+                    li.classList.remove('e-disabled');
                 }
             }
             ul.appendChild(li);
@@ -436,6 +436,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     private appendArrowSpan(): void {
+        this.cssClass = isNullOrUndefined(this.cssClass) ? '' : this.cssClass;
         this.element.appendChild(this.createElement('span', {
             className: 'e-btn-icon e-icons ' + 'e-icon-' + (this.cssClass.indexOf(classNames.VERTICAL) > -1
                 ? 'bottom' : 'right') + ' e-caret'
@@ -545,7 +546,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
-        EventHandler.add(<HTMLElement & Window>window, 'resize',this.windowResize, this);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        EventHandler.add(window as any, 'resize', this.windowResize, this);
     }
 
     protected windowResize(): void {
@@ -736,6 +738,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this as any).isReact && popupElem.childNodes.length < 1) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     isReact = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this as any).appendReactElement(this.getTargetElement(), this.getPopUpElement());
@@ -756,7 +759,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 if (ul) {
                     ul.focus();
                 }
-                if(this.enableRtl && ul.parentElement.style.left !== '0px')
+                if (this.enableRtl && ul.parentElement.style.left !== '0px')
                 {
                     let wrapperWidth: number;
                     if (this.element.parentElement && this.element.parentElement.classList.contains('e-split-btn-wrapper')) {
@@ -769,9 +772,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     if (popupLeft < 0) {
                         popupLeft = 0;
                     }
-                    ul.parentElement.style.left = popupLeft + "px";
+                    ul.parentElement.style.left = popupLeft + 'px';
                 }
-                const openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };    
+                const openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
                 this.trigger('open', openArgs);
             }
         });
@@ -824,7 +827,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             EventHandler.remove(this.getPopUpElement(), 'click', this.clickHandler);
             EventHandler.remove(this.getPopUpElement(), 'keydown', this.keyBoardHandler);
         }
-        EventHandler.remove(<HTMLElement & Window>window, 'resize', this.windowResize);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        EventHandler.remove(window as any, 'resize', this.windowResize);
     }
 
     /**
@@ -866,8 +870,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                         this.appendArrowSpan();
                     }
                     const arrowSpan: Element = this.element.querySelector('span.e-caret');
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                     newProp.cssClass.indexOf(classNames.VERTICAL) > -1 ? classList(arrowSpan, ['e-icon-bottom'], ['e-icon-right'])
-                     : classList(arrowSpan, ['e-icon-right'], ['e-icon-bottom']);
+                        : classList(arrowSpan, ['e-icon-right'], ['e-icon-bottom']);
                 }
                 if (this.isPopupCreated) {
                     if (oldProp.cssClass) {

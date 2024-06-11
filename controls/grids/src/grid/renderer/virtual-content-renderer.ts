@@ -52,8 +52,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     /** @hidden */
     public content: HTMLElement;
     /** @hidden */
-    public movableContent: HTMLElement;
-    /** @hidden */
     public offsets: { [x: number]: number } = {};
     private tmpOffsets: { [x: number]: number } = {};
     /** @hidden */
@@ -157,15 +155,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.parent.scrollPosition = scrollArgs.offset;
         }
         if (this.preventEvent || this.parent.isDestroyed) { this.preventEvent = false; return; }
-        if (this.parent.islazyloadRequest && scrollArgs.direction === 'down') {
-            this.parent.removeMaskRow();
-            this.parent.islazyloadRequest = false;
-            return;
-        }
         if (isNullOrUndefined(document.activeElement)) {
             this.isFocused = false;
         } else {
             this.isFocused = this.content === closest(document.activeElement, '.' + literals.content) || this.content === document.activeElement;
+        }
+        if (this.parent.islazyloadRequest && scrollArgs.direction === 'down') {
+            this.parent.removeMaskRow();
+            this.parent.islazyloadRequest = false;
+            return;
         }
         const info: SentinelType = scrollArgs.sentinel;
         const viewInfo: VirtualInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
@@ -1517,10 +1515,6 @@ export class VirtualElementHandler {
     public placeholder: HTMLElement;
     public content: HTMLElement;
     public table: HTMLElement;
-    public movableWrapper: HTMLElement;
-    public movablePlaceholder: HTMLElement;
-    public movableTable: HTMLElement;
-    public movableContent: HTMLElement;
 
     public renderWrapper(height?: number): void {
         this.wrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}` });
@@ -1543,31 +1537,8 @@ export class VirtualElementHandler {
         this.content.appendChild(this.placeholder);
     }
 
-    public renderMovableWrapper(height?: number): void {
-        this.movableWrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}` });
-        this.movableContent.appendChild(this.movableWrapper);
-    }
-
-    public renderMovablePlaceHolder(): void {
-        this.movablePlaceholder = createElement('div', { className: 'e-virtualtrack' });
-        this.movableContent.appendChild(this.movablePlaceholder);
-    }
-
     public adjustTable(xValue: number, yValue: number): void {
         this.wrapper.style.transform = `translate(${xValue}px, ${yValue}px)`;
-    }
-
-    public adjustMovableTable(xValue: number, yValue: number): void {
-        this.movableWrapper.style.transform = `translate(${xValue}px, ${yValue}px)`;
-    }
-
-    public setMovableWrapperWidth(width: string, full?: boolean): void {
-        this.movableWrapper.style.width = width ? `${width}px` : full ? '100%' : '';
-    }
-
-    public setMovableVirtualHeight(height?: number, width?: string): void {
-        this.movablePlaceholder.style.height = `${height}px`;
-        this.movablePlaceholder.style.width = width;
     }
 
     public setWrapperWidth(width: string, full?: boolean): void {

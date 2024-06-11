@@ -349,7 +349,6 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   }
 }
 
-// Mouse Small
 .e-small .e-multi-select-wrapper .e-chips {
   @if $ddl-multiselect-skin-name == 'bootstrap5' {
     border-radius: $ddl-chip-mobile-radius;
@@ -383,7 +382,6 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   }
 }
 
-//Touch Small
 .e-bigger.e-small .e-multi-select-wrapper .e-chips {
   height: $ddl-bigger-small-chip-height;
 }
@@ -406,8 +404,6 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
     background: transparent;
   }
 }
-
-// Multiselect Outline textbox configuration
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
   @if $ddl-multiselect-skin-name == 'material' {

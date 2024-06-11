@@ -106,7 +106,7 @@ export class Chart3DDataLabelSettings extends ChildProperty<Chart3DDataLabelSett
     /**
      * Option for customizing the data label text.
      */
-    @Complex<Chart3DTextFontModel>({ size: '12px', color: null, fontStyle: 'Normal', fontWeight: '400', fontFamily: null }, Chart3DTextFont)
+    @Complex<Chart3DTextFontModel>({ size: null, color: null, fontStyle: null, fontWeight: null, fontFamily: null }, Chart3DTextFont)
     public font: Chart3DTextFontModel;
 
     /**
@@ -501,7 +501,7 @@ export class Chart3DSeries extends ChildProperty<Chart3DSeries> {
         let i: number = 0;
         let point: Chart3DPoint = new Chart3DPoint();
         const xName: string = this.xName;
-        const textMappingName: string = this instanceof Chart3DSeries&& this.dataLabel.name ?
+        const textMappingName: string = this instanceof Chart3DSeries && this.dataLabel.name ?
             this.dataLabel.name : '';
         const len: number = (this.currentViewData as object[] || []).length;
         this.points = [];
@@ -619,7 +619,7 @@ export class Chart3DSeries extends ChildProperty<Chart3DSeries> {
             return null;
         }
         point.isEmpty = true;
-        const series: Chart3DSeries = this instanceof Chart3DSeries&& this;
+        const series: Chart3DSeries = this instanceof Chart3DSeries && this;
         const mode: EmptyPointMode = series.emptyPointSettings.mode;
         switch (mode) {
         case 'Zero':
@@ -695,9 +695,14 @@ export class Chart3DSeries extends ChildProperty<Chart3DSeries> {
             }
             point.xValue = this.xAxis.indexLabels[pointX as string];
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            this.xAxis.labels[index as number] ? this.xAxis.labels[index as number] += ', ' + pointX :
+            if (this.xAxis.labels[index as number]) {
+                this.xAxis.labels[index as number] += ', ' + pointX;
+            }
+            else {
                 this.xAxis.labels.push(pointX);
+            }
+            // this.xAxis.labels[index as number] ? this.xAxis.labels[index as number] += ', ' + pointX :
+            //     this.xAxis.labels.push(pointX);
             point.xValue = index;
         }
     }
@@ -741,12 +746,13 @@ export class Chart3DSeries extends ChildProperty<Chart3DSeries> {
 
     }
 
-    // eslint-disable-next-line jsdoc/require-param
     /**
      * Handles the success callback for the data manager operation.
      *
-     * @param {{ result: Object, count: number }} e - The success callback parameters containing the result and count.
-     * @param {boolean} isRemoteData - Indicates whether the data is fetched remotely. Defaults to true.
+     * @param {Object} e - The success callback parameters containing the result and count.
+     * @param {Object} e.result - The result object returned by the data manager operation.
+     * @param {number} e.count - The count of items returned by the data manager operation.
+     * @param {boolean} [isRemoteData=true] - Indicates whether the data is fetched remotely. Defaults to true.
      * @returns {void}
      */
     private dataManagerSuccess(e: { result: Object, count: number }, isRemoteData: boolean = true): void {

@@ -38,12 +38,8 @@ $de-ruler-indent-hover: $border-fg !default;
 $de-ruler-indent-active: $selection-bg !default;
 $de-custom-treeview-text-size: 13px !default;
 $de-custom-treeview-text-size-bg: 14px !default;
-
-// Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 113px) !default;
 $de-tool-ctnr-editor-height-big: calc(100% - 118px) !default;
-
-// Subtract statusbar height
 $de-ctnr-editor-height: calc(100% - 38px) !default;
 $de-ctnr-editor-height-big: calc(100% - 38px) !default;
 $de-ctrnr-tblr-item-padding: 0 !default;

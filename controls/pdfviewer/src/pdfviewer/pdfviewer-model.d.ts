@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { PageOrganizer } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs,PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs,PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, cornersPointsBeforeRotation, Point } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { PageOrganizer } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, Point } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs, SignatureUnselectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -58,7 +58,7 @@ export interface CustomToolbarItemModel {
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of commands.
      */
-    cssClass?: string; 
+    cssClass?: string;
 
     /**
      * Define which side(right/left) to use for customizing the icon.
@@ -205,6 +205,11 @@ export interface SignatureFieldSettingsModel {
      */
     signatureIndicatorSettings?: SignatureIndicatorSettingsModel;
 
+    /**
+     * specifies the custom data of the form fields.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -271,6 +276,11 @@ export interface InitialFieldSettingsModel {
      * Specifies the properties of the signature indicator in the initial field.
      */
     initialIndicatorSettings?: SignatureIndicatorSettingsModel;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    customData?: object;
 
 }
 
@@ -745,8 +755,8 @@ export interface ArrowSettingsModel {
     offset?: IPoint;
 
     /**
-      * Get or set page number of the annotation.
-      */
+     * Get or set page number of the annotation.
+     */
     pageNumber?: number;
 
     /**
@@ -855,18 +865,18 @@ export interface RectangleSettingsModel {
     offset?: IPoint;
 
     /**
-      * Get or set page number of the annotation.
-      */
+     * Get or set page number of the annotation.
+     */
     pageNumber?: number;
 
     /**
-      * specifies the width of the annotation.
-      */
+     * specifies the width of the annotation.
+     */
     width?: number;
 
     /**
-      * specifies the height of the annotation.
-      */
+     * specifies the height of the annotation.
+     */
     height?: number;
 
     /**
@@ -1197,8 +1207,8 @@ export interface PolygonSettingsModel {
 export interface StampSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -1302,8 +1312,8 @@ export interface StampSettingsModel {
 export interface CustomStampSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -1407,8 +1417,8 @@ export interface CustomStampSettingsModel {
 export interface DistanceSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -1527,8 +1537,8 @@ export interface DistanceSettingsModel {
 export interface PerimeterSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -1632,8 +1642,8 @@ export interface PerimeterSettingsModel {
 export interface AreaSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -1722,8 +1732,8 @@ export interface AreaSettingsModel {
 export interface RadiusSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -1827,13 +1837,13 @@ export interface RadiusSettingsModel {
 export interface VolumeSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
-    * Get or set page number of the annotation.
-    */
+     * Get or set page number of the annotation.
+     */
     pageNumber?: number;
 
     /**
@@ -1917,8 +1927,8 @@ export interface VolumeSettingsModel {
 export interface InkAnnotationSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -1937,8 +1947,8 @@ export interface InkAnnotationSettingsModel {
     height?: number;
 
     /**
-      * Gets or sets the path of the ink annotation.
-      */
+     * Gets or sets the path of the ink annotation.
+     */
     path?: string;
 
     /**
@@ -2002,8 +2012,8 @@ export interface InkAnnotationSettingsModel {
 export interface StickyNotesSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -2089,8 +2099,8 @@ export interface MeasurementSettingsModel {
 export interface FreeTextSettingsModel {
 
     /**
-    * Get or set offset of the annotation.
-    */
+     * Get or set offset of the annotation.
+     */
     offset?: IPoint;
 
     /**
@@ -2713,9 +2723,9 @@ export interface FormFieldModel {
     isMultiline?: boolean;
 
     /**
-     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false. 
+     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false.
      * If set, the field is automatically divided into as many equally spaced position, or  combs, as the value of MaxLength, and the text is laid out into the combs.
-     * 
+     *
      * @default false
      */
     insertSpaces?: boolean;
@@ -2749,6 +2759,11 @@ export interface FormFieldModel {
      * Get the zIndex of the form field. Default value is 0.
      */
     zIndex?: number;
+
+    /**
+     * specifies the custom data of the form field.
+     */
+    customData?: object;
 
 }
 
@@ -2873,6 +2888,11 @@ export interface TextFieldSettingsModel {
      */
     isMultiline?: boolean;
 
+    /**
+     * specifies the custom data of the form fields.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -2970,6 +2990,11 @@ export interface PasswordFieldSettingsModel {
      */
     borderColor?: string;
 
+    /**
+     * specifies the custom data of the form fields.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -3042,6 +3067,11 @@ export interface CheckBoxFieldSettingsModel {
      */
     borderColor?: string;
 
+    /**
+     * specifies the custom data of the form fields.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -3113,6 +3143,11 @@ export interface RadioButtonFieldSettingsModel {
      * Get or set the border color of the radio button field.
      */
     borderColor?: string;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    customData?: object;
 
 }
 
@@ -3210,6 +3245,11 @@ export interface DropdownFieldSettingsModel {
      * Get or set the border color of the drop down field.
      */
     borderColor?: string;
+
+    /**
+     * specifies the custom data of the form fields.
+     */
+    customData?: object;
 
 }
 
@@ -3447,7 +3487,7 @@ export interface KeyboardCommandModel {
 
     /**
      * Defines a combination of keys and key modifiers, on recognition of which the command will be executed.
-     * 
+     *
      * ```html
      * <div id='pdfViewer'></div>
      * ```
@@ -3466,7 +3506,7 @@ export interface KeyboardCommandModel {
      * });
      * pdfViewer.appendTo('#pdfViewer');
      * ```
-     * 
+     *
      * @default {}
      */
     gesture?: KeyGestureModel;
@@ -3480,7 +3520,8 @@ export interface CommandManagerModel {
 
     /**
      * Defines the multiple command names with the corresponding command objects.
-     * @default [] 
+     *
+     * @default []
      */
     keyboardCommand?: KeyboardCommandModel[];
 
@@ -3506,6 +3547,16 @@ export interface PageOrganizerSettingsModel {
      */
     canRotate?: boolean;
 
+    /**
+     * Specifies whether the pages can be copied.
+     */
+    canCopy?: boolean;
+
+    /**
+     * Specifies whether the pages can be rearranged.
+     */
+    canRearrange?: boolean;
+
 }
 
 /**
@@ -3515,15 +3566,15 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the service url of the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/serviceUrl/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     serviceUrl?: string;
 
     /**
      * gets the page count of the document loaded in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/pageCount/index.md' %}{% endcodeBlock %}
      *
      * @default 0
@@ -3540,7 +3591,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Checks whether the PDF document is edited.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isDocumentEdited/index.md' %}{% endcodeBlock %}
      *
      * @asptype bool
@@ -3550,7 +3601,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/currentPageNumber/index.md' %}{% endcodeBlock %}
      *
      * @default 0
@@ -3559,31 +3610,31 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Sets the PDF document path for initial loading.
-     * 
+     *
      * {% codeBlock src='pdfviewer/documentPath/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     documentPath?: string;
 
     /**
      * Gets or sets the export annotations JSON file name in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/exportAnnotationFileName/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     exportAnnotationFileName?: string;
 
     /**
      * Gets or sets the download file name in the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/downloadFileName/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     downloadFileName?: string;
 
     /**
      * Defines the scrollable height of the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/height/index.md' %}{% endcodeBlock %}
      *
      * @default 'auto'
@@ -3592,7 +3643,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the scrollable width of the PdfViewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/width/index.md' %}{% endcodeBlock %}
      *
      * @default 'auto'
@@ -3601,7 +3652,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disables the toolbar of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableToolbar/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3610,7 +3661,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Specifies the retry count for the failed requests.
-     * 
+     *
      * {% codeBlock src='pdfviewer/retryCount/index.md' %}{% endcodeBlock %}
      *
      * @default 1
@@ -3620,7 +3671,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Specifies the response status codes for retrying a failed request with a "3xx", "4xx", or "5xx" response status code.
      * The value can have multiple values, such as [500, 401, 400], and the default value is 500.
-     * 
+     *
      * {% codeBlock src='pdfviewer/retryStatusCodes/index.md' %}{% endcodeBlock %}
      *
      * @default [500]
@@ -3629,7 +3680,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Gets or sets the timeout for retries in seconds.
-     * 
+     *
      * {% codeBlock src='pdfviewer/retryTimeout/index.md' %}{% endcodeBlock %}
      *
      * @default 0
@@ -3638,7 +3689,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Initially renders the first N pages of the PDF document when the document is loaded.
-     * 
+     *
      * {% codeBlock src='pdfviewer/initialRenderPages/index.md' %}{% endcodeBlock %}
      *
      * @default 2
@@ -3647,7 +3698,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * If it is set as false then error message box is not displayed in PDF viewer control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/showNotificationDialog/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3656,7 +3707,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disables the Navigation toolbar of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableNavigationToolbar/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3665,7 +3716,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disables the Comment Panel of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableCommentPanel/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3674,7 +3725,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * If it set as true, then the command panel show at initial document loading in the PDF viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/isCommandPanelOpen/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3683,7 +3734,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableTextMarkupResizer/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3692,7 +3743,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the multi line text markup annotations in overlapping collections.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableMultiLineOverlap/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3701,7 +3752,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Checks if the freeText value is valid or not.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isValidFreeText/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3719,7 +3770,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
      * and get the annotation Toolbar Visible status.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isAnnotationToolbarVisible/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3729,7 +3780,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
      * and get the annotation Toolbar Visible status.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isFormDesignerToolbarVisible/index.md' %}{% endcodeBlock %}
      *
      * @public
@@ -3739,7 +3790,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableMultiPageAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3748,7 +3799,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disables the download option of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableDownload/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3757,7 +3808,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disables the print option of PdfViewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enablePrint/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3768,14 +3819,14 @@ export interface PdfViewerModel extends ComponentModel{
      * If it is set as FALSE, will suppress the page rotation of Landscape document on print action. By default it is TRUE.
      *
      * {% codeBlock src='pdfviewer/enablePrintRotation/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     enablePrintRotation?: boolean;
 
     /**
      * Enables or disables the thumbnail view in the PDF viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableThumbnail/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3784,25 +3835,25 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the page organizer in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enablePageOrganizer/index.md' %}{% endcodeBlock %}
      *
      * @default true
      */
-    enablePageOrganizer?: boolean;    
+    enablePageOrganizer?: boolean;
 
     /**
-    * Specifies whether the page organizer dialog will be displayed upon the initial document loading in the PDF Viewer.
-    * 
-    * {% codeBlock src='pdfviewer/isPageOrganizerOpen/index.md' %}{% endcodeBlock %}
-    *
-    * @default false
-    */
+     * Specifies whether the page organizer dialog will be displayed upon the initial document loading in the PDF Viewer.
+     *
+     * {% codeBlock src='pdfviewer/isPageOrganizerOpen/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
     isPageOrganizerOpen?: boolean;
 
     /**
-     * This property allows for control over various page management functionalities within the PDF Viewer. By setting it to `true`, users will be able to delete, insert and rotate pages. Conversely, setting it to `false` will disable these actions.
-     * 
+     * This property allows for control over various page management functionalities within the PDF Viewer. By setting it to `true`, users will be able to delete, insert, rotate pages, rearrange pages. Conversely, setting it to `false` will disable these actions.
+     *
      * {% codeBlock src='pdfviewer/pageOrganizerSettings/index.md' %}{% endcodeBlock %}
      *
      */
@@ -3810,7 +3861,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * If it set as true, then the thumbnail view show at initial document loading in the PDF Viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/isThumbnailViewOpen/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3819,7 +3870,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enables or disable saving Hand Written signature as editable in the PDF.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isSignatureEditable/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3828,7 +3879,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enables or disables the bookmark view in the PDF viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableBookmark/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3837,7 +3888,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enables or disables the bookmark styles in the PDF viewer
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableBookmarkStyles/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3846,7 +3897,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enables or disables the hyperlinks in PDF document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableHyperlink/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3855,7 +3906,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enables or disables the handwritten signature in PDF document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableHandwrittenSignature/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3866,14 +3917,14 @@ export interface PdfViewerModel extends ComponentModel{
      * If it is set as false, then the ink annotation support in the PDF Viewer will be disabled. By default it is true.
      *
      * {% codeBlock src='pdfviewer/enableInkAnnotation/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     enableInkAnnotation?: boolean;
 
     /**
      * restrict zoom request.
-     * 
+     *
      * {% codeBlock src='pdfviewer/restrictZoomRequest/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3882,7 +3933,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Specifies the open state of the hyperlink in the PDF document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/hyperlinkOpenState/index.md' %}{% endcodeBlock %}
      *
      * @default CurrentTab
@@ -3891,16 +3942,16 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Specifies the state of the ContextMenu in the PDF document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/contextMenuOption/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default RightClick
      */
     contextMenuOption?: ContextMenuAction;
 
     /**
      * Disables the menu items in the context menu.
-     * 
+     *
      * {% codeBlock src='pdfviewer/disableContextMenuItems/index.md' %}{% endcodeBlock %}
      *
      * @default []
@@ -3909,16 +3960,16 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
-     * 
+     *
      * {% codeBlock src='pdfviewer/formFieldCollections/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     formFieldCollections?: FormFieldModel[];
 
     /**
      * Enable or disable the Navigation module of PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableNavigation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3927,7 +3978,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disables the auto complete option in form documents.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableAutoComplete/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3936,7 +3987,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the Magnification module of PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableMagnification/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3945,7 +3996,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the Label for shapeAnnotations of PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableShapeLabel/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -3954,7 +4005,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the customization of measure values in PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableImportAnnotationMeasurement/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3963,7 +4014,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the pinch zoom option in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enablePinchZoom/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3972,7 +4023,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the text selection in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableTextSelection/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3981,7 +4032,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the text search in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableTextSearch/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3990,7 +4041,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -3999,7 +4050,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the form fields in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFormFields/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4008,7 +4059,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Show or hide the form designer tool in the main toolbar of the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFormDesigner/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4017,7 +4068,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the interaction of form fields in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/designerMode/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -4026,7 +4077,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the form fields validation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFormFieldsValidation/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -4035,7 +4086,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable if the PDF document contains form fields.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isFormFieldDocument/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -4046,7 +4097,7 @@ export interface PdfViewerModel extends ComponentModel{
      * Gets or sets a boolean value to show or hide desktop toolbar in mobile devices.
      *
      * {% codeBlock src='pdfviewer/enableDesktopMode/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     enableDesktopMode?: boolean;
@@ -4062,7 +4113,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the free text annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFreeText/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4071,7 +4122,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the text markup annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableTextMarkupAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4080,7 +4131,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the shape annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableShapeAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4089,7 +4140,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the calibrate annotation in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableMeasureAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4098,7 +4149,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enables and disable the stamp annotations when the PDF viewer control is loaded initially.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableStampAnnotations/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4107,7 +4158,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enables and disable the stickyNotes annotations when the PDF viewer control is loaded initially.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableStickyNotesAnnotation/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4116,7 +4167,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableAnnotationToolbar/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4125,7 +4176,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Opens the form designer toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableFormDesignerToolbar/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4134,7 +4185,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Gets or sets a boolean value to show or hide the bookmark panel while loading a document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isBookmarkPanelOpen/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -4151,7 +4202,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Sets the interaction mode of the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/interactionMode/index.md' %}{% endcodeBlock %}
      *
      * @default TextSelection
@@ -4160,7 +4211,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Specifies the rendering mode in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/zoomMode/index.md' %}{% endcodeBlock %}
      *
      * @default Default
@@ -4169,7 +4220,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Specifies the signature mode in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/signatureFitMode/index.md' %}{% endcodeBlock %}
      *
      * @default Default
@@ -4178,7 +4229,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Specifies the print mode in the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/printMode/index.md' %}{% endcodeBlock %}
      *
      * @default Default
@@ -4187,7 +4238,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Sets the initial loading zoom value from 10 to 400 in the PDF Viewer Control.
-     * 
+     *
      * {% codeBlock src='pdfviewer/zoomValue/index.md' %}{% endcodeBlock %}
      *
      * @default 0
@@ -4195,8 +4246,26 @@ export interface PdfViewerModel extends ComponentModel{
     zoomValue?: number;
 
     /**
+     * Specifies the minimum acceptable zoom level for the control, with a default value of 10.
+     *
+     * {% codeBlock src='pdfviewer/minZoom/index.md' %}{% endcodeBlock %}
+     *
+     * @default 10
+     */
+    minZoom?: number;
+
+    /**
+     * Specifies the maximum allowable zoom level for the control, with a default value of 400.
+     *
+     * {% codeBlock src='pdfviewer/maxZoom/index.md' %}{% endcodeBlock %}
+     *
+     * @default 400
+     */
+    maxZoom?: number;
+
+    /**
      *  Enable or disable the zoom optimization mode in PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableZoomOptimization/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4205,7 +4274,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable or disable the text extract from the PDF viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isExtractText/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -4214,7 +4283,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Maintain the selection of text markup annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/isMaintainSelection/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -4231,7 +4300,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      *  Show or hide the digital signature appearance in the document.
-     * 
+     *
      * {% codeBlock src='pdfviewer/showDigitalSignatureAppearance/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -4239,18 +4308,18 @@ export interface PdfViewerModel extends ComponentModel{
     showDigitalSignatureAppearance?: boolean;
 
     /**
-     *  Determines whether accessibility tags are enabled or disabled. 
+     *  Determines whether accessibility tags are enabled or disabled.
      *  Accessibility tags can help make web content more accessible to users with disabilities.
-     * 
+     *
      * {% codeBlock src='pdfviewer/enableAccessibilityTags/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default true
      */
     enableAccessibilityTags?: boolean;
 
     /**
      * Specifies whether to display or remove the untrusted HTML values in the PDF Viewer component.
-     * 
+     *
      * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
      * @private
@@ -4260,412 +4329,412 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Customize desired date and time format
-     * 
+     *
      * {% codeBlock src='pdfviewer/dateTimeFormat/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     dateTimeFormat?: string;
 
     /**
      * Set the resource URL for assets or the public directory. The standalone PDF Viewer will load its custom resources from this URL.
-     * 
+     *
      * {% codeBlock src='pdfviewer/resourceUrl/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @remarks
-     * 
-     * Users incorporating custom assets, public directories, or routing setups into their 
-     * Standalone PDF Viewer applications may face challenges when loading the PDF Viewer 
-     * libraries from the default assets location. This property addresses these issues by allowing 
-     * resource URL customization, guaranteeing a smooth integration process for loading libraries 
+     *
+     * Users incorporating custom assets, public directories, or routing setups into their
+     * Standalone PDF Viewer applications may face challenges when loading the PDF Viewer
+     * libraries from the default assets location. This property addresses these issues by allowing
+     * resource URL customization, guaranteeing a smooth integration process for loading libraries
      * in the Standalone PDF Viewer.
-     * 
+     *
      * @default ''
      */
     resourceUrl?: string;
 
     /**
      * Defines the settings of the PDF Viewer toolbar.
-     * 
+     *
      * {% codeBlock src='pdfviewer/toolbarSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     toolbarSettings?: ToolbarSettingsModel;
 
     /**
      * Defines the ajax Request settings of the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/ajaxRequestSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     ajaxRequestSettings?: AjaxRequestSettingsModel;
 
     /**
      * Defines the stamp items of the PDF Viewer.
-     * 
+     *
      * {% codeBlock src='pdfviewer/customStamp/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     customStamp?: CustomStampModel[];
 
     /**
      * Defines the settings of the PDF Viewer service.
-     * 
+     *
      * {% codeBlock src='pdfviewer/serverActionSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     serverActionSettings?: ServerActionSettingsModel;
 
     /**
      * Get or set the signature field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/signatureFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     signatureFieldSettings?: SignatureFieldSettingsModel;
 
     /**
      * Get or set the initial field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/initialFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     initialFieldSettings?: InitialFieldSettingsModel;
 
     /**
      * Defines the settings of highlight annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/highlightSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     highlightSettings?: HighlightSettingsModel;
 
     /**
      * Defines the settings of strikethrough annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/strikethroughSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     strikethroughSettings?: StrikethroughSettingsModel;
 
     /**
      * Defines the settings of underline annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/underlineSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     underlineSettings?: UnderlineSettingsModel;
 
     /**
      * Defines the settings of line annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/lineSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     lineSettings?: LineSettingsModel;
 
     /**
      * Defines the settings of arrow annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/arrowSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     arrowSettings?: ArrowSettingsModel;
 
     /**
      * Defines the settings of rectangle annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/rectangleSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     rectangleSettings?: RectangleSettingsModel;
 
     /**
      * Defines the settings of shape label.
-     * 
+     *
      * {% codeBlock src='pdfviewer/shapeLabelSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     shapeLabelSettings?: ShapeLabelSettingsModel;
 
     /**
      * Defines the settings of circle annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/circleSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     circleSettings?: CircleSettingsModel;
 
     /**
      * Defines the settings of polygon annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/polygonSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     polygonSettings?: PolygonSettingsModel;
 
     /**
      * Defines the settings of stamp annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/stampSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     stampSettings?: StampSettingsModel;
 
     /**
      * Defines the settings of customStamp annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/customStampSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     customStampSettings?: CustomStampSettingsModel;
 
     /**
      * Defines the settings of distance annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/distanceSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     distanceSettings?: DistanceSettingsModel;
 
     /**
      * Defines the settings of perimeter annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/perimeterSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     perimeterSettings?: PerimeterSettingsModel;
 
     /**
      * Defines the settings of area annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/areaSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     areaSettings?: AreaSettingsModel;
 
     /**
      * Defines the settings of radius annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/radiusSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     radiusSettings?: RadiusSettingsModel;
 
     /**
      * Defines the settings of volume annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/volumeSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     volumeSettings?: VolumeSettingsModel;
 
     /**
      * Defines the settings of stickyNotes annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/stickyNotesSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     stickyNotesSettings?: StickyNotesSettingsModel;
 
     /**
      * Defines the settings of free text annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/freeTextSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     freeTextSettings?: FreeTextSettingsModel;
 
     /**
      * Defines the settings of measurement annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/measurementSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     measurementSettings?: MeasurementSettingsModel;
 
     /**
      * Defines the settings of annotation selector.
-     * 
+     *
      * {% codeBlock src='pdfviewer/annotationSelectorSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
     /**
      * Sets the settings for the color of the text search highlight.
-     * 
+     *
      * {% codeBlock src='pdfviewer/textSearchColorSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     textSearchColorSettings?: TextSearchColorSettingsModel;
 
     /**
      * Get or set the signature dialog settings for signature field.
-     * 
+     *
      * {% codeBlock src='pdfviewer/signatureDialogSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     signatureDialogSettings?: SignatureDialogSettingsModel;
 
     /**
      * Get or set the signature dialog settings for initial field.
-     * 
+     *
      * {% codeBlock src='pdfviewer/initialDialogSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     initialDialogSettings?: SignatureDialogSettingsModel;
 
     /**
      * Defines the settings of handWrittenSignature.
-     * 
+     *
      * {% codeBlock src='pdfviewer/handWrittenSignatureSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     handWrittenSignatureSettings?: HandWrittenSignatureSettingsModel;
 
     /**
      * Defines the ink annotation settings for PDF Viewer.It used to customize the strokeColor, thickness, opacity of the ink annotation.
-     * 
+     *
      * {% codeBlock src='pdfviewer/inkAnnotationSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     inkAnnotationSettings?: InkAnnotationSettingsModel;
 
     /**
      * Defines the settings of the annotations.
-     * 
+     *
      * {% codeBlock src='pdfviewer/annotationSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     annotationSettings?: AnnotationSettingsModel;
 
     /**
      * Defines the tile rendering settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/tileRenderingSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     tileRenderingSettings?: TileRenderingSettingsModel;
 
     /**
      * Defines the scroll settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/scrollSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     scrollSettings?: ScrollSettingsModel;
 
     /**
      * Get or set the text field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/textFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     textFieldSettings?: TextFieldSettingsModel;
 
     /**
      * Get or set the password field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/passwordFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     passwordFieldSettings?: PasswordFieldSettingsModel;
 
     /**
      * Get or set the check box field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/checkBoxFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     checkBoxFieldSettings?: CheckBoxFieldSettingsModel;
 
     /**
      * Get or set the radio button field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/radioButtonFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     radioButtonFieldSettings?: RadioButtonFieldSettingsModel;
 
     /**
      * Get or set the dropdown field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/DropdownFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     DropdownFieldSettings?: DropdownFieldSettingsModel;
 
     /**
      * Get or set the listbox field settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/listBoxFieldSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
     listBoxFieldSettings?: ListBoxFieldSettingsModel;
 
     /**
      * Defines the context menu settings.
-     * 
+     *
      * {% codeBlock src='pdfviewer/contextMenuSettings/index.md' %}{% endcodeBlock %}
-     * 
+     *
      */
-    // eslint-disable-next-line max-len
+
     contextMenuSettings?: ContextMenuSettingsModel;
 
     /**
      * Defines the custom context menu items.
-     * 
+     *
      * @private
-    */
+     */
     customContextMenuItems?: MenuItemModel[];
 
     /**
      * Defines the custom context menu items.
-     * 
+     *
      * @private
-    */
+     */
     disableDefaultContextMenu?: boolean;
 
     /**
      * Defines the custom context menu items.
-     * 
+     *
      * @private
-    */
+     */
     showCustomContextMenuBottom?: boolean;
 
     /**
      * Defines a set of custom commands and binds them with a set of desired key gestures.
-     * 
+     *
      * {% codeBlock src='pdfviewer/commandManager/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default {}
      */
     commandManager?: CommandManagerModel;
@@ -4719,15 +4788,15 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers on successful AJAX request.
-     * 
+     *
      * @event ajaxRequestSuccess
      */
     ajaxRequestSuccess?: EmitType<AjaxRequestSuccessEventArgs>;
 
     /**
      * Triggers upon completion of page rendering.
-     * 
-     * @event pageRenderComplete 
+     *
+     * @event pageRenderComplete
      */
     pageRenderComplete?: EmitType<PageRenderCompleteEventArgs>;
 
@@ -4852,6 +4921,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @event signatureSelect
      */
     signatureSelect?: EmitType<SignatureSelectEventArgs>;
+
+    /**
+     * Triggers when signature is unselected over the page of the PDF document.
+     *
+     * @event signatureUnselect
+     */
+    signatureUnselect?: EmitType<SignatureUnselectEventArgs>;
 
     /**
      * Triggers when an annotation is selected over the page of the PDF document.
@@ -4992,7 +5068,7 @@ export interface PdfViewerModel extends ComponentModel{
      * @event toolbarClick
      * @blazorProperty 'ToolbarClick'
      */
-    toolbarClick?: EmitType<ClickEventArgs>;    
+    toolbarClick?: EmitType<ClickEventArgs>;
 
     /**
      * Triggers when the text selection is initiated.
@@ -5093,7 +5169,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers upon the initiation of page rendering.
      *
-     * @event pageRenderInitiate 
+     * @event pageRenderInitiate
      */
     pageRenderInitiate?: EmitType<PageRenderInitiateEventArgs>;
 
@@ -5271,7 +5347,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * PDF document form fields collection.
-     * 
+     *
      * @private
      * @deprecated
      */

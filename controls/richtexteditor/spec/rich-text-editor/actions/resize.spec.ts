@@ -18,7 +18,11 @@ describe("Resize - Actions Module", () => {
 
         beforeEach((done: Function) => {
             rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
                 enableResize: true,
+                enableRtl: true,
                 resizeStart: resizeStartSpy,
                 resizing: resizingSpy,
                 resizeStop: resizeStopSpy
@@ -48,24 +52,6 @@ describe("Resize - Actions Module", () => {
             }, 400);
         });
 
-        it('resize end', (done) => {
-            let trg = (rteEle.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
-            clickEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", false, true);
-            trg.dispatchEvent(clickEvent);
-            (rteObj.resizeModule as any).resizeStart(clickEvent);
-            setTimeout(() => {
-                clickEvent = document.createEvent("MouseEvents");
-                clickEvent.initEvent("mouseup", false, true);
-                trg.dispatchEvent(clickEvent);
-                (rteObj.resizeModule as any).stopResize(clickEvent);
-                setTimeout(() => {
-                    expect(resizeStopSpy).toHaveBeenCalled();
-                    done();
-                }, 400);
-            }, 400);
-        });
-
         it('resizing - mousemove', (done) => {
             let trg = (rteObj.element.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
             clickEvent = document.createEvent("MouseEvents");
@@ -79,6 +65,24 @@ describe("Resize - Actions Module", () => {
                 (rteObj.resizeModule as any).performResize(clickEvent);
                 setTimeout(() => {
                     expect(resizingSpy).toHaveBeenCalled();
+                    done();
+                }, 400);
+            }, 400);
+        });
+
+        it('resize end', (done) => {
+            let trg = (rteEle.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.resizeModule as any).resizeStart(clickEvent);
+            setTimeout(() => {
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("mouseup", false, true);
+                trg.dispatchEvent(clickEvent);
+                (rteObj.resizeModule as any).stopResize(clickEvent);
+                setTimeout(() => {
+                    expect(resizeStopSpy).toHaveBeenCalled();
                     done();
                 }, 400);
             }, 400);

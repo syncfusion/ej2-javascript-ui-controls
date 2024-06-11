@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { Animation, AnimationOptions, compile as templateComplier, Browser } from '@syncfusion/ej2-base';
 import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
@@ -29,7 +24,7 @@ import {Alignment} from './enum';
 import { Chart3D } from '../../chart3d';
 import { Chart3DAxis } from '../../chart3d/axis/axis';
 import { Chart3DPoint, Chart3DSeries} from '../../chart3d/series/chart-series';
-import { CircularChart3D } from '../../circularchart3d/circularchart3d';
+import { CircularChart3D } from '../../circularchart3d';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -65,12 +60,22 @@ export function sort(data: Object[], fields: string[], isDescending?: boolean): 
     return sortData;
 }
 
-/** @private */
+/**
+ * Checks if a label contains a line break.
+ *
+ * @param {string} label - The label to check.
+ * @returns {boolean} - True if the label contains a line break, otherwise false.
+ */
 export function isBreakLabel(label: string): boolean {
     return label.indexOf('<br>') !== -1;
 }
 
-/** @private */
+/**
+ * Retrieves the visible data points from a series.
+ *
+ * @param {Series | Chart3DSeries} series - The series to retrieve the visible data points.
+ * @returns {Points[]} - An array containing the visible data points.
+ */
 export function getVisiblePoints(series: Series | Chart3DSeries): Points[] {
     const points: Points[] = extend([], series.points, null, true) as Points[];
     const tempPoints: Points[] = [];
@@ -88,9 +93,18 @@ export function getVisiblePoints(series: Series | Chart3DSeries): Points[] {
     return tempPoints;
 }
 
-/** @private */
-export function rotateTextSize(font: FontModel, text: string, angle: number, chart: Chart| Chart3D): Size {
-    let transformValue: string = chart.element.style.transform;
+/**
+ * Rotates the size of text based on the provided angle.
+ *
+ * @param {FontModel} font - The font style of the text.
+ * @param {string} text - The text to be rotated.
+ * @param {number} angle - The angle of rotation.
+ * @param {Chart | Chart3D} chart - The chart instance.
+ * @param {FontModel} themeFontStyle - The font style based on the theme.
+ * @returns {Size} - The rotated size of the text.
+ */
+export function rotateTextSize(font: FontModel, text: string, angle: number, chart: Chart| Chart3D, themeFontStyle: FontModel): Size {
+    const transformValue: string = chart.element.style.transform;
     if (transformValue) {
         chart.element.style.transform = '';
     }
@@ -102,10 +116,10 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
         id: 'rotate_text',
         x: chart.initialClipRect.x,
         y: chart.initialClipRect.y,
-        'font-size': font.size,
-        'font-style': font.fontStyle,
+        'font-size': font.size || themeFontStyle.size,
+        'font-style': font.fontStyle || themeFontStyle.fontStyle,
         'font-family': font.fontFamily,
-        'font-weight': font.fontWeight,
+        'font-weight': font.fontWeight || themeFontStyle.fontWeight,
         'transform': 'rotate(' + angle + ', 0, 0)',
         'text-anchor': 'middle'
     };
@@ -141,7 +155,7 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
         chart.element.style.transform = transformValue;
     }
     remove(htmlObject);
-    if (!chart.delayRedraw && !chart.redraw && !(chart as Chart).stockChart) {
+    if (!chart.delayRedraw && !chart.redraw && !(chart as Chart).stockChart && !(chart as Chart).pointsAdded) {
         remove(chart.svgObject);
     }
     if ((chart as Chart).enableCanvas) {
@@ -154,7 +168,12 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
     }
     return new Size((box.right - box.left), (box.bottom - box.top));
 }
-/** @private */
+/**
+ * Removes the specified element.
+ *
+ * @param {string | Element} id - The id or reference of the element to be removed.
+ * @returns {void}
+ */
 export function removeElement(id: string | Element): void {
     if (!id) {
         return null;
@@ -164,11 +183,29 @@ export function removeElement(id: string | Element): void {
         remove(element);
     }
 }
-/** @private */
+/**
+ * Calculates the logarithm of a specified value with respect to a specified base.
+ *
+ * @param {number} value - The value for which to calculate the logarithm.
+ * @param {number} base - The base of the logarithm.
+ * @returns {number} - The logarithm of the value with respect to the specified base.
+ */
 export function logBase(value: number, base: number): number {
     return Math.log(value) / Math.log(base);
 }
-/** @private */
+/**
+ * Displays a tooltip at the specified coordinates with the given text.
+ *
+ * @param {string} text - The text content of the tooltip.
+ * @param {number} x - The x-coordinate where the tooltip should be displayed.
+ * @param {number} y - The y-coordinate where the tooltip should be displayed.
+ * @param {number} areaWidth - The width of the area where the tooltip is displayed.
+ * @param {string} id - The id of the tooltip element.
+ * @param {Element} element - The element to which the tooltip is appended.
+ * @param {boolean} isTouch - Indicates whether the tooltip is displayed on a touch device.
+ * @param {boolean} isTitleOrLegendEnabled - Indicates whether the tooltip is enabled for title or legend.
+ * @returns {void}
+ */
 export function showTooltip(
     text: string, x: number, y: number, areaWidth: number, id: string, element: Element,
     isTouch?: boolean, isTitleOrLegendEnabled?: boolean
@@ -206,19 +243,45 @@ export function showTooltip(
     }
 }
 
-/** @private */
+/**
+ * Checks if a value is within the specified range.
+ *
+ * @param {number} value - The value to check.
+ * @param {VisibleRangeModel} range - The range to check against.
+ * @returns {boolean} - True if the value is inside the range, otherwise false.
+ */
 export function inside(value: number, range: VisibleRangeModel): boolean {
     return (value < range.max) && (value > range.min);
 }
-/** @private */
+/**
+ * Checks if a value is within the specified range.
+ *
+ * @param {number} value - The value to check.
+ * @param {VisibleRangeModel} range - The range to check against.
+ * @returns {boolean} - True if the value is inside the range, otherwise false.
+ */
 export function withIn(value: number, range: VisibleRangeModel): boolean {
     return (value <= range.max) && (value >= range.min);
 }
-/** @private */
+/**
+ * Adjusts the value based on the axis type.
+ *
+ * @param {number} value - The value to adjust.
+ * @param {Axis} axis - The axis used for adjustment.
+ * @returns {number} - The adjusted value.
+ */
 export function logWithIn(value: number, axis: Axis): number {
     return axis.valueType === 'Logarithmic' ? logBase(value, axis.logBase) : value;
 }
-/** @private */
+/**
+ * Checks if a point is within the range of the previous and next points in a series.
+ *
+ * @param {Points} previousPoint - The previous point in the series.
+ * @param {Points} currentPoint - The current point to check.
+ * @param {Points} nextPoint - The next point in the series.
+ * @param {Series} series - The series to which the points belong.
+ * @returns {boolean} - A boolean indicating if the point is within the range.
+ */
 export function withInRange(previousPoint: Points, currentPoint: Points, nextPoint: Points, series: Series): boolean {
     const mX2: number = logWithIn(currentPoint.xValue, series.xAxis);
     const mX1: number = previousPoint ? logWithIn(previousPoint.xValue, series.xAxis) : mX2;
@@ -228,7 +291,12 @@ export function withInRange(previousPoint: Points, currentPoint: Points, nextPoi
     return ((mX1 >= xStart && mX1 <= xEnd) || (mX2 >= xStart && mX2 <= xEnd) ||
         (mX3 >= xStart && mX3 <= xEnd) || (xStart >= mX1 && xStart <= mX3));
 }
-/** @private */
+/**
+ * Calculates the sum of an array of numbers.
+ *
+ * @param {number[]} values - An array of numbers.
+ * @returns {number} - The sum of the numbers in the array.
+ */
 export function sum(values: number[]): number {
     let sum: number = 0;
     for (const value of values) {
@@ -236,7 +304,16 @@ export function sum(values: number[]): number {
     }
     return sum;
 }
-/** @private */
+/**
+ * Calculates the sum of elements in a subarray.
+ *
+ * @param {Object[]} values - The array containing elements.
+ * @param {number} first - The index of the first element in the subarray.
+ * @param {number} last - The index of the last element in the subarray.
+ * @param {number[]} index - The array of indices.
+ * @param {Series} series - The series object.
+ * @returns {number} - The sum of elements in the subarray.
+ */
 export function subArraySum(values: Object[], first: number, last: number, index: number[], series: Series): number {
     let sum: number = 0;
     if (index !== null) {
@@ -255,7 +332,13 @@ export function subArraySum(values: Object[], first: number, last: number, index
     }
     return sum;
 }
-/** @private */
+/**
+ * Subtracts thickness from the given rectangle.
+ *
+ * @param {Rect} rect - The rectangle from which to subtract thickness.
+ * @param {Thickness} thickness - The thickness to subtract.
+ * @returns {Rect} - The resulting rectangle after subtracting thickness.
+ */
 export function subtractThickness(rect: Rect, thickness: Thickness): Rect {
     rect.x += thickness.left;
     rect.y += thickness.top;
@@ -263,7 +346,13 @@ export function subtractThickness(rect: Rect, thickness: Thickness): Rect {
     rect.height -= thickness.top + thickness.bottom;
     return rect;
 }
-/** @private */
+/**
+ * Subtracts a rectangle representing thickness from the given rectangle.
+ *
+ * @param {Rect} rect - The rectangle from which to subtract the thickness rectangle.
+ * @param {Thickness} thickness - The rectangle representing the thickness to subtract.
+ * @returns {Rect} - The resulting rectangle after subtracting the thickness rectangle.
+ */
 export function subtractRect(rect: Rect, thickness: Rect): Rect {
     rect.x += thickness.x;
     rect.y += thickness.y;
@@ -271,17 +360,36 @@ export function subtractRect(rect: Rect, thickness: Rect): Rect {
     rect.height -= thickness.y + thickness.height;
     return rect;
 }
-/** @private */
+/**
+ * Converts a degree value to a location on the chart based on the provided radius and center point.
+ *
+ * @param {number} degree - The degree value to convert.
+ * @param {number} radius - The radius from the center point.
+ * @param {ChartLocation} center - The center point of the chart.
+ * @returns {ChartLocation} - The location on the chart corresponding to the degree value.
+ */
 export function degreeToLocation(degree: number, radius: number, center: ChartLocation): ChartLocation {
     const radian: number = (degree * Math.PI) / 180;
     return new ChartLocation(Math.cos(radian) * radius + center.x, Math.sin(radian) * radius + center.y);
 }
-/** @private */
+/**
+ * Converts a degree value to radians.
+ *
+ * @param {number} degree - The degree value to convert.
+ * @returns {number} - The equivalent value in radians.
+ */
 export function degreeToRadian(degree: number): number {
     return degree * (Math.PI / 180);
 }
-
-/** @private */
+/**
+ * Get the coordinates of a rotated rectangle.
+ *
+ * @param {ChartLocation[]} actualPoints - The coordinates of the original rectangle.
+ * @param {number} centerX - The x-coordinate of the center of rotation.
+ * @param {number} centerY - The y-coordinate of the center of rotation.
+ * @param {number} angle - The angle of rotation in degrees.
+ * @returns {ChartLocation[]} - The coordinates of the rotated rectangle.
+ */
 export function getRotatedRectangleCoordinates(
     actualPoints: ChartLocation[], centerX: number, centerY: number, angle: number
 ): ChartLocation[] {
@@ -365,8 +473,17 @@ export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): 
     return true;
 }
 
-/** @private */
-function getAccumulationLegend(locX: number, locY: number, r: number, height: number, width: number, mode: string): string {
+/**
+ * Generates the legend for accumulation chart.
+ *
+ * @param {number} locX - The x-coordinate of the legend position.
+ * @param {number} locY - The y-coordinate of the legend position.
+ * @param {number} r - The radius of the chart.
+ * @param {number} height - The height of the legend.
+ * @param {number} width - The width of the legend.
+ * @returns {string} - The generated legend.
+ */
+function getAccumulationLegend(locX: number, locY: number, r: number, height: number, width: number): string {
     const cartesianlarge: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX, locY));
     const cartesiansmall: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX + (width / 10), locY));
     return 'M' + ' ' + locX + ' ' + locY + ' ' + 'L' + ' ' + (locX + r) + ' ' + (locY) + ' ' + 'A' + ' ' + (r) + ' ' + (r) +
@@ -375,13 +492,25 @@ function getAccumulationLegend(locX: number, locY: number, r: number, height: nu
         + (r) + ' ' + (r) + ' ' + 0 + ' ' + 0 + ' ' + 0 + ' ' + cartesiansmall.x + ' ' + cartesiansmall.y + ' ' + 'Z';
 }
 
-/** @private */
+/**
+ * Calculates the angle between two points.
+ *
+ * @param {ChartLocation} center - The center point.
+ * @param {ChartLocation} point - The point to calculate the angle from the center.
+ * @returns {number} - The angle in degrees.
+ */
 export function getAngle(center: ChartLocation, point: ChartLocation): number {
     let angle: number = Math.atan2((point.y - center.y), (point.x - center.x));
     angle = angle < 0 ? (6.283 + angle) : angle;
     return angle * (180 / Math.PI);
 }
-/** @private */
+/**
+ * Returns a sub-array of values starting from the specified index.
+ *
+ * @param {number[]} values - The array of numbers.
+ * @param {number} index - The index from which the sub-array starts.
+ * @returns {number[]} - The sub-array of values.
+ */
 export function subArray(values: number[], index: number): number[] {
     const subArray: number[] = [];
     for (let i: number = 0; i <= index - 1; i++) {
@@ -389,7 +518,13 @@ export function subArray(values: number[], index: number): number[] {
     }
     return subArray;
 }
-/** @private */
+/**
+ * Converts a value to its corresponding coefficient based on the axis range.
+ *
+ * @param {number} value - The value to be converted.
+ * @param {Axis} axis - The axis object containing range information.
+ * @returns {number} - The coefficient value corresponding to the input value.
+ */
 export function valueToCoefficient(value: number, axis: Axis): number {
     const range: VisibleRangeModel = axis.visibleRange;
     const result: number = (value - <number>range.min) / (range.delta);
@@ -397,7 +532,17 @@ export function valueToCoefficient(value: number, axis: Axis): number {
     return isInverse ? (1 - result) : result;
 
 }
-/** @private */
+/**
+ * Transforms a point to its visible position based on the axes range and inversion.
+ *
+ * @param {number} x - The x-coordinate of the point.
+ * @param {number} y - The y-coordinate of the point.
+ * @param {Axis} xAxis - The x-axis object containing range information.
+ * @param {Axis} yAxis - The y-axis object containing range information.
+ * @param {boolean} [isInverted=false] - Specifies if the chart is inverted.
+ * @param {Series} [series] - The series object for additional information (optional).
+ * @returns {ChartLocation} - The transformed visible position of the point.
+ */
 export function TransformToVisible(x: number, y: number, xAxis: Axis, yAxis: Axis, isInverted?: boolean, series?: Series): ChartLocation {
     x = (xAxis.valueType === 'Logarithmic' ? logBase(x > 1 ? x : 1, xAxis.logBase) : x);
     y = (yAxis.valueType === 'Logarithmic' ?
@@ -412,9 +557,11 @@ export function TransformToVisible(x: number, y: number, xAxis: Axis, yAxis: Axi
 
 }
 /**
- * method to find series, point index by element id
+ * Finds the index from the given id.
  *
- * @private
+ * @param {string} id - The id to search for.
+ * @param {boolean} [isPoint=false] - Specifies if the id represents a data point (optional).
+ * @returns {Index} - The index found from the id.
  */
 export function indexFinder(id: string, isPoint: boolean = false): Index {
     let ids: string[] = ['NaN', 'NaN'];
@@ -430,7 +577,13 @@ export function indexFinder(id: string, isPoint: boolean = false): Index {
     return new Index(parseInt(ids[0], 10), parseInt(ids[1], 10));
 }
 
-/** @private */
+/**
+ * Converts a coefficient value to a vector representing a point on the circumference of a circle.
+ *
+ * @param {number} coefficient - The coefficient value to convert.
+ * @param {number} startAngle - The starting angle of the circle.
+ * @returns {ChartLocation} - The vector representing the point on the circle.
+ */
 export function CoefficientToVector(coefficient: number, startAngle: number): ChartLocation {
     startAngle = startAngle < 0 ? startAngle + 360 : startAngle;
     let angle: number = Math.PI * (1.5 - 2 * coefficient);
@@ -438,7 +591,13 @@ export function CoefficientToVector(coefficient: number, startAngle: number): Ch
     return { x: Math.cos(angle), y: Math.sin(angle) };
 }
 
-/** @private */
+/**
+ * Converts a value to a polar coefficient value based on the axis.
+ *
+ * @param {number} value - The value to convert.
+ * @param {Axis} axis - The axis object.
+ * @returns {number} - The polar coefficient value.
+ */
 export function valueToPolarCoefficient(value: number, axis: Axis): number {
     const range: VisibleRangeModel = axis.visibleRange;
     let delta: number;
@@ -495,7 +654,16 @@ export class PolarArc {
         this.currentXPosition = currentXPosition;
     }
 }
-/** @private */
+/**
+ * Creates a tooltip element with the specified id, text, position, and font size.
+ *
+ * @param {string} id - The id of the tooltip element.
+ * @param {string} text - The text content of the tooltip.
+ * @param {number} top - The top position of the tooltip.
+ * @param {number} left - The left position of the tooltip.
+ * @param {string} fontSize - The font size of the tooltip text.
+ * @returns {void}
+ */
 export function createTooltip(id: string, text: string, top: number, left: number, fontSize: string): void {
     let tooltip: HTMLElement = getElement(id) as HTMLElement;
     const style: string = 'top:' + top.toString() + 'px;' +
@@ -513,7 +681,17 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
         tooltip.setAttribute('styles', style);
     }
 }
-/** @private */
+/**
+ * Creates zooming labels for the specified axis and adds them to the parent element.
+ *
+ * @param {Chart} chart - The chart instance.
+ * @param {Axis} axis - The axis for which to create zooming labels.
+ * @param {Element} parent - The parent element to which the labels will be appended.
+ * @param {number} index - The index of the label.
+ * @param {boolean} isVertical - Indicates whether the axis is vertical.
+ * @param {Rect} rect - The bounding rectangle of the label.
+ * @returns {Element} - The created zooming label element.
+ */
 export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, index: number, isVertical: boolean, rect: Rect): Element {
     const margin: number = 5;
     const opposedPosition: boolean = axis.isAxisOpposedPosition;
@@ -528,9 +706,11 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
     let direction: string;
     const scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
         ? axis.scrollBarHeight : 0;
-    const isRtlEnabled: boolean = (chart.enableRtl && !isVertical && !axis.isInversed) || (axis.isInversed && !(chart.enableRtl && !isVertical));
+    const isRtlEnabled: boolean = (chart.enableRtl && !isVertical && !axis.isInversed) ||
+        (axis.isInversed && !(chart.enableRtl && !isVertical));
     for (let i: number = 0; i < 2; i++) {
-        size = measureText(i ? (isRtlEnabled ? axis.startLabel : axis.endLabel) : (isRtlEnabled ? axis.endLabel : axis.startLabel), axis.labelStyle, chart.themeStyle.axisLabelFont);
+        size = measureText(i ? (isRtlEnabled ? axis.startLabel : axis.endLabel) : (isRtlEnabled ? axis.endLabel : axis.startLabel),
+                           axis.labelStyle, chart.themeStyle.axisLabelFont);
         if (isVertical) {
             arrowLocation = i ? new ChartLocation(rect.x - scrollBarHeight, rect.y + rx) :
                 new ChartLocation(axis.rect.x - scrollBarHeight, (rect.y + rect.height - rx));
@@ -579,13 +759,28 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
             new TextOption(
                 chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? (isRtlEnabled ? axis.startLabel : axis.endLabel) : (isRtlEnabled ? axis.endLabel : axis.startLabel)),
             { color: chart.themeStyle.crosshairLabelFont.color, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' },
-            chart.themeStyle.crosshairLabelFont.color, parent, null, null, null, null, null, null, null, null, null, null, chart.themeStyle.crosshairLabelFont
+            chart.themeStyle.crosshairLabelFont.color, parent, null, null, null, null, null, null, null, null, null, null,
+            chart.themeStyle.crosshairLabelFont
         );
     }
 
     return parent;
 }
-/** @private */
+/**
+ * Finds the direction of the crosshair based on the provided parameters.
+ *
+ * @param {number} rX - The x-coordinate of the crosshair line.
+ * @param {number} rY - The y-coordinate of the crosshair line.
+ * @param {Rect} rect - The bounding rectangle of the crosshair.
+ * @param {ChartLocation} arrowLocation - The location of the arrow in the crosshair.
+ * @param {number} arrowPadding - The padding for the arrow.
+ * @param {boolean} top - Indicates whether the crosshair is positioned at the top.
+ * @param {boolean} bottom - Indicates whether the crosshair is positioned at the bottom.
+ * @param {boolean} left - Indicates whether the crosshair is positioned at the left.
+ * @param {number} tipX - The x-coordinate of the crosshair tip.
+ * @param {number} tipY - The y-coordinate of the crosshair tip.
+ * @returns {string} - The direction of the crosshair ('Top', 'Bottom', 'Left', 'Right', 'Center').
+ */
 export function findCrosshairDirection(
     rX: number, rY: number, rect: Rect, arrowLocation: ChartLocation, arrowPadding: number,
     top: boolean, bottom: boolean, left: boolean, tipX: number, tipY: number
@@ -659,22 +854,51 @@ export function findCrosshairDirection(
 
 }
 //Within bounds
-/** @private */
+/**
+ * Checks if the provided coordinates are within the bounds of the rectangle.
+ *
+ * @param {number} x - The x-coordinate to check.
+ * @param {number} y - The y-coordinate to check.
+ * @param {Rect} bounds - The bounding rectangle.
+ * @param {number} width - The width of the area to include in the bounds check.
+ * @param {number} height - The height of the area to include in the bounds check.
+ * @returns {boolean} - Returns true if the coordinates are within the bounds; otherwise, false.
+ */
 export function withInBounds(x: number, y: number, bounds: Rect, width: number = 0, height: number = 0): boolean {
     return (x >= bounds.x - width && x <= bounds.x + bounds.width + width && y >= bounds.y - height
         && y <= bounds.y + bounds.height + height);
 }
-/** @private */
+/**
+ * Gets the x-coordinate value for a given point value on the axis.
+ *
+ * @param {number} value - The point value.
+ * @param {number} size - The size of the axis.
+ * @param {Axis} axis - The axis.
+ * @returns {number} - Returns the x-coordinate value.
+ */
 export function getValueXByPoint(value: number, size: number, axis: Axis): number {
     const actualValue: number = !axis.isAxisInverse ? value / size : (1 - (value / size));
     return actualValue * (axis.visibleRange.delta) + axis.visibleRange.min;
 }
-/** @private */
+/**
+ * Gets the y-coordinate value for a given point value on the axis.
+ *
+ * @param {number} value - The point value.
+ * @param {number} size - The size of the axis.
+ * @param {Axis} axis - The axis.
+ * @returns {number} - Returns the y-coordinate value.
+ */
 export function getValueYByPoint(value: number, size: number, axis: Axis): number {
     const actualValue: number = axis.isAxisInverse ? value / size : (1 - (value / size));
     return actualValue * (axis.visibleRange.delta) + axis.visibleRange.min;
 }
-/** @private */
+/**
+ * Finds the clip rectangle for a series.
+ *
+ * @param {Series} series - The series for which to find the clip rectangle.
+ * @param {boolean} isCanvas - Indicates whether the rendering is on a canvas.
+ * @returns {void}
+ */
 export function findClipRect(series: Series, isCanvas: boolean = false): void {
     const rect: Rect = series.clipRect;
     if (isCanvas && (series.type === 'Polar' || series.type === 'Radar'))
@@ -704,11 +928,23 @@ export function findClipRect(series: Series, isCanvas: boolean = false): void {
         }
     }
 }
-/** @private */
+/**
+ * Converts the first character of a string to lowercase.
+ *
+ * @param {string} str - The string to convert.
+ * @returns {string} The converted string.
+ */
 export function firstToLowerCase(str: string): string {
     return str.substr(0, 1).toLowerCase() + str.substr(1);
 }
-/** @private */
+/**
+ * Gets the transformation of the chart area based on the provided axes and inverted axis state.
+ *
+ * @param {Axis} xAxis - The X-axis of the chart.
+ * @param {Axis} yAxis - The Y-axis of the chart.
+ * @param {boolean} invertedAxis - Indicates whether the chart axis is inverted.
+ * @returns {Rect} The transformed chart area.
+ */
 export function getTransform(xAxis: Axis, yAxis: Axis, invertedAxis: boolean): Rect {
     let x: number; let y: number; let width: number; let height: number;
     if (invertedAxis) {
@@ -724,13 +960,19 @@ export function getTransform(xAxis: Axis, yAxis: Axis, invertedAxis: boolean): R
     }
     return new Rect(x, y, width, height);
 }
-/** @private */
+/**
+ * Calculates the minimum points delta between data points on the provided axis.
+ *
+ * @param {Axis | Chart3DAxis} axis - The axis for which to calculate the minimum points delta.
+ * @param {Series[]} seriesCollection - The collection of series in the chart.
+ * @returns {number} The minimum points delta.
+ */
 export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Series[]): number {
     let minDelta: number = Number.MAX_VALUE;
     let xValues: Object[];
     let minVal: number;
     let seriesMin: number;
-    let stackingGroups: string[] = [];
+    const stackingGroups: string[] = [];
     for (let index: number = 0; index < seriesCollection.length; index++) {
         const series: Series = seriesCollection[index as number];
         xValues = [];
@@ -755,7 +997,7 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
                 for (let index: number = 0; index < xValues.length; index++) {
                     const value: Object = xValues[index as number];
                     if (index > 0 && value) {
-                        minVal = series.type.indexOf('Stacking') > -1 && axis.valueType == "Category" ? stackingGroups.length : <number>value - <number>xValues[index - 1];
+                        minVal = series.type.indexOf('Stacking') > -1 && axis.valueType === 'Category' ? stackingGroups.length : <number>value - <number>xValues[index - 1];
                         if (minVal !== 0) {
                             minDelta = Math.min(minDelta, minVal);
                         }
@@ -770,7 +1012,12 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
 
     return minDelta;
 }
-/** @private */
+/**
+ * Retrieves the animation function based on the specified effect.
+ *
+ * @param {string} effect - The name of the animation effect.
+ * @returns {Function} The animation function corresponding to the effect.
+ */
 export function getAnimationFunction(effect: string): Function {
     let functionName: Function;
     switch (effect) {
@@ -782,22 +1029,29 @@ export function getAnimationFunction(effect: string): Function {
 }
 
 /**
- * Animation Effect Calculation Started Here
+ * Linear animation function.
  *
- * @param {number} currentTime currentTime
- * @param {number} startValue startValue of the animation
- * @param {number} endValue endValue of the animation
- * @param {number} duration duration of the animation
- * @private
+ * @param {number} currentTime - The current time of the animation.
+ * @param {number} startValue - The starting value of the animation.
+ * @param {number} endValue - The ending value of the animation.
+ * @param {number} duration - The duration of the animation.
+ * @returns {number} The interpolated value at the current time.
  */
 export function linear(currentTime: number, startValue: number, endValue: number, duration: number): number {
     return -endValue * Math.cos(currentTime / duration * (Math.PI / 2)) + endValue + startValue;
 }
 
 /**
- * Animation Effect Calculation End
+ * Animates the marker element.
  *
- * @private
+ * @param {Element} element - The marker element to animate.
+ * @param {number} delay - The delay before starting the animation.
+ * @param {number} duration - The duration of the animation.
+ * @param {Series | AccumulationSeries} series - The series associated with the marker.
+ * @param {number} pointIndex - The index of the point in the series.
+ * @param {ChartLocation} point - The location of the point.
+ * @param {boolean} isLabel - Specifies whether the marker is a data label.
+ * @returns {void}
  */
 export function markerAnimate(
     element: Element, delay: number, duration: number, series: Series | AccumulationSeries,
@@ -832,7 +1086,14 @@ export function markerAnimate(
 }
 
 /**
- * Animate the rect element.
+ * Animates the rectangle element.
+ *
+ * @param {Element} element - The rectangle element to animate.
+ * @param {number} delay - The delay before starting the animation.
+ * @param {number} duration - The duration of the animation.
+ * @param {Rect} currentRect - The current rectangle dimensions.
+ * @param {Rect} previousRect - The previous rectangle dimensions.
+ * @returns {void}
  */
 export function animateRectElement(
     element: Element, delay: number, duration: number, currentRect: Rect, previousRect: Rect
@@ -866,11 +1127,12 @@ export function animateRectElement(
 /**
  * Animation after legend click a path.
  *
- * @param {Element} element element to be animated
- * @param {string} direction current direction of the path
- * @param {boolean} redraw chart redraw
- * @param {string} previousDirection previous direction of the path
- * @param {number} animateDuration animateDuration of the path
+ * @param {Element} element - element to be animated
+ * @param {string} direction - current direction of the path
+ * @param {boolean} redraw - chart redraw
+ * @param {string} previousDirection - previous direction of the path
+ * @param {number} animateDuration - animateDuration of the path
+ * @returns {void}
  */
 export function pathAnimation(
     element: Element, direction: string, redraw: boolean, previousDirection?: string, animateDuration?: number
@@ -879,7 +1141,7 @@ export function pathAnimation(
         return null;
     }
     let duration: number = 300;
-    if (animateDuration) {
+    if (!isNullOrUndefined(animateDuration)) {
         duration = animateDuration;
     }
     const startDirections: string = previousDirection || element.getAttribute('d');
@@ -929,13 +1191,84 @@ export function pathAnimation(
         }
     });
 }
+
+/**
+ * Point based animation in chart series.
+ *
+ * @param {Element} element element to be animated.
+ * @param {string} direction current direction of the path.
+ * @param {boolean} redraw chart redraw.
+ * @param {string} previousDirection previous direction of the path.
+ * @param {number} animateDuration animateDuration of the path.
+ * @param {string} removeDirection removeDirection of the path.
+ * @returns {void}
+ */
+export function animateAddPoints(
+    element: Element, direction: string, redraw: boolean, previousDirection?: string, animateDuration?: number, removeDirection?: string
+): void {
+    if (!redraw || (!previousDirection && !element)) {
+        return null;
+    }
+    let duration: number = 300;
+    if (!isNullOrUndefined(animateDuration)) {
+        duration = animateDuration;
+    }
+    const startDirections: string = previousDirection || element.getAttribute('d');
+    const endDirections: string = direction;
+    let currentDirection: string = '';
+    element.setAttribute('d', startDirections);
+    new Animation({}).animate(createElement('div'), {
+        duration: duration,
+        progress: (args: AnimationOptions): void => {
+            currentDirection = '';
+            const startPathCommands: string[] = startDirections.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = endDirections.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            for (let i: number = 0; i < maxLength; i++) {
+                const startPathCommand: string = startPathCommands[i as number] || '';
+                const endPathCommand: string = endPathCommands[i as number] || '';
+                const startCoords: string[] = startPathCommand.trim().split(/\s+/);
+                const endCoords: string[] = endPathCommand.trim().split(/\s+/);
+                const interpolatedCoords: number[] = [];
+                for (let j: number = 1; j < startCoords.length; j++) {
+                    const startCoord: number = parseFloat(startCoords[j as number]);
+                    const endCoord: number = parseFloat(endCoords[j as number]);
+                    if (!isNaN(startCoord) && !isNaN(endCoord) && startCoords.length === endCoords.length) {
+                        const interpolatedValue: number = linear(args.timeStamp, startCoord, (endCoord - startCoord), duration);
+                        if (i === maxLength - 1) {
+                            interpolatedCoords.push(interpolatedValue);
+                        }
+                        else {
+                            interpolatedCoords.push(interpolatedValue);
+                        }
+                    }
+                }
+
+                if (startCoords.length !== endCoords.length) {
+                    currentDirection += 'L';
+                }
+                else {
+                    currentDirection += startCoords[0];
+                }
+                currentDirection += ' ' + interpolatedCoords.join(' ');
+                currentDirection += ' ';
+            }
+            element.setAttribute('d', currentDirection);
+        },
+        end: () => {
+            element.setAttribute('d', removeDirection || direction);
+        }
+    });
+}
+
 /**
  * To append the clip rect element.
  *
- * @param {boolean} redraw chart redraw value
- * @param {BaseAttibutes} options element options
- * @param {SvgRenderer} renderer svg renderer values
- * @param {string} clipPath clipPath of the element
+ * @param {boolean} redraw - chart redraw value.
+ * @param {BaseAttibutes} options - element options.
+ * @param {SvgRenderer} renderer - svg renderer values.
+ * @param {string} clipPath - clipPath of the element.
+ * @returns {Element} - Returns clip rect element.
  */
 export function appendClipElement(
     redraw: boolean, options: BaseAttibutes, renderer: SvgRenderer,
@@ -954,10 +1287,14 @@ export function appendClipElement(
 }
 
 /**
- * Triggers the event.
+ * Triggers the label render event.
  *
+ * @param {Chart | RangeNavigator | Chart3D} chart - The chart or range navigator instance.
+ * @param {number} tempInterval - The temporary interval value.
+ * @param {string} text - The label text.
+ * @param {FontModel} labelStyle - The style of the label.
+ * @param {Axis | Chart3DAxis} axis - The axis associated with the label.
  * @returns {void}
- * @private
  */
 export function triggerLabelRender(
     chart: Chart | RangeNavigator| Chart3D, tempInterval: number, text: string, labelStyle: FontModel,
@@ -972,32 +1309,36 @@ export function triggerLabelRender(
         const isLineBreakLabels: boolean = argsData.text.indexOf('<br>') !== -1;
         const text: string | string[] = (axis.enableTrim) ? (isLineBreakLabels ?
             lineBreakLabelTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle, chart.themeStyle.axisLabelFont) :
-            textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle, chart.enableRtl, chart.themeStyle.axisLabelFont)) : argsData.text;
+            textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle, chart.enableRtl, chart.themeStyle.axisLabelFont))
+            : argsData.text;
         axis.visibleLabels.push(new VisibleLabels(text, argsData.value, argsData.labelStyle, argsData.text));
     }
 }
 /**
  * The function used to find whether the range is set.
  *
- * @returns {boolean} It returns true if the axis range is set otherwise false.
+ * @param {Axis | Chart3DAxis} axis - The axis to check.
+ * @returns {boolean} - It returns true if the axis range is set otherwise false.
  * @private
  */
 export function setRange(axis: Axis| Chart3DAxis): boolean {
     return (axis.minimum != null && axis.maximum != null);
 }
 /**
- * To check whether the axis is zoomed or not.
+ * Checks if zooming is enabled for the axis.
  *
- * @param {Axis} axis axis model
+ * @param {Axis} axis - The axis to check for zooming.
+ * @returns {boolean} - Returns true if zooming is enabled for the axis, otherwise false.
  */
 export function isZoomSet(axis: Axis): boolean {
     return (axis.zoomFactor < 1 && axis.zoomPosition >= 0);
 }
 /**
- * Calculate desired interval for the axis.
+ * Calculates the actual desired intervals count based on the available size and axis.
  *
- * @returns {void} It returns desired interval count.
- * @private
+ * @param {Size} availableSize - The available size for rendering.
+ * @param {Axis | Chart3DAxis} axis - The axis for which to calculate the intervals count.
+ * @returns {number} - The actual desired intervals count.
  */
 export function getActualDesiredIntervalsCount(availableSize: Size, axis: Axis | Chart3DAxis): number {
 
@@ -1012,9 +1353,14 @@ export function getActualDesiredIntervalsCount(availableSize: Size, axis: Axis |
 }
 
 /**
- * Animation for template
+ * Animates the template element.
  *
- * @private
+ * @param {Element} element - The element to animate.
+ * @param {number} delay - The delay before starting the animation.
+ * @param {number} duration - The duration of the animation.
+ * @param {Effect} name - The name of the animation effect.
+ * @param {boolean} [isRemove] - Indicates whether to remove the element after animation completion.
+ * @returns {void}
  */
 export function templateAnimate(
     element: Element, delay: number, duration: number, name: Effect, isRemove?: boolean
@@ -1036,7 +1382,21 @@ export function templateAnimate(
     });
 }
 
-/** @private */
+/**
+ * Draws a symbol at the specified location.
+ *
+ * @param {ChartLocation} location - The location to draw the symbol.
+ * @param {string} shape - The shape of the symbol.
+ * @param {Size} size - The size of the symbol.
+ * @param {string} url - The URL of the image symbol.
+ * @param {PathOption} options - The options for drawing the symbol.
+ * @param {string} label - The label for the symbol.
+ * @param {SvgRenderer | CanvasRenderer} [renderer] - The renderer for drawing the symbol.
+ * @param {Rect} [clipRect] - The clipping rectangle.
+ * @param {boolean} [isChartControl] - Indicates whether it is a chart control.
+ * @param {BulletChart} [control] - The bullet chart control.
+ * @returns {Element} - The element representing the drawn symbol.
+ */
 export function drawSymbol(
     location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string,
     renderer?: SvgRenderer | CanvasRenderer, clipRect?: Rect, isChartControl?: boolean, control?: BulletChart
@@ -1049,7 +1409,18 @@ export function drawSymbol(
     //drawElement.setAttribute('aria-label', label);
     return drawElement;
 }
-/** @private */
+/**
+ * Calculates the shapes based on the specified parameters.
+ *
+ * @param {ChartLocation} location - The location for the shapes.
+ * @param {Size} size - The size of the shapes.
+ * @param {string} shape - The shape of the symbols.
+ * @param {PathOption} options - The options for drawing the shapes.
+ * @param {string} url - The URL of the image symbols.
+ * @param {boolean} [isChart] - Indicates whether it is a chart.
+ * @param {BulletChart} [control] - The bullet chart control.
+ * @returns {IShapes} - The calculated shapes.
+ */
 export function calculateShapes(
     location: ChartLocation, size: Size, shape: string, options: PathOption, url: string, isChart?: boolean,
     control?: BulletChart
@@ -1177,7 +1548,14 @@ export function calculateShapes(
     options = <PathOption>calculateLegendShapes(location, new Size(width, height), shape, options).renderOption;
     return { renderOption: options, functionName: functionName };
 }
-/** @private */
+/**
+ * Gets the location of the rectangle based on the specified start and end locations and the outer rectangle.
+ *
+ * @param {ChartLocation} startLocation - The start location.
+ * @param {ChartLocation} endLocation - The end location.
+ * @param {Rect} outerRect - The outer rectangle.
+ * @returns {Rect} - The location of the rectangle.
+ */
 export function getRectLocation(startLocation: ChartLocation, endLocation: ChartLocation, outerRect: Rect): Rect {
     const x: number = (endLocation.x < outerRect.x) ? outerRect.x :
         (endLocation.x > (outerRect.x + outerRect.width)) ? outerRect.x + outerRect.width : endLocation.x;
@@ -1187,15 +1565,32 @@ export function getRectLocation(startLocation: ChartLocation, endLocation: Chart
         (x > startLocation.x ? startLocation.x : x), (y > startLocation.y ? startLocation.y : y),
         Math.abs(x - startLocation.x), Math.abs(y - startLocation.y));
 }
-/** @private */
+/**
+ * Returns the value constrained within the specified minimum and maximum limits.
+ *
+ * @param {number} value - The input value.
+ * @param {number} min - The minimum limit.
+ * @param {number} max - The maximum limit.
+ * @returns {number} - The constrained value.
+ */
 export function minMax(value: number, min: number, max: number): number {
     return value > max ? max : (value < min ? min : value);
 }
-/** @private */
+/**
+ * Retrieves the DOM element with the specified ID.
+ *
+ * @param {string} id - The ID of the element to retrieve.
+ * @returns {Element} - The DOM element.
+ */
 export function getElement(id: string): Element {
     return document.getElementById(id);
 }
-/** @private */
+/**
+ * Gets the template function from the provided template string or function.
+ *
+ * @param {string | Function} template - The template string or function.
+ * @returns {Function} - The template function.
+ */
 export function getTemplateFunction(template: string | Function): Function {
     let templateFn: Function = null;
     try {
@@ -1210,7 +1605,21 @@ export function getTemplateFunction(template: string | Function): Function {
 
     return templateFn;
 }
-/** @private */
+/**
+ * Renders the accumulation chart data labels using template.
+ *
+ * @param {HTMLElement} childElement - The child element.
+ * @param {AccumulationChart} chart - The accumulation chart instance.
+ * @param {boolean} isTemplate - Defines whether the template is applied or not.
+ * @param {AccPoints[]} points - The accumulation chart points.
+ * @param {IAccTextRenderEventArgs} argsData - The accumulation chart text render event arguments.
+ * @param {AccPoints} [point] - The accumulation chart point.
+ * @param {Element} [datalabelGroup] - The data label group element.
+ * @param {string} [id] - The id of the element.
+ * @param {AccumulationDataLabelSettingsModel} [dataLabel] - The accumulation chart data label settings.
+ * @param {boolean} [redraw] - Defines whether to redraw the chart or not.
+ * @returns {void}
+ */
 export function accReactTemplate(
     childElement: HTMLElement, chart: AccumulationChart, isTemplate: boolean, points: AccPoints[],
     argsData: IAccTextRenderEventArgs, point?: AccPoints, datalabelGroup?: Element, id?: string,
@@ -1221,7 +1630,17 @@ export function accReactTemplate(
         isTemplate, childElement, point, points, argsData, datalabelGroup, id, dataLabel, redraw, clientRect, true
     );
 }
-/** @private */
+/**
+ * Renders the chart data labels using template.
+ *
+ * @param {HTMLElement} childElement - The child element.
+ * @param {Chart} chart - The chart instance.
+ * @param {Points} point - The chart point.
+ * @param {Series} series - The chart series.
+ * @param {number} labelIndex - The index of the label.
+ * @param {boolean} [redraw] - Defines whether to redraw the chart or not.
+ * @returns {void}
+ */
 export function chartReactTemplate(
     childElement: HTMLElement, chart: Chart, point: Points, series: Series,
     labelIndex: number, redraw?: boolean
@@ -1239,7 +1658,27 @@ export function chartReactTemplate(
         );
     }
 }
-/** @private */
+/**
+ * Creates a template.
+ *
+ * @param {HTMLElement} childElement - The child element of the template.
+ * @param {number} pointIndex - The index of the point.
+ * @param {string | Function} content - The content of the template.
+ * @param {Chart | AccumulationChart | RangeNavigator} chart - The chart instance.
+ * @param {Points | AccPoints} point - The chart or accumulation point.
+ * @param {Series | AccumulationSeries} series - The chart or accumulation series.
+ * @param {string} dataLabelId - The id of the data label.
+ * @param {number} labelIndex - The index of the label.
+ * @param {IAccTextRenderEventArgs} argsData - The event arguments for text rendering.
+ * @param {boolean} isTemplate - Indicates whether it is a template.
+ * @param {AccPoints[]} points - The accumulation points.
+ * @param {Element} datalabelGroup - The group element of the data label.
+ * @param {string} id - The id of the element.
+ * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings.
+ * @param {boolean} redraw - Indicates whether to redraw.
+ * @returns {HTMLElement} - The created template element.
+ * @private
+ */
 export function createTemplate(
     childElement: HTMLElement, pointIndex: number, content: string | Function, chart: Chart | AccumulationChart | RangeNavigator,
     point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId?: string, labelIndex?: number,
@@ -1268,13 +1707,11 @@ export function createTemplate(
                 this, childElement, chart, isTemplate, points, argsData, points[pointIndex as number],
                 datalabelGroup, id, dataLabel, redraw
             );
-            // tslint:disable-next-line:no-any
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         } else if (chart.getModuleName() === 'chart') {
             reactCallback = (point && series) ? chartReactTemplate.bind(
                 this, childElement, chart, point, series, labelIndex, redraw
             ) : reactCallback;
-            // tslint:disable-next-line:no-any
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         }
     } catch (e) {
@@ -1282,16 +1719,30 @@ export function createTemplate(
     }
     return childElement;
 }
-/** @private */
-export function getFontStyle(font: FontModel): string {
+/**
+ * Gets the font style.
+ *
+ * @param {FontModel} font - The font settings.
+ * @returns {string} - The font style.
+ * @private
+ */
+export function getFontStyle(font: FontModel, themeFontStyle: FontModel): string {
     let style: string = '';
-    style = 'font-size:' + font.size +
-        '; font-style:' + font.fontStyle + '; font-weight:' + font.fontWeight +
+    style = 'font-size:' + (font.size || themeFontStyle.size) +
+        '; font-style:' + (font.fontStyle || themeFontStyle.fontStyle) + '; font-weight:' + (font.fontWeight || themeFontStyle.fontWeight) +
         '; font-family:' + font.fontFamily + ';opacity:' + font.opacity +
         '; color:' + font.color + ';';
     return style;
 }
-/** @private */
+/**
+ * Measures the bounding rectangle of an HTML element.
+ *
+ * @param {HTMLElement} element - The HTML element to measure.
+ * @param {boolean} redraw - Indicates whether to redraw.
+ * @param {boolean} isReactCallback - Indicates whether it's a React callback.
+ * @returns {ClientRect} - The bounding rectangle of the element.
+ * @private
+ */
 export function measureElementRect(element: HTMLElement, redraw: boolean = false, isReactCallback?: boolean): ClientRect {
     if (!isReactCallback) { // If the element is already in DOM, no need to append in the body.
         document.body.appendChild(element);
@@ -1304,7 +1755,14 @@ export function measureElementRect(element: HTMLElement, redraw: boolean = false
     }
     return bounds;
 }
-/** @private */
+/**
+ * Finds an element in a NodeList based on its id.
+ *
+ * @param {NodeList} elements - The NodeList to search.
+ * @param {string} id - The id of the element to find.
+ * @returns {Element} - The found element.
+ * @private
+ */
 export function findlElement(elements: NodeList, id: string): Element {
     let element: Element;
     for (let i: number = 0, length: number = elements.length; i < length; i++) {
@@ -1315,7 +1773,17 @@ export function findlElement(elements: NodeList, id: string): Element {
     }
     return element;
 }
-/** @private */
+/**
+ * Gets the point on the chart based on the provided coordinates and axes.
+ *
+ * @param {number} x - The x-coordinate of the point.
+ * @param {number} y - The y-coordinate of the point.
+ * @param {Axis} xAxis - The x-axis of the chart.
+ * @param {Axis} yAxis - The y-axis of the chart.
+ * @param {boolean} isInverted - Indicates whether the chart is inverted.
+ * @returns {ChartLocation} - The calculated point.
+ * @private
+ */
 export function getPoint(x: number, y: number, xAxis: Axis, yAxis: Axis, isInverted?: boolean): ChartLocation {
     x = ((xAxis.valueType === 'Logarithmic') ?
         logBase(((x > 0) ? x : Math.pow(xAxis.logBase, xAxis.visibleRange.min)), xAxis.logBase) : x);
@@ -1332,13 +1800,25 @@ export function getPoint(x: number, y: number, xAxis: Axis, yAxis: Axis, isInver
     const locationY: number = isInverted ? (1 - x) * (xLength) : (1 - y) * (yLength);
     return new ChartLocation(locationX, locationY);
 }
-/** @private */
+/**
+ * Appends an element to a parent element.
+ *
+ * @param {Element} child - The child element to be appended.
+ * @param {Element} parent - The parent element to which the child element will be appended.
+ * @param {boolean} [redraw=false] - A boolean value indicating whether to redraw. Default is false.
+ * @param {boolean} [animate=false] - A boolean value indicating whether to animate the appending operation. Default is false.
+ * @param {string} [x='x'] - The x-coordinate for the position of the child element. Default is 'x'.
+ * @param {string} [y='y'] - The y-coordinate for the position of the child element. Default is 'y'.
+ * @param {number} duration - duration of the animation
+ * @returns {void}
+ * @private
+ */
 export function appendElement(
     child: Element, parent: Element, redraw: boolean = false, animate: boolean = false,
-    x: string = 'x', y: string = 'y'
+    x: string = 'x', y: string = 'y', duration?: number
 ): void {
     if (child && child.hasChildNodes() && parent) {
-        appendChildElement(false, parent, child, redraw, animate, x, y);
+        appendChildElement(false, parent, child, redraw, animate, x, y, undefined, undefined, undefined, undefined, undefined, duration);
     } else {
         return null;
     }
@@ -1346,26 +1826,31 @@ export function appendElement(
 /**
  * Method to append child element.
  *
- * @param {boolean} isCanvas canvas mode value
- * @param {Element} parent parent element
- * @param {Element} childElement childElement element
- * @param {boolean} redraw chart redraw value
- * @param {boolean} isAnimate animation value
- * @param {string} x x position
- * @param {string} y y position
- * @param {ChartLocation} start start location value
- * @param {string} direction direction of the element
- * @param {boolean} forceAnimate forceAnimate
- * @param {boolean} isRect isRect
- * @param {Rect} previousRect previousRect
- * @param {number} animateDuration duration of the animation
+ * @param {boolean} isCanvas - canvas mode value
+ * @param {Element | HTMLElement} parent - parent element
+ * @param {Element | HTMLElement} childElement - childElement element
+ * @param {boolean} redraw - chart redraw value
+ * @param {boolean} isAnimate - animation value
+ * @param {string} x - x position
+ * @param {string} y - y position
+ * @param {ChartLocation} start - start location value
+ * @param {string} direction - direction of the element
+ * @param {boolean} forceAnimate - forceAnimate
+ * @param {boolean} isRect - isRect
+ * @param {Rect} previousRect - previousRect
+ * @param {number} animateDuration - duration of the animation
+ * @param {boolean} scatterElement - The scatter element.
+ * @param {number} angle - The angle of the element.
+ * @param {ChartLocation} currentTransform - The current transform of the element.
+ * @returns {void}
  */
 export function appendChildElement(
     isCanvas: boolean,
     parent: Element | HTMLElement, childElement: Element | HTMLElement,
     redraw?: boolean, isAnimate: boolean = false, x: string = 'x', y: string = 'y',
     start?: ChartLocation, direction?: string, forceAnimate: boolean = false,
-    isRect: boolean = false, previousRect: Rect = null, animateDuration?: number, scatterElement: boolean = false
+    isRect: boolean = false, previousRect: Rect = null, animateDuration?: number, scatterElement: boolean = false,
+    angle: number = 0, currentTransform?: ChartLocation
 ): void {
     if (isCanvas) {
         return null;
@@ -1373,7 +1858,7 @@ export function appendChildElement(
     const existChild: HTMLElement = scatterElement ? null : parent.querySelector('#' + childElement.id);
     const element: HTMLElement = <HTMLElement>(existChild || getElement(childElement.id));
     const child: HTMLElement = <HTMLElement>childElement;
-    const duration: number = animateDuration ? animateDuration : 300;
+    const duration: number = !isNullOrUndefined(animateDuration) ? animateDuration : 300;
     if (redraw && isAnimate && element) {
         start = start || (element.tagName === 'DIV' ?
             new ChartLocation(+(element.style[x as string].split('px')[0]), +(element.style[y as string].split('px')[0])) :
@@ -1392,7 +1877,8 @@ export function appendChildElement(
             const end: ChartLocation = child.tagName === 'DIV' ?
                 new ChartLocation(+(child.style[x as string].split('px')[0]), +(child.style[y as string].split('px')[0])) :
                 new ChartLocation(+child.getAttribute(x), +child.getAttribute(y));
-            animateRedrawElement(child, duration, start, end, x, y);
+            const previousTranform: string = element.getAttribute('transform');
+            animateRedrawElement(child, duration, start, end, x, y, angle, currentTransform, previousTranform ? new ChartLocation(parseFloat(previousTranform.split(',')[1]), parseFloat(previousTranform.split(',')[2])) : new ChartLocation(0, 0));
         }
     } else if (redraw && isAnimate && !element && forceAnimate) {
         templateAnimate(child, 0, 600, 'FadeIn');
@@ -1403,7 +1889,17 @@ export function appendChildElement(
         parent.appendChild(child);
     }
 }
-/** @private */
+/**
+ * Calculates the location of the dragged rectangle.
+ *
+ * @param {number} x1 - The x-coordinate of the starting point.
+ * @param {number} y1 - The y-coordinate of the starting point.
+ * @param {number} x2 - The x-coordinate of the ending point.
+ * @param {number} y2 - The y-coordinate of the ending point.
+ * @param {Rect} outerRect - The outer rectangle containing the dragged rectangle.
+ * @returns {Rect} - The location of the dragged rectangle.
+ * @private
+ */
 export function getDraggedRectLocation(x1: number, y1: number, x2: number, y2: number, outerRect: Rect): Rect {
     const width: number = Math.abs(x1 - x2);
     const height: number = Math.abs(y1 - y2);
@@ -1411,7 +1907,16 @@ export function getDraggedRectLocation(x1: number, y1: number, x2: number, y2: n
     const y: number = Math.max(checkBounds(Math.min(y1, y2), height, outerRect.y, outerRect.height), outerRect.y);
     return new Rect(x, y, Math.min(width, outerRect.width), Math.min(height, outerRect.height));
 }
-/** @private */
+/**
+ * Checks if a value is within bounds defined by minimum and maximum values.
+ *
+ * @param {number} start - The start value.
+ * @param {number} size - The size of the value.
+ * @param {number} min - The minimum value of the bound.
+ * @param {number} max - The maximum value of the bound.
+ * @returns {number} - The adjusted value within the bounds.
+ * @private
+ */
 export function checkBounds(start: number, size: number, min: number, max: number): number {
     if (start < min) {
         start = min;
@@ -1420,7 +1925,15 @@ export function checkBounds(start: number, size: number, min: number, max: numbe
     }
     return start;
 }
-/** @private */
+/**
+ * Retrieves label text for a data point.
+ *
+ * @param {Points} currentPoint - The current data point.
+ * @param {Series} series - The series to which the data point belongs.
+ * @param {Chart} chart - The chart instance.
+ * @returns {string[]} - The label text.
+ * @private
+ */
 export function getLabelText(currentPoint: Points, series: Series, chart: Chart): string[] {
     const labelFormat: string = series.marker.dataLabel.format ? series.marker.dataLabel.format : series.yAxis.labelFormat;
     const text: string[] = [];
@@ -1484,11 +1997,23 @@ export function getLabelText(currentPoint: Points, series: Series, chart: Chart)
     }
     return text;
 }
-/** @private */
+/**
+ * Stops the specified timer.
+ *
+ * @param {number} timer - The timer to stop.
+ * @returns {void}
+ */
 export function stopTimer(timer: number): void {
     window.clearInterval(timer);
 }
-/** @private */
+/**
+ * Checks if the specified rect collides with any of the rect in the collection within the given clip rect.
+ *
+ * @param {Rect} rect - The rect to check for collision.
+ * @param {Rect[]} collections - The collection of rect to check against.
+ * @param {Rect} clipRect - The clip rect.
+ * @returns {boolean} - Returns true if collision occurs; otherwise, false.
+ */
 export function isCollide(rect: Rect, collections: Rect[], clipRect: Rect): boolean {
     const currentRect: Rect = new Rect(rect.x + clipRect.x, rect.y + clipRect.y, rect.width, rect.height);
     const isCollide: boolean = collections.some((rect: Rect) => {
@@ -1497,19 +2022,38 @@ export function isCollide(rect: Rect, collections: Rect[], clipRect: Rect): bool
     });
     return isCollide;
 }
-/** @private */
+/**
+ * Checks if the specified rect overlap each other.
+ *
+ * @param {Rect} currentRect - The first rect.
+ * @param {Rect} rect - The second rect.
+ * @returns {boolean} - Returns true if the rect overlap; otherwise, false.
+ */
 export function isOverlap(currentRect: Rect, rect: Rect): boolean {
     return (currentRect.x < rect.x + rect.width && currentRect.x + currentRect.width > rect.x &&
         currentRect.y < rect.y + rect.height && currentRect.height + currentRect.y > rect.y);
 }
 
-/** @private */
+/**
+ * Checks if the specified rect is completely contained within another rect.
+ *
+ * @param {Rect} currentRect - The rect to check if it's contained.
+ * @param {Rect} rect - The containing rect.
+ * @returns {boolean} - Returns true if the specified rect is completely contained within the containing rect; otherwise, false.
+ */
 export function containsRect(currentRect: Rect, rect: Rect): boolean {
     return (currentRect.x <= rect.x && currentRect.x + currentRect.width >= rect.x + rect.width &&
         currentRect.y <= rect.y && currentRect.height + currentRect.y >= rect.y + rect.height);
 }
 
-/** @private */
+/**
+ * Calculates the rect based on the specified location, text size, and margin.
+ *
+ * @param {ChartLocation} location - The location of the rect.
+ * @param {Size} textSize - The size of the text.
+ * @param {MarginModel} margin - The margin to be applied around the text.
+ * @returns {Rect} - Returns the calculated rect.
+ */
 export function calculateRect(location: ChartLocation, textSize: Size, margin: MarginModel): Rect {
     return new Rect(
         (location.x - (textSize.width / 2) - margin.left),
@@ -1518,23 +2062,44 @@ export function calculateRect(location: ChartLocation, textSize: Size, margin: M
         textSize.height + margin.top + margin.bottom
     );
 }
-/** @private */
+/**
+ * Converts the color value to hexadecimal code.
+ *
+ * @param {ColorValue} value - The color value to convert.
+ * @returns {string} - Returns the hexadecimal representation of the color.
+ */
 export function convertToHexCode(value: ColorValue): string {
     return '#' + componentToHex(value.r) + componentToHex(value.g) + componentToHex(value.b);
 }
-/** @private */
+/**
+ * Converts a component value to its hexadecimal representation.
+ *
+ * @param {number} value - The component value to convert.
+ * @returns {string} - Returns the hexadecimal representation of the component.
+ * @private
+ */
 export function componentToHex(value: number): string {
     const hex: string = value.toString(16);
     return hex.length === 1 ? '0' + hex : hex;
 }
 
-/** @private */
+/**
+ * Converts a hexadecimal color code to its RedGreenBlue representation.
+ *
+ * @param {string} hex - The hexadecimal color code to convert.
+ * @returns {ColorValue} - Returns the RedGreenBlue representation of the hexadecimal color code.
+ */
 export function convertHexToColor(hex: string): ColorValue {
     const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? new ColorValue(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
         new ColorValue(255, 255, 255);
 }
-/** @private */
+/**
+ * Converts a color name to its corresponding hexadecimal color code.
+ *
+ * @param {string} color - The color name to convert.
+ * @returns {string} - Returns the hexadecimal color code.
+ */
 export function colorNameToHex(color: string): string {
     color = color === 'transparent' ? 'white' : color;
     document.body.appendChild(createElement('text', { id: 'chartmeasuretext' }));
@@ -1542,19 +2107,43 @@ export function colorNameToHex(color: string): string {
     element.style.color = color;
     color = window.getComputedStyle(element).color;
     remove(element);
-    // eslint-disable-next-line security/detect-unsafe-regex
-    const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
-    const isRGBValue: RegExpExecArray = exp.exec(color);
+    let isRGBValue: string[];
+    if (color.indexOf('rgb') === 0 || color.indexOf('hsl') === 0) {
+        color = color.replace(/\s/g, '').replace(/[()]/g, '');
+        isRGBValue = color.slice(3).split(',');
+    }
     return convertToHexCode(
-        new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
+        new ColorValue(parseInt(isRGBValue[0], 10), parseInt(isRGBValue[1], 10), parseInt(isRGBValue[2], 10))
     );
 }
-/** @private */
+/**
+ * Checks if the provided color string is in a valid format.
+ *
+ * @param {string} color - The color string to check.
+ * @returns {boolean} - Returns true if the color string is in a valid format, otherwise returns false.
+ */
 export function checkColorFormat(color: string): boolean {
-    // eslint-disable-next-line security/detect-unsafe-regex
-    return /(rgba?\((?:\d{1,3}[,)]){3}(?:\d+\.\d+\))?)|(^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$)/gmi.test(color);
+    if (color.indexOf('rgba(') === 0 || color.indexOf('rgb(') === 0) {
+        const rgbaValues: string[] = color.substring(color.indexOf('(') + 1, color.lastIndexOf(')')).split(',');
+        if (rgbaValues.length === 3 || rgbaValues.length === 4) {
+            return rgbaValues.every((val: string) => {
+                const num: number = parseFloat(val);
+                return !isNaN(num) && num >= 0 && num <= 255;
+            });
+        }
+    } else if (color.indexOf('#') === 0) {
+        const hex: string = color.substring(1);
+        return (hex.length === 3 || hex.length === 6) && /^[0-9A-Fa-f]{3,6}$/.test(hex);
+    }
+    return false;
 }
-/** @private */
+/**
+ * Gets the color with adjusted saturation.
+ *
+ * @param {string} color - The input color string.
+ * @param {number} factor - The factor by which to adjust the saturation.
+ * @returns {string} - The modified color string.
+ */
 export function getSaturationColor(color: string, factor: number): string {
     color = colorNameToHex(color);
     color = color.replace(/[^0-9a-f]/gi, '');
@@ -1572,7 +2161,13 @@ export function getSaturationColor(color: string, factor: number): string {
     }
     return rgb;
 }
-/** @private */
+/**
+ * Applies a lightness adjustment to the given color.
+ *
+ * @param {string} color - The input color string.
+ * @param {number} value - The value by which to adjust the lightness.
+ * @returns {string} - The modified color string.
+ */
 export function applyZLight(color: string, value: number): string {
     const RGB: ColorValue = convertHexToColor(color);
     RGB.r = parseInt(Math.floor(RGB.r * value).toString(), 10);
@@ -1580,12 +2175,25 @@ export function applyZLight(color: string, value: number): string {
     RGB.b = parseInt(Math.floor(RGB.b * value).toString(), 10);
     return '#' + componentToHex(RGB.r).toUpperCase() + componentToHex(RGB.g).toUpperCase() + componentToHex(RGB.b).toUpperCase();
 }
-/** @private */
+/**
+ * Calculates the median value of an array of numbers.
+ *
+ * @param {number[]} values - The array of numbers.
+ * @returns {number} - The median value.
+ */
 export function getMedian(values: number[]): number {
     const half: number = Math.floor(values.length / 2);
     return values.length % 2 ? values[half as number] : ((values[half - 1] + values[half as number]) / 2.0);
 }
-/** @private */
+/**
+ * Calculates the legend shapes based on the provided parameters.
+ *
+ * @param {ChartLocation} location - The location to position the legend shape.
+ * @param {Size} size - The size of the legend shape.
+ * @param {string} shape - The shape of the legend.
+ * @param {PathOption} options - The options for drawing the legend shape.
+ * @returns {IShapes} - The calculated legend shape.
+ */
 export function calculateLegendShapes(location: ChartLocation, size: Size, shape: string, options: PathOption): IShapes {
     const padding: number = 10;
     let dir: string = '';
@@ -1722,17 +2330,26 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
         merge(options, { 'd': dir });
         break;
     case 'Pie':
-    case 'Doughnut':
+    case 'Doughnut': {
         options.stroke = 'transparent';
-        // eslint-disable-next-line no-case-declarations
         const r: number = Math.min(height, width) / 2;
-        dir = getAccumulationLegend(lx, ly, r, height, width, shape);
+        dir = getAccumulationLegend(lx, ly, r, height, width);
         merge(options, { 'd': dir });
         break;
     }
+    }
     return { renderOption: options };
 }
-/** @private */
+/**
+ * Trims the text to fit within the specified maximum width.
+ *
+ * @param {number} maxWidth - The maximum width for the text.
+ * @param {string} text - The text to be trimmed.
+ * @param {FontModel} font - The font settings for the text.
+ * @param {boolean} isRtlEnabled - Indicates whether right-to-left text rendering is enabled.
+ * @param {FontModel} [themeFontStyle] - The font style to be used for theme-specific settings.
+ * @returns {string} - The trimmed text.
+ */
 export function textTrim(maxWidth: number, text: string, font: FontModel, isRtlEnabled: boolean, themeFontStyle?: FontModel): string {
     let label: string = text;
     let size: number = measureText(text, font, themeFontStyle).width;
@@ -1748,7 +2365,15 @@ export function textTrim(maxWidth: number, text: string, font: FontModel, isRtlE
     }
     return label;
 }
-/** @private */
+/**
+ * Trims the text and performs line breaks based on the maximum width and font settings.
+ *
+ * @param {number} maxWidth - The maximum width allowed for the text.
+ * @param {string} text - The text to be trimmed.
+ * @param {FontModel} font - The font settings for the text.
+ * @param {FontModel} [themeFontStyle] - Optional. The font style based on the theme.
+ * @returns {string[]} - An array of trimmed text lines with line breaks.
+ */
 export function lineBreakLabelTrim(maxWidth: number, text: string, font: FontModel, themeFontStyle?: FontModel): string[] {
     const labelCollection: string[] = [];
     const breakLabels: string[] = text.split('<br>');
@@ -1771,14 +2396,28 @@ export function lineBreakLabelTrim(maxWidth: number, text: string, font: FontMod
     }
     return labelCollection;
 }
-/** @private */
+/**
+ * Converts a string value to a number, considering the container size for percentage values.
+ *
+ * @param {string} value - The string value to convert to a number.
+ * @param {number} containerSize - The size of the container, used for percentage values.
+ * @returns {number} - The converted numeric value.
+ */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
     }
     return null;
 }
-/** @private */
+/**
+ * Redraws the SVG or canvas element based on the provided options.
+ *
+ * @param {boolean} redraw - Specifies whether to redraw the element.
+ * @param {string} id - The id of the element to redraw.
+ * @param {PathAttributes | RectAttributes | CircleAttributes} [options] - The attributes of the element to redraw.
+ * @param {SvgRenderer | CanvasRenderer} [renderer] - The renderer to use for redrawing.
+ * @returns {Element} - The redrawn element.
+ */
 export function redrawElement(
     redraw: boolean, id: string, options?: PathAttributes | RectAttributes | CircleAttributes,
     renderer?: SvgRenderer | CanvasRenderer
@@ -1795,41 +2434,81 @@ export function redrawElement(
     }
     return element;
 }
-/** @private */
+/**
+ * Animates the redrawn element from its start to end location over a specified duration.
+ *
+ * @param {Element | HTMLElement} element - The element to animate.
+ * @param {number} duration - The duration of the animation in milliseconds.
+ * @param {ChartLocation} start - The start location of the element.
+ * @param {ChartLocation} end - The end location of the element.
+ * @param {string} [x='x'] - The attribute representing the horizontal position of the element.
+ * @param {string} [y='y'] - The attribute representing the vertical position of the element.
+ * @param {number} [angle=0] - The angle of rotation for the element.
+ * @param {ChartLocation} [newTransform=new ChartLocation(0, 0)] - The new transform location of the element.
+ * @param {ChartLocation} [previousTransform=new ChartLocation(0, 0)] - The previous transform location of the element.
+ * @returns {void}
+ */
 export function animateRedrawElement(
     element: Element | HTMLElement, duration: number, start: ChartLocation, end: ChartLocation,
-    x: string = 'x', y: string = 'y'
+    x: string = 'x', y: string = 'y', angle: number = 0, newTransform: ChartLocation = new ChartLocation(0, 0), previousTransform: ChartLocation = new ChartLocation(0, 0)
 ): void {
     const isDiv: boolean = element.tagName === 'DIV';
-    const setStyle: Function = (xValue: number, yValue: number): void => {
+    const setStyle: Function = (xValue: number, yValue: number, rotateX?: number, rotateY?: number): void => {
         if (isDiv) {
             (element as HTMLElement).style[x as string] = xValue + 'px';
             (element as HTMLElement).style[y as string] = yValue + 'px';
         } else {
             element.setAttribute(x, xValue + '');
             element.setAttribute(y, yValue + '');
+            if (angle && newTransform.x && newTransform.y && previousTransform.x && previousTransform.y && rotateX && rotateY) {
+                element.setAttribute('transform', 'rotate(' + angle + ',' + rotateX + ',' + rotateY + ')');
+            }
         }
     };
-    setStyle(start.x, start.y);
+    setStyle(start.x, start.y, previousTransform.x, previousTransform.y);
     new Animation({}).animate(createElement('div'), {
         duration: duration,
         progress: (args: AnimationOptions): void => {
             setStyle(
                 linear(args.timeStamp, start.x, end.x - start.x, args.duration),
-                linear(args.timeStamp, start.y, end.y - start.y, args.duration)
+                linear(args.timeStamp, start.y, end.y - start.y, args.duration),
+                linear(args.timeStamp, previousTransform.x, newTransform.x - previousTransform.x, args.duration),
+                linear(args.timeStamp, previousTransform.y, newTransform.y - previousTransform.y, args.duration)
             );
         },
         end: (): void => {
-            setStyle(end.x, end.y);
+            setStyle(end.x, end.y, newTransform.x, newTransform.y);
         }
     });
 }
-/** @private */
+/**
+ * Renders a text element using the specified renderer and options.
+ *
+ * @param {SvgRenderer | CanvasRenderer} renderer - The renderer used for rendering.
+ * @param {TextOption} option - The options for the text element.
+ * @param {FontModel} font - The font settings for the text.
+ * @param {string} color - The color of the text.
+ * @param {HTMLElement | Element} parent - The parent element to which the text element is appended.
+ * @param {boolean} [isMinus=false] - Indicates whether the text represents a negative value.
+ * @param {boolean} [redraw] - Indicates whether to redraw the element.
+ * @param {boolean} [isAnimate] - Indicates whether to animate the element.
+ * @param {boolean} [forceAnimate=false] - Indicates whether to force animation.
+ * @param {number} [animateDuration] - The duration of the animation in milliseconds.
+ * @param {Rect} [seriesClipRect] - The clipping rectangle for the series.
+ * @param {Size} [labelSize] - The size of the label.
+ * @param {boolean} [isRotatedLabelIntersect] - Indicates whether rotated labels intersect.
+ * @param {boolean} [isCanvas] - Indicates whether the rendering is done on a canvas.
+ * @param {boolean} [isDataLabelWrap] - Indicates whether data labels are wrapped.
+ * @param {FontModel} [themeFontStyle] - The font settings based on the theme.
+ * @param {ChartLocation} [transform] - The location to transform the text element.
+ * @returns {Element} - The rendered text element.
+ */
 export function textElement(
     renderer: SvgRenderer | CanvasRenderer, option: TextOption, font: FontModel, color: string,
     parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
     forceAnimate: boolean = false, animateDuration?: number, seriesClipRect?: Rect,
-    labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean, isDataLabelWrap?: boolean, themeFontStyle?: FontModel
+    labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean, isDataLabelWrap?: boolean, themeFontStyle?: FontModel,
+    transform?: ChartLocation
 ): Element {
     let renderOptions: Object = {};
     let tspanElement: Element;
@@ -1852,10 +2531,10 @@ export function textElement(
         'x': dx,
         'y': option.y,
         'fill': color ? color : 'black',
-        'font-size': font.size,
-        'font-style': font.fontStyle,
+        'font-size': font.size || themeFontStyle.size,
+        'font-style': font.fontStyle || themeFontStyle.fontStyle,
         'font-family': font.fontFamily || themeFontStyle.fontFamily,
-        'font-weight': font.fontWeight,
+        'font-weight': font.fontWeight || themeFontStyle.fontWeight,
         'text-anchor': option.anchor,
         'labelRotation': option.labelRotation,
         'transform': option.transform,
@@ -1890,14 +2569,17 @@ export function textElement(
     if (!isRotatedLabelIntersect) {
         appendChildElement(
             renderer instanceof CanvasRenderer, parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null,
-            forceAnimate, false, null, animateDuration
+            forceAnimate, false, null, animateDuration, false, option.labelRotation, transform
         );
     }
     return htmlObject;
 }
 
 /**
- * Method to calculate the width and height of the chart.
+ * Calculates the size of the chart.
+ *
+ * @param {Chart | AccumulationChart | RangeNavigator | StockChart | Chart3D | CircularChart3D} chart - The chart for which to calculate the size.
+ * @returns {void}
  */
 export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart | Chart3D | CircularChart3D): void {
     // fix for Chart rendered with default width in IE issue
@@ -1934,23 +2616,24 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
                 chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
             scaleY = chart.element.getBoundingClientRect().height > 0 ?
                 chart.element.getBoundingClientRect().height / chart.availableSize.height : 1;
-            let transformValue: string = chart.element.style.transform;
+            const transformValue: string = chart.element.style.transform;
             if (transformValue) {
-                let scaleValue: number = parseFloat(transformValue.match(/scale\((.*?)\)/)[1]);
+                const scaleValue: number = parseFloat(transformValue.match(/scale\((.*?)\)/)[1]);
                 scaleX = scaleValue ? scaleX / scaleValue : scaleX;
                 scaleY = scaleValue ? scaleY / scaleValue : scaleY;
             }
             chart.availableSize.width = chart.availableSize.width * scaleX;
             chart.availableSize.height = chart.availableSize.height * scaleY;
-            (chart as Chart).scaleX = scaleX;
-            (chart as Chart).scaleY = scaleY;
         }
+        (chart as Chart).scaleX = scaleX;
+        (chart as Chart).scaleY = scaleY;
     }
 }
 /**
- * To create svg element.
+ * Creates an SVG element for the specified chart or chart element.
  *
- * @param {Chart} chart chart instance
+ * @param {Chart | AccumulationChart | RangeNavigator | Chart3D | CircularChart3D} chart - The chart or chart element for which to create the SVG element.
+ * @returns {void}
  */
 export function createSvg(chart: Chart | AccumulationChart | RangeNavigator | Chart3D | CircularChart3D): void {
     (chart as Chart).canvasRender = new CanvasRenderer(chart.element.id);
@@ -1981,11 +2664,14 @@ export function createSvg(chart: Chart | AccumulationChart | RangeNavigator | Ch
 }
 
 /**
- * To calculate chart title and height.
+ * Gets the title text with specified style and width, and supports right-to-left rendering.
  *
- * @param {string} title text of the title
- * @param {FontModel} style style of the title
- * @param {number} width width of the title
+ * @param {string} title - The title text.
+ * @param {FontModel} style - The font style for the title.
+ * @param {number} width - The width available for rendering the title.
+ * @param {boolean} isRtlEnabled - Specifies whether right-to-left rendering is enabled.
+ * @param {FontModel} [themeFontStyle] - The font style used for theme rendering.
+ * @returns {string[]} An array of strings containing the title text with line breaks if needed.
  */
 export function getTitle(title: string, style: FontModel, width: number, isRtlEnabled: boolean, themeFontStyle?: FontModel): string[] {
     let titleCollection: string[] = [];
@@ -2004,7 +2690,11 @@ export function getTitle(title: string, style: FontModel, width: number, isRtlEn
 }
 
 /**
- * Method to calculate x position of title.
+ * Calculates the x-coordinate position for rendering the title text within the specified rect.
+ *
+ * @param {Rect} rect - The rect within which the title text is to be rendered.
+ * @param {FontModel} titleStyle - The font style used for rendering the title text.
+ * @returns {number} The x-coordinate position for rendering the title text.
  */
 export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
     let positionX: number;
@@ -2019,9 +2709,19 @@ export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
 }
 
 /**
- * Method to find new text and element size based on textOverflow.
+ * Wraps the input text into multiple lines based on the specified maximum width and font style.
+ *
+ * @param {string} currentLabel - The text to be wrapped.
+ * @param {number} maximumWidth - The maximum width allowed for each line of text.
+ * @param {FontModel} font - The font style used for rendering the text.
+ * @param {boolean} isRtlEnabled - Specifies whether right-to-left text direction is enabled.
+ * @param {boolean} [wrapAnyWhere=false] - Indicates whether the text can be wrapped at any position.
+ * @param {boolean} [clip=false] - Specifies whether text exceeding the maximum width should be clipped.
+ * @param {FontModel} [themeFontStyle] - The font style used as the base for the text wrapping operation.
+ * @returns {string[]} An array of strings representing the wrapped lines of text.
  */
-export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, isRtlEnabled : boolean, wrapAnyWhere ?: boolean, clip ?: boolean, themeFontStyle?: FontModel): string[] {
+export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, isRtlEnabled : boolean, wrapAnyWhere ?: boolean,
+                         clip ?: boolean, themeFontStyle?: FontModel): string[] {
     if (wrapAnyWhere) {
         return (textWrapAnyWhere(currentLabel, maximumWidth, font, themeFontStyle));
     }
@@ -2051,7 +2751,13 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
     }
 }
 /**
- * Method to find new text and element size based on textWrap.
+ * Wraps the input text into multiple lines, allowing wrapping at any position.
+ *
+ * @param {string} currentLabel - The text to be wrapped.
+ * @param {number} maximumWidth - The maximum width allowed for each line of text.
+ * @param {FontModel} font - The font style used for rendering the text.
+ * @param {FontModel} [themeFontStyle] - The font style used as the base for the text wrapping operation.
+ * @returns {string[]} An array of strings representing the wrapped lines of text.
  */
 export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, font: FontModel, themeFontStyle?: FontModel) : string[] {
     let size : number = measureText(currentLabel, font,  themeFontStyle).width;
@@ -2090,7 +2796,11 @@ export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, fon
 }
 
 /**
- * Method to support the subscript and superscript value to text.
+ * Gets the Unicode text from the input string based on the provided regular expression.
+ *
+ * @param {string} text - The input string.
+ * @param {RegExp} regexp - The regular expression pattern to match Unicode characters.
+ * @returns {string} The Unicode text extracted from the input string.
  */
 export function getUnicodeText(text: string, regexp: RegExp): string {
     const title: string = text.replace(regexp, ' ');
@@ -2121,7 +2831,10 @@ export function getUnicodeText(text: string, regexp: RegExp): string {
 }
 
 /**
- * Method to reset the blazor templates.
+ * Resets the Blazor templates of the given control (Chart or AccumulationChart).
+ *
+ * @param {Chart | AccumulationChart} control - The control to reset Blazor templates for.
+ * @returns {void}
  */
 export function blazorTemplatesReset(control: Chart | AccumulationChart): void {
     for (let i: number = 0; i < (control as Chart | AccumulationChart).annotations.length; i++) {
@@ -2307,7 +3020,13 @@ export class Point3D {
 
     public point: Chart3DPoint;
     public series: Chart3DSeries;
-    /** @private */
+    /**
+     * Initializes a new instance of the Chart3DData class.
+     *
+     * @param {Chart3DPoint} point - The 3D point object.
+     * @param {Chart3DSeries} series - The 3D series object.
+     * @private
+     */
     constructor(point: Chart3DPoint, series: Chart3DSeries) {
         this.point = point;
         this.series = series;
@@ -2331,7 +3050,13 @@ export interface IHistogramValues {
     yValues?: number[];
 }
 
-/** @private */
+/**
+ * Gets the color from the range color setting model based on the specified value.
+ *
+ * @param {RangeColorSettingModel} colorMap - The range color setting model.
+ * @param {number} value - The value for which to get the color.
+ * @returns {string} - The color corresponding to the specified value.
+ */
 export function getColorByValue(colorMap: RangeColorSettingModel, value: number): string {
     let color: string = '';
     let rbgColorValue: ColorValue;
@@ -2346,7 +3071,13 @@ export function getColorByValue(colorMap: RangeColorSettingModel, value: number)
     return color;
 }
 
-/** @private */
+/**
+ * Gets the gradient color from the range color setting model based on the specified value.
+ *
+ * @param {number} value - The value for which to get the gradient color.
+ * @param {RangeColorSettingModel} colorMap - The range color setting model.
+ * @returns {ColorValue} - The gradient color corresponding to the specified value.
+ */
 export function getGradientColor(value: number, colorMap: RangeColorSettingModel): ColorValue {
     const previousOffset: number = colorMap.start;
     const nextOffset: number = colorMap.end;
@@ -2400,7 +3131,14 @@ export function getGradientColor(value: number, colorMap: RangeColorSettingModel
     return getPercentageColor(percent, previousColor, nextColor);
 }
 
-/** @private */
+/**
+ * Calculates the color based on the percentage change between two values.
+ *
+ * @param {number} percent - The percentage change.
+ * @param {string} previous - The color for the previous value.
+ * @param {string} next - The color for the next value.
+ * @returns {ColorValue} - The calculated color value.
+ */
 export function getPercentageColor(percent: number, previous: string, next: string): ColorValue {
     const nextColor: string = next.split('#')[1];
     const prevColor: string = previous.split('#')[1];
@@ -2410,19 +3148,32 @@ export function getPercentageColor(percent: number, previous: string, next: stri
     return new ColorValue(r, g, b);
 }
 
-/** @private */
+/**
+ * Calculates the percentage change between two values.
+ *
+ * @param {number} percent - The percentage to calculate.
+ * @param {number} previous - The previous value.
+ * @param {number} next - The next value.
+ * @returns {number} - The calculated percentage change.
+ */
 export function getPercentage(percent: number, previous: number, next: number): number {
     const full: number = next - previous;
     return Math.round((previous + (full * percent)));
 }
 
-/** @private */
-export function getTextAnchor(alignment: Alignment, enableRTL : boolean) : string {
+/**
+ * Gets the text anchor based on the specified alignment and Right-to-Left setting.
+ *
+ * @param {Alignment} alignment - The alignment of the text.
+ * @param {boolean} enableRtl - Specifies whether Right-to-Left is enabled.
+ * @returns {string} - The text anchor value.
+ */
+export function getTextAnchor(alignment: Alignment, enableRtl : boolean) : string {
     switch (alignment) {
     case 'Near':
-        return enableRTL ? 'end' : 'start';
+        return enableRtl ? 'end' : 'start';
     case 'Far':
-        return enableRTL ? 'start' : 'end';
+        return enableRtl ? 'start' : 'end';
     default:
         return 'middle';
     }

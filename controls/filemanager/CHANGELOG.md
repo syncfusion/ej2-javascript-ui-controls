@@ -2,70 +2,13 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I590909` - Resolved the file selection issue when enabling the virtualization support in the File Manager component.
-
-## 25.2.3 (2024-05-08)
-
-### FileManager
-
-#### Breaking Changes
-
-- The [`isPrimayKey`](https://ej2.syncfusion.com/documentation/api/file-manager/columnModel/#isprimarykey) property in the File Manager component `detailsViewSettings` has been marked as deprecated. It will continue to function as before, but it is recommended to avoid using it in new code as this usage is handled internally without declaring it in sample.
-
-## 25.1.40 (2024-04-16)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I574902` - The error dialog that appears when refreshing the File Manager component's SQL service has been resolved.
-
-## 25.1.39 (2024-04-09)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I574481` - The issue with context menu items not getting disabled when menu items contain spaces in the File Manager component has been resolved.
-- `#I573974` - The console error while trying to persist the deleted file in the File Manager component has been resolved.
-- `#I574902` - The error dialog that appears when refreshing the File Manager component's SQL service has been resolved.
-
-## 25.1.38 (2024-04-02)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I572635` - The problem where an extra plus icon appeared in the details view of the file manager component when in mobile mode has been resolved.
-
-## 25.1.37 (2024-03-26)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I561123` - The issue with being unable to sort the header columns using keyboard interaction has been resolved.
-
-## 25.1.35 (2024-03-15)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#FB50961` - The issues related to XSS attacks with file or folder names in the File Manager details view template is fixed.
+## 26.1.35 (2024-06-11)
 
 ### FileManager
 
 #### Features
 
 - Provided support in FileManager component to perform download operations via Fetch API request. Now FileManager component, will allow users to perform download operations using either the default form submit method or the latest Fetch API request with a Boolean property `useFormPost` in the `BeforeDownloadEventargs`. The default value of `useFormPost` is set to `true`, directing the FileManager component to utilize the form submit method by default for download operations.
-- `#I521053` - Custom sorting support is provided in the File Manager component. This feature will allow users to achieve windows natural sorting behaviour using `sortComparer` property. This is achieved by assigning the ‘sortComparer’ function exported from the utility file.
 
 ## 24.1.41 (2023-12-18)
 

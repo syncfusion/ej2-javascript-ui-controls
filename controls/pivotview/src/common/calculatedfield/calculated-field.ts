@@ -418,8 +418,8 @@ export class CalculatedField implements IAction {
             engineModule = this.parent.olapEngineModule;
             const fields: { [key: string]: Object }[] = engineModule.fieldListData ?
                 engineModule.fieldListData as { [key: string]: Object }[] : [];
-            for (const item of Object.keys(fields) as string[]) { // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (fields[item as any].name === fieldName) {
+            for (const item of Object.keys(fields) as string[]) {
+                if (fields[parseInt(item, 10)].name === fieldName) {
                     const index: number = parseInt(item, 10);
                     if (typeof (index) === 'number') {
                         fields.splice(index, 1);
@@ -518,7 +518,7 @@ export class CalculatedField implements IAction {
                     menuObj.open(pos.top + offset, pos.left - 100);
                 } else {
                     menuObj.open(pos.top + offset, pos.left + 150);
-                } /* eslint-enable security/detect-non-literal-fs-filename */
+                }
             }
         });
     }
@@ -581,8 +581,8 @@ export class CalculatedField implements IAction {
      *
      * @returns {void}
      */
-    private applyFormula(): void { // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const currentObj: CalculatedField = this;
+    private applyFormula(): void {
+        const currentObj: CalculatedField = this as CalculatedField;
         let isExist: boolean = false;
         removeClass([document.getElementById(this.parentID + 'ddlelement')], cls.EMPTY_FIELD);
         const inputObj: MaskedTextBox = getInstance(
@@ -2120,8 +2120,8 @@ export class CalculatedField implements IAction {
                     addClass([target], ['e-active', 'e-node-focus']);
                     target.setAttribute('aria-selected', 'true');
                     target.id = this.treeObj.element.id + '_active';
-                    if (this.parent.dataType === 'pivot') { // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const e: any = { event: { target: target.querySelector('.e-list-icon.e-edit.e-icons') as EventTarget } } as NodeClickEventArgs;
+                    if (this.parent.dataType === 'pivot') {
+                        const e: NodeClickEventArgs = { event: { target: target.querySelector('.e-list-icon.e-edit.e-icons') as EventTarget } } as NodeClickEventArgs;
                         this.fieldClickHandler(e);
                     } else {
                         this.displayMenu(target);

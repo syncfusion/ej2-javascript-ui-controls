@@ -1027,7 +1027,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             }
-            if (layer.dataSource instanceof MapAjax || !isNullOrUndefined(layer.dataSource['dataOptions'])) {
+            if (layer.dataSource instanceof MapAjax || (!isNullOrUndefined(layer.dataSource) && !isNullOrUndefined(layer.dataSource['dataOptions']))) {
                 this.processAjaxRequest(layer, layer.dataSource, 'DataSource');
             }
             if (this.serverProcess['request'] === this.serverProcess['response'] && length === layerIndex) {
@@ -1480,8 +1480,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private createTile(): void {
         const mainLayer: LayerSettings = this.layersCollection[0];
         const padding: number = 0;
-        if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
-            mainLayer.layerType === 'GoogleStaticMap' || mainLayer.layerType === 'Google' || (!isNullOrUndefined(mainLayer.urlTemplate) && mainLayer.urlTemplate !== ''))) {
+        if (mainLayer.isBaseLayer && (!isNullOrUndefined(mainLayer.urlTemplate) && mainLayer.urlTemplate !== '' && isNullOrUndefined(mainLayer.shapeData))) {
             removeElement(this.element.id + '_tile_parent');
             removeElement(this.element.id + '_tiles');
             removeElement('animated_tiles');
@@ -1533,7 +1532,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const baseLayer: LayerSettings = <LayerSettings>mainLayers[i as number];
             if (baseLayer.visible && baseIndex === i) {
                 baseLayer.isBaseLayer = true;
-                this.isTileMap = (baseLayer.layerType === 'Geometry' && !isNullOrUndefined(baseLayer.shapeData)) ? false : true;
+                this.isTileMap = !isNullOrUndefined(baseLayer.shapeData) ? false : true;
                 this.layersCollection.push(baseLayer);
                 break;
             } else if (i === mainLayers.length - 1) {
@@ -2846,7 +2845,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public onPropertyChanged(newProp: MapsModel, oldProp: MapsModel): void {
         if (!this.isDestroyed) {
             let render: boolean = false; let isMarker: boolean = false; let isLayer: boolean = false;
-            let isStaticMapType: boolean = false;
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
                 case 'background':
@@ -2866,14 +2864,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                             if (!isNullOrUndefined(newProp.layers[x as number])) {
                                 const collection: string[] = Object.keys(newProp.layers[x as number]);
                                 for (const collectionProp of collection) {
-                                    if ((collectionProp === 'layerType' && newProp.layers[x as number].layerType !== 'Geometry') ||
-                                        (isNullOrUndefined(this.layers[x as number].shapeData)
+                                    if ((isNullOrUndefined(this.layers[x as number].shapeData)
                                             && !isNullOrUndefined(this.layers[x as number].urlTemplate) && this.layers[x as number].urlTemplate !== '')) {
                                         this.isReset = true;
                                     } else if (collectionProp === 'markerSettings') {
                                         isMarker = true;
-                                    } else if (collectionProp === 'staticMapType') {
-                                        isStaticMapType = true;
                                     }
                                 }
                             }
@@ -2913,8 +2908,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     } else {
                         this.render();
                     }
-                } else if (newProp.layers && isStaticMapType) {
-                    this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);
                 } else {
                     this.createSVG();
                     this.renderElements();
@@ -3250,7 +3243,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
                 for (const polygon of polygonSetting.polygons) {
-                    if (polygon.points.length > 0) {
+                    if (!isNullOrUndefined(polygon.points) && polygon.points.length > 0) {
                         isSelection = layer.polygonSettings.highlightSettings.enable || isSelection;
                         isHighlight = layer.polygonSettings.selectionSettings.enable || isHighlight;
                         istooltipVisible = layer.polygonSettings.tooltipSettings.visible || istooltipVisible;
@@ -3355,7 +3348,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let latitude: number = 0;
         let longitude: number = 0;
         if (!this.isDestroyed && !isNullOrUndefined(this.translatePoint)) {
-            const padding: number = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
+            const padding: number = 10;
             pageY = pageY + padding;
             const mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
             const x1: number = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;

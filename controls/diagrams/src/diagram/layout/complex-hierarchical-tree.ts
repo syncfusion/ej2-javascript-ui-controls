@@ -69,7 +69,9 @@ export class ComplexHierarchicalTree {
         const processId: string = 'processId';
         for (let i: number = 0; i < nodes.length; i++) {
             node = nodes[parseInt(i.toString(), 10)];
-            if ((node.inEdges.length + node.outEdges.length > 0) && !node[`${parentId}`] && !node[`${processId}`]) {
+            //885697:Position of root node without the child node in complex hierarchical layout is not proper
+            if (((node.inEdges.length + node.outEdges.length > 0) || (node.offsetX === 0 && node.offsetY === 0)) &&
+                !node["" + parentId] && !node["" + processId]) {
                 nodesCollection.push(node);
             }
         }
@@ -247,7 +249,8 @@ class HierarchicalLayoutUtil {
                 }
                 for (let i: number = 0; i < edges.length; i++) {
                     if (!directed || edgeIsSource[parseInt(i.toString(), 10)]) {
-                        const next: Vertex = this.getVisibleTerminal(edges[parseInt(i.toString(), 10)], !edgeIsSource[parseInt(i.toString(), 10)]);
+                        const next: Vertex = this.getVisibleTerminal(edges[parseInt(i.toString(), 10)],
+                                                                     !edgeIsSource[parseInt(i.toString(), 10)]);
                         let netCount: number = 1;
                         for (let j: number = 0; j < edges.length; j++) {
                             if (j === i) {
@@ -265,7 +268,8 @@ class HierarchicalLayoutUtil {
                             }
                         }
                         if (netCount >= 0) {
-                            currentComp = this.traverse(next, directed, edges[parseInt(i.toString(), 10)], currentComp, hierarchyVertices, filledVertices);
+                            currentComp = this.traverse(next, directed, edges[parseInt(i.toString(), 10)],
+                                                        currentComp, hierarchyVertices, filledVertices);
                         }
                     }
                 }
@@ -338,9 +342,12 @@ class HierarchicalLayoutUtil {
         this.vertices = [];
         const filledVertexSet: {} = {};
         for (let i: number = 0; i < nodes.length; i++) {
-            const node: Vertex = this.createVertex(nodes[parseInt(i.toString(), 10)], nodes[parseInt(i.toString(), 10)].id, 0, 0, nodes[parseInt(i.toString(), 10)].actualSize.width, nodes[parseInt(i.toString(), 10)].actualSize.height);
+            const node: Vertex = this.createVertex(nodes[parseInt(i.toString(), 10)], nodes[parseInt(i.toString(), 10)].id, 0, 0,
+                                                   nodes[parseInt(i.toString(), 10)].actualSize.width,
+                                                   nodes[parseInt(i.toString(), 10)].actualSize.height);
             this.vertices.push(node);
-            if ((nodes[parseInt(i.toString(), 10)] as INode).inEdges.length > 0 || (nodes[parseInt(i.toString(), 10)] as INode).outEdges.length > 0) {
+            if ((nodes[parseInt(i.toString(), 10)] as INode).inEdges.length > 0
+                || (nodes[parseInt(i.toString(), 10)] as INode).outEdges.length > 0) {
                 nodeWithMultiEdges.push((nodes[parseInt(i.toString(), 10)] as INode));
             }
             filledVertexSet[node.name] = node;
@@ -456,11 +463,14 @@ class HierarchicalLayoutUtil {
                 if ((edges[parseInt(i.toString(), 10)]).x.length > 0) {
                     for (let j: number = 0; j < (edges[parseInt(i.toString(), 10)]).x.length; j++) {
                         if (layoutProp.orientation !== 'RightToLeft' && layoutProp.orientation !== 'LeftToRight') {
-                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layout.marginX;
+                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)]
+                                = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layout.marginX;
                         } else if (layoutProp.orientation === 'LeftToRight') {
-                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layoutProp.verticalSpacing / 2;
+                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)]
+                                = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layoutProp.verticalSpacing / 2;
                         } else {
-                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layoutProp.verticalSpacing / 2;
+                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)]
+                                = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layoutProp.verticalSpacing / 2;
                         }
                     }
                 }
@@ -482,12 +492,14 @@ class HierarchicalLayoutUtil {
 
             for (let i: number = 0; i < ranks.length; i++) {
                 for (let k: number = 0; k < ranks[parseInt(i.toString(), 10)].length; k++) {
-                    if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.target.id || ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.source.id) {
-
-                        if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.target.id && targetValue === undefined) {
+                    if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.target.id
+                        || ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.source.id) {
+                        if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.target.id
+                            && targetValue === undefined) {
                             targetValue = i;
                         }
-                        if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.source.id && sourceValue === undefined) {
+                        if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.source.id
+                            && sourceValue === undefined) {
                             sourceValue = i;
                         }
                     }
@@ -612,8 +624,10 @@ class HierarchicalLayoutUtil {
                 if (jettys != null) {
                     const arrayOffset: number = reversed ? 2 : 0;
                     let y: number = reversed ?
-                        (layoutReversed ? this.rankBottomY[parseInt(minRank.toString(), 10)] : this.rankTopY[parseInt(minRank.toString(), 10)]) :
-                        (layoutReversed ? this.rankTopY[parseInt(maxRank.toString(), 10)] : this.rankBottomY[parseInt(maxRank.toString(), 10)]);
+                        (layoutReversed ? this.rankBottomY[parseInt(minRank.toString(), 10)]
+                            : this.rankTopY[parseInt(minRank.toString(), 10)])
+                        : (layoutReversed ? this.rankTopY[parseInt(maxRank.toString(), 10)]
+                            : this.rankBottomY[parseInt(maxRank.toString(), 10)]);
                     let jetty: number = jettys[parallelEdgeCount * 4 + 1 + arrayOffset];
 
                     if (reversed !== layoutReversed) {
@@ -658,8 +672,10 @@ class HierarchicalLayoutUtil {
 
                     // Work out the vertical positions in a vertical layout
                     // in the edge buffer channels above and below this rank
-                    let topChannelY: number = (this.rankTopY[parseInt(currentRank.toString(), 10)] + this.rankBottomY[currentRank + 1]) / 2.0;
-                    let bottomChannelY: number = (this.rankTopY[currentRank - 1] + this.rankBottomY[parseInt(currentRank.toString(), 10)]) / 2.0;
+                    let topChannelY: number = (this.rankTopY[parseInt(currentRank.toString(), 10)]
+                        + this.rankBottomY[currentRank + 1]) / 2.0;
+                    let bottomChannelY: number = (this.rankTopY[currentRank - 1]
+                        + this.rankBottomY[parseInt(currentRank.toString(), 10)]) / 2.0;
 
                     if (reversed) {
                         const tmp: number = topChannelY;
@@ -683,8 +699,10 @@ class HierarchicalLayoutUtil {
                 if (jettys != null) {
                     const arrayOffset: number = reversed ? 2 : 0;
                     const rankY: number = reversed ?
-                        (layoutReversed ? this.rankTopY[parseInt(maxRank.toString(), 10)] : this.rankBottomY[parseInt(maxRank.toString(), 10)]) :
-                        (layoutReversed ? this.rankBottomY[parseInt(minRank.toString(), 10)] : this.rankTopY[parseInt(minRank.toString(), 10)]);
+                        (layoutReversed ? this.rankTopY[parseInt(maxRank.toString(), 10)]
+                            : this.rankBottomY[parseInt(maxRank.toString(), 10)])
+                        : (layoutReversed ? this.rankBottomY[parseInt(minRank.toString(), 10)]
+                            : this.rankTopY[parseInt(minRank.toString(), 10)]);
                     let jetty: number = jettys[parallelEdgeCount * 4 + 3 - arrayOffset];
 
                     if (reversed !== layoutReversed) {
@@ -806,9 +824,9 @@ class HierarchicalLayoutUtil {
                             const sortedCells: WeightedCellSorter[] = [];
 
                             for (let j: number = 0; j < currentCells.length; j++) {
-
                                 const sorter: WeightedCellSorter = this.weightedCellSorter(
-                                    currentCells[parseInt(j.toString(), 10)], this.getX(currentRank, currentCells[parseInt(j.toString(), 10)]));
+                                    currentCells[parseInt(j.toString(), 10)],
+                                    this.getX(currentRank, currentCells[parseInt(j.toString(), 10)]));
                                 sortedCells.push(sorter);
                             }
 
@@ -1324,7 +1342,8 @@ class HierarchicalLayoutUtil {
         }
         const rank: (IVertex | IEdge)[] = model.ranks[parseInt(rankValue.toString(), 10)];
         let maxOffset: number = 0.0;
-        let localOffset: number = (isHorizontal ? stage.marginY : stage.marginX) + (stage.widestRankValue - stage.rankSizes[parseInt(rankValue.toString(), 10)]) / 2;
+        let localOffset: number = (isHorizontal ? stage.marginY : stage.marginX)
+            + (stage.widestRankValue - stage.rankSizes[parseInt(rankValue.toString(), 10)]) / 2;
         for (let i: number = 0; i < rank.length; i++) {
             const node: IVertex = rank[parseInt(i.toString(), 10)];
             if (this.crossReduction.isVertex(node)) {
@@ -1518,7 +1537,8 @@ class HierarchicalLayoutUtil {
         }
         const medianValues: number[] = [];
         for (let i: number = 0; i < connectedCells.length; i++) {
-            medianValues[parseInt(i.toString(), 10)] = this.crossReduction.getTempVariable(connectedCells[parseInt(i.toString(), 10)], rankValue);
+            medianValues[parseInt(i.toString(), 10)]
+                = this.crossReduction.getTempVariable(connectedCells[parseInt(i.toString(), 10)], rankValue);
         }
         medianValues.sort((a: number, b: number) => {
             return a - b;
@@ -2549,7 +2569,8 @@ class CrossReduction {
             const leftMedian: number = medianValues[medianPoint - 1] - medianValues[0];
             const rightMedian: number = medianValues[arrayCount - 1]
                 - medianValues[parseInt(medianPoint.toString(), 10)];
-            return (medianValues[medianPoint - 1] * rightMedian + medianValues[parseInt(medianPoint.toString(), 10)] * leftMedian) / (leftMedian + rightMedian);
+            return (medianValues[medianPoint - 1] * rightMedian + medianValues[parseInt(medianPoint.toString(), 10)] * leftMedian)
+                / (leftMedian + rightMedian);
         }
     }
 

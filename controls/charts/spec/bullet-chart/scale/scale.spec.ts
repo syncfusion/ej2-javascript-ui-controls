@@ -385,5 +385,48 @@ describe('Bullet Chart Scale', () => {
             expect(svg.getAttribute('stroke-width') == '12').toBe(true);
             done();
         });
-    })
+    });
+     describe('Null or undefined public properly', () => {
+        let bullet: BulletChart;
+        let svg: Element;
+        let range1: Element;
+        let range2: Element;
+        let range3: Element;
+        let bulletElement: Element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(bulletElement);
+            bullet = new BulletChart({
+                valueField: 'value',
+                targetField: 'comparativeMeasureValue',
+                categoryField: 'category',
+                height: '400',
+                minimum: 0, maximum: 20, interval: 4,
+                animation: { enable: false }
+            });
+            bullet.appendTo('#container');
+        });
+        afterAll((): void => {
+            bullet.destroy();
+            bulletElement.remove();
+        });
+        it('Checking ranges', () => {
+            svg = document.getElementById('container_svg_range_0');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+            svg = document.getElementById('container_svg_range_1');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+            svg = document.getElementById('container_svg_range_2');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+        });
+        it('Checking Measure bar', () => {
+            svg = document.getElementById('container_svg_FeatureMeasure_0');
+            expect(svg === null).toBe(true);
+        });
+        it('Checking comparative bar', () => {
+            svg = document.getElementById('container_svg_ComparativeMeasure');
+            expect(svg === null).toBe(true);
+        });
+    });
 });

@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { ChartData } from '../utils/get-data';
 import { SeriesModel } from '../series/chart-series-model';
@@ -27,15 +24,17 @@ export class DataEditing {
     public isPointDragging: boolean = false;
 
     /**
-     * Constructor for DataEditing module.
+     * Initializes the event manager for the chart.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
      */
     constructor(chart: Chart) {
         this.chart = chart;
     }
     /**
      * Point drag start here.
+     *
+     * @returns {void}
      */
     public pointMouseDown(): void {
         const chart: Chart = this.chart;
@@ -60,7 +59,10 @@ export class DataEditing {
     }
 
     /**
-     * Point dragging.
+     * Handles the mouse move event on chart data points.
+     *
+     * @param {PointerEvent | TouchEvent} event - The pointer event or touch event.
+     * @returns {void}
      */
     public pointMouseMove(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
@@ -84,7 +86,10 @@ export class DataEditing {
         }
     }
     /**
-     * Get cursor style.
+     * Gets the cursor style based on the point data.
+     *
+     * @param {PointData} pointData - The data associated with the chart point.
+     * @returns {void}
      */
     private getCursorStyle(pointData: PointData): void {
         const chart: Chart = this.chart;
@@ -99,7 +104,11 @@ export class DataEditing {
         }
     }
     /**
-     * Dragging calculation.
+     * Handles the dragging behavior of a specific point.
+     *
+     * @param {number} si - Series index.
+     * @param {number} pi - Point index.
+     * @returns {void}
      */
     private pointDragging(si: number, pi: number): void {
         const chart: Chart = this.chart;
@@ -144,6 +153,8 @@ export class DataEditing {
 
     /**
      * Point drag ends here.
+     *
+     * @returns {void}
      */
     public pointMouseUp(): void {
         const chart: Chart = this.chart;
@@ -165,6 +176,8 @@ export class DataEditing {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         // Returns te module name
@@ -177,6 +190,6 @@ export class DataEditing {
      * @private
      */
     public destroy(): void {
-        // Destroy method performed here
+        // Destroy method performed here.
     }
 }

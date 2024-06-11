@@ -87,10 +87,10 @@ export interface DiagramTooltipModel {
     animation?: AnimationModel;
 
     /**
-     * Specifies whether the tooltip remains visible even when the mouse moves away from the target element. 
+     * Specifies whether the tooltip remains visible even when the mouse moves away from the target element.
      * If set to true, the tooltip is always visible; otherwise, it is hidden when the mouse moves away.
      * The default value is false.
-     * 
+     *
      * @default false
      */
     isSticky?: boolean;

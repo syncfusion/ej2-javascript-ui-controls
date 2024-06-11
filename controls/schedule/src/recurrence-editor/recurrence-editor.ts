@@ -36,7 +36,6 @@ const MONTHWEEK: string = 'e-month-week';
 const ENDON: string = 'e-end-on';
 const MONTHEXPANDERLABEL: string = 'e-month-expander-label';
 const WEEKEXPANDERLABEL: string = 'e-week-expander-label';
-const ENDONLABEL: string = 'e-end-on-label';
 const ENDONLEFT: string = 'e-end-on-left';
 const MONTHDAYELEMENT: string = 'e-monthday-element';
 const ENDONELEMENT: string = 'e-end-on-element';
@@ -848,7 +847,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             '<input type="text" tabindex="0" class="' + MONTHWEEK + '"title="' + this.localeObj.getConstant('monthWeek') + '" />' +
             '</div></td></tr></table>' +
             '</div></div>' +
-            '<div class="' + INPUTWARAPPERSIDE + ' ' + ENDON + ' ' + FORMRIGHT + '">' + 
+            '<div class="' + INPUTWARAPPERSIDE + ' ' + ENDON + ' ' + FORMRIGHT + '">' +
             '<div class="' + INPUTWARAPPER + ' ' + ENDONLEFT + '">' +
             '<input type="text" tabindex="0" class="' + ENDONELEMENT + '"title="' + this.localeObj.getConstant(END) + '" />' +
             '</div>' +
@@ -1021,7 +1020,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
     }
     private getCalendarMode(): string {
-        return this.calendarMode.toLowerCase();
+        return !isNullOrUndefined(this.calendarMode) ? this.calendarMode.toLowerCase() : 'gregorian';
     }
     public getRuleSummary(rule: string = this.getRecurrenceRule()): string {
         return generateSummary(rule, this.localeObj, this.locale, this.calendarMode);
@@ -1226,13 +1225,13 @@ type DayFormateType = 'wide' | 'narrow' | 'short';
 export type RepeatType = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 /**
-* Defines the available types of recurrence end for the recurrence editor.
-* ```props
-* The following options are available:
-*
-* never :- Denotes that the recurrence has no end date and continues indefinitely.
-* until :- Denotes that the recurrence ends on a specified date.
-* count :- Denotes that the recurrence ends after a specified number of occurrences.
-* ```
+ * Defines the available types of recurrence end for the recurrence editor.
+ * ```props
+ * The following options are available:
+ *
+ * never :- Denotes that the recurrence has no end date and continues indefinitely.
+ * until :- Denotes that the recurrence ends on a specified date.
+ * count :- Denotes that the recurrence ends after a specified number of occurrences.
+ * ```
  */
 export type EndType = 'never' | 'until' | 'count';

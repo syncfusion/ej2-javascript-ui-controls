@@ -45,9 +45,12 @@ export class ImageExport {
             const svgObject: Element = getElementByID(maps.element.id + '_svg').cloneNode(true) as Element;
             const backgroundElement: HTMLElement = svgObject.childNodes[0] as HTMLElement;
             const backgroundColor: string = backgroundElement.getAttribute('fill');
-            if ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+            if ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3' || maps.theme === 'Fluent2')
+                && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 (svgObject.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
-            } else if ((maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+            } else if ((maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark' ||
+                maps.theme === 'Fluent2Dark' || maps.theme === 'Fluent2HighContrast')
+                && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 (svgObject.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(0, 0, 0, 1)');
             }
             if (!maps.isTileMap) {

@@ -110,12 +110,8 @@ export class EventHandler {
      * @returns {void} ?
      */
     public static clearEvents(element: Element): void {
-        let eventData: EventOptions[];
-        let copyData: EventOptions[];
-        // eslint-disable-next-line
-        eventData = EventHandler.addOrGetEventData(element);
-        // eslint-disable-next-line
-        copyData = extend([], copyData, eventData) as EventOptions[];
+        const eventData: EventOptions[] = EventHandler.addOrGetEventData(element);
+        const copyData: EventOptions[] = extend([], undefined, eventData) as EventOptions[];
         for (let i: number = 0; i < copyData.length; i++) {
             const parseValue: EventOptions = copyData[parseInt(i.toString(), 10)];
             element.removeEventListener(<string>parseValue.name, <EventListener>parseValue.debounce);

@@ -252,7 +252,13 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
         words = text.textWrapping !== 'NoWrap' ? eachLine[parseInt(j.toString(), 10)].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[parseInt(j.toString(), 10)]] : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[parseInt(i.toString(), 10)];
-            newText = txtValue + ' ' + (words[i + 1] || '');
+             //Bug 885842: Position of annotation inside the node is not aligned center.
+            //Extra space is added when we have single word as annotation text and due to this the width of the text is increased.
+            if(words[i+1]){
+                newText = txtValue + ' ' + (words[i + 1]);
+            }else{
+                newText = txtValue;
+            }
             const width: number = bBoxText(newText, text);
             if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
                 childNodes[childNodes.length] = {
@@ -910,9 +916,11 @@ export function getScrollerWidth(): number {
 export function addTouchPointer(touchList: ITouches[], e: PointerEvent, touches: TouchList): ITouches[] {
     touchList = [];
     for (let i: number = 0, length: number = touches.length; i < length; i++) {
-        touchList.push({ pageX: touches[parseInt(i.toString(), 10)].clientX, pageY: touches[parseInt(i.toString(), 10)].clientY, pointerId: null });
+        touchList.push({
+            pageX: touches[parseInt(i.toString(), 10)].clientX, pageY: touches[parseInt(i.toString(), 10)].clientY,
+            pointerId: null
+        });
     }
-
     return touchList;
 }
 
@@ -977,18 +985,12 @@ export function getContent(
             div.parentElement.removeChild(div);
         }
         //let blazor: string = 'Blazor';
-        if (isBlazor()) {
-            content = 'diagramsf_node_template';
-            sentNode = cloneBlazorObject(node);
-        }
+        //Removed isBlazor code
         propertyName = "nodeTemplate";
     } else {
         sentNode = node;
         //new
-        if (isBlazor()) {
-            sentNode = cloneBlazorObject(node);
-            content = 'diagramsf_annotation_template';
-        }
+        //Removed isBlazor code
         propertyName = "annotationTemplate";
     }
     let item: HTMLElement | SVGElement;
@@ -996,7 +998,7 @@ export function getContent(
     const instance: string = 'ej2_instances';
     const diagram: Object = diagramElement[instance][0];
 
-    if ((typeof element.content === 'string' || typeof element.content === 'function') && (!(element as DiagramHtmlElement).isTemplate || isBlazor())) {
+    if ((typeof element.content === 'string' || typeof element.content === 'function') && (!(element as DiagramHtmlElement).isTemplate)) {
         const template: HTMLElement = document.getElementById(element.content as string);
         if (template) {
             div.appendChild(template);
@@ -1186,19 +1188,20 @@ export function setChildPosition(temp: SubTextElement, childNodes: SubTextElemen
 }
 
 /**
- * getTemplateContent method   \
+ * getTemplateContent method\
  *
  * @returns {DiagramHtmlElement} getTemplateContent method .\
  * @param {DiagramHtmlElement} annotationcontent - provide the annotationcontent  value.
  * @param {Annotation} annotation - provide the annotation  value.
  * @param {number} annotationTemplate - provide the annotationTemplate  value.
+ * @param {Object} diagram - provide the diagram value.
  * @private
  */
 export function getTemplateContent(
     // eslint-disable-next-line @typescript-eslint/ban-types
     annotationcontent: DiagramHtmlElement, annotation: Annotation, annotationTemplate?: string | Function,
     diagram?: Object): DiagramHtmlElement {
-    if ((annotationTemplate && !annotation.template) || 
+    if ((annotationTemplate && !annotation.template) ||
         (annotation.template && typeof annotation.template === 'function'  && (diagram as IReactDiagram).isReact)) {
         annotationcontent.isTemplate = true;
         annotationcontent.template = annotationcontent.content = getContent(annotationcontent, true, annotation) as HTMLElement;
@@ -1236,24 +1239,7 @@ export function createUserHandleTemplates(userHandleTemplate: string | Function,
                 template[0].appendChild(div);
             }
         }
-    } else if (isBlazor()) {
-        let content: string = 'diagramsf_userHandle_template';
-        let a: Function;
-        for (handle of selectedItems.userHandles) {
-            if (!handle.pathData && !handle.content && !handle.source) {
-                compiledString = compile(handle.content);
-                for (i = 0, a = compiledString(cloneBlazorObject(handle), diagram, 'userHandleTemplate', content); i < a.length; i++) {
-                    let attr: object = {
-                        'style': 'height: 100%; width: 100%; pointer-events: all',
-                        'id': handle.name + '_template_hiddenUserHandle'
-                    };
-                    div = createHtmlElement('div', attr);
-                    div.appendChild(a[i]);
-                }
-                template[0].appendChild(div);
-            }
-        }
-    }
+    }//Removed isBlazor code
 }
 
 /* eslint-enable */

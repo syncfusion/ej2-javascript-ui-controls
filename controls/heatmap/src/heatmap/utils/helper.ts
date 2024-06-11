@@ -112,8 +112,10 @@ export class Size {
      * Specifies the width of an element.
      */
     public width: number;
-    // eslint-disable-next-line valid-jsdoc
-    /** @private */
+    /**
+     * @param {number} width - Specifies the width.
+     * @param {number} height - Specifies the height.
+     * @private */
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
@@ -162,17 +164,25 @@ export class PathOption extends CustomizeOption {
  * @returns {any} templateFunction -  returns the size
  * @private
  */
-/* eslint-disable max-len */
-export function createLabelTemplate(template: string | Function, heatMap: HeatMap, labelTemplate: HTMLElement, rectPosition: any, xLabels: any, yLabels: any, index: number): HTMLElement {
+// eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
+export function createLabelTemplate(template: string | Function, heatMap: HeatMap, labelTemplate: HTMLElement, rectPosition: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    xLabels: any, yLabels: any, index: number): HTMLElement {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const templateFunction: any = getTemplateFunction(template, heatMap);
-    let rectData = null;
+    let rectData: object = null;
     const dataSource: object[][] = <object[][]>heatMap.dataSource;
     if (heatMap.dataSourceSettings.isJsonData && (heatMap.dataSourceSettings.adaptorType === 'Cell' || heatMap.dataSourceSettings.adaptorType === 'Table')) {
+        // eslint-disable-next-line @typescript-eslint/tslint/config
         const yLabelData = heatMap.yAxis.valueType === 'Numeric' ? heatMap.yAxis.labels : yLabels;
+        // eslint-disable-next-line @typescript-eslint/tslint/config
         const xLabelData = heatMap.xAxis.valueType === 'Numeric' ? heatMap.xAxis.labels : xLabels;
+        // eslint-disable-next-line @typescript-eslint/tslint/config
         dataSource.forEach((item) => {
+            // eslint-disable-next-line @typescript-eslint/tslint/config
             const yDataMapping = heatMap.dataSourceSettings.adaptorType === 'Cell' ? Object.keys(item).some((key: string) => item[key as keyof typeof item] === yLabelData[rectPosition.yIndex]) : ((Object.prototype.hasOwnProperty as Function).call(item, yLabelData[rectPosition.yIndex]));
-            if (Object.keys(item).some((key: string) => item[key as keyof typeof item] === xLabelData[rectPosition.xIndex]) && yDataMapping) {
+            if (Object.keys(item).some((key: string) => item[key as keyof typeof item] === xLabelData[rectPosition.xIndex])
+            && yDataMapping) {
                 rectData = item;
             }
         });
@@ -200,6 +210,7 @@ export function createLabelTemplate(template: string | Function, heatMap: HeatMa
  * @returns {any}  -  returns the size
  * @private
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getTemplateFunction(template: string | Function, heatMap: HeatMap): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
@@ -226,7 +237,6 @@ export function getTemplateFunction(template: string | Function, heatMap: HeatMa
  * @returns { HTMLElement }  -  returns the size
  * @private
  */
-
 export function convertElement(element: HTMLCollection, elementId: string): HTMLElement {
     const childElement: HTMLElement = createElement('div', {
         id: elementId
@@ -312,8 +322,19 @@ export class SelectedCellDetails {
     public x: number;
     /** @private */
     public y: number;
-    // eslint-disable-next-line valid-jsdoc
     /**
+     * @param {number | BubbleTooltipData} value - Specifies the value.
+     * @param {string} xLabel - Specifies the x label.
+     * @param {string} yLabel - Specifies the y label.
+     * @param {number} xValue - Specifies the x value.
+     * @param {number} yValue - Specifies the y value.
+     * @param {Element} cellElement - Specifies the cell element.
+     * @param {number} xPosition - Specifies the x position.
+     * @param {number} yPosition - Specifies the y position.
+     * @param {number} width - Specifies the width.
+     * @param {number} height - Specifies the height.
+     * @param {number} x - Specifies the x value.
+     * @param {number} y - Specifies the y value.
      * @private
      */
     constructor(
@@ -421,6 +442,8 @@ export class TextOption extends TextElement {
     public x: number;
     public y: number;
     public ['dominant-baseline']: string = 'auto';
+    public role: string = 'region';
+    public ['aria-label']: string;
     public labelRotation: number = 0;
     public baseline: string = 'auto';
     public dy: string;
@@ -432,6 +455,7 @@ export class TextOption extends TextElement {
         this.y = basic.y;
         this['text-anchor'] = basic['text-anchor'];
         this.text = basic.text;
+        this['aria-label'] = basic.text as string;
         this.transform = basic.transform;
         this.labelRotation = basic.labelRotation;
         this['dominant-baseline'] = basic['dominant-baseline'];
@@ -454,6 +478,7 @@ export class TextBasic {
     public x: number;
     public y: number;
     public ['dominant-baseline']: string = 'auto';
+    public ['aria-label']: string;
     public labelRotation: number = 0;
     public baseline: string = 'auto';
     public dy: string;
@@ -465,6 +490,7 @@ export class TextBasic {
         this.y = y ? y : 0;
         this['text-anchor'] = anchor ? anchor : 'start';
         this.text = text ? text : '';
+        this['aria-label'] = text as string;
         this.transform = transform ? transform : '';
         this.labelRotation = labelRotation;
         this['dominant-baseline'] = baseLine ? baseLine : 'auto';
@@ -667,7 +693,12 @@ export class DrawSvgCanvas {
     public drawRectangle(properties: RectOption, parentElement: Element, isFromSeries?: boolean): void {
         if (!this.heatMap.enableCanvasRendering) {
             delete properties.d;
-            parentElement.appendChild(this.heatMap.renderer.drawRectangle(properties));
+            const rectElement: Element = parentElement.appendChild(this.heatMap.renderer.drawRectangle(properties));
+            if (rectElement.id.indexOf('Rect') === -1) {
+                rectElement.setAttribute('title', 'Rect Element');
+                rectElement.setAttribute('role', 'img');
+                rectElement.setAttribute('aria-hidden', 'false');
+            }
         } else {
             this.drawCanvasRectangle(this.heatMap.canvasRenderer, properties, isFromSeries);
         }
@@ -724,7 +755,8 @@ export class DrawSvgCanvas {
             'font-weight': font.fontWeight.toLowerCase(),
             'text-anchor': options['text-anchor'],
             'transform': options.transform,
-            'dominant-baseline': options['dominant-baseline']
+            'dominant-baseline': options['dominant-baseline'],
+            'aria-label': options.text[0] as string
         };
         const text : string = options.text[0];
         if (!this.heatMap.enableCanvasRendering) {
@@ -766,7 +798,8 @@ export class DrawSvgCanvas {
     }
 
     //Canvas Text Part
-    public canvasDrawText(options: TextOption, label: string, translateX?: number, translateY?: number, wrappedLabels?: string[], elementHeight?: number, isAxisLabel?: boolean): void {
+    public canvasDrawText(options: TextOption, label: string, translateX?: number, translateY?: number,
+                          wrappedLabels?: string[], elementHeight?: number, isAxisLabel?: boolean): void {
         const ctx: CanvasRenderingContext2D = this.heatMap.canvasRenderer.ctx;
         if (!translateX) {
             translateX = options.x;

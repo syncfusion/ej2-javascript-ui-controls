@@ -1,7 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable no-case-declarations */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { DateFormatOptions } from '@syncfusion/ej2-base';
 import { Axis, VisibleLabels } from '../axis/axis';
 import { isZoomSet, setRange, triggerLabelRender } from '../../common/utils/helper';
@@ -31,6 +27,7 @@ export class DateTime extends NiceInterval {
      * Constructor for the dateTime module.
      *
      * @private
+     * @param {Chart} chart - Specifies the chart.
      */
     constructor(chart?: Chart) {
         super(chart);
@@ -57,6 +54,9 @@ export class DateTime extends NiceInterval {
      * Actual Range for the axis.
      *
      * @private
+     * @param {Axis} axis - The axis for which the actual range is calculated.
+     * @param {Size} size - The size used for calculation.
+     * @returns {void}
      */
     public getActualRange(axis: Axis, size: Size): void {
         const option: DateFormatOptions = {
@@ -103,6 +103,9 @@ export class DateTime extends NiceInterval {
      * Apply padding for the range.
      *
      * @private
+     * @param {Axis} axis - The axis for which padding is applied.
+     * @param {Size} size - The size used for padding calculation.
+     * @returns {void}
      */
     public applyRangePadding(axis: Axis, size: Size): void {
         this.min = (axis.actualRange.min); this.max = (axis.actualRange.max);
@@ -129,7 +132,7 @@ export class DateTime extends NiceInterval {
                 case 'Hours':
                     this.getHour(minimum, maximum, rangePadding, interval);
                     break;
-                case 'Minutes':
+                case 'Minutes': {
                     const minute: number = (minimum.getMinutes() / interval) * interval;
                     const endMinute: number = maximum.getMinutes() + (minimum.getMinutes() - minute);
                     if (rangePadding === 'Round') {
@@ -160,7 +163,8 @@ export class DateTime extends NiceInterval {
                         ).getTime();
                     }
                     break;
-                case 'Seconds':
+                }
+                case 'Seconds': {
                     const second: number = (minimum.getSeconds() / interval) * interval;
                     const endSecond: number = maximum.getSeconds() + (minimum.getSeconds() - second);
                     if (rangePadding === 'Round') {
@@ -190,6 +194,7 @@ export class DateTime extends NiceInterval {
                             )).getTime();
                     }
                     break;
+                }
                 }
             }
         }
@@ -260,6 +265,9 @@ export class DateTime extends NiceInterval {
      * Calculate visible range for axis.
      *
      * @private
+     * @param {Size} size - The size used for calculation.
+     * @param {Axis} axis - The axis for which the visible range is calculated.
+     * @returns {void}
      */
     protected calculateVisibleRange(size: Size, axis: Axis): void {
 
@@ -271,7 +279,7 @@ export class DateTime extends NiceInterval {
         };
         const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((isZoomSet(axis)) && !isLazyLoad) {
-            axis.calculateVisibleRangeOnZooming(size);
+            axis.calculateVisibleRangeOnZooming();
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
                 : axis.visibleRange.interval;
@@ -303,7 +311,7 @@ export class DateTime extends NiceInterval {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             previousValue = axisLabels.length ? axis.visibleLabels[axisLabels.length - 1].value : tempInterval;
             axis.format = chart.intl.getDateFormat({
-                format: this.findCustomFormats(axis, tempInterval, previousValue) || this.blazorCustomFormat(axis),
+                format: this.findCustomFormats(axis) || this.blazorCustomFormat(axis),
                 type: firstToLowerCase(axis.skeletonType),
                 skeleton: this.getSkeleton(axis, tempInterval, previousValue, isBlazor)
             });
@@ -316,7 +324,7 @@ export class DateTime extends NiceInterval {
                 }
                 triggerLabelRender(chart, tempInterval, axis.format(new Date(tempInterval)), labelStyle, axis);
             }
-            let actualInterval: number = tempInterval;
+            const actualInterval: number = tempInterval;
             tempInterval = this.increaseDateTimeInterval(axis, tempInterval, axis.visibleRange.interval).getTime();
             if (actualInterval === tempInterval) {
                 break;
@@ -335,7 +343,13 @@ export class DateTime extends NiceInterval {
 
     }
 
-    /** @private */
+    /**
+     * Calculate the Blazor custom format for axis.
+     *
+     * @param {Axis} axis - The axis for which the custom format is calculated.
+     * @returns {string} - The custom format string.
+     * @private
+     */
     private blazorCustomFormat(axis: Axis): string {
         if (this.chart.isBlazor) {
             return axis.actualIntervalType === 'Years' ? (axis.isIntervalInDecimal ? 'yyyy' : 'MMM y') :
@@ -345,7 +359,15 @@ export class DateTime extends NiceInterval {
         }
     }
 
-    /** @private */
+    /**
+     * Increase the date-time interval.
+     *
+     * @param {Axis} axis - The axis for which the interval is increased.
+     * @param {number} value - The value of the interval.
+     * @param {number} interval - The interval to increase.
+     * @returns {Date} - The increased date-time interval.
+     * @private
+     */
     public increaseDateTimeInterval(axis: Axis, value: number, interval: number): Date {
         let result: Date = new Date(value);
         if (axis.interval) {
@@ -391,37 +413,40 @@ export class DateTime extends NiceInterval {
     private alignRangeStart(axis: Axis, sDate: number, intervalSize: number): Date {
         let sResult: Date = new Date(sDate);
         switch (axis.actualIntervalType) {
-        case 'Years':
+        case 'Years': {
             const year: number = Math.floor(Math.floor(sResult.getFullYear() / intervalSize) * intervalSize);
             sResult = new Date(year, sResult.getMonth(), sResult.getDate(), 0, 0, 0);
             return sResult;
-        case 'Months':
+        }
+        case 'Months': {
             const month: number = Math.floor(Math.floor((sResult.getMonth()) / intervalSize) * intervalSize);
             sResult = new Date(sResult.getFullYear(), month, sResult.getDate(), 0, 0, 0);
             return sResult;
-
-        case 'Days':
+        }
+        case 'Days': {
             const day: number = Math.floor(Math.floor((sResult.getDate()) / intervalSize) * intervalSize);
-            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, sResult.getHours(), sResult.getMinutes(), sResult.getSeconds());
+            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, sResult.getHours(),
+                               sResult.getMinutes(), sResult.getSeconds());
             return sResult;
-
-        case 'Hours':
+        }
+        case 'Hours': {
             const hour: number = Math.floor(Math.floor((sResult.getHours()) / intervalSize) * intervalSize);
             sResult = new Date(sResult.getFullYear(), sResult.getMonth(), sResult.getDate(), hour, 0, 0);
             return sResult;
-
-        case 'Minutes':
+        }
+        case 'Minutes': {
             const minutes: number = Math.floor(Math.floor((sResult.getMinutes()) / intervalSize) * intervalSize);
             sResult = new Date(sResult.getFullYear(), sResult.getMonth(), sResult.getDate(), sResult.getHours(), minutes, 0, 0);
             return sResult;
-
-        case 'Seconds':
+        }
+        case 'Seconds': {
             const seconds: number = Math.floor(Math.floor((sResult.getSeconds()) / intervalSize) * intervalSize);
             sResult = new Date(
                 sResult.getFullYear(), sResult.getMonth(), sResult.getDate(),
                 sResult.getHours(), sResult.getMinutes(), seconds, 0
             );
             return sResult;
+        }
         }
         return sResult;
     }
@@ -430,48 +455,56 @@ export class DateTime extends NiceInterval {
         const roundValue: number = Math.floor(interval);
         const decimalValue: number = interval - roundValue;
         switch (intervalType) {
-        case 'Years':
+        case 'Years': {
             const month: number = Math.round(12 * decimalValue);
             result.setFullYear(result.getFullYear() + roundValue);
             result.setMonth(result.getMonth() + month);
             return result;
+        }
         case 'Quarter':
             result.setMonth(result.getMonth() + (3 * interval));
             return result;
-        case 'Months':
+        case 'Months': {
             const days: number = Math.round(30 * decimalValue);
             result.setMonth(result.getMonth() + roundValue);
             result.setDate(result.getDate() + days);
             return result;
+        }
         case 'Weeks':
             result.setDate(result.getDate() + (interval * 7));
             return result;
-        case 'Days':
+        case 'Days': {
             const hour: number = Math.round(24 * decimalValue);
             result.setDate(result.getDate() + roundValue);
             result.setHours(result.getHours() + hour);
             return result;
-        case 'Hours':
+        }
+        case 'Hours': {
             const min: number = Math.round(60 * decimalValue);
             result.setHours(result.getHours() + roundValue);
             result.setMinutes(result.getMinutes() + min);
             return result;
-        case 'Minutes':
+        }
+        case 'Minutes': {
             const sec: number = Math.round(60 * decimalValue);
             result.setMinutes(result.getMinutes() + roundValue);
             result.setSeconds(result.getSeconds() + sec);
             return result;
-        case 'Seconds':
+        }
+        case 'Seconds': {
             const milliSec: number = Math.round(1000 * decimalValue);
             result.setSeconds(result.getSeconds() + roundValue);
             result.setMilliseconds(result.getMilliseconds() + milliSec);
             return result;
         }
+        }
         return result;
     }
 
     /**
-     * Get module name
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**

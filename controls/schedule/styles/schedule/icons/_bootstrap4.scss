@@ -13,7 +13,8 @@
         content: '\e759';
       }
 
-      & .e-icon-today::before {
+      & .e-icon-today::before,
+      & .e-icon-day::before {
         content: '\e7b8';
       }
 
@@ -21,14 +22,7 @@
         content: '\e744';
       }
 
-      & .e-icon-day::before {
-        content: '\e7b8';
-      }
-
-      & .e-icon-week::before {
-        content: '\e7c0';
-      }
-
+      & .e-icon-week::before,
       & .e-icon-workweek::before {
         content: '\e7c0';
       }
@@ -45,15 +39,10 @@
         content: '\e7bd';
       }
 
-      & .e-icon-year::before {
-        content: '\e71e';
-      }
-
-      & .e-icon-timeline-year-vertical::before {
-        content: '\e71e';
-      }
-
-      & .e-icon-timeline-year-horizontal::before {
+      & .e-icon-year::before,
+      & .e-icon-timeline-year-vertical::before,
+      & .e-icon-timeline-year-horizontal::before,
+      & .e-icon-timeline-month::before {
         content: '\e71e';
       }
 
@@ -69,15 +58,8 @@
         content: '\e762';
       }
 
-      & .e-icon-timeline-month::before {
-        content: '\e71e';
-      }
-
       &.e-toolbar {
-        .e-popup-down-icon::before {
-          content: '\e781';
-        }
-
+        .e-popup-down-icon::before,
         .e-popup-up-icon::before {
           content: '\e781';
         }

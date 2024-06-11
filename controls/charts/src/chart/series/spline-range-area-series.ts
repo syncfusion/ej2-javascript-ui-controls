@@ -1,6 +1,4 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-import { withInRange, getPoint, ChartLocation } from '../../common/utils/helper';
+import { withInRange, getPoint, ChartLocation, animateAddPoints } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from './chart-series';
 import { SplineBase } from './spline-base';
@@ -17,10 +15,15 @@ export class SplineRangeAreaSeries extends SplineBase {
     /**
      * Render SplineRangeArea Series.
      *
+     * @param {Series} series - The series to be rendered.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
+     * @param {boolean} inverted - Specifies whether the chart is inverted.
+     * @param {boolean} pointAnimate - Specifies whether the point has to be animated or not.
+     * @param {boolean} pointUpdate - Specifies whether the point has to be updated or not.
      * @returns {void}
-     * @private
      */
-    public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
+    public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean, pointAnimate?: boolean, pointUpdate?: boolean): void {
         let point: Points;
         let direction: string = '';
         let closed: boolean = undefined;
@@ -135,22 +138,19 @@ export class SplineRangeAreaSeries extends SplineBase {
         const options: PathOption = new PathOption(
             name1, series.interior,
             0, 'transparent', series.opacity, series.dashArray, direction);
-        this.appendLinePath(options, series, '');
+        this[pointAnimate ? 'addPath' : 'appendLinePath'](options, series, '');
         /**
          * To draw border for the path directions of area
          */
         if (series.border.width !== 0) {
-            this.appendLinePath(
-                new PathOption(
-                    series.chart.element.id + '_Series_border_' + series.index, 'transparent',
-                    borderWidth, borderColor, 1, series.dashArray,
-                    this.borderDirection
-                ),
-                series, ''
-            );
+            this[pointAnimate ? 'addPath' : 'appendLinePath'](new PathOption(
+                series.chart.element.id + '_Series_border_' + series.index, 'transparent',
+                borderWidth, borderColor, 1, series.dashArray,
+                this.borderDirection
+            ), series, '');
             this.borderDirection = '';
         }
-        this.renderMarker(series);
+        if (!pointUpdate) {this.renderMarker(series); }
     }
 
     /**
@@ -212,12 +212,73 @@ export class SplineRangeAreaSeries extends SplineBase {
     }
 
     /**
+     * To animate point for spline range area series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
+        for (let i: number = 0; i < point.length; i++) {
+            if (series.marker && series.marker.visible) {
+                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
+                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
+    }
+    /**
+     * Adds a area path to equate the start and end paths.
+     *
+     * @param {PathOption} options - The options for the path.
+     * @param {Series} series - The series to which the path belongs.
+     * @param {string} clipRect - The clip rectangle for the path.
+     * @returns {void}
+     */
+    public addPath(options: PathOption, series: Series, clipRect: string): void {
+        const points: { element: Element; previousDirection: string; } =
+            this.appendPathElement(options, series, clipRect);
+        if (points.previousDirection !== '' && options.d !== '') {
+            const startPathCommands: string[] = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (startPathCommands.length < endPathCommands.length) {
+                for (let i: number = startPathCommands.length; i < endPathCommands.length; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        startPathCommands.splice(((startPathCommands.length) / 2) + 1, 0, 'C ' + ((startPathCommands[(startPathCommands.length - 1) / 2].split(' ')).slice(5, 7)).join(' ') + ' ' + ((startPathCommands[(startPathCommands.length - 1) / 2].split(' ')).slice(5, 7)).join(' ') + ' ' + ((startPathCommands[(startPathCommands.length - 1) / 2].split(' ')).slice(5, 7)).join(' '));
+                        startPathCommands.splice((startPathCommands.length / 2) + 2, 0, 'C ' + (startPathCommands[(startPathCommands.length / 2) + 1].split(' ')).slice(1, 3).join(' ') + ' ' + (startPathCommands[(startPathCommands.length / 2) + 1].split(' ')).slice(1, 3).join(' ') + ' ' + (startPathCommands[(startPathCommands.length / 2) + 1].split(' ')).slice(1, 3).join(' '));
+                    }
+                }
+                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+            } else if (startPathCommands.length > endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        endPathCommands.splice(2, 0, 'C ' + endPathCommands[1].split(' ').slice(-3).join(' ') + endPathCommands[1].split(' ').slice(-3).join(' ') + endPathCommands[1].split(' ').slice(-3).join(' '));
+                        endPathCommands.splice(endPathCommands.length - 1, 0, 'C ' + endPathCommands[endPathCommands.length - 2].split(' ').slice(-4).join(' ') + endPathCommands[endPathCommands.length - 2].split(' ').slice(-4).join(' ') + endPathCommands[endPathCommands.length - 2].split(' ').slice(-4).join(' '));
+                    }
+                }
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
+            } else {
+                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+            }
+        }
+    }
+    /**
      * Animates the series.
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
      */
-
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;
         this.doLinearAnimation(series, option);
@@ -225,11 +286,12 @@ export class SplineRangeAreaSeries extends SplineBase {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'SplineRangeAreaSeries';
     }
@@ -240,10 +302,9 @@ export class SplineRangeAreaSeries extends SplineBase {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys range area series
+         * Destroys range area series.
          */
     }
 }

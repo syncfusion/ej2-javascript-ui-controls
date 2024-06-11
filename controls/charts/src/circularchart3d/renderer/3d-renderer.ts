@@ -1,17 +1,10 @@
-/* eslint-disable max-len */
-/* eslint-disable no-constant-condition */
-/* eslint-disable no-useless-escape */
-/* eslint-disable prefer-rest-params */
-/* eslint-disable @typescript-eslint/tslint/config */
-/* eslint-disable security/detect-unsafe-regex */
-/* eslint-disable valid-jsdoc */
-
 import { PathAttributes, SVGCanvasAttributes, Size, measureText } from '@syncfusion/ej2-svg-base';
 import { appendChildElement, colorNameToHex } from '../../common/utils/helper';
 import { CircularChart3DBasicTransform, CircularChart3DColorFormat, CircularChart3DDataElement, CircularChart3DLabelElement, CircularChart3DLocation, CircularChart3DPathOptions, CircularChart3DPolyAttributes, CircularChart3DPolyCollections, CircularChart3DPolygon, CircularChart3DStringBuilder, CircularChart3DVector } from '../model/circular3d-base';
 import { CircularChart3D } from '../circularchart3d';
 import { FontModel } from '../../common/model/base-model';
 import { CircularChart3DSeries } from './series';
+import { CircularChart3DPolyLineAttributes } from '../model/pie-interface';
 
 /**
  * Represents a 3D rendering configuration for the EJ 3D rendering engine.
@@ -198,6 +191,7 @@ export class CircularChart3DMatrix {
      * @returns {number[][]} - The generated 3D matrix.
      * @private
      */
+
     public matrix3D(size: number): number[][] {
         const matrixData: number[][] = [];
         for (let i: number = 0; i < size; i++) {
@@ -212,6 +206,7 @@ export class CircularChart3DMatrix {
      * @param {number[][]} matrixData - The matrix to check.
      * @returns {boolean} - True if the matrix is an affine matrix, false otherwise.
      */
+
     public isAffine(matrixData: number[][]): boolean {
         return matrixData[0][3] === 0 && matrixData[1][3] === 0 && matrixData[2][3] === 0 && matrixData[3][3] === 1;
     }
@@ -235,6 +230,7 @@ export class CircularChart3DMatrix {
      *
      * @returns {number[][]} - The identity matrix.
      */
+
     public getIdentity(): number[][] {
         const matrixData: number[][] = this.matrix3D(this.matrixSize);
         for (let i: number = 0; i < this.matrixSize; i++) {
@@ -249,6 +245,7 @@ export class CircularChart3DMatrix {
      * @param {number[][]} matrix - The matrix to get the interval for.
      * @returns {number[][]} - The interval matrix.
      */
+
     public getInterval(matrix: number[][]): number[][] {
         let matrixData: number[][] = this.getIdentity();
         for (let i: number = 0; i < this.matrixSize; i++) {
@@ -268,6 +265,7 @@ export class CircularChart3DMatrix {
      * @param {number[][]} matrix - The matrix to multiply.
      * @returns {number[][]} - The resulting matrix.
      */
+
     public getMatrixMultiple(factor: number, matrix: number[][]): number[][] {
         for (let i: number = 0; i < matrix.length; i++) {
             for (let j: number = 0; j < matrix[i as number].length; j++) {
@@ -284,6 +282,7 @@ export class CircularChart3DMatrix {
      * @param {CircularChart3DVector} point - The vector to multiply with.
      * @returns {CircularChart3DVector} - The resulting vector.
      */
+
     public getMatrixVectorMultiple(matrix: number[][], point: CircularChart3DVector): CircularChart3DVector {
         let x: number =
             matrix[0][0] * point.x +
@@ -316,6 +315,7 @@ export class CircularChart3DMatrix {
      * @param {number[][]} matrix2 - The second matrix.
      * @returns {number[][]} - The resulting matrix.
      */
+
     public getMatrixMultiplication(matrix1: number[][], matrix2: number[][]): number[][] {
         const result: number[][] = this.getIdentity();
         for (let i: number = 0; i < this.matrixSize; i++) {
@@ -341,6 +341,7 @@ export class CircularChart3DMatrix {
      * @returns {number} - The minor of the matrix.
      * @private
      */
+
     public getMinor(matrix: number[][], columnIndex: number, rowIndex: number): number {
         return ((columnIndex + rowIndex) % 2 === 0 ? 1 : -1) * this.getDeterminant(this.getMatrix(matrix, columnIndex, rowIndex));
     }
@@ -353,6 +354,7 @@ export class CircularChart3DMatrix {
      * @param {number} rowIndex - The row index.
      * @returns {number[][]} - The submatrix.
      */
+
     public getMatrix(matrix: number[][], columnIndex: number, rowIndex: number): number[][] {
         const count: number = matrix.length - 1;
         const subMatrix: any = this.createArray(count);
@@ -373,6 +375,7 @@ export class CircularChart3DMatrix {
      * @param {number[][]} matrix - The matrix.
      * @returns {number} - The determinant of the matrix.
      */
+
     public getDeterminant(matrix: number[][]): number {
         const count: number = matrix.length;
         let determinant: number = 0;
@@ -397,6 +400,7 @@ export class CircularChart3DMatrix {
      * @param {number} z - The z-coordinate of the translation.
      * @returns {number[][]} - The transformed matrix.
      */
+
     public transform(x: number, y: number, z: number): number[][] {
         const transformedMatrix: number[][] = this.getIdentity();
         transformedMatrix[3][0] = x;
@@ -412,6 +416,7 @@ export class CircularChart3DMatrix {
      * @returns {number[][]} - The rotation matrix.
      * @private
      */
+
     public turn(angle: number): number[][] {
         const rotatedMatrix: number[][] = this.getIdentity();
         rotatedMatrix[0][0] = Math.cos(angle);
@@ -427,6 +432,7 @@ export class CircularChart3DMatrix {
      * @param {number} angle - The angle of rotation.
      * @returns {number[][]} - The rotation matrix.
      */
+
     public tilt(angle: number): number[][] {
         const rotatedMatrix: number[][] = this.getIdentity();
         rotatedMatrix[1][1] = Math.cos(angle);
@@ -442,6 +448,7 @@ export class CircularChart3DMatrix {
      * @param {number[][]} matrix3D - The matrix to transpose.
      * @returns {number[][]} - The transposed matrix.
      */
+
     public transposed(matrix3D: number[][]): number[][] {
         const transposedMatrix: number[][] = this.getIdentity();
         for (let i: number = 0; i < this.matrixSize; i++) {
@@ -548,7 +555,8 @@ export class CircularChart3DTransform {
      * @param {CircularChart3DMatrix} chartObj - Optional custom matrix object for transformation.
      * @returns {CircularChart3DLocation} - The screen coordinates.
      */
-    public toScreen(vector3D: CircularChart3DVector, transform: CircularChart3DBasicTransform, chartObj?: CircularChart3DMatrix): CircularChart3DLocation {
+    public toScreen(vector3D: CircularChart3DVector, transform: CircularChart3DBasicTransform,
+                    chartObj?: CircularChart3DMatrix): CircularChart3DLocation {
         if (!chartObj) {
             transform.chartObj = this.matrixObj;
             vector3D = this.matrixObj.getMatrixVectorMultiple(this.result(transform), vector3D);
@@ -566,6 +574,7 @@ export class CircularChart3DTransform {
      * @param {CircularChart3DBasicTransform} transform - The 3D transformation.
      * @returns {void}
      */
+
     private setViewMatrix(matrix: number[][], transform: CircularChart3DBasicTransform): void {
         if (transform.viewMatrix === matrix) {
             return;
@@ -581,6 +590,7 @@ export class CircularChart3DTransform {
      * @param {CircularChart3DMatrix} matrixobj - Optional custom matrix object for transformation.
      * @returns {number[][]} - The final result matrix.
      */
+
     public result(transform: CircularChart3DBasicTransform, matrixobj?: CircularChart3DMatrix): number[][] {
         let chartObj: CircularChart3DMatrix = transform.chartObj ? transform.chartObj : this.matrixObj;
         if (!chartObj) {
@@ -613,7 +623,6 @@ export class CircularChart3DTransform {
 /**
  * Represents a 3D graphics rendering utility for drawing and managing 3D elements in a chart.
  *
- * @class
  */
 export class CircularChart3DGraphics {
     /** The vector class. */
@@ -727,7 +736,8 @@ export class CircularChart3DGraphics {
         if (bspElement === null || circular3DRender.transform == null) {
             return;
         }
-        while (true) {
+        const isVector: boolean = true;
+        while (isVector) {
             const r: number = vector.vector3DAdd(
                 polygonObj.getNormal(chart.transform3D.result(circular3DRender.transform), bspElement.plane.vectorPoints),
                 eyeVector
@@ -752,7 +762,7 @@ export class CircularChart3DGraphics {
                 }
             }
             break;
-        }
+        } return null;
     }
 }
 
@@ -982,8 +992,8 @@ export class CircularChart3DBinaryTreeBuilder {
         polyPoints: CircularChart3DPolyAttributes[], initialVertex: CircularChart3DPolyAttributes): CircularChart3DVector[] {
         const points: CircularChart3DVector[] = [];
         let currentVertex: CircularChart3DPolyAttributes = initialVertex;
-
-        while (true) {
+        const isVector: boolean = true;
+        while (isVector) {
             currentVertex.alreadyCutFront = true;
             points.push(currentVertex.vector);
 
@@ -995,7 +1005,8 @@ export class CircularChart3DBinaryTreeBuilder {
                 } else {
                     const previousVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(
                         currentVertex.index - 1, polyPoints.length)];
-                    const nextVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1, polyPoints.length)];
+                    const nextVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(
+                        currentVertex.index + 1, polyPoints.length)];
 
                     if (previousVertexOnBack.result === 'OnFront' && !previousVertexOnBack.alreadyCutFront) {
                         currentVertex = previousVertexOnBack;
@@ -1006,8 +1017,10 @@ export class CircularChart3DBinaryTreeBuilder {
                     }
                 }
             } else {
-                const previousVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1, polyPoints.length)];
-                const nextVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1, polyPoints.length)];
+                const previousVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1,
+                                                                                                    polyPoints.length)];
+                const nextVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1,
+                                                                                                polyPoints.length)];
 
                 if (previousVertexOnBack.result !== 'OnBack' && !previousVertexOnBack.alreadyCutFront) {
                     currentVertex = previousVertexOnBack;
@@ -1017,7 +1030,7 @@ export class CircularChart3DBinaryTreeBuilder {
                     return points;
                 }
             }
-        }
+        } return null;
     }
 
     /**
@@ -1027,11 +1040,12 @@ export class CircularChart3DBinaryTreeBuilder {
      * @param {CircularChart3DPolyAttributes} initialVertex - The PolyAttributes representing the cutting point.
      * @returns {CircularChart3DVector[]} - The resulting points of the back part.
      */
-    private cutOutBackPolygon(polyPoints: CircularChart3DPolyAttributes[], initialVertex: CircularChart3DPolyAttributes): CircularChart3DVector[] {
+    private cutOutBackPolygon(polyPoints: CircularChart3DPolyAttributes[],
+                              initialVertex: CircularChart3DPolyAttributes): CircularChart3DVector[] {
         const points: CircularChart3DVector[] = [];
         let currentVertex: CircularChart3DPolyAttributes = initialVertex;
-
-        while (true) {
+        const isVector: boolean = true;
+        while (isVector) {
             currentVertex.alreadyCutBack = true;
             points.push(currentVertex.vector);
 
@@ -1043,7 +1057,8 @@ export class CircularChart3DBinaryTreeBuilder {
                 } else {
                     const previousVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(
                         currentVertex.index - 1, polyPoints.length)];
-                    const nextVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1, polyPoints.length)];
+                    const nextVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1,
+                                                                                                    polyPoints.length)];
 
                     if (previousVertexOnBack.result === 'OnBack' && !previousVertexOnBack.alreadyCutBack) {
                         currentVertex = previousVertexOnBack;
@@ -1054,8 +1069,10 @@ export class CircularChart3DBinaryTreeBuilder {
                     }
                 }
             } else {
-                const previousVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1, polyPoints.length)];
-                const nextVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1, polyPoints.length)];
+                const previousVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index - 1,
+                                                                                                    polyPoints.length)];
+                const nextVertexOnBack: CircularChart3DPolyAttributes = polyPoints[this.getNext(currentVertex.index + 1,
+                                                                                                polyPoints.length)];
 
                 if (previousVertexOnBack.result !== 'OnFront' && !previousVertexOnBack.alreadyCutBack) {
                     currentVertex = previousVertexOnBack;
@@ -1065,7 +1082,7 @@ export class CircularChart3DBinaryTreeBuilder {
                     return points;
                 }
             }
-        }
+        } return null;
     }
 
     /**
@@ -1076,10 +1093,10 @@ export class CircularChart3DBinaryTreeBuilder {
      * @returns {CircularChart3DBspNode} - The root node of the Binary Space Partitioning tree.
      */
     public build(points?: CircularChart3DPolygon[], chart?: CircularChart3D): CircularChart3DBspNode {
-        if (!arguments[0]) {
+        if (!points) {
             return this.build(chart.circular3DPolygon);
         } else {
-            const inputPolygons: CircularChart3DPolygon[] = arguments[0];
+            const inputPolygons: CircularChart3DPolygon[] = points;
             if (inputPolygons.length < 1) {
                 return null;
             }
@@ -1169,19 +1186,23 @@ export class CircularChart3DSvgRenderer {
      * @returns {CircularChart3DColorFormat | null} - The parsed color format (Red green Blue) or null if parsing fails.
      */
     public hexToValue(hexColorCode: string): CircularChart3DColorFormat | null {
-        const rgbRegex: boolean = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/.test(hexColorCode);
         let result: RegExpExecArray | null;
-
-        if (rgbRegex === true) {
-            result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/.exec(hexColorCode);
-            return result
-                ? {
-                    red: parseInt(result[1], 10),
-                    green: parseInt(result[2], 10),
-                    blue: parseInt(result[3], 10),
-                    alpha: result[4]
-                }
-                : null;
+        let values: string[];
+        if (hexColorCode.indexOf('rgba(') === 0) {
+            values = hexColorCode.slice(5, -1).split(',');
+            return values ? {
+                red: parseInt(values[0], 10),
+                green: parseInt(values[1], 10),
+                blue: parseInt(values[2], 10),
+                alpha: parseFloat(values[3])
+            } : null;
+        } else if (hexColorCode.indexOf('rgb(') === 0) {
+            values = hexColorCode.slice(4, -1).split(',');
+            return values ? {
+                red: parseInt(values[0], 10),
+                green: parseInt(values[1], 10),
+                blue: parseInt(values[2], 10)
+            } : null;
         } else {
             result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexColorCode);
             return result
@@ -1244,8 +1265,19 @@ export class CircularChart3DSvgRenderer {
      * @returns {boolean} - True if the color string is valid, otherwise false.
      */
     public checkColorFormat(color: string): boolean {
-        const regex: boolean = /(rgba?\((?:\d{1,3}[,\)]){3}(?:\d+\.\d+\))?)|(^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$)/gmi.test(color);
-        return regex;
+        if (color.indexOf('rgba(') === 0 || color.indexOf('rgb(') === 0) {
+            const rgbaValues: string[] = color.substring(color.indexOf('(') + 1, color.lastIndexOf(')')).split(',');
+            if (rgbaValues.length === 3 || rgbaValues.length === 4) {
+                return rgbaValues.every((val: string) => {
+                    const num: number = parseFloat(val);
+                    return !isNaN(num) && num >= 0 && num <= 255;
+                });
+            }
+        } else if (color.indexOf('#') === 0) {
+            const hex: string = color.substring(1);
+            return (hex.length === 3 || hex.length === 6) && /^[0-9A-Fa-f]{3,6}$/.test(hex);
+        }
+        return false;
     }
 
 }
@@ -1277,15 +1309,16 @@ export class CircularChart3DPolygonModule {
      * @param {string} [text] - Additional text associated with the polygon.
      * @returns {CircularChart3DPolygon} - Returns the created polygon.
      */
-    public polygon3D(points?: CircularChart3DVector[], tag?: CircularChart3DPolygon, index?: number, stroke?: string, strokeThickness?: number,
+    public polygon3D(points?: CircularChart3DVector[],
+                     tag?: CircularChart3DPolygon, index?: number, stroke?: string, strokeThickness?: number,
                      opacity?: number, fill?: string, name?: string, parent?: Element, text?: string ): CircularChart3DPolygon {
 
         if (arguments.length === 2) {
-            points = arguments[0];
+            //points = points;
             this.calculateNormal(points[0], points[1], points[2]);
             this.vectorPoints = points;
             this.calculateNormal(this.vectorPoints);
-            const polygon: CircularChart3DPolygon = arguments[1];
+            const polygon: CircularChart3DPolygon = tag;
             polygon.normal = this.normal;
             polygon.points = points;
             polygon.vectorPoints = this.vectorPoints;
@@ -1349,7 +1382,7 @@ export class CircularChart3DPolygonModule {
             }
         } else {
             const points: CircularChart3DVector[] = args[0];
-            this.calculateNormal(points[0], points[1], points[2], arguments[1]);
+            this.calculateNormal(points[0], points[1], points[2], args[1]);
             for (let i: number = 3; (i < points.length) && (this.test()); i++) {
                 this.calculateNormal(points[i as number], points[0], points[i / 2]);
             }
@@ -1373,6 +1406,7 @@ export class CircularChart3DPolygonModule {
      * @returns {CircularChart3DVector} - Returns the normal vector.
      * @private
      */
+
     public getNormal(transform: number[][], vectorPoints?: CircularChart3DVector[]): CircularChart3DVector {
         let normal: CircularChart3DVector;
         if (vectorPoints != null) {
@@ -1418,9 +1452,10 @@ export class CircularChart3DPolygonModule {
      * @param {CircularChart3DLabelElement} element - The circular 3D label element associated with the polyline.
      * @returns {CircularChart3DPolygon} - The resulting 3D polyline with the specified circular 3D label element and vertices.
      */
+
     public createPolyline(points: { x: number; y: number; z?: number }[], element: CircularChart3DLabelElement): CircularChart3DPolygon {
         if (points.length === 2) {
-            const prePoint = points[1];
+            const prePoint: CircularChart3DVector = points[1];
             points.push({ x: prePoint.x, y: prePoint.y, z: prePoint.z });
         }
         return this.polyLine3D(element, points);
@@ -1433,8 +1468,9 @@ export class CircularChart3DPolygonModule {
      * @param {Array<{ x: number; y: number; z?: number }>} points - An array of points in 3D space, specified by their x, y, and optional z coordinates.
      * @returns {CircularChart3DPolygon} - The resulting 3D polygon with the specified circular 3D label element and vertices.
      */
+
     private polyLine3D(element: CircularChart3DLabelElement, points: { x: number; y: number; z?: number }[]): CircularChart3DPolygon {
-        const plane = this.polygon3D(points);
+        const plane: CircularChart3DPolygon = this.polygon3D(points);
         plane.element = element;
         return plane;
     }
@@ -1458,10 +1494,11 @@ export class CircularChart3DPolygonModule {
      * @param {CircularChart3DPolygon} panel - The polygon panel on which to draw the polyline.
      * @param {CircularChart3D} chart - The circular 3D chart instance.
      */
+
     public drawPolyLine(panel: CircularChart3DPolygon, chart: CircularChart3D): void {
         const transform: CircularChart3DBasicTransform = circular3DRender.transform;
         const pathDirection: CircularChart3DStringBuilder = chart.svg3DRenderer.getStringBuilder();
-        const startPoint = chart.transform3D.toScreen(panel.vectorPoints[0], transform);
+        const startPoint: CircularChart3DLocation = chart.transform3D.toScreen(panel.vectorPoints[0], transform);
         pathDirection.append(`M ${startPoint.x} ${startPoint.y} `);
 
         const lineSegment1: CircularChart3DLocation = chart.transform3D.toScreen(panel.vectorPoints[1], transform);
@@ -1472,9 +1509,9 @@ export class CircularChart3DPolygonModule {
 
         pathDirection.append(`L ${lineSegment2.x} ${lineSegment2.y} `);
 
-        const direction = pathDirection.toString();
+        const direction: string = pathDirection.toString();
 
-        const optionsLine = {
+        const optionsLine: CircularChart3DPolyLineAttributes = {
             id: panel.element.id,
             'stroke-dasharray': panel.element.dashArray,
             'stroke-width': panel.element.width,
@@ -1569,13 +1606,13 @@ export class CircularChart3DPolygonModule {
             ' ' + (y + (height / 2)) + ' ' + 'L' + ' ' + (x + (-width / 2)) +
             ' ' + (y + (-height / 2)) + ' z';
 
-        let transform = '';
+        let transform: string = '';
         if (series.dataLabel.enableRotation) {
             let degree: number;
-            let angle = degree = series.dataLabel.angle;
+            const angle: number = degree = series.dataLabel.angle;
             if (angle === 0) {
-                const toDegrees = (angle: number) => angle * (180 / Math.PI);
-                const midAngle = toDegrees(dataElement.point.symbolLocation.angle);
+                const toDegrees: (angle: number) => number = (angle: number) => angle * (180 / Math.PI);
+                const midAngle: number = toDegrees(dataElement.point.symbolLocation.angle);
                 if (series.dataLabel.position === 'Outside') {
                     degree = 0;
                 }
@@ -1594,7 +1631,7 @@ export class CircularChart3DPolygonModule {
             fill: dataElement.point.argsData.color,
             'stroke-width': dataElement.point.argsData.border.width,
             stroke: dataElement.point.argsData.border.color,
-            "stroke-dasharray": dataElement.point.argsData.border.dashArray,
+            'stroke-dasharray': dataElement.point.argsData.border.dashArray,
             opacity: 1,
             visibility: '',
             transform: transform,

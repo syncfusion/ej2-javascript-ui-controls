@@ -159,7 +159,7 @@ export class IsFormatted {
      * @deprecated
      */
     public static isStrikethrough(node : Node): boolean {
-        const validTags : string[] = ['del', 'strike'];
+        const validTags: string[] = ['del', 'strike', 's'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
             return true;
         /* eslint-disable */

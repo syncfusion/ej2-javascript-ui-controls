@@ -1,10 +1,6 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart annotation properties
  */
-
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { AccumulationAnnotationSettings } from '../model/acc-base';
 import { AnnotationBase } from '../../common/annotation/annotation';
@@ -26,6 +22,7 @@ export class AccumulationAnnotation extends AnnotationBase {
      * Constructor for accumulation chart annotation.
      *
      * @private
+     * @param {AccumulationChart} control - The accumulation chart control.
      */
     constructor(control: AccumulationChart) {
         super(control);
@@ -35,7 +32,8 @@ export class AccumulationAnnotation extends AnnotationBase {
     /**
      * Method to render the annotation for accumulation chart.
      *
-     * @param {Element} element Annotation element.
+     * @param {Element} element - Annotation element.
+     * @returns {void}
      */
     public renderAnnotations(element: Element): void {
         this.annotations = this.pie.annotations;
@@ -52,6 +50,8 @@ export class AccumulationAnnotation extends AnnotationBase {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         // Returns te module name

@@ -380,7 +380,7 @@ describe('Selection ->', () => {
                     expect(chart).not.toBeNull();
                     done();
                 });
-            }, 1000);
+            });
         });
         it('Mouse selection for image', (done: Function) => {
             helper.getInstance().spreadsheetImageModule.createImageElement({ options: {src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'D3', isPublic: true});
@@ -740,7 +740,7 @@ describe('Selection ->', () => {
                     expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
                     expect(helper.getElement().querySelector('.e-active-cell').style.height).toBe('20px');
                     done();
-                }, 10);
+                }, 20);
             });
         });
         describe('EJ2-51718->', () => {

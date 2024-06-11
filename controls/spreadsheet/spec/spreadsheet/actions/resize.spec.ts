@@ -514,7 +514,7 @@ describe('Resize ->', () => {
                 expect(cellEle.style.height).toEqual(selectionEle.style.height);
                 expect(cellEle.style.top).toEqual(selectionEle.style.top);
                 done();
-            },1000);
+            });
         });
     });
     describe('SF-367016, SF-371460 ->', () => {

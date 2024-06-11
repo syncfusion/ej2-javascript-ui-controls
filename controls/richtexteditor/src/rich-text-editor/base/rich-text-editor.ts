@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
@@ -15,8 +15,8 @@ import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs,
 import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { RenderType, ToolbarType, DialogType } from './enum';
-import { EditorMode, ShiftEnterKey, EnterKey, ContentHeightSource } from './../../common/types';
+import { RenderType, DialogType } from './enum';
+import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';
 import { Toolbar } from '../actions/toolbar';
 import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';
@@ -80,6 +80,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private isValueChangeBlurhandler: boolean;
     private displayTempElem: HTMLElement;
     private beforeRenderClassValue: string;
+
+    /**
+     * Specifies the root container of the Rich Text Editor component.
+     *
+     * @hidden
+     * @deprecated
+     *
+     **/
+    public rootContainer: HTMLElement;
     /**
      * @hidden
      * @deprecated
@@ -740,7 +749,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * types: [
      * { text: 'Paragraph' },
      * { text: 'Code' },
-     * { text: 'Quotation' },
      * { text: 'Heading 1' },
      * { text: 'Heading 2' },
      * { text: 'Heading 3' },
@@ -1388,7 +1396,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 addClass([this.valueContainer], currentClassList[i as number]);
             }
         }
-        this.element.appendChild(this.valueContainer);
+        this.rootContainer = this.createElement('div', {className: classes.CLS_RTE_CONTAINER, attrs: { 'role': 'presentation' }});
+        this.element.appendChild(this.rootContainer);
+        this.rootContainer.appendChild(this.valueContainer);
     }
 
     /**
@@ -1715,7 +1725,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             (this.toolbarSettings.items.indexOf('Undo') > -1 && this.toolbarSettings.items.indexOf('Redo') > -1)) {
             this.disableToolbarItem(['Undo', 'Redo']);
         }
-        this.setContentHeight('Init');
         if (this.value !== null) {
             this.valueContainer.defaultValue = this.value;
         }
@@ -1724,6 +1733,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.bindCssClass, {cssClass: this.getCssClass()});
         this.addAudioVideoWrapper();
         this.notify(events.tableclass, {});
+        this.autoResize();
         this.renderComplete();
     }
 
@@ -1867,8 +1877,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (closest(startNode, 'pre') &&
                 (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
                 (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
-                // eslint-disable-next-line
-                const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+                const regEx: RegExp = new RegExp('\u200B', 'g');
                 const pointer: number = e.which === 8 ? range.startOffset - 1 : range.startOffset;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(
@@ -1904,7 +1913,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         const notFormatPainterCopy: boolean = isNOU((e as KeyboardEventArgs).action) ? true : ((e as KeyboardEventArgs).action !== 'format-copy' ? true : false);
         if (this.formatter.getUndoRedoStack().length === 0 && notFormatPainterCopy &&
-            !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which == 67))) {
+            !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which === 67))) {
             this.formatter.saveData();
         }
         const keyboardEventAction: string[] = ['insert-link', 'format-copy', 'format-paste', 'insert-image', 'insert-table', 'insert-audio', 'insert-video'];
@@ -1932,7 +1941,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         firstActiveItem = quickToolbarElem.querySelector('.e-toolbar-item:not(.e-overlay)[title]');
                     }
                     if (firstActiveItem) {
-                        const firstChild = firstActiveItem.firstElementChild as HTMLElement;
+                        const firstChild: HTMLElement = firstActiveItem.firstElementChild as HTMLElement;
                         firstChild.removeAttribute('tabindex');
                         firstChild.focus();
                     }
@@ -1943,17 +1952,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 break;
             }
         }
-        if (!isNOU(this.placeholder)) {
-            if ((!isNOU(this.placeHolderWrapper)) && (this.inputElement.textContent.length !== 1)) {
-                this.placeHolderWrapper.style.display = 'none';
-            } else if (this.iframeSettings.enable && this.inputElement.classList.contains('e-rte-placeholder')) {
-                removeClass([this.inputElement], 'e-rte-placeholder');
-            } else {
-                this.setPlaceHolder();
-            }
-        }
         this.notify(events.afterKeyDown, { member: 'afterKeyDown', args: e });
         this.autoResize();
+        if (!isNOU(this.placeholder)) {
+            this.setPlaceHolder();
+        }
     }
 
     private keyUp(e: KeyboardEvent): void {
@@ -1999,12 +2002,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             || this.element.querySelectorAll('.e-toolbar-item.e-active').length > 0 || this.formatter.getUndoRedoStack().length > 0) {
             this.notify(events.toolbarRefresh, { args: e });
         }
-        if (!isNOU(this.placeholder)) {
-            if (!(e.key === 'Enter' && e.keyCode === 13) && (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
-            this.inputElement.innerHTML === '<br>')) {
-                this.setPlaceHolder();
-            }
-        }
+        this.setPlaceHolder();
     }
     /**
      * @param {string} value - specifies the value.
@@ -2072,6 +2070,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
             (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0)) ||
             (e.target && !isNOU(closest((e.target as HTMLElement), 'table'))) ||
+            (e.target && !isNOU((e.target as HTMLElement).querySelector('img'))) ||
             (e.target && ((e.target as HTMLElement).nodeName === 'VIDEO' ||
             (e.target as HTMLElement).querySelectorAll('.' + classes.CLS_VIDEOWRAP).length > 0) ||
             (e.target && (e.target as HTMLElement).nodeName !== 'BR' &&
@@ -2093,6 +2092,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.notifyMouseUp(e);
+        this.setPlaceHolder();
+        this.autoResize();
     }
 
     /**
@@ -2153,10 +2154,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             if (!pasteArgs.cancel && this.inputElement.contentEditable === 'true' &&
             (this.maxLength === -1 || totalLength <= this.maxLength)) {
+                const isImageDialogOpen: HTMLElement = this.contentModule.getDocument().querySelector('.e-rte-img-dialog');
                 if (!isNOU(this.pasteCleanupModule)) {
-                    this.notify(events.pasteClean, { args: e as ClipboardEvent });
+                    if (isNOU(isImageDialogOpen)) {
+                        this.notify(events.pasteClean, { args: e as ClipboardEvent });
+                    }
                 } else {
-                    console.warn('[WARNING] :: Module "pasteCleanup" is not available in RichTextEditor component! You either misspelled the module name or forgot to load it.'); 
+                    console.warn('[WARNING] :: Module "pasteCleanup" is not available in RichTextEditor component! You either misspelled the module name or forgot to load it.');
                     const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
                     let value: string = null;
                     let htmlValue: boolean = false;
@@ -2277,6 +2281,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             } else {
                 this.element.innerHTML = '';
             }
+        }
+        const dialogElement: Element = document.querySelector('.e-dialog.e-rte-elements');
+        if (dialogElement) {
+            detach(dialogElement);
         }
         if (this.placeholder && this.placeHolderWrapper) {
             this.placeHolderWrapper = null;
@@ -2462,7 +2470,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 break;
             case 'height':
                 this.setHeight(newProp[prop]);
-                this.setContentHeight('Init');
                 this.autoResize();
                 break;
             case 'readonly':
@@ -2500,11 +2507,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             case 'locale': super.refresh(); break;
             case 'inlineMode':
                 this.notify(events.modelChanged, { module: 'quickToolbar', newProp: newProp, oldProp: oldProp });
-                this.setContentHeight('Init');
                 break;
             case 'toolbarSettings':
                 this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                this.setContentHeight('Init');
                 break;
             case 'maxLength':
                 if (this.showCharCount) {
@@ -2542,6 +2547,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
                 break;
             }
+            this.autoResize();
         }
     }
     /* eslint-enable */
@@ -2569,9 +2575,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private updatePanelValue(): void {
         let value: string = this.listOrderCorrection(this.value);
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
-        const getTextArea: HTMLInputElement = this.element.querySelector('.'+ classes.CLS_RTE_SOURCE_CODE_TXTAREA) ;
+        const getTextArea: HTMLInputElement = this.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA) ;
         if (value) {
-            if (getTextArea && getTextArea.style.display === 'block') {
+            if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
                 getTextArea.value = this.value;
             }
             if (this.valueContainer) {
@@ -2584,7 +2590,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 (this.inputElement as HTMLTextAreaElement).value = value;
             }
         } else {
-            if (getTextArea && getTextArea.style.display === 'block') {
+            if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
                 getTextArea.value = '';
             }
             if (this.editorMode === 'HTML') {
@@ -2641,21 +2647,21 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.inputElement && this.placeholder && this.iframeSettings.enable !== true) {
             if (this.editorMode !== 'Markdown') {
                 if (!this.placeHolderWrapper) {
-                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder e-rte-placeholder' + ' ' + this.cssClass });
+                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder e-rte-placeholder' + ' ' + this.getCssClass()});
+                    if (this.fontSize.default) {
+                        this.placeHolderWrapper.style.fontSize = this.fontSize.default;
+                    }
                     if (this.inputElement) {
                         this.inputElement.parentElement.insertBefore(this.placeHolderWrapper, this.inputElement);
                     }
-                    attributes(this.placeHolderWrapper, {
-                        'style': 'font-size: 14px; margin-left: 0px; margin-right: 0px;'
-                    });
                 }
                 this.placeHolderWrapper.innerHTML = this.placeholder;
-                if ( this.inputElement.textContent.length === 0 && this.inputElement.childNodes.length < 2 && !isNOU(this.inputElement.firstChild) && (this.inputElement.firstChild.nodeName === 'BR' ||
+                if (this.inputElement.textContent.length === 0 && this.inputElement.childNodes.length < 2 && !isNOU(this.inputElement.firstChild) && (this.inputElement.firstChild.nodeName === 'BR' ||
                 ((this.inputElement.firstChild.nodeName === 'P' || this.inputElement.firstChild.nodeName === 'DIV') && !isNOU(this.inputElement.firstChild.firstChild) &&
                 this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
-                    this.placeHolderWrapper.style.display = 'block';
+                    this.placeHolderWrapper.classList.add('enabled');
                 } else {
-                    this.placeHolderWrapper.style.display = 'none';
+                    this.placeHolderWrapper.classList.remove('enabled');
                 }
             } else {
                 this.inputElement.setAttribute('placeholder', this.placeholder);
@@ -2965,9 +2971,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const imgPadding: number = 12
         const imgResizeBorder: number = 2;
         let editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
-        if (this.editorMode === "HTML" && !isNOU(this.formatter.editorManager.nodeSelection) && !isNOU(this.formatter.editorManager.nodeSelection.range)) {
+        if (this.editorMode === 'HTML' && !isNOU(this.formatter.editorManager.nodeSelection) && !isNOU(this.formatter.editorManager.nodeSelection.range)) {
             const currentRange : Range = this.formatter.editorManager.nodeSelection.range;
-            if(currentRange.startContainer.nodeType !== 3 && (currentRange.startContainer as HTMLElement).closest &&
+            if (currentRange.startContainer.nodeType !== 3 && (currentRange.startContainer as HTMLElement).closest &&
             !isNOU((currentRange.startContainer as HTMLElement).closest('TD'))) {
                 editEle = currentRange.startContainer as HTMLElement;
             }
@@ -2999,63 +3005,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return isNOU(maxWidth) ? editEleMaxWidth : maxWidth;
     }
 
-    /**
-     * setContentHeight method
-     *
-     * @param {string} target - specifies the target value.
-     * @param {boolean} isExpand - specifies  the bollean value.
-     * @returns {void}
-     * @hidden
-     * @deprecated
-     */
-    public setContentHeight(target: ContentHeightSource, isExpand?: boolean): void {
-        let heightValue: string;
-        let rteHeightPercent: string;
-        const heightPercent: boolean = typeof (this.height) === 'string' && this.height.indexOf('%') > -1;
-        const cntEle: HTMLElement = this.contentModule.getPanel() as HTMLElement;
-        let rteHeight: number = this.element.offsetHeight;
-        if (rteHeight === 0 && this.height !== 'auto' && !this.getToolbar()) {
-            rteHeight = parseInt(this.height as string, 10);
-            if (heightPercent) {
-                rteHeightPercent = this.height as string;
-            }
-        }
-        let tbHeight: number = this.getToolbar() ? this.toolbarModule.getToolbarHeight() : 0;
-        const rzHandle: HTMLElement = this.element.querySelector('.' + classes.CLS_RTE_RES_HANDLE) as HTMLElement;
-        const rzHeight: number = this.enableResize ? (!isNOU(rzHandle) ? (rzHandle.offsetHeight + 8) : 0) : 0;
-        const expandPopHeight: number = this.getToolbar() ? this.toolbarModule.getExpandTBarPopHeight() : 0;
-        if (target && target !== 'Toolbar' && expandPopHeight && this.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0) {
-            tbHeight = tbHeight - expandPopHeight;
-        }
-        if (this.toolbarSettings.type === ToolbarType.Expand) {
-            if (isExpand) {
-                heightValue = (this.height === 'auto' && this.element.style.height === 'auto') ? 'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
-            } else {
-                heightValue = (this.height === 'auto' && this.element.style.height === 'auto') ? 'auto' : rteHeight - (tbHeight - expandPopHeight + rzHeight) + 'px';
-            }
-        } else {
-            heightValue = (this.height === 'auto' && this.element.style.height === 'auto') ? 'auto' : rteHeight - tbHeight + 'px';
-        }
-        const finalHeight: string | number = heightPercent && rteHeightPercent ? rteHeightPercent : heightValue;
-        switch (target) {
-            case 'Init':
-            case 'Toolbar':
-            case 'WindowResize':
-            case 'Refresh':
-                if (this.element.querySelectorAll('.e-source-content').length > 0 && (this.element.querySelector('.e-source-content') as HTMLElement).style.display === 'block') {
-                    setStyleAttribute(this.element.querySelector('.e-source-content') as HTMLElement, { height: finalHeight});
-                } else {
-                    setStyleAttribute(cntEle, { height: finalHeight});
-                }
-                break;
-            case 'Resize':
-                setStyleAttribute(cntEle, { height: finalHeight});
-                break;
-        }
-        if (rzHeight === 0) {
-            this.autoResize();
-        }
-    }
     /**
      * Retrieves the HTML from RichTextEditor.
      *
@@ -3196,18 +3145,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public getID(): string {
-        return (this.originalElement.tagName === 'TEXTAREA' ? this.valueContainer.id : this.element.id);
+        return (this.originalElement.tagName === 'TEXTAREA' ? (isNOU(this.valueContainer) ? this.element.id : this.valueContainer.id) : this.element.id);
     }
 
     /**
-   * @returns {void}
-   * getCssClass method
-   *
-   * @hidden
-   * @deprecated
-   */
+     * Returns the CSS class.
+     *
+     * @param {boolean} [isSpace] - Specifies whether to include a space before the CSS class.
+     * @returns {string} The CSS class.
+     * @hidden
+     * @deprecated
+     */
     public getCssClass(isSpace?: boolean): string {
-        return (isNOU(this.cssClass) ? '' : isSpace?' '+ this.cssClass: this.cssClass);
+        return (isNOU(this.cssClass) ? '' : isSpace ? ' ' + this.cssClass : this.cssClass);
     }
 
     private mouseDownHandler(e: MouseEvent | TouchEvent): void {
@@ -3254,17 +3204,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private resizeHandler(): void {
-        let isExpand: boolean = false;
         if (!document.body.contains(this.element)) {
             document.defaultView.removeEventListener('resize', debounce(this.onResizeHandler, 10) as EventListenerOrEventListenerObject, true);
             return;
         }
         if (this.toolbarSettings.enable && !this.inlineMode.enable) {
             this.toolbarModule.refreshToolbarOverflow();
-            isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(classes.CLS_EXPAND_OPEN);
         }
-        this.setContentHeight('WindowResize', isExpand);
         this.notify(events.windowResize, null);
+        this.autoResize();
     }
 
     private scrollHandler(e: Event): void {
@@ -3328,7 +3276,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
             this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
                     this.encode(decode(this.removeResizeElement(this.inputElement.innerHTML))) : this.inputElement.innerHTML;
-            if (getTextArea && getTextArea.style.display === 'block') {
+            if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
                 value = getTextArea.value;
             }
         } else {
@@ -3355,26 +3303,28 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private cleanupResizeElements(args: CleanupResizeElemArgs): void {
-        const value = this.removeResizeElement(args.value);
+        const value: string = this.removeResizeElement(args.value);
         args.callBack(value);
     }
 
     public addAnchorAriaLabel(value: string): string {
-        let valueElementWrapper: HTMLElement = document.createElement("div");
+        const valueElementWrapper: HTMLElement = document.createElement('div');
         valueElementWrapper.innerHTML = value;
-        let item: NodeListOf<Element> = valueElementWrapper.querySelectorAll("a");
+        const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('a');
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
-                (item[i as number].hasAttribute("target") && item[i as number].getAttribute("target") === '_blank') ? item[i as number].setAttribute("aria-label", (this.serviceLocator.getService<L10n>('rteLocale') as any).getConstant("linkAriaLabel")) : item[i as number];
+                if (item[i as number].hasAttribute('target') && item[i as number].getAttribute('target') === '_blank') {
+                    item[i as number].setAttribute('aria-label', (this.serviceLocator.getService<L10n>('rteLocale') as L10n).getConstant('linkAriaLabel'));
+                }
             }
         }
         return valueElementWrapper.innerHTML;
     }
 
     private removeResizeElement(value: string): string {
-        let valueElementWrapper: HTMLElement = document.createElement("div");
+        const valueElementWrapper: HTMLElement = document.createElement('div');
         valueElementWrapper.innerHTML = value;
-        let item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize');
+        const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize');
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
                 detach(item[i as number]);
@@ -3406,7 +3356,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.isRTE = false;
         }
         this.notify(events.docClick, { args: e });
-        const hideQuickToolbarChecker: boolean = this.quickToolbarModule && !this.inlineMode.enable && isNOU(this.quickToolbarModule.inlineQTBar);
+        const hideQuickToolbarChecker: boolean = this.quickToolbarModule && !this.inlineMode.enable &&
+            isNOU(this.quickToolbarModule.inlineQTBar);
         if ((hideQuickToolbarChecker && !isNOU(closest(target, '.' + 'e-toolbar-wrapper'))) || (hideQuickToolbarChecker && (!isNOU(closest(target, '.e-rte-table-resize')) || !isNOU(closest(target, '.e-table-box'))))) {
             this.quickToolbarModule.hideQuickToolbars();
         }
@@ -3422,7 +3373,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (!rteElement && this.iframeSettings.enable)
             {
                 const iframeElement: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
-                if(iframeElement && iframeElement.contentWindow.document.body.contains(trg))
+                if (iframeElement && iframeElement.contentWindow.document.body.contains(trg))
                 {
                     rteElement = closest(iframeElement, '.' + classes.CLS_RTE);
                 }
@@ -3458,8 +3409,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 clearInterval(this.timeInterval);
                 this.timeInterval = null;
             }
-            if (!isNOU(this.placeHolderWrapper) && this.element.querySelector('[title = Preview]'))
-            {
+            if (!isNOU(this.placeHolderWrapper) && this.element.querySelector('[title = Preview]')) {
                 this.placeHolderWrapper.style.display = 'none';
             }
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
@@ -3562,7 +3512,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private contextHandler(e: MouseEvent): void {
-        const closestElem: Element = closest((e.target as HTMLElement), 'a, table, img, video, audio');
+        let closestElem: Element = closest((e.target as HTMLElement), 'a, table, img, video, audio');
+        if (!closestElem && (e.target as HTMLElement) && (e.target as HTMLElement).classList &&
+            ((e.target as HTMLElement).classList.contains(classes.CLS_AUDIOWRAP) ||
+            (e.target as HTMLElement).classList.contains(classes.CLS_CLICKELEM))) {
+            closestElem = (e.target as HTMLElement).querySelector('audio');
+        }
         if (this.inlineMode.onSelection === false ||  (!isNOU(closestElem) && this.inputElement.contains(closestElem)
         && (closestElem.tagName === 'IMG' || closestElem.tagName === 'TABLE' || closestElem.tagName === 'A' ||
         closestElem.tagName.toLowerCase() === 'video' || closestElem.tagName.toLowerCase() === 'audio'))) {
@@ -3586,16 +3541,33 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.setAutoHeight(this.inputElement);
             } else if (this.iframeSettings.enable) {
                 const iframeElement: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
-                this.setAutoHeight(iframeElement);
-                this.inputElement.style.overflow = 'hidden';
+                if (iframeElement) {
+                    this.setAutoHeight(iframeElement);
+                    this.inputElement.style.overflow = 'hidden';
+                }
             }
         } else {
-            this.inputElement.style.overflow = null;
+            if (this.editorMode === 'Markdown') {
+                const textArea: HTMLTextAreaElement = this.inputElement as HTMLTextAreaElement;
+                const otherElemHeight: number = (this.enableResize || this.showCharCount) ? 20 : 0;
+                // Three added because of border top of the e-rte-container, bottom of the toolbar wrapper and then bottom of the e-rte-container.
+                if (textArea) {
+                    textArea.style.height = this.element.clientHeight - (this.toolbarModule.getToolbarHeight() + otherElemHeight + 3) + 'px';
+                }
+            } else if (this.iframeSettings.enable) {
+                const iframe: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
+                const otherElemHeight: number = (this.enableResize || this.showCharCount) ? 20 : 0;
+                // Three added because of border top of the e-rte-container, bottom of the toolbar wrapper and then bottom of the e-rte-container.
+                if (iframe) {
+                    iframe.style.height = this.element.clientHeight - (this.toolbarModule.getToolbarHeight() + otherElemHeight + 3) + 'px';
+                }
+            }
         }
     }
     private setAutoHeight(element: HTMLElement): void {
         if (!isNOU(element)) {
-            element.style.height = this.inputElement.scrollHeight + 'px';
+            element.style.height = 'auto';
+            element.style.height = (this.inputElement.scrollHeight + 16) + 'px';
             element.style.overflow = 'hidden';
         }
     }
@@ -3607,6 +3579,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.on(events.updateTbItemsStatus, this.updateStatus, this);
         this.on(events.cleanupResizeElements, this.cleanupResizeElements, this);
         this.on(events.updateValueOnIdle, this.updateValueOnIdle, this);
+        this.on(events.autoResize, this.autoResize, this);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -3614,7 +3587,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private restrict(e: MouseEvent | KeyboardEvent): void {
         if (this.maxLength >= 0 ) {
-            const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText():
+            const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
                 (this.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, ''));
             if (!element) { return; }
             const array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
@@ -3649,6 +3622,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         EventHandler.add(this.inputElement, 'content-changed', this.contentChanged, this);
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
+        EventHandler.add(this.inputElement, 'input', this.inputHandler, this);
         this.wireContextEvent();
         this.formatter.editorManager.observer.on(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown, this);
         this.element.ownerDocument.defaultView.addEventListener('resize', debounce(this.onResizeHandler, 10) as EventListenerOrEventListenerObject, true);
@@ -3657,6 +3631,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
             EventHandler.add(this.inputElement.ownerDocument, 'scroll', this.contentScrollHandler, this);
             EventHandler.add(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown, this);
+            EventHandler.add(this.contentModule.getPanel(), 'load', this.iframeLoadHandler, this);
         }
         this.wireScrollElementsEvents();
     }
@@ -3665,6 +3640,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.isBlur = false;
         this.currentTarget = <HTMLElement>e.target;
         this.notify(events.iframeMouseDown, e);
+    }
+
+    private inputHandler(): void {
+        this.autoResize();
     }
 
     private editorKeyDown(e: IHtmlKeyboardEvent): void {
@@ -3698,6 +3677,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.off(events.updateTbItemsStatus, this.updateStatus);
         this.off(events.cleanupResizeElements, this.cleanupResizeElements);
         this.off(events.updateValueOnIdle, this.updateValueOnIdle);
+        this.off(events.autoResize, this.autoResize);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -3717,6 +3697,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         EventHandler.remove(this.inputElement, 'content-changed', this.contentChanged);
         EventHandler.remove(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30));
         EventHandler.remove(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler);
+        EventHandler.remove(this.inputElement, 'input', this.inputHandler);
         this.unWireContextEvent();
         if (this.formatter) {
             this.formatter.editorManager.observer.off(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown);
@@ -3727,14 +3708,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);
             EventHandler.remove(this.inputElement.ownerDocument, 'scroll', this.contentScrollHandler);
             EventHandler.remove(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown);
+            EventHandler.remove(this.contentModule.getPanel(), 'load', this.iframeLoadHandler);
         }
         this.unWireScrollElementsEvents();
     }
 
     /**
-     * 
-     * @param e Focus event
-     * @returns string Returns the current focus either `editArea` or `toolbar` or `textArea` or `sourceCode` or `outside` of the RichTextEditor.
+     *
+     * @param {FocusEvent} e - The focus event.
+     * @returns {string} Returns the current focus either `editArea` or `toolbar` or `textArea` or `sourceCode` or `outside` of the RichTextEditor.
      * @hidden
      */
     private getCurrentFocus(e: FocusEvent): string {
@@ -3744,14 +3726,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             return 'toolbar';
         } else if (e.target === this.valueContainer && document.activeElement === this.valueContainer) {
             return 'textArea';
-        } else if (!isNOU(e.target) && (e.target as HTMLElement).classList.contains(classes.CLS_RTE_SOURCE_CODE_TXTAREA) && document.activeElement === e.target) {
+        } else if (!isNOU(e.target) && (e.target as HTMLElement).classList.contains(classes.CLS_RTE_SOURCE_CODE_TXTAREA)
+            && document.activeElement === e.target) {
             return 'sourceCode';
         }
         return 'outside';
     }
 
     /**
-     * @param {FocusEvent} e - specifies the event.
+     * @returns {void}
      * @hidden
      */
     private resetToolbarTabIndex(): void {
@@ -3769,7 +3752,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private removeSelectionClassStates(element: HTMLElement): void {
-        const classNames: string[] = [classes.CLS_IMG_FOCUS, classes.CLS_TABLE_SEL, classes.CLS_VID_FOCUS,  classes.CLS_AUD_FOCUS]
+        const classNames: string[] = [classes.CLS_IMG_FOCUS, classes.CLS_TABLE_SEL,
+            classes.CLS_TABLE_MULTI_CELL, classes.CLS_TABLE_SEL_END, classes.CLS_VID_FOCUS, classes.CLS_AUD_FOCUS];
         for (let i: number = 0; i < classNames.length; i++) {
             const item: NodeListOf<Element> = element.querySelectorAll('.' + classNames[i as number]);
             removeClass(item, classNames[i as number]);
@@ -3793,5 +3777,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         return null;
+    }
+
+    private iframeLoadHandler(): void {
+        this.autoResize();
     }
 }

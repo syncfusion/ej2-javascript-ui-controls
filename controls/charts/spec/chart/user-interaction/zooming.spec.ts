@@ -1192,7 +1192,7 @@ describe('Chart Control', () => {
         it('Checking mouse wheel with pointer as false with backward ', (done: Function) => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
-                let isPointer: Boolean = chartObj.zoomModule.isPointer;
+                let isPointer: boolean = chartObj.zoomModule.isPointer;
                 let browserName: string = chartObj.zoomModule.browserName;
                 chartObj.zoomModule.browserName = 'mozilla';
                 chartObj.zoomModule.isPointer = false
@@ -1219,7 +1219,7 @@ describe('Chart Control', () => {
         it('Checking mouse wheel with pointer as false with forward ', (done: Function) => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
-                let isPointer: Boolean = chartObj.zoomModule.isPointer;
+                let isPointer: boolean = chartObj.zoomModule.isPointer;
                 chartObj.zoomModule.isPointer = false
                 let browserName: string = chartObj.zoomModule.browserName;
                 chartObj.zoomModule.browserName = 'mozilla';
@@ -2070,6 +2070,30 @@ describe('Area series zooming', () => {
             done();
         };
         chartObj.zoomSettings.enablePinchZooming = true;
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Checking toolkit with fluent2 theme', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            let color: string = document.getElementById('Zoomingcontainer_Zooming_Zoom_3').getAttribute('fill');
+            expect(color == '#424242').toBe(true);
+            done();
+        };
+        chartObj.zoomSettings.showToolbar = true;
+        chartObj.theme = 'Fluent2';
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Checking toolkit with fluent2 dark theme', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            let color: string = document.getElementById('Zoomingcontainer_Zooming_Zoom_3').getAttribute('fill');
+            expect(color == '#D6D6D6').toBe(true);
+            done();
+        };
+        chartObj.zoomSettings.showToolbar = true;
+        chartObj.theme = 'Fluent2Dark';
         chartObj.loaded = loaded;
         chartObj.refresh();
     });

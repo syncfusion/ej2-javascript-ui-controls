@@ -7,7 +7,9 @@ import {
     Page, Rect, IWidget, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
-    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox, TextFrame, BookmarkElementBox, EditRangeEndElementBox
+    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase,
+    FootnoteElementBox, TextFrame, BookmarkElementBox, EditRangeEndElementBox,
+    ContentControl
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
@@ -30,7 +32,8 @@ export class Renderer {
     /**
      * @private
      */
-    public commentMarkDictionary:Dictionary<HTMLElement,CommentCharacterElementBox[]>=new Dictionary<HTMLElement,CommentCharacterElementBox[]>();
+    public commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> =
+    new Dictionary<HTMLElement, CommentCharacterElementBox[]>();
     public isPrinting: boolean = false;
     public isExporting: boolean =  false;
     private pageLeft: number = 0;
@@ -201,7 +204,7 @@ export class Renderer {
                 height += block.height;
             }
             // if (isHeader || !isHeader && this.getScaledValue(Math.round(height)) <= this.getScaledValue(Math.round(pageHt))) {
-                this.renderWidget(page, block);
+            this.renderWidget(page, block);
             // }
         }
         this.renderFloatingItems(page, widget.floatingElements, 'InFrontOfText');
@@ -226,26 +229,27 @@ export class Renderer {
         //Dash line Separator
         this.renderDashLine(ctx, left, top + y, pageWidth, '#000000', false);
         let type: string = this.getHeaderFooterType(page, true);
-        let index: number = (this.viewer as PageLayoutViewer).getHeaderFooter(widget.headerFooterType);
-        let sectionIndex: number = page.sectionIndex;
-        let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const index: number = (this.viewer as PageLayoutViewer).getHeaderFooter(widget.headerFooterType);
+        const sectionIndex: number = page.sectionIndex;
+        const l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         l10n.setLocale(this.documentHelper.owner.locale);
         if (this.documentHelper.headersFooters.length > 1) {
-            let sectionMarkIndex: number = sectionIndex + 1;
-            type = type + " -" + l10n.getConstant('Section')+ " " +sectionMarkIndex+ "-";
+            const sectionMarkIndex: number = sectionIndex + 1;
+            type = type + ' -' + l10n.getConstant('Section') + ' ' + sectionMarkIndex + '-';
         }
         ctx.font = '9pt Arial';
         let width: number = ctx.measureText(type).width;
         this.renderHeaderFooterMark(ctx, left + 5, top + y, width + 10, 20);
         this.renderHeaderFooterMarkText(ctx, type, left + 10, y + top + 15);
         let headerFooterWidget: HeaderFooterWidget;
-        if (this.documentHelper.headersFooters[parseInt(sectionIndex.toString(),10)]) {
-            headerFooterWidget = this.documentHelper.headersFooters[parseInt(sectionIndex.toString(),10)][parseInt(index.toString(),10)] as HeaderFooterWidget;
+        if (this.documentHelper.headersFooters[parseInt(sectionIndex.toString(), 10)]) {
+            headerFooterWidget = this.documentHelper.headersFooters[parseInt(
+                sectionIndex.toString(), 10)][parseInt(index.toString(), 10)] as HeaderFooterWidget;
         }
-        if (sectionIndex != 0 && !headerFooterWidget) {
-            let content: string = l10n.getConstant('Same as Previous');
-            let width: number = ctx.measureText(content).width;
-            let right: number = this.viewer.containerWidth - width - 75 + left;
+        if (sectionIndex !== 0 && !headerFooterWidget) {
+            const content: string = l10n.getConstant('Same as Previous');
+            const width: number = ctx.measureText(content).width;
+            const right: number = this.viewer.containerWidth - width - 75 + left;
             this.renderHeaderFooterMark(ctx, right, top + y, width + 10, 20);
             this.renderHeaderFooterMarkText(ctx, content, right + 5, y + top + 15);
         }
@@ -260,23 +264,24 @@ export class Renderer {
             footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
             this.renderDashLine(ctx, left, top + footerHeight, pageWidth, '#000000', false);
             let type: string = this.getHeaderFooterType(page, false);
-            let sectionIndex: number = page.sectionIndex;
+            const sectionIndex: number = page.sectionIndex;
             if (this.documentHelper.headersFooters.length > 1) {
-                let sectionMarkIndex: number = sectionIndex + 1;
-                type = type + " -" + l10n.getConstant('Section')+ " " +sectionMarkIndex+ "-";
+                const sectionMarkIndex: number = sectionIndex + 1;
+                type = type + ' -' + l10n.getConstant('Section') + ' ' + sectionMarkIndex + '-';
             }
             width = ctx.measureText(type).width;
             this.renderHeaderFooterMark(ctx, left + 5, top + footerHeight - 20, width + 10, 20);
             this.renderHeaderFooterMarkText(ctx, type, left + 10, top + footerHeight - 5);
-            let index: number = (this.viewer as PageLayoutViewer).getHeaderFooter(page.footerWidget.headerFooterType);
+            const index: number = (this.viewer as PageLayoutViewer).getHeaderFooter(page.footerWidget.headerFooterType);
             let headerFooterWidget: HeaderFooterWidget;
-            if (this.documentHelper.headersFooters[parseInt(sectionIndex.toString(),10)]) {
-                headerFooterWidget = this.documentHelper.headersFooters[parseInt(sectionIndex.toString(),10)][parseInt(index.toString(),10)] as HeaderFooterWidget;
+            if (this.documentHelper.headersFooters[parseInt(sectionIndex.toString(), 10)]) {
+                headerFooterWidget = this.documentHelper.headersFooters[parseInt(
+                    sectionIndex.toString(), 10)][parseInt(index.toString(), 10)] as HeaderFooterWidget;
             }
-            if (sectionIndex != 0 && !headerFooterWidget) {
-                let content: string = l10n.getConstant('Same as Previous');
-                let width: number = ctx.measureText(content).width;
-                let right: number = this.viewer.containerWidth - width - 75 + left;
+            if (sectionIndex !== 0 && !headerFooterWidget) {
+                const content: string = l10n.getConstant('Same as Previous');
+                const width: number = ctx.measureText(content).width;
+                const right: number = this.viewer.containerWidth - width - 75 + left;
                 this.renderHeaderFooterMark(ctx, right, top + footerHeight - 20, width + 10, 20);
                 this.renderHeaderFooterMarkText(ctx, content, right + 5, top + footerHeight - 5);
             }
@@ -287,14 +292,15 @@ export class Renderer {
     private getFooterHeight(page: Page): number {
         const footerWidgetHeight: number = ((page.boundingRectangle.height) / 100) * 40;
         const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
-        let actualHeight: number = page.boundingRectangle.height -
-            Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin));
+        const actualHeight: number = page.boundingRectangle.height -
+            Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(
+                page.footerWidgetIn.sectionFormat.bottomMargin));
         return Math.max((page.boundingRectangle.height) - footerWidgetHeight, actualHeight);
     }
 
     private getHeaderFooterType(page: Page, isHeader: boolean): string {
         let type: string;
-        let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        const l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         l10n.setLocale(this.documentHelper.owner.locale);
         type = isHeader ? l10n.getConstant('Header') : l10n.getConstant('Footer');
         if (page.bodyWidgets[0].sectionFormat.differentFirstPage &&
@@ -327,7 +333,8 @@ export class Renderer {
         context.closePath();
     }
 
-    public renderSolidLine(context: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string): void {
+    public renderSolidLine(context: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, x: number, y: number,
+                           width: number, fillStyle: string): void {
         context.beginPath();
         context.strokeStyle = fillStyle;
         context.lineWidth = 0.5;
@@ -336,7 +343,8 @@ export class Renderer {
         context.stroke();
         context.closePath();
     }
-    private renderHeaderFooterMark(ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
+    private renderHeaderFooterMark(ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, x: number, y: number,
+                                   w: number, h: number): void {
         ctx.beginPath();
         ctx.fillStyle = 'lightgray';
         ctx.fillRect(x, y, w, h);
@@ -344,7 +352,8 @@ export class Renderer {
         ctx.strokeRect(x, y, w, h);
         ctx.closePath();
     }
-    private renderHeaderFooterMarkText(ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, content: string, x: number, y: number): void {
+    private renderHeaderFooterMarkText(ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, content: string,
+                                       x: number, y: number): void {
         ctx.beginPath();
         ctx.fillStyle = '#000000';
         ctx.textBaseline = 'alphabetic';
@@ -365,11 +374,13 @@ export class Renderer {
         let isClipped: boolean = false;
 
         let nextColumnBody: BodyWidget;
-        if (!isNullOrUndefined(bodyWidget.nextRenderedWidget) && bodyWidget.columnIndex + 1 === (bodyWidget.nextRenderedWidget as BodyWidget).columnIndex) {
+        if (!isNullOrUndefined(bodyWidget.nextRenderedWidget)
+            && bodyWidget.columnIndex + 1 === (bodyWidget.nextRenderedWidget as BodyWidget).columnIndex) {
             nextColumnBody = bodyWidget.nextRenderedWidget  as BodyWidget;
         }
-        if (!(this.viewer instanceof WebLayoutViewer) && bodyWidget.sectionFormat.columns.length > 1 && !isNullOrUndefined(nextColumnBody)) {
-            let colIndex: number = page.bodyWidgets.indexOf(bodyWidget);
+        if (!(this.viewer instanceof WebLayoutViewer) && bodyWidget.sectionFormat.columns.length > 1
+        && !isNullOrUndefined(nextColumnBody)) {
+            const colIndex: number = page.bodyWidgets.indexOf(bodyWidget);
             let xPos: number;
             let width: number;
             if (bodyWidget.columnIndex === 0) {
@@ -418,29 +429,36 @@ export class Renderer {
             if (page.bodyWidgets[parseInt(i.toString(), 10)].sectionFormat.lineBetweenColumns === true) {
                 if (page.bodyWidgets[parseInt(i.toString(), 10)].columnIndex !== 0 && page.bodyWidgets.length > 1) {
                     const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
-                    let linestartY: number = this.getScaledValue(Math.max((page.headerWidgetIn.y + page.headerWidgetIn.height), topMargin));
+                    const linestartY: number =
+                    this.getScaledValue(Math.max((page.headerWidgetIn.y + page.headerWidgetIn.height), topMargin));
                     const headerFooterHeight: number = (this.getScaledValue(page.boundingRectangle.height) / 100) * 40;
                     const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
                     let footerHeight: number = this.getScaledValue(page.boundingRectangle.height) -
                         /* eslint-disable-next-line max-len */
                         this.getScaledValue(Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin)));
                     footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
-                    let inBetweenSpace: number = (page.bodyWidgets[parseInt(i.toString(), 10)].x - (page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.x + page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.width)) / 2;
-                    let startX = inBetweenSpace + (page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.x + page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.width);
+                    const inBetweenSpace: number =
+                        (page.bodyWidgets[parseInt(i.toString(), 10)].x
+                            - (page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.x
+                                + page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.width)) / 2;
+                    const startX: number = inBetweenSpace + (page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.x
+                        + page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.width);
                     let startY: number = linestartY / this.documentHelper.zoomFactor;
-                    let endX: number = startX;
+                    const endX: number = startX;
                     let endY: number;
                     if (page.footnoteWidget) {
-                        endY = ((footerHeight - (page.footerWidgetIn.height / 2)) - page.footnoteWidget.height * this.documentHelper.zoomFactor) / this.documentHelper.zoomFactor;
+                        endY = ((footerHeight - (page.footerWidgetIn.height / 2))
+                            - page.footnoteWidget.height * this.documentHelper.zoomFactor) / this.documentHelper.zoomFactor;
                     } else {
                         endY = (footerHeight - (page.footerWidgetIn.height / 2)) / this.documentHelper.zoomFactor;
                     }
-                    let firstBody: BodyWidget = this.documentHelper.layout.getBodyWidget(page.bodyWidgets[parseInt(i.toString(), 10)], true);
-                    let height: number = this.documentHelper.layout.getNextWidgetHeight(firstBody);
+                    const firstBody: BodyWidget = this.documentHelper.layout.getBodyWidget(
+                        page.bodyWidgets[parseInt(i.toString(), 10)], true);
+                    const height: number = this.documentHelper.layout.getNextWidgetHeight(firstBody);
                     startY = page.bodyWidgets[parseInt(i.toString(), 10)].y;
                     endY = height;
-                    let color: string = '#000000';
-                    this.renderSingleBorder(color, startX, startY, endX, endY, 0.5, "Single");
+                    const color: string = '#000000';
+                    this.renderSingleBorder(color, startX, startY, endX, endY, 0.5, 'Single');
                 }
             }
         }
@@ -448,7 +466,7 @@ export class Renderer {
 
     private renderFloatingItems(page: Page, floatingElements: (ShapeBase | TableWidget)[], wrappingType: TextWrappingStyle): void {
         if (!isNullOrUndefined(floatingElements) && floatingElements.length > 0) {
-            let overLappedShapeWidgets : Dictionary<number, ShapeBase> = new Dictionary<number, ShapeBase>();
+            const overLappedShapeWidgets : Dictionary<number, ShapeBase> = new Dictionary<number, ShapeBase>();
             /* eslint-disable */
             floatingElements.sort(function (a, b) {
                 if (a instanceof TableWidget || b instanceof TableWidget) {
@@ -780,6 +798,77 @@ export class Renderer {
             this.renderSingleBorder(bottomBorder.color, startX, startY, endX, endY, lineWidth, bottomBorder.lineStyle);
         }
     }
+    /**
+     * Renders the border around a TextElementBox.
+     * @param elementBox - The TextElementBox for which the border is rendered.
+     * @param left - The left position of the TextElementBox.
+     * @param top - The top position of the TextElementBox.
+     * @param color - The color of the border.
+     * @param borderStyle - The style of the border (e.g., 'Single', 'Double').
+     * @param borderWidth - The width of the border.
+     * @param baselineAlignment - The baseline alignment of the TextElementBox.
+     * @param revisionInfo - Revision information (optional).
+     */
+    private renderImgBorder(elementBox: ImageElementBox, left: number, top: number, color: string, borderStyle: string, borderWidth: number, baselineAlignment: BaselineAlignment, revisionInfo?: RevisionInfo): void {
+        // Get the width dynamically based on the current text content
+        let width: number = (elementBox.width) / this.documentHelper.zoomFactor;
+        let lineWidth = HelperMethods.convertPointToPixel(borderWidth);
+        let next = this.documentHelper.selection.getNextTextElement(elementBox);
+        let previous = this.documentHelper.selection.getPreviousTextElement(elementBox);
+
+        // Calculate top margin based on baseline alignment
+        let topMargin: number = (baselineAlignment === 'Subscript') ? elementBox.margin.top + (elementBox.height - elementBox.height / 1.5) : elementBox.margin.top;
+
+        // Apply top margin
+        top += topMargin > 0 ? topMargin : 0;
+
+        // Calculate rendered height based on baseline alignment
+        let renderedHeight: number = (elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5)) + 15;
+        let startX = 0;
+        let startY = 0;
+        let endX = 0;
+        let endY = 0;
+
+        startX = left;
+        startY = top;
+        endX = left + width;
+        endY = top;
+        this.renderSingleBorder(color, startX, startY, endX, endY, lineWidth, borderStyle);
+
+        // Render bottom border
+        startY = top + renderedHeight;
+        endY = startY;
+
+        this.renderSingleBorder(color, startX, startY, endX, endY, lineWidth, borderStyle);
+
+        //Render left border
+        startY = top;
+        endX = left;
+        if (previous instanceof TextElementBox) {
+            if (previous.line !== elementBox.line || previous.contentControlProperties == undefined) {
+                borderStyle = 'Solid';
+            }
+            else {
+                borderStyle = 'None';
+            }
+        }
+        this.renderSingleBorder(color, startX, startY, endX, endY, lineWidth, borderStyle);
+
+        // Render right border
+        startX = left + width;
+        endX = startX;
+        if (next instanceof TextElementBox) {
+            if (next.line !== elementBox.line || next.contentControlProperties == undefined) {
+                borderStyle = 'Solid';
+            }
+            else {
+                borderStyle = 'None';
+            }
+        } else {
+            borderStyle = 'Solid';
+        }
+        this.renderSingleBorder(color, startX, startY, endX, endY, lineWidth, borderStyle);
+    }
     private getContainerWidth(paraWidget: ParagraphWidget, page: Page): any {
         let hangingIndent: number = 0;
         if (paraWidget.paragraphFormat.firstLineIndent < 0) {
@@ -986,6 +1075,116 @@ export class Renderer {
         }
         return undefined;
     }
+    private renderEditregionContentHighlight(page: Page, lineWidget: LineWidget, top: number): void {
+        if (!isNullOrUndefined(this.documentHelper.owner.editor) && page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.contentControleditRegionHighlighters)) {
+            // let renderHighlight: boolean = this.documentHelper.selection.contentControleditRegionHighlighters.containsKey(lineWidget);
+            // let widgetInfo: SelectionWidgetInfo[] = this.documentHelper.selection.contentControleditRegionHighlighters.
+            let contenControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+            if (!isNullOrUndefined(contenControl)) {
+                let widgetInfo: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.documentHelper.selection.contentControleditRegionHighlighters.get(contenControl);
+                if (!isNullOrUndefined(widgetInfo) && lineWidget == contenControl.line) {
+                    for (var i = 0; i < widgetInfo.length; i++) {
+                        let color : string = contenControl.contentControlProperties.color;
+                        if(color === '#00000000'){
+                            //Change color to grey if color is transparent
+                            color = '#939393'
+                        }
+                        let widget: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i]);
+                        for (var j = 0; j < widget.length; j++) {
+                            let startX = widget[j].left - 2;
+                            let endX = widget[j].left + widget[j].width + 2;
+                            if ( widgetInfo.length - 1 > i) {
+                                endX = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
+                            }
+                            let startY = top;
+                            let endY = startY + lineWidget.height;
+                            if (i == 0) {
+                                //left
+                                this.renderSingleBorder(color, startX, startY, startX, endY, 1, 'single');
+                                //top
+                                this.renderSingleBorder(color, startX, startY, endX, startY, 1, 'single');
+                                //right
+                                this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
+                            }
+                            if (i > 0 && i < widgetInfo.length - 1) {
+                                startY = top + lineWidget.height * i;
+                                endY = startY + lineWidget.height;
+                                //left
+                                this.renderSingleBorder(color, startX, startY, startX, endY, 1, 'single');
+                                //right
+                                this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
+                                //top
+                                let widget1: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
+                                let startUpdated = widget1[j].left;
+                                this.renderSingleBorder(color, startX, startY, startUpdated, startY, 1, 'single');
+
+                            }
+                            if (i == widgetInfo.length - 1) {
+                                startY = top + lineWidget.height * (widgetInfo.length - 1);
+                                endY = startY + lineWidget.height;
+                                // left
+                                this.renderSingleBorder(color, startX, startY, startX, endY, 1, 'single');
+                                //bottom
+                                this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
+                                //top
+                                if (widgetInfo.length > 1) {
+                                    
+                                    let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
+                                    // let endUpdated = widgets[j].width + widgets[j].left;
+                                    let endUpdated = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
+                                    this.renderSingleBorder(color, endX, startY, endUpdated, startY, 1, 'single');
+                                    if(startX < widgets[j].left)
+                                        {
+                                            this.renderSingleBorder(color, widgets[j].left, startY, startX, startY, 1, 'single');
+                                        }
+                                }
+                                //right
+                                this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
+                                if (!isNullOrUndefined(contenControl) && (contenControl.contentControlProperties.type === 'ComboBox' || contenControl.contentControlProperties.type === 'DropDownList' || contenControl.contentControlProperties.type === 'Date')) {
+                                    let element = document.getElementById("contenticon");
+                                    if (element) {
+                                        element.style.display = 'block';
+                                        startX = this.getScaledValue(endX, 1);
+                                        startY = this.getScaledValue(startY, 2);
+                                        element.style.left = `${startX}px`; // Position to the right of the right border
+                                        element.style.top = `${startY}px`; // Align with the top of the border
+                                        element.style.border = '0.5px solid #7F7F7F';
+                                        element.style.backgroundColor = '#D3D3D3'
+                                        element.style.height = lineWidget.height + 'px';
+                                        element.addEventListener('click', this.documentHelper.owner.editor.contentControlDropDownChange.bind(this));
+                                    }
+                                    else {
+                                        let contentMark = document.createElement('div');
+                                        contentMark.id = "contenticon"
+                                        contentMark.style.display = 'block';
+                                        contentMark.style.position = 'sticky';
+                                        startX = this.getScaledValue(endX, 1);
+                                        startY = this.getScaledValue(startY, 2);
+                                        contentMark.style.left = `${startX}px`; // Position to the right of the right border
+                                        contentMark.style.top = `${startY}px`; // Align with the top of the border
+                                        contentMark.style.border = '0.5px solid #7F7F7F';
+                                        contentMark.style.backgroundColor = '#D3D3D3'
+                                        contentMark.style.height = lineWidget.height + 'px';
+                                        contentMark.classList.add('e-de-cmt-mark');
+                                        let span: HTMLElement = document.createElement('span');
+                                        span.classList.add('e-icons');
+                                        span.classList.add('e-chevron-down-fill');
+                                        contentMark.appendChild(span);
+                                        this.documentHelper.pageContainer.appendChild(contentMark);
+                                        contentMark.addEventListener('click', this.documentHelper.owner.editor.contentControlDropDownChange.bind(this));
+                                    }
+                                }
+
+                            }
+
+                        }
+                    }
+                }
+
+            }
+
+        }
+    }
     private renderEditRegionHighlight(page: Page, lineWidget: LineWidget, top: number): void {
         if (page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.editRegionHighlighters)) {
             let renderHighlight: boolean = this.documentHelper.selection.editRegionHighlighters.containsKey(lineWidget);
@@ -1101,6 +1300,8 @@ export class Renderer {
         this.renderSearchHighlight(page, lineWidget, top);
         // EditRegion highlight 
         this.renderEditRegionHighlight(page, lineWidget, top);
+        // Content region border
+        this.renderEditregionContentHighlight(page, lineWidget, top);
         let commentIDList: string[]=[];
 
         let children: ElementBox[] = lineWidget.renderedElements;
@@ -2280,6 +2481,19 @@ export class Renderer {
         if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo')) {
             let y: number = this.getUnderlineYPosition(elementBox.line);
             this.renderUnderline(elementBox, left, top, y, color, 'Single', 'Normal');
+        }
+        this.documentHelper.owner.picturePositionY = this.getScaledValue(top + topMargin, 2);
+        if (!isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked() &&  this.documentHelper.selection.start.currentWidget === elementBox.line) {
+            let contentControlImage: ElementBox = this.documentHelper.owner.getImageContentControl();
+            if (!isNullOrUndefined(contentControlImage) && contentControlImage.contentControlProperties.type == "Picture") {
+                let format: WCharacterFormat = elementBox.characterFormat;
+                let color : string = contentControlImage.contentControlProperties.color;
+                        if(color === '#00000000'){
+                            //Change color to grey if color is transparent
+                            color = '#939393'
+                        }
+                this.renderImgBorder(elementBox, left, top, 'black', 'Solid', 0.5, format.baselineAlignment);
+            }
         }
         if (isClipped) {
             this.pageContext.restore();

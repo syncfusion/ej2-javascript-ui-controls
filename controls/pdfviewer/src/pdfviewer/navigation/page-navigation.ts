@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { PdfViewerBase, PdfViewer } from '../index';
 
 /**
@@ -10,10 +9,8 @@ export class Navigation {
     private pageNumber: number;
 
     /**
-     * @param viewer
-     * @param viewerBase
-     * @param viewer
-     * @param viewerBase
+     * @param {PdfViewer} viewer - It describes about the viewer
+     * @param {PdfViewerBase} viewerBase - It describes about the viewer base
      * @private
      */
     constructor(viewer: PdfViewer, viewerBase: PdfViewerBase) {
@@ -24,7 +21,7 @@ export class Navigation {
     /**
      * Navigate to Next page of the PDF document
      *
-     * @returns void
+     * @returns {void}
      */
     public goToNextPage(): void {
         this.pageNumber = this.pdfViewerBase.currentPageNumber;
@@ -37,7 +34,7 @@ export class Navigation {
     /**
      * Navigate to Previous page of the PDF document
      *
-     * @returns void
+     * @returns {void}
      */
     public goToPreviousPage(): void {
         this.pageNumber = this.pdfViewerBase.currentPageNumber;
@@ -52,20 +49,20 @@ export class Navigation {
      * Note : In case if we have provided incorrect page number as argument it will retain the existing page
      *
      * @param  {number} pageNumber - Defines the page number to navigate
-     * @returns void
+     * @returns {void}
      */
     public goToPage(pageNumber: number): void {
         if (pageNumber > 0 && pageNumber <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageNumber) {
             this.pdfViewerBase.updateScrollTop(pageNumber - 1);
-            if(this.pdfViewer.enableThumbnail) {
+            if (this.pdfViewer.enableThumbnail) {
                 this.pdfViewer.thumbnailViewModule.updateScrollTopForThumbnail(pageNumber - 1);
             }
         }
-        if(this.pdfViewer.magnificationModule)
+        if (this.pdfViewer.magnificationModule)
         {
             this.pdfViewer.magnificationModule.resizeCanvas(pageNumber);
         }
-        let textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + (pageNumber - 1));
+        const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + (pageNumber - 1));
         if (textLayer) {
             textLayer.style.display = 'block';
         }
@@ -74,7 +71,7 @@ export class Navigation {
     /**
      * Navigate to First page of the PDF document
      *
-     * @returns void
+     * @returns {void}
      */
     public goToFirstPage(): void {
         this.pageNumber = 0;
@@ -84,20 +81,24 @@ export class Navigation {
     /**
      * Navigate to Last page of the PDF document
      *
-     * @returns void
+     * @returns {void}
      */
     public goToLastPage(): void {
         this.pageNumber = this.pdfViewerBase.pageCount - 1;
         this.pdfViewerBase.updateScrollTop(this.pageNumber);
     }
+
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.pageNumber = 0;
     }
+
     /**
      * @private
+     * @returns {string} - string
      */
     public getModuleName(): string {
         return 'Navigation';

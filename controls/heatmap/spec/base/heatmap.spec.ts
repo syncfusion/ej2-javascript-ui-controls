@@ -712,6 +712,7 @@ describe('Heatmap Control', () => {
             expect((heatmap.initialClipRect.height === -62 || heatmap.initialClipRect.height === -58) && (heatmap.initialClipRect.width === -92 || heatmap.initialClipRect.width === -91)).toBe(true);
         });
     });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -720,5 +721,178 @@ describe('Heatmap Control', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
+
+});
+
+describe('Heatmap fluent2 and fluent dark theme', () => {
+    let heatmap: HeatMap;
+    let ele: HTMLElement;
+    let created: EmitType<Object>;
+    let data: number[][] = [
+        [73, 39, 26, 39, 94, 0],
+        [93, 58, 53, 38, 26, 68],
+        [99, 28, 22, 4, 66, 90],
+        [14, 26, 97, 69, 69, 3],
+        [7, 46, 47, 47, 88, 6],
+        [41, 55, 73, 23, 3, 79],
+        [56, 69, 21, 86, 3, 33],
+        [45, 7, 53, 81, 95, 79],
+        [60, 77, 74, 68, 88, 51],
+        [25, 25, 10, 12, 78, 14],
+        [25, 56, 55, 58, 12, 82],
+        [74, 33, 88, 23, 86, 59]
+    ];
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        heatmap = new HeatMap({
+            dataSource: data,
+            titleSettings: {
+                text: 'Sales Revenue per Employee (in 1000 US$)',
+            },
+            xAxis: {
+                title:{
+                    text:'XAxisTitle'
+                },
+                labels: ['Nancy', 'Andrew', 'Janet', 'Margaret', 'Steven',
+                'Michael', 'Robert', 'Laura', 'Anne', 'Paul', 'Karin', 'Mario'],
+                multiLevelLabels: [
+                    {
+                        overflow:'Trim',
+                        alignment: 'Near',
+                         textStyle: {
+                            color: 'black',
+                            fontWeight: 'Bold'
+                        },
+                        border: { type: 'Rectangle', color: '#a19d9d' },
+                        categories: [
+                            { start: 0, end: 2, text: 'Electronics', },
+                            { start: 3, end: 4, text: 'Beauty and personal care'}
+                        ]
+                    },
+                ]
+            },
+            yAxis: {
+                title:{
+                    text:'YAxisTitle'
+                },
+                multiLevelLabels: [
+                    {
+                        overflow:'Trim',
+                        alignment: 'Near',
+                         textStyle: {
+                            color: 'black',
+                            fontWeight: 'Bold'
+                        },
+                        border: { type: 'Rectangle', color: '#a19d9d' },
+                        categories: [
+                            { start: 0, end: 2, text: 'Electronics', },
+                            { start: 3, end: 4, text: 'Beauty and personal care'}
+                        ]
+                    },
+                ],
+                labels: ['Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat'],
+            },
+            cellSettings: {
+                showLabel: true
+            },
+            paletteSettings: {
+                palette: [
+                { value: 0, color: '#C2E7EC' },
+                { value: 10, color: '#AEDFE6' },
+                { value: 20, color: '#9AD7E0' },
+                { value: 30, color: '#72C7D4' },
+                { value: 40, color: '#5EBFCE' },
+                { value: 50, color: '#4AB7C8' },
+                { value: 60, color: '#309DAE' },
+                { value: 70, color: '#2B8C9B' },
+                { value: 80, color: '#206974' },
+                { value: 90, color: '#15464D' },
+                { value: 100, color: '#000000' },
+            ],
+                type: 'Fixed'
+            },
+            legendSettings: {
+                position: 'Bottom',
+                width: '75%',
+                enableSmartLegend: true,
+                toggleVisibility: true,
+                title:{
+                    text:'LegendTitle'
+                }
+            },
+        });
+    });
+
+    afterAll((): void => {
+        heatmap.destroy();
+    });
+
+    it('Checking heatmap instance creation', (done: Function) => {
+        created = (args: Object): void => {
+            expect(heatmap != null).toBe(true);
+            done();
+        }
+        heatmap.created = created;
+        heatmap.appendTo('#container');
+    });
+
+    it('Checking fluent2 dark theme', () => {
+        heatmap.theme = "Fluent2Dark";
+        heatmap.refresh();
+        let text: HTMLElement = document.getElementById('container_HeatmapTitle');
+        expect(text.getAttribute('font-size')).toEqual("14px");
+        expect(text.getAttribute('font-weight')).toEqual('600');
+        expect(text.getAttribute('fill')).toEqual('#FFFFFF');
+        let xaxistitle: HTMLElement = document.getElementById('container_XAxisTitle');
+        expect(xaxistitle.getAttribute('font-size')).toEqual('12px');
+        expect(xaxistitle.getAttribute('font-weight')).toEqual('400');
+        expect(xaxistitle.getAttribute('fill')).toEqual('#FFFFFF');
+        let xaxisLabels: HTMLElement = document.getElementById('container_XAxis_Label0');
+        expect(xaxisLabels.getAttribute('font-size')).toEqual('12px');
+        expect(xaxisLabels.getAttribute('font-weight')).toEqual('400');
+        expect(xaxisLabels.getAttribute('fill')).toEqual('#FFFFFF');
+        let yaxisLabels: HTMLElement = document.getElementById('container_YAxis_Label3');
+        expect(yaxisLabels.getAttribute('font-weight')).toEqual('400');
+        expect(yaxisLabels.getAttribute('font-size')).toEqual('12px');
+        expect(yaxisLabels.getAttribute('fill')).toBe('#FFFFFF');
+        let cellLabels: HTMLElement = document.getElementById('container_HeatMapRectLabels_0');
+        expect(cellLabels.getAttribute('font-weight')).toBe('400');
+        expect(cellLabels.getAttribute('font-size')).toBe('10px');
+        expect(cellLabels.getAttribute('fill')).toBe('black');
+        let legendText: HTMLElement = document.getElementById('container_Legend_Label0');
+        expect(legendText.getAttribute('font-weight')).toBe('400');
+        expect(legendText.getAttribute('font-size')).toBe('12px');
+        expect(legendText.getAttribute('fill')).toBe('#FFFFFF');
+    });
+
+    it('Checking fluent2 theme', () => {
+        heatmap.theme = "Fluent2";
+        heatmap.refresh();
+        let text: HTMLElement = document.getElementById('container_HeatmapTitle');
+        expect(text.getAttribute('font-size')).toBe('14px');
+        expect(text.getAttribute('font-weight')).toBe('600');
+        expect(text.getAttribute('fill')).toBe('#242424');
+        let xaxistitle: HTMLElement = document.getElementById('container_XAxisTitle');
+        expect(xaxistitle.getAttribute('font-size')).toBe('12px');
+        expect(xaxistitle.getAttribute('font-weight')).toBe('400');
+        expect(xaxistitle.getAttribute('fill')).toBe('#242424');
+        let xaxisLabels: HTMLElement = document.getElementById('container_XAxis_Label0');
+        expect(xaxisLabels.getAttribute('font-size')).toBe('12px');
+        expect(xaxisLabels.getAttribute('font-weight')).toBe('400');
+        expect(xaxisLabels.getAttribute('fill')).toBe('#242424');
+        let yaxisLabels: HTMLElement = document.getElementById('container_YAxis_Label3');
+        expect(yaxisLabels.getAttribute('font-weight')).toBe('400');
+        expect(yaxisLabels.getAttribute('font-size')).toBe('12px');
+        expect(yaxisLabels.getAttribute('fill')).toBe('#242424');
+        let cellLabels: HTMLElement = document.getElementById('container_HeatMapRectLabels_0');
+        expect(cellLabels.getAttribute('font-weight')).toBe('400');
+        expect(cellLabels.getAttribute('font-size')).toBe('10px');
+        expect(cellLabels.getAttribute('fill')).toBe('black');
+        let legendText: HTMLElement = document.getElementById('container_Legend_Label0');
+        expect(legendText.getAttribute('font-weight')).toBe('400');
+        expect(legendText.getAttribute('font-size')).toBe('12px');
+        expect(legendText.getAttribute('fill')).toBe('#242424');
+    });
 });

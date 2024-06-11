@@ -1,9 +1,7 @@
 @include export-module('drop-down-button-layout') {
-
-  /*! drop-down button layout */
   .e-dropdown-btn,
   .e-dropdown-btn.e-btn {
-    @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' {
+    @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' and $skin-name != 'fluent2' {
       box-shadow: none;
     }
     text-transform: none;
@@ -30,7 +28,7 @@
     }
 
     &:focus-visible { // only for keybord
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
         box-shadow: $btn-keyboard-focus-box-shadow;
       }
     }
@@ -77,6 +75,12 @@
         line-height: 1;
         padding: $drop-down-btn-vertical-btn-padding;
       }
+
+      & .e-btn-icon.e-caret {
+        @if $skin-name == 'fluent2' {
+          font-size: 12px;
+        }
+      }
     }
   }
 
@@ -109,6 +113,9 @@
       border-radius: $drop-down-btn-ul-border-radius;
       margin-top: $drop-down-btn-popup-margin-top;
     }
+    @if $skin-name == 'fluent2' {
+      border-radius: $drop-down-btn-ul-border-radius;
+    }
 
     & ul {
       border: $drop-down-btn-ul-border;
@@ -133,6 +140,15 @@
         height: $drop-down-btn-li-height;
         line-height: $drop-down-btn-li-height;
         padding: $drop-down-btn-li-padding;
+        @if $skin-name == 'fluent2' {
+          line-height: 19px;
+          margin: 4px;
+          border-radius: 4px;
+        }
+
+        &.e-separator {
+          padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+        }
 
         &.e-url {
           padding: 0;
@@ -148,7 +164,13 @@
         & .e-menu-icon {
           float: left;
           font-size: $drop-down-btn-menu-icon-font-size;
-          line-height: $drop-down-btn-li-height;
+          @if $skin-name == 'fluent2' {
+            line-height: 18px;
+            padding: 2px;
+          }
+          @else {
+            line-height: $drop-down-btn-li-height;
+          }
           margin-right: $drop-down-btn-icon-margin-right;
           vertical-align: middle;
           width: 1em;
@@ -159,6 +181,14 @@
           pointer-events: none;
           @if $skin-name == 'Material3' {
             box-shadow: $drop-down-btn-sub-ul-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            color: $flyout-text-color-disabled;
+            opacity: 1;
+
+            & .e-menu-icon {
+              color: $flyout-text-color-disabled;
+            }
           }
         }
 
@@ -217,16 +247,31 @@
 
     & .e-item  {
       height: $drop-down-btn-bigger-li-height;
-      line-height: $drop-down-btn-bigger-li-height;
+      @if $skin-name != 'fluent2' {
+        line-height: $drop-down-btn-bigger-li-height;
+      }
+      @if $skin-name == 'fluent2' {
+        height: 40px;
+        line-height: 22px;
+      }
       padding: $drop-down-btn-bigger-li-padding;
 
       &.e-url {
         padding: 0;
       }
 
+      & .e-menu-url {
+        @if $skin-name == 'fluent2' {
+          padding: 8px 8px 10px;
+        }
+      }
+
       & .e-menu-icon {
         font-size: $drop-down-btn-menu-icon-bigger-font-size;
         line-height: $drop-down-btn-bigger-li-height;
+        @if $skin-name == 'fluent2' {
+          line-height: 22px;
+        }
       }
 
       &.e-separator {

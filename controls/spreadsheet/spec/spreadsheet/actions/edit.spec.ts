@@ -1166,4 +1166,413 @@ describe('Editing ->', () => {
             });
         });
     });
+
+    describe('Checking ReadOnly Cells. ->', () => {
+        let spreadsheet: Spreadsheet;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], columns: [{ index: 11, isReadOnly: true, }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check setRangeReadOnly public method with true as readonly', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            let cell: CellModel = spreadsheet.sheets[0].rows[0].cells[0];
+            expect(cell.isReadOnly).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[1].cells[2].isReadOnly).toBeUndefined();
+            spreadsheet.setRangeReadOnly(true, 'A1:C2', spreadsheet.activeSheetIndex);
+            expect(cell.isReadOnly).toBe(true);
+            expect(spreadsheet.sheets[0].rows[1].cells[2].isReadOnly).toBe(true);
+            expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-readonly');
+            done();
+        });
+        it('Check setRangeReadOnly public method with false as readonly', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            let cell: CellModel = spreadsheet.sheets[0].rows[0].cells[0];
+            expect(cell.isReadOnly).toBe(true);
+            expect(spreadsheet.sheets[0].rows[1].cells[2].isReadOnly).toBe(true);
+            expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-readonly');
+            spreadsheet.setRangeReadOnly(false, 'A1:C2', spreadsheet.activeSheetIndex);
+            expect(cell.isReadOnly).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[1].cells[2].isReadOnly).toBeUndefined();
+            expect(helper.invoke('getCell', [0, 0]).classList).not.toContain('e-readonly');
+            done();
+        });
+        it('Alert dialog shown while the autofill applied on read only cell as data range', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'B2:B5', spreadsheet.activeSheetIndex);
+            helper.invoke('autoFill', ['C2:D2', 'B2:B2', 'Right', 'FillSeries']);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-readonly-alert-dlg.e-dialog');
+                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
+                    "You are trying to modify a cell that is in read-only mode. To make changes, please disable the read-only status.");
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Alert dialog shown while the autofill applied on read only cell as fill range', (done: Function) => {
+            helper.invoke('autoFill', ['B2:D2', 'A2:A2', 'Right', 'FillSeries']);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-readonly-alert-dlg.e-dialog');
+                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
+                    "You are trying to modify a cell that is in read-only mode. To make changes, please disable the read-only status.");
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking context menu items for the readonly cells', (done: Function) => {
+            helper.invoke('selectRange', ['B3']);
+            let td: HTMLTableCellElement = helper.invoke('getCell', [1, 3]);
+            let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(1)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').classList).not.toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(3)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(4)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+        it('Alert dialog shown when cut action is performed on read only cells', (done: Function) => {
+            helper.invoke('cut', ['B2:B3']);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Alert dialog shown when paste action is performed on read only cells', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.invoke('copy', ['A2']).then(() => {
+                helper.invoke('paste', ['B2']);
+                setTimeout(() => {
+                    const dialog: HTMLElement = helper.getElement('.e-dialog');
+                    expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                    helper.click('.e-dialog .e-primary');
+                    done();
+                });
+            });
+        });
+        it('Alert dialog shown when replace action is performed on read only cells', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'A10:A11', spreadsheet.activeSheetIndex);
+            helper.invoke('selectRange', ['A11']);
+            helper.invoke('replace', [{ replaceValue: 'T-Shirts', replaceBy: 'replace', value: 'T-Shirt' }]);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking Repalce All with readonly cases', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'H2:H3', spreadsheet.activeSheetIndex);
+            helper.invoke('selectRange', ['H2']);
+            helper.invoke('replace', [{ replaceValue: '150', replaceBy: 'replaceall', value: 10 }]);
+            expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toBe(10);
+            done();
+        });
+        it('Checking improper sheet index in setRangeReadonly method', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'D2:D3', 1);
+            expect(helper.getInstance().sheets[0].rows[1].cells[3].isReadOnly).toBeUndefined();
+            done();
+        });
+        it('Checking Readonly with true as column cases', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'D:D', 0);
+            spreadsheet.setRangeReadOnly(true, 'e:e', 0);
+            expect(helper.getInstance().sheets[0].columns[3].isReadOnly).toBeTruthy();
+            expect(helper.getInstance().sheets[0].columns[4].isReadOnly).toBeTruthy();
+            done();
+        });
+        it('Checking Readonly with false as column cases', (done: Function) => {
+            spreadsheet.setRangeReadOnly(false, 'D:D', 0);
+            spreadsheet.setRangeReadOnly(false, 'e:e', 0);
+            expect(helper.getInstance().sheets[0].columns[3].isReadOnly).toBeUndefined();
+            expect(helper.getInstance().sheets[0].columns[4].isReadOnly).toBeUndefined();
+            done();
+        });
+        it('Checking Readonly with null as range cases', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            spreadsheet.setRangeReadOnly(true, null, 0);
+            expect(helper.getInstance().sheets[0].rows[1].cells[0].isReadOnly).toBeTruthy();
+            done();
+        });
+        it('Checking Readonly with true as row cases', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, '2:2', 0);
+            expect(helper.getInstance().sheets[0].rows[1].isReadOnly).toBeTruthy();
+            done();
+        });
+        it('Checking Readonly with false as row cases', (done: Function) => {
+            spreadsheet.setRangeReadOnly(false, '2:2', 0);
+            expect(helper.getInstance().sheets[0].rows[1].isReadOnly).toBeFalsy();
+            done();
+        });
+        it('Checking copy and paste with readonly cells cases', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'A2:A3', 0);
+            helper.invoke('copy', ['A2']).then(() => {
+                helper.invoke('paste', ['A12']);
+                expect(helper.getInstance().sheets[0].rows[11].cells[0].value).toBe('Casual Shoes');
+                expect(helper.getInstance().sheets[0].rows[11].cells[0].isReadOnly).toBeUndefined();
+                done();
+            });
+        });
+        it('Checking readonly cells with Insert Row-Before cases->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(1, 0, [6, 1], true);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with Insert Row-after cases->', (done: Function) => {
+            helper.invoke('selectRange', ['A3']);
+            helper.openAndClickCMenuItem(2, 0, [6, 2], true);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with Delete Row cases->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.openAndClickCMenuItem(1, 0, [7], true);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with Insert Column-Before cases->', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'B:B', spreadsheet.activeSheetIndex);
+            helper.invoke('selectRange', ['A2']);
+            helper.openAndClickCMenuItem(0, 1, [6, 1], false, true);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with Insert Column-After cases->', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'C:C', spreadsheet.activeSheetIndex);
+            helper.invoke('selectRange', ['A3']);
+            helper.openAndClickCMenuItem(0, 2, [6, 2], false, true);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with Delete Column cases->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.openAndClickCMenuItem(0, 1, [7], false, true);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with sort ascending using ribbon items ->', (done: Function) => {
+            helper.invoke('selectRange', ['D1']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with sort descending using ribbon items ->', (done: Function) => {
+            helper.invoke('selectRange', ['E1']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(2)');
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with sort ascending using context menu items ->', (done: Function) => {
+            helper.invoke('selectRange', ['F6']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 0, [7, 1], false, false);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Checking readonly cells with sort descending using context menu items ->', (done: Function) => {
+            helper.invoke('selectRange', ['G2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 0, [7, 2], false, false);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Readonly cells with Listvalidation', (done: Function) => {
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '12,13,14' }, 'A11']);
+            const cell: CellModel = helper.getInstance().sheets[0].rows[10].cells[0];
+            expect(JSON.stringify(cell.validation)).toBe('{"type":"List","value1":"12,13,14"}');
+            expect(cell.isReadOnly).toBe(true);
+            done();
+        });
+        it('Alert dialog shown when hyperlink applied on read only cells', (done: Function) => {
+            helper.invoke('addHyperlink', ['www.syncfusion.com', 'B3']);
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Deleting values from readonly cells using delete key and warning dialog', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'E2:E5', spreadsheet.activeSheetIndex);
+            helper.invoke('selectRange', ['E3']);
+            helper.getElement().focus();
+            helper.triggerKeyEvent('keydown', 46, null, null, null, helper.invoke('getCell', [2, 4]));
+            setTimeout((): void => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.classList.contains('e-readonly-alert-dlg')).toBeTruthy();
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Deleting values from readonly cells using backspace key and warning dialog', (done: Function) => {
+            helper.invoke('selectRange', ['E4']);
+            helper.getElement().focus();
+            helper.triggerKeyEvent('keydown', 8, null, null, null, helper.invoke('getCell', [3, 4]));
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
+                expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-readonly-alert-dlg .e-footer-content button:nth-child(1)');
+                done();
+            });
+        });
+        it('Editing values from readonly cells using general keys', (done: Function) => {
+            helper.invoke('selectRange', ['E3']);
+            helper.getElement().focus();
+            helper.triggerKeyEvent('keydown', 72, null, null, null, helper.invoke('getCell', [2, 4]));
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
+                expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-readonly-alert-dlg .e-footer-content button:nth-child(1)');
+                done();
+            });
+        });
+        it('Formula bar edit alert with readonly cells', (done: Function) => {
+            helper.invoke('selectRange', ['E3']);
+            setTimeout(() => {
+                let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar');
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                editorElem.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                editorElem.dispatchEvent(e);
+                e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                editorElem.dispatchEvent(e);
+                setTimeout((): void => {
+                    helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
+                    expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).not.toBeNull();
+                    helper.click('.e-readonly-alert-dlg .e-footer-content button:nth-child(1)');
+                    done();
+                });
+            });
+        });
+        it('Formula Insert Function Dialog alert with readonly cells', (done: Function) => {
+            helper.click('.e-formula-bar-panel .e-insert-function');
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
+                expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-readonly-alert-dlg .e-footer-content button:nth-child(1)');
+                done();
+            });
+        });
+        it('Applying Number format to the readonly cells', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'G2:G11', spreadsheet.activeSheetIndex);
+            helper.invoke('selectRange', ['F2:H2']);
+            helper.switchRibbonTab(1);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Percentage').click();
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [1, 6]).textContent).toBe('1');
+                done();
+            });
+        });
+        it('Applying cell format to the readonly cells', (done: Function) => {
+            helper.invoke('cellFormat', [{ fontWeight: 'bold' }, 'F2:H2']);
+            helper.invoke('cellFormat', [{ fontStyle: 'italic' }, 'F3:H3']);
+            helper.invoke('cellFormat', [{ textDecoration: 'underline line-through' }, 'F4:H4']);
+            helper.invoke('cellFormat', [{ border: '1px solid #000' }, 'F5:H5']);
+            helper.invoke('cellFormat', [{ fontSize: '14pt' }, 'F6:H6']);
+            helper.invoke('cellFormat', [{ fontFamily: 'Georgia' }, 'F7:H7']);
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [1, 6]).style.fontWeight).not.toBe('bold');
+                expect(helper.invoke('getCell', [2, 6]).style.fontStyle).not.toBe('italic');
+                expect(helper.invoke('getCell', [3, 6]).style.textDecoration).not.toBe('underline line-through');
+                expect(helper.invoke('getCell', [5, 6]).style.fontSize).not.toBe('14pt');
+                expect(helper.invoke('getCell', [6, 6]).style.fontFamily).not.toBe('Georgia');
+                let td: HTMLElement = helper.invoke('getCell', [4, 6]);
+                expect(td.style.borderWidth).not.toBe('1px');
+                expect(td.style.borderStyle).not.toBe('solid');
+                expect(td.style.borderColor).not.toBe('rgb(0, 0, 0)');
+                done();
+            });
+        });
+        it('Apply Merge to read only cells->', (done: Function) => {
+            helper.invoke('selectRange', ['F2:H2']);
+            helper.getElement('#' + helper.id + '_merge_dropdownbtn').click();
+            helper.getElement('.e-item[aria-label="Merge All"]').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
+                expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-readonly-alert-dlg .e-footer-content button:nth-child(1)');
+                done();
+            });
+        });
+        it('Checking Find and Replace dialog cancel with readonly alert dialog', (done: Function) => {
+            spreadsheet.setRangeReadOnly(true, 'F:F', spreadsheet.activeSheetIndex);
+            helper.invoke('selectRange', ['F4']);
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                helper.click('.e-findtool-dlg .e-findRib-more');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                    findTxtBox.value = '300';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                    const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+                    replaceTxtBox.value = '343';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+                    let target: any = helper.getElements('.e-find-dlg .e-search-within .e-dropdownlist')[0];
+                    target.ej2_instances[0].value = 'Workbook';
+                    target.ej2_instances[0].dataBind();
+                    setTimeout(() => {
+                        helper.click('.e-find-dlg .e-btn-replace');
+                        setTimeout(() => {
+                            helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
+                            expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).not.toBeNull();
+                            helper.click('.e-readonly-alert-dlg .e-footer-content button:nth-child(1)');
+                            helper.click('.e-find-dlg .e-footer-content button:nth-child(5)');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
 });

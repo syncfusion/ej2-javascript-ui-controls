@@ -1,6 +1,5 @@
 import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
 import { ZIndex, Anchor, BorderType, SizeType } from '../utils/enum';
-import { Theme } from '../../common/model/theme';
 import { Font, Border } from '../../common/model/base';
 import { BorderModel, FontModel } from '../../common/model/base-model';
 import { LabelBorderModel, MultiLevelCategoriesModel, ScrollbarSettingsRangeModel  } from '../../chart/model/chart-base-model';
@@ -417,7 +416,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      */
     @Property(1)
     public opacity: number;
-  
+
     /**
      * The URL of the background image for the strip line.
      *
@@ -456,7 +455,7 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
     /**
      * Options to customize the multi level labels.
      */
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public textStyle: FontModel;
     /**
      * Border of the multi level labels.

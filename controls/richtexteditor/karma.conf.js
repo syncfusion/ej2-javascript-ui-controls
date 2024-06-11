@@ -18,6 +18,7 @@ module.exports = function (config) {
       "test-main.js",
       { pattern: "src/**/*.js", included: false },
       { pattern: "spec/**/*.spec.js", included: false },
+      { pattern: "demos/themes/material.css*", watched: false, included: false, served: true, nocache: false },
       { pattern: "spec/content/**/*", watched: false, included: false, served: true, nocache: false },
       { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },
@@ -82,7 +83,7 @@ module.exports = function (config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['ChromeHeadless', 'Chrome', 'Firefox'],
+    browsers: ['ChromeHeadless', 'Chrome'],
 
 
     // Continuous Integration mode

@@ -194,8 +194,15 @@ export class SpreadsheetHelper extends TestHelper {
         spreadsheet.endEdit();
     }
 
-    public setAnimationToNone(selector: string): void {
-        (document.querySelector(selector) as any).ej2_instances[0].animationSettings.effect = 'None';
+    public setAnimationToNone(selector: string, isTab?: boolean): void {
+        if (isTab) {
+            const tabObj: any = getComponent(this.getElement(selector), 'tab');
+            tabObj.animation.next.effect = 'None';
+            tabObj.animation.previous.effect = 'None';
+            tabObj.dataBind();
+        } else {
+            (document.querySelector(selector) as any).ej2_instances[0].animationSettings.effect = 'None';
+        }
     }
 
     public openAndClickCMenuItem(rowIdx: number, colIdx: number, children?: number[], isRowHdr?: boolean, isColHdr?: boolean, checkFn?: Function, isSheetTab?: boolean, tabEle?: HTMLElement): void {

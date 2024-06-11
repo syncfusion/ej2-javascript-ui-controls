@@ -29,13 +29,13 @@ describe('Filter ->', () => {
                 setTimeout(() => {
                     const searchEle: HTMLInputElement = helper.getElementFromSpreadsheet('.e-searchinput') as HTMLInputElement;
                     searchEle.value = '20';
+                    const excelFilter: HTMLElement = helper.getElementFromSpreadsheet('.e-excelfilter');
                     const spreadsheet: any = helper.getInstance();
                     spreadsheet.notify(refreshCheckbox, { event: { type: 'keyup', target: searchEle } });
                     expect(spreadsheet.filterModule.filterRange.size).toBe(1);
                     expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(1);
                     expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe('10');
                     helper.getElementFromSpreadsheet('.e-add-current').click();
-                    const excelFilter: HTMLElement = helper.getElementFromSpreadsheet('.e-excelfilter');
                     (excelFilter.querySelector('.e-btn.e-primary') as HTMLElement).click();
                     expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(2);
                     expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe('10');

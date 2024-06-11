@@ -24,33 +24,23 @@
   }
 }
 
-@mixin active-item {
-  background: $fe-active-bg-color;
-  border-color: $fe-active-border-color;
-}
-
-@mixin hover-item($bg-color, $border-color) {
+@mixin bg-border($bg-color, $border-color) {
   background: $bg-color;
   border-color: $border-color;
 }
 
 @include export-module('FileManager-theme') {
   .e-filemanager {
-    background: $fe-background;
-    border-color: $fe-border-color;
+    @include bg-border($fe-background, $fe-border-color);
 
     .e-toolbar {
       border-bottom-color: $fe-border-color;
-
       @if $fm-skin-name != 'Material3' {
-
         .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
-          //Based on toolbar active background modify the dropdowns background
           &.e-active {
             @include hover-icon-border-color;
             @include active-icon-color;
-            background: $fe-tb-focus-bg;
-            border-color: $fe-tb-focus-border-color;
+            @include bg-border($fe-tb-focus-bg, $fe-tb-focus-border-color);
             @if $fm-skin-name == 'highcontrast' {
               background: $fe-active-bg-color;
             }
@@ -64,15 +54,13 @@
 
           &:hover {
             @include hover-icon-border-color;
-            background: $fe-tb-focus-bg;
-            border-color: $fe-tb-hover-border-color;
+            @include bg-border($fe-tb-focus-bg, $fe-tb-hover-border-color);
           }
 
           &:focus {
             @include hover-icon-border-color;
             @include active-icon-color;
-            background: $fe-tb-focus-bg;
-            border-color: $fe-tb-hover-border-color;
+            @include bg-border($fe-tb-focus-bg, $fe-tb-hover-border-color);
             @if $fm-skin-name == 'highcontrast' {
               background: $fe-active-bg-color;
             }
@@ -82,10 +70,8 @@
     }
 
     @if $fm-skin-name == 'tailwind' {
-      .e-navigation {
-        &.e-pane {
-          background-color: $content-bg-color-alt1;
-        }
+      .e-navigation.e-pane {
+        background-color: $content-bg-color-alt1;
       }
     }
 
@@ -125,28 +111,19 @@
         }
 
         &:not(:last-child) {
-
           .e-list-text {
-
-            &:hover {
-              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
-                background: $fe-bc-hover-bg-color;
-              }
-              color: $fe-bc-hover-font-color;
-            }
-
-            &:active {
-              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
-                background: $fe-bc-hover-bg-color;
-              }
-              color: $fe-bc-hover-font-color;
-            }
-
+            &:hover,
+            &:active,
             &:focus {
               @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
                 background: $fe-bc-hover-bg-color;
               }
               color: $fe-bc-hover-font-color;
+            }
+            @if $fm-skin-name == 'fluent2' {
+              &:active {
+                background: $fe-bc-active-bg-color;
+              }
             }
           }
         }
@@ -154,8 +131,10 @@
 
       .e-search-wrap {
         .e-input-group.e-control-wrapper:not(.e-success) {
-          background: $fe-search-bg-color;
-          border-color: $fe-border-color;
+          @if $fm-skin-name != 'fluent2' {
+            @include bg-border($fe-search-bg-color, $fe-border-color);
+          }
+
           @if $theme-name == 'fluentui-dark' {
             border-color: $fe-search-border-color;
           }
@@ -197,32 +176,23 @@
 
         .e-headercell {
 
-          &:not(.e-fe-grid-icon):hover {
-            background: $fe-hover-bg-color;
-          }
-          @if $fm-skin-name == 'FluentUI' {
-            &.e-fe-checkbox:hover {
-              background: $content-bg-color;
-            }
-          }
-          @else {
-            &.e-fe-checkbox:hover {
-              background: $fe-grid-header-bg-color;
-            }
-          }
-
+          &:not(.e-fe-grid-icon):hover,
           &.e-fe-grid-icon .e-headercelldiv:hover {
             background: $fe-hover-bg-color;
+          }
+          &.e-fe-checkbox:hover {
+            @if $fm-skin-name == 'FluentUI' {
+              background: $content-bg-color;
+            }
+            @else {
+              background: $fe-grid-header-bg-color;
+            }
           }
         }
       }
 
       .e-empty-inner-content {
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
-          color: $content-text-color-alt2;
-        }
-
-        @if $fm-skin-name =='Material3' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name =='Material3' {
           color: $fe-grid-empty-inner-content-color;
         }
       }
@@ -250,12 +220,9 @@
         }
       }
 
-      tr:hover {
-
-        td.e-active {
-          @if $fm-skin-name == 'material-dark' {
-            background-color: $fe-ah-bg-color;
-          }
+      tr:hover td.e-active {
+        @if $fm-skin-name == 'material-dark' {
+          background-color: $fe-ah-bg-color;
         }
       }
 
@@ -299,9 +266,6 @@
 
       .e-empty-inner-content {
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3' {
-          color: $content-text-color-alt2;
-        }
-        @if $fm-skin-name =='Material3' {
           color: $fe-grid-empty-inner-content-color;
         }
       }
@@ -310,17 +274,17 @@
         border-color: transparent;
 
         &.e-active {
-          @include active-item;
+          @include bg-border($fe-active-bg-color, $fe-active-border-color);
         }
 
         &.e-hover,
         &:hover {
-          @include hover-item($fe-hover-bg-color, $fe-hover-border-color);
+          @include bg-border($fe-hover-bg-color, $fe-hover-border-color);
         }
 
         &.e-active.e-hover,
         &.e-active:hover {
-          @include hover-item($fe-ah-bg-color, $fe-ah-border-color);
+          @include bg-border($fe-ah-bg-color, $fe-ah-border-color);
         }
 
         &.e-focus {
@@ -363,33 +327,26 @@
     }
 
     &.e-fe-mobile {
-
       .e-large-icons {
-
         .e-large-icon {
 
           &.e-hover,
           &:hover {
-            @include hover-item(transparent, transparent);
+            @include bg-border(transparent, transparent);
           }
-
           &.e-focus {
             border-color: transparent;
           }
-
           &.e-active {
-            @include active-item;
+            @include bg-border($fe-active-bg-color, $fe-active-border-color);
           }
         }
       }
       @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
-        .e-address {
-          .e-icons {
-            color: $icon-color;
-
-            &:hover {
-              color: $icon-color-hover;
-            }
+        .e-address .e-icons {
+          color: $icon-color;
+          &:hover {
+            color: $icon-color-hover;
           }
         }
       }
@@ -411,10 +368,8 @@
     }
 
     &.e-dialog {
-
       td {
         color: $fe-text-color;
-
         &:first-child {
           color: $fe-label-color;
         }
@@ -425,11 +380,8 @@
       color: $fe-error-color;
     }
 
-    .e-upload {
-
-      .e-upload-actions {
-        border-bottom-color: $fe-up-list-border-color;
-      }
+    .e-upload .e-upload-actions {
+      border-bottom-color: $fe-up-list-border-color;
     }
   }
 }

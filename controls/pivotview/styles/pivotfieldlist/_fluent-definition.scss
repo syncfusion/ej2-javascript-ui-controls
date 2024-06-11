@@ -1,5 +1,3 @@
-/*! component's theme wise override definitions and variables */
-// layout variables
 $field-list-skin: 'FluentUI' !default;
 $field-list-border-type: solid !default;
 $field-list-border-size: 1px !default;
@@ -112,8 +110,6 @@ $field-list-member-editor-search-padding: 0 $field-list-editor-search-padding-si
 $field-list-member-editor-node-limit-outer-div-bigger-height: 65px !default;
 $field-list-member-editor-bigger-height: 400px !default;
 $field-list-member-editor-node-limit-bigger-height: 450px !default;
-
-// normal variables
 $field-list-active-color: $icon-color !default;
 $field-list-default-font-color: $content-text-color !default;
 $field-list-default-formula-font-color: $field-list-default-font-color !default;
@@ -160,8 +156,6 @@ $field-list-sort-select-background-color: $icon-color !default;
 $field-list-sort-select-border-color: transparent !default;
 $field-list-sort-select-color: rgba($content-text-color-alt2, .87) !default;
 $field-list-cal-button-text-color: $secondary-text-color !default;
-
-/*! component's common definitions and variables */
 $field-list-static-padding-size: 10px !default;
 $field-list-treeview-padding-size: -30px !default;
 $field-list-header-padding-size: 18px !default;

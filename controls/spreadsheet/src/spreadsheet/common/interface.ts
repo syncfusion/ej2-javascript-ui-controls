@@ -353,6 +353,20 @@ export interface CellSaveEventArgs {
 }
 
 /**
+ * NoteSaveEventArgs
+ */
+export interface NoteSaveEventArgs {
+    /** Defines the note text. */
+    notes: string;
+    /** Defines the element. */
+    element: HTMLElement;
+    /** Defines the address. */
+    address: string;
+    /** Defines the type of Event. */
+    originalEvent?: MouseEvent & TouchEvent | KeyboardEventArgs;
+}
+
+/**
  * CellSaveEventArgs
  */
 export interface ConditionalFormatEventArgs {
@@ -405,6 +419,7 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     sheetIndex?: number;
     oldWidth?: string;
     oldHeight?: string;
+    notes?: string;
     isCol?: boolean;
     hide?: boolean;
     index?: number;
@@ -440,7 +455,7 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     sheetIdx?: number;
     validation?: CellValidationEventArgs;
     previousSort?: SortCollectionModel;
-    conditionalFormats:ConditionalFormatModel[];
+    conditionalFormats: ConditionalFormatModel[];
     /** Specifies the previous sorted cells. */
     cellDetails?: PreviousCellDetails[];
     /** Specifies the sorted cells. */
@@ -491,6 +506,7 @@ export interface PreviousCellDetails {
     style?: object;
     format?: string;
     value?: string;
+    notes?: string;
     formula?: string;
     wrap?: boolean;
     rowSpan?: number;
@@ -499,7 +515,8 @@ export interface PreviousCellDetails {
     image?: ImageModel[];
     chart?: ChartModel[];
     isLocked?: boolean;
-    validation?: CellValidationEventArgs
+    validation?: CellValidationEventArgs;
+    isReadOnly?: boolean
 }
 
 export interface BeforePasteEventArgs {
@@ -619,6 +636,7 @@ export interface FillRangeInfo {
 
 /**
  * Cell model and its count details on external copy/paste.
+ *
  * @hidden
  */
 export interface PasteModelArgs {
@@ -641,8 +659,5 @@ export interface ExtendedPredicateModel extends PredicateModel {
  * @hidden
  */
 export interface ExtendedSpreadsheet extends Spreadsheet {
-    isReact?: boolean;
-    isAngular?: boolean;
-    isVue?: boolean;
     renderTemplates?: (callback: Function) => void;
 }

@@ -1,4 +1,29 @@
-/* stylelint-disable property-no-vendor-prefix */
+@mixin align-chip($border-radius, $font-size, $margin) {
+  border-radius: $border-radius;
+  font-size: $font-size;
+  margin: $margin;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+@mixin icon-position {
+  background-size: cover;
+  display: flex;
+  overflow: hidden;
+}
+
+@mixin icon-style($height, $width) {
+  height: $height;
+  width: $width;
+}
+
+@mixin bigger-style($height, $width, $margin) {
+  height: $height;
+  width: $width;
+  margin: $margin;
+}
+
 @include export-module('chip-layout') {
   .e-chip-list {
     display: flex;
@@ -7,19 +32,15 @@
     &.e-chip,
     .e-chip {
       -webkit-tap-highlight-color: transparent;
-      align-items: center;
       border: $chip-border-size solid;
-      border-radius: $chip-border-radius;
+      @include align-chip($chip-border-radius, $chip-font-size, $chip-margin);
       box-shadow: $chip-box-shadow;
       box-sizing: border-box;
       cursor: pointer;
       display: inline-flex;
-      font-size: $chip-font-size;
       font-weight: $chip-font-weight;
       height: $chip-height;
-      justify-content: center;
       line-height: $chip-line-height;
-      margin: $chip-margin;
       outline: none;
       overflow: $chip-overflow;
       padding: $chip-padding;
@@ -28,17 +49,9 @@
       user-select: none;
 
       .e-chip-avatar {
-        align-items: center;
-        background-size: cover;
-        border-radius: $chip-avatar-border-radius;
-        display: flex;
-        font-size: $chip-avatar-content-font-size;
-        height: $chip-avatar-size;
-        justify-content: center;
-        line-height: 1;
-        margin: $chip-avatar-margin;
-        overflow: hidden;
-        width: $chip-avatar-size;
+        @include icon-position;
+        @include icon-style($chip-avatar-size, $chip-avatar-size);
+        @include align-chip($chip-avatar-border-radius, $chip-avatar-content-font-size, $chip-avatar-margin);
       }
 
       .e-chip-avatar-wrap,
@@ -47,17 +60,9 @@
       }
 
       .e-chip-icon {
-        align-items: center;
-        background-size: cover;
-        border-radius: $chip-leading-icon-border-radius;
-        display: flex;
-        font-size: $chip-leading-icon-font-size;
-        height: $chip-leading-icon-size;
-        justify-content: center;
-        line-height: 1;
-        margin: $chip-leading-icon-margin;
-        overflow: hidden;
-        width: $chip-leading-icon-size;
+        @include icon-position;
+        @include icon-style($chip-leading-icon-size, $chip-leading-icon-size);
+        @include align-chip($chip-leading-icon-border-radius, $chip-leading-icon-font-size, $chip-leading-icon-margin);
       }
 
       .e-chip-text {
@@ -70,17 +75,9 @@
       }
 
       .e-chip-delete {
-        align-items: center;
-        background-size: cover;
-        border-radius: $chip-delete-icon-border-radius;
-        display: flex;
-        font-size: $chip-delete-icon-font-size;
-        height: $chip-delete-icon-size;
-        justify-content: center;
-        line-height: 1;
-        margin: $chip-delete-icon-margin;
-        overflow: hidden;
-        width: $chip-delete-icon-size;
+        @include icon-position;
+        @include icon-style($chip-delete-icon-size, $chip-delete-icon-size);
+        @include align-chip($chip-delete-icon-border-radius, $chip-delete-icon-font-size, $chip-delete-icon-margin);
         @if $skin-name == 'Material3' {
           line-height: $chip-delete-icon-size;
           width: $chip-delete-icon-font-size;
@@ -91,41 +88,24 @@
       }
 
       .image-url {
-        align-items: center;
-        background-size: cover;
-        border-radius: $chip-leading-icon-border-radius;
-        display: flex;
-        font-size: $chip-leading-icon-font-size;
-        height: $chip-leading-icon-size;
-        justify-content: center;
-        line-height: 1;
-        margin: $chip-leading-icon-margin;
-        overflow: hidden;
-        width: $chip-leading-icon-size;
+        @include icon-position;
+        @include icon-style($chip-leading-icon-size, $chip-leading-icon-size);
+        @include align-chip($chip-leading-icon-border-radius, $chip-leading-icon-font-size, $chip-leading-icon-margin);
       }
 
       .trailing-icon-url {
-        align-items: center;
-        background-size: cover;
-        border-radius: $chip-delete-icon-border-radius;
-        display: flex;
+        @include icon-position;
+        @include icon-style($chip-delete-icon-size, $chip-delete-icon-size);
+        @include align-chip($chip-delete-icon-border-radius, $chip-delete-icon-font-size, $chip-delete-icon-margin);
         font-family: 'e-icons';
-        font-size: $chip-delete-icon-font-size;
-        height: $chip-delete-icon-size;
-        justify-content: center;
-        line-height: 1;
-        margin: $chip-delete-icon-margin;
-        overflow: hidden;
-        width: $chip-delete-icon-size;
       }
     }
 
     .e-chip.e-outline {
       .e-chip-avatar {
         @if ($skin-name == 'FluentUI') {
+          @include icon-style($chip-outline-avatar-size, $chip-outline-avatar-size);
           border-radius: $chip-avatar-wrapper-border-radius;
-          height: $chip-outline-avatar-size;
-          width: $chip-outline-avatar-size;
         }
       }
     }
@@ -137,16 +117,15 @@
     &.e-multi-selection .e-chip {
       &::before {
         align-items: center;
-        display: flex;
-        font-family: 'e-icons';
-        height: $chip-leading-icon-size;
         justify-content: center;
         line-height: 1;
+        display: flex;
+        font-family: 'e-icons';
+        @include icon-style($chip-leading-icon-size, $chip-leading-icon-size);
         margin: $chip-multi-selection-icon-margin;
         margin-top: $chip-multi-selection-icon-margin-top;
         overflow: hidden;
         transition: width 300ms cubic-bezier(.4, 0, .2, 1);
-        width: $chip-leading-icon-size;
       }
 
       &:not(.e-chip-icon-wrap):not(.e-chip-avatar-wrap) {
@@ -164,10 +143,9 @@
 
       &.e-chip-avatar-wrap {
         &::before {
-          height: $chip-avatar-size;
+          @include icon-style($chip-avatar-size, $chip-avatar-size);
           margin: $chip-avatar-margin;
           margin-top: $chip-multi-selection-icon-margin-top;
-          width: $chip-avatar-size;
         }
       }
 
@@ -247,16 +225,14 @@
       @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5dark' ) {
         height: $chip-touch-text-height;
       }
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
         line-height: $chip-touch-text-line-height;
       }
     }
 
     .e-chip-avatar {
+      @include bigger-style($chip-touch-avatar-size, $chip-touch-avatar-size, $chip-touch-avatar-margin);
       font-size: $chip-touch-avatar-content-font-size;
-      height: $chip-touch-avatar-size;
-      margin: $chip-touch-avatar-margin;
-      width: $chip-touch-avatar-size;
       @if $skin-name == 'Material3' {
         border-radius: $chip-touch-avatar-wrapper-border-radius;
       }
@@ -269,20 +245,16 @@
 
     .e-chip-icon {
       font-size: $chip-touch-leading-icon-font-size;
-      height: $chip-touch-leading-icon-size;
-      margin: $chip-touch-leading-icon-margin;
-      width: $chip-touch-leading-icon-size;
+      @include bigger-style($chip-touch-leading-icon-size, $chip-touch-leading-icon-size, $chip-touch-leading-icon-margin);
     }
 
     .e-chip-delete {
+      @include bigger-style($chip-touch-delete-icon-size, $chip-touch-delete-icon-size, $chip-touch-delete-icon-margin);
       font-size: $chip-touch-delete-icon-font-size;
-      height: $chip-touch-delete-icon-size;
       @if $skin-name == 'Material3' {
         line-height: $chip-touch-delete-icon-height;
         height: $chip-touch-delete-icon-height;
       }
-      margin: $chip-touch-delete-icon-margin;
-      width: $chip-touch-delete-icon-size;
 
       @if $skin-name == 'bootstrap4' {
         &.e-dlt-btn::before {
@@ -295,29 +267,28 @@
           font-size: 13px;
         }
       }
+      @else if $skin-name == 'fluent2' {
+        &.e-dlt-btn::before {
+          font-size: 16px;
+        }
+      }
     }
 
     .trailing-icon-url {
+      @include bigger-style($chip-touch-delete-icon-size, $chip-touch-delete-icon-size, $chip-touch-delete-icon-margin);
       font-size: $chip-touch-delete-icon-font-size;
-      height: $chip-touch-delete-icon-size;
-      margin: $chip-touch-delete-icon-margin;
-      width: $chip-touch-delete-icon-size;
     }
 
     &.e-multi-selection .e-chip {
       &::before {
-        height: $chip-touch-leading-icon-size;
-        margin: $chip-touch-multi-selection-icon-margin;
+        @include bigger-style($chip-touch-leading-icon-size, $chip-touch-leading-icon-size, $chip-touch-multi-selection-icon-margin);
         margin-top: $chip-multi-selection-icon-margin-top;
-        width: $chip-touch-leading-icon-size;
       }
 
       &.e-chip-avatar-wrap {
         &::before {
-          height: $chip-touch-avatar-size;
-          margin: $chip-touch-avatar-margin;
+          @include bigger-style($chip-touch-avatar-size, $chip-touch-avatar-size, $chip-touch-avatar-margin);
           margin-top: $chip-multi-selection-icon-margin-top;
-          width: $chip-touch-avatar-size;
         }
       }
 

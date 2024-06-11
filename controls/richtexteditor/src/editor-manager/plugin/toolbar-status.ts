@@ -3,7 +3,7 @@ import * as CONSTANT from './../base/constant';
 import { NodeSelection } from './../../selection/index';
 import { IToolbarStatus } from './../../common/interface';
 import { getDefaultHtmlTbStatus } from './../../common/util';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Update Toolbar Status
  *
@@ -68,6 +68,9 @@ export class ToolbarStatus {
             }
             if ((index === 0 && formatCollection.insertcode) || !formatCollection.insertcode) {
                 nodeCollection.insertcode = formatCollection.insertcode;
+            }
+            if ((index === 0 && formatCollection.blockquote) || !formatCollection.blockquote) {
+                nodeCollection.blockquote = formatCollection.blockquote;
             }
             if ((index === 0 && formatCollection.italic) || !formatCollection.italic) {
                 nodeCollection.italic = formatCollection.italic;
@@ -218,6 +221,26 @@ export class ToolbarStatus {
                 formatCollection.insertcode = true;
             }
         }
+        if (!formatCollection.blockquote) {
+            let currentFormatCollection: string;
+            if (!isNullOrUndefined(formatNode)) {
+                if (formatNode.indexOf('blockquote') > -1) {
+                    formatCollection.formats = this.isFormats(node, formatNode);
+                    currentFormatCollection = formatCollection.formats;
+                } else {
+                    formatNode.push('blockquote');
+                    currentFormatCollection = this.isFormats(node, formatNode);
+                    for (let i: number = formatNode.length - 1; i >= 0; i--) {
+                        if (formatNode[i as number] === 'blockquote') {
+                            formatNode.splice(i, 1);
+                        }
+                    }
+                }
+            }
+            if (currentFormatCollection === 'blockquote') {
+                formatCollection.blockquote = true;
+            }
+        }
         if (!formatCollection.createlink) {
             formatCollection.createlink = this.isLink(node);
         }
@@ -281,16 +304,15 @@ export class ToolbarStatus {
         let index: number = null;
         if ((name !== null && name !== '' && name !== undefined)
             && (fontName === null || fontName === undefined || (fontName.filter((value: string, pos: number) => {
-                // eslint-disable-next-line
-                const pattern: RegExp = new RegExp(name, 'i');
+                const regExp: RegExpConstructor = RegExp;
+                const pattern: RegExp = new regExp(name, 'i');
                 if ((value.replace(/"/g, '').replace(/ /g, '').toLowerCase() === name.replace(/"/g, '').replace(/ /g, '').toLowerCase()) ||
                     (value.split(',')[0] && !isNullOrUndefined(value.split(',')[0].trim().match(pattern)) &&
                     value.split(',')[0].trim() === value.split(',')[0].trim().match(pattern)[0])) {
                     index = pos;
                 }
             }) && (index !== null)))) {
-            // eslint-disable-next-line
-            return (index !== null) ? fontName[index] : name.replace(/"/g, '');
+            return (index !== null) ? fontName[index as number] : name.replace(/"/g, '');
         } else {
             return null;
         }

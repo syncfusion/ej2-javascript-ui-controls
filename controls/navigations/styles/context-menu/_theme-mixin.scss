@@ -2,10 +2,16 @@
   @if $skin-name != 'bootstrap5' {
     & .e-caret {
       color: $cmenu-caret-color;
+      @if $skin-name == 'fluent2' {
+        color: $cmenu-hover-icon-color;
+      }
     }
   
     & .e-menu-icon {
       color: $cmenu-icon-color;
+      @if $skin-name == 'fluent2' {
+        color: $cmenu-hover-icon-color;
+      }
     }
   }
 }
@@ -34,6 +40,9 @@
   color: $cmenu-li-selection-font-color;
   outline: $cmenu-li-hover-outline;
   outline-offset: $cmenu-li-hover-outline-offset;
+  @if $skin-name == 'fluent2' {
+    border-radius: 4px;
+  }
 }
 
 @mixin selected-color {
@@ -41,6 +50,10 @@
   color: $cmenu-selected-color;
   outline: $cmenu-li-selected-outline;
   outline-offset: $cmenu-li-selected-outline-offset;
+  @if $skin-name == 'fluent2' {
+    border-radius: 4px;
+    box-shadow: none;
+  }
 }
 
 @mixin disabled-color {

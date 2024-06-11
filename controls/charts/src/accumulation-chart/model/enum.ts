@@ -90,6 +90,10 @@ export type AccumulationTheme =
     'Fluent' |
     /**  Render a accumulation chart with FluentDark theme. */
     'FluentDark' |
+    /**  Render a accumulation chart with Fluent 2 theme. */
+    'Fluent2' |
+    /**  Render a accumulation chart with Fluent 2 dark theme. */
+    'Fluent2Dark' |
     /**  Render a accumulation chart with Material 3 theme. */
     'Material3' |
     /**  Render a accumulation chart with Material 3 dark theme. */

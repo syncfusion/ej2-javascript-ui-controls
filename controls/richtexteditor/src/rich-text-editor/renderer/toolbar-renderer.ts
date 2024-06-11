@@ -14,6 +14,7 @@ import { ColorPicker, PaletteTileEventArgs, ModeSwitchEventArgs } from '@syncfus
 import { hasClass } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { ToolbarStatus } from '../../editor-manager/plugin/toolbar-status';
+import { IToolbarStatus } from '../../common/interface';
 
 /**
  * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
@@ -121,6 +122,9 @@ export class ToolbarRenderer implements IRenderer {
         }
         if (args.target.querySelector('.e-active')) {
             args.cancel = true;
+            if (!isNOU(args.target.getAttribute('title'))) {
+                this.closeTooltip({ target: args.target, isTitle: true });
+            }
         }
     }
 
@@ -222,7 +226,6 @@ export class ToolbarRenderer implements IRenderer {
                     args.cancel = true;
                     return;
                 }
-                // eslint-disable-next-line
                 // Table styles dropdown preselect
                 if (proxy.parent.editorMode !== 'Markdown') {
                     const startNode: HTMLElement = proxy.parent.getRange().startContainer.parentElement;
@@ -291,13 +294,14 @@ export class ToolbarRenderer implements IRenderer {
                     if ((args.items[0 as number] as IDropDownItemModel).command === 'Formats' || (args.items[0 as number] as IDropDownItemModel).command === 'Font') {
                         const fontName: string[] = [];
                         const formats: string[] = [];
+                        let hasUpdatedActive: boolean = false;
                         this.parent.format.types.forEach((item: IDropDownItemModel): void => {
                             formats.push(item.value.toLocaleLowerCase());
                         });
                         this.parent.fontFamily.items.forEach((item: IDropDownItemModel): void => {
                             fontName.push(item.value);
                         });
-                        const toolbarStatus = ToolbarStatus.get(
+                        const toolbarStatus: IToolbarStatus = ToolbarStatus.get(
                             this.parent.contentModule.getDocument(),
                             this.parent.contentModule.getEditPanel(),
                             formats,
@@ -307,13 +311,16 @@ export class ToolbarRenderer implements IRenderer {
                         for (let index: number = 0; index < args.element.childNodes.length; index++) {
                             const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
                             divNode.innerHTML = dropDown.content.trim();
-                            if ((divNode.textContent.trim() !== ''
+                            if (!hasUpdatedActive && ((divNode.textContent.trim() !== ''
                                 && args.element.childNodes[index as number].textContent.trim() === divNode.textContent.trim()) ||
                                 (((args.items[0 as number] as IDropDownItemModel).command === 'Formats' && !isNOU(toolbarStatus.formats) && this.parent.format.types[index as number].value.toLowerCase() === toolbarStatus.formats.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.format.types[index as number].cssClass))
                                     || ((args.items[0 as number] as IDropDownItemModel).subCommand === 'FontName' && (args.items[0 as number] as IDropDownItemModel).command === 'Font' && !isNOU(toolbarStatus.fontname) && !isNOU(this.parent.fontFamily.items[index as number]) && this.parent.fontFamily.items[index as number].value.toLowerCase() === toolbarStatus.fontname.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.fontFamily.items[index as number].cssClass)))
+                                || ((((args.items[0 as number] as IDropDownItemModel).subCommand === 'FontName') && this.parent.fontFamily.items[index as number].value === '' && isNullOrUndefined(toolbarStatus.fontname) && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.fontFamily.items[index as number].cssClass)) ||
+                                    (((args.items[0 as number] as IDropDownItemModel).subCommand === 'FontSize') && args.element.childNodes[index as number].textContent === 'Default' && divNode.textContent === 'Font Size' && this.parent.fontSize.items[index as number].value === '' && !isNullOrUndefined(toolbarStatus.fontsize))))
                             ) {
                                 if (!(args.element.childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
                                     addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                    hasUpdatedActive = true;
                                 }
                             } else {
                                 removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
@@ -347,13 +354,18 @@ export class ToolbarRenderer implements IRenderer {
         this.tooltipTargetEle.removeAttribute('data-title');
         EventHandler.remove(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler);
     }
-    private closeTooltip(args:{[key: string]: HTMLElement} ){
-        const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
-            this.parent.contentModule.getDocument();
-        this.tooltipTargetEle = closest(args.target as HTMLElement, '[data-tooltip-id]');
-        if (!isNOU(this.tooltipTargetEle) && this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
-            this.destroyTooltip();
-             if (!this.tooltipTargetEle.closest('.e-rte-quick-popup')) {
+    private closeTooltip(args: { [key: string]: HTMLElement | boolean }): void {
+        if (args.isTitle as boolean) {
+            this.tooltipTargetEle = args.target as HTMLElement;
+            this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
+            this.tooltipTargetEle.removeAttribute('title');
+            EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+        } else {
+            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+                this.parent.contentModule.getDocument();
+            this.tooltipTargetEle = closest(args.target as HTMLElement, '[data-tooltip-id]');
+            if (!isNOU(this.tooltipTargetEle) && this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
+                this.destroyTooltip();
                 this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
                 this.tooltipTargetEle.removeAttribute('title');
                 EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
@@ -410,7 +422,7 @@ export class ToolbarRenderer implements IRenderer {
                         addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
                     }
                 }
-                this.closeTooltip({target:args.event.target as HTMLElement});
+                this.closeTooltip({target: args.event.target as HTMLElement});
                 if (proxy.parent.readonly || !proxy.parent.enabled) {
                     args.cancel = true;
                     return;
@@ -565,7 +577,7 @@ export class ToolbarRenderer implements IRenderer {
                     return;
                 }
             },
-            close: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
+            close: (): void => {
                 proxy.parent.notify(events.selectionRestore, {});
             }
         });
@@ -621,6 +633,7 @@ export class ToolbarRenderer implements IRenderer {
             cssClass : ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass + ' ' + 'e-rte-picker-init',
             created: () => {
                 const value: string = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
+                colorPicker.setProperties({ value: value });
                 colorPicker.cssClass = ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass;
                 colorPicker.value = value;
             },

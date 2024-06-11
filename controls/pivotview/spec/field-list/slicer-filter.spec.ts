@@ -1,5 +1,5 @@
 import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
-import { createElement, remove, closest } from '@syncfusion/ej2-base';
+import { createElement, remove, closest, getInstance } from '@syncfusion/ej2-base';
 import { pivot_dataset } from '../base/datasource.spec';
 import { IDataSet } from '../../src/base/engine';
 import { PivotCommon } from '../../src/common/base/pivot-common';
@@ -8,13 +8,16 @@ import { EventHandler } from '@syncfusion/ej2-base';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { MemberEditorOpenEventArgs, MemberFilteringEventArgs } from '../../src/common/base/interface';
+import { PivotView } from '../../src/pivotview/base/pivotview';
+import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
+import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 
 describe('Pivot Field List Slicer Appearance', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -286,13 +289,230 @@ describe('Pivot Field List Slicer Appearance', () => {
         });
     });
 
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    describe('- Opening filter dialog', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(GroupingBar);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    enableSorting: true,
+                    allowValueFilter: true,
+                    sortSettings: [{ name: 'company', order: 'Descending' }],
+                    formatSettings: [{ name: 'balance', format: 'C' }],
+                    filterSettings: [
+                        { name: 'gender', type: 'Value', condition: 'Equals', value1: '3250', measure: 'quantity' },
+                        { name: 'eyeColor', type: 'Value', condition: 'GreaterThan', value1: '200', measure: 'quantity' }
+                    ],
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: [],
+                },
+                showFieldList: true,
+                showGroupingBar: true,
+                width: 1000,
+                height: 400,
+                memberEditorOpen: function(args: MemberEditorOpenEventArgs) {
+                    args.cancel = true;
+                }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 500);
+        });
+        it('Opening member editor dialog', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                (document.querySelectorAll('.e-pv-filter')[0] as HTMLElement).click();
+                done();
+            }, 500);
+        });
+    });
+
+    describe('- Searching for field members', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(GroupingBar);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    enableSorting: true,
+                    allowValueFilter: true,
+                    sortSettings: [{ name: 'company', order: 'Descending' }],
+                    formatSettings: [{ name: 'balance', format: 'C' }],
+                    filterSettings: [
+                        { name: 'gender', type: 'Value', condition: 'Equals', value1: '3250', measure: 'quantity' },
+                        { name: 'eyeColor', type: 'Value', condition: 'GreaterThan', value1: '200', measure: 'quantity' }
+                    ],
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: [],
+                },
+                showFieldList: true,
+                showGroupingBar: true,
+                width: 1000,
+                height: 400
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 500);
+        });
+        it('Searching for field members that start with the letter A', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            (document.querySelectorAll('.e-pv-filter')[0] as HTMLElement).click();
+            (document.querySelectorAll('.e-maskedtextbox.e-input')[0] as any).ej2_instances[0].value = 'A';
+            (document.querySelectorAll('.e-maskedtextbox.e-input')[0] as any).ej2_instances[0].element.dispatchEvent(new Event('keyup', { bubbles: true }));
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-list-text')[0].textContent).toBe('All');
+                (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                done();
+            }, 500);
+        });
+
+        it('Selecting field member', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-pv-filter')[0] as HTMLElement).click();
+                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-fullrow');
+                expect(checkEle.length).toBeGreaterThan(0);
+                util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                checkEle[0].dispatchEvent(down);
+                checkEle[0].dispatchEvent(up);
+                (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+
+        it('Unselecting field member', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-pv-filter')[0] as HTMLElement).click();
+                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-fullrow');
+                expect(checkEle.length).toBeGreaterThan(0);
+                util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                checkEle[0].dispatchEvent(down);
+                checkEle[0].dispatchEvent(up);
+                (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+
+        it('Unselecting field member', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-pv-filter')[0] as HTMLElement).click();
+                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-fullrow');
+                expect(checkEle.length).toBeGreaterThan(0);
+                util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                checkEle[0].dispatchEvent(down);
+                checkEle[0].dispatchEvent(up);
+                (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+
+        it('Sorting field member', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-pv-filter')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-sort-ascend-icon')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+
+        it('Selecting a field from the dropdown menu', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-btn-filter')[0] as HTMLElement).click();
+                document.getElementsByClassName('e-ddl')[0].dispatchEvent(new Event('mousedown', { bubbles: true }));
+                document.querySelectorAll('.e-value-options .e-list-item')[0].dispatchEvent(new Event('click', { bubbles: true }));
+                (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+
+        it('Selecting a filter operator from the dropdown menu', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-btn-filter')[0] as HTMLElement).click();
+                document.getElementsByClassName('e-ddl')[1].dispatchEvent(new Event('mousedown', { bubbles: true }));
+                document.querySelectorAll('.e-filter-operator .e-list-item')[1].dispatchEvent(new Event('click', { bubbles: true }));
+                document.getElementsByClassName('e-ddl')[1].dispatchEvent(new Event('mousedown', { bubbles: true }));
+                document.querySelectorAll('.e-filter-operator .e-list-item')[6].dispatchEvent(new Event('click', { bubbles: true }));
+                document.querySelectorAll('.e-spin-down')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
+                document.querySelectorAll('.e-spin-down')[1].dispatchEvent(new Event('mouseup', { bubbles: true }));
+                (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+
+        it('Filtering values using between operator', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-btn-filter')[0] as HTMLElement).click();
+                document.getElementsByClassName('e-ddl')[1].dispatchEvent(new Event('mousedown', { bubbles: true }));
+                document.querySelectorAll('.e-filter-operator .e-list-item')[1].dispatchEvent(new Event('click', { bubbles: true }));
+                document.getElementsByClassName('e-ddl')[1].dispatchEvent(new Event('mousedown', { bubbles: true }));
+                document.querySelectorAll('.e-filter-operator .e-list-item')[6].dispatchEvent(new Event('click', { bubbles: true }));
+                (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
     });
 });

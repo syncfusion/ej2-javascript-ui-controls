@@ -140,7 +140,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
     /**
      * Sets and gets the options to customize the style properties of the border for range tooltip.
      */
-    @Complex<BorderModel>({}, Border)
+    @Complex<BorderModel>({ color: null }, Border)
     public border: BorderModel;
 
     /**
@@ -203,7 +203,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
     /**
      * Sets and gets the options to customize the style properties of the border for annotation tooltip.
      */
-    @Complex<BorderModel>({}, Border)
+    @Complex<BorderModel>({ color: null }, Border)
     public border: BorderModel;
 
 }
@@ -321,7 +321,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Sets and gets the options to customize the style properties of the border for pointer tooltip.
      */
-    @Complex<BorderModel>({}, Border)
+    @Complex<BorderModel>({ color: null }, Border)
     public border: BorderModel;
 
     /**
@@ -344,7 +344,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 /**
  * Sets and gets the location of the legend in circular gauge.
  */
- export class Location extends ChildProperty<Location>  {
+export class Location extends ChildProperty<Location>  {
     /**
      * Sets and gets the X coordinate of the legend in the circular gauge.
      *

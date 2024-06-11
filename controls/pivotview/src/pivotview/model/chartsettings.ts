@@ -24,7 +24,7 @@ import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs, Selection
 import { PivotSeriesModel, PivotAxisModel, PivotTooltipSettingsModel, PivotZoomSettingsModel } from './chartsettings-model';
 import { PivotPieChartCenterModel, PivotChartDataLabelModel, PivotChartConnectorStyleModel } from './chartsettings-model';
 import { ChartSeriesType, ChartSelectionMode } from '../../common/base/enum';
-import { Theme } from '../../common/base/themes';
+import { axisLabelFont, axisTitleFont, chartSubTitleFont, chartTitleFont, crosshairLabelFont, legendLabelFont, stripLineLabelFont, tooltipLabelFont } from '../../common/base/themes';
 import { MultiLevelLabelClickEventArgs, MultiLevelLabelRenderEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
 import { LabelPosition, MultipleAxisMode } from '../../common/base/enum';
 
@@ -1086,7 +1086,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
     /**
      * Allows options to customize the crosshair ToolTip text.
      */
-    @Complex<PivotChartFontModel>(Theme.crosshairLabelFont, Font)
+    @Complex<PivotChartFontModel>(crosshairLabelFont, Font)
     public textStyle: PivotChartFontModel;
 
 }
@@ -1275,7 +1275,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
     /**
      * Allows options to customize the strip line text.
      */
-    @Complex<PivotChartFontModel>(Theme.stripLineLabelFont, Font)
+    @Complex<PivotChartFontModel>(stripLineLabelFont, Font)
     public textStyle: PivotChartFontModel;
 
     /**
@@ -2047,7 +2047,7 @@ export class PivotChartAxisCrosshairTooltip {
     /**
      * Allows options to customize the crosshair ToolTip text.
      */
-    @Complex<PivotChartFontModel>(Theme.crosshairLabelFont, Font)
+    @Complex<PivotChartFontModel>(crosshairLabelFont, Font)
     public textStyle: PivotChartFontModel;
 }
 /**
@@ -2373,7 +2373,7 @@ export class PivotChartAxisStripLineSettings {
     /**
      * Allows options to customize the strip line text.
      */
-    @Complex<PivotChartFontModel>(Theme.stripLineLabelFont, Font)
+    @Complex<PivotChartFontModel>(stripLineLabelFont, Font)
     public textStyle: PivotChartFontModel;
 
     /**
@@ -2577,7 +2577,7 @@ export class PivotChartSettingsLegendSettings {
     /**
      * Allows options to customize the legend text.
      */
-    @Complex<PivotChartFontModel>(Theme.legendLabelFont, Font)
+    @Complex<PivotChartFontModel>(legendLabelFont, Font)
     public textStyle: PivotChartFontModel;
 
     /**
@@ -3118,7 +3118,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
     /**
      * Allows options to customize the axis label.
      */
-    @Complex<PivotChartFontModel>(Theme.axisLabelFont, Font)
+    @Complex<PivotChartFontModel>(axisLabelFont, Font)
     public labelStyle: PivotChartFontModel;
 
     /**
@@ -3155,7 +3155,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
     /**
      * Allows options for customizing the axis title.
      */
-    @Complex<PivotChartFontModel>(Theme.axisTitleFont, Font)
+    @Complex<PivotChartFontModel>(axisTitleFont, Font)
     public titleStyle: PivotChartFontModel;
 
     /**
@@ -3439,7 +3439,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
     /**
      * Allows options to customize the ToolTip text.
      */
-    @Complex<PivotChartFontModel>(Theme.tooltipLabelFont, Font)
+    @Complex<PivotChartFontModel>(tooltipLabelFont, Font)
     public textStyle: PivotChartFontModel;
 
     /**
@@ -3739,7 +3739,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allow options to customize the title in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
      */
-    @Complex<PivotChartFontModel>(Theme.chartTitleFont, Font)
+    @Complex<PivotChartFontModel>(chartTitleFont, Font)
     public titleStyle: PivotChartFontModel;
 
     /**
@@ -3753,7 +3753,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allow options to customize the subtitle in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
      */
-    @Complex<PivotChartFontModel>(Theme.chartSubTitleFont, Font)
+    @Complex<PivotChartFontModel>(chartSubTitleFont, Font)
     public subTitleStyle: PivotChartFontModel;
 
     /**

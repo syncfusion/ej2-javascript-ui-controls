@@ -33,8 +33,6 @@ describe('Map layer testing', () => {
             document.body.appendChild(ele);
             label = new Maps({
                 layers: [{
-                    layerType: 'Geometry',
-
                     dataLabelSettings: {
                         visible: true,
                         labelPath: 'name',
@@ -331,6 +329,63 @@ describe('Map layer testing', () => {
                 expect(spec.innerHTML).toBe('4.00');
             };
         });
+        it('testing datalabel from datasource as null', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById('label_LayerIndex_0_dataLableIndex_Group');
+                expect(spec.childElementCount).toBe(0);
+            };
+            label.layers[0].dataSource = null;
+            label.refresh();
+        });
+    });
+    describe('testing datalabel with zoomByPosition method', () => {
+        let id: string = 'label';
+        let label: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            label = new Maps({
+                zoomSettings: {
+                    enable: true,
+                    zoomFactor: 2
+                },
+                format: 'c',
+                useGroupingSeparator: true,
+                layers: [
+                    {
+                        urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
+                    },
+                    {
+                        type: 'SubLayer',
+                        dataSource : electiondata,
+                        shapeDataPath:'State',
+                        shapePropertyPath:['name', 'admin'],
+                        dataLabelSettings: {
+                            visible: true,
+                            labelPath : 'Electors',
+                            textStyle: { size: '10px' },
+                        },
+                        shapeSettings: {
+                            fill: '#C3E6ED',
+                        },
+                        shapeData: usMap,
+                    },
+                ]
+            }, '#' + id)
+        });
+        afterAll(() => {
+            remove(ele);
+            label.destroy();
+        });        
+        it('testing datalabel zoomByPosition', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById('label_LayerIndex_0_shapeIndex_4_LabelIndex_4');
+                expect(spec.innerHTML).toBe('4.00');
+            };
+            label.zoomByPosition({ latitude: 33.5302186, longitude: -117.7418381 }, 5);
+        });
     });
     describe('datalabel border testing with enable zoom', () => {
         let id: string = 'label';
@@ -345,8 +400,6 @@ describe('Map layer testing', () => {
             document.body.appendChild(ele);
             label = new Maps({
                 layers: [{
-                    layerType: 'Geometry',
-
                     dataLabelSettings: {
                         visible: true,
                         labelPath: 'name',
@@ -397,7 +450,6 @@ describe('Map layer testing', () => {
           document.body.appendChild(ele);
           label = new Maps({
               layers: [{
-                  layerType: 'Geometry',
                   shapePropertyPath: ["continent", "admin", "name" ],
                   dataLabelSettings: {
                       visible: true,

@@ -20,6 +20,7 @@ import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHa
 import { getDirectoryPath, updateRenamingData, getItemName, doDeleteFiles, doDownloadFiles } from '../common/index';
 import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs  } from '@syncfusion/ej2-grids';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * DetailsView module
  */
@@ -109,7 +110,6 @@ export class DetailsView {
         showSpinner(this.parent.element);
         if (this.parent.view === 'Details') {
             removeClass([this.parent.element], CLS.MULTI_SELECT);
-            // eslint-disable-next-line
             const items: Object[] = getSortedData(this.parent, args.files);
             this.checkNameWidth();
             const columns: ColumnModel[] = this.getColumns();
@@ -149,8 +149,7 @@ export class DetailsView {
                 width: '100%',
                 height: (this.parent.enableVirtualization) ? this.getGridHeight() : 'auto',
                 beforeCopy: (args: BeforeCopyEventArgs) => { args.cancel = true; },
-                // eslint-disable-next-line
-                load: function (args: Object): void {
+                load: function (): void {
                     this.focusModule.destroy();
                 },
                 locale: this.parent.locale
@@ -169,19 +168,19 @@ export class DetailsView {
     }
 
     private reactTemplateRender(args: Object[]): void {
-        (this.parent as any)[`portals`] = args;
+        (this.parent as any)['portals'] = args;
         if ((this.parent as any).portals && this.parent.toolbarModule && this.parent.toolbarModule.toolbarObj &&
             (this.parent.toolbarModule.toolbarObj as any).portals) {
-            (this.parent as any)[`portals`] = (this.parent as any)[`portals`].concat((this.parent.toolbarModule.toolbarObj as any).portals);
+            (this.parent as any)['portals'] = (this.parent as any)['portals'].concat((this.parent.toolbarModule.toolbarObj as any).portals);
         }
-        this.parent.notify('renderReactTemplate', (this.parent as any)[`portals`]);
-        (this.parent as any)[`renderReactTemplates`]();
+        this.parent.notify('renderReactTemplate', (this.parent as any)['portals']);
+        (this.parent as any)['renderReactTemplates']();
     }
 
     /**
      * Gets the grid height.
      *
-     * @returns The grid height.
+     * @returns {number} - The grid height.
      * @private
      */
     private getGridHeight(): number {
@@ -222,15 +221,15 @@ export class DetailsView {
 
     private getColumns(): ColumnModel[] {
         let columns: ColumnModel[];
-        let enableHtmlSanitizer: boolean = this.parent.enableHtmlSanitizer;
+        const enableHtmlSanitizer: boolean = this.parent.enableHtmlSanitizer;
         if (this.parent.isMobile) {
             columns = [
                 {
                     field: 'name', headerText: getLocaleText(this.parent, 'Name'), width: 'auto', minWidth: 120, headerTextAlign: 'Left',
-                    template: initializeCSPTemplate(function(data: any) {
+                    template: initializeCSPTemplate(function(data: any): string | Function {
                         const name: string = enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(data.name) : data.name;
                         return `<div class="e-fe-text">${name}</div><div class="e-fe-date">${data._fm_modified}</div><span class="e-fe-size">${data.size}</span>`;
-                    }) as any
+                    }) as string | Function
                 }
             ];
         } else {
@@ -240,7 +239,7 @@ export class DetailsView {
                 columns[i as number].headerText = getLocaleText(this.parent, columns[i as number].headerText);
                 if (columns[i as number].field === 'name' && !isNOU(columns[i as number].template) && !(typeof columns[i as number].template === 'function')) {
                     const template: string | Function = columns[i as number].template;
-                    columns[i as number].template = initializeCSPTemplate(function (data: any) {
+                    columns[i as number].template = initializeCSPTemplate(function (data: any): string | Function {
                         const name: string = enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(data.name) : data.name;
                         return (template as any).replace(/\${name}/g, name);
                     });
@@ -250,12 +249,12 @@ export class DetailsView {
         const iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
         const icon: ColumnModel = {
             field: 'type', width: iWidth, minWidth: iWidth,
-            template: initializeCSPTemplate(function(data: any) {
+            template: initializeCSPTemplate(function(data: any): string | Function  {
                 return `<span class="e-fe-icon ${data._fm_iconClass}"></span>`;
-            }) as any, allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
-            headerTemplate: initializeCSPTemplate(function() {
-                return `<span class="e-fe-icon e-fe-folder"></span>`;
-            }) as any
+            }) as string | Function, allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
+            headerTemplate: initializeCSPTemplate(function(): string | Function {
+                return '<span class=\'e-fe-icon e-fe-folder\'></span>';
+            }) as string | Function
         };
         columns.unshift(icon);
         if (this.parent.showItemCheckBoxes) {
@@ -313,7 +312,8 @@ export class DetailsView {
             }
         }
         if (!this.parent.showFileExtension && getValue('isFile', args.data)) {
-            const textEle: Element = args.row.querySelector('.e-fe-text');
+            const text: string = getValue('name', args.data);
+            const textEle: Element = args.row.querySelector('[title= "' + text + '"]');
             if (textEle) {
                 const name: string = getValue('name', args.data);
                 const type: string = getValue('type', args.data);
@@ -346,7 +346,6 @@ export class DetailsView {
                 const dateEle: Element = args.row.querySelector('.e-fe-date');
                 const intl: Internationalization = new Internationalization(this.parent.locale);
                 const columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
-                // eslint-disable-next-line
                 let format: Object;
                 for (let i: number = 0; i < columns.length; i++) {
                     if (columns[i as number].field === 'dateModified') {
@@ -383,7 +382,6 @@ export class DetailsView {
                 let len: number = rows.length;
                 this.sortSelectedNodes = [];
                 while (len > 0) {
-                    // eslint-disable-next-line
                     const data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
                     this.sortSelectedNodes.push(getValue(this.parent.hasId ? 'id' : 'name', data));
                     len--;
@@ -402,10 +400,14 @@ export class DetailsView {
 
     private onBeforeDataBound(args: BeforeDataBoundArgs): void {
         showSpinner(this.parent.element);
-        let nameColumn = this.parent.detailsViewSettings.columns.find((column: ColumnModel) => column.field === this.parent.sortBy);
+        const nameColumn: ColumnModel =
+        this.parent.detailsViewSettings.columns.find((column: ColumnModel) => column.field === this.parent.sortBy);
         if (nameColumn && !('sortComparer' in nameColumn)) {
-            // eslint-disable-next-line
-            const items: Object[] = getSortedData(this.parent, (this.parent.enableVirtualization) ? args.result : this.gridObj.dataSource as Object[]);
+            const items: Object[] = getSortedData(
+                this.parent, (this.parent.enableVirtualization)
+                    ? args.result
+                    : this.gridObj.dataSource as Object[]
+            );
             args.result = items;
         }
     }
@@ -414,7 +416,7 @@ export class DetailsView {
         this.createDragObj();
         if ((this.parent.selectedItems.length !== 0 && !this.parent.enableVirtualization) ||
                 ((this.parent.selectedItems.length !== 0 && this.parent.enableVirtualization &&
-                this.element.querySelector('.e-content').scrollTop == 0))) {
+                this.element.querySelector('.e-content').scrollTop === 0))) {
             this.selectRecords(this.parent.selectedItems);
         }
         if (this.isPasteOperation === true) {
@@ -484,7 +486,6 @@ export class DetailsView {
     }
 
     private selectRecords(nodes: string[]): void {
-        // eslint-disable-next-line
         const gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
         const sRecords: number[] = [];
         for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
@@ -492,7 +493,7 @@ export class DetailsView {
             if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
-            else if (!this.parent.showFileExtension && node.includes('.')){
+            else if (!this.parent.showFileExtension && !this.parent.hasId && node.includes('.')){
                 const Str2: string = node.split('.').slice(0, -1).join('.');
                 if (nodes.indexOf(Str2) !== -1) {
                     sRecords.push(i);
@@ -505,17 +506,13 @@ export class DetailsView {
         }
     }
 
-    // eslint-disable-next-line
     private addSelection(data: Object): void {
-        // eslint-disable-next-line
         const items: Object[] = this.gridObj.getCurrentViewRecords();
-        // eslint-disable-next-line
         let rData: Object[] = [];
         if (this.parent.hasId) {
             rData = new DataManager(items).
                 executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
         } else {
-            // eslint-disable-next-line
             const nData: Object[] = new DataManager(items).
                 executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
             if (nData.length > 0) {
@@ -533,7 +530,6 @@ export class DetailsView {
         if (this.parent.sortOrder !== 'None') {
             this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
         } else {
-            // eslint-disable-next-line
             this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
         }
         if (this.element.querySelector('.e-content').scrollTop !== 0) {
@@ -641,7 +637,6 @@ export class DetailsView {
     }
 
     private checkEmptyDiv(args: ReadArgs | SearchArgs): void {
-        // eslint-disable-next-line
         const items: Object[] = getSortedData(this.parent, args.files);
         if (items.length === 0 && !isNOU(this.element.querySelector('.' + CLS.GRID_VIEW))) {
             createEmptyElement(this.parent, this.element, args);
@@ -657,7 +652,6 @@ export class DetailsView {
 
     private onOpenInit(): void {
         if (this.parent.activeModule === 'detailsview') {
-            // eslint-disable-next-line
             const data: Object = this.gridObj.getSelectedRecords()[0];
             this.openContent(data);
         }
@@ -665,7 +659,6 @@ export class DetailsView {
 
     public DblClickEvents(args: RecordDoubleClickEventArgs): void {
         this.gridObj.selectRows([args.rowIndex]);
-        // eslint-disable-next-line
         let data: Object;
         if (args.rowData) {
             data = JSON.parse(JSON.stringify(args.rowData));
@@ -673,7 +666,6 @@ export class DetailsView {
         }
     }
 
-    // eslint-disable-next-line
     public openContent(data: Object): void {
         if (!hasReadAccess(data)) {
             createDeniedDialog(this.parent, data, events.permissionRead);
@@ -766,7 +758,6 @@ export class DetailsView {
                 if (this.parent.sortOrder !== 'None') {
                     this.gridObj.sortColumn('name', this.parent.sortOrder);
                 } else {
-                    // eslint-disable-next-line
                     this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
                 }
                 this.parent.notify(events.sortByChange, {});
@@ -960,7 +951,6 @@ export class DetailsView {
 
     private onActionFailure(): void { this.interaction = true; }
 
-    // eslint-disable-next-line
     private onMenuItemData(args: { [key: string]: Object; }): void {
         if (this.parent.activeModule === this.getModuleName()) {
             this.parent.itemData = [this.gridObj.getRowInfo(<Element>args.target).rowData];
@@ -990,10 +980,10 @@ export class DetailsView {
         if (!dragLi) { return null; }
         let name: string;
         if (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]) {
-            name = this.parent.hasId ? (this.gridObj.getRowInfo(dragLi).rowData as any).id : (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
+            name = this.parent.hasId ? (this.gridObj.getRowInfo(dragLi).rowData as {[key: string]: Object}).id as string : (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
         }
         else if (<HTMLElement>dragLi.getElementsByClassName('e-rowcell e-templatecell')[0].nextElementSibling) {
-            name = this.parent.hasId ? (this.gridObj.getRowInfo(dragLi).rowData as any).id : (<HTMLElement>dragLi.getElementsByClassName('e-rowcell e-templatecell')[0].nextElementSibling).innerText;
+            name = this.parent.hasId ? (this.gridObj.getRowInfo(dragLi).rowData as { [key: string]: Object }).id as string : (<HTMLElement>dragLi.getElementsByClassName('e-rowcell e-templatecell')[0].nextElementSibling).innerText;
         }
         if (dragLi && !dragLi.querySelector('.e-active')) {
             this.selectRecords([name]);
@@ -1001,7 +991,6 @@ export class DetailsView {
         getModule(this.parent, dragLi);
         this.parent.activeElements = [];
         this.parent.dragData = [];
-        // eslint-disable-next-line
         this.parent.dragData = <{ [key: string]: Object; }[]>this.gridObj.getSelectedRecords();
         let dragRow: { [key: string]: Object; };
         if (this.parent.dragData.length === 0 && dragLi) {
@@ -1088,15 +1077,12 @@ export class DetailsView {
     private onDropInit(args: DragEventArgs): void {
         if (this.parent.targetModule === this.getModuleName()) {
             /* istanbul ignore next */
-            // eslint-disable-next-line
             const cwdData: Object = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (!args.target.closest('tr')) {
                 this.parent.dropPath = this.parent.path;
                 this.parent.dropData = cwdData;
             } else {
-                // eslint-disable-next-line
                 let info: { [key: string]: Object; } = null;
-                // eslint-disable-next-line
                 info = <{ [key: string]: Object; }>this.gridObj.getRowInfo(args.target).rowData;
                 this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
                 this.parent.dropData = info.isFile ? cwdData : info;
@@ -1201,7 +1187,6 @@ export class DetailsView {
             this.parent.currentItemText = getValue('name', args.data);
         }
         else if (len > 0) {
-            // eslint-disable-next-line
             const data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
             this.parent.currentItemText = getValue('name', data);
         }
@@ -1232,7 +1217,6 @@ export class DetailsView {
 
     private selectedRecords(): void {
         this.parent.setProperties({ selectedItems: [] }, true);
-        // eslint-disable-next-line
         const selectedRecords: Object[] = this.gridSelectNodes();
         let selectSize: number = 0;
         while (selectSize < selectedRecords.length) {
@@ -1306,27 +1290,25 @@ export class DetailsView {
 
     private wireClickEvent(toBind: boolean): void {
         if (toBind) {
-            // eslint-disable-next-line
-            const proxy: DetailsView = this;
             const ele: HTMLElement = <HTMLElement>this.gridObj.getContent();
             this.clickObj = new Touch(ele, {
                 tap: (eve: TapEventArgs) => {
                     if (eve.tapCount === 1 && (<HTMLElement>eve.originalEvent.target).classList.contains('e-content')) {
-                        proxy.onClearAllInit();
+                        this.onClearAllInit();
                     }
                 },
                 tapHold: (e: TapEventArgs) => {
-                    if (proxy.parent.isDevice) {
+                    if (this.parent.isDevice) {
                         e.originalEvent.preventDefault();
-                        if (proxy.parent.allowMultiSelection) {
-                            setValue('enableSelectMultiTouch', proxy.parent.allowMultiSelection, proxy.gridObj.selectionModule);
-                            addClass([proxy.parent.element], CLS.MULTI_SELECT);
+                        if (this.parent.allowMultiSelection) {
+                            setValue('enableSelectMultiTouch', this.parent.allowMultiSelection, this.gridObj.selectionModule);
+                            addClass([this.parent.element], CLS.MULTI_SELECT);
                         }
                         const target: Element = <Element>e.originalEvent.target;
                         if (target) {
                             const row: Element = closest(target, '.' + CLS.ROW);
-                            const index: number = proxy.gridObj.getRows().indexOf(row);
-                            proxy.gridObj.selectRow(index);
+                            const index: number = this.gridObj.getRows().indexOf(row);
+                            this.gridObj.selectRow(index);
                         }
                     }
                 }
@@ -1374,7 +1356,6 @@ export class DetailsView {
     }
 
     /* istanbul ignore next */
-    // eslint:disable-next-line
     private keydownHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         switch (e.action) {
@@ -1417,19 +1398,15 @@ export class DetailsView {
     }
 
     /* istanbul ignore next */
-    // eslint:disable-next-line
     private keyupHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         e.preventDefault();
         const action: string = e.action;
-        // eslint-disable-next-line
         const gridItems: object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
         const gridLength: number = gridItems.length;
-        const focItem: Element = this.getFocusedItem();
         const focIndex: number = this.getFocusedItemIndex();
         const selIndex: number = this.gridObj.selectedRowIndex;
         const selRowIndeces: number[] = this.gridObj.getSelectedRowIndexes();
-        // eslint-disable-next-line
         let rowData: object;
         let firstItem: string[];
         let lastItem: string[];
@@ -1459,7 +1436,6 @@ export class DetailsView {
             }
             rowData = this.gridObj.getRowsObject()[this.gridObj.selectedRowIndex].data;
             if (rowData) {
-                // eslint-disable-next-line
                 const data: object = JSON.parse(JSON.stringify(rowData));
                 this.openContent(data);
             }
@@ -1572,7 +1548,6 @@ export class DetailsView {
         }
     }
 
-    // eslint-disable-next-line
     public gridSelectNodes(): Object[] {
         return this.gridObj.getSelectedRecords();
     }
@@ -1580,7 +1555,6 @@ export class DetailsView {
     private doDownload(): void {
         if (this.parent.selectedItems.length !== 0) {
             this.parent.itemData = this.gridObj.getSelectedRecords();
-            // eslint-disable-next-line
             const items: Object[] = this.parent.itemData;
             for (let i: number = 0; i < items.length; i++) {
                 if (!hasDownloadAccess(items[i as number])) {
@@ -1595,7 +1569,6 @@ export class DetailsView {
     private performDelete(): void {
         if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
             this.parent.itemData = this.gridObj.getSelectedRecords();
-            // eslint-disable-next-line
             const items: Object[] = this.parent.itemData;
             for (let i: number = 0; i < items.length; i++) {
                 if (!hasEditAccess(items[i as number])) {
@@ -1615,12 +1588,10 @@ export class DetailsView {
     }
 
     private updateRenameData(): void {
-        // eslint-disable-next-line
         const data: Object = this.gridSelectNodes()[0];
         updateRenamingData(this.parent, data);
     }
 
-    // eslint-disable-next-line
     private shiftMoveMethod(gridItems: object[], selIndex: number, focIndex: number, selRowIndeces: number[], e: KeyboardEventArgs): void {
         if (!this.parent.allowMultiSelection) {
             this.moveFunction(gridItems, e, selIndex);
@@ -1636,7 +1607,6 @@ export class DetailsView {
         }
     }
 
-    // eslint-disable-next-line
     private moveFunction(selectedItems: object[], e: KeyboardEventArgs, rowIndex: number): void {
         if (!isNOU(this.getFocusedItem()) && this.parent.allowMultiSelection) {
             if (e.action === 'moveDown') {
@@ -1677,7 +1647,6 @@ export class DetailsView {
         }
     }
 
-    // eslint-disable-next-line
     private ctrlMoveFunction(items: object[], e: KeyboardEventArgs, rowIndex: number): void {
         let nextItem: number;
         if (!isNOU(this.getFocusedItem())) {
@@ -1695,7 +1664,6 @@ export class DetailsView {
         this.addFocus(nextItem);
     }
 
-    // eslint-disable-next-line
     private checkRowsKey(items: object[], indexValue: number, focIndex: (null | number), e: KeyboardEventArgs): void {
         if (this.gridObj.checkAllRows === 'Uncheck' || this.gridObj.checkAllRows === 'Intermediate') {
             if (e.action !== 'csHome' && e.action !== 'csEnd') {
@@ -1816,7 +1784,6 @@ export class DetailsView {
         return check;
     }
 
-    // eslint-disable-next-line
     private shiftSelectedItem(selIndex: number, selRowIndexes: number[], gridItems: object[], e: KeyboardEventArgs): void {
         if (selIndex === -1) {
             this.gridObj.selectRow(0);
@@ -1854,7 +1821,6 @@ export class DetailsView {
         }
     }
 
-    // eslint-disable-next-line
     private onMethodCall(e: Object): void {
         if (this.parent.view !== 'Details') { return; }
         const action: string = getValue('action', e);
@@ -1886,11 +1852,8 @@ export class DetailsView {
         }
     }
 
-    // eslint-disable-next-line
     private getRecords(nodes: string[]): Object[] {
-        // eslint-disable-next-line
         const gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
-        // eslint-disable-next-line
         const records: Object[] = [];
         const hasFilter: boolean = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
         const filter: string = this.parent.hasId ? 'id' : 'name';
@@ -1917,10 +1880,8 @@ export class DetailsView {
             this.performDelete();
             return;
         }
-        // eslint-disable-next-line
         const records: Object[] = this.getRecords(ids);
         if (records.length === 0) { return; }
-        // eslint-disable-next-line
         const data: Object[] = [];
         const newIds: string[] = [];
         for (let i: number = 0; i < records.length; i++) {
@@ -1935,10 +1896,8 @@ export class DetailsView {
             this.doDownload();
             return;
         }
-        // eslint-disable-next-line
         const dRecords: Object[] = this.getRecords(ids);
         if (dRecords.length === 0) { return; }
-        // eslint-disable-next-line
         const data: Object[] = [];
         const newIds: string[] = [];
         for (let i: number = 0; i < dRecords.length; i++) {
@@ -1950,7 +1909,6 @@ export class DetailsView {
 
     private openFile(id: string): void {
         if (isNOU(id)) { return; }
-        // eslint-disable-next-line
         const records: Object[] = this.getRecords([id]);
         if (records.length > 0) {
             this.openContent(records[0]);
@@ -1963,7 +1921,6 @@ export class DetailsView {
             this.performRename();
             return;
         }
-        // eslint-disable-next-line
         const records: Object[] = this.getRecords([id]);
         if (records.length > 0) {
             updateRenamingData(this.parent, records[0]);

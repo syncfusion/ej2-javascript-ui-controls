@@ -6,6 +6,7 @@ import { ShadowModel, RadialGradientModel, StopModel,LinearGradientModel } from 
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { NodeConstraints } from '../../../src/diagram/enum/enum';
 Diagram.Inject(BpmnDiagrams);
 
 /**
@@ -479,6 +480,70 @@ describe('Diagram Control', () => {
             let node2 = diagram.nameTable['text1'];
             diagram.remove(node2)
             expect(node1.outEdges.length === 0).toBe(true);
+            done();
+        })
+    });
+
+    describe('Code coverage-Bpmn', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramBpmn' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id:'start', width: 50, height: 50, offsetX: 250, offsetY: 250,shape:{type:'Bpmn',shape:'Event',event:{event:'Start'}}
+                    ,margin:{left:20,top:20}
+                },
+                {
+                    id: 'group', width: 200, height: 200, offsetX: 300, offsetY: 300,
+                    shape: { type: 'Bpmn', shape: 'Group',group: { type: 'group', children: ['start'] }} as any
+                },
+                {
+                    id: 'nonInterruptingStart', shape: { type: 'Bpmn', shape: 'Event',event:{event:'NonInterruptingStart'} }, width: 100, height: 100,
+                    margin: { left: 50, top: 50 }
+                },
+                 {
+                id: 'subProcess', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                offsetX: 600, offsetY: 400,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false, processes:['nonInterruptingStart']
+                        }
+                    },
+                },
+            }
+            ];
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: nodes
+            });
+            diagram.appendTo('#diagramBpmn');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking bpmn group rendering with start node',(done: Function) => {
+            let nodeCount = diagram.nodes.length;
+            expect(nodeCount === 4).toBe(true);
+            done();
+        })
+        it('Changing bpmn subProcess visibility with event node',(done: Function) => {
+            let subProcess = diagram.nameTable['subProcess'];
+            diagram.updateElementVisibility(subProcess.wrapper,subProcess,false);
+            diagram.updateElementVisibility(subProcess.wrapper,subProcess,true);
+            expect(subProcess.visible).toBe(true);
             done();
         })
     });

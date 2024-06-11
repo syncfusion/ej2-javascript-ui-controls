@@ -1,4 +1,4 @@
-﻿﻿﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper, animationMode } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { getElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper, animationMode } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { getElement } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {ExpandOnSettings,SortOrder,FailureEventArgs,DataBoundEventArgs,DataSourceChangedEventArgs,DrawNodeEventArgs,NodeKeyPressEventArgs,NodeCheckEventArgs,NodeClickEventArgs,NodeExpandEventArgs,DragAndDropEventArgs,NodeEditEventArgs,NodeSelectEventArgs} from "./treeview";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -225,6 +225,7 @@ export interface TreeViewModel extends ComponentModel{
      * });
      * treeObj.appendTo('#tree');
      * ```
+     *
      * @default []
      */
     checkedNodes?: string[];
@@ -249,6 +250,7 @@ export interface TreeViewModel extends ComponentModel{
      * padding: 10px 0;
      * }
      * ```
+     *
      * @default ''
      */
     cssClass?: string;
@@ -280,6 +282,7 @@ export interface TreeViewModel extends ComponentModel{
      * margin-left: 100px;
      * }
      * ```
+     *
      * @default null
      */
     dragArea?: HTMLElement | string;
@@ -297,6 +300,7 @@ export interface TreeViewModel extends ComponentModel{
      * });
      * treeObj.appendTo('#tree');
      * ```
+     *
      * @default true
      */
     enableHtmlSanitizer?: boolean;
@@ -326,6 +330,7 @@ export interface TreeViewModel extends ComponentModel{
      * treeObj.appendTo('#tree');
      * </script>
      * ```
+     *
      * @default []
      */
     expandedNodes?: string[];
@@ -348,6 +353,7 @@ export interface TreeViewModel extends ComponentModel{
      * });
      * treeObj.appendTo('#tree');
      * ```
+     *
      * @default 'Auto'
      */
     expandOn?: ExpandOnSettings;
@@ -419,6 +425,7 @@ export interface TreeViewModel extends ComponentModel{
      * });
      * treeObj.appendTo('#tree');
      * ```
+     *
      * @default []
      */
     selectedNodes?: string[];
@@ -458,159 +465,159 @@ export interface TreeViewModel extends ComponentModel{
     fullRowNavigable?: boolean;
 
     /**
-     * Event callback that is raised while any TreeView action failed to fetch the desired results.
+     * Event callback that is raised while any TreeView action failed to fetch the desired results.
      *
-     * @event
-     */
+     * @event actionFailure
+     */
     actionFailure?: EmitType<FailureEventArgs>;
 
     /**
      * Event callback that is raised when the TreeView component is created successfully.
      *
-     * @event
+     * @event created
      */
     created?: EmitType<Object>;
 
     /**
-     * Event callback that is raised when data source is populated in the TreeView.
+     * Event callback that is raised when data source is populated in the TreeView.
      *
-     * @event
-     */
+     * @event dataBound
+     */
     dataBound?: EmitType<DataBoundEventArgs>;
 
     /**
-     * Event callback that is raised when data source is changed in the TreeView. The data source will be changed after performing some operation like
+     * Event callback that is raised when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
      *
-     * @event
-     */
+     * @event dataSourceChanged
+     */
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
     /**
      * Event callback that is raised before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
      *
-     * @event
+     * @event drawNode
      */
     drawNode?: EmitType<DrawNodeEventArgs>;
 
     /**
      * Event callback that is raised when the TreeView control is destroyed successfully.
      *
-     * @event
+     * @event destroyed
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Event callback that is raised when key press is successful. It helps to customize the operations at key press.
      *
-     * @event
+     * @event keyPress
      */
     keyPress?: EmitType<NodeKeyPressEventArgs>;
 
     /**
      * Event callback that is raised when the TreeView node is checked/unchecked successfully.
      *
-     * @event
+     * @event nodeChecked
      */
     nodeChecked?: EmitType<NodeCheckEventArgs>;
 
     /**
      * Event callback that is raised before the TreeView node is to be checked/unchecked.
      *
-     * @event
+     * @event nodeChecking
      */
     nodeChecking?: EmitType<NodeCheckEventArgs>;
 
     /**
      * Event callback that is raised when the TreeView node is clicked successfully.
      *
-     * @event
+     * @event nodeClicked
      */
     nodeClicked?: EmitType<NodeClickEventArgs>;
 
     /**
-     * Event callback that is raised when the TreeView node collapses successfully.
+     * Event callback that is raised when the TreeView node collapses successfully.
      *
-     * @event
-     */
+     * @event nodeCollapsed
+     */
     nodeCollapsed?: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Event callback that is raised before the TreeView node collapses.
+     * Event callback that is raised before the TreeView node collapses.
      *
-     * @event
-     */
+     * @event nodeCollapsing
+     */
     nodeCollapsing?: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Event callback that is raised when the TreeView node is dragged (moved) continuously.
+     * Event callback that is raised when the TreeView node is dragged (moved) continuously.
      *
      * @deprecated
-     * @event
-     */
+     * @event nodeDragging
+     */
     nodeDragging?: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Event callback that is raised when the TreeView node drag (move) starts.
+     * Event callback that is raised when the TreeView node drag (move) starts.
      *
-     * @event
-     */
+     * @event nodeDragStart
+     */
     nodeDragStart?: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Event callback that is raised when the TreeView node drag (move) is stopped.
+     * Event callback that is raised when the TreeView node drag (move) is stopped.
      *
-     * @event
-     */
+     * @event nodeDragStop
+     */
     nodeDragStop?: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Event callback that is raised when the TreeView node is dropped on target element successfully.
+     * Event callback that is raised when the TreeView node is dropped on target element successfully.
      *
-     * @event
-     */
+     * @event nodeDropped
+     */
     nodeDropped?: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Event callback that is raised when the TreeView node is renamed successfully.
+     * Event callback that is raised when the TreeView node is renamed successfully.
      *
-     * @event
-     */
+     * @event nodeEdited
+     */
     nodeEdited?: EmitType<NodeEditEventArgs>;
 
     /**
-     * Event callback that is raised before the TreeView node is renamed.
+     * Event callback that is raised before the TreeView node is renamed.
      *
-     * @event
-     */
+     * @event nodeEditing
+     */
     nodeEditing?: EmitType<NodeEditEventArgs>;
 
     /**
-     * Event callback that is raised when the TreeView node expands successfully.
+     * Event callback that is raised when the TreeView node expands successfully.
      *
-     * @event
-     */
+     * @event nodeExpanded
+     */
     nodeExpanded?: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Event callback that is raised before the TreeView node is to be expanded.
+     * Event callback that is raised before the TreeView node is to be expanded.
      *
-     * @event
-     */
+     * @event nodeExpanding
+     */
     nodeExpanding?: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Event callback that is raised when the TreeView node is selected/unselected successfully.
+     * Event callback that is raised when the TreeView node is selected/unselected successfully.
      *
-     * @event
-     */
+     * @event nodeSelected
+     */
     nodeSelected?: EmitType<NodeSelectEventArgs>;
 
     /**
-     * Event callback that is raised before the TreeView node is selected/unselected.
+     * Event callback that is raised before the TreeView node is selected/unselected.
      *
-     * @event
-     */
+     * @event nodeSelecting
+     */
     nodeSelecting?: EmitType<NodeSelectEventArgs>;
 
 }

@@ -1,6 +1,4 @@
 @include export-module('carousel-theme') {
-
-  /*! carousel component theme */
   .e-carousel {
     .e-carousel-navigators {
 
@@ -18,6 +16,14 @@
         &:hover {
           background-color: $carousel-navigator-btn-bg-hover;
           outline: none;
+        }
+
+        @if $skin-name == 'fluent2' {
+          &:focus {
+            background-color: $carousel-navigator-btn-bg;
+            box-shadow: $carousel-navigator-btn-focus-box-shadow;
+            border-radius: 4px;
+          }
         }
       }
     }

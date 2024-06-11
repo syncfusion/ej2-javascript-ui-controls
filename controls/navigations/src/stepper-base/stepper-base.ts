@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, ChildProperty, Collection, removeClass, Event, EmitType } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, ChildProperty, Collection, Event, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { StepperBaseModel, StepModel } from './stepper-base-model';
 
 const PROGRESSVALUE: string = '--progress-value';
@@ -188,6 +188,7 @@ export class StepperBase extends Component<HTMLElement> implements INotifyProper
      * @private
      * @returns {void}
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     protected preRender(): void {
     }
 
@@ -195,7 +196,7 @@ export class StepperBase extends Component<HTMLElement> implements INotifyProper
      * This method is abstract member of the Component<HTMLElement>.
      *
      * @private
-     * @returns {string}
+     * @returns {string} - It returns the current module name.
      */
     public getModuleName(): string {
         return 'stepperBase';
@@ -205,7 +206,7 @@ export class StepperBase extends Component<HTMLElement> implements INotifyProper
      * This method is abstract member of the Component<HTMLElement>.
      *
      * @private
-     * @returns {string}
+     * @returns {string} - It returns the persisted data.
      */
     protected getPersistData(): string {
         return this.addOnPersist([]);
@@ -217,14 +218,17 @@ export class StepperBase extends Component<HTMLElement> implements INotifyProper
      * @private
      * @returns {void}
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     protected render(): void {
     }
 
     protected updateOrientaion(wrapper: HTMLElement): void {
         if (wrapper.classList.contains('e-horizontal') || wrapper.classList.contains('e-vertical')) {
-            wrapper.classList.contains('e-horizontal') ? wrapper.classList.remove('e-horizontal') : wrapper.classList.remove('e-vertical');
+            wrapper.classList.remove('e-horizontal', 'e-vertical');
         }
-        wrapper.classList.add('e-' + this.orientation.toLocaleLowerCase());
+        if (!(isNullOrUndefined(this.orientation))) {
+            wrapper.classList.add('e-' + this.orientation.toLocaleLowerCase());
+        }
     }
 
     protected renderProgressBar(wrapper: HTMLElement): void {
@@ -248,10 +252,10 @@ export class StepperBase extends Component<HTMLElement> implements INotifyProper
     protected setProgressPosition(wrapper: HTMLElement, isResize?: boolean): void {
         const stepItemContainer: HTMLElement = (wrapper.querySelector('.e-step-container'));
         const stepItemEle: HTMLElement = (stepItemContainer.firstElementChild as HTMLElement);
-        if (isResize != true) {
+        if (isResize !== true) {
             let topPos: number = 0;
             if (wrapper.classList.contains('e-label-before')) { topPos = ((stepItemContainer.offsetParent as HTMLElement).offsetHeight - (stepItemEle.offsetHeight / 2) - 1); }
-            else { topPos = (stepItemEle.offsetHeight / 2) }
+            else { topPos = (stepItemEle.offsetHeight / 2); }
             this.progressStep.style.setProperty('--progress-top-position', topPos + 'px');
         }
         const lastEle: HTMLElement = wrapper.querySelector('.e-stepper-steps').lastChild.firstChild as HTMLElement;
@@ -268,11 +272,12 @@ export class StepperBase extends Component<HTMLElement> implements INotifyProper
     /**
      * This method is abstract member of the Component<HTMLElement>.
      *
-     * @param newProp
-     * @param oldProp
+     * @param  {StepperBaseModel} newProp - Specifies new properties
+     * @param  {StepperBaseModel} oldProp - Specifies old properties
      * @private
      * @returns {void}
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public onPropertyChanged(newProp: StepperBaseModel, oldProp: StepperBaseModel): void {
     }
 }

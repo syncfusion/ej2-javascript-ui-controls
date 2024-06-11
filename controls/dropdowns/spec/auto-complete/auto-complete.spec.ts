@@ -4,7 +4,7 @@
 import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '@syncfusion/ej2-base';
 import { AutoComplete } from '../../src/auto-complete/index';
 import { FilteringEventArgs, PopupEventArgs } from '../../src/drop-down-base';
-import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 let languageData: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
@@ -1420,7 +1420,11 @@ describe('AutoComplete', () => {
             }, 450);
         });
         it(' trigger on remote data', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
             let isDataBound: boolean = false;
             dropDowns = new AutoComplete({
                 dataSource: remoteData,
@@ -1486,7 +1490,11 @@ describe('AutoComplete', () => {
         });
 
         it(' actionBegin event', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
             dropDowns = new AutoComplete({
                 dataSource: remoteData,
                 fields: { value: 'FirstName' },
@@ -1520,7 +1528,11 @@ describe('AutoComplete', () => {
         });
 
         it(' actionComplete event', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
             dropDowns = new AutoComplete({
                 dataSource: remoteData,
                 fields: { value: 'FirstName' },
@@ -2872,5 +2884,343 @@ describe("EJ2-842578 - Check that the aria-owns attribute does indeed contain th
             expect((element as any).getAttribute('aria-owns') === "ariaInput_popup").toBe(true);
         done();
         }, 100);
+    });
+});
+describe('Disable items', () => {
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+    let listObj: any;
+    let sportsData: { [key: string]: Object }[] = [ 
+        { "State": false, "Game": "American Football", "Id" : 'Game1' },
+        { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+        { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+        { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+        { "State": false, "Game": "Football", "Id" : 'Game5' },
+        { "State": false, "Game": "Golf", "Id" : 'Game6' },
+        { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+        { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+        { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+        { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+    
+    ]; 
+    beforeAll(() => {
+        document.body.appendChild(element);
+        listObj = new AutoComplete({
+            dataSource: sportsData,
+            fields: { value: 'Id', text: 'Game', disabled: 'State' },
+        });
+        listObj.appendTo(element);
+    });
+    afterAll((done) => {
+        listObj.hidePopup();
+        setTimeout(() => {
+            listObj.destroy();
+            element.remove();
+            done();
+        }, 450)
+    });
+    /**
+   * Mouse click
+   */
+    it('checked with disableItem method', (done) => {
+        listObj.showPopup();
+        setTimeout(() => {
+            expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem("Game4");
+                expect(listObj.liCollections[3].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[3].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[3].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.liCollections[6].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[6].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[6].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem({ "State": true, "Game": "Hockey", "Id" : 'Game7' });
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem(0);
+                expect(listObj.liCollections[0].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[0].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[0].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(7);
+                listObj.disableItem("Game8");
+                expect(listObj.liCollections[7].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[7].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[7].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(6);
+                listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                expect(listObj.liCollections[9].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem(0);
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem("Game8");
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem(listObj.liCollections[8]);
+                expect(listObj.liCollections[8].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[8].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[8].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(4);
+            done();
+        }, 450);
+    });
+});
+describe('Disable items', function () {
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+    let listObj: any;
+    let sportsData: { [key: string]: Object }[] = [ 
+        { "State": false, "Game": "American Football", "Id" : 'Game1' },
+        { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+        { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+        { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+        { "State": false, "Game": "Football", "Id" : 'Game5' },
+        { "State": false, "Game": "Golf", "Id" : 'Game6' },
+        { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+        { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+        { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+        { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+    
+    ]; 
+    beforeAll(() => {
+        document.body.appendChild(element);
+        listObj = new AutoComplete({
+            dataSource: sportsData,
+            fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            value: 'Game7',
+        });
+        listObj.appendTo(element);
+    });
+    afterAll((done) => {
+        listObj.hidePopup();
+        setTimeout(() => {
+            listObj.destroy();
+            element.remove();
+            done();
+        }, 450)
+    });
+    it('checked with value binding', function (done) {
+        setTimeout(function () {
+            expect(listObj.value).toBe(null);
+            listObj.value = "Game4";
+            listObj.dataBind();
+            expect(listObj.value === null).toBe(true);
+            listObj.value = "Game1";
+            listObj.dataBind();
+            listObj.disableItem(0);
+            expect(listObj.value === null).toBe(true);
+            done();
+        }, 450);
+    });
+});
+describe('Disable Items', function () {       
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+    let listObj: any;
+    let sportsData: { [key: string]: Object }[] = [ 
+        { "State": false, "Game": "American Football", "Id" : 'Game1' },
+        { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+        { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+        { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+        { "State": false, "Game": "Football", "Id" : 'Game5' },
+        { "State": false, "Game": "Golf", "Id" : 'Game6' },
+        { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+        { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+        { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+        { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+    
+    ]; 
+    beforeAll(() => {
+        document.body.appendChild(element);
+        listObj = new AutoComplete({
+            dataSource: sportsData,
+            fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            value: { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            allowObjectBinding: true,
+        });
+        listObj.appendTo(element);
+    });
+    afterAll((done) => {
+        listObj.hidePopup();
+        setTimeout(() => {
+            listObj.destroy();
+            element.remove();
+            done();
+        }, 450)
+    });
+    it('checked with object value binding', function (done) {          
+        setTimeout(function () {
+            expect(listObj.value).toBe(null);
+            listObj.value = { "State": true, "Game": "Cricket", "Id" : 'Game4' };
+            listObj.dataBind();
+            expect(listObj.value === null).toBe(true);
+            listObj.value = { "State": false, "Game": "American Football", "Id" : 'Game1' };
+            listObj.dataBind();
+            listObj.disableItem(0);
+            expect(listObj.value === null).toBe(true);
+            done();
+        }, 450);
+    });
+});
+describe('Disable items', function () {
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+    let listObj: any;
+    let sportsData: { [key: string]: Object }[] = [ 
+        { "State": false, "Game": "American Football", "Id" : 'Game1' },
+        { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+        { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+        { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+        { "State": false, "Game": "Football", "Id" : 'Game5' },
+        { "State": false, "Game": "Golf", "Id" : 'Game6' },
+        { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+        { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+        { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+        { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+    
+    ]; 
+    beforeAll(() => {
+        document.body.appendChild(element);
+        listObj = new AutoComplete({
+            dataSource: sportsData,
+            fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            text: "Hockey",
+        });
+        listObj.appendTo(element);
+    });
+    afterAll((done) => {
+        listObj.hidePopup();
+        setTimeout(() => {
+            listObj.destroy();
+            element.remove();
+            done();
+        }, 450)
+    });
+    it('checked with text binding', function (done) {
+        setTimeout(function () {
+            expect(listObj.value).toBe(null);
+            listObj.text = "Cricket";
+            listObj.dataBind();
+            expect(listObj.value === null).toBe(true);
+            listObj.text = "American Football";
+            listObj.dataBind();
+            listObj.disableItem("Game1");
+            expect(listObj.value === null).toBe(true);
+            done();
+        }, 450);
+    });
+});
+describe('Disable items', function () {
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+    let listObj: any;
+    let sportsData: { [key: string]: Object }[] = [ 
+        { "State": false, "Game": "American Football", "Id" : 'Game1' },
+        { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+        { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+        { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+        { "State": false, "Game": "Football", "Id" : 'Game5' },
+        { "State": false, "Game": "Golf", "Id" : 'Game6' },
+        { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+        { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+        { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+        { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+    
+    ]; 
+    beforeAll(() => {
+        document.body.appendChild(element);
+        listObj = new AutoComplete({
+            dataSource: sportsData,
+            fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            index: 6,
+        });
+        listObj.appendTo(element);
+    });
+    afterAll((done) => {
+        listObj.hidePopup();
+        setTimeout(() => {
+            listObj.destroy();
+            element.remove();
+            done();
+        }, 450)
+    });
+    it('checked with index binding', function (done) {
+        setTimeout(function () {
+            expect(listObj.value).toBe(null);
+            listObj.index = 3;
+            listObj.dataBind();
+            expect(listObj.value === null).toBe(true);
+            listObj.index = 0;
+            listObj.dataBind();
+            listObj.disableItem({ "State": false, "Game": "American Football", "Id" : 'Game1' });
+            expect(listObj.value === null).toBe(true);
+            done();
+        }, 450);
+    });
+});
+describe('keyboard interaction with disabled items', () => {
+    let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up' };
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+    let listObj: any;
+    let sportsData: { [key: string]: Object }[] = [ 
+        { "State": true, "Game": "American Football", "Id" : 'Game1' },
+        { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+        { "State": true, "Game": "Basketball", "Id" : 'Game3' },
+        { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+        { "State": false, "Game": "Football", "Id" : 'Game5' },
+        { "State": true, "Game": "Golf", "Id" : 'Game6' },
+    
+    ]; 
+    beforeAll(() => {
+        document.body.appendChild(element);
+        listObj = new AutoComplete({
+            dataSource: sportsData,
+            fields: { value: 'Id', text: 'Game', disabled: 'State' },
+        });
+        listObj.appendTo(element);
+    });
+    afterAll((done) => {
+        listObj.hidePopup();
+        setTimeout(() => {
+            listObj.destroy();
+            element.remove();
+            done();
+        }, 450)
+    });
+    /**
+   * Mouse click
+   */
+    it('up and down action', (done) => {
+        listObj.showPopup();
+        setTimeout(() => {
+            expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game5").toBe(true);
+            keyEventArgs.action = 'down';
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game2").toBe(true);
+            keyEventArgs.action = 'down';
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game5").toBe(true);
+            keyEventArgs.action = 'up';
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game2").toBe(true);
+            done();
+        }, 450);
+    });
+    it('all disabled items', (done) => {
+        listObj.showPopup();
+        setTimeout(() => {
+            listObj.disableItem('Game2');
+            listObj.disableItem('Game5');
+            expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+            keyEventArgs.action = 'down';
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+            keyEventArgs.action = 'up';
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+            keyEventArgs.action = 'down';
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+            keyEventArgs.action = 'up';
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+            done();
+        }, 450);
     });
 });

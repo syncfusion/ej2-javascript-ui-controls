@@ -200,8 +200,8 @@ describe(' Inline Quick Toolbar - ', () => {
                 let item: HTMLElement = document.querySelector('#' + controlId + '_quick_FontSize');
                 item.click();
                 let popup: HTMLElement = document.getElementById(controlId + '_quick_FontSize-popup');
-                dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
-                (popup.querySelectorAll('.e-item')[3] as HTMLElement).click();
+                dispatchEvent((popup.querySelectorAll('.e-item')[4] as HTMLElement), 'mousedown');
+                (popup.querySelectorAll('.e-item')[4] as HTMLElement).click();
                 rteObj.quickToolbarModule.hideInlineQTBar();
                 setTimeout(()=>{
                     dispatchEvent(pEle, 'mouseup');

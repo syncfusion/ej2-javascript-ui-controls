@@ -195,11 +195,11 @@ describe('Ribbon ->', () => {
                (document.getElementsByClassName("e-menu")[0].firstElementChild as HTMLElement).click();
                 setTimeout(function () {
                     let menuElemCount:number = document.getElementsByClassName('e-menu-parent e-ul')[0].querySelectorAll('.e-menu-item').length;
-                    expect(menuElemCount).toBe(3);
+                    expect(menuElemCount).toBe(4);
                     let spreadsheet:Spreadsheet = helper.getInstance();
                     spreadsheet.addFileMenuItems([{text: 'Print'}], 'Save As', false, false);
                     menuElemCount = document.getElementsByClassName('e-menu-parent e-ul')[0].querySelectorAll('.e-menu-item').length;
-                    expect(menuElemCount).toBe(4);
+                    expect(menuElemCount).toBe(5);
                     (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
                     done();
             },0);    

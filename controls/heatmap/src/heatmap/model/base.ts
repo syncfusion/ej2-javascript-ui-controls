@@ -423,6 +423,7 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
 
 /**
  * Internal class used to maintain colorcollection.
+ *
  * @private
  */
 export class ColorCollection {
@@ -455,8 +456,10 @@ export class BubbleTooltipData {
     public bubbleData: number;
     /** Defines the type of the bubble heatmap. */
     public valueType: string;
-    // eslint-disable-next-line valid-jsdoc
     /**
+     * @param {string} mappingName - Specifies the mapping name.
+     * @param {number} bubbleData - Specifies the bubble data.
+     * @param {string} valueType - Specifies the value type.
      * @private
      */
     constructor(mappingName: string, bubbleData: number, valueType: string) {
@@ -468,6 +471,7 @@ export class BubbleTooltipData {
 
 /**
  * Internal class used to maintain legend colorcollection.
+ *
  * @private
  */
 export class LegendColorCollection {
@@ -494,6 +498,7 @@ export class LegendColorCollection {
 }
 /**
  * class used to maintain xAxis labels details for multipleRow label intersect action.
+ *
  * @private
  */
 export class MultipleRow {

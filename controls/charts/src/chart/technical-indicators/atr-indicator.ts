@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -15,6 +12,8 @@ export class AtrIndicator extends TechnicalAnalysis {
      * Defines the predictions using Average True Range approach
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         const validData: Points[] = indicator.points;
@@ -24,9 +23,11 @@ export class AtrIndicator extends TechnicalAnalysis {
     }
 
     /**
-     *  To calculate Average True Range indicator points
+     * Calculates the Average True Range (ATR) points for a technical indicator.
      *
-     * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the ATR points are calculated.
+     * @param {Points[]} validData - The valid data points used for calculation.
+     * @returns {void}
      */
     private calculateATRPoints(indicator: TechnicalIndicator, validData: Points[]): void {
         let average: number = 0;
@@ -85,16 +86,18 @@ export class AtrIndicator extends TechnicalAnalysis {
 
     public destroy(): void {
         /**
-         * Destroy the Average true range indicator
+         * Destroy the Average true range indicator.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the Indicator
+         * Returns the module name of the Indicator.
          */
         return 'AtrIndicator';
     }

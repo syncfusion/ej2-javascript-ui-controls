@@ -163,7 +163,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Triggers when component is created.
      *
-     * @event
+     * @event created
      *
      *
      */
@@ -172,30 +172,29 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Triggers when component is closed.
      *
-     * @event
+     * @event close
      */
     close?: EmitType<EventArgs>;
 
     /**
      * Triggers when component is opened.
      *
-     * @event
+     * @event open
      */
     open?: EmitType<EventArgs>;
 
     /**
      * Triggers when the state(expand/collapse) of the component is changed.
      *
-     * @event
+     * @event change
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when component gets destroyed.
      *
-     * @event
+     * @event destroyed
      */
-    /* eslint-disable */
     destroyed?: EmitType<Object>;
 
 }

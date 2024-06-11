@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { extend } from './util';
 import { Property, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Event } from './notify-property-change';
 import { Browser } from './browser';
@@ -60,11 +61,8 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     private movedDirection: string;
     private tStampStart: number;
     private touchAction: boolean = true;
-    // eslint-disable-next-line
     private timeOutTap: any;
-    // eslint-disable-next-line
     private modeClear: any;
-    // eslint-disable-next-line
     private timeOutTapHold: any;
 
     /* Properties */
@@ -141,7 +139,6 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
      * @param {TouchModel} oldProp ?
      * @returns {void} ?
      */
-    // eslint-disable-next-line
     public onPropertyChanged(newProp: TouchModel, oldProp: TouchModel): void {
         //No Code to handle
     }
@@ -264,11 +261,9 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     private tapHoldEvent(evt: MouseEvent | TouchEventArgs): void {
         this.tapCount = 0;
         this.touchAction = true;
-        let eTapArgs: TapEventArgs;
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.moveEvent);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.endEvent);
-        // eslint-disable-next-line
-        eTapArgs = { originalEvent: <TouchEventArgs>evt };
+        const eTapArgs: TapEventArgs = { originalEvent: <TouchEventArgs>evt };
         this.trigger('tapHold', eTapArgs);
         EventHandler.remove(this.element, Browser.touchCancelEvent, this.cancelEvent);
     }
@@ -323,10 +318,8 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
             velocity: this.getVelocity(point)
         };
         if (this.isTouchMoved) {
-            let eSwipeArgs: Object;
             const tDistance: number = this.swipeSettings.swipeThresholdDistance;
-            // eslint-disable-next-line
-            eSwipeArgs = extend(eSwipeArgs, this.defaultArgs, swipeArgs);
+            const eSwipeArgs: Object = extend(undefined, this.defaultArgs, swipeArgs);
             let canTrigger: boolean = false;
             const ele: HTMLElement = this.element;
             const scrollBool: boolean = this.isScrollable(ele);
@@ -392,8 +385,6 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         const interval: number = newT - this.tStampStart;
         return Math.sqrt(xDist * xDist + yDist * yDist) / interval;
     }
-
-    // eslint-disable-next-line
     private checkSwipe(ele: any, flag: boolean): boolean {
         const keys: string[] = ['scroll', 'offset'];
         const temp: string[] = flag ? ['Height', 'Top'] : ['Width', 'Left'];

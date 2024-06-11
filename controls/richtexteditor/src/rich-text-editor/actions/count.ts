@@ -45,7 +45,11 @@ export class Count {
     public renderCount(): void {
         this.initializeInstance();
         this.element = this.parent.createElement('span', { className: CLS_COUNT });
-        this.contentRenderer.getPanel().parentElement.appendChild(this.element);
+        this.parent.rootContainer.appendChild(this.element);
+        this.parent.rootContainer.classList.add('e-count-enabled');
+        if (this.parent.iframeSettings.enable) {
+            this.parent.inputElement.classList.add('e-count-enabled');
+        }
         this.appendCount();
         if (this.parent.maxLength !== -1) {
             this.charCountBackground(this.htmlLength);
@@ -100,6 +104,12 @@ export class Count {
      * @deprecated
      */
     public destroy(): void {
+        if (this.parent && this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-count-enabled')) {
+            this.parent.rootContainer.classList.remove('e-count-enabled');
+        }
+        if (this.parent.iframeSettings.enable && !isNullOrUndefined(this.parent.inputElement)) {
+            this.parent.inputElement.classList.remove('e-count-enabled');
+        }
         if (this.element && !isNullOrUndefined(this.parent.element.querySelector('.' + CLS_COUNT))) {
             detach(this.element);
         }

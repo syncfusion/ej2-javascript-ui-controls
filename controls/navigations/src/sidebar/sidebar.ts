@@ -226,44 +226,42 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when component is created.
      *
-     * @event
+     * @event created
      *
      *
      */
     @Event()
     public created: EmitType<Object>;
-    /* eslint-enable */
+
     /**
      * Triggers when component is closed.
      *
-     * @event
+     * @event close
      */
     @Event()
     public close: EmitType<EventArgs>;
     /**
      * Triggers when component is opened.
      *
-     * @event
+     * @event open
      */
     @Event()
     public open: EmitType<EventArgs>;
     /**
      * Triggers when the state(expand/collapse) of the component is changed.
      *
-     * @event
+     * @event change
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /**
      * Triggers when component gets destroyed.
      *
-     * @event
+     * @event destroyed
      */
-    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
-    defaultBackdropDiv: any;
-    /* eslint-enable */
+    defaultBackdropDiv: HTMLElement;
 
     constructor(options?: SidebarModel, element?: string | HTMLElement) {
         super(options, element);
@@ -415,10 +413,11 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             this.modal = null;
         }
     }
-    /* eslint-disable */
+
     /**
      * Hide the Sidebar component, if it is in an open state.
      *
+     * @param {Event} e - The event triggering the hide action.
      * @returns {void}
      *
      */
@@ -478,10 +477,11 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
     }
-    /* eslint-disable */
+
     /**
      * Shows the Sidebar component, if it is in closed state.
      *
+     * @param {Event} e - The optional event triggering the show action.
      * @returns {void}
      */
     public show(e?: Event): void {
@@ -649,10 +649,10 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private wireEvents(): void {
         this.setEnableGestures();
-        EventHandler.add(window as any, 'resize', this.resize, this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resize, this);
     }
     private unWireEvents(): void {
-        EventHandler.remove(window as any, 'resize', this.resize);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resize);
         EventHandler.remove(document, 'mousedown touchstart', this.documentclickHandler);
         if (this.mainContentEle) { this.mainContentEle.destroy(); }
         if (this.sidebarEle) { this.sidebarEle.destroy(); }

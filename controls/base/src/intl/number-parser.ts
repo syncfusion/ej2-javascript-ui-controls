@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NumberFormatOptions } from '../internationalization';
 import { extend, isNullOrUndefined, isBlazor, getValue } from '../util';
 import { ParserBase as parser, NumericOptions } from './parser-base';
 import { IntlBase as base } from './intl-base';
 const regExp: RegExpConstructor = RegExp;
-// eslint-disable-next-line
-const parseRegex: RegExp = new regExp('^([^0-9]*)' + '(([0-9,]*[0-9]+)(\.[0-9]+)?)' + '([Ee][+-]?[0-9]+)?([^0-9]*)$');
+
+const parseRegex: RegExp = new regExp('^([^0-9]*)' + '(([0-9,]*[0-9]+)(.[0-9]+)?)' + '([Ee][+-]?[0-9]+)?([^0-9]*)$');
 const groupRegex: RegExp = /,/g;
 
 const keys: string[] = ['minusSign', 'infinity'];
@@ -25,13 +26,11 @@ export interface NumericParts {
 /**
  * interface for numeric parse options
  */
-// eslint-disable-next-line
+
 interface NumberParseOptions {
     parseRegex: string;
     numbericMatcher: Object;
 }
-
-
 /**
  * Module for Number Parser.
  *
@@ -49,7 +48,6 @@ export class NumberParser {
     public static numberParser(culture: string, option: NumberFormatOptions, cldr: Object): Function {
         const dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
         const parseOptions: NumericParts = { custom: true };
-        let numOptions: NumericOptions;
         if ((base.formatRegex.test(option.format)) || !(option.format)) {
             extend(parseOptions, base.getProperNumericSkeleton(option.format || 'N'));
             parseOptions.custom = false;
@@ -62,10 +60,9 @@ export class NumberParser {
             extend(parseOptions, base.customFormat(option.format, null, null));
         }
         const numbers: Object = getValue('numbers', dependable.parserObject);
-        // eslint-disable-next-line
-        numOptions = parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr), true, isBlazor());
+        const numOptions: NumericOptions = parser.getCurrentNumericOptions(dependable.parserObject,
+                                                                           parser.getNumberingSystem(cldr), true, isBlazor());
         parseOptions.symbolRegex = parser.getSymbolRegex(Object.keys(numOptions.symbolMatch));
-        // eslint-disable-next-line
         parseOptions.infinity = (<any>numOptions).symbolNumberSystem[keys[1]];
         let symbolpattern: string;
         if (!isBlazor()) {

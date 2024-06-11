@@ -263,7 +263,7 @@ describe('Schedule base module', () => {
 
         it('default Scroll width Check', () => {
             document.getElementById('Schedule').style.width = '600px';
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), width: '600px', height:'400px', currentView: 'Month' });
+            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), width: '600px', height: '400px', currentView: 'Month' });
             schObj.appendTo('#Schedule');
             expect(scheduleUtil.getScrollBarWidth()).toEqual(15);
         });
@@ -273,7 +273,7 @@ describe('Schedule base module', () => {
             (schObj as any).onScheduleResize();
             expect(scheduleUtil.getScrollBarWidth()).toEqual(30);
         });
-    }); 
+    });
 
     describe('Views and current view', () => {
         let schObj: Schedule;
@@ -2445,6 +2445,758 @@ describe('Schedule base module', () => {
             expect(renderedAppointments.length).toEqual(1);
             schObj.currentView = 'Month';
             schObj.dataBind();
+        });
+    });
+
+    describe('Schedule public properties null or undefined value testing', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {  };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('agendaDaysCount', () => {
+            schObj.agendaDaysCount = null;
+            schObj.dataBind();
+            expect(schObj.agendaDaysCount).toBe(null);
+            schObj.agendaDaysCount = undefined;
+            schObj.dataBind();
+            expect(schObj.agendaDaysCount).toBe(undefined);
+        });
+        it('allowDragAndDrop', () => {
+            schObj.allowDragAndDrop = null;
+            schObj.dataBind();
+            expect(schObj.allowDragAndDrop).toBe(null);
+            schObj.allowDragAndDrop = undefined;
+            schObj.dataBind();
+            expect(schObj.allowDragAndDrop).toBe(undefined);
+        });
+        it('allowInline', () => {
+            schObj.allowInline = null;
+            schObj.dataBind();
+            expect(schObj.allowInline).toBe(null);
+            schObj.allowInline = undefined;
+            schObj.dataBind();
+            expect(schObj.allowInline).toBe(undefined);
+        });
+        it('allowKeyboardInteraction', () => {
+            schObj.allowKeyboardInteraction = null;
+            schObj.dataBind();
+            expect(schObj.allowKeyboardInteraction).toBe(null);
+            schObj.allowKeyboardInteraction = undefined;
+            schObj.dataBind();
+            expect(schObj.allowKeyboardInteraction).toBe(undefined);
+        });
+        it('allowMultiCellSelection', () => {
+            schObj.allowMultiCellSelection = null;
+            schObj.dataBind();
+            expect(schObj.allowMultiCellSelection).toBe(null);
+            schObj.allowMultiCellSelection = undefined;
+            schObj.dataBind();
+            expect(schObj.allowMultiCellSelection).toBe(undefined);
+        });
+        it('allowMultiDrag', () => {
+            schObj.allowMultiDrag = null;
+            schObj.dataBind();
+            expect(schObj.allowMultiDrag).toBe(null);
+            schObj.allowMultiDrag = undefined;
+            schObj.dataBind();
+            expect(schObj.allowMultiDrag).toBe(undefined);
+        });
+        it('allowMultiRowSelection', () => {
+            schObj.allowMultiRowSelection = null;
+            schObj.dataBind();
+            expect(schObj.allowMultiRowSelection).toBe(null);
+            schObj.allowMultiRowSelection = undefined;
+            schObj.dataBind();
+            expect(schObj.allowMultiRowSelection).toBe(undefined);
+        });
+        it('allowResizing', () => {
+            schObj.allowResizing = null;
+            schObj.dataBind();
+            expect(schObj.allowResizing).toBe(null);
+            schObj.allowResizing = undefined;
+            schObj.dataBind();
+            expect(schObj.allowResizing).toBe(undefined);
+        });
+        it('allowSwiping', () => {
+            schObj.allowSwiping = null;
+            schObj.dataBind();
+            expect(schObj.allowSwiping).toBe(null);
+            schObj.allowSwiping = undefined;
+            schObj.dataBind();
+            expect(schObj.allowSwiping).toBe(undefined);
+        });
+        it('calendarMode', () => {
+            schObj.calendarMode = null;
+            schObj.dataBind();
+            expect(schObj.calendarMode).toBe(null);
+            schObj.calendarMode = undefined;
+            schObj.dataBind();
+            expect(schObj.calendarMode).toBe(undefined);
+        });
+        it('cellHeaderTemplate', () => {
+            schObj.cellHeaderTemplate = null;
+            schObj.dataBind();
+            expect(schObj.cellHeaderTemplate).toBe(null);
+            schObj.cellHeaderTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.cellHeaderTemplate).toBe(undefined);
+        });
+        it('cellTemplate', () => {
+            schObj.cellTemplate = null;
+            schObj.dataBind();
+            expect(schObj.cellTemplate).toBe(null);
+            schObj.cellTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.cellTemplate).toBe(undefined);
+        });
+        it('cssClass', () => {
+            schObj.cssClass = null;
+            schObj.dataBind();
+            expect(schObj.cssClass).toBe(null);
+            schObj.cssClass = undefined;
+            schObj.dataBind();
+            expect(schObj.cssClass).toBe(undefined);
+        });
+        it('currentView', () => {
+            schObj.currentView = null;
+            schObj.dataBind();
+            expect(schObj.currentView).toBe(null);
+            schObj.currentView = undefined;
+            schObj.dataBind();
+            expect(schObj.currentView).toBe(undefined);
+        });
+    });
+
+    describe('Schedule public properties null or undefined value testing', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {  };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('dateFormat', () => {
+            schObj.dateFormat = null;
+            schObj.dataBind();
+            expect(schObj.dateFormat).toBe(null);
+            schObj.dateFormat = undefined;
+            schObj.dataBind();
+            expect(schObj.dateFormat).toBe(undefined);
+        });
+        it('dateHeaderTemplate', () => {
+            schObj.dateHeaderTemplate = null;
+            schObj.dataBind();
+            expect(schObj.dateHeaderTemplate).toBe(null);
+            schObj.dateHeaderTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.dateHeaderTemplate).toBe(undefined);
+        });
+        it('dateRangeTemplate', () => {
+            schObj.dateRangeTemplate = null;
+            schObj.dataBind();
+            expect(schObj.dateRangeTemplate).toBe(null);
+            schObj.dateRangeTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.dateRangeTemplate).toBe(undefined);
+        });
+        it('dayHeaderTemplate', () => {
+            schObj.dayHeaderTemplate = null;
+            schObj.dataBind();
+            expect(schObj.dayHeaderTemplate).toBe(null);
+            schObj.dayHeaderTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.dayHeaderTemplate).toBe(undefined);
+        });
+        it('editorFooterTemplate', () => {
+            schObj.editorFooterTemplate = null;
+            schObj.dataBind();
+            expect(schObj.editorFooterTemplate).toBe(null);
+            schObj.editorFooterTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.editorFooterTemplate).toBe(undefined);
+        });
+        it('editorHeaderTemplate', () => {
+            schObj.editorHeaderTemplate = null;
+            schObj.dataBind();
+            expect(schObj.editorHeaderTemplate).toBe(null);
+            schObj.editorHeaderTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.editorHeaderTemplate).toBe(undefined);
+        });
+        it('editorTemplate', () => {
+            schObj.editorTemplate = null;
+            schObj.dataBind();
+            expect(schObj.editorTemplate).toBe(null);
+            schObj.editorTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.editorTemplate).toBe(undefined);
+        });
+        it('enableAdaptiveUI', () => {
+            schObj.enableAdaptiveUI = null;
+            schObj.dataBind();
+            expect(schObj.enableAdaptiveUI).toBe(null);
+            schObj.enableAdaptiveUI = undefined;
+            schObj.dataBind();
+            expect(schObj.enableAdaptiveUI).toBe(undefined);
+        });
+        it('enableAllDayScroll', () => {
+            schObj.enableAllDayScroll = null;
+            schObj.dataBind();
+            expect(schObj.enableAllDayScroll).toBe(null);
+            schObj.enableAllDayScroll = undefined;
+            schObj.dataBind();
+            expect(schObj.enableAllDayScroll).toBe(undefined);
+        });
+        it('enableHtmlSanitizer', () => {
+            schObj.enableHtmlSanitizer = null;
+            schObj.dataBind();
+            expect(schObj.enableHtmlSanitizer).toBe(null);
+            schObj.enableHtmlSanitizer = undefined;
+            schObj.dataBind();
+            expect(schObj.enableHtmlSanitizer).toBe(undefined);
+        });
+        it('enablePersistence', () => {
+            schObj.enablePersistence = null;
+            schObj.dataBind();
+            expect(schObj.enablePersistence).toBe(null);
+            schObj.enablePersistence = undefined;
+            schObj.dataBind();
+            expect(schObj.enablePersistence).toBe(undefined);
+        });
+        it('enableRecurrenceValidation', () => {
+            schObj.enableRecurrenceValidation = null;
+            schObj.dataBind();
+            expect(schObj.enableRecurrenceValidation).toBe(null);
+            schObj.enableRecurrenceValidation = undefined;
+            schObj.dataBind();
+            expect(schObj.enableRecurrenceValidation).toBe(undefined);
+        });
+        it('enableRtl', () => {
+            schObj.enableRtl = null;
+            schObj.dataBind();
+            expect(schObj.enableRtl).toBe(null);
+            schObj.enableRtl = undefined;
+            schObj.dataBind();
+            expect(schObj.enableRtl).toBe(undefined);
+        });
+    });
+
+    describe('Schedule public properties null or undefined value testing', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {  };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('endHour', () => {
+            schObj.endHour = null;
+            schObj.dataBind();
+            expect(schObj.endHour).toBe(null);
+            schObj.endHour = undefined;
+            schObj.dataBind();
+            expect(schObj.endHour).toBe(undefined);
+        });
+        it('eventDragArea', () => {
+            schObj.eventDragArea = null;
+            schObj.dataBind();
+            expect(schObj.eventDragArea).toBe(null);
+            schObj.eventDragArea = undefined;
+            schObj.dataBind();
+            expect(schObj.eventDragArea).toBe(undefined);
+        });
+        it('firstDayOfWeek', () => {
+            schObj.firstDayOfWeek = null;
+            schObj.dataBind();
+            expect(schObj.firstDayOfWeek).toBe(null);
+            schObj.firstDayOfWeek = undefined;
+            schObj.dataBind();
+            expect(schObj.firstDayOfWeek).toBe(undefined);
+        });
+        it('firstMonthOfYear', () => {
+            schObj.firstMonthOfYear = null;
+            schObj.dataBind();
+            expect(schObj.firstMonthOfYear).toBe(null);
+            schObj.firstMonthOfYear = undefined;
+            schObj.dataBind();
+            expect(schObj.firstMonthOfYear).toBe(undefined);
+        });
+        it('headerIndentTemplate', () => {
+            schObj.headerIndentTemplate = null;
+            schObj.dataBind();
+            expect(schObj.headerIndentTemplate).toBe(null);
+            schObj.headerIndentTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.headerIndentTemplate).toBe(undefined);
+        });
+        it('hieght', () => {
+            schObj.height = null;
+            schObj.dataBind();
+            expect(schObj.height).toBe(null);
+            schObj.height = undefined;
+            schObj.dataBind();
+            expect(schObj.height).toBe(undefined);
+        });
+        it('hideEmptyAgendaDays', () => {
+            schObj.hideEmptyAgendaDays = null;
+            schObj.dataBind();
+            expect(schObj.hideEmptyAgendaDays).toBe(null);
+            schObj.hideEmptyAgendaDays = undefined;
+            schObj.dataBind();
+            expect(schObj.hideEmptyAgendaDays).toBe(undefined);
+        });
+        it('locale', () => {
+            schObj.locale = null;
+            schObj.dataBind();
+            expect(schObj.locale).toBe(null);
+            schObj.locale = undefined;
+            schObj.dataBind();
+            expect(schObj.locale).toBe(undefined);
+        });
+        it('monthHeaderTemplate', () => {
+            schObj.monthHeaderTemplate = null;
+            schObj.dataBind();
+            expect(schObj.monthHeaderTemplate).toBe(null);
+            schObj.monthHeaderTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.monthHeaderTemplate).toBe(undefined);
+        });
+        it('monthsCount', () => {
+            schObj.monthsCount = null;
+            schObj.dataBind();
+            expect(schObj.monthsCount).toBe(null);
+            schObj.monthsCount = undefined;
+            schObj.dataBind();
+            expect(schObj.monthsCount).toBe(undefined);
+        });
+        it('quickInfoOnSelectionEnd', () => {
+            schObj.quickInfoOnSelectionEnd = null;
+            schObj.dataBind();
+            expect(schObj.quickInfoOnSelectionEnd).toBe(null);
+            schObj.quickInfoOnSelectionEnd = undefined;
+            schObj.dataBind();
+            expect(schObj.quickInfoOnSelectionEnd).toBe(undefined);
+        });
+        it('readonly', () => {
+            schObj.readonly = null;
+            schObj.dataBind();
+            expect(schObj.readonly).toBe(null);
+            schObj.readonly = undefined;
+            schObj.dataBind();
+            expect(schObj.readonly).toBe(undefined);
+        });
+        it('resourceHeaderTemplate', () => {
+            schObj.resourceHeaderTemplate = null;
+            schObj.dataBind();
+            expect(schObj.resourceHeaderTemplate).toBe(null);
+            schObj.resourceHeaderTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.resourceHeaderTemplate).toBe(undefined);
+        });
+        it('rowAutoHeight', () => {
+            schObj.rowAutoHeight = null;
+            schObj.dataBind();
+            expect(schObj.rowAutoHeight).toBe(null);
+            schObj.rowAutoHeight = undefined;
+            schObj.dataBind();
+            expect(schObj.rowAutoHeight).toBe(undefined);
+        });
+    });
+
+    describe('Schedule public properties null or undefined value testing', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {  };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('showHeaderBar', () => {
+            schObj.showHeaderBar = null;
+            schObj.dataBind();
+            expect(schObj.showHeaderBar).toBe(null);
+            schObj.showHeaderBar = undefined;
+            schObj.dataBind();
+            expect(schObj.showHeaderBar).toBe(undefined);
+        });
+        it('showQuickInfo', () => {
+            schObj.showQuickInfo = null;
+            schObj.dataBind();
+            expect(schObj.showQuickInfo).toBe(null);
+            schObj.showQuickInfo = undefined;
+            schObj.dataBind();
+            expect(schObj.showQuickInfo).toBe(undefined);
+        });
+        it('showTimeIndicator', () => {
+            schObj.showTimeIndicator = null;
+            schObj.dataBind();
+            expect(schObj.showTimeIndicator).toBe(null);
+            schObj.showTimeIndicator = undefined;
+            schObj.dataBind();
+            expect(schObj.showTimeIndicator).toBe(undefined);
+        });
+        it('showWeekNumber', () => {
+            schObj.showWeekNumber = null;
+            schObj.dataBind();
+            expect(schObj.showWeekNumber).toBe(null);
+            schObj.showWeekNumber = undefined;
+            schObj.dataBind();
+            expect(schObj.showWeekNumber).toBe(undefined);
+        });
+        it('showWeekend', () => {
+            schObj.showWeekend = null;
+            schObj.dataBind();
+            expect(schObj.showWeekend).toBe(null);
+            schObj.showWeekend = undefined;
+            schObj.dataBind();
+            expect(schObj.showWeekend).toBe(undefined);
+        });
+        it('timeFormat', () => {
+            schObj.timeFormat = null;
+            schObj.dataBind();
+            expect(schObj.timeFormat).toBe(null);
+            schObj.timeFormat = undefined;
+            schObj.dataBind();
+            expect(schObj.timeFormat).toBe(undefined);
+        });
+        it('timezone', () => {
+            schObj.timezone = null;
+            schObj.dataBind();
+            expect(schObj.timezone).toBe(null);
+            schObj.timezone = undefined;
+            schObj.dataBind();
+            expect(schObj.timezone).toBe(undefined);
+        });
+        it('timezoneDataSource', () => {
+            schObj.timezoneDataSource = null;
+            schObj.dataBind();
+            expect(schObj.timezoneDataSource).toBe(null);
+            schObj.timezoneDataSource = undefined;
+            schObj.dataBind();
+            expect(schObj.timezoneDataSource).toBe(undefined);
+        });
+        it('toolbarItems', () => {
+            schObj.toolbarItems = null;
+            schObj.dataBind();
+            expect(schObj.toolbarItems.length).toBe(0);
+            schObj.toolbarItems = undefined;
+            schObj.dataBind();
+            expect(schObj.toolbarItems.length).toBe(0);
+        });
+        it('views', () => {
+            schObj.views = null;
+            schObj.dataBind();
+            expect(schObj.views).toBe(null);
+            schObj.views = undefined;
+            schObj.dataBind();
+            expect(schObj.views).toBe(undefined);
+        });
+        it('weekRule', () => {
+            schObj.weekRule = null;
+            schObj.dataBind();
+            expect(schObj.weekRule).toBe(null);
+            schObj.weekRule = undefined;
+            schObj.dataBind();
+            expect(schObj.weekRule).toBe(undefined);
+        });
+        it('width', () => {
+            schObj.width = null;
+            schObj.dataBind();
+            expect(schObj.width).toBe(null);
+            schObj.width = undefined;
+            schObj.dataBind();
+            expect(schObj.width).toBe(undefined);
+        });
+        it('workDays', () => {
+            schObj.workDays = null;
+            schObj.dataBind();
+            expect(schObj.workDays).toBe(null);
+            schObj.workDays = undefined;
+            schObj.dataBind();
+            expect(schObj.workDays).toBe(undefined);
+        });
+    });
+
+    describe('Schedule public properties null or undefined value testing', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {  };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('eventSettings', () => {
+            schObj.eventSettings.allowAdding = null;
+            schObj.eventSettings.allowDeleting = null;
+            schObj.eventSettings.allowEditing = null;
+            schObj.eventSettings.dataSource = null;
+            schObj.eventSettings.editFollowingEvents = null;
+            schObj.eventSettings.enableIndicator = null;
+            schObj.eventSettings.enableMaxHeight = null;
+            schObj.eventSettings.enableTooltip = null;
+            schObj.eventSettings.ignoreWhitespace = null;
+            schObj.eventSettings.includeFiltersInQuery = null;
+            schObj.eventSettings.minimumEventDuration = null;
+            schObj.eventSettings.query = null;
+            schObj.eventSettings.resourceColorField = null;
+            schObj.eventSettings.sortComparer = null;
+            schObj.eventSettings.spannedEventPlacement = null;
+            schObj.eventSettings.template = null;
+            schObj.eventSettings.tooltipTemplate = null;
+            schObj.dataBind();
+            expect(schObj.eventSettings.allowAdding).toBe(null);
+            expect(schObj.eventSettings.allowDeleting).toBe(null);
+            expect(schObj.eventSettings.allowEditing).toBe(null);
+            expect(schObj.eventSettings.dataSource).toBe(null);
+            expect(schObj.eventSettings.editFollowingEvents).toBe(null);
+            expect(schObj.eventSettings.enableIndicator).toBe(null);
+            expect(schObj.eventSettings.enableMaxHeight).toBe(null);
+            expect(schObj.eventSettings.enableTooltip).toBe(null);
+            expect(schObj.eventSettings.ignoreWhitespace).toBe(null);
+            expect(schObj.eventSettings.includeFiltersInQuery).toBe(null);
+            expect(schObj.eventSettings.minimumEventDuration).toBe(null);
+            expect(schObj.eventSettings.query).toBe(null);
+            expect(schObj.eventSettings.resourceColorField).toBe(null);
+            expect(schObj.eventSettings.sortComparer).toBe(null);
+            expect(schObj.eventSettings.spannedEventPlacement).toBe(null);
+            expect(schObj.eventSettings.template).toBe(null);
+            expect(schObj.eventSettings.tooltipTemplate).toBe(null);
+            schObj.eventSettings.allowAdding = undefined;
+            schObj.eventSettings.allowDeleting = undefined;
+            schObj.eventSettings.allowEditing = undefined;
+            schObj.eventSettings.dataSource = undefined;
+            schObj.eventSettings.editFollowingEvents = undefined;
+            schObj.eventSettings.enableIndicator = undefined;
+            schObj.eventSettings.enableMaxHeight = undefined;
+            schObj.eventSettings.enableTooltip = undefined;
+            schObj.eventSettings.ignoreWhitespace = undefined;
+            schObj.eventSettings.includeFiltersInQuery = undefined;
+            schObj.eventSettings.minimumEventDuration = undefined;
+            schObj.eventSettings.query = undefined;
+            schObj.eventSettings.resourceColorField = undefined;
+            schObj.eventSettings.sortComparer = undefined;
+            schObj.eventSettings.spannedEventPlacement = undefined;
+            schObj.eventSettings.template = undefined;
+            schObj.eventSettings.tooltipTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.eventSettings.allowAdding).toBe(undefined);
+            expect(schObj.eventSettings.allowDeleting).toBe(undefined);
+            expect(schObj.eventSettings.allowEditing).toBe(undefined);
+            expect(schObj.eventSettings.dataSource).toBe(undefined);
+            expect(schObj.eventSettings.editFollowingEvents).toBe(undefined);
+            expect(schObj.eventSettings.enableIndicator).toBe(undefined);
+            expect(schObj.eventSettings.enableMaxHeight).toBe(undefined);
+            expect(schObj.eventSettings.enableTooltip).toBe(undefined);
+            expect(schObj.eventSettings.ignoreWhitespace).toBe(undefined);
+            expect(schObj.eventSettings.includeFiltersInQuery).toBe(undefined);
+            expect(schObj.eventSettings.minimumEventDuration).toBe(undefined);
+            expect(schObj.eventSettings.query).toBe(undefined);
+            expect(schObj.eventSettings.resourceColorField).toBe(undefined);
+            expect(schObj.eventSettings.sortComparer).toBe(undefined);
+            expect(schObj.eventSettings.spannedEventPlacement).toBe(undefined);
+            expect(schObj.eventSettings.template).toBe(undefined);
+            expect(schObj.eventSettings.tooltipTemplate).toBe(undefined);
+        });
+    });
+
+    describe('Schedule public properties null or undefined value testing', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {  };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('group', () => {
+            schObj.group.allowGroupEdit = null;
+            schObj.group.byDate = null;
+            schObj.group.byGroupID = null;
+            schObj.group.enableCompactView = null;
+            schObj.group.headerTooltipTemplate = null;
+            schObj.group.hideNonWorkingDays = null;
+            schObj.group.resources = null;
+            schObj.dataBind();
+            expect(schObj.group.allowGroupEdit).toBe(null);
+            expect(schObj.group.byDate).toBe(null);
+            expect(schObj.group.byGroupID).toBe(null);
+            expect(schObj.group.enableCompactView).toBe(null);
+            expect(schObj.group.headerTooltipTemplate).toBe(null);
+            expect(schObj.group.hideNonWorkingDays).toBe(null);
+            expect(schObj.group.resources).toBe(null);
+            schObj.group.allowGroupEdit = undefined;
+            schObj.group.byDate = undefined;
+            schObj.group.byGroupID = undefined;
+            schObj.group.enableCompactView = undefined;
+            schObj.group.headerTooltipTemplate = undefined;
+            schObj.group.hideNonWorkingDays = undefined;
+            schObj.group.resources = undefined;
+            schObj.dataBind();
+            expect(schObj.group.allowGroupEdit).toBe(undefined);
+            expect(schObj.group.byDate).toBe(undefined);
+            expect(schObj.group.byGroupID).toBe(undefined);
+            expect(schObj.group.enableCompactView).toBe(undefined);
+            expect(schObj.group.headerTooltipTemplate).toBe(undefined);
+            expect(schObj.group.hideNonWorkingDays).toBe(undefined);
+            expect(schObj.group.resources).toBe(undefined);
+        });
+        it('quickInfoTemplates', () => {
+            schObj.quickInfoTemplates.header = null;
+            schObj.quickInfoTemplates.content = null;
+            schObj.quickInfoTemplates.footer = null;
+            schObj.dataBind();
+            expect(schObj.quickInfoTemplates.header).toBe(null);
+            expect(schObj.quickInfoTemplates.content).toBe(null);
+            expect(schObj.quickInfoTemplates.footer).toBe(null);
+            schObj.quickInfoTemplates.header = undefined;
+            schObj.quickInfoTemplates.content = undefined;
+            schObj.quickInfoTemplates.footer = undefined;
+            schObj.dataBind();
+            expect(schObj.quickInfoTemplates.header).toBe(undefined);
+            expect(schObj.quickInfoTemplates.content).toBe(undefined);
+            expect(schObj.quickInfoTemplates.footer).toBe(undefined);
+        });
+    });
+
+    describe('Schedule public properties null or undefined value testing', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {
+                resources: [{
+                    field: 'RoomId', name: 'Rooms',
+                    dataSource: [
+                        { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
+                        { Text: 'Room 2', Id: 2, Color: '#f8a398' }
+                    ]
+                }, {
+                    field: 'OwnerId', name: 'Owners',
+                    dataSource: [
+                        { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                        { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                        { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
+                    ]
+                }]
+            };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('resources', () => {
+            schObj.resources[0].allowMultiple = null;
+            schObj.resources[0].dataSource = null;
+            schObj.resources[0].field = null;
+            schObj.resources[0].title = null;
+            schObj.resources[0].name = null;
+            schObj.resources[0].query = null;
+            schObj.dataBind();
+            expect(schObj.resources[0].allowMultiple).toBe(null);
+            expect(schObj.resources[0].dataSource).toBe(null);
+            expect(schObj.resources[0].field).toBe(null);
+            expect(schObj.resources[0].title).toBe(null);
+            expect(schObj.resources[0].name).toBe(null);
+            expect(schObj.resources[0].query).toBe(null);
+            schObj.resources[0].allowMultiple = undefined;
+            schObj.resources[0].dataSource = undefined;
+            schObj.resources[0].field = undefined;
+            schObj.resources[0].title = undefined;
+            schObj.resources[0].name = undefined;
+            schObj.resources[0].query = undefined;
+            schObj.dataBind();
+            expect(schObj.resources[0].allowMultiple).toBe(undefined);
+            expect(schObj.resources[0].dataSource).toBe(undefined);
+            expect(schObj.resources[0].field).toBe(undefined);
+            expect(schObj.resources[0].title).toBe(undefined);
+            expect(schObj.resources[0].name).toBe(undefined);
+            expect(schObj.resources[0].query).toBe(undefined);
+        });
+    });
+
+    describe('Schedule public properties null or undefined value testing', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {  };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('timeScale', () => {
+            schObj.timeScale.enable = null;
+            schObj.timeScale.interval = null;
+            schObj.timeScale.slotCount = null;
+            schObj.timeScale.majorSlotTemplate = null;
+            schObj.timeScale.minorSlotTemplate = null;
+            schObj.dataBind();
+            expect(schObj.timeScale.enable).toBe(null);
+            expect(schObj.timeScale.interval).toBe(null);
+            expect(schObj.timeScale.slotCount).toBe(null);
+            expect(schObj.timeScale.majorSlotTemplate).toBe(null);
+            expect(schObj.timeScale.minorSlotTemplate).toBe(null);
+            schObj.timeScale.enable = undefined;
+            schObj.timeScale.interval = undefined;
+            schObj.timeScale.slotCount = undefined;
+            schObj.timeScale.majorSlotTemplate = undefined;
+            schObj.timeScale.minorSlotTemplate = undefined;
+            schObj.dataBind();
+            expect(schObj.timeScale.enable).toBe(undefined);
+            expect(schObj.timeScale.interval).toBe(undefined);
+            expect(schObj.timeScale.slotCount).toBe(undefined);
+            expect(schObj.timeScale.majorSlotTemplate).toBe(undefined);
+            expect(schObj.timeScale.minorSlotTemplate).toBe(undefined);
+        });
+        it('workHours', () => {
+            schObj.workHours.highlight = null;
+            schObj.workHours.start = null;
+            schObj.workHours.end = null;
+            schObj.dataBind();
+            expect(schObj.workHours.highlight).toBe(null);
+            expect(schObj.workHours.start).toBe(null);
+            expect(schObj.workHours.end).toBe(null);
+            schObj.workHours.highlight = undefined;
+            schObj.workHours.start = undefined;
+            schObj.workHours.end = undefined;
+            schObj.dataBind();
+            expect(schObj.workHours.highlight).toBe(undefined);
+            expect(schObj.workHours.start).toBe(undefined);
+            expect(schObj.workHours.end).toBe(undefined);
+        });
+    });
+
+    describe('Render schedule with scaling', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2018, 0, 1),
+                currentView: 'Month',
+                eventSettings: {
+                    fields: { subject: { name: 'Subject', default: 'No Title' } }
+                }
+            };
+            document.body.style.transform = 'scale(1.25)';
+            schObj = util.createSchedule(model, tooltipData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking schedule with scaling', () => {
+            expect(document.body.style.transform.includes('scale')).toBe(true);
+            document.body.style.transform = '';
+            expect(document.body.style.transform.includes('scale')).toBe(false);
         });
     });
 

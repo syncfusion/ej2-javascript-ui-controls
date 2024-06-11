@@ -3,7 +3,7 @@
  */
 import { EmitType, L10n, createElement, isUndefined } from '@syncfusion/ej2-base';
 import { SortOrder } from '@syncfusion/ej2-lists/src/common';
-import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, Query, WebApiAdaptor} from '@syncfusion/ej2-data';
 import { DropDownBase } from '../../src/drop-down-base/drop-down-base';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
@@ -180,8 +180,9 @@ describe('DropDownBase', () => {
             it('initialized HTML data', (done) => {
                 nTree = new DropDownBase({
                     dataSource: new DataManager({
-                        url: '/api/Employees',
-                        adaptor: new ODataV4Adaptor
+                        url: 'https://services.syncfusion.com/js/production/api/Employees',
+                        adaptor: new WebApiAdaptor,
+                        crossDomain: true
                     }),
                     fields: { value: 'EmployeeID', text: 'FirstName' },
                     actionComplete: (e: any) => {
@@ -320,7 +321,11 @@ describe('DropDownBase', () => {
              */
             it('actionComplete events triggered', (done) => {
                 list = new DropDownBase({
-                    dataSource: new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor }),
+                    dataSource: new DataManager({
+                        url: 'https://services.syncfusion.com/js/production/api/Employees',
+                        adaptor: new WebApiAdaptor,
+                        crossDomain: true
+                    }),
                     fields: { text: 'FirstName' },
                     actionBegin: beginAction,
                     actionComplete: (e: any) => {
@@ -355,7 +360,11 @@ describe('DropDownBase', () => {
              */
             it('noRecordsTemplate', (done) => {
                 list = new DropDownBase({
-                    dataSource: new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor }),
+                    dataSource: new DataManager({
+                        url: 'https://services.syncfusion.com/js/production/api/Employees',
+                        adaptor: new WebApiAdaptor,
+                        crossDomain: true
+                    }),
                     fields: { text: 'FirstName' },
                     actionBegin: beginAction,
                     actionComplete: (e: any) => {

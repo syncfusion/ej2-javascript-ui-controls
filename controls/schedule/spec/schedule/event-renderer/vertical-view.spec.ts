@@ -1277,7 +1277,7 @@ describe('Vertical View Event Render Module', () => {
             schObj.dataBind();
         });
 
-        it('Checking allowInline event in timeline week view', (done: Function) => {
+        it('Checking allowInline event in timeline week view - cell click', (done: Function) => {
             schObj.dataBound = () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(26);
@@ -1290,6 +1290,40 @@ describe('Vertical View Event Render Module', () => {
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'timeline';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('Checking allowInline event in timeline week view - event click', (done: Function) => {
+            schObj.dataBound = () => {
+                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_46"]');
+                expect(eventElement).toBeTruthy();
+                expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('timeline - edited');
+                done();
+            };
+            const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_46"]');
+            expect(eventElement).toBeTruthy();
+            const subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            subjectElement.click();
+            const inputElement: HTMLInputElement = eventElement.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'timeline - edited';
+            keyModule.keyActionHandler({ action: 'enter', target: inputElement });
+        });
+
+        it('Checking allowInline, remove inline element on document click - cell click', () => {
+            (schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            util.triggerMouseEvent(document.body, 'mousedown');
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeFalsy();
+        });
+
+        it('Checking allowInline, remove inline element on document click - event click', () => {
+            const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_46"]');
+            expect(eventElement).toBeTruthy();
+            const subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
+            subjectElement.click();
+            expect(schObj.element.querySelector('.e-inline-subject')).toBeTruthy();
+            util.triggerMouseEvent(document.body, 'mousedown');
+            expect(schObj.element.querySelector('.e-inline-subject')).toBeFalsy();
         });
 
         it('Changing current view to Agenda', (done: Function) => {
@@ -1326,15 +1360,33 @@ describe('Vertical View Event Render Module', () => {
             schObj.currentView = 'Month';
             schObj.dataBind();
         });
+    });
 
-        xit('Checking allowInline add action in Month view', (done: Function) => {
+    describe('allowInline property', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: Function) => {
+            const model: ScheduleModel = {
+                currentView: 'Month', views: [
+                    { option: 'Month' },
+                ], height: '550px', width: '500px',
+                allowInline: true, selectedDate: new Date(2017, 10, 6)
+            };
+            schObj = util.createSchedule(model, defaultData, done);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking allowInline add action in Month view', (done: Function) => {
             schObj.dataBound = () => {
-                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
                 expect(eventElement).toBeTruthy();
                 expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Month view testing');
                 done();
             };
-            const workCell: HTMLElement = schObj.element.querySelector('[data-date="1511461800000"]') as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[26] as HTMLElement;
             workCell.click();
             const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
@@ -1342,14 +1394,14 @@ describe('Vertical View Event Render Module', () => {
             keyModule.keyActionHandler({ action: 'enter', target: inputElement });
         });
 
-        xit('Checking allowInline edit action in Month view', (done: Function) => {
+        it('Checking allowInline edit action in Month view', (done: Function) => {
             schObj.dataBound = () => {
-                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
                 expect(eventElement).toBeTruthy();
                 expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Month view testing edited');
                 done();
             };
-            const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_47"]');
+            const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_44"]');
             expect(eventElement).toBeTruthy();
             const subjectElement: HTMLElement = eventElement.querySelector('.e-subject') as HTMLElement;
             subjectElement.click();
@@ -1357,6 +1409,59 @@ describe('Vertical View Event Render Module', () => {
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
             inputElement.value = 'Month view testing edited';
             keyModule.keyActionHandler({ action: 'enter', target: inputElement });
+        });
+
+        it('Checking more popup closing after cell click when inline edit enabled', () => {
+            const moreEvent: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            moreEvent.click();
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(morePopup.classList.contains('e-popup-open')).toBeFalsy();
+        });
+
+        it('Checking inline appointment wrapper width after pressing enter key on multiple day cell selection', () => {
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            util.triggerMouseEvent(workCells[0], 'mousedown');
+            util.triggerMouseEvent(workCells[5], 'mousemove');
+            util.triggerMouseEvent(workCells[5], 'mouseup');
+            keyModule.keyActionHandler({ action: 'enter', target: workCells[5] });
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Month view testing edited';
+            const appWrapper: HTMLElement = schObj.element.querySelector('.e-appointment-wrapper .e-inline-appointment') as HTMLElement;
+            expect(appWrapper.style.width).toBe((workCells[0].clientWidth * 6) - 5 + 'px');
+        });
+    });
+
+    describe('allowInline property with template without default subject field', () => {
+        let schObj: Schedule;
+        const eventTemplate: string = '<div>Subject: ${Subject}</div><div>StartTime: ${StartTime.toLocaleString()}</div>' +
+            '<div>EndTime: ${EndTime.toLocaleString()</div>';
+        beforeAll((done: Function) => {
+            const model: ScheduleModel = {
+                currentView: 'Week', views: [
+                    { option: 'TimelineWeek' },
+                    { option: 'TimelineMonth' },
+                    { option: 'Week' },
+                    { option: 'Agenda' }
+                ], height: '550px', width: '700px',
+                allowInline: true, selectedDate: new Date(2017, 10, 6),
+                eventSettings: { template: eventTemplate }
+            };
+            schObj = util.createSchedule(model, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        
+        it('Checking allowInline property in Week view', () => {
+            const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]');
+            eventElement.click();
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            expect((eventElement.querySelector('.e-appointment-details') as HTMLElement).classList.contains('e-subject')).toBeFalsy();
+            util.triggerMouseEvent(document.body, 'mousedown');
         });
     });
 

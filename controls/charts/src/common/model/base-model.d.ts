@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { FadeOutMode, TooltipPosition } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, EmptyPointMode, TextOverflow, TitlePosition} from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
+import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { FadeOutMode, TooltipPosition } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, EmptyPointMode, TextOverflow, TitlePosition} from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
 
 /**
  * Interface for a class Connector
@@ -308,6 +308,7 @@ export interface BorderModel {
      *
      * @default ''
      */
+
     dashArray?: string;
 
 }
@@ -787,22 +788,22 @@ export interface TooltipSettingsModel {
     border?: BorderModel;
 
     /**
-     * Specifies the location of the tooltip, relative to the chart. 
-     * If x is 20, tooltip moves by 20 pixels to the right of the chart 
-     * ```html 
-     * <div id='Chart'></div> 
-     * ``` 
-     * ```typescript 
-     * let chart: Chart = new Chart({ 
-     * ... 
-     * tooltipSettings: { 
-     * enable: true, 
-     * location: { x: 100, y: 150 }, 
-     *   }, 
-     * ... 
-     * }); 
-     * chart.appendTo('#Chart'); 
-     * ``` 
+     * Specifies the location of the tooltip, relative to the chart.
+     * If x is 20, tooltip moves by 20 pixels to the right of the chart
+     * ```html
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let chart: Chart = new Chart({
+     * ...
+     * tooltipSettings: {
+     * enable: true,
+     * location: { x: 100, y: 150 },
+     *   },
+     * ...
+     * });
+     * chart.appendTo('#Chart');
+     * ```
      */
 
     location?: LocationModel;
@@ -940,14 +941,14 @@ export interface StockTooltipSettingsModel {
     border?: BorderModel;
 
     /**
-     * Specifies the tooltip position. They are, 
-     * * fixed - Place the tooltip in the fixed position. 
-     * * nearest- Tooltip moves along with the mouse. 
-     * 
-     * @default 'Fixed' 
+     * Specifies the tooltip position. They are,
+     * * fixed - Place the tooltip in the fixed position.
+     * * nearest- Tooltip moves along with the mouse.
+     *
+     * @default 'Fixed'
      */
 
-    position?: TooltipPosition; 
+    position?: TooltipPosition;
 
 }
 

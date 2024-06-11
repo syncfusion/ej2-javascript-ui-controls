@@ -39,7 +39,7 @@ export class RowRenderer implements IRowRenderer {
             if (window.devicePixelRatio % 1 > 0) {
                 const pointValue: number = (1 * window.devicePixelRatio) % 1;
                 width = 1 + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
-            } 
+            }
             this.bottomBorderWidth = width;
         }
         if (actualRowHgt < 20) {

@@ -898,7 +898,7 @@ describe('SendToBack and BringToFront of native nodes', () => {
         diagram.select([diagram.nodes[0]]);
         diagram.bringToFront();
         diagram.sendBackward();
-        expect(diagram.nodes[0].zIndex === 6).toBe(true);
+        expect(diagram.nodes[0].zIndex === 4).toBe(true);
         done();
     });
 });
@@ -1026,4 +1026,131 @@ describe('Bug 830365: Exception raised on adding group node in layers dynamicall
         && curNodeCount === 12).toBe(true);
         done();
     });
+});
+
+describe('Task 871044: Revamp Order Commands for Group Node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramGroupOrder' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 50, height: 50, offsetX: 100,
+                offsetY: 100,style:{fill:'green'}
+            }, {
+                id: 'node2', width: 50, height: 50, offsetX: 200,
+                offsetY: 200,style:{fill:'yellow'}
+            },
+            {
+                id: 'node3', width: 170, height: 170, offsetX: 245,
+                offsetY: 140, style: { fill: 'blue' }
+            },
+            {
+                id: 'node4', width: 200, height: 170, offsetX: 200,
+                offsetY: 215,style: { fill: 'skyblue' }
+            },
+            {
+                id: 'node5', width: 100, height: 100, offsetX: 305,
+                offsetY: 150, style: { fill: 'red' }
+            },
+            {
+                id: 'node6', width: 100, height: 100, offsetX: 185,
+                offsetY: 150, style: { fill: 'orange' }
+            },
+            { id: 'group', children: ['node1', 'node2'], padding: { left: 10, right: 10, top: 10, bottom: 10 }, style: { fill: 'pink' } },
+            { id: 'group2', children: ['node5', 'node6'], padding: { left: 10, right: 10, top: 10, bottom: 10 }, style: { fill: 'violet' } },
+        ];
+     
+        diagram = new Diagram({
+            width: '1000px', height: '500px',nodes: nodes,
+        });
+        diagram.appendTo('#diagramGroupOrder');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Group-order commands sendToBack and BringToFront', (done: Function) => {
+       let group1 = diagram.nameTable['group'];
+       let preGroupZindex = group1.zIndex;
+       diagram.select([group1]);
+       diagram.sendToBack();
+       let curGroupZindex = group1.zIndex;
+       expect(preGroupZindex === 6 && curGroupZindex === -1).toBe(true);
+       diagram.bringToFront();
+       expect(group1.zIndex === 10).toBe(true);
+       done();
+    });
+    it('Group-order commands sendBackword and BringForward', (done: Function) => {
+        let group1 = diagram.nameTable['group'];
+        let preGroupZindex = group1.zIndex;
+        diagram.select([group1]);
+        diagram.sendBackward();
+        let curGroupZindex = group1.zIndex;
+        expect(preGroupZindex === 10 && curGroupZindex === 4).toBe(true);
+        diagram.moveForward();
+        expect(group1.zIndex === 10).toBe(true);
+        done();
+     });
+     it('Group-order commands second group sendBackword and BringForward', (done: Function) => {
+        let group2 = diagram.nameTable['group2'];
+        let preGroupZindex = group2.zIndex;
+        diagram.select([group2]);
+        diagram.moveForward();
+        let curGroupZindex = group2.zIndex;
+        expect(preGroupZindex === 7 && curGroupZindex === 13).toBe(true);
+        diagram.moveForward();
+        expect(group2.zIndex === 13).toBe(true);
+        diagram.sendBackward();
+        expect(group2.zIndex === 7).toBe(true);
+        done();
+     });
+     it('Group-order commands second group sendToBack and BringToFront', (done: Function) => {
+        let group2 = diagram.nameTable['group2'];
+        let preGroupZindex = group2.zIndex;
+        diagram.select([group2]);
+        diagram.sendToBack();
+        let curGroupZindex = group2.zIndex;
+        expect(preGroupZindex === 7 && curGroupZindex === 2).toBe(true);
+        diagram.bringToFront();
+        expect(group2.zIndex === 13).toBe(true);
+        diagram.bringToFront();
+        expect(group2.zIndex === 13).toBe(true);
+        done();
+     });
+     it('Group-order commands normal nodes sendToBack and BringToFront', (done: Function) => {
+        let node3 = diagram.nameTable['node3'];
+        let preZindex = node3.zIndex;
+        diagram.select([node3]);
+        diagram.bringToFront();
+        let curZindex = node3.zIndex;
+        expect(preZindex === 3 && curZindex === 14).toBe(true);
+        diagram.sendToBack();
+        expect(node3.zIndex === 3).toBe(true);
+        diagram.bringToFront();
+        expect(node3.zIndex === 14).toBe(true);
+        done();
+     });
+     it('Group-order commands normal nodes sendBackward and BringForward', (done: Function) => {
+        let node4 = diagram.nameTable['node4'];
+        diagram.select([node4]);
+        diagram.moveForward();
+        let curZindex = node4.zIndex;
+        expect(curZindex === 11).toBe(true);
+        diagram.moveForward();
+        expect(node4.zIndex === 15).toBe(true);
+        diagram.sendBackward();
+        expect(node4.zIndex === 11).toBe(true);
+        done();
+     });
 });

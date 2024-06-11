@@ -54,10 +54,10 @@
     }
 
     #{if(&, '&', '*')} .e-model-header {
-      @if $skin-name != 'Material3' {
+      @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
         background-color: $datepicker-modal-header-bg;
       }
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
         background: $datepicker-modal-header-bg;
       }
       color: $datepicker-modal-header-color;
@@ -103,15 +103,14 @@
 
   .e-datepicker.e-popup-wrapper.e-lib.e-popup.e-control.e-popup-open {
     position: relative;
-    top:0 !important;
+    top: 0 !important;
     left: 0 !important;
   }
 
   .e-datepicker.e-popup-wrapper.e-popup-expand.e-lib.e-popup.e-control.e-popup-open {
     min-width: 100%;
-    min-height:100%;
+    min-height: 100%;
   }
-
 }
 
 .e-content-placeholder.e-datepicker.e-placeholder-datepicker {
@@ -126,13 +125,12 @@
 }
 
 @media screen and (orientation: landscape) {
-.e-datepick-mob-popup-wrap .e-datepicker.e-popup-expand .e-calendar .e-content.e-month td.e-today span.e-day {
-  line-height: $modal-tablet-content-dimension;
-}
+  .e-datepick-mob-popup-wrap .e-datepicker.e-popup-expand .e-calendar .e-content.e-month td.e-today span.e-day {
+    line-height: $modal-tablet-content-dimension;
+  }
 }
 
-.e-datepick-mob-popup-wrap {
-  
+.e-datepick-mob-popup-wrap {  
   #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
     border-radius: 0;
 
@@ -181,6 +179,9 @@
         @if $skin-name == 'bootstrap5' {
           background-color: transparent;
         }
+        @if $skin-name == 'fluent2' {
+          border-color: transparent;
+        }
         @media (min-device-width: 768px) {
           font-size: $modal-tablet-font-size;
         }
@@ -220,6 +221,9 @@
           line-height: $modal-month-header-title-line-height;
           @media (min-device-width: 768px) {
             font-size: $modal-tablet-font-size;
+          }
+          @if $skin-name == 'fluent2' {
+            left: $modal-header-left;
           }
         }
 
@@ -261,6 +265,9 @@
 
         #{if(&, '&', '*')} .e-icon-container {
           float: $modal-portrait-icon-float;
+          @if $skin-name == 'fluent2' {
+            padding-right: 2vw;
+          }
         }
       }
 
@@ -375,7 +382,9 @@
       #{if(&, '&', '*')} .e-calendar .e-header.e-decade {
 
         #{if(&, '&', '*')} .e-prev {
-          margin-right: $modal-landscape-prev-icon-margin;
+          @if $skin-name != 'fluent2' {
+            margin-right: $modal-landscape-prev-icon-margin;
+          }
         }
 
         #{if(&, '&', '*')} .e-title {

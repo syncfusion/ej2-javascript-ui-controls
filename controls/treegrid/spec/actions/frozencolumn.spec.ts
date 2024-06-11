@@ -280,7 +280,7 @@ describe('Remotedata in Frozenrows and column', () => {
               ]
           });
       gridObj.appendTo('#Grid');
-      this.request = window.fetch['calls'].mostRecent();
+      request = window.fetch['calls'].mostRecent();
   });
   it('Expanding remote frozen rows', () => {
       (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treegridcollapse')[0]).click();

@@ -12,4 +12,5 @@ export * from './textbox/index';
 export * from './textarea/index';
 export * from './signature/index';
 export * from './rating/index';
+export * from './otp-input/index';
 export * from './common/index';

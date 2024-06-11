@@ -1,12 +1,10 @@
 @include export-module('daterangepicker-layout') {
-  
-  /*! daterangepicker layout */
+
   .e-input-group.e-control-wrapper.e-date-range-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
   .e-float-input.e-control-wrapper.e-input-group.e-date-range-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
     display: flex;
   }
 
-  // Hidden element styles
   .e-float-input.e-input-group.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
   .e-input-group.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
   .e-float-input.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
@@ -101,6 +99,9 @@
         @if ($skin-name != 'FluentUI') {
           padding: $range-calendar-popup-padding;
         }
+        @if $skin-name == 'fluent2' {
+          box-shadow: none;
+        }
 
         #{if(&, '&', '*')} .e-content table {
           @if ($skin-name != 'FluentUI') {
@@ -126,12 +127,12 @@
             }
           }
           #{if(&, '&', '*')} .e-next {
-            @if ($skin-name != 'FluentUI') {
+            @if ($skin-name != 'FluentUI' and $skin-name != 'fluent2') {
               float: $range-float-right;
             }
           }
           #{if(&, '&', '*')} .e-prev {
-            @if ($skin-name != 'FluentUI') {
+            @if ($skin-name != 'FluentUI' and $skin-name != 'fluent2') {
               float: $range-float-left;
             }
           }
@@ -186,6 +187,9 @@
         overflow: $range-visibility-hidden;
         padding: $range-btn-padding;
         text-overflow: $range-text-overflow;
+        @if $skin-name == 'fluent2' {
+          border: $footer-btn-border;
+        }
       }
       #{if(&, '&', '*')} .e-footer .e-btn.e-apply {
         margin: $range-normal-footer-margin;
@@ -329,8 +333,6 @@
   .e-bigger.e-small #{&}.e-daterangepicker #{&}.e-calendar {
     max-width: $calendar-bigger-small-max-width;
   }
-
-  //bigger style
 
   .e-bigger #{&}.e-daterangepicker,
   #{if(&, '&', '*')}.e-bigger#{&}.e-daterangepicker,
@@ -660,9 +662,7 @@
 }
 
 .e-daterangepick-mob-popup-wrap {
-
-    #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
-      
+    #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {      
       #{if(&, '&', '*')} .e-date-range-container {
             min-height: $modal-range-portrait-calendar-min-height;
             min-width: $modal-range-portrait-calendar-min-width;
@@ -833,7 +833,6 @@
           }
         }
 
-
         #{if(&, '&', '*')} .e-separator {
             margin: 0;
         }
@@ -896,22 +895,19 @@
     }
 }
 
-
 @media screen and (orientation: landscape) {
-
   .e-daterangepick-mob-popup-wrap {
-
     #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
-
       #{if( &, '&', '*')} .e-date-range-container .e-range-header .e-model-header-wrapper .e-btn {
-        padding: 0;
+        @if $skin-name != 'fluent2' {
+          padding: 0;
+        }
         @media (min-device-width: 768px) {
           font-size: $modal-range-header-landscape-font-size;
         }
       }
 
       #{if( &, '&', '*')} .e-calendar-holder {
-
         #{if(&, '&', '*')} .e-calendar-container {
           @media (min-height: 600px) {
             min-height: 70vh;
@@ -946,7 +942,6 @@
       }
 
       #{if(&, '&', '*')} .e-range-mob-popup-wrap {
-
         #{if(&, '&', '*')} .e-model-header {
           height: $modal-range-header-landscape-height;
           font-size: $modal-range-header-landscape-font-size;
@@ -1006,8 +1001,7 @@
           }
           overflow-y: $modal-range-landscape-conetent-overflow;
 
-          table {
-  
+          table {  
             @media (min-height: 600px) {
               height: $modal-range-tablet-header-height;
             }
@@ -1026,5 +1020,3 @@
 .e-outline.e-float-input.e-static-clear.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-date-time-icon {
   width: calc(100% - 110px);
 }
-
-/* stylelint-enable */

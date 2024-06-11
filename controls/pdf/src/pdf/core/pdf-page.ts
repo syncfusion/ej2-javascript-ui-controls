@@ -7,6 +7,7 @@ import { _PdfBaseStream, _PdfContentStream } from './base-stream';
 import { PdfRotationAngle, PdfDestinationMode, PdfFormFieldsTabOrder, PdfPageOrientation } from './enumerator';
 import { PdfNamedDestination } from './pdf-outline';
 import { PdfPageSettings } from './pdf-document';
+import { PdfTemplate } from './graphics/pdf-template';
 /**
  * Represents a page loaded from the PDF document.
  * ```typescript
@@ -42,6 +43,7 @@ export class PdfPage {
     _tabOrder: PdfFormFieldsTabOrder;
     _pageSettings: PdfPageSettings;
     _isNew: boolean = false;
+    _isDuplicate: boolean = false;
     /**
      * Represents a loaded page of the PDF document.
      *
@@ -604,6 +606,58 @@ export class PdfPage {
             }
         }
     }
+    get _contentTemplate(): PdfTemplate {
+        this._loadContents();
+        this._fetchResources();
+        let array: Uint8Array;
+        const list: Uint8Array[] = [];
+        const count: number = this._contents.length;
+        list.push(new Uint8Array([32, 113, 32, 10]));
+        for (let i: number = 0; i < count; i++) {
+            const reference: _PdfReference = this._contents[Number.parseInt(i.toString(), 10)];
+            const base: any = this._crossReference._fetch(reference); // eslint-disable-line
+            if (typeof base !== 'undefined') {
+                if (base instanceof _PdfContentStream) {
+                    array = new Uint8Array(base._bytes);
+                } else if (base instanceof _PdfBaseStream) {
+                    array = base.getBytes();
+                }
+                if (array) {
+                    list.push(array);
+                    list.push(new Uint8Array([13, 10]));
+                }
+            }
+        }
+        list.push(new Uint8Array([32, 81, 32, 10]));
+        list.push(new Uint8Array([13, 10]));
+        const targetArray: Uint8Array = this._combineIntoSingleArray(list);
+        const targetStream: _PdfContentStream = new _PdfContentStream(Array.from(targetArray));
+        const template: PdfTemplate = new PdfTemplate(targetStream, this._crossReference);
+        template._content.dictionary.set('Resources', this._resourceObject);
+        if (this.cropBox[0] > 0 || this.cropBox[1] > 0) {
+            template._content.dictionary.set('BBox', this.cropBox);
+            template._size = [this.cropBox[0], this.cropBox[1]];
+        } else if (this.mediaBox[0] > 0 || this.mediaBox[1] > 0) {
+            template._content.dictionary.set('BBox', this.mediaBox);
+            template._size = [this.mediaBox[0], this.mediaBox[1]];
+        } else {
+            template._content.dictionary.set('BBox', [0, 0, this.size[0], this.size[1]]);
+            template._size = [this.size[0], this.size[1]];
+        }
+        template._exportResources(this._pageDictionary, this._crossReference);
+        template._isResourceExport = true;
+        return template;
+    }
+    _combineIntoSingleArray(arrays: Uint8Array[]): Uint8Array {
+        const totalLength: number = arrays.reduce((length: number, arr: Uint8Array) => length + arr.length, 0);
+        const targetArray: Uint8Array = new Uint8Array(totalLength);
+        let offset: number = 0;
+        arrays.forEach((sourceArray: Uint8Array) => {
+            targetArray.set(sourceArray, offset);
+            offset += sourceArray.length;
+        });
+        return targetArray;
+    }
 }
 /**
  * `PdfDestination` class represents the PDF destination.
@@ -642,7 +696,7 @@ export class PdfDestination {
     _index: number = 0;
     _destinationBounds: number[] = [0, 0, 0, 0];
     _array: Array<any> = Array<any>(); // eslint-disable-line
-    _parent: PdfNamedDestination;
+    _parent: any; // eslint-disable-line
     /**
      * Initializes a new instance of the `PdfDestination` class.
      * ```typescript
@@ -1062,7 +1116,7 @@ export class PdfDestination {
             break;
         }
         if (this._parent) {
-            this._parent._dictionary.set('D', this._array);
+            this._parent._dictionary.set(this._parent instanceof PdfNamedDestination ? 'D' : 'Dest', this._array);
             this._parent._dictionary._updated = true;
         }
     }

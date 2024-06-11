@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
+## 26.1.35 (2024-06-11)
 
 ### DashboardLayout
 
 #### Bug Fixes
 
-- `#I564184` - Resolved the issue with the dynamically added panel not being persisted when `enablePersistence` is enabled in the Dashboard Layout.
+- `#I590397` - Resolved the issue where two panels occupy the same cell when dragging panels in the Dashboard Layout.
 
 ## 25.1.35 (2024-03-15)
 

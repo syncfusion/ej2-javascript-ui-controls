@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../series/chart-series-model.d.ts' />
 import { Property, Complex } from '@syncfusion/ej2-base';
@@ -187,7 +185,14 @@ export class TechnicalIndicator extends SeriesBase {
     /** @private */
     public clipRect: Rect = new Rect(0, 0, 0, 0);
 
-    /** @private */
+    /**
+     * Sets the data source for the series in the chart.
+     *
+     * @private
+     * @param {Series} series - The series for which the data source is being set.
+     * @param {Chart} chart - The chart instance.
+     * @returns {void}
+     */
     public setDataSource(series: Series, chart: Chart): void {
         if (series) {
             this.xData = series.xData;

@@ -81,6 +81,10 @@ export class Page {
      * @returns {void}
      */
     public updateExternalMessage(message: string): void {
+        if (isNullOrUndefined(message)) {
+            const error: string = 'The provided value for the message is undefined. Please ensure the message contains string.';
+            this.parent.trigger(events.actionFailure, { error: error });
+        }
         this.parent.grid.pagerModule.updateExternalMessage(message);
     }
     /**

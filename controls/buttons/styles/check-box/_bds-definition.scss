@@ -1,4 +1,3 @@
-//layout variables
 $cbox-bigger-check-fontsize: 12px !default;
 $cbox-bigger-font-size: 16px !default;
 $cbox-bigger-height: 20px !default;
@@ -48,16 +47,16 @@ $cbox-focus-outline-offset: 0 !default;
 $cbox-focus-outline:  rgba($primary, .25) !default;
 $cbox-border-color: $border !default;
 $cbox-bgcolor: $content-bg-color !default;
-$cbox-checkmark-bgcolor: $primary-lighter !default;
+$cbox-checkmark-bgcolor: $primary !default;
 $cbox-checkmark-border-color: $primary !default;
-$cbox-checkmark-color: $primary !default;
+$cbox-checkmark-color: $primary-text-color !default;
 $cbox-checked-ripple-bgcolo: transparent !default;
 $cbox-checkmark-disabled-bgcolor: $content-bg-color-alt3 !default;
 $cbox-checkmark-disabled-border-color: $border !default;
 $cbox-checkmark-disabled-color: $border !default;
-$cbox-checkmark-hover-bgcolor:  $primary-lighter !default;
+$cbox-checkmark-hover-bgcolor:  $primary !default;
 $cbox-checkmark-hover-border-color: $primary !default;
-$cbox-checkmark-hover-color: $primary !default;
+$cbox-checkmark-hover-color: $primary-text-color !default;
 $cbox-color: $content-text-color !default;
 $cbox-disabled-bgcolor: $content-bg-color-alt3 !default;
 $cbox-disabled-border-color: $border !default;
@@ -66,9 +65,9 @@ $cbox-focussed-box-shadow: $primary-shadow-focus !default;
 $cbox-hover-bgcolor: $primary-lighter !default;
 $cbox-hover-border-color: $primary !default;
 $cbox-hover-color: $content-text-color !default;
-$cbox-indeterminate-bgcolor: $primary-lighter !default;
+$cbox-indeterminate-bgcolor: $primary !default;
 $cbox-indeterminate-border-color: $primary !default;
-$cbox-indeterminate-color: $primary !default;
+$cbox-indeterminate-color: $primary-text-color !default;
 $cbox-indeterminate-content: '\e7d6' !default;
 $cbox-indeterminate-disabled-bgcolor: $content-bg-color-alt3 !default;
 $cbox-indeterminate-disabled-border-color: $border !default;
@@ -82,5 +81,3 @@ $cbox-focussed-checkmark-bgcolor: $primary-lighter !default;
 $cbox-focussed-checkmark-border-color: $primary !default;
 $cbox-focussed-checkmark-color: $primary !default;
 $cbox-border-style: solid !default;
-
-//enddefault

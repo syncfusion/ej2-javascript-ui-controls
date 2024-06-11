@@ -1,4 +1,4 @@
-import { SvgRenderer, LinearGradient as Linear, RadialGradient as Radial, GradientColor } from '@syncfusion/ej2-svg-base';import { Pointer, Range } from '../axes/axis';import { LinearGauge } from '../../linear-gauge';import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
+import { SvgRenderer, LinearGradient as Linear, RadialGradient as Radial, GradientColor } from '@syncfusion/ej2-svg-base';import { Pointer, Range } from '../axes/axis';import { LinearGauge } from '../../linear-gauge';import { Property, ChildProperty, Complex, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class ColorStop

@@ -110,8 +110,6 @@
     }
   }
 
-  //normal styles
-
   #{&}.e-datetimepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
       line-height: $datetime-list-normal-line-height;
@@ -119,7 +117,6 @@
     }
   }
 
-  //bigger styles
   .e-bigger.e-datetime-wrapper,
   #{if(&, '&', '*')}.e-bigger .e-datetime-wrapper {
 

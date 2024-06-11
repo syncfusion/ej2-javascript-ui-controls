@@ -15,7 +15,7 @@ import { StockChart } from '../../stock-chart/stock-chart';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { IPDFArgs } from '../../common/model/interface';
 import { Chart3D } from '../../chart3d';
-import { CircularChart3D } from '../../circularchart3d/circularchart3d';
+import { CircularChart3D } from '../../circularchart3d';
 
 /**
  * Export Functionalities
@@ -210,14 +210,16 @@ export class ExportUtils {
         }));
     }
     /**
-     * To get the maximum size value
+     * To get the maximum size value.
      *
-     * @param controls
-     * @param name
+     * @param {(Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart | Chart3D | CircularChart3D)[]} controls - The array of controls to retrieve the maximum size value.
+     * @param {boolean} isVertical - Indicates whether the orientation is vertical.
+     * @param {boolean} isMultiPages - Indicates whether multiple pages are used.
+     * @param {ExportType} type - The type of export.
+     * @returns {IControlValue[]} - An array of control values.
      */
-
-    // eslint-disable-next-line max-len
-    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart | Chart3D | CircularChart3D)[], isVertical?: boolean, isMultiPages?: boolean, type?: ExportType): IControlValue[] {
+    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart | Chart3D |
+    CircularChart3D)[], isVertical?: boolean, isMultiPages?: boolean, type?: ExportType): IControlValue[] {
         let width: number = 0;
         let height: number = 0;
         let svgObject: Element = new SvgRenderer('').createSvg({
@@ -227,7 +229,8 @@ export class ExportUtils {
         const controlValues: IControlValue[] = [];
         let backgroundColor: string;
         for (let i: number = 0; i < controls.length; i++) {
-            const control = controls[i as number];
+            const control: Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart | Chart3D |
+            CircularChart3D = controls[i as number];
             const isCanvas: boolean = (control as Chart).enableCanvas;
             const svg: Node = control.svgObject.cloneNode(true);
             const groupEle: Element = control.renderer.createGroup({
@@ -236,7 +239,7 @@ export class ExportUtils {
             });
             backgroundColor = (svg.childNodes[0] as HTMLElement) ? (svg.childNodes[0] as HTMLElement).getAttribute('fill') : 'transparent';
             if (backgroundColor === 'transparent') {
-                if (control.theme.indexOf('Dark') > -1 || control.theme === 'HighContrast') {
+                if (control.theme.indexOf('Dark') > -1 || control.theme.indexOf('HighContrast') > -1) {
                     backgroundColor = 'rgba(0, 0, 0, 1)';
                 } else {
                     backgroundColor = 'rgba(255, 255, 255, 1)';
@@ -316,9 +319,8 @@ export class ExportUtils {
         chart['preRender']();
         chart['render']();
     }
-
-    // eslint-disable-next-line max-len
-    private exportPdf(element: HTMLCanvasElement[], orientation: PdfPageOrientation, width: number[], height: number[], isDownload: boolean, fileName: string, header?: IPDFArgs, footer?: IPDFArgs): void {
+    private exportPdf(element: HTMLCanvasElement[], orientation: PdfPageOrientation, width: number[], height: number[],
+                      isDownload: boolean, fileName: string, header?: IPDFArgs, footer?: IPDFArgs): void {
         const document: PdfDocument = new PdfDocument();
         const margin: PdfMargins = document.pageSettings.margins;
         const pdfDefaultWidth: number = document.pageSettings.width;
@@ -326,8 +328,10 @@ export class ExportUtils {
         for (let i: number = 0; element.length > i; i++) {
             let imageString: string = element[i as number].toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
             document.pageSettings.orientation = orientation;
-            const exactWidth: number = (pdfDefaultWidth < width[i as number]) ? (width[i as number] + margin.left + margin.right) : pdfDefaultWidth;
-            const exactHeight: number = orientation === 0 ? (width[i as number] + margin.left + margin.right) : (pdfDefaultHeight < height[i as number]) ? (height[i as number] + margin.top + margin.bottom) : pdfDefaultHeight;
+            const exactWidth: number = (pdfDefaultWidth < width[i as number]) ? (width[i as number] + margin.left + margin.right) :
+                pdfDefaultWidth;
+            const exactHeight: number = orientation === 0 ? (width[i as number] + margin.left + margin.right) :
+                (pdfDefaultHeight < height[i as number]) ? (height[i as number] + margin.top + margin.bottom) : pdfDefaultHeight;
             if (header !== undefined) {
                 const font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
                 const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);

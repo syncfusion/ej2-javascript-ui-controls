@@ -2747,3 +2747,111 @@ describe('880811-grouping child nodes with addChildToGroup method does not push 
         done();
     });
 });
+describe('Ungrouping group node with connector', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_group' });
+        document.body.appendChild(ele);
+        
+        let nodes: NodeModel[] = [
+            {
+                id: 'transaction_com', width: 50, height: 50, offsetX: 100,
+                offsetY: 100,
+            },
+            {
+                id: 'node2', width: 50, height: 50, offsetX: 300,
+                offsetY: 100,
+            },
+            {
+                id:'group10', children:['transaction_com','node2']
+            },
+            {
+                id: 'node4', width: 50, height: 50, offsetX: 400,
+                offsetY: 200,
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            { id: 'connector1', sourceID:"group10", targetID:'node4' }
+        ];
+
+        diagram = new Diagram({
+            width: '800px', height: '500px',nodes: nodes,
+            mode:"SVG",
+            connectors: connectors,
+            getNodeDefaults: function (node:any) {
+                if(node.width==undefined){
+                    node.width = 150
+                }
+                node.style = { fill: '#357BD2', strokeColor: 'white' };
+            },
+        });
+        diagram.appendTo('#diagram_group');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Ungrouping group nodes with connectors', (done: Function) => {
+        diagram.select([diagram.nodes[2]]);
+        diagram.unGroup();
+        done();
+    });
+});
+
+describe('Bug 886881: Exception throws while ungrouping a group node with annotations', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_group' });
+        document.body.appendChild(ele);
+        
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 50, height: 50, offsetX: 100,
+                offsetY: 100,annotations: [{ content: 'Node1' }]
+            }, {
+                id: 'node2', width: 50, height: 50, offsetX: 200,
+                offsetY: 200,annotations: [{ content: 'Node2' }]
+            },
+            { id: 'group1', children: ['node1', 'node2'],annotations: [{ content: 'Group' },{content:'222',offset:{x:0.5,y:0.8}},{content:'111',offset:{x:0.8,y:0.2}}],style:{fill:'green'}},
+        ];
+ 
+
+        diagram = new Diagram( {
+            width: '1050px', height: '500px', nodes: nodes,
+        });
+        diagram.appendTo('#diagram_group');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Ungrouping group nodes with multiple annotation', (done: Function) => {
+        let group1 = diagram.nameTable['group1'];
+        diagram.select([group1]);
+        diagram.unGroup();
+        expect(diagram.nodes.length === 2).toBe(true);
+        diagram.undo();
+        expect(diagram.nodes.length === 3).toBe(true);
+        done();
+    });
+});

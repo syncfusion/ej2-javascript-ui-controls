@@ -465,7 +465,7 @@ describe('FileManager control single selection Grid view', () => {
                 setTimeout(function () {
                     let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                     expect(gridLi.length).toEqual(3);
-                    expect(gridLi[1].querySelector('.e-fe-text').innerText).toBe("2");
+                    expect(gridLi[1].querySelector('.e-fe-grid-name').innerText).toBe("2");
                     done();
                 }, 500);
             }, 500);

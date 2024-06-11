@@ -874,7 +874,7 @@ describe('Map marker properties tesing', () => {
                 baseLayerIndex: 0,
                 layers: [
                     {
-                        layerType:'OSM'
+                        urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
                     },
                     {
                         type:'SubLayer',
@@ -1493,7 +1493,7 @@ describe('Map marker properties tesing', () => {
         it('Marker Legend visibility', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_Legend_Group');
-                expect(element.childElementCount).toBe(4);
+                expect(element.querySelectorAll('g').length).toBe(4);
             };
         });
         it('Toggle legend property for marker color', () => {
@@ -1920,8 +1920,10 @@ describe('Map marker properties tesing', () => {
                         useGroupingSeparator: true,
                         zoomSettings: {
                             enable: true,
-                            horizontalAlignment: 'Near',
-                            toolBarOrientation: 'Vertical',
+                            toolbarSettings: {
+                                orientation: 'Vertical',
+                                horizontalAlignment: 'Near'
+                            },
                             pinchZooming: true
                         },
                         titleSettings: {
@@ -2040,8 +2042,10 @@ describe('Map marker properties tesing', () => {
                             useGroupingSeparator: true,
                             zoomSettings: {
                                 enable: true,
-                                horizontalAlignment: 'Near',
-                                toolBarOrientation: 'Vertical',
+                                toolbarSettings: {
+                                    orientation: 'Vertical',
+                                    horizontalAlignment: 'Near'
+                                },
                                 pinchZooming: true
                             },
                             titleSettings: {

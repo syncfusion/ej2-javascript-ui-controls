@@ -40,7 +40,8 @@ export class CircularChart3DPoints {
     /** Circular 3D point slice radius. */
     public radius: number;
     /** Circular 3D point original text.
-     *  @private  
+     *
+     *  @private
      */
     public originalText: string;
     /** Circular 3D point color. */
@@ -358,14 +359,15 @@ export class CircularChart3DSeries extends ChildProperty<CircularChart3DSeries> 
         dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e, chart));
     }
 
-    // eslint-disable-next-line jsdoc/require-param
     /**
      * Handles the success event when the DataManager fetches data for the circular 3D series.
      *
      * @private
-     * @param { object } dataObject - Specifies the series data object.
+     * @param {Object} dataObject - Specifies the series data object.
+     * @param {Object} dataObject.result - The actual data.
+     * @param {number} dataObject.count - The count of data.
      * @param {CircularChart3D} chart - The instance of the circular 3D chart.
-     * @param {boolean} render - A boolean value indicating whether rendering is required. Default is true.
+     * @param {boolean} [render=true] - A boolean value indicating whether rendering is required. Default is true.
      * @returns {void}
      */
     public dataManagerSuccess(dataObject: { result: Object, count: number }, chart: CircularChart3D, render: boolean = true): void {
@@ -564,7 +566,6 @@ export class CircularChart3DSeries extends ChildProperty<CircularChart3DSeries> 
         }
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Creates polygons for a 3D circular chart series.
      *
@@ -572,6 +573,7 @@ export class CircularChart3DSeries extends ChildProperty<CircularChart3DSeries> 
      * @param {CircularChart3D} chart - The circular 3D chart instance.
      * @returns {CircularChart3DPolygon[][]} - The array of created polygons.
      */
+
     private createPolygons(series: CircularChart3DSeries, chart: CircularChart3D): CircularChart3DPolygon[][] {
         let segments: CircularChart3DSegments[] = [];
         const polygons: CircularChart3DPolygon[][] = [];
@@ -618,7 +620,6 @@ export class CircularChart3DSeries extends ChildProperty<CircularChart3DSeries> 
         return null;
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Creates sectors for a circular 3D chart based on the specified parameters.
      *
@@ -628,6 +629,7 @@ export class CircularChart3DSeries extends ChildProperty<CircularChart3DSeries> 
      * @param {number} seriesIndex - The index of the series to which the sectors belong.
      * @returns {CircularChart3DPolygon[][]} - An array of CircularChart3DPolygon arrays representing the created sectors.
      */
+
     private createSector(segment: CircularChart3DSegments, chart: CircularChart3D,
                          style: CircularChart3DSeriesStyle, seriesIndex: number): CircularChart3DPolygon[][] {
         const count: number = Math.ceil(segment.actualEndValue / 6);
@@ -1000,9 +1002,9 @@ export class CircularChart3DSeries extends ChildProperty<CircularChart3DSeries> 
      * @returns {CircularChart3DSegments} - The created segment.
      */
     private createSegment(center: CircularChart3DVector, start: number, end: number,
-                         height: number, radius: number, index: number, yValue: number,
-                         insideRadius: number, pointIndex: number, series: CircularChart3DSeries,
-                         accessibilityText: string): CircularChart3DSegments {
+                          height: number, radius: number, index: number, yValue: number,
+                          insideRadius: number, pointIndex: number, series: CircularChart3DSeries,
+                          accessibilityText: string): CircularChart3DSegments {
         return {
             startValue: start,
             endValue: end,

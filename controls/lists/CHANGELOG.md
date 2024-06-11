@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
+## 26.1.35 (2024-06-11)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I576036` -  The issue with "`currentIndex` was not proper in `listbox beforeDrop` event when drag and drop the duplicate item" has been resolved.
 
 ### ListBox
 

@@ -100,12 +100,12 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
      */
     @Property()
     public animation: AnimationModel;
-    
+
     /**
-     * Specifies whether the tooltip remains visible even when the mouse moves away from the target element. 
+     * Specifies whether the tooltip remains visible even when the mouse moves away from the target element.
      * If set to true, the tooltip is always visible; otherwise, it is hidden when the mouse moves away.
      * The default value is false.
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -197,8 +197,8 @@ function updateTooltipContent(tooltip: DiagramTooltipModel, tooltipObject: Toolt
     if (tooltip.content) {
         tooltipObject.content = tooltip.content;
         //Task 834121: Content-Security-Policy support for diagram
-        if(typeof tooltip.content === 'string'){
-            const contentTemp = function() {
+        if (typeof tooltip.content === 'string') {
+            const contentTemp: () => string | HTMLElement = function (): string | HTMLElement {
                 return tooltip.content;
             };
             tooltipObject.content = initializeCSPTemplate(contentTemp);
@@ -217,6 +217,3 @@ function updateTooltipContent(tooltip: DiagramTooltipModel, tooltipObject: Toolt
     }
     return tooltipObject as Tooltip;
 }
-
-
-

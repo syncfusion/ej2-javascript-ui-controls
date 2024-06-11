@@ -482,6 +482,32 @@ describe('Map navigation properties tesing', () => {
             ];
             map.refresh();
         });
+        it('Navigation line Data as empty', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
+                expect(spec == null).toEqual(true);
+            };
+            map.layers[0].navigationLineSettings = [
+                {
+
+                },
+                {
+                    visible: true,
+                    latitude: [38.8833, 21.0000],
+                    longitude: [-77.0167, 78.0000],
+                    angle: -0.5,
+                    width: 5,
+                    color: 'none',
+                    arrowSettings: {
+                        showArrow: true,
+                        size: 5,
+                        position: 'End',
+                        offSet: 5
+                    }
+                },                
+            ];
+            map.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

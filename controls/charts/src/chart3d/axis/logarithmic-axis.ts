@@ -6,6 +6,7 @@ import { logBase, withIn } from '../../common/utils/helper';
 import { Chart3D } from '../chart3D';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { Chart3DTextFont } from '../model/chart3d-Interface';
+import { Chart3DSeries } from '../series/chart-series';
 
 /**
  * The `Logarithmic` module is used to render log axis.
@@ -57,7 +58,7 @@ export class Logarithmic3D extends Double3D {
         let logEnd: number = this.max === 1 ? 1 : logBase(<number>this.max, axis.logBase);
         logEnd = isFinite(logStart) ? logEnd : <number>this.max;
         this.min = Math.floor(logStart / 1);
-        const isRectSeries: boolean = axis.series && axis.series.some((item) => {
+        const isRectSeries: boolean = axis.series && axis.series.some((item: Chart3DSeries) => {
             return (item.type.indexOf('Column') !== -1 || item.type.indexOf('Bar') !== -1);
         });
         if (isRectSeries) {

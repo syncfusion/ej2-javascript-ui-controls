@@ -1,4 +1,3 @@
-// uploader with material3 theme
 $zero-value: 0 !default;
 $upload-border-radius: 4px !default;
 $upload-root-font-family: $font-family !default;
@@ -30,8 +29,6 @@ $remove-icon-rtl: 20px !default;
 $reload-btn-right: 36px !default;
 $icons-small-ie-padding: 18px 13px 18px 23px !default;
 $icons-bigger-ie-padding: 20px 17px 20px 26px !default;
-
-// Smaller values
 $list-items-height-smaller: 60px !default;
 $list-item-status-margin-smaller: 8px !default;
 $progress-bar-top-smaller: $zero-value !default;
@@ -47,13 +44,9 @@ $progress-bar-paddding: 6px 6px !default;
 $remove-icon-before-bigger: 15px !default;
 $remove-icon-rtl-bigger: $zero-value !default;
 $margin-rtl-header-smaller: 10px !default;
-
-// Smaller RTL values
 $file-status-rtl-smaller: 21px !default;
 $rtl-progress-left-smaller: -23px !default;
 $remove-icon-top-bigger: 10px !default;
-
-// themes files
 $progress-bar-transition: width 2s !default;
 $remove-icon-disabled-color:  $zero-value !default;
 $pause-play-button-right-value: 36px !default;
@@ -62,7 +55,6 @@ $pause-play-button-right-value-bigger-rtl: 41px !default;
 $file-container-left: 60px !default;
 $ie-icons-position-value: 10px !default;
 $ie-abort-icon-position-value: 12px !default;
-
 $upload-font-family: inherit !default;
 $drop-area-padding-left: 16px !default;
 $drop-area-font-size: 15px !default;
@@ -117,9 +109,6 @@ $remove-icon-top: 50% !default;
 $clear-icon-focus-color: rgba($content-text-color, .08) !default;
 $remove-icon-margin-top: -24px !default;
 $remove-icon-padding-smaller: 18px !default;
-
-//smaller
-
 $drop-area-font-size-smaller: 14px !default;
 $drop-area-padding-left-smaller: 12px !default;
 $list-items-font-size-smaller: 14px !default;
@@ -151,9 +140,6 @@ $progress-bar-top-paddding: 6px !default;
 $progress-bar-bottom-paddding: 6px !default;
 $inner-wrap-radius: $zero-value !default;
 $progress-bar-radius: $zero-value !default;
-
-//Smaller RTL
-
 $margin-rtl-smaller: 12px !default;
 $progress-bar-wrap-top-smaller: 46px !default;
 $remove-icon-rtl-top-smaller: 50% !default;
@@ -161,17 +147,13 @@ $progress-bar-width-rtl: 89% !default;
 $rtl-progress-top: -25px !default;
 $progress-background-color: $content-bg-color-alt3 !default;
 $progress-text-color: $drop-text-color !default;
-
 $remove-icon-margin-top-smaller: -18px !default;
 $remove-icon-margin-top: -20px !default;
 $upload-border: 1px dashed rgba($border-light) !default;
 $list-bottom-border: 1px solid rgba($border-light) !default;
-
 $remove-icon-color: rgba($icon-color) !default;
 $upload-hover-icon-color: rgba($icon-color-hover) !default;
 $uploader-icons-hover-radius: 50% !default;
-
-// mouse small
 $header-padding-small: 12px 0 12px 12px !default;
 $drop-area-small-font-size: 13px !default;
 $file-small-name-font-size: 12px !default;
@@ -186,8 +168,6 @@ $progress-bar-bottom-paddding-small: 3px !default;
 $drop-small-area-padding-left: 12px !default;
 $li-min-height-small: 76px !default;
 $header-padding-rtl-small: 16px 12px 16px 0 !default;
-
-// form upload - normal
 $form-upload-file-name-line-height: 1.5 !default;
 $form-upload-file-list-height: $list-item-height !default;
 $form-upload-file-list-padding-top: $file-name-padding-top-smaller - 4 !default;
@@ -195,8 +175,6 @@ $form-upload-file-list-padding-bottom: $file-name-padding-top-smaller !default;
 $form-upload-file-name-padding: 4px !default;
 $form-upload-file-status-font-size: $list-item-status-font-size-smaller !default;
 $form-upload-remove-icon-top: 32px !default;
-
-// form upload - bigger
 $form-upload-bigger-file-name-line-height: 1.5 !default;
 $form-upload-bigger-file-list-height: $list-item-height !default;
 $form-upload-bigger-file-list-padding-top: $file-name-padding-top - 4 !default;
@@ -204,8 +182,6 @@ $form-upload-bigger-file-list-padding-bottom: $file-name-padding-top !default;
 $form-upload-bigger-file-name-padding: 4px !default;
 $form-upload-bigger-file-status-font-size: $list-item-status-font-size !default;
 $form-upload-bigger-remove-icon-top: 42px !default;
-
-// form upload - small
 $form-upload-small-file-name-line-height: 1.5 !default;
 $form-upload-small-file-list-height: $list-item-height !default;
 $form-upload-small-file-list-padding-top: $file-small-name-padding-top - 4 !default;

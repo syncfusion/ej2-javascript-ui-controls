@@ -32,7 +32,7 @@ export class Resize {
         this.parent.treeGrid.resizeStart = (args: ResizeArgs) => {
             if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('ColumnResize')) {
                 this.parent.undoRedoModule['createUndoCollection']();
-                let details: Object = {};
+                const details: Object = {};
                 details['action'] = 'ColumnResize';
                 details['resizedColumn'] = { ...args.column };
                 this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] = details;

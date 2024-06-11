@@ -1,9 +1,8 @@
-// color system
 @use 'sass:math';
 @import '../common/mixin.scss';
 
 @function mapcolorvariable($pallete-name){
-  @return var(#{'--color-sf-'+  $pallete-name});
+  @return var(#{'--color-sf-'+ $pallete-name});
 }
 
 @function darken-color($color, $amount) {
@@ -19,7 +18,7 @@
   filter: brightness(#{100% + $amount}) saturate(100%) hue-rotate(0deg);
   background-color: $color;
 }
-  
+
 @function rgbaChange($hex, $alpha: 1) {
   $r: str-slice($hex, 1, 2);
   $g: str-slice($hex, 3, 4);
@@ -74,7 +73,7 @@
   --color-sf-on-warning: 99, 52, 0;
   --color-sf-on-warning-container: 255, 220, 193;
   --color-sf-spreadsheet-gridline: 231, 224, 236;
-  --color-sf-shadow-focus-ring1: 0 0 0 1px #000000, 0 0 0 3px #ffffff;
+  --color-sf-shadow-focus-ring1: 0 0 0 1px #000, 0 0 0 3px #fff;
   --color-sf-success-text: 0, 0, 0;
   --color-sf-warning-text: 0, 0, 0;
   --color-sf-info-text: 0, 0, 0;
@@ -83,17 +82,13 @@
   --color-sf-content-text-color-alt2: var(--color-sf-on-secondary);
 }
 
-// black
 $black: mapcolorvariable('black') !default;
+$white: mapcolorvariable('white') !default;
 
-// White
-$white:  mapcolorvariable('white') !default;
-
-// Material3 Light
-$primary :  mapcolorvariable('primary') !default;
+$primary : mapcolorvariable('primary') !default;
 $primary-container: mapcolorvariable('primary-container') !default;
-$secondary:  mapcolorvariable('secondary') !default;
-$secondary-container:  mapcolorvariable('secondary-container') !default;
+$secondary: mapcolorvariable('secondary') !default;
+$secondary-container: mapcolorvariable('secondary-container') !default;
 $tertiary: mapcolorvariable('tertiary') !default;
 $tertiary-container: mapcolorvariable('tertiary-container') !default;
 $surface: mapcolorvariable('surface') !default;
@@ -138,7 +133,6 @@ $info-text: mapcolorvariable('info-text') !default;
 $danger-text: mapcolorvariable('danger-text') !default;
 $spreadsheet-gridline: mapcolorvariable('spreadsheet-gridline') !default;
 
-// opacity
 $opacity0: 0 !default;
 $opacity4: .04 !default;
 $opacity5: .05 !default;
@@ -149,7 +143,6 @@ $opacity12: .12 !default;
 $opacity14: .14 !default;
 $opacity16: .16 !default;
 
-//Material custom variable
 $surface1: linear-gradient(0deg, rgba($primary, $opacity5), rgba($primary, $opacity5)), rgba($surface) !default;
 $surface2: linear-gradient(0deg, rgba($primary, $opacity8), rgba($primary, $opacity8)), rgba($surface) !default;
 $surface3: linear-gradient(0deg, rgba($primary, $opacity11), rgba($primary, $opacity11)), rgba($surface) !default;
@@ -157,14 +150,13 @@ $surface4: linear-gradient(0deg, rgba($primary, $opacity12), rgba($primary, $opa
 $surface5: linear-gradient(0deg, rgba($primary, $opacity14), rgba($primary, $opacity14)), rgba($surface) !default;
 $surface6: linear-gradient(0deg, rgba($primary, $opacity16), rgba($primary, $opacity16)), rgba($surface) !default;
 
-//shadow
 $level1: 0 1px 3px 1px rgba(0, 0, 0, .15), 0 1px 2px 0 rgba(0, 0, 0, .3);
 $level2: 0 2px 6px 2px rgba(0, 0, 0, .15), 0 1px 2px 0 rgba(0, 0, 0, .3);
 $level3: 0 1px 3px 0 rgba(0, 0, 0, .3), 0 4px 8px 3px rgba(0, 0, 0, .15);
 $level4: 0 2px 3px 0 rgba(0, 0, 0, .3), 0 6px 10px 4px rgba(0, 0, 0, .15);
 $level5: 0 4px 4px 0 rgba(0, 0, 0, .3), 0 8px 12px 6px rgba(0, 0, 0, .15);
 
-$primary:  $primary !default;
+$primary: $primary !default;
 $primary-text-color: $on-primary !default;
 $primary-light: $primary-container !default;
 $primary-lighter: $primary-light !default;
@@ -188,7 +180,6 @@ $info-light-alt: $info-light !default;
 $warning-light-alt: $warning-light !default;
 $danger-light-alt: $danger-light !default;
 
-// backgroundcolor
 $content-bg-color: $surface !default;
 $content-bg-color-alt1: $surface1 !default;
 $content-bg-color-alt2: $surface2 !default;
@@ -212,7 +203,6 @@ $table-bg-color-hover: rgba($on-surface, $opacity5) !default;
 $table-bg-color-pressed: rgba($on-surface, $opacity8) !default;
 $table-bg-color-selected: rgba($primary-container, .65) !default;
 
-// all theme common color
 $colorpicker-gradient-1: #f00 !default;
 $colorpicker-gradient-2: #ff0 !default;
 $ccolorpicker-gradient-3: #0f0 !default;
@@ -227,7 +217,6 @@ $spreadsheet-selection-4: #4caf51 !default;
 $spreadsheet-selection-5: #fe9800 !default;
 $spreadsheet-selection-6: #3f52b5 !default;
 
-// text-color
 $content-text-color: $on-surface !default;
 $content-text-color-alt1: $on-surface-variant !default;
 $content-text-color-alt2: $on-surface-variant !default;
@@ -250,13 +239,11 @@ $table-text-color-hover: $content-text-color !default;
 $table-text-color-pressed: $content-text-color !default;
 $table-text-color-selected: $content-text-color !default;
 
-// icon-color
 $icon-color: $on-surface-variant !default;
 $icon-color-hover: $on-surface !default;
 $icon-color-pressed: $on-surface-variant !default;
 $icon-color-disabled: rgba($on-surface-variant, .38) !default;
 
-// border-color
 $border-light: $outline-variant !default;
 $border: $outline !default;
 $border-alt: $on-surface-variant !default;
@@ -273,12 +260,10 @@ $border-success: $success !default;
 $spreadsheet-gridline: #e7e0ec !default;
 $flyout-border: $border-light !default;
 
-// Tooltip
 $tooltip-bg-color: $inverse-surface !default;
 $tooltip-border: $inverse-surface;
 $tooltip-text-color: $inverse-on-surface !default;
 
-// shadow
 $shadow: 0 .8px 16px rgba($black, .15) !default;
 $shadow-sm: $level1 !default;
 $shadow-md: $level2 !default;
@@ -288,7 +273,7 @@ $shadow-2xl: $level5 !default;
 $shadow-inner: inset 0 1px 2px rgba($black, .075) !default;
 $shadow-none: 0 0 rgba($black, 0) !default;
 
-$shadow-focus-ring1: 0 0 0 1px #000000, 0 0 0 3px #ffffff !default;
+$shadow-focus-ring1: 0 0 0 1px #000, 0 0 0 3px #fff !default;
 $shadow-focus-ring2: 0 0 0 1px rgba($black, .95) !default;
 $primary-shadow-focus: 0 0 0 4px rgba($primary, .5) !default;
 $secondary-shadow-focus: 0 0 0 4px rgba($secondary, .5) !default;
@@ -297,10 +282,8 @@ $danger-shadow-focus: 0 0 0 4px rgba($danger, .5) !default;
 $info-shadow-focus: 0 0 0 4px rgba($info, .5) !default;
 $warning-shadow-focus: 0 0 0 4px rgba($warning, .5) !default;
 
-// fontfamily
 $font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif !default;
 
-// default font Size
 $text-xxs: 10px !default;
 $text-xs: 12px !default;
 $text-sm: 14px !default;
@@ -316,7 +299,6 @@ $text-7xl: 78px !default;
 $text-8xl: 96px !default;
 $text-9xl: 128px !default;
 
-// heading
 $h1-font-size: 40px !default;
 $h2-font-size: 32px !default;
 $h3-font-size: 28px !default;
@@ -324,9 +306,6 @@ $h4-font-size: $text-2xl !default;
 $h5-font-size: $text-xl !default;
 $h6-font-size: $text-base !default;
 
-// Display
-
-// Line-height
 $leading-none: 1 !default;
 $leading-tight: 1.25 !default;
 $leading-snug: 1.375 !default;
@@ -334,15 +313,12 @@ $leading-normal: 1.5 !default;
 $leading-relaxed: 1.625 !default;
 $leading-loose: 2 !default;
 
-// font Weight
-$font-weight-lighter:         lighter !default;
-$font-weight-light:           300 !default;
-$font-weight-normal:          400 !default;
-$font-weight-medium:          600 !default;
-$font-weight-bold:            700 !default;
-$font-weight-bolder:          bolder !default;
-
-// Secondary-button
+$font-weight-lighter: lighter !default;
+$font-weight-light: 300 !default;
+$font-weight-normal: 400 !default;
+$font-weight-medium: 600 !default;
+$font-weight-bold: 700 !default;
+$font-weight-bolder: bolder !default;
 
 $secondary-bg-color: $content-bg-color-alt1 !default;
 $secondary-border-color: linear-gradient(0deg, rgba($primary, $opacity5), rgba($primary, $opacity5)) !default;
@@ -360,8 +336,6 @@ $secondary-bg-color-disabled: rgba($secondary, .12) !default;
 $secondary-border-color-disabled: rgba($secondary, 0) !default;
 $secondary-text-color-disabled: rgba($on-surface, .38) !default;
 
-// Primary-button
-
 $primary-bg-color: $primary !default;
 $primary-border-color: $primary !default;
 $primary-text: $primary-text-color !default;
@@ -377,8 +351,6 @@ $primary-text-focus: $primary-text !default;
 $primary-bg-color-disabled: rgba($secondary, .12) !default;
 $primary-border-color-disabled: rgba($secondary, 0) !default;
 $primary-text-disabled: rgba($on-surface, .38) !default;
-
-// Success-button
 
 $success-bg-color: $success !default;
 $success-border-color: $success !default;
@@ -396,7 +368,6 @@ $success-bg-color-disabled: rgba($secondary, .12) !default;
 $success-border-color-disabled: $success-bg-color-disabled !default;
 $success-text-disabled: rgba($on-surface, .38) !default;
 
-// Warning-button
 $warning-bg-color: $warning !default;
 $warning-border-color: $warning !default;
 $warning-text: $black !default;
@@ -413,7 +384,6 @@ $warning-bg-color-disabled: rgba($secondary, .12) !default;
 $warning-border-color-disabled: $warning-bg-color-disabled !default;
 $warning-text-disabled: rgba($on-surface, .38) !default;
 
-// danger-button
 $danger-bg-color: $danger !default;
 $danger-border-color: $danger !default;
 $danger-text: $black !default;
@@ -430,7 +400,6 @@ $danger-bg-color-disabled: rgba($secondary, .12) !default;
 $danger-border-color-disabled: $danger-bg-color-disabled !default;
 $danger-text-disabled: rgba($on-surface, .38) !default;
 
-// Info-button
 $info-text: $black !default;
 $info-bg-color: $info !default;
 $info-border-color: $info-bg-color !default;
@@ -447,7 +416,6 @@ $info-bg-color-disabled: rgba($secondary, .12) !default;
 $info-border-color-disabled: $info-bg-color-disabled !default;
 $info-text-disabled: rgba($on-surface, .38) !default;
 
-//Outline button
 $primary-outline: $primary-bg-color !default;
 $primary-outline-border: $outline !default;
 $secondary-outline: $secondary-text-color !default;
@@ -461,11 +429,8 @@ $success-outline-border: $outline !default;
 $info-outline: $info-bg-color !default;
 $info-outline-border:$outline !default;
 
-//Toast-text
 $toast-text-color: $content-text-color !default;
 $toast-alt-text-color: $content-text-color !default;
-
-// chart series
 
 $series-1: $surface-variant !default;
 $series-2: $outline-variant !default;
@@ -482,12 +447,10 @@ $series-12: #38be09 !default;
 $skin-name: 'Material3' !default;
 $theme-name: 'Material3-dark' !default;
 
-//Diagram Palette color
 $diagram-palette-background: $inverse-surface !default;
 $diagram-palette-hover-background: rgba($surface, .05) !default;
 $diagram-palette-selection-background: rgba($surface, .12) !default;
 
-//M3 radius
 $shape-none:0 !default;
 $shape-extra-small:4px !default;
 $shape-small:8px !default;
@@ -496,7 +459,6 @@ $shape-Large:16px !default;
 $shape-extra-large:16px !default;
 $shape-full:50% !default;
 
-//border-radius
 $button-radius:$shape-full !default;
 $button-radius-small: $shape-full !default;
 $button-radius-bigger: $shape-full !default;
@@ -525,9 +487,6 @@ $chip-radius: $shape-extra-small !default;
 $chip-radius-small: $shape-extra-small !default;
 $chip-radius-bigger: $shape-small !default;
 
-//Message component
-
-//Message Default
 $msg-color: rgba($on-surface) !default;
 $msg-bg-color: $content-bg-color-alt1 !default;
 $msg-border-color: linear-gradient(0deg, rgba($primary, $opacity5), rgba($primary, $opacity5)) !default;
@@ -546,7 +505,6 @@ $msg-close-icon-color: rgba($icon-color) !default;
 $msg-close-icon-color-alt1: rgba($icon-color) !default;
 $msg-close-icon-color-alt2: rgba($inverse-on-surface) !default;
 
-//Message success
 $msg-success-color: rgba($on-success-container) !default;
 $msg-success-bg-color: rgba($success-container) !default;
 $msg-success-border-color: rgba($success-container) !default;
@@ -565,7 +523,6 @@ $msg-success-close-icon-color: rgba($icon-color) !default;
 $msg-success-close-icon-color-alt1: rgba($icon-color) !default;
 $msg-success-close-icon-color-alt2: rgba($on-success) !default;
 
-//Message danger
 $msg-danger-color: rgba($on-error-container) !default;
 $msg-danger-bg-color: rgba($error-container) !default;
 $msg-danger-border-color: rgba($error-container) !default;
@@ -584,7 +541,6 @@ $msg-danger-close-icon-color: rgba($icon-color) !default;
 $msg-danger-close-icon-color-alt1: rgba($icon-color) !default;
 $msg-danger-close-icon-color-alt2: rgba($on-error) !default;
 
-//Message warning
 $msg-warning-color: rgba($on-warning-container) !default;
 $msg-warning-bg-color: rgba($warning-container) !default;
 $msg-warning-border-color: rgba($warning-container) !default;
@@ -603,7 +559,6 @@ $msg-warning-close-icon-color: rgba($icon-color) !default;
 $msg-warning-close-icon-color-alt1: rgba($icon-color) !default;
 $msg-warning-close-icon-color-alt2: rgba($on-warning) !default;
 
-//Message Info
 $msg-info-color: rgba($on-info-container) !default;
 $msg-info-bg-color: rgba($info-container) !default;
 $msg-info-border-color: rgba($info-container) !default;
@@ -622,24 +577,19 @@ $msg-info-close-icon-color: rgba($icon-color) !default;
 $msg-info-close-icon-color-alt1: rgba($icon-color) !default;
 $msg-info-close-icon-color-alt2: rgba($on-info) !default;
 
-//Appbar
-//Light
 $appbar-bg-color-alt1: $content-bg-color-alt2 !default;
 $appbar-color-alt1: rgba($content-text-color) !default;
 $appbar-border-color-alt1: linear-gradient(0deg, rgba($primary, $opacity8), rgba($primary, $opacity8)) !default;
 $appbar-hover-bg-color-alt1: rgba(0, 0, 0, .05) !default;
 
-//Dark
 $appbar-bg-color-alt2: rgba($inverse-surface) !default;
 $appbar-color-alt2: rgba($inverse-on-surface) !default;
 $appbar-border-color-alt2: rgba($inverse-surface) !default;
 $appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
 
-//shadow
 $appbar-bottom-shadow: 0 1.6px 3.6px rgba(0, 0, 0, .13), 0 .3px .9px rgba(0, 0, 0, .1) !default;
 $appbar-top-shadow: 0 -1.6px 3.6px rgba(0, 0, 0, .13), 0 -.3px .9px rgba(0, 0, 0, .1) !default;
 
-//rating
 $rating-selected-color: $primary !default;
 $rating-unrated-color: $content-bg-color-alt3 !default;
 $rating-selected-disabled-color: rgba($on-surface, .24) !default;
@@ -648,15 +598,12 @@ $rating-selected-hover-color: darken-color(rgba($primary), 5%) !default;
 $rating-unrated-hover-color: darken-color(rgba($primary), 10%) !default;
 $rating-pressed-color: darken-color(rgba($primary), 10%) !default;
 
-//skeleton
 $skeleton-wave-color: rgba(73, 69, 79, 1) !default;
 
-//spreadsheet
 $splitbtn-right-border: linear-gradient(to right, rgba($content-bg-color, 1) 25%, rgba($border-light, 1) 75%) 1 !default;
 $splitbtn-right-border-rtl: linear-gradient(to left, rgba($content-bg-color, 1) 25%, rgba($border-light, 1) 75%) 1 !default;
 $splitbtn-right-border-vertical: linear-gradient(to bottom, rgba($content-bg-color, 1) 25%, rgba($border-light, 1) 75%) 1 !default;
 
-//gantt
 $gantt-taskbar-color: linear-gradient(0deg, rgba($primary, .75), rgba($primary, .75)), rgba($content-bg-color) !default;
 
 $grey-white: #fff !default;
@@ -672,7 +619,6 @@ $grey-900: #212121 !default;
 $sd-focus-box-shadow: $secondary-shadow-focus !default;
 $toooltip-text-color: #f9fafb !default;
 
-// from component side
 $range-button-font-color: $info !default;
 $ddl-input-placeholder-padding: 0 0 0 8px !default;
 $theme-light: $primary-light !default;
@@ -683,7 +629,6 @@ $gray-900: #212529 !default;
 $primary-300: #7986cb;
 $gray-400: #ced4da !default;
 
-//font-icons
 $font-icon-8: 8px !default;
 $font-icon-9: 9px !default;
 $font-icon-10: 10px !default;
@@ -701,7 +646,6 @@ $font-icon-26: 26px !default;
 $font-icon-28: 28px !default;
 $font-icon-32: 32px !default;
 
-//defintion
 $font-size: 12px !default;
 $font-weight: 400 !default;
 $error-font-color: $danger !default;

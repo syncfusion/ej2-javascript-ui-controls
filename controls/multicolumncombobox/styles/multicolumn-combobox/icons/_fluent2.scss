@@ -1,0 +1,6 @@
+@include export-module('multicolumncombobox-fluent2-icons') {
+  .e-input-group.e-control-wrapper .e-multicolumn-list-icon::before {
+    content: '\e729';
+    font-family: 'e-icons';
+  }
+}

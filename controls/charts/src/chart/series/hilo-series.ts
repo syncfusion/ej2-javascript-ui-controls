@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { withInRange } from '../../common/utils/helper';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
@@ -13,7 +10,7 @@ import { Rect } from '@syncfusion/ej2-svg-base';
  * `HiloSeries` module is used to render the hilo series.
  */
 export class HiloSeries extends ColumnBase {
-
+    public sideBySideInfo: DoubleRange[] = [];
     /**
      * Render Hiloseries.
      *
@@ -22,41 +19,58 @@ export class HiloSeries extends ColumnBase {
      */
 
     public render(series: Series): void {
-        let region: Rect;
-        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
-        let argsData: IPointRenderEventArgs;
+        this.sideBySideInfo[series.index] = this.getSideBySideInfo(series);
         for (const point of series.points) {
-            point.symbolLocations = []; point.regions = [];
-            if (
-                point.visible &&
-                withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)
-            ) {
-                region = this.getRectangle(
-                    point.xValue + sideBySideInfo.median, <number>point.high,
-                    point.xValue + sideBySideInfo.median, <number>point.low, series
-                );
-                argsData = this.triggerPointRenderEvent(series, point);
-                if (!argsData.cancel) {
-                    if (!series.chart.requireInvertedAxis) {
-                        region.width = argsData.border.width;
-                        region.x = region.x - (region.width / 2);
-                    } else {
-                        region.height = argsData.border.width;
-                        region.y = region.y - (region.height / 2);
-                    }
-                    argsData.border.width = 0;
-                    this.updateSymbolLocation(point, region, series);
-                    this.drawRectangle(series, point, region, argsData);
+            this.renderPoint(series, point, this.sideBySideInfo[series.index]);
+        }
+    }
+    public renderPoint(series: Series, point: Points, sideBySideInfo: DoubleRange): void {
+        point.symbolLocations = []; point.regions = [];
+        let region: Rect;
+        if (
+            point.visible &&
+            withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)
+        ) {
+            region = this.getRectangle(
+                point.xValue + sideBySideInfo.median, <number>point.high,
+                point.xValue + sideBySideInfo.median, <number>point.low, series
+            );
+            const argsData: IPointRenderEventArgs = this.triggerPointRenderEvent(series, point);
+            if (!argsData.cancel) {
+                if (!series.chart.requireInvertedAxis) {
+                    region.width = argsData.border.width;
+                    region.x = region.x - (region.width / 2);
+                } else {
+                    region.height = argsData.border.width;
+                    region.y = region.y - (region.height / 2);
+                }
+                argsData.border.width = 0;
+                this.updateSymbolLocation(point, region, series);
+                this.drawRectangle(series, point, region, argsData);
+            }
+        }
+    }
+
+    public updateDirection(series: Series, point: number[]): void {
+        for (let i: number = 0; i < point.length; i++) {
+            this.renderPoint(series, series.points[point[i as number]], this.sideBySideInfo[series.index]);
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
                 }
             }
         }
     }
 
     /**
-     * To trigger the point rendering event.
+     * Triggers the point render event for the specified series and data point.
      *
-     * @returns {void}
-     * @private
+     * @param {Series} series - The series associated with the point.
+     * @param {Points} point - The data point.
+     * @returns {IPointRenderEventArgs} The event arguments.
      */
     private triggerPointRenderEvent(series: Series, point: Points): IPointRenderEventArgs {
         const border: BorderModel = { color: series.fill, width: Math.max(series.border.width, 2) };
@@ -67,11 +81,13 @@ export class HiloSeries extends ColumnBase {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'HiloSeries';
         /**
-         * return the module name
+         * return the module name.
          */
     }
 
@@ -81,7 +97,6 @@ export class HiloSeries extends ColumnBase {
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
      */
-
     public doAnimation(series: Series): void {
         this.animate(series);
     }
@@ -92,10 +107,9 @@ export class HiloSeries extends ColumnBase {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys the Hilo Series
+         * Destroys the Hilo Series.
          */
     }
 }

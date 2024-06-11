@@ -73,4 +73,50 @@ describe('Gantt spec for weekend', () => {
            }
        });
     });
+    describe('Weekend rendering', () => {
+        Gantt.Inject(DayMarkers, Selection);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate'
+                },
+                workWeek: ['Tuesday'],
+                highlightWeekends: false,
+                renderBaseline: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 2
+                    },
+                    timelineUnitSize: 60,
+                    weekStartDay: 2
+                },
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('11/30/2017'),
+            }, done);
+        });
+        it('Weekend Testing ', () => {
+            ganttObj.highlightWeekends = true
+            expect(ganttObj.highlightWeekends).toBe(true)
+        })
+        afterAll(() => {
+           if(ganttObj){
+               destroyGantt(ganttObj);
+           }
+       });
+    });
 });

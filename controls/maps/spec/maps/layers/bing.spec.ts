@@ -31,8 +31,7 @@ describe('Map layer testing', () => {
             bingmap = new Maps({
                 layers: [
                     {
-                        layerType: 'Bing',
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        urlTemplate: 'https://ecn.{subdomain}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14527'
                     }
                 ]
             }, '#' + id);
@@ -42,13 +41,6 @@ describe('Map layer testing', () => {
             bingmap.destroy();
         });
         it('Bing Map basic testing spec', (done: Function) => {
-            bingmap.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(bingmap);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                bingmap.mapLayerPanel["bing"] = bing;
-            };
             bingmap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
                 expect(spec).not.toBe(null);
@@ -60,12 +52,10 @@ describe('Map layer testing', () => {
                 // expect(size.width).toBe(256);
                 done();
             };
-            bingmap.layers[0].layerType = 'Bing';
             bingmap.refresh();
 
         });
         it('Bing Map AJAX spec', (done: Function) => {
-            bingmap.layers[0].layerType = 'Bing';
             bingmap.refresh();
             done();
         });
@@ -77,13 +67,6 @@ describe('Map layer testing', () => {
             done();
         });
         it('Bing Map AerialWithLabel type testing spec', (done: Function) => {
-            bingmap.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(bingmap);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                bingmap.mapLayerPanel["bing"] = bing;
-            };
             bingmap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
                 expect(spec).not.toBe(null);
@@ -91,7 +74,7 @@ describe('Map layer testing', () => {
                 // expect(img.getAttribute('src').indexOf('virtualearth') > -1).toBe(true);
                 done();
             };
-            bingmap.layers[0].bingMapType = 'AerialWithLabel';
+            bingmap.layers[0].urlTemplate = 'https://{subdomain}.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/{quadkey}?mkt=en-US&it=A,G,L&og=2489&n=z';
             bingmap.refresh();
         });
         it('Bing Map Road type testing spec', (done: Function) => {
@@ -102,14 +85,7 @@ describe('Map layer testing', () => {
                 // expect(img.getAttribute('src').indexOf('virtualearth') > -1).toBe(true);
                 done();
             };
-            bingmap.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(bingmap);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                bingmap.mapLayerPanel["bing"] = bing;
-            };
-            bingmap.layers[0].bingMapType = 'Road';
+            bingmap.layers[0].urlTemplate = 'https://ecn.{subdomain}.tiles.virtualearth.net/tiles/r{quadkey}.jpeg?g=14527&mkt={culture}&shading=hill';
             bingmap.refresh();
         });
         it('Bing Map Zoom level 2 testing spec', (done: Function) => {
@@ -118,13 +94,6 @@ describe('Map layer testing', () => {
                 expect(spec).not.toBe(null);
                 // expect(spec.childNodes.length).toBe(36);
                 done();
-            };
-            bingmap.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(bingmap);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                bingmap.mapLayerPanel["bing"] = bing;
             };
             ele.setAttribute('style', 'height: 2048px; width: 2048px;');
             bingmap.zoomSettings.zoomFactor = 2;
@@ -137,13 +106,6 @@ describe('Map layer testing', () => {
                 // expect(spec.childNodes.length).toBe(72);
                 done();
             };
-            bingmap.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(bingmap);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                bingmap.mapLayerPanel["bing"] = bing;
-            };
             bingmap.zoomSettings.zoomFactor = 3;
             bingmap.refresh();
         });
@@ -154,21 +116,14 @@ describe('Map layer testing', () => {
                 // expect(spec.childNodes.length).toBe(18);
                 done();
             };
-            bingmap.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(bingmap);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                bingmap.mapLayerPanel["bing"] = bing;
-            };
             bingmap.zoomSettings.zoomFactor = 1;
             bingmap.layers = [
                 {
-                    layerType: 'Bing'
+                    urlTemplate: 'https://ecn.{subdomain}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14527'
                 },
                 {
-                    layerType: 'Bing',
-                    type: 'SubLayer'
+                    type: 'SubLayer',
+                    urlTemplate: 'https://ecn.{subdomain}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14527'
                 }
             ];
             ele.setAttribute('style', 'height: 512px; width: 512px;');
@@ -186,7 +141,7 @@ describe('Map layer testing', () => {
             osm = new Maps({
                 layers: [
                     {
-                        layerType: 'OSM',
+                        urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
                     }
                 ]
             }, '#' + id);
@@ -207,7 +162,7 @@ describe('Map layer testing', () => {
                 // expect(size.width).toBe(256);
                 done();
             };
-            osm.layers[0].layerType = 'OSM';
+            osm.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             osm.refresh();
         });
         it('OSM Map Zoom level 3 testing spec', (done: Function) => {
@@ -231,10 +186,10 @@ describe('Map layer testing', () => {
             osm.zoomSettings.zoomFactor = 1;
             osm.layers = [
                 {
-                    layerType: 'OSM'
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
                 },
                 {
-                    layerType: 'OSM',
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
                     type: 'SubLayer'
                 }
             ];

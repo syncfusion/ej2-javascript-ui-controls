@@ -138,6 +138,9 @@
     .e-split-btn-wrapper.e-de-prop-splitbutton,
     .e-split-btn-wrapper.e-de-btn-hghlclr,
     .e-btn.de-split-button {
+        @if $skin-name=='fluent2' {
+            margin-right: $de-pane-margin-right;
+        }
         @if $skin-name=='Material3' {
             box-shadow: none;
         }
@@ -177,6 +180,9 @@
         width: auto;
         line-height: 22px;
         margin-right: $e-de-ctnr-break-listview-margin-right;
+        @if $skin-name=='fluent2' {
+            padding: 1px 12px;
+        }
     }
     .e-de-linespacing {
         margin-top: $e-de-ctnr-linespacing-tick-icon;
@@ -194,24 +200,23 @@
     }
     .e-de-pagenumber-text {
         border: none !important;
-        // height: 22px !important;
-        // margin-top: $de-pagenumber-text-margin-top !important;
     }
 
     @if $skin-name=='Material3' {
         .e-de-prop-pane .e-de-ctnr-group-btn.e-btn-group button {
             background: $de-prop-btn-bg-color;
         }
-        .e-de-font-clr-picker button, .e-de-prop-font-colorpicker button {
+        .e-de-font-clr-picker button,
+        .e-de-prop-font-colorpicker button {
             background: $de-prop-btn-bg-color !important;
         }
         .e-de-style-font-color-picker .e-de-style-icon-button-size button:first-child {
             margin-right: 0px;
         }
-        .e-de-ctnr-group-btn .e-btn-group button, 
+        .e-de-ctnr-group-btn .e-btn-group button,
         .e-documenteditorcontainer.e-lib .e-split-btn-wrapper button,
         .e-documenteditorcontainer.e-lib .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-colorpicker.e-split-btn,
-        .e-de-ctnr-segment button, 
+        .e-de-ctnr-segment button,
         .e-de-char-fmt-btn-right button,
         .e-de-border-size-button,
         .e-de-cell-div button,
@@ -291,12 +296,17 @@
         padding: 0px;
         text-align: center;
         width: 22px;
+        @if $skin-name =='fluent2' {
+            height: $de-page-number-height;
+        } 
     }
     @if $skin-name=='bootstrap5' or  $skin-name=='tailwind' or $skin-name =='FluentUI'  {
         .e-bigger {
             .e-de-pagenumber-input {
                 font-size: $e-de-btn-font-size-big;
-                //margin-top: $de-page-number-margin-top-big;
+                @if $skin-name =='fluent2' {
+                    height: $de-page-number-height;
+                } 
             }
         }
     }
@@ -451,7 +461,6 @@
                 margin-bottom: 16px;
             }
             .e-de-property-div-padding {
-                //padding-bottom: 16px;
                 padding: 16px;
             }
             .e-de-insert-del-cell>div:last-child {
@@ -496,6 +505,17 @@
             margin-right: 0;
         }
     }
+    @if $skin-name=='fluent2' {
+        .e-de-font-clr-picker .e-colorpicker-wrapper:first-child,
+        .e-de-font-clr-picker>.e-split-btn-wrapper {
+            margin-right: $de-font-margin-right;
+        }
+        .e-de-font-clr-picker.e-rtl .e-colorpicker-wrapper:first-child,
+        .e-de-font-clr-picker.e-rtl>.e-split-btn-wrapper {
+            margin-left: $de-font-margin-right;
+            margin-right: 0;
+        }
+    }
     @if $skin-name=='bootstrap-dark' {
         .e-de-font-clr-picker .e-colorpicker-wrapper:first-child,
         .e-de-font-clr-picker>.e-split-btn-wrapper {
@@ -524,7 +544,12 @@
         width: $de-ctnr-tlbr-width;
     }
     .e-de-ctnr-prop-label {
-        color: $de-panel-header-color;
+        @if $skin-name=='fluent2' {
+            color: $de-sub-header-color;
+        }
+        @else {
+            color: $de-panel-header-color;
+        }
         display: inline-block;
         font-size: $de-panel-header-size;
         font-weight: 500;
@@ -636,7 +661,13 @@
             flex-direction: column;
             height: $de-tlbr-btn-height;
             padding: 0;
-            padding-bottom: $de-toolbar-padding-bottom;
+            @if $skin-name =='fluent2' {
+                padding-bottom: $de-toolbar-padding-bottom-size;
+            }
+            @else{
+                padding-bottom: $de-toolbar-padding-bottom;
+            }
+            
             #{if(&, '&', '*')}:focus {
                 padding: 0;
                 padding-bottom: $de-toolbar-padding-bottom;
@@ -839,14 +870,9 @@
 
         .e-de-pagenumber-text {
             border: none !important;
-            // height: 22px !important;
-            // margin-top: $de-pagenumber-text-margin-top !important;
         }
 
     }
-    // .de-split-button>div:first-child {
-    //     margin-right: $de-list-button-margin-right;
-    // }
     .e-de-ctnr-properties-pane-btn {
         @if $skin-name == 'Material3' {
             width: 78px;
@@ -854,15 +880,24 @@
         @else {
             width: 75px;
         }
+        @if $skin-name=='fluent2' {
+            background-color: $de-ctnr-prop-bg-clr;
+        }
     }
     .e-de-pane-enable-clr.e-de-ctnr-properties-pane-btn {
         .e-btn {
             color: $de-pane-color-border;
+            @if $skin-name=='fluent2' {
+                background-color: $de-ctnr-prop-bg-clr;
+            }    
         }
     }
     .e-de-pane-disable-clr.e-de-ctnr-properties-pane-btn {
         .e-btn {
             color: $de-font-color;
+            @if $skin-name=='fluent2' {
+                background-color: $de-ctnr-prop-bg-clr;
+            }
         }
     }
     .e-de-ctnr-properties-pane-btn {
@@ -882,6 +917,9 @@
             #{if(&, '&', '*')}:hover {
                 box-shadow: none;
             }
+            @if $skin-name=='fluent2' {
+                background-color: $de-ctnr-prop-bg-clr;
+            }
         }
     }
     .e-de-showhide-btn {
@@ -898,6 +936,9 @@
     .e-de-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text .e-de-text-wrap {
         @if $skin-name =='Material3' {
             line-height: 0.8;
+        }
+        @if  $skin-name == 'fluent2' {
+            padding-top: 5px;
         }
     }
     .e-de-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text {
@@ -980,7 +1021,6 @@
         @else {
             border-bottom: 0.5px solid $de-pane-separator;
         }
-        //padding-bottom: $de-prop-div-padding-bottom;
         padding: $de-prop-div-padding-top;
     }
     .e-de-ctnr-dropdown-ftr {
@@ -1121,7 +1161,6 @@
         margin-left: 0;
     }
     .e-de-list-header-presetmenu div span {
-        //color: #aaa; 
         display: inline-block;
         vertical-align: middle;
     }
@@ -1209,7 +1248,15 @@
         top: $de-img-span-top;
     }
     .e-btn-toggle {
-        background-color: $de-toggle-bg-color !important;
+        @if $skin-name=='fluent2' {
+            background-color: var(--color-sf-secondary-bg-color);
+        }
+        @else{
+            background-color: $de-toggle-bg-color !important;
+        }
+        @if $skin-name =='fluent2' {
+            background-color: $de-items-pressed;
+        }
         @if $skin-name=='highcontrast' {
             color: $de-title-bar-font-clr !important;
         }
@@ -1341,7 +1388,12 @@
         width: $de-toc-template-content3;
     }
     .e-de-prop-sub-label {
-        color: $de-panel-sub-label-color;
+        @if $skin-name=='fluent2' {
+            color: $de-panel-header-color;
+        }
+        @else {
+            color: $de-panel-sub-label-color;
+        }
         @if $skin-name=='tailwind' {
             font-size: 12px;
             line-height: 18px;
@@ -1368,8 +1420,9 @@
         margin-top: $de-prop-pane-margin;
     }
     .e-de-status-bar {
-        background: $de-ctnr-bg-clr;
-        //border-bottom: 1px solid $de-panel-border;
+        @if $skin-name !='fluent2' {
+            background: $de-ctnr-bg-clr;
+        }
         display: flex;
         @if $skin-name !='Material3' {
             padding-top: $e-de-status-bar-padding-top;
@@ -1441,7 +1494,14 @@
         margin-right: 10px;
     }
     .e-de-prop-header-label {
-        color: $de-panel-header-color;
+        @if $skin-name=='fluent2' {
+            color: $de-sub-header-color;
+            font-size: 16px;
+        }
+        @else {
+            color: $de-panel-header-color;
+        }
+        
         display: inline-block;
         @if $skin-name =='tailwind' or $skin-name =='bootstrap5' or $skin-name =='FluentUI' {
             font-size: $de-panel-header-size;
@@ -1469,30 +1529,6 @@
         padding-left: 0;
         padding-right: $de-prop-style-padding;
     }
-    // .e-de-border-style-div {
-    //     margin-left: 12px;
-    // }
-    // .e-de-border-style-div.e-de-rtl {
-    //     margin-left: 0;
-    //     margin-right: 12px;
-    // }
-    // .e-de-insert-del-cell {
-    //     margin-left: 12px;
-    // }
-    // .e-de-insert-del-cell.e-de-rtl {
-    //     margin-left: 0;
-    //     margin-right: 12px;
-    // }
-    // .e-de-cell-margin {
-    //     margin-left: 12px;
-    // }
-    // .e-de-align-text {
-    //     margin-left: 12px;
-    // }
-    // .e-de-align-text.e-de-rtl {
-    //     margin-left: 0;
-    //     margin-right: 12px;
-    // }
     .e-de-border-size-button {
         height: $de-border-size-button-height;
         margin-top: $de-table-prop-border-margin;
@@ -1502,13 +1538,6 @@
         height: $de-border-size-button-height;
         width: $de-border-size-button-width;
     }
-    // .e-de-cell-div {
-    //     margin-left: $de-prop-style-padding;
-    // }
-    // .e-de-cell-div.e-de-rtl {
-    //     margin-left: 0;
-    //     margin-right: $de-prop-style-padding;
-    // }
     .e-de-cell-text-box {
         margin-right: $de-prop-style-padding;
     }
@@ -1519,7 +1548,6 @@
         }
     }
     .e-de-prop-fill-label {
-        //margin-left: 10.3px;
         @if $skin-name =='Material3' {
             margin-right: 16px;
         }
@@ -1702,9 +1730,6 @@
             margin-left: 9.8px;
             margin-right: 0px;
         }
-        // .e-de-cell-text-box {
-        //     margin-right: 16px;
-        // }
         .e-rtl {
             .e-de-cell-text-box {
                 margin-left: 16px;
@@ -1712,7 +1737,6 @@
             }
         }
         .e-de-cell-div {
-            //margin-left: 16px;
             @if $skin-name =='bootstrap5' {
                 button {
                    width: 45px !important;
@@ -1953,6 +1977,9 @@
                 #{if(&, '&', '*')}:hover {
                     box-shadow: none;
                 }
+                @if $skin-name=='fluent2' {
+                    background-color: $de-ctnr-prop-bg-clr;
+                }
             }
         }
         .e-de-showhide-btn {
@@ -2042,6 +2069,18 @@
                 box-shadow: none;
             }
         }
+         .e-de-ctnr-group-btn {
+        .e-de-prop-indent-button {
+            @if $skin-name =='fluent2' {
+                padding-left: 10px;
+            }
+        }
+        .e-de-prop-indent-last-button {
+            @if $skin-name =='fluent2' {
+                padding-left: 10px;
+            }
+        }
+    }
         @if $skin-name !='tailwind' {
             .e-de-property-div-padding {
                 border-bottom: 0.5px solid $de-pane-separator;
@@ -2111,7 +2150,12 @@
             top: $de-img-span-top-big;
         }
         .e-btn-toggle {
-            background-color: $de-toggle-bg-color !important;
+            @if $skin-name=='fluent2' {
+                background-color: var(--color-sf-secondary-bg-color);
+            }
+            @else{
+                background-color: $de-toggle-bg-color !important;
+            }
             box-shadow: $de-toggle-btn-border !important;
             @if $skin-name=='fabric' {
                 border-color: $de-toggle-bg-color !important;
@@ -2175,9 +2219,10 @@
         .e-de-btn-cancel {
             margin-left: 10px;
         }
-        .e-de-status-bar {
-            background: $de-ctnr-bg-clr;
-            //border-bottom: 1px solid $de-panel-border;
+        .e-de-status-bar { 
+            @if $skin-name !='fluent2' {
+                background: $de-ctnr-bg-clr;
+            }
             display: flex;
             @if $skin-name !='Material3' {
                 padding-top: $e-de-status-bar-big-padding-top;
@@ -2257,8 +2302,10 @@
         @if $skin-name !='bootstrap4' and $skin-name !='bootstrap5' {
             font-weight: 400;
         }
+        @if $skin-name !='fluent2' {
+            background: $e-de-bzr-button-bg-color;
+        }
         
-        background: $e-de-bzr-button-bg-color;
         @if $skin-name!='tailwind' and $skin-name!='tailwind-dark' and $skin-name !='material' and $skin-name !='material-dark' {
             height: 100%;
         }
@@ -2270,7 +2317,7 @@
     @if $skin-name=='bootstrap4' or $skin-name=='bootstrap' or $skin-name=='bootstrap-dark' {
         border: 1px solid $e-de-bzr-button-border-color;
     }
-    @if $skin-name=='highcontrast' or $skin-name=='bootstrap' or $skin-name=='bootstrap-dark' or $skin-name=='fabric' or $skin-name=='fabric-dark' {
+    @if $skin-name=='highcontrast' or $skin-name=='bootstrap' or $skin-name=='bootstrap-dark' or $skin-name=='fabric' or $skin-name=='fabric-dark' or $skin-name=='fluent2' {
         box-shadow: none;
         border: none;
     }

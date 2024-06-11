@@ -52,7 +52,11 @@ export type ProgressTheme =
     /** Fluent */
     'Fluent' |
     /** FluentDark */
-    'FluentDark' | 
+    'FluentDark' |
+    /** Fluent2 */
+    'Fluent2' |
+    /** Fluent2Dark */
+    'Fluent2Dark' |
     /** Material 3 */
     'Material3' |
     /** Material 3 dark */

@@ -2,13 +2,13 @@ import { Spreadsheet } from '../base/index';
 import { formulaBar, locale, enableFormulaInput, DialogBeforeOpenEventArgs, focus, getUpdateUsingRaf, dialog, isNavigationKey } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
-import { CellModel, getSheetName, getSheet, SheetModel, checkIsFormula, Workbook, getCell, isCustomDateTime } from '../../workbook/index';
+import { CellModel, getSheetName, getSheet, SheetModel, checkIsFormula, Workbook, getCell, isCustomDateTime, isReadOnly, getRow } from '../../workbook/index';
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel, isLocked, getColumn } from '../../workbook/index';
-import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
+import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select, Browser } from '@syncfusion/ej2-base';
+import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { isUndefined, getNumericObject, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue, renderInsertDlg } from '../common/event';
+import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue, renderInsertDlg, readonlyAlert } from '../common/event';
 import { intToDate, isNumber } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
@@ -52,13 +52,13 @@ export class FormulaBar {
                 value: 'A1',
                 cssClass: 'e-name-box',
                 width: '',
-                noRecordsTemplate: initializeCSPTemplate(function (): string { return '' }),
+                noRecordsTemplate: initializeCSPTemplate(function (): string { return ''; }),
                 fields: { text: 'name', value: 'refersTo' },
                 beforeOpen: this.nameBoxBeforeOpen.bind(this),
                 blur: this.nameBoxBlur.bind(this),
                 select: this.nameBoxSelect.bind(this),
-                open: (args: PopupEventArgs) => {
-                    if (this.isDevice) { (window as any).browserDetails.isDevice = true; }
+                open: () => {
+                    if (this.isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = true; }
                 },
                 change: () => {
                     /** */
@@ -128,7 +128,8 @@ export class FormulaBar {
                 const eventArg: { editedValue: string, action: string } = { action: 'getCurrentEditValue', editedValue: '' };
                 this.parent.notify(
                     editOperation, eventArg);
-                if (eventArg.editedValue !== trgtElem.value && e.keyCode !== 16 && (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))) {
+                if (eventArg.editedValue !== trgtElem.value && e.keyCode !== 16 &&
+                    (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))) {
                     this.parent.notify(
                         editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
                 }
@@ -141,8 +142,8 @@ export class FormulaBar {
             args.cancel = true;
         } else {
             (<HTMLInputElement>this.comboBoxInstance.element).select();
-            this.isDevice = (window as any).browserDetails.isDevice;
-            if (this.isDevice) { (window as any).browserDetails.isDevice = false; }
+            this.isDevice = (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice;
+            if (this.isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = false; }
         }
     }
 
@@ -236,7 +237,7 @@ export class FormulaBar {
                                     const timeVal: Date = isDateTimeVal ? intToDate(parseFloat((valArr[0] + 1) + '.' + valArr[1]) ||
                                         Number(cell.value)) : dateVal;
                                     if (type === 'date') {
-                                        let dateObj: { type: string, format?: string, skeleton?: string } = { type: 'date' };
+                                        const dateObj: { type: string, format?: string, skeleton?: string } = { type: 'date' };
                                         dateObj.skeleton = 'yMd';
                                         value = intl.formatDate(dateVal, dateObj);
                                         if (isDateTimeVal) {
@@ -334,7 +335,12 @@ export class FormulaBar {
         if (target.classList.contains('e-drop-icon') && target.parentElement.classList.contains('e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
         } else if (target.classList.contains('e-formula-bar')) {
-            if ((!this.parent.isEdit && (!isSheetProtected || (isSheetProtected && !isCellLocked))) || (this.parent.isEdit && isSheetProtected && !(target as HTMLTextAreaElement).disabled)) {
+            if (isReadOnly(cell, getColumn(sheet, range[1]), getRow(sheet, range[0]))) {
+                this.parent.notify(readonlyAlert, null);
+                return;
+            }
+            if ((!this.parent.isEdit && (!isSheetProtected || (isSheetProtected && !isCellLocked))) ||
+                (this.parent.isEdit && isSheetProtected && !(target as HTMLTextAreaElement).disabled)) {
                 this.formulaBarScrollEdit();
             } else if (isSheetProtected && isCellLocked) {
                 this.parent.notify(editAlert, null);
@@ -344,12 +350,13 @@ export class FormulaBar {
                 const eventArgs: { action: string, names: string[] } = { action: 'getNames', names: [] };
                 this.parent.notify(formulaOperation, eventArgs);
                 if ((this.comboBoxInstance.dataSource as Object[]).length !== eventArgs.names.length ||
-                this.comboBoxInstance.value === this.comboBoxInstance.text ) {
-                   let searchText: string = this.comboBoxInstance.text;
-                   this.comboBoxInstance.dataSource = eventArgs.names;
-                   let definedName: DefineNameModel = (eventArgs.names as DefineNameModel[]).find((name: DefineNameModel) => name.name == searchText);
-                   this.comboBoxInstance.value = definedName ? definedName.refersTo : this.comboBoxInstance.value;
-                   this.comboBoxInstance.dataBind();
+                    this.comboBoxInstance.value === this.comboBoxInstance.text) {
+                    const searchText: string = this.comboBoxInstance.text;
+                    this.comboBoxInstance.dataSource = eventArgs.names;
+                    const definedName: DefineNameModel = (eventArgs.names as DefineNameModel[]).find((
+                        name: DefineNameModel) => name.name === searchText);
+                    this.comboBoxInstance.value = definedName ? definedName.refersTo : this.comboBoxInstance.value;
+                    this.comboBoxInstance.dataBind();
                 }
             } else {
                 this.comboBoxInstance.element.classList.add('e-name-editing');
@@ -367,12 +374,17 @@ export class FormulaBar {
 
     private renderInsertDlg(): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
+        const activeCell: number[] = getCellIndexes(sheet.activeCell);
         if (sheet.isProtected) {
-            const activeCell: number[] = getCellIndexes(sheet.activeCell);
             if (isLocked(getCell(activeCell[0], activeCell[1], sheet), getColumn(sheet, activeCell[1])) && !this.parent.isEdit) {
                 this.parent.notify(editAlert, null);
                 return;
             }
+        }
+        const cell: CellModel = getCell(activeCell[0], activeCell[1], sheet);
+        if (isReadOnly(cell, getColumn(sheet, activeCell[1]), getRow(sheet, activeCell[0]))) {
+            this.parent.notify(readonlyAlert, null);
+            return;
         }
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let isOpen: boolean = !this.parent.isEdit;
@@ -551,11 +563,14 @@ export class FormulaBar {
     }
     private updateFormulaDescription(): void {
         let selectedFormula: string | string[] | number | number[] = this.formulaList.getSelectedItems().text;
-        const descriptionArgs: { action: string, description: string, selectedList: string | string[] | number | number[], isCustom:boolean } = {
+        const descriptionArgs: {
+            action: string, description: string, selectedList: string | string[] | number | number[],
+            isCustom: boolean
+        } = {
             action: 'getFormulaDescription',
             description: '',
             selectedList: selectedFormula,
-            isCustom:false
+            isCustom: false
         };
         this.parent.notify(workbookFormulaOperation, descriptionArgs);
         const okBtn: HTMLElement = this.dialog.dialogInstance.element.querySelector('.e-footer-content .e-primary');
@@ -564,7 +579,8 @@ export class FormulaBar {
         }
         const descriptionArea: Element = document.getElementById(this.parent.element.id + '_description_content');
         selectedFormula = (selectedFormula === 'AND') ? 'CalculateAND' : (selectedFormula === 'OR') ? 'CalculateOR' : selectedFormula;
-        descriptionArea.textContent = descriptionArgs.isCustom?descriptionArgs.description:(this.parent.serviceLocator.getService(locale) as L10n).getConstant(selectedFormula as string);
+        descriptionArea.textContent = descriptionArgs.isCustom ? descriptionArgs.description :
+            (this.parent.serviceLocator.getService(locale) as L10n).getConstant(selectedFormula as string);
     }
     private formulaClickHandler(args: MouseEvent & TouchEvent): void {
         const trgtElem: HTMLElement = <HTMLElement>args.target;

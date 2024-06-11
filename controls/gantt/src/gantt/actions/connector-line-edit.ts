@@ -1,5 +1,5 @@
-import { isNullOrUndefined, isUndefined, addClass} from '@syncfusion/ej2-base';
-import { removeClass, getValue, createElement, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined} from '@syncfusion/ej2-base';
+import { getValue, createElement, extend } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import * as cls from '../base/css-constants';
 import { parentsUntil, formatString, isScheduledTask, getIndex } from '../base/utils';
@@ -23,7 +23,7 @@ export class ConnectorLineEdit {
     public predecessorIndex: number = null;
     /** @private */
     public childRecord: IGanttData = null;
-    private validatedId:{ id: any, value: any }[] = [];
+    private validatedId: { id: string | number, value: IPredecessor }[] = [];
     private dateValidateModule: DateProcessor;
     private validatedOffsetIds: string[] = [];
     constructor(ganttObj?: Gantt) {
@@ -56,8 +56,8 @@ export class ConnectorLineEdit {
     private getConnectorLineHoverElement(target: EventTarget): Element {
         const isOnLine: Element = parentsUntil(target as Element, cls.connectorLineSVG);
         const isArrow: Element = parentsUntil(target as Element, cls.connectorLineArrow);
-        const isCriticalLine: Element= parentsUntil(target as Element, cls.criticalConnectorLineSVG);
-        var isCriticalArrow = parentsUntil(target as Element, cls.criticalConnectorArrowSVG);
+        const isCriticalLine: Element = parentsUntil(target as Element, cls.criticalConnectorLineSVG);
+        const isCriticalArrow: Element = parentsUntil(target as Element, cls.criticalConnectorArrowSVG);
         if (isOnLine || isArrow || isCriticalLine || isCriticalArrow) {
             return parentsUntil(target as Element, cls.connectorLineContainer);
         } else {
@@ -92,13 +92,9 @@ export class ConnectorLineEdit {
      */
     private addHighlight(element: Element): void {
         this.connectorLineElement = element;
-        const pathElement = element.querySelector('.' + cls.connectorLineSVG);
-        const criticalElement = element.querySelector('.'+cls.criticalConnectorLineSVG);
+        const pathElement: Element = element.querySelector('.' + cls.connectorLineSVG);
         if (pathElement) {
             pathElement.setAttribute('stroke-width', '2');
-        }
-        else{
-            criticalElement.setAttribute('stroke-width', '2');
         }
     }
 
@@ -110,13 +106,9 @@ export class ConnectorLineEdit {
      */
     private removeHighlight(): void {
         if (this.connectorLineElement) {
-            const pathElement = this.connectorLineElement.querySelector('.' + cls.connectorLineSVG);
-            const criticalElement = this.connectorLineElement.querySelector('.'+cls.criticalConnectorLineSVG);
+            const pathElement: Element = this.connectorLineElement.querySelector('.' + cls.connectorLineSVG);
             if (pathElement) {
-                pathElement.setAttribute('stroke-width', '1'); 
-            }
-            else{
-                criticalElement.setAttribute('stroke-width', '1');
+                pathElement.setAttribute('stroke-width', '1');
             }
             this.connectorLineElement = null;
         }
@@ -150,7 +142,8 @@ export class ConnectorLineEdit {
                     parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[`${from}`]);
                     childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[`${to}`]);
                     if ((!this.parent.allowParentDependency && (parentGanttRecord && parentGanttRecord.expanded === true) ||
-                    (childGanttRecord && childGanttRecord.expanded === true)) || (this.parent.allowParentDependency &&(parentGanttRecord || childGanttRecord))) {
+                    (childGanttRecord && childGanttRecord.expanded === true)) || (this.parent.allowParentDependency &&
+                        (parentGanttRecord || childGanttRecord))) {
                         connectorObj =
                             this.parent.predecessorModule.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
                         if (!isNullOrUndefined(connectorObj)) {
@@ -190,7 +183,6 @@ export class ConnectorLineEdit {
         const preArray: string[] = pre.split(',');
         const preIdArray: string[] = [];
         let values: string[] = [];
-        let offsetValue: string;
         let match: string[] = [];
         for (let j: number = 0; j < preArray.length; j++) {
             const strArray: string[] = [];
@@ -198,8 +190,8 @@ export class ConnectorLineEdit {
             let isAlpha: boolean = false;
             let predecessorName: string;
             let isGUId: boolean = false;
-            var regex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-            let elSplit: string[] = preArray[j as number].split('-');
+            const regex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            const elSplit: string[] = preArray[j as number].split('-');
             let id: string;
             if (elSplit.length === 6) {
                 elSplit[4] = elSplit[4] + '-' + elSplit[5];
@@ -222,10 +214,10 @@ export class ConnectorLineEdit {
                     predecessorName = preArray[j as number].slice(-2).toString();
                 }
                 if (preArray[j as number].includes('-') && /[A-Za-z]/.test(predecessorName)) {
-                    var indexFS = preArray[j as number].indexOf(predecessorName);
+                    const indexFS: number = preArray[j as number].indexOf(predecessorName);
                     if (indexFS !== -1) {
                         firstPart = preArray[j as number].substring(0, indexFS);
-                        if(firstPart.includes('-')){
+                        if (firstPart.includes('-')) {
                             isAlpha = true;
                         }
                     }
@@ -235,7 +227,7 @@ export class ConnectorLineEdit {
                 let split: string[];
                 split = elSplit[4].split('+');
                 let spliceLength: number;
-                if(split.length === 1) {
+                if (split.length === 1) {
                     values[0] = preArray[j as number];
                 }
                 else {
@@ -243,10 +235,9 @@ export class ConnectorLineEdit {
                     values[0] = preArray[j as number].slice(0, -(spliceLength + 1));
                     values[1] = split[1];
                 }
-                offsetValue = '+';
                 if (elSplit[4].indexOf('-') >= 0) {
                     split = elSplit[4].split('-');
-                    if(split.length === 1) {
+                    if (split.length === 1) {
                         values[0] = preArray[j as number];
                     }
                     else {
@@ -254,7 +245,6 @@ export class ConnectorLineEdit {
                         values[0] = preArray[j as number].slice(0, -(spliceLength + 1));
                         values[1] = split[1];
                     }
-                    offsetValue = '-';
                 }
             }
             else {
@@ -263,10 +253,8 @@ export class ConnectorLineEdit {
                 }
                 else{
                     values = preArray[j as number].split('+');
-                    offsetValue = '+';
                     if (preArray[j as number].indexOf('-') >= 0) {
                         values = preArray[j as number].split('-');
-                        offsetValue = '-';
                     }
                 }
             }
@@ -356,7 +344,7 @@ export class ConnectorLineEdit {
         return parentRec;
     }
     // To check whether the predecessor drawn is valid for parent task
-    public validateParentPredecessor(fromRecord: IGanttData, toRecord: IGanttData) {
+    public validateParentPredecessor(fromRecord: IGanttData, toRecord: IGanttData): boolean {
         if (fromRecord && toRecord) {
             if (toRecord.hasChildRecords && !fromRecord.hasChildRecords) {
                 if (fromRecord.parentUniqueID === toRecord.uniqueID) {
@@ -440,9 +428,9 @@ export class ConnectorLineEdit {
                     }
                 }
                 else {
-                    if (parseInt(predecessorIdArray[predecessorIdArray.length - 1]) !== ganttRecord[this.parent.taskFields.id]) {
-                        let num: number = this.parent.ids.indexOf(predecessorIdArray[predecessorIdArray.length - 1]);
-                        let fromRecord: IGanttData = this.parent.currentViewData[num as number];
+                    if (parseInt(predecessorIdArray[predecessorIdArray.length - 1], 10) !== ganttRecord[this.parent.taskFields.id]) {
+                        const num: number = this.parent.ids.indexOf(predecessorIdArray[predecessorIdArray.length - 1]);
+                        const fromRecord: IGanttData = this.parent.currentViewData[num as number];
                         if (fromRecord && ganttRecord) {
                             flag = this.validateParentPredecessor(fromRecord, ganttRecord);
                         }
@@ -579,7 +567,7 @@ export class ConnectorLineEdit {
             return true;
         } else {
             if (ganttRecord.taskData[this.parent.taskFields.dependency]) {
-                ganttRecord.taskData[this.parent.taskFields.dependency] = null
+                ganttRecord.taskData[this.parent.taskFields.dependency] = null;
             }
             return false;
         }
@@ -688,49 +676,51 @@ export class ConnectorLineEdit {
             this.checkChildRecords(ganttRecord);
             this.parent.editModule.updateEditedTask(args.editEventArgs);
         } else if (args.validateMode.preserveLinkWithEditing) {
-            let connectedTaskId:any;
-            if (this.parent.UpdateOffsetOnTaskbarEdit) {
-                let taskId:any = ganttRecord.ganttProperties.taskId;
+            let connectedTaskId: string;
+            if (this.parent.updateOffsetOnTaskbarEdit) {
+                const taskId: string = ganttRecord.ganttProperties.taskId;
                 if (ganttRecord.ganttProperties.predecessor) {
-                    ganttRecord.ganttProperties.predecessor.forEach(predecessor => {
-                        if (taskId == predecessor.from) {
-                            connectedTaskId = predecessor.to
-                            return
+                    ganttRecord.ganttProperties.predecessor.forEach((predecessor: IPredecessor) => {
+                        if (taskId === predecessor.from) {
+                            connectedTaskId = predecessor.to;
+                            return;
                         }
                     });
                 }
             }
             this.parent.editModule.updateEditedTask(args.editEventArgs);
-            this.processPredecessors(connectedTaskId)
+            this.processPredecessors(connectedTaskId);
         }
     }
-    private compareArrays(arr1: any, arr2: any): any {
+    private compareArrays(arr1: IPredecessor[], arr2: IPredecessor[]): boolean {
         if (arr1.length !== arr2.length) {
             return false;
         }
-        const str1 = JSON.stringify(arr1);
-        const str2 = JSON.stringify(arr2);
+        const str1: string = JSON.stringify(arr1);
+        const str2: string = JSON.stringify(arr2);
         return str1 === str2;
     }
-    private processPredecessors(parentId: any): void {
+    private processPredecessors(parentId: string): void {
         if (parentId) {
-            const record = this.parent.getRecordByID(parentId);
+            const record: IGanttData = this.parent.getRecordByID(parentId);
             if (record && record.ganttProperties && record.ganttProperties.predecessor) {
                 this.parent.connectorLineEditModule['validatedOffsetIds'] = [];
                 this.calculateOffset(record);
                 let isIdInclude: boolean = true;
-                let matchedObject = this.validatedId.find(item => item.id === record.ganttProperties.taskId);
+                /* eslint-disable-next-line */
+                const matchedObject: { id: any, value: any } = this.validatedId.find((item: any) =>
+                    item.id === record.ganttProperties.taskId);
                 if (matchedObject) {
-                    let predecessorArray = matchedObject.value;
-                    let areArraysEqual = this.compareArrays(predecessorArray, record.ganttProperties.predecessor);
+                    const predecessorArray: IPredecessor[] = matchedObject.value;
+                    const areArraysEqual: boolean = this.compareArrays(predecessorArray, record.ganttProperties.predecessor);
                     if (areArraysEqual) {
-                        isIdInclude = false
+                        isIdInclude = false;
                     }
                 }
-                const predecessors = record.ganttProperties.predecessor;
-                predecessors.forEach(predecessor => {
-                    if (record.ganttProperties.taskId == predecessor.from && isIdInclude) {
-                        this.processPredecessors(predecessor.to)
+                const predecessors: IPredecessor[] = record.ganttProperties.predecessor;
+                predecessors.forEach((predecessor: IPredecessor) => {
+                    if (record.ganttProperties.taskId === predecessor.from && isIdInclude) {
+                        this.processPredecessors(predecessor.to);
                     }
                 });
             }
@@ -743,7 +733,7 @@ export class ConnectorLineEdit {
         }
         if (ganttRecord.childRecords.length > 0) {
             for (let i: number = 0; i < ganttRecord.childRecords.length; i++) {
-                let childRecord = ganttRecord.childRecords[i as number];
+                const childRecord: IGanttData = ganttRecord.childRecords[i as number];
                 this.validationPredecessor = childRecord.ganttProperties.predecessor;
                 if (!isNullOrUndefined(this.validationPredecessor)) {
                     this.removePredecessors(childRecord, this.validationPredecessor);
@@ -753,7 +743,7 @@ export class ConnectorLineEdit {
                 }
             }
         } else if (!isNullOrUndefined(ganttRecord.parentItem)) {
-            let parentRecord = this.parent.getRecordByID(ganttRecord.parentItem.taskId)
+            const parentRecord: IGanttData = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
             this.validationPredecessor = parentRecord.ganttProperties.predecessor;
             this.removePredecessors(parentRecord, this.validationPredecessor);
         }
@@ -767,11 +757,11 @@ export class ConnectorLineEdit {
                 for (let i: number = 0; i < validPredecessor.length; i++) {
                     const predecessor: IPredecessor = validPredecessor[parseInt(i.toString(), 10)];
                     const parentTask: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.from);
-                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.viewType == 'ProjectView') {
+                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.viewType === 'ProjectView') {
                         const isPresent: IPredecessor[] = parentTask.ganttProperties.predecessor.filter((pred: IPredecessor) => {
-                            return pred.from == validPredecessor[i as number].from && pred.to == validPredecessor[i as number].to;
+                            return pred.from === validPredecessor[i as number].from && pred.to === validPredecessor[i as number].to;
                         });
-                        if (isPresent.length == 0) {
+                        if (isPresent.length === 0) {
                             parentTask.ganttProperties.predecessor.push(validPredecessor[i as number]);
                         }
                     }
@@ -782,22 +772,22 @@ export class ConnectorLineEdit {
                         let tempDuration: number;
                         let isNegativeOffset: boolean;
                         switch (predecessor.type) {
-                            case 'FS':
-                                tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
-                                tempEndDate = new Date(record.ganttProperties.startDate.getTime());
-                                break;
-                            case 'SS':
-                                tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
-                                tempEndDate = new Date(record.ganttProperties.startDate.getTime());
-                                break;
-                            case 'SF':
-                                tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
-                                tempEndDate = new Date(record.ganttProperties.endDate.getTime());
-                                break;
-                            case 'FF':
-                                tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
-                                tempEndDate = new Date(record.ganttProperties.endDate.getTime());
-                                break;
+                        case 'FS':
+                            tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
+                            tempEndDate = new Date(record.ganttProperties.startDate.getTime());
+                            break;
+                        case 'SS':
+                            tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
+                            tempEndDate = new Date(record.ganttProperties.startDate.getTime());
+                            break;
+                        case 'SF':
+                            tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
+                            tempEndDate = new Date(record.ganttProperties.endDate.getTime());
+                            break;
+                        case 'FF':
+                            tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
+                            tempEndDate = new Date(record.ganttProperties.endDate.getTime());
+                            break;
                         }
 
                         if (tempStartDate.getTime() < tempEndDate.getTime()) {
@@ -811,7 +801,8 @@ export class ConnectorLineEdit {
                             isNegativeOffset = true;
                         }
                         if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                            tempDuration = this.dateValidateModule.getDuration(tempStartDate, tempEndDate, predecessor.offsetUnit, true, false);
+                            tempDuration = this.dateValidateModule.getDuration(
+                                tempStartDate, tempEndDate, predecessor.offsetUnit, true, false);
                             offset = isNegativeOffset ? (tempDuration * -1) : tempDuration;
                         } else {
                             offset = 0;
@@ -821,13 +812,13 @@ export class ConnectorLineEdit {
                     }
                     const preIndex: number = getIndex(predecessor, 'from', prevPredecessor, 'to');
                     if (preIndex !== -1) {
-                       prevPredecessor[preIndex as number].offset = offset;
+                        prevPredecessor[preIndex as number].offset = offset;
                     }
                     // Update predecessor in predecessor task
                     const parentPredecessors: IPredecessor = extend([], parentTask.ganttProperties.predecessor, [], true);
                     const parentPreIndex: number = getIndex(predecessor, 'from', parentPredecessors, 'to');
                     if (parentPreIndex !== -1) {
-                       parentPredecessors[parentPreIndex as number].offset = offset;
+                        parentPredecessors[parentPreIndex as number].offset = offset;
                     }
                     this.parent.setRecordValue('predecessor', parentPredecessors, parentTask.ganttProperties, true);
                 }
@@ -835,9 +826,9 @@ export class ConnectorLineEdit {
                 const validPredecessor: IPredecessor[] = record.ganttProperties.predecessor;
                 if (validPredecessor) {
                     if (validPredecessor.length > 0) {
-                        validPredecessor.forEach((element) => {
-                            if (this.validatedOffsetIds.indexOf(element.to) == -1) {
-                               this.calculateOffset(this.parent.getRecordByID(element.to))
+                        validPredecessor.forEach((element: IPredecessor) => {
+                            if (this.validatedOffsetIds.indexOf(element.to) === -1) {
+                                this.calculateOffset(this.parent.getRecordByID(element.to));
                             }
                         });
                     }
@@ -848,19 +839,22 @@ export class ConnectorLineEdit {
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, record);
             this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, record);
             this.parent.setRecordValue('predecessorsName', predecessorString, record.ganttProperties, true);
-            if (this.validatedOffsetIds.indexOf(record.ganttProperties.taskId.toString()) == -1) {
-              this.validatedOffsetIds.push(record.ganttProperties.taskId.toString());
+            if (this.validatedOffsetIds.indexOf(record.ganttProperties.taskId.toString()) === -1) {
+                this.validatedOffsetIds.push(record.ganttProperties.taskId.toString());
             }
             if (record.hasChildRecords) {
                 for (let i: number = 0; i < record.childRecords.length; i++) {
-                    if (this.validatedOffsetIds.indexOf(record.childRecords[i as number].ganttProperties.taskId.toString()) == -1 && record.childRecords[i as number].ganttProperties.predecessor && record.childRecords[i as number].ganttProperties.predecessor.length > 0) {
+                    if (this.validatedOffsetIds.indexOf(record.childRecords[i as number].ganttProperties.taskId.toString()) === -1 &&
+                    record.childRecords[i as number].ganttProperties.predecessor &&
+                    record.childRecords[i as number].ganttProperties.predecessor.length > 0) {
                         this.calculateOffset(record.childRecords[i as number]);
                     }
                 }
             }
             else if (record.parentItem) {
-                let parentItem: IGanttData = this.parent.getRecordByID(record.parentItem.taskId);
-                if (this.validatedOffsetIds.indexOf(parentItem.ganttProperties.taskId.toString()) == -1 && parentItem.ganttProperties.predecessor && parentItem.ganttProperties.predecessor.length > 0) {
+                const parentItem: IGanttData = this.parent.getRecordByID(record.parentItem.taskId);
+                if (this.validatedOffsetIds.indexOf(parentItem.ganttProperties.taskId.toString()) === -1 &&
+                parentItem.ganttProperties.predecessor && parentItem.ganttProperties.predecessor.length > 0) {
                     this.calculateOffset(parentItem);
                 }
             }
@@ -968,10 +962,11 @@ export class ConnectorLineEdit {
      * To validate the types while editing the taskbar
      *
      * @param {IGanttData} ganttRecord .
+     * @param {any} data .
      * @returns {boolean} .
      * @private
      */
-    public validateTypes(ganttRecord: IGanttData, data?:any): object {
+    public validateTypes(ganttRecord: IGanttData, data?: IGanttData): object {
         const predecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(ganttRecord);
         let parentGanttRecord: IGanttData;
         this.validationPredecessor = [];
@@ -1051,14 +1046,17 @@ export class ConnectorLineEdit {
             const prevPredecessor: IPredecessor[] = prevData.ganttProperties.predecessor;
             if (!isNullOrUndefined(prevPredecessor)) {
                 for (let p: number = 0; p < prevPredecessor.length; p++) {
-                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(prevPredecessor[parseInt(p.toString(), 10)].from as string);
+                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(
+                        prevPredecessor[parseInt(p.toString(), 10)].from as string);
                     if (parentGanttRecord === data) {
                         const isValid: IPredecessor[] = data.ganttProperties.predecessor.filter((pred: IPredecessor) => {
-                            return prevPredecessor[p as number].from == pred.from && prevPredecessor[p as number].to == pred.to;
+                            return prevPredecessor[p as number].from === pred.from && prevPredecessor[p as number].to === pred.to;
                         });
-                        if (isValid.length == 0) {
-                            if (data.parentItem && this.parent.taskFields.dependency && data.ganttProperties.predecessor && this.parent.allowParentDependency) {
-                                if (prevPredecessor[p as number].from !== data.parentItem.taskId && prevPredecessor[p as number].to !== data.parentItem.taskId) {
+                        if (isValid.length === 0) {
+                            if (data.parentItem && this.parent.taskFields.dependency && data.ganttProperties.predecessor &&
+                                this.parent.allowParentDependency) {
+                                if (prevPredecessor[p as number].from !== data.parentItem.taskId &&
+                                    prevPredecessor[p as number].to !== data.parentItem.taskId) {
                                     data.ganttProperties.predecessor.push(prevPredecessor[parseInt(p.toString(), 10)]);
                                 }
                             }
@@ -1079,13 +1077,14 @@ export class ConnectorLineEdit {
             }
             if (!isNullOrUndefined(newPredecessor)) {
                 for (let n: number = 0; n < newPredecessor.length; n++) {
-                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(newPredecessor[parseInt(n.toString(), 10)].from as string);
+                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(
+                        newPredecessor[parseInt(n.toString(), 10)].from as string);
                     const parentPredecessor: IPredecessor[] =
                         extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
                     const isValid: IPredecessor[] = parentPredecessor.filter((pred: IPredecessor) => {
-                        return newPredecessor[n as number].from == pred.from && newPredecessor[n as number].to == pred.to;
+                        return newPredecessor[n as number].from === pred.from && newPredecessor[n as number].to === pred.to;
                     });
-                    if (isValid.length == 0) {
+                    if (isValid.length === 0) {
                         parentPredecessor.push(newPredecessor[parseInt(n.toString(), 10)]);
                         this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
                     }
@@ -1107,10 +1106,10 @@ export class ConnectorLineEdit {
                 this.parent.undoRedoModule['disableRedo']();
             }
             this.parent.undoRedoModule['createUndoCollection']();
-            let details: Object = {};
+            const details: Object = {};
             details['action'] = 'DeleteDependency';
             details['modifiedRecords'] = extend([], [childRecord], [], true);
-            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = details;
+            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as object) = details;
         }
         const childPredecessor: IPredecessor[] = childRecord.ganttProperties.predecessor;
         const predecessor: IPredecessor = childPredecessor.splice(index, 1) as IPredecessor;

@@ -6,6 +6,7 @@ import { BeforeSaveEventArgs, FileType, ImageEditor, Point, SaveEventArgs, Selec
 export class Export {
     private parent: ImageEditor;
     private lowerContext: CanvasRenderingContext2D;
+    private imageQuality: number;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -37,12 +38,11 @@ export class Export {
         case 'exportToCanvas':
             this.exportToCanvas(args.value['object']);
             break;
-        case 'drawAnnotation':
-            this.drawAnnotation(args.value['context'], args.value['ratio']);
-            break;
         case 'updateSaveContext':
             this.updateSaveContext(args.value['context']);
             break;
+        case 'setImageQuality':
+            this.imageQuality = args.value['value'];
         }
     }
 
@@ -145,14 +145,14 @@ export class Export {
         showSpinner(parent.element);
         parent.element.style.opacity = '0.5';
         const tempCanvas: HTMLCanvasElement = this.exportToCanvas();
-        const imagetype: string = (type === 'jpeg') ? 'image/jpeg' : 'image/png';
+        const imagetype: string = type !== 'jpeg' ? 'image/png' : 'image/jpeg';
         // eslint-disable-next-line @typescript-eslint/tslint/config
         tempCanvas.toBlob(function(blob){
             const blobUrl: string = URL.createObjectURL(blob);
             proxy.downloadImg(blobUrl, fileName + '.' + type);
             hideSpinner(parent.element);
             parent.element.style.opacity = '1';
-        }, imagetype);
+        }, imagetype, this.imageQuality ? this.imageQuality : null);
     }
 
     private exportToCanvas(object?: Object): HTMLCanvasElement {
@@ -170,7 +170,7 @@ export class Export {
             value: {obj: selPointCollObj }});
         if (this.parent.aspectWidth) {
             parent.notify('undo-redo', { prop: 'setPreventUR', value: { bool: true } });
-            parent.notify('toolbar', { prop: 'resizeClick', value: {bool: false }}); 
+            parent.notify('toolbar', { prop: 'resizeClick', value: {bool: false }});
             parent.okBtn();
             if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
                 width = this.parent.aspectHeight; height = this.parent.aspectWidth;
@@ -234,8 +234,8 @@ export class Export {
             parent.freehandCounter = parent.pointColl.length;
             parent.transform.straighten = 0;
             this.lowerContext.filter = 'none';
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
             this.lowerContext.filter = prevObj.filter;
             parent.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.lowerContext}});
             if (parent.isCircleCrop || (parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle')) {
@@ -248,53 +248,108 @@ export class Export {
 
     private drawAnnotation(tempContext: CanvasRenderingContext2D, ratio: Dimension): void {
         const parent: ImageEditor = this.parent;
+        const tempObjColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tempPointColl: any = extend([], parent.pointColl, [], true);
+        for (let i: number = 0; i < parent.shapeColl.length; i++) {
+            if (parent.shapeColl[i as number].order) {
+                if (parent.shapeColl[i as number].currIndex && parent.shapeColl[i as number].currIndex.indexOf('shape') > -1) {
+                    parent.objColl = [];
+                    parent.objColl.push(extend({}, parent.shapeColl[i as number], {}, true) as SelectionPoint);
+                    this.drawShape(tempContext, ratio);
+                } else if (parent.shapeColl[i as number].id && parent.shapeColl[i as number].id.indexOf('pen') > -1) {
+                    parent.pointColl = []; parent.freehandCounter = 0;
+                    parent.pointColl.push(extend({}, parent.shapeColl[i as number], {}, true));
+                    parent.freehandCounter = parent.pointColl.length;
+                    this.drawPen(tempContext, ratio);
+                }
+            }
+        }
+        parent.objColl = tempObjColl; parent.pointColl = tempPointColl; parent.freehandCounter = parent.pointColl.length;
+    }
+
+    private drawShape(tempContext: CanvasRenderingContext2D, ratio: Dimension): void {
+        const parent: ImageEditor = this.parent;
         if (parent.objColl.length > 0) {
             const temp: string = tempContext.filter;
             tempContext.filter = 'none';
+            const indexObj: Object = {index: null };
+            parent.notify('shape', { prop: 'getSmallestIndex', onPropertyChange: false, value: {obj: indexObj }});
+            let index: number = indexObj['index'];
+            const objColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
             const tempObjColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
-            for (let i: number = 0, len: number = parent.objColl.length ; i < len; i++) {
-                const currObj: SelectionPoint = parent.objColl[i as number];
-                const activePoint: ActivePoint = currObj.activePoint;
-                // Subtracting destination left and top points
-                activePoint.startX -= parent.img.destLeft;
-                activePoint.startY -= parent.img.destTop;
-                activePoint.endX -= parent.img.destLeft;
-                activePoint.endY -= parent.img.destTop;
-                activePoint.width = activePoint.endX - activePoint.startX;
-                activePoint.height = activePoint.endY - activePoint.startY;
-                // Manipulating points
-                activePoint.startX *= ratio.width;
-                activePoint.startY *= ratio.height;
-                activePoint.endX *= ratio.width;
-                activePoint.endY *= ratio.height;
-                activePoint.width = activePoint.endX - activePoint.startX;
-                activePoint.height = activePoint.endY - activePoint.startY;
-                currObj.strokeSettings.strokeWidth *= ((ratio.width + ratio.height) / 2);
-                if (currObj.shape === 'text') {
-                    currObj.textSettings.fontSize *= ((ratio.width + ratio.height) / 2);
-                } else if (currObj.shape === 'path') {
-                    for (let l: number = 0; l < currObj.pointColl.length; l++) {
-                        currObj.pointColl[l as number].x =
-                            (currObj.pointColl[l as number].x - parent.img.destLeft) * ratio.width;
-                        currObj.pointColl[l as number].y =
-                            (currObj.pointColl[l as number].y - parent.img.destTop) * ratio.height;
+            while (objColl.length > 0) {
+                let found: boolean = false;
+                for (let i: number = 0; i < objColl.length; i++) {
+                    const currentObj: SelectionPoint = objColl[i as number];
+                    if (isNullOrUndefined(currentObj.order)) {
+                        objColl.splice(i, 1);
+                        i--;
+                        continue;
                     }
-                } else if (currObj.shape === 'image') {
-                    parent.activeObj = extend({}, parent.objColl[i as number], {}, true) as SelectionPoint;
-                    parent.notify('selection', { prop: 'upgradeImageQuality', onPropertyChange: false });
-                    parent.objColl[i as number] = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+                    if (currentObj.order === index) {
+                        const temp: string = tempContext.filter;
+                        tempContext.filter = 'none';
+                        const currObj: SelectionPoint = objColl[i as number];
+                        const activePoint: ActivePoint = currObj.activePoint;
+                        // Subtracting destination left and top points
+                        activePoint.startX -= parent.img.destLeft;
+                        activePoint.startY -= parent.img.destTop;
+                        activePoint.endX -= parent.img.destLeft;
+                        activePoint.endY -= parent.img.destTop;
+                        activePoint.width = activePoint.endX - activePoint.startX;
+                        activePoint.height = activePoint.endY - activePoint.startY;
+                        // Manipulating points
+                        activePoint.startX *= ratio.width;
+                        activePoint.startY *= ratio.height;
+                        activePoint.endX *= ratio.width;
+                        activePoint.endY *= ratio.height;
+                        activePoint.width = activePoint.endX - activePoint.startX;
+                        activePoint.height = activePoint.endY - activePoint.startY;
+                        currObj.strokeSettings.strokeWidth *= ((ratio.width + ratio.height) / 2);
+                        if (currObj.shape === 'text') {
+                            currObj.textSettings.fontSize *= ((ratio.width + ratio.height) / 2);
+                        } else if (currObj.shape === 'path') {
+                            for (let l: number = 0; l < currObj.pointColl.length; l++) {
+                                currObj.pointColl[l as number].x =
+                                    (currObj.pointColl[l as number].x - parent.img.destLeft) * ratio.width;
+                                currObj.pointColl[l as number].y =
+                                    (currObj.pointColl[l as number].y - parent.img.destTop) * ratio.height;
+                            }
+                        } else if (currObj.shape === 'image') {
+                            parent.activeObj = extend({}, objColl[i as number], {}, true) as SelectionPoint;
+                            parent.notify('selection', { prop: 'upgradeImageQuality', onPropertyChange: false});
+                            objColl[i as number] = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+                        }
+                        parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'saveContext', obj: objColl[i as number], isCropRatio: null,
+                            points: null, isPreventDrag: true, saveContext: tempContext, isPreventSelection: null} });
+                        tempContext.filter = temp;
+                        parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
+                        index++;
+                        const indexBool: Object = {bool: false };
+                        parent.notify('shape', { prop: 'isIndexInObjColl', onPropertyChange: false, value: {obj: indexBool, index: index }});
+                        if (!indexBool['bool']) {index++; }
+                        objColl.splice(i, 1);
+                        found = true;
+                        break; // Exit the loop to start from the beginning
+                    }
                 }
-                parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'saveContext', obj: parent.objColl[i as number], isCropRatio: null,
-                    points: null, isPreventDrag: true, saveContext: tempContext, isPreventSelection: null} });
+                if (!found) {
+                    break; // If no matching order was found, exit the loop
+                }
             }
             tempContext.filter = temp;
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
             parent.objColl = tempObjColl;
         }
+    }
+
+    private drawPen(tempContext: CanvasRenderingContext2D, ratio: Dimension): void {
+        const parent: ImageEditor = this.parent;
         if (parent.freehandCounter > 0) {
             const widthObj: Object = {penStrokeWidth: null };
             parent.notify('freehand-draw', {prop: 'getPenStrokeWidth', onPropertyChange: false, value: {obj: widthObj }});
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tempPointColl: any = extend({}, parent.pointColl, {}, true);
             for (let n: number = 0; n < parent.freehandCounter; n++) {
                 parent.points = extend([], parent.pointColl[n as number].points, []) as Point[];

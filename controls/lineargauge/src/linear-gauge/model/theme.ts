@@ -293,6 +293,86 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             containerBorderColor: '#49454F'
         };
         break;
+    case 'fluent2':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#242424',
+            titleFontSize: '14px',
+            tooltipFillColor: '#FFFFFF',
+            tooltipFontColor: '#242424',
+            tooltipFontSize: '12px',
+            labelColor: '#616161',
+            lineColor: '#EDEBE9',
+            majorTickColor: '#C8C6C4',
+            minorTickColor: '#C8C6C4',
+            pointerColor: '#A19F9D',
+            fontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            titleFontStyle: 'normal',
+            titleFontWeight: '600',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#EDEBE9',
+            containerBackground: '#EDEBE9',
+            fontFamily: 'Segoe UI',
+            labelFontFamily: 'Segoe UI',
+        };
+        break;
+    case 'fluent2dark':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#FFFFFF',
+            titleFontSize: '14px',
+            tooltipFillColor: '#292929',
+            tooltipFontColor: '#FFFFFF',
+            tooltipFontSize: '12px',
+            labelColor: '#ADADAD',
+            lineColor: '#292827',
+            majorTickColor: '#484644',
+            minorTickColor: '#484644',
+            pointerColor: '#8A8886',
+            fontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            titleFontStyle: 'normal',
+            titleFontWeight: '600',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#292827',
+            containerBackground: '#292827',
+            fontFamily: 'Segoe UI',
+            labelFontFamily: 'Segoe UI'
+        };
+        break;
+    case 'fluent2highcontrast':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#FFFFFF',
+            titleFontSize: '14px',
+            tooltipFillColor: '#000000',
+            tooltipFontColor: '#FFFFFF',
+            tooltipFontSize: '12px',
+            labelColor: '#FFFFFF',
+            lineColor: '#292827',
+            majorTickColor: '#484644',
+            minorTickColor: '#484644',
+            pointerColor: '#8A8886',
+            fontSize: '12px',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            titleFontStyle: 'normal',
+            titleFontWeight: '600',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#292827',
+            containerBackground: '#292827',
+            fontFamily: 'Segoe UI',
+            labelFontFamily: 'Segoe UI',
+            tooltipBorderColor: '#FFF',
+            tooltipBorderWidth: 1
+        };
+        break;
     default:
         style = {
             backgroundColor: '#FFFFFF',

@@ -100,6 +100,10 @@
     content: '\e794';
   }
 
+  .e-de-ctnr-content-control::before {
+    content: '\e902';
+  }
+
   .e-de-ctnr-strokestyle::before {
     content: '\eb62';
   }
@@ -364,6 +368,18 @@
   .e-de-textform::before {
     color: $icon-color;
     content: '\e830';
+    font-family: 'e-icons';
+  }
+
+  .e-de-combo-box::before {
+    color: $icon-color;
+    content: '\e8ff';
+    font-family: 'e-icons';
+  }
+
+  .e-de-dropdown-list::before {
+    color: $icon-color;
+    content: '\e8fe';
     font-family: 'e-icons';
   }
 

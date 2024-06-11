@@ -170,7 +170,7 @@ export class Selection3D extends BaseSelection {
      * @returns {Element[]} An array of Element objects representing the clustered elements associated with the specified data index.
      */
     public getClusterElements(chart: Chart3D, index: Index): Element[] {
-        const clusters: Element[] = []; let seriesStyle: string; let selectedElements: NodeListOf<HTMLElement>;
+        const clusters: Element[] = [];
         for (const series of chart.visibleSeries) {
             if (series.visible) {
                 index = new Index(series.index, index.point);
@@ -178,8 +178,6 @@ export class Selection3D extends BaseSelection {
                 for (let i: number = 0; i < pointElements.length; i++) {
                     clusters.push(pointElements[i as number]);
                 }
-                seriesStyle = this.generateStyle(chart.visibleSeries[index.series]);
-                selectedElements = <NodeListOf<HTMLElement>>document.querySelectorAll('.' + seriesStyle);
             }
         }
         return clusters;
@@ -237,7 +235,7 @@ export class Selection3D extends BaseSelection {
                     if (this.previousSelectedEle[i as number].getAttribute('class').indexOf('highlight') > -1 &&
                         (isElement || eventType === 'click')) {
                         let selectionClass: string;
-                        this.previousSelectedEle[i as number].classList.forEach(className => {
+                        this.previousSelectedEle[i as number].classList.forEach((className: string) => {
                             if (className.indexOf('selection') > -1) {
                                 selectionClass = className;
                             }
@@ -316,20 +314,20 @@ export class Selection3D extends BaseSelection {
         case 'Series':
             this.selection(chart, index, this.getSeriesElements(chart.series[index.series as number]));
             this.selectionComplete(chart, index, this.currentMode);
-            this.blurEffect(chart.element.id, chart.visibleSeries, false);
+            this.blurEffect(chart.element.id, chart.visibleSeries);
             break;
         case 'Point':
             if (!isNaN(index.point) && element) {
                 this.selection(chart, index, this.getElementByIndex(chart, index));
                 this.selectionComplete(chart, index, this.currentMode);
-                this.blurEffect(chart.element.id, chart.visibleSeries, false);
+                this.blurEffect(chart.element.id, chart.visibleSeries);
             }
             break;
         case 'Cluster':
             if (!isNaN(index.point)) {
                 this.clusterSelection(chart, index);
                 this.selectionComplete(chart, index, this.currentMode);
-                this.blurEffect(chart.element.id, chart.visibleSeries, false);
+                this.blurEffect(chart.element.id, chart.visibleSeries);
             }
             break;
         }
@@ -448,8 +446,6 @@ export class Selection3D extends BaseSelection {
             }
             let isAdd: boolean;
             const className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
-            const pClassName: string = selectedElements[0].parentNode &&
-                ((<Element>selectedElements[0].parentNode).getAttribute('class') || '');
             if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
                 this.removeStyles(selectedElements);
             } else {
@@ -510,10 +506,9 @@ export class Selection3D extends BaseSelection {
      *
      * @param {string} chartId - The unique identifier of the target chart where the blur effect is applied.
      * @param {Chart3DSeries[]} visibleSeries - An array of visible series in the chart.
-     * @param {boolean} [isLegend=false] - A boolean indicating whether the blur effect is applied to legends.
      * @returns {void}
      */
-    public blurEffect(chartId: string, visibleSeries: Chart3DSeries[], isLegend: boolean = false): void {
+    public blurEffect(chartId: string, visibleSeries: Chart3DSeries[]): void {
         const visibility: boolean = (this.checkVisibility(this.highlightDataIndexes, this.chart) ||
             this.checkVisibility(this.selectedDataIndexes, this.chart));
         for (const series of visibleSeries) {
@@ -528,12 +523,12 @@ export class Selection3D extends BaseSelection {
                 });
                 this.checkSelectionElements(
                     pointElements,
-                    this.generateStyle(series), visibility, isLegend, legendIndex, legendStrokeColor
+                    this.generateStyle(series), visibility, legendIndex, legendStrokeColor
                 );
                 if (!isNullOrUndefined(getElement(chartId + 'SymbolGroup' + series.index))) {
                     this.checkSelectionElements(
                         pointElements,
-                        this.generateStyle(series), visibility, isLegend, legendIndex, legendStrokeColor
+                        this.generateStyle(series), visibility, legendIndex, legendStrokeColor
                     );
                 }
             }
@@ -546,12 +541,11 @@ export class Selection3D extends BaseSelection {
      * @param {Element[] | Element} element - The chart elements or a single element to be checked for selection.
      * @param {string} className - The CSS class name used to identify selected elements.
      * @param {boolean} visibility - A boolean indicating whether the elements should be visible or hidden based on selection.
-     * @param {boolean} [isLegend=true] - A boolean indicating whether the specified elements are legends.
      * @param {number} [series=0] - The index of the series if the specified elements are series.
      * @param {string} [legendStrokeColor='#D3D3D3'] - The stroke color used for legends when they are selected.
      * @returns {void}
      */
-    public checkSelectionElements(element: Element[] | Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = '#D3D3D3'): void {
+    public checkSelectionElements(element: Element[] | Element, className: string, visibility: boolean, series: number = 0, legendStrokeColor: string = '#D3D3D3'): void {
         let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? element || [element] : element);
         if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
             children = element as Element[];
@@ -692,7 +686,7 @@ export class Selection3D extends BaseSelection {
                     element, this.getSelectionClass(element.id)
                 );
                 if (this.chart.highlightPattern === 'None' && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightColor !== 'transparent') {
-                    let color = (this.control as Chart3D).visibleSeries[this.indexFinder(element.id).series].interior;
+                    let color: string = (this.control as Chart3D).visibleSeries[this.indexFinder(element.id).series].interior;
                     if (element.getAttribute('name') === 'ZLight') {
                         color = this.chart.polygon.applyZLight(color, this.control as Chart3D);
                     }
@@ -762,7 +756,7 @@ export class Selection3D extends BaseSelection {
         } else {
             this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
         }
-        this.blurEffect(chart.element.id, chart.visibleSeries, false);
+        this.blurEffect(chart.element.id, chart.visibleSeries);
         this.selectDataIndex(chart, selectedDataIndexes);
     }
 
@@ -808,13 +802,13 @@ export class Selection3D extends BaseSelection {
             this.isSeriesMode = this.currentMode === 'Series';
             const isBlurEffectNeeded: boolean = true;
             if (selectedElements.length > 0) {
-                this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded, index);
+                this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
             } else {
                 for (const element of chart.visibleSeries) {
                     if (element.index !== series && !chart.isMultiSelect) {
                         seriesStyle = this.generateStyle(chart.visibleSeries[element.index]);
                         selectedElements = document.querySelectorAll('.' + seriesStyle);
-                        this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded, index);
+                        this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
                     }
                 }
                 let seriesElements: Element[] = [];
@@ -824,11 +818,11 @@ export class Selection3D extends BaseSelection {
                     seriesElements = this.getSeriesElements(chart.visibleSeries[series as number]);
                 }
                 if (seriesElements.length > 0) {
-                    this.checkSelectionElements(seriesElements, seriesStyle, false, true, series, '');
+                    this.checkSelectionElements(seriesElements, seriesStyle, false, series, '');
                     this.isSeriesMode = true;
                     this.selection(chart, new Index(index.series, NaN), seriesElements);
                     this.isSeriesMode = chart.selectionMode === 'Series';
-                    this.blurEffect(chart.element.id, chart.visibleSeries, true);
+                    this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
             }
         }
@@ -842,12 +836,11 @@ export class Selection3D extends BaseSelection {
      * @param {NodeListOf<HTMLElement>} selectedElements - The HTML elements representing the selected items.
      * @param {string} seriesStyle - The style to be applied to the series after the removal of selection.
      * @param {boolean} isBlurEffectNeeded - A flag indicating whether a blur effect is needed after the removal of selection.
-     * @param {Index} index - The index representing the specific data point for which selection is being removed (optional).
      * @returns {void}
      */
     public removeSelection(
         chart: Chart3D, series: number, selectedElements: NodeListOf<HTMLElement>,
-        seriesStyle: string, isBlurEffectNeeded: boolean, index?: Index): void {
+        seriesStyle: string, isBlurEffectNeeded: boolean): void {
         if (selectedElements.length > 0) {
             const elements: Element[] = [];
             for (let i: number = 0; i < selectedElements.length; i++) {
@@ -860,7 +853,7 @@ export class Selection3D extends BaseSelection {
                 seriesStyle = this.generateStyle(value);
                 if (document.querySelectorAll('.' + seriesStyle).length > 0) {
                     for (const element of elements) {
-                        this.checkSelectionElements(element, seriesStyle, true, true, series, '');
+                        this.checkSelectionElements(element, seriesStyle, true, series, '');
                     }
                     isBlurEffectNeeded = false;
                     break;
@@ -868,7 +861,7 @@ export class Selection3D extends BaseSelection {
             }
             if (isBlurEffectNeeded) {
                 this.isSeriesMode = chart.selectionMode === 'Series';
-                this.blurEffect(chart.element.id, chart.visibleSeries, null);
+                this.blurEffect(chart.element.id, chart.visibleSeries);
             }
         }
     }
@@ -939,23 +932,20 @@ export class Selection3D extends BaseSelection {
     /**
      * Handles the mouse leave event for the 3D chart.
      *
-     * @param {Event} event - The mouse leave event object.
      * @returns {void}
      * @private
      */
-    private mouseLeave(event: Event): void {
-        this.completeSelection(event.target as HTMLElement, event.type);
+    private mouseLeave(): void {
+        this.completeSelection();
     }
 
     /**
      * Completes the selection process based on the specified target element and event type.
      *
-     * @param {HTMLElement} target - The target HTML element involved in the selection.
-     * @param {string} eventType - The type of event triggering the selection.
      * @returns {void}
      * @private
      */
-    public completeSelection(target: HTMLElement, eventType: string): void {
+    public completeSelection(): void {
         const chart: Chart3D = this.chart;
         if (chart.selectionMode === 'None') {
             return;
@@ -1029,7 +1019,7 @@ export class Selection3D extends BaseSelection {
                     if (element) {
                         this.removeSvgClass(element, element.getAttribute('class'));
                         if (this.chart.highlightPattern === 'None' && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightColor !== 'transparent') {
-                            let color = (this.control as Chart3D).visibleSeries[i as number].interior;
+                            let color: string = (this.control as Chart3D).visibleSeries[i as number].interior;
                             if (element.getAttribute('name') === 'ZLight') {
                                 color = this.chart.polygon.applyZLight(color, this.control as Chart3D);
                             }

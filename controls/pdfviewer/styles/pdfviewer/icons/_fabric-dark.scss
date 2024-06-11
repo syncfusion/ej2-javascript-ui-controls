@@ -242,6 +242,14 @@
     content: '\ebe5';
   }
 
+  .e-pv-save-icon.e-menu-icon::before {
+    content: '\e70f';
+  }
+
+  .e-pv-save-as-icon.e-menu-icon::before {
+    content: '\e700';
+  }
+
   .e-pv-highlight-icon::before {
     content: '\ebee';
     font-family: 'e-icons';

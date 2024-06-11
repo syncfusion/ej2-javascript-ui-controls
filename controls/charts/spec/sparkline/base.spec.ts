@@ -44,7 +44,7 @@ describe('Sparkline Component Base Spec', () => {
         });
         afterAll(() => {
             sparkline.destroy();
-            sparkline.sparklineResize(null);
+            sparkline.sparklineResize();
             removeElement(id);
         });
         it('Sparkline height and width percentage checking', () => {
@@ -253,13 +253,13 @@ describe('Sparkline Component Base Spec', () => {
             sparkline.refresh();
         });
         it('Sparkline resize event checking', (done: Function) => {
-            sparkline.sparklineResize(null);
+            sparkline.sparklineResize();
             sparkline.resize = (args: ISparklineResizeEventArgs) => {
                 expect(args.name).toBe('resize');
                 sparkline.resize = null;
                 done();
             };
-            sparkline.sparklineResize(null);
+            sparkline.sparklineResize();
         });
     });
     it('memory leak', () => {

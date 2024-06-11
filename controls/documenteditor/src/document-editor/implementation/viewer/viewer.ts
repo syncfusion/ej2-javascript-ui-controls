@@ -38,6 +38,7 @@ import { CaretHeightInfo } from '../editor/editor-helper';
 import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs, FormFieldFillEventArgs, beforePaneSwitchEvent, keyDownEvent, beforeFormFieldFillEvent, afterFormFieldFillEvent, AutoResizeEventArgs } from '../../base/index';
 import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 import { FormFieldPopUp } from '../dialogs/form-field-popup';
+import { ContentControlPopUp } from '../dialogs/content-control-popup';
 import { Revision } from '../track-changes/track-changes';
 import { TrackChangesPane } from '../track-changes/track-changes-pane';
 import { Themes } from '../themes/themes';
@@ -287,7 +288,10 @@ export class DocumentHelper {
     private dialogTarget2: HTMLElement;
     private dialogInternal2: Dialog;
     private dialogInternal3: Dialog;
-    private dialogTarget3: HTMLElement;
+     /**
+     * @private
+     */
+     public dialogTarget3: HTMLElement;
 
     /**
      * @private
@@ -520,6 +524,10 @@ export class DocumentHelper {
     public restrictEditingPane: RestrictEditing;
 
     public formFillPopup: FormFieldPopUp;
+    /**
+     * @private
+     */
+    public contentDropDown : ContentControlPopUp;
     /**
      * @private
      */
@@ -950,6 +958,7 @@ export class DocumentHelper {
         this.isIosDevice = typeof window !== 'undefined' ? /Mac|iPad|iPod/i.test(navigator.userAgent) : false;
         this.isMobileDevice = typeof window !== 'undefined' ? /Android|Windows Phone|webOS/i.test(navigator.userAgent) : false;
         this.formFillPopup = new FormFieldPopUp(this.owner);
+        this.contentDropDown = new ContentControlPopUp(this.owner);
         this.customXmlData = new Dictionary<string, string>();
         this.fontSubstitutionTable = new Dictionary<string, string>();
         this.contentControlCollection = [];
@@ -1054,6 +1063,9 @@ export class DocumentHelper {
         this.userCollection = [];
         if (this.formFillPopup) {
             this.formFillPopup.hidePopup();
+        }
+        if (this.contentDropDown) {
+            this.contentDropDown.hidePopup();
         }
         this.customXmlData.clear();
         this.fontSubstitutionTable.clear();
@@ -1655,7 +1667,7 @@ export class DocumentHelper {
             }
             return;
         }
-        if (!this.owner.isReadOnlyMode || (this.selection && this.selection.isInlineFormFillMode())) {
+        if (!this.owner.isReadOnlyMode && this.owner.editorModule.canEditContentControl || (this.owner.documentHelper.protectionType === 'FormFieldsOnly' && this.owner.editorModule.canEditContentControl && !isNullOrUndefined(this.owner.documentHelper.selection) && this.owner.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode()) {
             const key: number = event.keyCode || event.charCode;
             let char: string = '';
             if (key) {
@@ -1957,6 +1969,10 @@ export class DocumentHelper {
                 this.showRevisions(true);
             }
         });
+        let picture_cc: HTMLElement = document.getElementById('container_editorPICTURE_CONTENT_CONTROL');
+        if (!isNullOrUndefined(picture_cc)) {
+            this.owner.renderPictureContentControlElement(this.owner, false, false);
+        }
     }
     /**
      * Fires on scrolling.
@@ -2015,6 +2031,10 @@ export class DocumentHelper {
      * @returns {void}
      */
     public onWindowResize = (): void => {
+        if (!isNullOrUndefined(this.owner) && this.owner.isContainerResize) {
+            this.owner.isContainerResize = false;
+            return;
+        }
         if (this.resizeTimer) {
             clearTimeout(this.resizeTimer);
         }
@@ -2120,6 +2140,9 @@ export class DocumentHelper {
             this.updateCursor(event);
             if (this.formFillPopup) {
                 this.formFillPopup.hidePopup();
+            }
+            if(this.contentDropDown){
+                this.contentDropDown.hidePopup();
             }
             if (this.isLeftButtonPressed(event) && !this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !isNullOrUndefined(this.owner.imageResizerModule.selectedResizeElement)) {
                 if (this.selection.isInShape) {
@@ -2511,6 +2534,19 @@ export class DocumentHelper {
                     else
                     {
                         this.updateTextPositionForSelection(touchPoint, tapCount);
+                        // to check whether the image is selected
+                        if (this.owner.selectionModule.isImageSelected) {
+                            let contentControlImage: ElementBox = this.owner.getImageContentControl();
+                            // to check whether selected image has content control and type as picture , then the dialog opens
+                            if (contentControlImage instanceof ContentControl) {
+                                if (contentControlImage.contentControlProperties.type == 'Picture') {
+                                    let picturePositionY = this.owner.picturePositionY;
+                                    this.owner.renderPictureContentControlElement(this.owner, true, false, picturePositionY);
+                                }
+                            }
+                        } else {
+                            this.owner.renderPictureContentControlElement(this.owner, false, false);
+                        }
                     }
                     if (Browser.isIE && tapCount === 2) {
                         this.selection.checkAndEnableHeaderFooter(cursorPoint, touchPoint);
@@ -2523,6 +2559,18 @@ export class DocumentHelper {
                 }
             }
             let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
+            if(!isNullOrUndefined(this.owner.editorModule) && !isNullOrUndefined(this.owner.selectionModule)){
+                let contentControl: ContentControl = this.owner.editorModule.getContentControl();
+                let iscontentControl: boolean = this.owner.selectionModule.checkContentControlLocked();
+                if ((!isNullOrUndefined(contentControl) && !contentControl.contentControlProperties.lockContents && !this.isDocumentProtected && iscontentControl && event.button === 0) || (!isNullOrUndefined(contentControl) &&  !contentControl.contentControlProperties.lockContents && this.protectionType =='FormFieldsOnly' && event.button === 0)){
+                    if(contentControl.contentControlProperties.type === 'CheckBox'){
+                        this.owner.editor.toggleContentControlCheckBox(contentControl);
+                        if(contentControl.contentControlProperties.isTemporary){
+                            this.owner.editor.removeContentControl();
+                        }
+                    }
+                }
+            }
             if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)
                 && (this.owner.selectionModule.isEmpty || this.owner.selectionModule.isImageSelected) &&
                 (((isCtrlkeyPressed && this.owner.useCtrlClickToFollowHyperlink ||
@@ -2623,11 +2671,18 @@ export class DocumentHelper {
         if (this.selection) {
             this.selection.isCellPrevSelected = false;
         }
+        if (this.owner.documentHelper.contentControlCollection.length > 0) {
+            //Need to work on these
+            this.clearContent();
+            this.owner.documentHelper.viewer.updateScrollBars();
+        }
     }
     private moveSelectedContent(): void {
         this.isDragStarted = false;
         let info = this.owner.editor.getSelectionInfo(true);
-        info = this.owner.selection.updateSelectionInfo(info);
+        if (this.owner.selection.start.paragraph.isInsideTable) {
+            info = this.owner.selection.updateSelectionInfo(info);
+        }
         let start: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(info.start);
         let end: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(info.end);
         let dropSelectionStartParaInfo: ParagraphInfo = this.selection.getParagraphInfo(start);
@@ -3950,6 +4005,10 @@ export class DocumentHelper {
         if (this.formFillPopup) {
             this.formFillPopup.destroy();
             this.formFillPopup = undefined;
+        }
+        if (this.contentDropDown) {
+            this.contentDropDown.destroy();
+            this.contentDropDown = undefined;
         }
         this.L10n = undefined;
         this.currentPage = undefined;

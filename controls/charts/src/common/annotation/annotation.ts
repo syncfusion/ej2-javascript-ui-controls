@@ -103,13 +103,13 @@ export class AnnotationBase {
                         const xAnnotation: string =  xAxis.valueType === 'DateTimeCategory' ? ((annotation.x as Date).getTime()).toString() :
                                                                                             <string>annotation.x;
                         if (typeof xAnnotation === 'object') {
-                            for (let i = 0; i < xAxis.labels.length; i++) {
-                                if (xAxis.labels[i as number].toString() == annotation.x.toString()) {
+                            for (let i: number = 0; i < xAxis.labels.length; i++) {
+                                if (xAxis.labels[i as number].toString() === annotation.x.toString()) {
                                     xValue = i;
                                 }
                             }
                         }
-                        else if (xAxis.labels.indexOf(xAnnotation) < 0) {
+                        if (xAxis.labels.indexOf(xAnnotation) < 0) {
                             return false;
                         } else {
                             xValue = xAxis.labels.indexOf(xAnnotation);
@@ -241,7 +241,7 @@ export class AnnotationBase {
             ) + 'px';
             argsData.content.setAttribute('aria-label', this.annotation.description || 'Annotation');
             argsData.content.setAttribute('role', 'img');
-            appendElement(argsData.content, parentElement, this.control.redraw, true, 'left', 'top');
+            appendElement(argsData.content, parentElement, this.control.redraw, true, 'left', 'top', this.control.duration);
         }
     }
 

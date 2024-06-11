@@ -18,6 +18,8 @@ import { _FdfDocument } from './import-export/fdf-document';
 import { PdfBookmark, PdfNamedDestination, PdfBookmarkBase, _PdfNamedDestinationCollection } from './pdf-outline';
 import { _XmlDocument } from './import-export/xml-document';
 import { PdfFileStructure } from './pdf-file-structure';
+import { _PdfMergeHelper } from './pdf-merge';
+import { PdfPageImportOptions } from './pdf-page-import-options';
 /**
  * Represents a PDF document and can be used to parse an existing PDF document.
  * ```typescript
@@ -58,6 +60,8 @@ export class PdfDocument {
     _isExport: boolean = false;
     private _allowCustomData: boolean = false;
     _bookmarkHashTable: Map<PdfPage, PdfBookmarkBase[]>;
+    _targetIndex: number;
+    _isDuplicatePage: boolean = false;
     /**
      * Initializes a new instance of the `PdfDocument` class.
      *
@@ -366,13 +370,25 @@ export class PdfDocument {
      */
     get bookmarks(): PdfBookmarkBase {
         const catalog: _PdfCatalog = this._catalog;
-        if (catalog && catalog._catalogDictionary.has('Outlines')) {
-            const outlines: _PdfDictionary = catalog._catalogDictionary.get('Outlines');
-            if (outlines) {
-                this._bookmarkBase = new PdfBookmarkBase(outlines, this._crossReference);
-                if (outlines.has('First')) {
-                    this._bookmarkBase._reproduceTree();
+        if (catalog) {
+            if (catalog._catalogDictionary.has('Outlines')) {
+                const reference: _PdfReference = catalog._catalogDictionary._get('Outlines');
+                const outlines: _PdfDictionary = catalog._catalogDictionary.get('Outlines');
+                if (outlines) {
+                    this._bookmarkBase = new PdfBookmarkBase(outlines, this._crossReference);
+                    this._bookmarkBase._reference = reference;
+                    if (outlines.has('First')) {
+                        this._bookmarkBase._reproduceTree();
+                    }
                 }
+            } else {
+                const outlines: _PdfDictionary = new _PdfDictionary(this._crossReference);
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(reference, outlines);
+                catalog._catalogDictionary.update('Outlines', reference);
+                this._crossReference._allowCatalog = true;
+                this._bookmarkBase = new PdfBookmarkBase(outlines, this._crossReference);
+                this._bookmarkBase._reference = reference;
             }
         }
         return this._bookmarkBase;
@@ -1373,8 +1389,10 @@ export class PdfDocument {
                 value._destroy();
             });
         }
-        this._pages.clear();
-        this._pages = undefined;
+        if (this._pages) {
+            this._pages.clear();
+            this._pages = undefined;
+        }
         this._startXrefSignature = undefined;
         this._stream = undefined;
         this._form = undefined;
@@ -1537,6 +1555,213 @@ export class PdfDocument {
                     } catch (e) { } // eslint-disable-line
                 }
             }
+        }
+    }
+    /**
+     * Import the pages specified by the start and end index into the current document's pages collection.
+     *
+     * @param {PdfDocument} document PDF document to get pages to import.
+     * @param {number} startIndex Start page index. The default value is 0.
+     * @param {number} endIndex End page index. The default value is the index of the last page in the source document.
+     * @remarks The source document must be disposed of after the destination document is saved during the import function.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let destination: PdfDocument = new PdfDocument(data1);
+     * // Load another existing PDF document
+     * let document: PdfDocument = new PdfDocument(data2);
+     * // Import 5 pages from page index 2 to 6 into the destination document.
+     * destination.importPageRange(document, 2, 6);
+     * // Save the output PDF
+     * destination.save(‘Output.pdf’);
+     * // Destroy the documents
+     * destination.destroy();
+     * document.destroy();
+     * ```
+     */
+    importPageRange(document: PdfDocument, startIndex: number, endIndex: number): void
+    /**
+     * Import the pages specified by start and end index into the current document's pages collection.
+     *
+     * @param {PdfDocument} document PDF document to get pages to import.
+     * @param {number} startIndex Start page index. The default value is 0.
+     * @param {number} endIndex End page index. The default value is the index of the last page in the source document.
+     * @param {number} targetIndex Target page index to import.
+     * @remarks The source document must be disposed of after the destination document is saved during the import function.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let destination: PdfDocument = new PdfDocument(data1);
+     * // Load another existing PDF document
+     * let document: PdfDocument = new PdfDocument(data2);
+     * // Import 5 pages from page index 2 to 6 into the destination document and insert them at index 3.
+     * destination.importPageRange(document, 2, 6, 3);
+     * // Save the output PDF
+     * destination.save(‘Output.pdf’);
+     * // Destroy the documents
+     * destination.destroy();
+     * document.destroy();
+     * ```
+     */
+    importPageRange(document: PdfDocument, startIndex: number, endIndex: number, targetIndex: number): void
+    importPageRange(document: PdfDocument, startIndex: number, endIndex: number, targetIndex?: number): void {
+        if (startIndex > endIndex || startIndex >= document.pageCount) {
+            throw new Error('The start index is greater then the end index, which might indicate the error in the program.');
+        }
+        if (typeof targetIndex !== 'undefined') {
+            if (targetIndex > this.pageCount) {
+                throw new Error('The target index is out of range.');
+            }
+            this._targetIndex = targetIndex;
+        }
+        this._importPages(document, startIndex, endIndex);
+    }
+    _importPages(document: PdfDocument, startIndex: number, endIndex: number, options?: PdfPageImportOptions): void {
+        let sourceOCProperties: _PdfDictionary;
+        let correspondancePagecount: number = 0;
+        let ocProperties : _PdfDictionary;
+        const pageReference: Map<_PdfDictionary, PdfPage> = new Map<_PdfDictionary, PdfPage>();
+        if (!this._isDuplicatePage) {
+            for (let index: number = 0; index < document.pageCount; index++) {
+                const sourcepage: PdfPage = document.getPage(index);
+                pageReference.set(sourcepage._pageDictionary, null);
+            }
+        }
+        const helper: _PdfMergeHelper = new _PdfMergeHelper(this._crossReference, this, pageReference, options);
+        let isLayersPresent: boolean = false;
+        if ((!this ._isDuplicatePage && document._catalog._catalogDictionary.has('OCProperties')) || (typeof options !== 'undefined' && !options.optimizeResources)) {
+            isLayersPresent = true;
+            sourceOCProperties = document._catalog._catalogDictionary.get('OCProperties');
+            ocProperties = new _PdfDictionary(this._crossReference);
+            helper._writeObject(document, ocProperties, sourceOCProperties, sourceOCProperties, 'OCProperties', null, null);
+            ocProperties._updated = true;
+        }
+        for (let i: number = startIndex; i <= endIndex; i++) {
+            const page: PdfPage = document.getPage(i);
+            document.form._doPostProcess(document.flatten, page);
+            if (page.annotations.count > 0) {
+                page.annotations._doPostProcess(this._flatten);
+            }
+            helper._importPages(page, document, this._targetIndex, isLayersPresent, this._isDuplicatePage);
+            correspondancePagecount++;
+            if (typeof this._targetIndex !== 'undefined') {
+                ++this._targetIndex;
+            }
+        }
+        helper._fixDestinations(document);
+        helper._exportBookmarks(document, correspondancePagecount);
+        helper._mergeFormFieldsWithDocument();
+        if ((isLayersPresent && !this._isDuplicatePage) || (typeof options !== 'undefined' && !options.optimizeResources)){
+            helper._importLayers(ocProperties, true);
+        }
+        helper._objectDispose();
+        this._isDuplicatePage = false;
+    }
+    /**
+     * Copy the specific page and insert it as the next page
+     *
+     * @param {number} pageIndex Target page index to import.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data1);
+     * // Copy the second page and add it as third page
+     * document.importPage(1);
+     * // Save the output PDF
+     * document.save(‘Output.pdf’);
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    importPage(index: number): void
+    /**
+     * Copy the specific page and insert it at the specified target page index and page rotation.
+     *
+     * @param {number} pageIndex Target page index to import.
+     * @param {PdfPageImportOptions} options Options to customize the support of import PDF pages.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(readFromResources('PDF_Succinctly.pdf'));
+     * // Options to customize the support of import PDF pages.
+     * let options: PdfPageImportOptions = new PdfPageImportOptions();
+     * // Sets the target page index to import
+     * options.targetIndex = 1;
+     * // Sets the rotation angle of the page to import
+     * options.rotation = PdfRotationAngle.angle180;
+     * // Copy the first page and add it as second page with page rotation
+     * document.importPage(0, options);
+     * // Save the output PDF
+     * let output = document.save();
+     * write('863764-86.pdf', output);
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    importPage(index: number, options: PdfPageImportOptions): void
+    /**
+     * Import the specified page into the current document pages collection as the last page
+     *
+     * @param {PdfPage} page Page to import.
+     * @param {PdfDocument} document PDF document to get pages to import.
+     * @remarks The source document must be disposed of after the destination document is saved during the import function.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let destination: PdfDocument = new PdfDocument(data1);
+     * // Load another existing PDF document
+     * let document: PdfDocument = new PdfDocument(data2);
+     * // Access first page of the source document
+     * let pageToImport: PdfPage = document.getPage(0);
+     * // Import the page into the destination document as the last page.
+     * destination.importPage(pageToImport, document);
+     * // Save the output PDF
+     * destination.save(‘Output.pdf’);
+     * // Destroy the documents
+     * destination.destroy();
+     * document.destroy();
+     * ```
+     */
+    importPage(page: PdfPage, document: PdfDocument): void
+    /**
+     * Create a new page with default settings and insert it into the collection at the specified page index.
+     *
+     * @param {PdfPage} page Page to import.
+     * @param {PdfDocument} document PDF document to get pages to import.
+     * @param {number} targetIndex Target page index to import.
+     * @remarks The source document must be disposed of after the destination document is saved during the import function.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let destination: PdfDocument = new PdfDocument(data1);
+     * // Load another existing PDF document
+     * let document: PdfDocument = new PdfDocument(data2);
+     * // Access first page of the source document
+     * let pageToImport: PdfPage = document.getPage(0);
+     * // Imports the page into destination document as 5th page
+     * destination.importPage(pageToImport, document, 5);
+     * // Save the output PDF
+     * destination.save(‘Output.pdf’);
+     * // Destroy the documents
+     * destination.destroy();
+     * document.destroy();
+     * ```
+     */
+    importPage(page: PdfPage, document: PdfDocument, targetIndex: number): void
+    importPage(arg1?: PdfPage | number, arg2?: PdfDocument | PdfPageImportOptions, targetIndex?: number): void {
+        if (typeof arg1 === 'number') {
+            this._isDuplicatePage = true;
+            if (arg2 instanceof PdfPageImportOptions) {
+                this._importPages(this, arg1, arg1, arg2);
+            } else {
+                this._importPages(this, arg1, arg1);
+            }
+        } else if (arg1 instanceof PdfPage && arg2 instanceof PdfDocument) {
+            const index: number = arg1._pageIndex;
+            if (typeof targetIndex !== 'undefined') {
+                this._targetIndex = targetIndex;
+            }
+            this.importPageRange(arg2, index, index);
         }
     }
 }

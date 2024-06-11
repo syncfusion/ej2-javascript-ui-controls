@@ -898,6 +898,8 @@ export class CommentView {
         wrapperDiv.appendChild(resolveText);
         this.resolveDiv.appendChild(wrapperDiv);
         wrapperDiv.style.display = "flex";
+        wrapperDiv.style.justifyContent = "center";
+        wrapperDiv.style.alignItems = "center";
         this.resolveDiv.style.display = "none";
         
         const commentUserInfo: HTMLElement = createElement('div', { className: 'e-de-cmt-author' });
@@ -968,7 +970,7 @@ export class CommentView {
     private initEditView(localObj: L10n): void {
         this.textAreaContainer = createElement('div', { styles: 'display:none' });
         this.textArea = createElement('div', { className: 'e-de-cmt-textarea e-input'});
-        this.textArea.style.borderWidth = '0 0 1px 0';
+        this.textArea.style.borderWidth = '0 0 2px 0';
         this.textArea.setAttribute('placeholder', localObj.getConstant('Type your comment here'));
         this.editMention = new Mention({
             dataSource: this.owner.documentEditorSettings.mentionSettings.dataSource,
@@ -994,6 +996,7 @@ export class CommentView {
         cancelButton.addEventListener('click', this.cancelEditing.bind(this));
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
+        editRegionFooter.style.marginTop = "8px";
         this.textAreaContainer.appendChild(this.textArea);
         this.textAreaContainer.appendChild(editRegionFooter);
         this.commentView.appendChild(this.textAreaContainer);
@@ -1054,6 +1057,7 @@ export class CommentView {
         cancelButton.title = localObj.getConstant('Cancel');
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
+        editRegionFooter.style.marginTop = "8px";
         this.replyFooter = editRegionFooter;
         this.replyViewContainer.appendChild(this.replyViewTextBox);
         this.replyViewContainer.appendChild(editRegionFooter);
@@ -1089,6 +1093,8 @@ export class CommentView {
         wrapperFooterDiv.style.justifyContent = "space-between";
         wrapperFooterDiv.style.alignItems = "center";
         reopenDeleteWrapper.style.display = "flex";
+        reopenDeleteWrapper.style.justifyContent = "center";
+        reopenDeleteWrapper.style.alignItems = "center";
         reopenDeleteWrapper.style.marginTop = "0px";
         this.resolveView = editRegionFooter;
         this.parentElement.appendChild(editRegionFooter);

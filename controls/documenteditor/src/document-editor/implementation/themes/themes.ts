@@ -1,5 +1,5 @@
-import { isNullOrUndefined } from "@syncfusion/ej2-base";
-import { FontScheme } from "./font-scheme";
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { FontScheme } from './font-scheme';
 
 /**
  * @private

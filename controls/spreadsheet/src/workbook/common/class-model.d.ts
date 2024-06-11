@@ -562,7 +562,7 @@ export interface MarkerSettingsModel {
 
     /**
      * Options for customizing the border of a marker.
-     * 
+     *
      * @default {}
      */
     border?: BorderModel;

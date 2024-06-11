@@ -19,12 +19,12 @@
     }
 
     .e-spinner-inner {
-
       .e-spin-label {
         color: $spin-label-color;
       }
 
       .e-spin-fluent,
+      .e-spin-fluent2,
       .e-spin-fabric {
 
         .e-path-circle {
@@ -37,7 +37,6 @@
       }
 
       .e-spin-tailwind {
-
         .e-path-circle {
           stroke: $spin-tailwind-stroke-color;
         }
@@ -52,7 +51,6 @@
       }
 
       .e-spin-high-contrast {
-
         .e-path-circle {
           stroke: $spin-fabric-stroke-color;
         }

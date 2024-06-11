@@ -46,6 +46,17 @@ describe('Toolbar actions ', () => {
                             items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
                                 'FontName', '|', 'InsertCode']
                         },
+                        format: {
+                            types: [
+                                { text: 'Paragraph', value: 'P' },
+                                { text: 'Code', value: 'Pre'},
+                                { text: 'Quotation', value: 'BlockQuote'},
+                                { text: 'Heading 1', value: 'H1' },
+                                { text: 'Heading 2', value: 'H2' },
+                                { text: 'Heading 3', value: 'H3' },
+                                { text: 'Heading 4', value: 'H4' }
+                            ]
+                        },
                         value: innerHTMLStr,
                         placeholder : 'Syncfusion RichTextEditor',
                         actionComplete: (): void => {
@@ -114,19 +125,6 @@ describe('Toolbar actions ', () => {
                     selectNode = editNode.querySelector('.first-p-node');
                     expect(selectNode.nodeName.toLowerCase() === 'p').toBe(true);
                     expect(action).toBe(true);
-                });
-                it("Formats - blockquote", () => {
-                    selectNode = editNode.querySelector('.first-p-node');
-                    setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
-                    let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
-                    (trgEle.childNodes[0] as HTMLElement).click();
-                    let popupElement: Element = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
-                    mouseEventArgs = {
-                        target: (popupElement.childNodes[0].childNodes[2] as HTMLElement)
-                    };
-                    (rteObj.toolbarModule as any).dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
-                    selectNode = editNode.querySelector('.first-p-node');
-                    expect(selectNode.tagName.toLowerCase() === 'blockquote').toBe(true);
                 });
                 it("Formats - h1", () => {
                     selectNode = editNode.querySelector('.first-p-node');
@@ -279,10 +277,10 @@ describe('Toolbar actions ', () => {
                 it("check-placeholder", function () {
                     rteObj.value='';
                     rteObj.dataBind();
-                    expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
+                    expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
                     var trgEle = rteEle.querySelectorAll(".e-toolbar-item")[5];
                     (trgEle.childNodes[0] as HTMLElement).click();
-                    expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).style.display).toBe('none');
+                    expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(false);
                     expect((rteObj.inputElement.firstChild as HTMLElement).tagName).toBe('OL');
                 });
 
@@ -324,6 +322,22 @@ describe('Toolbar actions ', () => {
                     selectNode = editNode.querySelector('#revertPre');
                     expect(selectNode.tagName.toLowerCase() === 'p').toBe(true);
                 });
+                
+                it("Formats - blockquote", () => {
+                    rteObj.value = innerHTMLStr;
+                    rteObj.dataBind();
+                    selectNode = editNode.querySelector('.first-p-node');
+                    setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
+                    let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
+                    (trgEle.childNodes[0] as HTMLElement).click();
+                    let popupElement: Element = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
+                    mouseEventArgs = {
+                        target: (popupElement.childNodes[0].childNodes[2] as HTMLElement)
+                    };
+                    (rteObj.toolbarModule as any).dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
+                    selectNode = editNode.querySelector('.first-p-node');
+                    expect(selectNode.parentElement.tagName.toLowerCase() === 'blockquote').toBe(true);
+                });
             });
             describe(' RTE with Iframe content ', () => {
                 let rteEle: Element;
@@ -334,6 +348,17 @@ describe('Toolbar actions ', () => {
                             items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|', 'InsertCode']
                         }, iframeSettings: {
                             enable: true
+                        },
+                        format: {
+                            types: [
+                                { text: 'Paragraph', value: 'P' },
+                                { text: 'Code', value: 'Pre'},
+                                { text: 'Quotation', value: 'BlockQuote'},
+                                { text: 'Heading 1', value: 'H1' },
+                                { text: 'Heading 2', value: 'H2' },
+                                { text: 'Heading 3', value: 'H3' },
+                                { text: 'Heading 4', value: 'H4' }
+                            ]
                         },
                         value: innerHTMLStr
                     });
@@ -369,19 +394,6 @@ describe('Toolbar actions ', () => {
                     (rteObj.toolbarModule as any).dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
                     selectNode = editNode.querySelector('.first-p-node');
                     expect(selectNode.tagName.toLowerCase() === 'pre').toBe(true);
-                });
-                it("Formats - blockquote", () => {
-                    selectNode = editNode.querySelector('.first-p-node');
-                    setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
-                    let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
-                    (trgEle.childNodes[0] as HTMLElement).click();
-                    let popupElement: Element = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
-                    mouseEventArgs = {
-                        target: (popupElement.childNodes[0].childNodes[2] as HTMLElement)
-                    };
-                    (rteObj.toolbarModule as any).dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
-                    selectNode = editNode.querySelector('.first-p-node');
-                    expect(selectNode.tagName.toLowerCase() === 'blockquote').toBe(true);
                 });
                 it("Formats - h1", () => {
                     selectNode = editNode.querySelector('.first-p-node');
@@ -533,6 +545,22 @@ describe('Toolbar actions ', () => {
                     selectNode = editNode.querySelector('#convertPre');
                     expect(selectNode.tagName.toLowerCase() === 'pre').toBe(true);
                 });
+                
+                it("Formats - blockquote", () => {
+                    rteObj.value = innerHTMLStr;
+                    rteObj.dataBind();
+                    selectNode = editNode.querySelector('.first-p-node');
+                    setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
+                    let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
+                    (trgEle.childNodes[0] as HTMLElement).click();
+                    let popupElement: Element = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
+                    mouseEventArgs = {
+                        target: (popupElement.childNodes[0].childNodes[2] as HTMLElement)
+                    };
+                    (rteObj.toolbarModule as any).dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
+                    selectNode = editNode.querySelector('.first-p-node');
+                    expect(selectNode.parentElement.tagName.toLowerCase() === 'blockquote').toBe(true);
+                });
             });
         });
     });
@@ -554,6 +582,17 @@ describe('Toolbar actions ', () => {
                 rteObj = renderRTE({
                     toolbarSettings: {
                         items: ['|', 'Formats', '|', 'OrderedList', 'UnorderedList']
+                    },
+                    format: {
+                        types: [
+                            { text: 'Paragraph', value: 'P' },
+                            { text: 'Code', value: 'Pre'},
+                            { text: 'Quotation', value: 'BlockQuote'},
+                            { text: 'Heading 1', value: 'H1' },
+                            { text: 'Heading 2', value: 'H2' },
+                            { text: 'Heading 3', value: 'H3' },
+                            { text: 'Heading 4', value: 'H4' }
+                        ]
                     },
                     editorMode: 'Markdown',
                     formatter: new MarkdownFormatter({
@@ -932,6 +971,122 @@ describe('Toolbar actions ', () => {
                 (rteObj as any).inputElement.ownerDocument.dispatchEvent(mouseDownEvent);
                 expect(popupElement.classList.contains("e-popup-close")).toBe(true);
             });
+        });
+    });
+    describe('Coverage for the enter key with BR.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName']
+                },
+                enterKey: "BR",
+                value: `wergwerg<br><strong>qwefqwefewq</strong><br><strong id='strong-elem'>s​</strong>`
+            });
+            done();
+        });
+        it('Check the first child as a text node when entering a key in the BR configuration to get the node.', (done) => {
+            rteObj.focusIn();
+            let node = rteObj.inputElement.querySelector("#strong-elem");
+            let selection: NodeSelection = new NodeSelection();
+            selection.setCursorPoint(document, node, 1);
+            let keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 77,
+                shiftKey: false,
+                altKey: false,
+                ctrlKey: false,
+                char: '',
+                key: 'm',
+                charCode: 77,
+                which: 77,
+                code: 'KeyM',
+                action: 'KeyM',
+                type: 'keyup'
+            };
+            (<any>rteObj).keyUp(keyboardEventArgs);
+            expect(rteObj.inputElement.firstChild.nodeName === '#text').toBe(true);
+            done();
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('879942 - Include the inherited fontsize and font-family dropdown button in Rich Text Editor.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName']
+                },
+                value: "<p>Rich Text Editor</p>"
+            });
+            done();
+        });
+        it('Check the default toolbar UI', function (done) {
+            rteObj.focusIn();
+            let fontSize = rteObj.toolbarModule.getToolbarElement().querySelectorAll(".e-rte-toolbar .e-toolbar-item")[0].querySelector(".e-rte-dropdown-btn-text").textContent;
+            let fontName = rteObj.toolbarModule.getToolbarElement().querySelectorAll(".e-rte-toolbar .e-toolbar-item")[1].querySelector(".e-rte-dropdown-btn-text").textContent;
+            expect('Font Size' === fontSize).toBe(true);
+            expect('Font Name' === fontName).toBe(true);
+            done();
+        });
+        it('Check the preselect when the fontsize dropdown is opened.', function (done) {
+            rteObj.focusIn();
+            let node = rteObj.inputElement.querySelector("p");
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, node.firstChild, node.firstChild, 1, 3);
+            let fontSize = rteObj.toolbarModule.getToolbarElement().querySelectorAll(".e-rte-toolbar .e-toolbar-item")[0];
+            fontSize.querySelector("button").click();
+            setTimeout(function () {
+                expect(document.querySelectorAll("#" + rteObj.getID() + "_toolbar_FontSize-popup UL LI")[0].classList.contains("e-active")).toBe(true);
+                done();
+            }, 100)
+        });
+        it('Check the preselect when the fontname dropdown is opened.', function (done) {
+            rteObj.focusIn();
+            let node = rteObj.inputElement.querySelector("p");
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, node.firstChild, node.firstChild, 1, 3);
+            let fontName = rteObj.toolbarModule.getToolbarElement().querySelectorAll(".e-rte-toolbar .e-toolbar-item")[1];
+            fontName.querySelector("button").click();
+            setTimeout(function () {
+                expect(document.querySelectorAll("#" + rteObj.getID() + "_toolbar_FontName-popup UL LI")[0].classList.contains("e-active")).toBe(true);
+                done();
+            }, 100)
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('879942 - Include the inherited fontsize and font-family dropdown button in Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName']
+                },
+                value: "<p>Rich Text Editor</p>"
+            });
+            done();
+        });
+        it('The fontSize need to be removed when apply the font style as default', function (done) {
+            rteObj.focusIn();
+            rteObj.value = '<p><span style="font-size: 24pt;">Rich Text Editor</span></p>';
+            rteObj.dataBind();
+            let node = rteObj.inputElement.querySelector("p");
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, node.firstChild.firstChild, node.firstChild.firstChild, 1, 3);
+            let fontName = rteObj.toolbarModule.getToolbarElement().querySelectorAll(".e-rte-toolbar .e-toolbar-item")[0];
+            fontName.querySelector("button").click();
+            setTimeout(function () {
+                (document.querySelectorAll("#" + rteObj.getID() + "_toolbar_FontSize-popup UL LI")[0] as any).click();
+                expect(node.childNodes.length > 1).toBe(true);
+                done();
+            }, 100)
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
         });
     });
 });

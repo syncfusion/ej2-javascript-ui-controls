@@ -233,6 +233,14 @@
     content: '\e731';
   }
 
+  .e-pv-save-icon.e-menu-icon::before {
+    content: '\e74d';
+  }
+
+  .e-pv-save-as-icon.e-menu-icon::before {
+    content: '\e72b';
+  }
+
   .e-pv-highlight-icon::before {
     content: '\e770';
     font-family: 'e-icons';

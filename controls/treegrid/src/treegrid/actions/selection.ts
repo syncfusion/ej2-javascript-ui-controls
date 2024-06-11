@@ -183,6 +183,10 @@ export class Selection {
     }
 
     public selectCheckboxes(rowIndexes: number[]): void {
+        if (isNullOrUndefined(rowIndexes)) {
+            const error: string = 'The provided value for the rowIndexes is undefined. Please ensure the rowIndexes contains number.';
+            this.parent.trigger(events.actionFailure, { error: error });
+        }
         for (let i: number = 0; i < rowIndexes.length; i++) {
             let record: ITreeData = this.parent.getCurrentViewRecords()[rowIndexes[parseInt(i.toString(), 10)]];
             const flatRecord: ITreeData = getParentData(this.parent, record.uniqueID);
@@ -423,7 +427,6 @@ export class Selection {
         if (recordIndex > -1) {
             if (!isNullOrUndefined(checkbox)) {
                 checkbox.classList.add(checkBoxclass);
-                const chkstate: string = checkState === 'check' ? 'checked' : checkState === 'uncheck' ? 'unchecked' : 'mixed';
                 tr.querySelector('.e-treecheckselect').setAttribute('aria-checked', checkState === 'check' ? 'true' : checkState === 'uncheck' ? 'false' : 'mixed');
             }
         }

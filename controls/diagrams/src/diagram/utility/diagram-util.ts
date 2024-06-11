@@ -9,7 +9,8 @@ import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel
 import { Point } from './../primitives/point';
 import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows, DiagramAction,
-    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType, BlazorAction, ControlPointsVisibility
+    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType, BlazorAction,
+    ControlPointsVisibility
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
@@ -203,8 +204,8 @@ export function setPortsEdges(node: Node): Node {
  */
 export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: NodeModel | ConnectorModel): void {
     if (node instanceof Node) {
-        const shape: UmlActivityShapes = (isBlazor() ? (child.shape as DiagramShape).umlActivityShape :
-            (child.shape as UmlActivityShape).shape);
+        const shape: UmlActivityShapes =
+            (child.shape as UmlActivityShape).shape;
         switch (shape) {
         case 'JoinNode':
             if (!(child as NodeModel).width) {
@@ -240,8 +241,7 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
             break;
         }
     } else {
-        const flow: UmlActivityFlows = (isBlazor() ?
-            (child.shape as DiagramConnectorShape).umlActivityFlow : (child.shape as ActivityFlow).flow);
+        const flow: UmlActivityFlows = (child.shape as ActivityFlow).flow;
         switch (flow) {
         case 'Object':
             if (!child.style || !child.style.strokeDashArray) {
@@ -280,7 +280,7 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
 export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel): void {
     switch ((child.shape).type) {
         case 'Bpmn':
-            const bpmnFlow: BpmnFlows = (isBlazor() ? (child.shape as DiagramConnectorShape).bpmnFlow : (child.shape as BpmnFlow).flow);
+            const bpmnFlow: BpmnFlows = (child.shape as BpmnFlow).flow;
             switch (bpmnFlow) {
                 case 'Sequence':
                     if (((((child.shape as BpmnFlow).sequence) === 'Normal' && child.type !== 'Bezier')) ||
@@ -325,8 +325,7 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
             }
             break;
         case 'UmlActivity':
-            let flow: UmlActivityFlows = (isBlazor() ?
-                (child.shape as DiagramConnectorShape).umlActivityFlow : (child.shape as ActivityFlow).flow);
+            let flow: UmlActivityFlows = (child.shape as ActivityFlow).flow;
             switch (flow) {
                 case 'Exception':
                     if ((((child.shape as BpmnFlow).association) === 'Directional') ||
@@ -581,15 +580,7 @@ export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, no
         for (const key of Object.keys(defaultValue)) {
             keyObj = defaultValue[`${key}`];
             if (key === 'getAssistantDetails') {
-                if (isBlazor()) {
-                    // Iterate the node data and get the assistant.
-                    for (const dataValue of Object.keys(node.data)) {
-                        assistantKey = dataValue;
-                        if (node.data[`${assistantKey}`] === defaultValue[`${key}`]['root']) {
-                            break;
-                        }
-                    }
-                }
+                //Removed isBlazor code
                 if (node.data[`${assistantKey}`] === defaultValue[`${key}`]['root']) {
                     const assitants: string[] = defaultValue[`${key}`]['assistants'];
                     for (let i: number = 0; i < assitants.length; i++) {
@@ -771,14 +762,15 @@ export function getPoints(element: DiagramElement, corners: Corners, padding?: n
  * @param { string} type - provide the type  value.
  * @private
  */
-export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, node: NodeModel | ConnectorModel | PointPortModel, type?: string): PointModel {
+export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, node: NodeModel | ConnectorModel | PointPortModel,
+                                 type?: string): PointModel {
     //let offset: PointModel;
     const inheritTooltip: number = (node instanceof Node) ? ((node as NodeModel).constraints & NodeConstraints.InheritTooltip)
-        : (node instanceof Connector) ? ((node as ConnectorModel).constraints & ConnectorConstraints.InheritTooltip) 
-        : ((node as PointPort).constraints & PortConstraints.InheritTooltip);
+        : (node instanceof Connector) ? ((node as ConnectorModel).constraints & ConnectorConstraints.InheritTooltip)
+            : ((node as PointPort).constraints & PortConstraints.InheritTooltip);
     const objectTooltip: number = (node instanceof Node) ? ((node as NodeModel).constraints & NodeConstraints.Tooltip)
-        : (node instanceof Connector) ? ((node as ConnectorModel).constraints & ConnectorConstraints.Tooltip) 
-        : ((node as PointPort).constraints & PortConstraints.ToolTip);
+        : (node instanceof Connector) ? ((node as ConnectorModel).constraints & ConnectorConstraints.Tooltip)
+            : ((node as PointPort).constraints & PortConstraints.ToolTip);
     let isMouseBased: boolean = ((!inheritTooltip && objectTooltip ? node.tooltip.relativeMode
         : diagram.tooltip.relativeMode) === 'Mouse') ? true : false;
     if (type === 'Mouse') {
@@ -800,7 +792,8 @@ export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, no
  * @param { boolean} isMouseBased - provide the isMouseBased  value.
  * @private
  */
-function tooltipOffset(node: NodeModel | ConnectorModel | PointPortModel, mousePosition: PointModel, diagram: Diagram, isMouseBased: boolean): PointModel {
+function tooltipOffset(node: NodeModel | ConnectorModel | PointPortModel, mousePosition: PointModel,
+                       diagram: Diagram, isMouseBased: boolean): PointModel {
     let point: PointModel = {};
     //let scale: number = diagram.scroller.transform.scale;
     const element: HTMLElement = document.getElementById(diagram.element.id);
@@ -976,14 +969,14 @@ export function getAnnotationPosition(pts: PointModel[], annotation: PathAnnotat
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function getPortsPosition(pts: PointModel[], ports: Port, bound: Rect): SegmentInfo {	
-    const getloop: SegmentInfo = getOffsetOfPorts(pts, ports);	
-    const angle: number = Point.findAngle(pts[getloop.index], pts[getloop.index + 1]);	
-    const alignednumber: number = getAlignedPositionForPorts(ports);	
-    const point: PointModel = Point.transform(getloop.point, angle + 45, alignednumber);	
-    getloop.point = point; getloop.angle = angle;	
-    return getloop;	
-};
+export function getPortsPosition(pts: PointModel[], ports: Port, bound: Rect): SegmentInfo {
+    const getloop: SegmentInfo = getOffsetOfPorts(pts, ports);
+    const angle: number = Point.findAngle(pts[getloop.index], pts[getloop.index + 1]);
+    const alignednumber: number = getAlignedPositionForPorts(ports);
+    const point: PointModel = Point.transform(getloop.point, angle + 45, alignednumber);
+    getloop.point = point; getloop.angle = angle;
+    return getloop;
+}
 
 /**
  * getOffsetOfPorts method \
@@ -1012,7 +1005,7 @@ export function getOffsetOfPorts(points: PointModel[], ports: Port): SegmentInfo
         prevLength = pointDistance[parseInt(k.toString(), 10)];
     }
     return { point: point, index: kCount };
-};
+}
 
 /**
  * getAlignedPosition method . To get the port alignment position \
@@ -1022,7 +1015,7 @@ export function getOffsetOfPorts(points: PointModel[], ports: Port): SegmentInfo
  * @private
  */
 export function getAlignedPositionForPorts(ports : Port): number {
-    let constant: number = 0;
+    const constant: number = 0;
     let state: number = 0;
     switch ((ports as PathPort).alignment) {
     case 'Center':
@@ -1938,17 +1931,15 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
         case 'Basic':
 
 
-            const element: DiagramElement = ((isBlazor() ? (actualObject.shape as DiagramShape).basicShape === 'Rectangle' :
-                (actualObject.shape as BasicShape).shape === 'Rectangle')) ? new DiagramElement() : new PathElement();
-            if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Polygon') ||
-                (isBlazor() && (actualObject.shape as DiagramShape).basicShape === 'Polygon')) {
+            const element: DiagramElement = (
+                (actualObject.shape as BasicShape).shape === 'Rectangle') ? new DiagramElement() : new PathElement();
+            if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Polygon')) {
                 (element as PathElement).data = getPolygonPath((actualObject.shape as BasicShape).points) as string;
             } else {
-                (element as PathElement).data = getBasicShape((isBlazor() ? (actualObject.shape as DiagramShape).basicShape :
-                    (actualObject.shape as BasicShape).shape));
+                (element as PathElement).data = getBasicShape(
+                    (actualObject.shape as BasicShape).shape);
             }
-            if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Rectangle') ||
-                (isBlazor() && (actualObject.shape as DiagramShape).basicShape === 'Rectangle')) {
+            if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Rectangle')) {
                 element.cornerRadius = (actualObject.shape as BasicShape).cornerRadius;
             }
             //EJ2-70880 - Node disappeared after changing shape and type dynamically.
@@ -1958,7 +1949,7 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
         case 'Flow':
             /* eslint-disable */
             const flowShapeElement: PathElement = new PathElement();
-            const shape: string = (isBlazor()) ? (actualObject.shape as DiagramShape).flowShape : (actualObject.shape as FlowShape).shape;
+            const shape: string = (actualObject.shape as FlowShape).shape;
             flowShapeElement.data = getFlowShape(shape);
             content = flowShapeElement;
             updateShapeContent(content, actualObject, diagram);
@@ -1976,7 +1967,7 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
             content = htmlContent;
             updateShapeContent(content, actualObject, diagram);
     }
-    if (node.shape.type === undefined || node.shape.type === oldObject.shape.type || (isBlazor() && node.shape.type === 'UmlActivity')) {
+    if (node.shape.type === undefined || node.shape.type === oldObject.shape.type) {
         updateContent(node, actualObject, diagram, oldObject);
     } else {
         content.width = actualObject.wrapper.children[0].width;
@@ -2029,30 +2020,25 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
                     htmlElement.appendChild(getContent(actualObject.wrapper.children[0] as DiagramHtmlElement, true));
                 }
             }
-        } else if (actualObject.shape.type === 'Flow' && ((isBlazor() && (newValues.shape as DiagramShapeModel).flowShape !== undefined) ||
+        } else if (actualObject.shape.type === 'Flow' && (
             (newValues.shape as FlowShapeModel).shape !== undefined)) {
-            (actualObject.shape as FlowShapeModel).shape = isBlazor() ? (newValues.shape as DiagramShapeModel).flowShape :
-                (newValues.shape as FlowShapeModel).shape;
+            (actualObject.shape as FlowShapeModel).shape = (newValues.shape as FlowShapeModel).shape;
             const shapes: FlowShapes = (actualObject.shape as FlowShapeModel).shape;
             const flowshapedata: string = getFlowShape(shapes.toString());
             (actualObject.wrapper.children[0] as PathModel).data = flowshapedata;
         } else if (actualObject.shape.type === 'UmlActivity' &&
-            ((isBlazor() && (newValues.shape as DiagramShape).umlActivityShape !== undefined) ||
-                (!isBlazor() && (newValues.shape as UmlActivityShapeModel).shape !== undefined))) {
+            (!isBlazor() && (newValues.shape as UmlActivityShapeModel).shape !== undefined)) {
             updateUmlActivityNode(actualObject, newValues);
         } else if ((newValues.shape as BasicShapeModel).cornerRadius !== undefined) {
             (actualObject.wrapper.children[0] as BasicShapeModel).cornerRadius = (newValues.shape as BasicShapeModel).cornerRadius;
         } else if (actualObject.shape.type === 'Basic' && (oldObject && (oldObject.shape as BasicShape).shape === 'Rectangle')) {
             const basicshape: PathElement = new PathElement();
-            const basicshapedata: string = getBasicShape((isBlazor()) ? (actualObject.shape as DiagramShape).basicShape :
-                (actualObject.shape as BasicShape).shape);
+            const basicshapedata: string = getBasicShape((actualObject.shape as BasicShape).shape);
             basicshape.data = basicshapedata;
             const content: DiagramElement = basicshape;
             updateShapeContent(content, actualObject, diagram);
-        } else if (((isBlazor() && (newValues.shape as DiagramShapeModel).basicShape !== undefined) ||
-            (newValues.shape as FlowShapeModel).shape !== undefined)) {
-            (actualObject.shape as BasicShapeModel).shape = isBlazor() ? (newValues.shape as DiagramShapeModel).basicShape :
-                (newValues.shape as BasicShapeModel).shape;
+        } else if ((newValues.shape as FlowShapeModel).shape !== undefined) {
+            (actualObject.shape as BasicShapeModel).shape = (newValues.shape as BasicShapeModel).shape;
             const shapes: string = (actualObject.shape as BasicShapeModel).shape;
             const basicShapeData: string = getBasicShape(shapes.toString());
             (actualObject.wrapper.children[0] as PathModel).data = basicShapeData;
@@ -2077,16 +2063,12 @@ export function updateUmlActivityNode(actualObject: Node, newValues: Node): void
     const shapes: UmlActivityShapes = !isBlazor() ? (actualObject.shape as UmlActivityShapeModel).shape :
         (actualObject.shape as DiagramShape).umlActivityShape;
     const umlActivityShapeData: string = getUMLActivityShape(shapes.toString());
-    if ((isBlazor() && (actualObject.shape as DiagramShape).umlActivityShape === 'InitialNode') ||
-        (!isBlazor() && (actualObject.shape as UmlActivityShapeModel).shape === 'InitialNode')) {
+    if ((!isBlazor() && (actualObject.shape as UmlActivityShapeModel).shape === 'InitialNode')) {
         actualObject.wrapper.children[0].style.fill = 'black';
     } else if ((!isBlazor() && ((actualObject.shape as UmlActivityShapeModel).shape === 'ForkNode' ||
-        (actualObject.shape as UmlActivityShapeModel).shape === 'JoinNode')) ||
-        ((isBlazor() && ((actualObject.shape as DiagramShape).umlActivityShape === 'ForkNode' ||
-            (actualObject.shape as DiagramShape).umlActivityShape === 'JoinNode')))) {
+        (actualObject.shape as UmlActivityShapeModel).shape === 'JoinNode'))) {
         actualObject.wrapper.children[0].style.fill = 'black';
-    } else if ((!isBlazor() && (actualObject.shape as UmlActivityShapeModel).shape === 'FinalNode') ||
-        (isBlazor() && (actualObject.shape as DiagramShape).umlActivityShape === 'FinalNode')) {
+    } else if ((!isBlazor() && (actualObject.shape as UmlActivityShapeModel).shape === 'FinalNode')) {
         if (actualObject instanceof Node) {
             actualObject.wrapper = getUMLFinalNode(actualObject);
         }
@@ -2148,7 +2130,7 @@ export function getUMLFinalNode(node: Node): Canvas {
  * @private
  */
 export function getUMLActivityShapes(umlActivityShape: PathElement, content: DiagramElement, node: Node): DiagramElement {
-    const shape: UmlActivityShapes = (isBlazor() ? (node.shape as DiagramShape).umlActivityShape : (node.shape as UmlActivityShape).shape);
+    const shape: UmlActivityShapes = (node.shape as UmlActivityShape).shape;
     const umlActivityShapeData: string = getUMLActivityShape(shape);
     umlActivityShape.data = umlActivityShapeData;
     content = umlActivityShape;
@@ -2285,14 +2267,16 @@ export function getUserHandlePosition(selectorItem: SelectorModel, handle: UserH
         //const offsetLength: number;
         const angle: number = getPointloop.angle;
         let matrix: Matrix = identityMatrix();
-        rotateMatrix(matrix, -angle, connector.intermediatePoints[parseInt(index.toString(), 10)].x, connector.intermediatePoints[parseInt(index.toString(), 10)].y);
+        rotateMatrix(matrix, -angle, connector.intermediatePoints[parseInt(index.toString(), 10)].x,
+                     connector.intermediatePoints[parseInt(index.toString(), 10)].y);
         point = transformPointByMatrix(matrix, point);
         point.x += (margin.left - margin.right) +
             (size / 2) * (handle.horizontalAlignment === 'Center' ? 0 : (handle.horizontalAlignment === 'Right' ? -1 : 1));
         point.y += (margin.top - margin.bottom) +
             (size / 2) * (handle.verticalAlignment === 'Center' ? 0 : (handle.verticalAlignment === 'Top' ? -1 : 1));
         matrix = identityMatrix();
-        rotateMatrix(matrix, angle, connector.intermediatePoints[parseInt(index.toString(), 10)].x, connector.intermediatePoints[parseInt(index.toString(), 10)].y);
+        rotateMatrix(matrix, angle, connector.intermediatePoints[parseInt(index.toString(), 10)].x,
+                     connector.intermediatePoints[parseInt(index.toString(), 10)].y);
         point = transformPointByMatrix(matrix, point);
     }
     if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
@@ -2683,7 +2667,8 @@ function getAnnotation(obj: Object, element: DiagramHtmlElement | DiagramNativeE
     const length: string = 'length';
     let j: number;
     for (j = 0; annotations && j < annotations[`${length}`]; j++) {
-        if ((element as DiagramHtmlElement).annotationId && annotations[parseInt(j.toString(), 10)].id === (element as DiagramHtmlElement).annotationId) {
+        if ((element as DiagramHtmlElement).annotationId
+            && annotations[parseInt(j.toString(), 10)].id === (element as DiagramHtmlElement).annotationId) {
             return annotations[parseInt(j.toString(), 10)];
         }
     }
@@ -2723,13 +2708,7 @@ export function getCollectionChangeEventArguements(
     args1: IBlazorCollectionChangeEventArgs,
     obj: NodeModel | ConnectorModel, state: EventState, type: ChangeType):
     IBlazorCollectionChangeEventArgs {
-    if (isBlazor()) {
-        args1 = {
-            cause: args1.cause, state: state, type: type, cancel: false,
-            element: getObjectType(obj) === Connector ?
-                { connector: cloneBlazorObject(obj) as ConnectorModel } : { node: cloneBlazorObject(obj) as NodeModel }
-        };
-    }
+    //Removed isBlazor code
     return args1;
 }
 /**
@@ -2741,34 +2720,7 @@ export function getCollectionChangeEventArguements(
  * @private
  */
 export function getDropEventArguements(args: MouseEventArgs, arg: IBlazorDropEventArgs): IBlazorDropEventArgs {
-    if (isBlazor()) {
-        const isConnector: boolean = (getObjectType(args.source) === Connector);
-        const object: Object = cloneBlazorObject(args.source);
-        const target: Object = cloneBlazorObject(args.target);
-        // BLAZ-20491 - Added the below code to check whether selector has nodes or connectors in it.
-        // If it does not have means then we can directly access node.
-        let connector: ConnectorModel;
-        let node: NodeModel;
-        if ((object as Selector).connectors && (object as Selector).connectors.length > 0) {
-            connector = (object as Selector).connectors[0] as ConnectorModel;
-        } else {
-            connector = object;
-        }
-        if ((object as Selector).nodes && (object as Selector).nodes.length > 0) {
-            node = (object as Selector).nodes[0] as NodeModel;
-        } else {
-            node = object;
-        }
-        arg = {
-            element: isConnector ? {
-                connector: connector,
-                connectorId: connector.id
-            }
-                : { node: node, nodeId: node.id },
-            target: isConnector ? { connector: target } : { node: target },
-            position: arg.position, cancel: arg.cancel
-        } as IBlazorDropEventArgs;
-    }
+    //Removed isBlazor code
     return arg;
 }
 /**
@@ -3046,9 +2998,7 @@ export let findDistance: Function = (point1: PointModel, point2: PointModel): nu
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function cloneBlazorObject(args: object): Object {
-    if (isBlazor()) {
-        args = cloneObject(args);
-    }
+    //Removed isBlazor code
     return args;
 }
 
@@ -3125,9 +3075,9 @@ export function getSymbolSize(sourceElement: SymbolPaletteModel, clonedObject: N
  * findParent method \
  *
  * @returns {string} findParent method .\
- * @param { Node } clonedObject - provide the clonedObject  value.
- * @param { Diagram } wrapper - provide the diagram  element.
- * @param { string } size - provide the parent id.
+ * @param { Node } node - provide the clonedObject  value.
+ * @param { Diagram } diagram - provide the diagram  element.
+ * @param { string } parent - provide the parent id.
  * @private
  */
 export function findParentInSwimlane(node: Node, diagram: Diagram, parent: string): string {
@@ -3147,8 +3097,8 @@ export function findParentInSwimlane(node: Node, diagram: Diagram, parent: strin
  * selectionHasConnector method \
  *
  * @returns {boolean} selectionHasConnector method .\
- * @param { Diagram } wrapper - provide the diagram  element.
- * @param { selector } size - provide the selector element.
+ * @param { Diagram } diagram - provide the diagram  element.
+ * @param { selector } selector - provide the selector element.
  * @private
  */
 export function selectionHasConnector(diagram: Diagram, selector: Selector): boolean {

@@ -18,7 +18,6 @@ $tbar-border-radius: 4px !default;
 $tbar-tab-highlight-color:  rgba(0, 0, 0, 0) !default;
 $tbar-border-nav-type: solid !default;
 $tbar-btn-box-shadow: none !default;
-
 $tbar-default-bg: $content-bg-color-alt2 !default;
 $tbar-items-default-bg: $tbar-default-bg !default;
 $tbar-default-font: $content-text-color !default;
@@ -40,13 +39,11 @@ $tbar-hover-border-color: $icon-color !default;
 $tbar-focus-border-color: $tbar-hover-border-color !default;
 $tbar-focus-bg: $tbar-hover-bg !default;
 $tbar-press-font: $content-text-color-alt2 !default;
-
 $tbar-default-font-overlay: $content-text-color-alt2 !default;
 $tbar-active-font-color: $tbar-press-font !default;
 $tbar-border-nav-type: $border-light !default;
 $tbar-border-nav-active-type: $border-light !default;
 $tbar-btn-border: none !default;
-
 $tbar-box-shadow: none !default;
 $tbar-border-type: $border-type !default;
 $tbar-separator-size: 1px !default;
@@ -67,7 +64,6 @@ $tbar-bgr-item-size: 49px !default;
 $tbar-btn-font-size: $text-lg !default;
 $tbar-btn-txt-font-size: $text-sm !default;
 $tbar-item-pop-bg-color: $transparent !default;
-
 $tbar-item-bgr-padding: 8px 4px !default;
 $tbar-item-nrml-padding: 8px 4px !default;
 $tbar-btn-nrml-padding: 0 4px !default;
@@ -85,7 +81,6 @@ $btn-txt-nrml-padding: 8px 4px !default;
 $btn-txt-bgr-padding: 8px 4px !default;
 $btn-rtl-txt-nrml-padding: 8px 4px !default;
 $btn-rtl-txt-bgr-padding: 8px 4px !default;
-
 $tbar-pop-bg: $tbar-default-bg !default;
 $tbar-item-pop-nrml-padding: 0 !default;
 $tbar-item-pop-bgr-padding: 0 !default;
@@ -95,7 +90,6 @@ $tbar-pop-icon-bgr-padding: 0 6px 0 0 !default;
 $tbar-pop-icon-nrml-padding: 0 4px 0 0 !default;
 $tbar-pop-btn-txt-nrml-pad: 0 0 0 4px !default;
 $tbar-pop-btn-txt-bgr-pad: 0 0 0 6px !default;
-
 $tbar-nav-press-border: 0 !default;
 $tbar-nav-hover-border: 1px solid $tbar-default-border !default;
 $tbar-nav-focus-border: 0 !default;
@@ -131,15 +125,12 @@ $tbar-multirow-items-mrgn-bigger: 12.5px !default;
 $tbar-multirow-items-mrgn-small: 10px !default;
 $tbar-multirow-item-top-btm-mrgn-bigger: 0 !default;
 $tbar-multirow-item-top-btm-mrgn-small: 0 !default;
-
 $tbar-bgr-btn-text-font-size: $text-base !default;
 $tbar-bgr-btn-icon-font-size: 20px !default;
 $tbar-bgr-btn-focus-padding: 0 8px !default;
-
 $tbar-nrml-btn-border-radius: 4px !default;
 $tbar-nrml-btn-focus-padding: 0 4px !default;
 $tbar-nrml-btn-focus-outline: 0 !default;
-
 $tbar-btn-icons-focus-color: $icon-color !default;
 $tbar-btn-text-focus-color: $content-text-color !default;
 $tbar-btn-focus-border-color: $tbar-focus-border-color !default;
@@ -155,14 +146,12 @@ $tbar-btn-pressed-text-color: $secondary-text-color-pressed !default;
 $tbar-btn-pressed-focus-box-shadow: $shadow-sm !default;
 $tbar-btn-pressed-bg: $secondary-bg-color-pressed !default;
 $tbar-flat-btn-active-box-shadow: $shadow-sm !default;
-
 $tbar-ext-btn-focus-padding: 0 4px !default;
 $tbar-ext-btn-icon-padding: 8px 4px !default;
 $tbar-ext-btn-icon-font-size: $text-base !default;
 $tbar-ext-btn-focus-box-shadow: none !default;
 $tbar-ext-btn-hover-border-color: $tbar-hover-border-color !default;
 $tbar-ext-btn-border: none !default;
-
 $tbar-popup-icon-font-size: $text-lg !default;
 $tbar-popup-text-btn-icon-padding: 0 !default;
 $tbar-popup-bgr-text-btn-icon-padding: 0 !default;
@@ -200,16 +189,9 @@ $tbar-popup-nav-pressed-border-size: 0 !default;
 $tbar-popup-nav-pressed-focus-border-color: $tbar-pressed-bg !default;
 $tbar-popup-nav-pressed-focus-border-size: 0 !default;
 $tbar-popup-btn-hover-border-size: $tbar-zero-value !default;
-
 @mixin tbar-btn-animation {
   content: '';
 }
-
 @mixin tbar-btn-animation-after {
   content: '';
-}
-
-/* stylelint-disable */
-.e-toolbar-pop {
-  padding: 6px !important;
 }

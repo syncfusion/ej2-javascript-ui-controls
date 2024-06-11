@@ -8,7 +8,7 @@ import { identityMatrix, transformPointByMatrix, Matrix, rotateMatrix } from '..
 import { DiagramElement } from '../core/elements/diagram-element';
 import { getUserHandlePosition, checkPortRestriction, canShowControlPoints } from '../utility/diagram-util';
 import { NodeModel } from './../objects/node-model';
-import { canMove, canDragSourceEnd, canDragTargetEnd, canContinuousDraw, canDragSegmentThumb,canSingleSelect, canMultiSelect } from '../utility/constraints-util';
+import { canMove, canDragSourceEnd, canDragTargetEnd, canContinuousDraw, canDragSegmentThumb, canSingleSelect, canMultiSelect } from '../utility/constraints-util';
 import { canZoomPan, defaultTool, canDrawOnce, canDrag, canDraw, canSelect, canRotate } from '../utility/constraints-util';
 import { canShowCorner, canResizeCorner } from '../utility/diagram-util';
 import { Point } from '../primitives/point';
@@ -127,7 +127,8 @@ export function findToolToActivate(
     //Panning
     if (canZoomPan(diagram) && !obj) { return 'Pan'; }
     //826364 - Drawing Tool is not activated on hovering the ports while both ZoomPan and single select constraints enabled
-      if ((target instanceof PointPort || target instanceof PathPort) && (!canZoomPan(diagram) || (canSingleSelect(diagram) || canMultiSelect(diagram)))) {
+    if ((target instanceof PointPort || target instanceof PathPort)
+        && (!canZoomPan(diagram) || (canSingleSelect(diagram) || canMultiSelect(diagram)))) {
         const action: Actions = findPortToolToActivate(diagram, target);
         if (action !== 'None') { return action; }
     }
@@ -192,10 +193,10 @@ function checkResizeHandles(
  * @private
  */
 function checkForConnectorSegment(conn: Connector, handle: SelectorModel, position: PointModel, diagram: Diagram): Actions {
-    //(EJ2-70650)-Unable to drag bezier control thumb, when we increase handleSize value 
+    //(EJ2-70650)-Unable to drag bezier control thumb, when we increase handleSize value
     //Added below code for drag the bezier control thumb while increasing handle size (Changing cursor from pointer to drag cursor)
-    const targetPaddingValue: number = (handle.handleSize/2) / diagram.scrollSettings.currentZoom;
-    const sourcePaddingValue: number = (handle.handleSize/2) / diagram.scrollSettings.currentZoom;
+    const targetPaddingValue: number = (handle.handleSize / 2) / diagram.scrollSettings.currentZoom;
+    const sourcePaddingValue: number = (handle.handleSize / 2) / diagram.scrollSettings.currentZoom;
     if (conn.type === 'Bezier' && diagram.connectorEditingToolModule) {
         for (let i: number = 0; i < conn.segments.length; i++) {
             const segment: BezierSegment = (conn.segments)[parseInt(i.toString(), 10)] as BezierSegment;
@@ -217,7 +218,8 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
         if (conn.type === 'Straight' || conn.type === 'Bezier') {
             for (let i: number = 0; i < conn.segments.length; i++) {
                 //let segment: StraightSegmentModel | BezierSegmentModel;
-                const segment: StraightSegmentModel | BezierSegmentModel = (conn.segments)[parseInt(i.toString(), 10)] as StraightSegmentModel | BezierSegmentModel;
+                const segment: StraightSegmentModel | BezierSegmentModel
+                    = (conn.segments)[parseInt(i.toString(), 10)] as StraightSegmentModel | BezierSegmentModel;
                 if (contains(position, segment.point, 10)) {
                     return 'SegmentEnd';
                 }
@@ -243,8 +245,8 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
                 }
             }
         }
-    }else if(canDragSegmentThumb(conn as Connector)){
-        console.warn("[WARNING] :: Module \"ConnectorEditing\" is not available in Diagram component! You either misspelled the module name or forgot to load it.");
+    } else if (canDragSegmentThumb(conn as Connector)) {
+        console.warn('[WARNING] :: Module "ConnectorEditing" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
     }
     return null;
 }
@@ -331,7 +333,7 @@ function checkResizeHandleForContainer(diagram: Diagram, element: DiagramElement
 function checkForResizeHandles(
     diagram: Diagram, element: DiagramElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {
     const forty: number = 40 / diagram.scroller.currentZoom;
-    const ten: number =  (diagram.selectedItems.handleSize/2) / diagram.scroller.currentZoom;
+    const ten: number = (diagram.selectedItems.handleSize / 2) / diagram.scroller.currentZoom;
     const selectedItems: Selector = diagram.selectedItems as Selector;
     const labelSelection: boolean = (selectedItems.annotation) ? true : false;
     if (element.actualSize.width >= forty && element.actualSize.height >= forty) {

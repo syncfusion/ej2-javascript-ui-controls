@@ -201,7 +201,8 @@ export class GridPanel extends Container {
                         row.cells[parseInt(j.toString(), 10)].desiredCellWidth += (this.width - calculateWidth);
                         row.cells[parseInt(j.toString(), 10)].minWidth = row.cells[parseInt(j.toString(), 10)].desiredCellWidth;
                         if (row.cells[parseInt(j.toString(), 10)].children && row.cells[parseInt(j.toString(), 10)].children.length) {
-                            row.cells[parseInt(j.toString(), 10)].children[0].width = row.cells[parseInt(j.toString(), 10)].desiredCellWidth;
+                            row.cells[parseInt(j.toString(), 10)].children[0].width =
+                                row.cells[parseInt(j.toString(), 10)].desiredCellWidth;
                         }
                         this.colDefns[parseInt(j.toString(), 10)].width = row.cells[parseInt(j.toString(), 10)].desiredCellWidth;
                     }
@@ -212,9 +213,13 @@ export class GridPanel extends Container {
                             if (height > 0) {
                                 for (let k: number = 0; k < row.cells.length; k++) {
                                     row.cells[parseInt(k.toString(), 10)].desiredCellHeight += height;
-                                    row.cells[parseInt(k.toString(), 10)].minHeight = row.cells[parseInt(k.toString(), 10)].desiredCellHeight = row.cells[parseInt(k.toString(), 10)].desiredCellHeight;
-                                    if (row.cells[parseInt(k.toString(), 10)].children && row.cells[parseInt(k.toString(), 10)].children.length) {
-                                        row.cells[parseInt(k.toString(), 10)].children[0].height = row.cells[parseInt(k.toString(), 10)].desiredCellHeight;
+                                    row.cells[parseInt(k.toString(), 10)].minHeight =
+                                        row.cells[parseInt(k.toString(), 10)].desiredCellHeight =
+                                        row.cells[parseInt(k.toString(), 10)].desiredCellHeight;
+                                    if (row.cells[parseInt(k.toString(), 10)].children
+                                        && row.cells[parseInt(k.toString(), 10)].children.length) {
+                                        row.cells[parseInt(k.toString(), 10)].children[0].height =
+                                            row.cells[parseInt(k.toString(), 10)].desiredCellHeight;
                                     }
                                 }
                                 this.rowDefns[parseInt(i.toString(), 10)].height += height;
@@ -297,8 +302,10 @@ export class GridPanel extends Container {
         }
         for (let i: number = 0; i < this.rows.length; i++) {
             this.setTextRefresh(this.rows[parseInt(i.toString(), 10)].cells[0]);
-            this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].desiredCellWidth = this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].minWidth = width;
-            if (this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].children && this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].children.length) {
+            this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].desiredCellWidth =
+                this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].minWidth = width;
+            if (this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].children
+                && this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].children.length) {
                 this.rows[parseInt(i.toString(), 10)].cells[parseInt(colId.toString(), 10)].children[0].width = width;
             }
         }
@@ -592,14 +599,16 @@ export class GridPanel extends Container {
                         if (j === 0 || this.desiredRowHeight[parseInt(i.toString(), 10)] === undefined) {
                             this.desiredRowHeight[parseInt(i.toString(), 10)] = size.height;
                         } else {
-                            this.desiredRowHeight[parseInt(i.toString(), 10)] = Math.max(size.height, this.desiredRowHeight[parseInt(i.toString(), 10)]);
+                            this.desiredRowHeight[parseInt(i.toString(), 10)] =
+                                Math.max(size.height, this.desiredRowHeight[parseInt(i.toString(), 10)]);
                         }
                     }
                     if (cell.columnSpan === 1) {
                         if (i === 0 || this.desiredCellWidth[parseInt(j.toString(), 10)] === undefined) {
                             this.desiredCellWidth[parseInt(j.toString(), 10)] = size.width;
                         } else {
-                            this.desiredCellWidth[parseInt(j.toString(), 10)] = Math.max(size.width, this.desiredCellWidth[parseInt(j.toString(), 10)]);
+                            this.desiredCellWidth[parseInt(j.toString(), 10)] =
+                                Math.max(size.width, this.desiredCellWidth[parseInt(j.toString(), 10)]);
                         }
 
                         if (i === this.rows.length - 1) {

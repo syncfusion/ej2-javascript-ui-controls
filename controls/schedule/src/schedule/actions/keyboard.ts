@@ -545,7 +545,7 @@ export class KeyboardInteraction {
     }
     private processViewNavigation(e: KeyboardEventArgs): void {
         const index: number = parseInt(e.key, 10) - 1;
-        if (index < this.parent.views.length) {
+        if (!isNullOrUndefined(this.parent.views) && index < this.parent.views.length) {
             const view: View = this.parent.viewCollections[parseInt(index.toString(), 10)].option;
             this.parent.changeView(view, e, undefined, index);
             if (this.parent.headerModule) {

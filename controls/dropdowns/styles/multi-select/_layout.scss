@@ -92,7 +92,9 @@
   }
 
   .e-multi-select-wrapper.e-down-icon {
-    padding: 0 48px 0 0;
+    @if $ddl-multiselect-skin-name != 'fluent2' {
+      padding: 0 48px 0 0;
+    }
   }
 
   .e-multi-select-wrapper .e-delim-values {
@@ -132,6 +134,9 @@
     margin-right: 0;
     margin-top: $ddl-icon-margin-top;
     right: 0;
+    @if $ddl-multiselect-skin-name == 'fluent2' {
+      padding: 9px;
+    }
     @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'tailwind-dark'{
       min-width: 30px;
     }
@@ -173,6 +178,9 @@
 .e-bigger.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
   @if $ddl-multiselect-skin-name != 'Material3' {
     margin-top: $ddl-icon-margin-top-bigger;
+  }
+  @if $ddl-multiselect-skin-name == 'fluent2' {
+    padding: 11px;
   }
 }
 
@@ -468,7 +476,12 @@
 
 .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon,
 .e-bigger.e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
-  margin-top: $ddl-closer-margin-top-bigger;
+  @if $skin-name != 'fluent2' {
+    margin-top: $ddl-closer-margin-top-bigger;
+  }
+  @if $skin-name == 'fluent2' {
+    margin-top: -2.5em;
+  }
   @if $ddl-multiselect-skin-name == 'FluentUI' {
     margin-top: $ddl-bigger-clear-margin-top;
   }
@@ -563,7 +576,6 @@
   width: auto;
 }
 
-// bootstrap modal search wrapper width
 .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
   width: $ddl-search-wrapper-width;
 }
@@ -585,7 +597,6 @@
   width: $ddl-bigger-small-search-wrapper-width;
 }
 
-// Outline bootstrap modal search wrapper width
 .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     width: $ddl-search-wrapper-width;
@@ -1044,12 +1055,14 @@
 
 .e-multiselect.e-checkbox .e-multi-select-wrapper,
 .e-multiselect .e-multi-select-wrapper.e-down-icon {
-  padding: 0;
+  @if $ddl-multiselect-skin-name != 'fluent2' {
+    padding: 0;
+  }
 }
 
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus .e-input-filter {
-  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' {
+  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'fluent2' {
     padding: $ddl-filterbar-padding;
   }
 }
@@ -1124,7 +1137,6 @@ ejs-multiselect {
   }
 }
 
-// small size
 .e-small.e-multi-select-list-wrapper .e-selectall-parent,
 .e-small .e-multi-select-list-wrapper .e-selectall-parent {
   line-height: $ddl-select-all-height-small;
@@ -1194,7 +1206,9 @@ ejs-multiselect {
 
 .e-small .e-multi-select-wrapper .e-chips-close.e-close-hooker,
 .e-small .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
-  margin-top: $ddl-small-closer-margin-top;
+  @if $skin-name != 'fluent2' {
+    margin-top: $ddl-small-closer-margin-top;
+  }
   @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: $ddl-closer-hooker-font-small;
     height: $ddl-small-clear-icon-height;
@@ -1227,7 +1241,6 @@ ejs-multiselect {
   }
 }
 
-// Touch small
 .e-bigger.e-small.e-multi-select-list-wrapper .e-selectall-parent,
 .e-bigger.e-small .e-multi-select-list-wrapper .e-selectall-parent {
   line-height: $ddl-select-all-height-bigger-small;
@@ -1330,8 +1343,6 @@ ejs-multiselect {
   min-height: 40px;
 }
 
-// Outline textbox configuration
-
 .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
   color: inherit;
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
@@ -1390,8 +1401,6 @@ ejs-multiselect {
     min-height: $outline-multiselect-bigger-inner-input-height;
   }
 }
-
-// Multiselect heigh changes
 
 .e-bigger {
   .e-multiselect.e-outline .e-multi-select-wrapper,
@@ -1558,8 +1567,6 @@ ejs-multiselect {
   }
 }
 
-// Delimeter padding and left
-
 .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-outline-multiselect-height;
@@ -1671,8 +1678,6 @@ ejs-multiselect {
   }
 }
 
-// Chip size configuration
-
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-chip-height;
@@ -1756,8 +1761,6 @@ ejs-multiselect {
   align-items: normal;
 }
 
-//+2 more configutations
-
 .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
@@ -1796,9 +1799,6 @@ ejs-multiselect {
   }
 }
 
-// Filled theme specifications
-
-// Multiselect wrapper
 .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper {
   padding: 0 12px 0 8px;
 }
@@ -1842,8 +1842,6 @@ ejs-multiselect {
 .e-rtl.e-multiselect.e-filled.e-float-input.e-control-wrapper {
   padding: 0;
 }
-
-// Searchable input
 
 .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
 .e-bigger.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
@@ -1943,8 +1941,6 @@ ejs-multiselect {
   }
 }
 
-// Delimiter wrapper specifications
-
 .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
 .e-small.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
 .e-small.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
@@ -2001,8 +1997,6 @@ ejs-multiselect {
   }
 }
 
-// Chip specifications
-
 .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
 .e-bigger.e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
 .e-bigger.e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
@@ -2014,17 +2008,16 @@ ejs-multiselect {
 .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
 .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
 .e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-mob-wrapper .e-chips.e-mob-chip,
+.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
   height: 24px;
 }
 
 .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
 .e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
   height: 32px;
-}
-
-.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-mob-wrapper .e-chips.e-mob-chip {
-  height: 24px;
 }
 
 .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
@@ -2080,11 +2073,6 @@ ejs-multiselect {
 .e.rtl.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
 .e-rtl.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
   margin: 4px 0 0 4px;
-}
-
-.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
-  height: 24px;
 }
 
 .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,

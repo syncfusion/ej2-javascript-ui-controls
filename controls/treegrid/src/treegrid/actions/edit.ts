@@ -166,8 +166,9 @@ export class Edit {
         const eventArgs: ActionEventArgs | CellSaveEventArgs = getObject('editAction', args);
         const eventName: string = getObject('name', eventArgs);
         const treeObj: TreeGrid = this.parent;
-        const adaptor: AdaptorOptions = (treeObj.dataSource as DataManager).adaptor;
-        if ((isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) &&
+        const adaptor: AdaptorOptions = !isNullOrUndefined((treeObj.dataSource as DataManager))
+            && (treeObj.dataSource as DataManager).adaptor;
+        if (!isNullOrUndefined(adaptor) && (isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) &&
           (eventArgs.requestType === 'save' && eventArgs.action === 'add') &&
           (treeObj.editSettings.newRowPosition === 'Child' || treeObj.editSettings.newRowPosition === 'Below'
           || treeObj.editSettings.newRowPosition === 'Above')) {
@@ -387,7 +388,7 @@ export class Edit {
     private customCellSave(args: ActionEventArgs): void {
         if (isCountRequired(this.parent) && this.parent.editSettings.mode === 'Cell' && args.action === 'edit') {
             this.updateCell(args, args.rowIndex);
-            this.afterCellSave(args, args.row as HTMLTableRowElement, args.rowIndex);
+            this.afterCellSave(args, args.row as HTMLTableRowElement);
         }
     }
 
@@ -444,7 +445,7 @@ export class Edit {
                     } else {
                         this.updateCell(args, rowIndex);
                         setValue('isEdit', false, this.parent.grid);
-                        this.afterCellSave(args, row, rowIndex);
+                        this.afterCellSave(args, row);
                     }
                 } else if (isRemoteData(this.parent) ||
                        (this.parent.dataSource instanceof DataManager && this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor )) {
@@ -452,7 +453,7 @@ export class Edit {
                     if (this.parent['isGantt'] && !this.parent.loadChildOnDemand) {
                         this.updateCell(args, rowIndex);
                         setValue('isEdit', false, this.parent.grid);
-                        this.afterCellSave(args, row, rowIndex);
+                        this.afterCellSave(args, row);
                     }
                     else {
                         let crud: Promise<Object> = null;
@@ -465,7 +466,7 @@ export class Edit {
                             }
                             this.updateCell(args, rowIndex);
                             setValue('isEdit', false, this.parent.grid);
-                            this.afterCellSave(args, row, rowIndex);
+                            this.afterCellSave(args, row);
                         });
                     }
                 }
@@ -478,7 +479,7 @@ export class Edit {
         }
     }
 
-    private afterCellSave(args: CellSaveArgs, row: HTMLTableRowElement, rowIndex: number ): void {
+    private afterCellSave(args: CellSaveArgs, row: HTMLTableRowElement ): void {
         if (this.parent.grid.aggregateModule) {
             this.parent.grid.aggregateModule.refresh(args.rowData);
         }

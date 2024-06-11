@@ -35,13 +35,9 @@
     stroke: $diagram-endpoint-handle-connected-border;
   }
 
-  .e-diagram-endpoint-handle.e-disabled {
-    fill: $diagram-resize-handle-disable-color;
-    opacity: 1;
-    stroke: $diagram-resize-handle-disable-stroke;
-  }
-
-  .e-diagram-bezier-control-handle.e-disabled {
+  .e-diagram-endpoint-handle.e-disabled,
+  .e-diagram-bezier-control-handle.e-disabled,
+  .e-diagram-resize-handle.e-disabled {
     fill: $diagram-resize-handle-disable-color;
     opacity: 1;
     stroke: $diagram-resize-handle-disable-stroke;
@@ -56,11 +52,7 @@
     opacity: 1 !important;
   }
 
-  .e-diagram-bezier-control-handle {
-    fill: $diagram-bezier-handle-color;
-    stroke: $diagram-resize-handle-stroke;
-  }
-
+  .e-diagram-bezier-control-handle,
   .e-diagram-bezier-segment-handle {
     fill: $diagram-bezier-handle-color;
     stroke: $diagram-resize-handle-stroke;
@@ -87,12 +79,6 @@
 
   .e-diagram-helper {
     stroke: $diagram-helper-stroke;
-  }
-
-  .e-diagram-resize-handle.e-disabled {
-    fill: $diagram-resize-handle-disable-color;
-    opacity: 1;
-    stroke: $diagram-resize-handle-disable-stroke;
   }
 
   .e-diagram-rotate-handle {

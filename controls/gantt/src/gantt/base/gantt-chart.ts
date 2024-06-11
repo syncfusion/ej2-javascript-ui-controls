@@ -1,6 +1,6 @@
 import { Gantt } from '../base/gantt';
 import {
-    createElement, formatUnit, EventHandler, Browser, KeyboardEvents, getElement,
+    createElement, formatUnit, EventHandler, Browser, KeyboardEvents,
     KeyboardEventArgs
 } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, closest, addClass, removeClass, getValue, setValue } from '@syncfusion/ej2-base';
@@ -13,8 +13,6 @@ import { TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 import { VirtualContentRenderer } from '../renderer/virtual-content-render';
 import { CriticalPath } from '../actions/critical-path';
-import { DataManager } from '@syncfusion/ej2-data';
-import { TaskFieldsModel } from '../models/task-fields-model';
 
 /**
  * module to render gantt chart - project view
@@ -38,17 +36,18 @@ export class GanttChart {
     public keyboardModule: KeyboardEvents;
     public targetElement: Element;
     public virtualRender: VirtualContentRenderer;
-    public isEditableElement:any;
-    public tempNextElement:any;
-    public nextElementIndex:any;
-    public childrenIndex:any;
+    public isEditableElement: boolean;
+    /* eslint-disable-next-line */
+    public tempNextElement: any;
+    public nextElementIndex: number;
+    public childrenIndex: number;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.chartTimelineContainer = null;
         this.rangeViewContainer =
             createElement('div', { className: cls.rangeContainer });
-        this.rangeViewContainer.setAttribute("role", "button");  
-        this.rangeViewContainer.setAttribute("aria-label", "RangeContainer"); 
+        this.rangeViewContainer.setAttribute('role', 'button');
+        this.rangeViewContainer.setAttribute('aria-label', 'RangeContainer');
         this.virtualRender = new VirtualContentRenderer(this.parent);
         this.addEventListener();
     }
@@ -135,18 +134,24 @@ export class GanttChart {
                 }
                 else {
                     if (this.parent.viewType === 'ProjectView') {
-                        if (!isNullOrUndefined(this.parent.chartRowsModule.ganttChartTableBody.children[parseInt(i.toString(), 10)].children[0].children[1].children[1])) {
+                        const node: HTMLElement = this.parent.chartRowsModule.ganttChartTableBody.
+                            children[parseInt(i.toString(), 10)].children[0].children[1].children[1] as HTMLElement;
+                        if (!isNullOrUndefined(node)) {
                             (<HTMLElement>this.parent.chartRowsModule.ganttChartTableBody.children[i as number].children[0].children[1].children[1]).setAttribute('tabindex', '-1');
                         }
                     }
-                    else if (this.parent.chartRowsModule.ganttChartTableBody.children[parseInt(i.toString(), 10)].children[0].children[1].children[0]) {
+                    else if (this.parent.chartRowsModule.ganttChartTableBody.children[parseInt(i.toString(), 10)].children[0].
+                        children[1].children[0]) {
                         (<HTMLElement>this.parent.chartRowsModule.ganttChartTableBody.children[i as number].children[0].children[1].children[0]).setAttribute('tabindex', '-1');
                     }
                 }
             }
-            let criticalModule: CriticalPath = this.parent.criticalPathModule;
+            const criticalModule: CriticalPath = this.parent.criticalPathModule;
             if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
-                this.parent.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,this.parent.enableCriticalPath,criticalModule.predecessorCollectionTaskIds)
+                this.parent.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,
+                                                                     criticalModule.detailPredecessorCollection,
+                                                                     this.parent.enableCriticalPath,
+                                                                     criticalModule.predecessorCollectionTaskIds);
             }
             if (this.parent.showOverAllocation) {
                 this.renderOverAllocationContainer();
@@ -182,7 +187,7 @@ export class GanttChart {
         const updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
         let recordIndex: number = updatedRecords.indexOf(currentRecord);
         if (currentRecord.parentItem && recordIndex === -1) {
-            const nestedParent = this.parent.getRecordByID(currentRecord.parentItem.taskId);
+            const nestedParent: IGanttData = this.parent.getRecordByID(currentRecord.parentItem.taskId);
             recordIndex = updatedRecords.indexOf(nestedParent);
         }
         if (!currentRecord.expanded ) {
@@ -200,9 +205,10 @@ export class GanttChart {
     }
     private renderRange(rangeCollection: IWorkTimelineRanges[], currentRecord: IGanttData): void {
         let topValue: number = 0;
-        let rowIndex: number = this.parent.currentViewData.indexOf(currentRecord);
+        const rowIndex: number = this.parent.currentViewData.indexOf(currentRecord);
         if (!this.parent.allowTaskbarOverlap && this.parent.enableMultiTaskbar) {
-            topValue = !currentRecord.expanded ? this.parent.getRowByIndex(rowIndex as number).offsetTop : this.parent.getRowByIndex(rowIndex as number).offsetTop + this.parent.rowHeight;
+            topValue = !currentRecord.expanded ? this.parent.getRowByIndex(rowIndex as number).offsetTop :
+                this.parent.getRowByIndex(rowIndex as number).offsetTop + this.parent.rowHeight;
         }
         else {
             topValue = this.getTopValue(currentRecord);
@@ -223,15 +229,16 @@ export class GanttChart {
         }
         for (let i: number = 0; i < rangeCollection.length; i++) {
             let height: number;
+            const node: NodeListOf<ChildNode> = this.parent.chartRowsModule.ganttChartTableBody.childNodes;
             if (!this.parent.allowTaskbarOverlap && !currentRecord.expanded && this.parent.enableMultiTaskbar && !this.isCollapseAll) {
-                height = parseInt((this.parent.chartRowsModule.ganttChartTableBody.childNodes[rowIndex as number] as HTMLElement).style.height) -
+                height = parseInt((node[rowIndex as number] as HTMLElement).style.height, 10) -
                          (this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight);
             }
             else {
                 height = this.getRangeHeight(currentRecord);
             }
             const leftDiv: HTMLElement = createElement('div', {
-                className: cls.rangeChildContainer + ' ' +  'e-leftarc', styles: (this.parent.enableRtl? 'right:' : 'left:') +
+                className: cls.rangeChildContainer + ' ' + 'e-leftarc', styles: (this.parent.enableRtl ? 'right:' : 'left:') +
                 `${(this.parent.enableRtl ? rangeCollection[i as number].left + rangeCollection[i as number].width - 5 : rangeCollection[i as number].left)}px;
                 top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px;
                 height: ${height + 1}px; border-right: 0px;
@@ -239,7 +246,7 @@ export class GanttChart {
             });
             const rightDiv: HTMLElement = createElement('div', {
                 className: cls.rangeChildContainer + ' ' + 'e-rightarc',
-                styles: (this.parent.enableRtl? 'right:' : 'left:') + `${(this.parent.enableRtl? rangeCollection[i as number].left :
+                styles: (this.parent.enableRtl ? 'right:' : 'left:') + `${(this.parent.enableRtl ? rangeCollection[i as number].left :
                     rangeCollection[i as number].left + rangeCollection[i as number].width - 5)}px;
                 top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px; height: ${height + 1}px;
                 border-left: 0px;
@@ -262,7 +269,7 @@ export class GanttChart {
             this.chartTimelineContainer.style.borderLeftWidth = '1px';
             this.chartTimelineContainer.style.borderRightWidth = '0px';
         }
-        this.chartTimelineContainer.setAttribute("role", "presentation");    
+        this.chartTimelineContainer.setAttribute('role', 'presentation');
         this.chartElement.appendChild(this.chartTimelineContainer);
     }
 
@@ -284,7 +291,7 @@ export class GanttChart {
         } else {
             this.scrollElement.appendChild(this.chartBodyContent);
         }
-        
+
         // this.parent.chartRowsModule.createChartTable();
         this.scrollObject = new ChartScroll(this.parent);
         //this.scrollObject.setWidth(this.chartProperties.width);
@@ -302,12 +309,13 @@ export class GanttChart {
     public updateWidthAndHeight(): void {
         //empty row height
         const emptydivHeight: number = 36;
-        const emptyHeight: number = this.parent.contentHeight === 0 ? this.parent.flatData.length > 1 ? emptydivHeight : 0 : this.parent.contentHeight;
-        let contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
+        const emptyHeight: number = this.parent.contentHeight === 0 ? this.parent.flatData.length > 1 ? emptydivHeight : 0 :
+            this.parent.contentHeight;
+        const contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
         if (emptyHeight >= contentElement['offsetHeight'] || this.parent.height === 'auto' || (contentElement['offsetHeight'] - emptyHeight) < emptydivHeight) {
             this.chartBodyContent.style.height = formatUnit(emptyHeight);
         } else {
-            let scrollHeight: number =  this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
+            const scrollHeight: number =  this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
             if (contentElement['offsetHeight'] >= scrollHeight) {
                 this.chartBodyContent.style.height = contentElement['offsetHeight'] - 17 + 'px';
             }
@@ -315,8 +323,10 @@ export class GanttChart {
                 this.chartBodyContent.style.height = contentElement['offsetHeight'] + 'px';
             }
         }        //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
-        this.chartBodyContent.style.width = (this.parent.enableTimelineVirtualization && (this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) ? formatUnit(this.parent.element.offsetWidth * 3)
-                                        : formatUnit(this.parent.timelineModule.totalTimelineWidth);
+        this.chartBodyContent.style.width = (this.parent.enableTimelineVirtualization
+            && (this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) ?
+            formatUnit(this.parent.element.offsetWidth * 3)
+            : formatUnit(this.parent.timelineModule.totalTimelineWidth);
         this.setVirtualHeight();
         this.parent.notify('updateHeight', {});
         this.parent.updateGridLineContainerHeight();
@@ -332,7 +342,7 @@ export class GanttChart {
             const virtualTable: string = (document.getElementsByClassName('e-virtualtable')[1] as HTMLElement).style.transform;
             if (this.parent.enableTimelineVirtualization) {
                 let translateXValue: string;
-                if (virtualTable !== "") {
+                if (virtualTable !== '') {
                     translateXValue = virtualTable.match(/translate.*\((.+)\)/)[1].split(', ')[0];
                 }
                 else {
@@ -367,12 +377,13 @@ export class GanttChart {
                 if (lastRow) {
                     addClass(lastRow.querySelectorAll('td'), 'e-lastrow');
                     const emptydivHeight: number = 36;
-                    const emptyHeight: number = this.parent.contentHeight === 0 ? this.parent.flatData.length > 1 ? emptydivHeight : 0 : this.parent.contentHeight;
-                    let contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
+                    const emptyHeight: number = this.parent.contentHeight === 0 ? this.parent.flatData.length > 1 ? emptydivHeight : 0 :
+                        this.parent.contentHeight;
+                    const contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
                     if (emptyHeight >= contentElement['offsetHeight'] || (contentElement['offsetHeight'] - emptyHeight) < emptydivHeight) {
                         this.chartBodyContent.style.height = formatUnit(emptyHeight);
                     } else {
-                        let scrollHeight: number =  this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
+                        const scrollHeight: number =  this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
                         if (contentElement['offsetHeight'] >= scrollHeight) {
                             this.chartBodyContent.style.height = contentElement['offsetHeight'] - 17 + 'px';
                         }
@@ -404,14 +415,14 @@ export class GanttChart {
     private ganttChartMouseDown(e: PointerEvent): void {
         let cancel: boolean = false;
         if (this.parent.allowTaskbarDragAndDrop && this.parent.editModule && this.parent.editSettings.allowTaskbarEditing) {
-            const editAction = this.parent.editModule.taskbarEditModule['getTaskBarAction'](e);
+            const editAction: string = this.parent.editModule.taskbarEditModule['getTaskBarAction'](e);
             if (editAction === 'ChildDrag' || editAction === 'ParentDrag' || editAction === 'MilestoneDrag' || editAction === 'ManualParentDrag') {
                 const args: Object = {
                     cancel: cancel,
                     data: this.getRecordByTaskBar(e.target as Element),
                     target: e.target,
                     chartRow: closest(e.target as Element, 'tr')
-                }
+                };
                 this.parent.trigger('rowDragStartHelper', args);
                 cancel = args['cancel'];
             }
@@ -422,10 +433,10 @@ export class GanttChart {
                 this.parent.element.tabIndex = 0;
             }
             let isTaskbarEdited: boolean = false;
-             if (this.parent.editSettings.allowTaskbarEditing && (this.parent.element.querySelector('.e-left-resize-gripper') || this.parent.element.querySelector('.e-left-connectorpoint-outer-div') )) {
+            if (this.parent.editSettings.allowTaskbarEditing && (this.parent.element.querySelector('.e-left-resize-gripper') || this.parent.element.querySelector('.e-left-connectorpoint-outer-div') )) {
                 isTaskbarEdited = true;
             }
-            if (!isTaskbarEdited || e.button == 2) {
+            if (!isTaskbarEdited || e.button === 2) {
                 if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
                     this.parent.treeGrid.endEdit();
                 }
@@ -434,29 +445,29 @@ export class GanttChart {
     }
     private ganttChartMouseClick(e: PointerEvent): void {
         if (this.parent.autoFocusTasks) {
-                this.scrollToTarget(e); /** Scroll to task */
-            }
-            this.parent.notify('chartMouseClick', e);
+            this.scrollToTarget(e); /** Scroll to task */
         }
+        this.parent.notify('chartMouseClick', e);
+    }
 
     private ganttChartMouseUp(e: PointerEvent): void {
-        if (e.type === "touchend") {
-            var resizeCheck = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        if (e.type === 'touchend') {
+            const resizeCheck: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div');
             if (!isNullOrUndefined(resizeCheck)) {
-                resizeCheck.remove()
+                resizeCheck.remove();
             }
-            var Check: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar') || this.parent.chartPane.querySelector('.e-clone-taskbar');
+            const Check: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar') || this.parent.chartPane.querySelector('.e-clone-taskbar');
             if (!isNullOrUndefined(Check)) {
-                var clonetbody: HTMLElement = Check.parentElement;
-                var cloneTable: HTMLElement = clonetbody.parentElement;
-                cloneTable.remove()
-            }   
-            var falseline = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-gantt-false-line');
+                const clonetbody: HTMLElement = Check.parentElement;
+                const cloneTable: HTMLElement = clonetbody.parentElement;
+                cloneTable.remove();
+            }
+            const falseline: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-gantt-false-line');
             if (!isNullOrUndefined(falseline)) {
-                this.parent.editModule.taskbarEditModule.removeFalseLine(true)
+                this.parent.editModule.taskbarEditModule.removeFalseLine(true);
             }
         }
-        if (this.parent.editSettings.allowTaskbarEditing) { 
+        if (this.parent.editSettings.allowTaskbarEditing) {
             this.parent.notify('chartMouseUp', e);
         }
         if (!this.parent.editSettings.allowEditing) {
@@ -493,11 +504,16 @@ export class GanttChart {
             this.parent.currentViewData.length > 0) {
             const rowIndex: number = getValue('rowIndex', closest(e.target as Element, 'tr'));
             const dateObject: Date = this.parent.currentViewData[rowIndex as number].ganttProperties.startDate;
-            let dateObjLeft: number = this.parent.currentViewData[rowIndex as number].ganttProperties.left;
+            const dateObjLeft: number = this.parent.currentViewData[rowIndex as number].ganttProperties.left;
             if (!isNullOrUndefined(dateObject)) {
-                const left: any = !this.parent.enableTimelineVirtualization ? this.parent.dataOperation.getTaskLeft(dateObject, false) : {};
+                const left: number | {} = !this.parent.enableTimelineVirtualization ?
+                    this.parent.dataOperation.getTaskLeft(dateObject, false) : {};
                 if (this.parent.autoFocusTasks) {
-                    this.parent.enableTimelineVirtualization ? this.updateScrollLeft(dateObjLeft as number) : this.updateScrollLeft(left as number);
+                    if (this.parent.enableTimelineVirtualization) {
+                        this.updateScrollLeft(dateObjLeft as number);
+                    } else {
+                        this.updateScrollLeft(left as number);
+                    }
                 }
             }
         }
@@ -514,9 +530,9 @@ export class GanttChart {
         scrollLeft = this.scrollElement.scrollWidth <= scrollLeft ? this.scrollElement.scrollWidth : scrollLeft;
         if ((this.scrollElement.offsetWidth + this.parent.ganttChartModule.scrollElement.scrollLeft) < scrollLeft
             || (this.scrollElement.scrollLeft > scrollLeft)) {
-            this.scrollObject.setScrollLeft(scrollLeft - 50, this.parent.enableRtl? -1 : 0);
+            this.scrollObject.setScrollLeft(scrollLeft - 50, this.parent.enableRtl ? -1 : 0);
         }
-      //  this.parent.ganttChartModule.scrollObject.updateLeftPosition();
+        //  this.parent.ganttChartModule.scrollObject.updateLeftPosition();
     }
 
     /**
@@ -527,12 +543,12 @@ export class GanttChart {
      * @private
      */
     private mouseUp(e: PointerEvent): void {
-        if(! isNullOrUndefined(this.parent.editModule) &&! isNullOrUndefined(this.parent.editModule.taskbarEditModule)){
+        if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.taskbarEditModule)){
             this.parent.editModule.taskbarEditModule.removeFalseLine(false);
         }
-        var resizeCheck = this.parent.element.querySelector(".e-taskbar-resize-div")
-        if(!isNullOrUndefined(resizeCheck)){
-            resizeCheck.remove()
+        const resizeCheck: HTMLElement = this.parent.element.querySelector('.e-taskbar-resize-div');
+        if (!isNullOrUndefined(resizeCheck)) {
+            resizeCheck.remove();
         }
         if (this.parent.allowTaskbarDragAndDrop && this.parent.editModule && this.parent.editModule.taskbarEditModule) {
             this.parent.editModule.taskbarEditModule['previousLeftValue'] = 0;
@@ -557,10 +573,10 @@ export class GanttChart {
      */
     private documentMouseUp(e: PointerEvent): void {
         this.isGanttElement = true;
-        if ((e.target as HTMLElement).classList.contains('e-treegridexpand') || 
+        if ((e.target as HTMLElement).classList.contains('e-treegridexpand') ||
            (e.target as HTMLElement).classList.contains('e-treegridcollapse')) {
             if (getValue('isEditCollapse', this.parent.treeGrid) === true) {
-                setValue('isEditCollapse',false, this.parent.treeGrid);
+                setValue('isEditCollapse', false, this.parent.treeGrid);
             }
         }
         if (this.parent.allowRowDragAndDrop) {
@@ -572,15 +588,15 @@ export class GanttChart {
         if (this.parent.isDestroyed || e.which === 3) {
             return;
         }
-        var resizeCheck = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
-        if(!isNullOrUndefined(resizeCheck)){
-            resizeCheck.remove()
+        const resizeCheck: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div');
+        if (!isNullOrUndefined(resizeCheck)) {
+            resizeCheck.remove();
         }
-        let Check: HTMLElement = this.parent.element.getElementsByClassName('e-clone-taskbar')[0] as HTMLElement;
-        if(!isNullOrUndefined(Check)){
-          var clonetbody:HTMLElement =  Check.parentElement;
-          var cloneTable : HTMLElement =clonetbody.parentElement;
-          cloneTable.remove()
+        const Check: HTMLElement = this.parent.element.getElementsByClassName('e-clone-taskbar')[0] as HTMLElement;
+        if (!isNullOrUndefined(Check)) {
+            const clonetbody: HTMLElement = Check.parentElement;
+            const cloneTable: HTMLElement = clonetbody.parentElement;
+            cloneTable.remove();
         }
         let isTaskbarEdited: boolean = false;
         if (this.parent.editSettings.allowTaskbarEditing &&
@@ -591,7 +607,7 @@ export class GanttChart {
         this.parent.notify('chartMouseUp', e);
         if (this.parent.showActiveElement) {
             this.parent.showIndicator = true;
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer"){
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'){
                 this.parent.hideMaskRow();
             } else {
                 this.parent.hideSpinner();
@@ -677,7 +693,7 @@ export class GanttChart {
                     xValue = e.pageX;
                 }
                 if (xValue <= this.parent.getOffsetRect(this.parent.ganttChartModule.chartElement).left) {
-                    return
+                    return;
                 }
             }
             this.parent.notify('chartMouseMove', e);
@@ -699,12 +715,12 @@ export class GanttChart {
             this.parent.filterModule.closeFilterOnContextClick(e.srcElement as Element);
         }
         if (this.parent.allowTaskbarDragAndDrop) {
-            let Check: HTMLElement = this.parent.chartPane.querySelector('.e-clone-taskbar')
+            const Check: HTMLElement = this.parent.chartPane.querySelector('.e-clone-taskbar');
             if (!isNullOrUndefined(Check)) {
-                let clonetbody: HTMLElement = Check.parentElement;
-                let cloneTable: HTMLElement = clonetbody.parentElement;
-                cloneTable.remove()
-            } 
+                const clonetbody: HTMLElement = Check.parentElement;
+                const cloneTable: HTMLElement = clonetbody.parentElement;
+                cloneTable.remove();
+            }
         }
     }
 
@@ -829,11 +845,11 @@ export class GanttChart {
      * @private
      */
     public getChartRows(): NodeListOf<Element> {
-        if(document.getElementById(this.parent.element.id + 'GanttTaskTableBody') != null){
+        if (document.getElementById(this.parent.element.id + 'GanttTaskTableBody') !== null) {
             return document.getElementById(this.parent.element.id + 'GanttTaskTableBody').querySelectorAll('.e-chart-row');
-            } else {
-                return null;
-            }
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -873,7 +889,7 @@ export class GanttChart {
         this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
         const criticalModule: CriticalPath = this.parent.criticalPathModule;
         if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
-            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true,
+            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true,
                                                  criticalModule.predecessorCollectionTaskIds);
         }
     }
@@ -910,15 +926,15 @@ export class GanttChart {
         }
         let record: IGanttData;
         if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
-            record = this.parent.currentViewData.filter(item => item.ganttProperties[this.parent.taskFields.id] === args['data'][this.parent.taskFields.id])[0];
+            record = this.parent.currentViewData.filter((item: IGanttData) => item.ganttProperties[this.parent.taskFields.id] === args['data'][this.parent.taskFields.id])[0];
         } else {
-            record = getValue('data', args)
+            record = getValue('data', args);
         }
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
             const idField: string = this.parent.taskFields.id;
             if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
-                const gridRec: Object = this.parent.treeGrid.getCurrentViewRecords().filter(function (item) { return item[idField as string] == args['data'][idField as string]; })[0];
+                const gridRec: Object = this.parent.treeGrid.getCurrentViewRecords().filter(function (item: Object): boolean { return item[idField as string] === args['data'][idField as string]; })[0];
                 this.parent.treeGrid.collapseRow(getValue('gridRow', args), gridRec);
             }
             else {
@@ -972,16 +988,16 @@ export class GanttChart {
         }
         let record: IGanttData;
         if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
-            record = this.parent.currentViewData.filter(item => item.ganttProperties.taskId == args['data'][this.parent.taskFields.id])[0];
+            record = this.parent.currentViewData.filter((item: IGanttData) => item.ganttProperties.taskId === args['data'][this.parent.taskFields.id])[0];
         } else {
-            record = getValue('data', args)
+            record = getValue('data', args);
         }
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
             const idField: string = this.parent.taskFields.id;
             if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
-               const gridRec: Object = this.parent.treeGrid.getCurrentViewRecords().filter(function (item) { return item[idField as string] == args['data'][idField as string]; })[0];
-               this.parent.treeGrid.expandRow(getValue('gridRow', args), gridRec);
+                const gridRec: Object = this.parent.treeGrid.getCurrentViewRecords().filter(function (item: IGanttData): boolean { return item[idField as string] === args['data'][idField as string]; })[0];
+                this.parent.treeGrid.expandRow(getValue('gridRow', args), gridRec);
             }
             else {
                 this.parent.treeGrid.expandRow(getValue('gridRow', args), record);
@@ -1046,36 +1062,36 @@ export class GanttChart {
             }
         }
         if (!this.parent.enableVirtualization) {
-          const childRecords: IGanttData[] = record.childRecords;
-          const chartRows: NodeListOf<Element> = this.getChartRows();
-          const rows: HTMLElement[] = [];
-          for (let i: number = 0; i < chartRows.length; i++) {
-            if ((<HTMLElement>chartRows[i as number]).classList.contains(
-                "gridrowtaskId" +
-                  record.ganttProperties.rowUniqueID +
-                  "level" +
-                  (record.level + 1)
-              )
-            ) {
-              rows.push(<HTMLElement>chartRows[i as number]);
+            const childRecords: IGanttData[] = record.childRecords;
+            const chartRows: NodeListOf<Element> = this.getChartRows();
+            const rows: HTMLElement[] = [];
+            for (let i: number = 0; i < chartRows.length; i++) {
+                if ((<HTMLElement>chartRows[i as number]).classList.contains(
+                    'gridrowtaskId' +
+                    record.ganttProperties.rowUniqueID +
+                    'level' +
+                    (record.level + 1)
+                )
+                ) {
+                    rows.push(<HTMLElement>chartRows[i as number]);
+                }
             }
-          }
-          for (let i: number = 0; i < rows.length; i++) {
-            rows[i as number].style.display = displayType;
-            if (childRecords[i as number].childRecords &&
-              childRecords[i as number].childRecords.length &&
-              (action === "collapse" ||
-                childRecords[i as number].expanded ||
-                this.isExpandAll)
-            ) {
-              this.expandCollapseChartRows(
-                action,
-                rows[i as number],
-                childRecords[i as number],
-                true
-              );
+            for (let i: number = 0; i < rows.length; i++) {
+                rows[i as number].style.display = displayType;
+                if (childRecords[i as number].childRecords &&
+                    childRecords[i as number].childRecords.length &&
+                    (action === 'collapse' ||
+                        childRecords[i as number].expanded ||
+                        this.isExpandAll)
+                ) {
+                    this.expandCollapseChartRows(
+                        action,
+                        rows[i as number],
+                        childRecords[i as number],
+                        true
+                    );
+                }
             }
-          }
         }
     }
 
@@ -1094,8 +1110,8 @@ export class GanttChart {
             this.isCollapseAll = true;
             this.parent.treeGrid.collapseAll();
             if (this.isCollapseAll && !this.parent.allowTaskbarOverlap) {
-                let treeGridContentHeight: number = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
-                                      this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
+                const treeGridContentHeight: number = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
+                    this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
                 this.parent.contentHeight = treeGridContentHeight;
                 document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
             }
@@ -1239,16 +1255,16 @@ export class GanttChart {
         const isTab: boolean = (e.action === 'tab') ? true : false;
         let nextElement: Element | string = this.getNextElement($target, isTab, isInEditedState);
         if (nextElement && $target.classList.contains('e-headercell')) {
-            let colIndex: number = parseInt((nextElement as HTMLElement).getAttribute('data-colindex'));
+            let colIndex: number = parseInt((nextElement as HTMLElement).getAttribute('data-colindex'), 10);
             if (e.action === 'shiftTab') {
-                while (colIndex != -1 && !this.parent.treeGrid.columns[colIndex as number]['visible']) {
+                while (colIndex !== -1 && !this.parent.treeGrid.columns[colIndex as number]['visible']) {
                     colIndex = colIndex - 1;
                 }
-                if (colIndex != -1) {
+                if (colIndex !== -1) {
                     nextElement = document.getElementsByClassName('e-columnheader')[0].childNodes[colIndex as number] as HTMLElement;
                 }
                 else {
-                    let toolbarItems: HTMLCollectionOf<Element> = document.getElementsByClassName('e-toolbar-item');
+                    const toolbarItems: HTMLCollectionOf<Element> = document.getElementsByClassName('e-toolbar-item');
                     for (let i: number = toolbarItems.length - 1; i > 0; i--) {
                         if (!document.getElementsByClassName('e-toolbar-item')[i as number].classList.contains('e-hidden')) {
                             nextElement = document.getElementsByClassName('e-toolbar-item')[i as number];
@@ -1265,7 +1281,7 @@ export class GanttChart {
             }
         }
         if (!nextElement && e.action === 'shiftTab' && $target.classList.contains('e-headercell')) {
-            let toolbarItems: HTMLCollectionOf<Element> = document.getElementsByClassName('e-toolbar-item');
+            const toolbarItems: HTMLCollectionOf<Element> = document.getElementsByClassName('e-toolbar-item');
             for (let i: number = toolbarItems.length - 1; i > 0; i--) {
                 if (!document.getElementsByClassName('e-toolbar-item')[i as number].classList.contains('e-hidden')) {
                     nextElement = document.getElementsByClassName('e-toolbar-item')[i as number];
@@ -1303,23 +1319,23 @@ export class GanttChart {
                 }
             }
         }
-        this.tempNextElement=nextElement;
+        this.tempNextElement = nextElement;
         if (!isNullOrUndefined(nextElement) && !isNullOrUndefined(nextElement['cellIndex'])) {
-            if(this.parent.allowRowDragAndDrop){
-            this.childrenIndex=nextElement['cellIndex'];
-            this.nextElementIndex=nextElement['cellIndex']-1;
+            if (this.parent.allowRowDragAndDrop) {
+                this.childrenIndex = nextElement['cellIndex'];
+                this.nextElementIndex = nextElement['cellIndex'] - 1;
+            }
+            else {
+                this.childrenIndex = nextElement['cellIndex'];
+                this.nextElementIndex = nextElement['cellIndex'];
+            }
+            if (!this.parent.ganttColumns[this.nextElementIndex]['allowEditing'] && this.parent.ganttColumns[this.nextElementIndex]['field'] !== this.parent.taskFields.id) {
+                this.isEditableElement = true;
+            }
+            else {
+                this.isEditableElement = false;
+            }
         }
-        else{
-            this.childrenIndex=nextElement['cellIndex'];
-            this.nextElementIndex=nextElement['cellIndex'];
-        }
-        if(!this.parent.ganttColumns[this.nextElementIndex]['allowEditing'] && this.parent.ganttColumns[this.nextElementIndex]['field']!==this.parent.taskFields.id){
-            this.isEditableElement=true;
-        }
-        else{
-            this.isEditableElement=false;
-        }
-    }
         if (nextElement === 'noNextRow') {
             this.manageFocus($target as HTMLElement, 'remove', true);
             return;
@@ -1329,7 +1345,7 @@ export class GanttChart {
                 $target.classList.contains('e-headercell') || $target.closest('.e-segmented-taskbar') || $target.classList.contains('e-timeline-header-container')) {
                 e.preventDefault();
             }
-            if(isTab && $target.classList.contains('e-rowdragdrop')){
+            if (isTab && $target.classList.contains('e-rowdragdrop')) {
                 this.parent.treeGrid.grid.notify('key-pressed', e);
                 return;
             }
@@ -1343,7 +1359,7 @@ export class GanttChart {
                             if (columnName === this.parent.taskFields.endDate || columnName ===
                                      this.parent.taskFields.duration || columnName === this.parent.taskFields.dependency ||
                                      columnName === this.parent.taskFields.progress || columnName === this.parent.taskFields.work ||
-                                     columnName === this.parent.taskFields.type) {
+                                     columnName === this.parent.taskFields.type || columnName === 'taskType') {
                                 this.parent.treeGrid.grid.endEdit();
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
                             } else if (columnName === this.parent.taskFields.name || columnName === this.parent.taskFields.startDate) {
@@ -1363,7 +1379,7 @@ export class GanttChart {
                                 this.manageFocus($target as HTMLElement, 'remove', false);
                             }
                             if (!nextElement || $target.classList.contains('e-editedbatchcell')) {
-                              this.parent.treeGrid.grid.notify('key-pressed', e);
+                                this.parent.treeGrid.grid.notify('key-pressed', e);
                             }
                         }
                     }
@@ -1374,7 +1390,7 @@ export class GanttChart {
                     }
                 }
             }
-            if (!(this.parent.editModule && this.parent.editModule.cellEditModule 
+            if (!(this.parent.editModule && this.parent.editModule.cellEditModule
                 && !isNullOrUndefined(this.parent.editModule.cellEditModule.editedColumn))) {
                 if (nextElement) {
                     if ($target.classList.contains('e-rowcell')) {
@@ -1395,7 +1411,7 @@ export class GanttChart {
                         this.manageFocus(nextElement as HTMLElement, 'add', false);
                     } else {
                         if (nextElement && (nextElement.classList.contains('e-toolbar-item') || nextElement.classList.contains('e-headercell')
-                            || nextElement.classList.contains("e-rowcell"))) {
+                            || nextElement.classList.contains('e-rowcell'))) {
                             this.manageFocus($target as HTMLElement, 'remove', false);
                             this.manageFocus(nextElement as HTMLElement, 'add', false);
                             if ($target.classList.contains('e-treegrid')) {
@@ -1483,7 +1499,7 @@ export class GanttChart {
                 return childElement;
             }
             nextElement = $target;
-                if (nextElement && nextElement.parentElement.classList.contains('e-toolbar-item') && this.parent.toolbarModule) {
+            if (nextElement && nextElement.parentElement.classList.contains('e-toolbar-item') && this.parent.toolbarModule) {
                 while (nextElement && nextElement.parentElement.classList.contains('e-toolbar-item') &&  nextElement.parentElement.nextElementSibling.classList.contains('e-toolbar-item')) {
                     if (nextElement.parentElement.nextElementSibling.classList.contains('e-hidden')) {
                         nextElement = nextElement.parentElement.nextElementSibling.childNodes[0] as Element;
@@ -1564,9 +1580,10 @@ export class GanttChart {
      * @param {HTMLElement} element .
      * @param {string} focus .
      * @param {boolean} isChartElement .
+     * @param {string} keyAction .
      * @returns {void} .
      */
-    public manageFocus(element: HTMLElement, focus: string, isChartElement?: boolean): void {
+    public manageFocus(element: HTMLElement, focus: string, isChartElement?: boolean, keyAction?: string): void {
         if (isChartElement) {
             let childElement: Element = null;
             if (element.classList.contains('e-left-label-container') ||
@@ -1586,15 +1603,17 @@ export class GanttChart {
                     childElement = element;
                 }
             }
-            if (element.classList.contains('e-right-label-temp-container') || element.classList.contains('e-left-label-temp-container') || element.classList.contains('e-indicator-span') || element.classList.contains("e-timeline-header-container")) {
+            if (element.classList.contains('e-right-label-temp-container') || element.classList.contains('e-left-label-temp-container') || element.classList.contains('e-indicator-span') || element.classList.contains('e-timeline-header-container')) {
                 if (focus === 'add') {
                     element.setAttribute('tabIndex', '0');
                     addClass([element], 'e-active-container');
                     element.focus();
                 } else {
-                    removeClass([element], 'e-active-container');
-                    element.setAttribute('tabIndex', '-1');
-                    element.blur();
+                    if (keyAction !== 'downArrow' && keyAction !== 'upArrow') {
+                        removeClass([element], 'e-active-container');
+                        element.setAttribute('tabIndex', '-1');
+                        element.blur();
+                    }
                 }
             }
             if (focus === 'add' && !isNullOrUndefined(childElement)) {
@@ -1602,7 +1621,7 @@ export class GanttChart {
                 addClass([childElement], 'e-active-container');
                 element.focus();
                 this.focusedElement = childElement as HTMLElement;
-            } else if (!isNullOrUndefined(childElement)) {
+            } else if (!isNullOrUndefined(childElement) && (keyAction !== 'downArrow' && keyAction !== 'upArrow')) {
                 removeClass([childElement], 'e-active-container');
                 element.setAttribute('tabIndex', '-1');
                 element.blur();
@@ -1644,12 +1663,14 @@ export class GanttChart {
                 recordIndex = this.parent.flatData.indexOf(record);
             }
             else {
-                if (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
-                    this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth && this.parent.pdfExportModule.isPdfExport) {
+                if (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps
+                    && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings
+                    && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth
+                    && this.parent.pdfExportModule.isPdfExport) {
                     recordIndex = this.parent.ids.indexOf(record.ganttProperties.taskId.toString());
                 }
                 else {
-                recordIndex = this.parent.currentViewData.indexOf(record);
+                    recordIndex = this.parent.currentViewData.indexOf(record);
                 }
             }
         }

@@ -48,24 +48,19 @@ $sd-bigger-small-li-icon-font-size: 14px !default;
 
 $sd-overlay-bg: $overlay-bg-color !default;
 $sd-li-shadow: 0 3px 5px -1px rgba(0, 0, 0, .2), 0 6px 10px rgba(0, 0, 0, .14), 0 1px 18px rgba(0, 0, 0, .12) !default;
-
 $sd-li-bg: $flyout-bg-color !default;
 $sd-li-border-color: $border-light !default;
 $sd-font-color: $content-text-color !default;
-
 $sd-disabled-li-bg: $secondary-border-color-disabled !default;
 $sd-disabled-li-border-color: $secondary-border-color-disabled !default;
 $sd-disabled-font-color: $secondary-text-color-disabled !default;
-
 $sd-focus-li-bg: $secondary-bg-color-focus !default;
 $sd-focus-li-border-color: $secondary-border-color-focus !default;
 $sd-focus-font-color: $secondary-text-color-focus !default;
 $sd-focus-box-shadow: $sd-li-shadow, $shadow-focus-ring1 !default;
-
 $sd-hover-li-bg: $secondary-bg-color-hover !default;
 $sd-hover-li-border-color: $secondary-border-color-hover !default;
 $sd-hover-font-color: $secondary-text-color-hover !default;
-
 $sd-active-li-bg: $secondary-bg-color-pressed !default;
 $sd-active-li-border-color: $secondary-border-color-pressed !default;
 $sd-active-font-color: $secondary-text-color-pressed !default;

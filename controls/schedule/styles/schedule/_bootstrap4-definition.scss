@@ -1,4 +1,3 @@
-/*! Schedule component's bootstrap4 theme definitions and variables */
 $border-type: solid !default;
 $border-size: 1px !default;
 $schedule-skin: $skin-name !default;
@@ -28,7 +27,6 @@ $schedule-calendar-background: none !default;
 $schedule-calendar-shadow: none !default;
 $schedule-time-cells-font-color: $schedule-primary-content-font-color !default;
 $schedule-time-cells-bg-color: $schedule-header-bg-color !default;
-
 $schedule-timezone-enable-nrml-height: 60px !default;
 $schedule-timezone-enable-bgr-height: 64px !default;
 $schedule-alternate-cell-border: dashed !default;
@@ -55,7 +53,6 @@ $schedule-date-header-wrap-device-font-size: 14px !default;
 $schedule-month-date-header-cell-font-size: none !default;
 $schedule-month-date-header-cell-text-align: left !default;
 $schedule-month-date-header-cell-text-transform: none !default;
-
 $schedule-appointment-details-padding: 4px 8px 0 !default;
 $schedule-appointment-bg-color: $primary !default;
 $schedule-appointment-font-color: $primary-font !default;
@@ -63,7 +60,7 @@ $schedule-appointment-border-color: lighten($schedule-appointment-bg-color, 40%)
 $schedule-appointment-border-radius: 4px !default;
 $schedule-appointment-selected-border: 1px solid rgba($black, .5) !default;
 $schedule-appointment-active-border-color: #333 !default;
-$schedule-month-agenda-app-indicator-color: #c3c3c3 !default;
+$schedule-month-agenda-app-indicator-color: #ccc !default;
 $schedule-month-appointment-height: 22px !default;
 $schedule-month-appointment-text-line-height: 19px !default;
 $schedule-appointment-text-line-height: 20px !default;
@@ -72,7 +69,6 @@ $schedule-month-appointment-subject-padding: 1px 2px !default;
 $schedule-timescale-appointment-height: 54px !default;
 $schedule-appointment-detail-line-height: $schedule-appointment-text-line-height !default;
 $schedule-drag-appointment-opacity: .4;
-
 $schedule-header-day-line-height: 17px !default;
 $schedule-header-day-padding-bottom: 4px !default;
 $schedule-header-day-nrml-font-size: 13px !default;
@@ -92,7 +88,6 @@ $schedule-time-scale-width: 85px !default;
 $schedule-device-time-scale-width: 60px !default;
 $schedule-header-date-line-height: 21px !default;
 $schedule-header-padding-top: 0 !default;
-
 $schedule-vertical-work-cells-border: 0 0 1px 1px !default;
 $schedule-rtl-vertical-work-cells-border: 0 1px 1px 0 !default;
 $schedule-month-work-cells-border: 0 0 1px 1px !default;
@@ -117,7 +112,6 @@ $schedule-popup-footer-padding: 0 14px 14px 0 !default;
 $schedule-date-header-line-height: 21px !default;
 $schedule-date-header-margin: 3px 3px 2px !default;
 $schedule-date-header-margin-rtl: 8px 8px 0 0 !default;
-
 $schedule-tbar-bgr-min-height: 54px !default;
 $schedule-tbar-border-bottom-size: 1px solid rgba($black, .15) !default;
 $schedule-tbar-box-shadow: none !default;
@@ -154,7 +148,6 @@ $schedule-tbar-right-active-items-btn-border: none !default;
 $schedule-device-tbar-right-items-btn-border-radius: 0 !default;
 $schedule-device-tbar-right-items-btn-border: none !default;
 $schedule-device-font-size: 8px !default;
-
 $schedule-content-nrml-font-text-transform: initial !default;
 $schedule-header-hover-border-radius: 4px !default;
 $schedule-more-popup-wrapper-border-radius: 6px !default;
@@ -206,7 +199,6 @@ $schedule-multiple-event-popup-icon-height: 35px !default;
 $schedule-multiple-event-popup-icon-font-size: 14px !default;
 $schedule-bgr-multiple-event-popup-subject-padding: 2px 5px !default;
 $schedule-bgr-multiple-event-popup-icon-height: 35px !default;
-
 $schedule-event-box-shadow-1: 0 6px 10px 0 rgba($black, .14) !default;
 $schedule-event-box-shadow-2: 0 1px 18px 0 rgba($black, .12) !default;
 $schedule-event-box-shadow-3: 0 3px 5px -1px rgba($black, .2) !default;
@@ -219,7 +211,6 @@ $schedule-more-popup-padding: 12px 4px 14px !default;
 $schedule-more-appointment-margin-bottom: 4px !default;
 $schedule-event-popup-header-icon-padding: 6px 8px 0 0 !default;
 $schedule-event-popup-subject-wrap-padding: 8px 14px !default;
-
 $schedule-timeline-header-cells-height: 36px !default;
 $schedule-timeline-work-cells-height: 60px !default;
 $schedule-timeline-work-cells-width: 50px !default;
@@ -241,24 +232,19 @@ $schedule-bigger-dialog-row-container-padding-bottom: 16px !default;
 $schedule-bigger-dialog-all-day-row-padding-top: 0 !default;
 $schedule-device-dialog-all-day-row-padding-top: 0 !default;
 $schedule-all-day-section-hover-color: $white !default;
-
 $schedule-tree-bg-color: $gray-100 !default;
 $schedule-tree-font-color: $schedule-primary-content-font-color !default;
 $schedule-tree-content-color: $gray-900 !default;
-$schedule-popup-overlay-bg-color: #383838 !default;
-
+$schedule-popup-overlay-bg-color: #333 !default;
 $schedule-val-error-color: $danger !default;
-$schedule-val-error-bg-color: #fcdbe4 !default;
-
+$schedule-val-error-bg-color: #fde !default;
 $schedule-block-appointment-bg-color: $gray-300 !default;
 $schedule-block-appointment-font-color: $gray-900 !default;
-
 $schedule-resource-color-margin-top: 6px !default;
 $schedule-bigger-resource-color-margin-top: 8px !default;
 $schedule-resource-color-size: 14px !default;
 $schedule-bigger-resource-color-size: 16px !default;
 $schedule-resource-tree-text-content-padding: 0 0 0 12px !default;
-
 $schedule-tip-content-padding: 4px 8px 0 !default;
 $schedule-time-cells-border-bottom-color: $schedule-content-border-color !default;
 $schedule-current-day-font-weight: normal !default;
@@ -280,7 +266,6 @@ $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
 @mixin tbar-btn-animation {
   content: '';
 }
-
 @mixin tbar-btn-animation-after {
   content: '';
 }

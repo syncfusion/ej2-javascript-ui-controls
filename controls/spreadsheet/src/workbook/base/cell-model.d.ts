@@ -6,6 +6,13 @@ import { extend, Property, ChildProperty, Complex, Collection } from '@syncfusio
 export interface CellModel {
 
     /**
+     * Specifies the note of the cell.
+     *
+     * @default ''
+     */
+    notes?: string;
+
+    /**
      * Specifies the image of the cell.
      *
      * @default []
@@ -113,5 +120,20 @@ export interface CellModel {
      * @asptype int
      */
     rowSpan?: number;
+
+    /**
+     * Specifies the Specifies the note is editable or not, for the current cell when scroll the spreadsheet.
+     *
+     * @default false
+     * @hidden
+     */
+    isNoteEditable?: boolean;
+
+    /**
+     * Represents whether a cell in the sheet is read-only or not. If set to true, it prevents editing the specified cell in the sheet.
+     *
+     * @default false
+     */
+    isReadOnly?: boolean;
 
 }

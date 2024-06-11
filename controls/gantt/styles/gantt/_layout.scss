@@ -1,14 +1,57 @@
+@mixin resizer-styles($display, $position, $top, $width, $index) {
+  display: $display;
+  position: $position;
+  top: $top;
+  width: $width;
+  z-index: $index;
+}
+
+@mixin mask-cell-styles($height,$width,$left,$border-radius) {
+  height: $height;
+  width: $width;
+  left: $left;
+  border-radius: $border-radius;
+}
+
+@mixin inner-cell-styles($innerheight, $innerwidth, $innerleft) {
+  height: $innerheight;
+  width: $innerwidth;
+  left: $innerleft;
+}
+
+@mixin button-styles($back-color,$border-color,$text-color,$font-size,$line-height,$padding) {
+  background-color: $back-color;
+  border-color: $border-color;
+  color: $text-color;
+  font-size: $font-size;
+  line-height: $line-height;
+  padding: $padding;
+}
+
+@mixin border-styles($border-radius,$border-height,$border-width) {
+  border-radius: $border-radius;
+  height: $border-height;
+  width: $border-width;
+}
+
+@mixin float-styles($direction,$padding-style,$width) {
+  float: $direction;
+  padding: $padding-style;
+  width: $width;
+}
+
+@mixin min-styles {
+  min-height: $gantt-bigger-dialog-input-icon;
+  min-width: 35.82px !important; /* stylelint-disable-line declaration-no-important */
+}
+
 @include export-module('gantt-layout') {
 
   .e-bigger {
     .e-gantt {
       @if ($theme-name == 'material-dark'){
-        .e-grid{
-          .e-row{
-            .e-input-group{
-              margin: 0 !important; /* stylelint-disable-line declaration-no-important */
-            }
-          }
+        .e-grid .e-row .e-input-group {
+          margin: 0 !important; /* stylelint-disable-line declaration-no-important */
         }
       }
       @if ($skin-name== 'Material3-dark' or $skin-name == 'Material3'){
@@ -19,11 +62,7 @@
         
         .e-taskbar-left-resizer,
         .e-taskbar-right-resizer {
-          display: inline-block;
-          position: absolute;
-          top: 0;
-          width: 25px;
-          z-index: 4;
+          @include resizer-styles(inline-block, absolute, 0, 25px, 4);
         }
 
         .e-left-resize-gripper,
@@ -133,7 +172,6 @@
       }
       .e-gantt-dialog .e-tab .e-tab-header {
         padding-left: $gantt-dialog-tab-padding-left;
-
         @if ($skin-name == 'FluentUI') {
           .e-indicator {
             display: block;
@@ -154,7 +192,6 @@
       .e-dialog {
         .e-dlg-header-content {
           padding: $gantt-bigger-dialog-header-padding; /* stylelint-disable-line declaration-no-important */
-
           .e-btn.e-dlg-closeicon-btn {
             left: -11px;
             @if ($skin-name == 'bootstrap5-dark' or $skin-name == 'bootstrap5'){
@@ -268,17 +305,13 @@
         padding-bottom: $gantt-dialog-padding-bottom;
         @if ($skin-name == 'bootstrap-dark') {
           .e-btn.e-dlg-closeicon-btn {
-            border-radius: 50%;
-            height: auto !important; /* stylelint-disable-line declaration-no-important */
-            width: auto;
+            @include border-styles(50%, auto !important, auto);
             box-shadow: none;
           }
         }
         @else{
           .e-btn.e-dlg-closeicon-btn:not(.e-gantt-adaptive-dialog .e-dialog .e-dlg-closeicon-btn) {
-            border-radius: 50%;
-            height: auto !important; /* stylelint-disable-line declaration-no-important */
-            width: auto;
+            @include border-styles(50%, auto !important, auto);
             @if ($skin-name=='Material3') {
               line-height: 0px;
               padding: 0 !important; /* stylelint-disable-line declaration-no-important */
@@ -307,8 +340,7 @@
       }
 
       .e-control-wrapper .e-input-group-icon.e-date-icon {
-        min-height: $gantt-bigger-dialog-input-icon;
-        min-width: 35.82px !important; /* stylelint-disable-line declaration-no-important */
+        @include min-styles;
       }
 
       .e-btn.e-flat {
@@ -336,20 +368,17 @@
 
       .e-float-input.e-control-wrapper input {
         height: $gantt-bigger-dialog-input-field-height;
-
         @if ($skin-name == 'material') {
           padding: 5px 0 11px !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
       .e-numeric.e-control-wrapper.e-input-group .e-input-group-icon {
-        min-height: $gantt-bigger-dialog-input-icon;
-        min-width: 35.82px !important; /* stylelint-disable-line declaration-no-important */
+        @include min-styles;
       }
 
       .e-control-wrapper .e-input-group-icon.e-time-icon {
-        min-height: $gantt-bigger-dialog-input-icon;
-        min-width: 35.82px !important; /* stylelint-disable-line declaration-no-important */
+        @include min-styles;
       }
 
       .e-input-group.e-control-wrapper {
@@ -416,21 +445,11 @@
       }
 
       .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:first-of-type {
-        background-color: $gantt-bigger-tooltip-button-color;
-        border-color: $gantt-bigger-tooltip-button-color;
-        color: $gantt-bigger-tooltip-button-text-color;
-        font-size: 12px;
-        line-height: 18px;
-        padding: 0 8px 0 0;
+        @include button-styles($gantt-bigger-tooltip-button-color,$gantt-bigger-tooltip-button-color,$gantt-bigger-tooltip-button-text-color,12px,18px,0 8px 0 0);
       }
 
       .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:last-of-type {
-        background-color: $gantt-bigger-tooltip-button-color;
-        border-color: $gantt-bigger-tooltip-button-color;
-        color: $gantt-bigger-tooltip-button-text-color;
-        font-size: 12px;
-        line-height: 18px;
-        padding: 0 0 0 8px;
+        @include button-styles($gantt-bigger-tooltip-button-color,$gantt-bigger-tooltip-button-color,$gantt-bigger-tooltip-button-text-color,12px,18px,0 0 0 8px);
       }
     }
 
@@ -447,6 +466,11 @@
         @if ($skin-name == 'FluentUI') {
           margin-bottom: 0;
         }
+      }
+      .e-touch-predecessor-dialog {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
     }
   }
@@ -539,10 +563,6 @@
     display: block;
     width: 100%;
 
-    .e-cloneproperties {
-      padding: $gantt-bigger-clone-padding;
-    }
-
     & .e-cloneproperties.e-draganddrop .e-row .e-icon-rowdragicon::before {
       left: -5px;
       position: relative;
@@ -562,17 +582,17 @@
       vertical-align: middle;
       white-space: nowrap;
       z-index: 100;
-    }
 
-    .e-cloneproperties.e-draganddrop {
-      border-spacing: 0;
-      font-size: $gantt-header-font-size;
-      font-weight: normal;
-      overflow: visible;
-    }
+      .e-draganddrop {
+        border-spacing: 0;
+        font-size: $gantt-header-font-size;
+        font-weight: normal;
+        overflow: visible;
+      }
 
-    .e-cloneproperties .e-bothganttlines {
-      border-width: 1px 0 0 1px;
+      .e-bothganttlines {
+        border-width: 1px 0 0 1px;
+      }
     }
 
     .e-draganddrop {
@@ -646,14 +666,6 @@
         border-width: 0;
       }
 
-      .e-grid.e-gridhover tr[role = 'row']:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
-      .e-grid.e-gridhover tr[role = 'row']:hover .e-detailrowcollapse:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
-      .e-grid.e-gridhover tr[role = 'row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
-      .e-grid.e-rtl .e-gridhover tr[role = 'row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
-      .e-grid.e-gridhover tr[role = 'row']:hover .e-detailrowexpand:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-        background-color: transparent;
-      }
-
       .e-gantt-temp-header {
         border-bottom-style: solid;
         border-bottom-width: 1px;
@@ -722,6 +734,21 @@
           overflow-x: scroll;
           overflow-y: auto;
           position: relative;
+          td.e-chart-row-cell.e-droptop{
+            border-top: $gantt-rowdd-topbottom-border;
+            border-width: $gantt-rowdd-childborder-width;
+          }
+
+          td.e-chart-row-cell.e-dropbottom{
+            border-bottom: $gantt-rowdd-topbottom-border;
+            box-shadow: $gantt-rowdd-boxshadow;
+          }
+          
+          td.e-chart-row-cell.e-childborder {
+            border-bottom: $gantt-rowdd-topbottom-border;
+            border-top: $gantt-rowdd-topbottom-border;
+            box-shadow: $gantt-rowdd-boxshadow;
+          }
         }
 
         .e-nonworking-day-container {
@@ -806,9 +833,17 @@
           white-space: nowrap;
         }
 
-        .e-gantt-top-cell-text {
-          padding-left: 11px;
-          text-align: left;
+        @if ($theme-name == 'fluent2' or $theme-name == 'fluent2-highcontrast' or $theme-name == 'fluent2-dark') {
+          .e-gantt-top-cell-text {
+            padding-left: 8px;
+            text-align: left;
+          }
+        }
+        @else {
+          .e-gantt-top-cell-text {
+            padding-left: 11px;
+            text-align: left;
+          }
         }
       }
 
@@ -828,7 +863,7 @@
         //border-width: 0;
         border-top: 0;
       }
-
+      
       .e-chart-row {
         .e-chart-row-border {
           border-collapse: separate;
@@ -979,12 +1014,11 @@
         }
         @if $skin-name =='Material3' or $skin-name =='Material3-dark'{
           border-top-style: dashed;
-          border-top-width: 2px;
         }
         @else{
           border-top-style: dotted;
-          border-top-width: 2px;
         }
+        border-top-width: 2px;
         height: 0;
         left: 2px;
         pointer-events: none;
@@ -1036,83 +1070,52 @@
       }
 
       .e-innerHTML {
-        height: 16px;
-        width: 16px;
-        left: 14px;
+        @include inner-cell-styles(16px,16px,14px);
       }
 
       .e-innerHTML1 {
-        height: 16px;
-        width: 16px;
-        left: 30px;
+        @include inner-cell-styles(16px,16px,30px);
       }
 
       .e-innerHTML2 {
-        height: 16px;
-        width: 16px;
-        left: 60px;
+        @include inner-cell-styles(16px,16px,60px);
       }
 
       .e-timelineHeader {
-        height: 16px;
-        width: 82px;
-        left: 20px;
+        @include inner-cell-styles(16px,82px,20px);
       }
 
       .e-maskcell01 {
-        height: 12px;
-        width: 88px;
-        left: 14px;
-        border-radius: 0;
+        @include mask-cell-styles(12px, 88px, 14px, 0);
       }
 
       .e-maskcell02 {
-        height: 18px;
-        width: 410px;
-        border-radius: 0;
+        @include border-styles(0, 18px, 410px);
       }
 
       .e-maskcell03 {
-        height: 12px;
-        width: 88px;
-        left: 14px;
-        border-radius: 0;
+        @include mask-cell-styles(12px, 88px, 14px, 0);
       }
 
       .e-maskcell04 {
-        height: 18px;
-        width: 208px;
-        border-radius: 0;
+        @include border-styles(0, 18px, 208px);
       }
 
       .e-maskcell05 {
-        height: 12px;
-        width: 108px;
-        left: 64px;
-        border-radius: 0;
+        @include mask-cell-styles(12px, 108px, 64px, 0);
       }
 
       .e-maskcell06 {
-        height: 18px;
-        width: 195px;
-        left: 192px;
-        border-radius: 0;
+        @include mask-cell-styles(18px, 195px, 192px, 0);
       }
 
       .e-maskcell07 {
-        height: 18px;
-        width: 156px;
-        left: 388px;
-        border-radius: 0;
+        @include mask-cell-styles(18px, 156px, 388px, 0);
       }
 
       .e-taskbar-left-resizer,
       .e-taskbar-right-resizer {
-        display: inline-block;
-        position: absolute;
-        top: 0;
-        width: 10px;
-        z-index: 4;
+        @include resizer-styles(inline-block,absolute,0,10px,4);
       }
 
       .e-child-progress-resizer {
@@ -1162,9 +1165,18 @@
           width: 0;
         }
       }
+      @if ($theme-name == 'fluent2' or $theme-name == 'fluent2-highcontrast' or $theme-name == 'fluent2-dark') {
+        .e-baseline-bar {
+          border-radius: 4px;
+        }
+      }
+      @else {
+        .e-baseline-bar {
+          border-radius: 2px;
+        }
+      }
 
       .e-baseline-bar {
-        border-radius: 2px;
         box-sizing: border-box;
         position: absolute;
         z-index: 2;
@@ -1320,10 +1332,7 @@
         z-index: 1;
       }
 
-      .e-connector-line-hover {
-        outline: 1px solid;
-      }
-
+      .e-connector-line-hover,
       .e-critical-connector-line-hover {
         outline: 1px solid;
       }
@@ -1474,15 +1483,11 @@
     }
 
     .e-edit-form-column:nth-child(odd) {
-      float: left;
-      padding: $gantt-dialog-edit-form-odd-padding;
-      width: 50%;
+      @include float-styles(left, $gantt-dialog-edit-form-odd-padding,50%);
     }
 
     .e-edit-form-column:nth-child(even) {
-      float: left;
-      padding: $gantt-dialog-edit-form-even-padding;
-      width: 50%;
+      @include float-styles(left, $gantt-dialog-edit-form-even-padding,50%);
     }
 
     .e-edit-form-row.e-scroll .e-edit-form-column:nth-child(even) {
@@ -1504,7 +1509,7 @@
     .e-richtexteditor {
       border-bottom-width: $gantt-richtext-border-bottom;
       height: $gantt-dialog-rte-height !important; /* stylelint-disable-line declaration-no-important */
-      overflow: hidden scroll;
+      overflow: hidden auto;
     }
 
     .e-richtexteditor.e-rte-tb-expand {
@@ -1514,8 +1519,9 @@
     .e-richtexteditor .e-rte-content {
       border-bottom-width: $gantt-richtext-content-border-bottom;
       height: $gantt-dialog-rte-content-height;
-      overflow: hidden;
+      overflow: auto;
     }
+
     > .e-dlg-content {
       padding: 0 !important; /* stylelint-disable-line declaration-no-important */
       @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
@@ -1542,17 +1548,13 @@
       
       @if ($skin-name == 'bootstrap-dark'){
         .e-btn.e-dlg-closeicon-btn {
-          border-radius: 50%;
-          height: auto !important; /* stylelint-disable-line declaration-no-important */
-          width: auto;
+          @include border-styles(50%, auto !important, auto);
           box-shadow: none;
         }
       }
       @else{
         .e-btn.e-dlg-closeicon-btn {
-          border-radius: 50%;
-          height: auto !important; /* stylelint-disable-line declaration-no-important */
-          width: auto;
+          @include border-styles(50%, auto !important, auto);
         }
       }
     }
@@ -1620,7 +1622,7 @@
   .e-bigger .e-gantt .e-gantt-chart .e-label {
     font-size: $gantt-bigger-label-font-size;
   }
-
+  
   .e-bigger .e-filter-popup .e-control .e-dialog .e-lib .e-popup .e-popup-open .e-excelfilter .e-gantt,
   .e-bigger .e-gantt .e-excelfilter .e-dialog .e-dlg-content {
     padding: 0 18px 0 0 !important; /* stylelint-disable-line declaration-no-important */
@@ -1640,9 +1642,7 @@
     .e-edit-form-column {
       &:nth-child(odd),
       &:nth-child(even) {
-        float: none;
-        padding: $gantt-dialog-edit-form-odd-padding;
-        width: 100%;
+        @include float-styles(none, $gantt-dialog-edit-form-odd-padding,100%);
       }
     }
 
@@ -1689,17 +1689,6 @@
       font-size: 12px;
     }
 
-    // .e-right-resize-gripper,
-    // .e-left-resize-gripper {
-    //   border: 7px solid;
-    //   z-index: -1;
-
-    //   &::before {
-    //     font-size: 14px;
-    //     margin-left: -7px;
-    //   }
-    // }
-
     .e-dependent-div .e-content {
       height: 100%;
     }
@@ -1737,10 +1726,7 @@
       color: $gantt-bigger-tooltip-button-color;
     }
 
-    .e-left-btn:disabled {
-      color: $gantt-bigger-tooltip-disabled-button-color;
-    }
-
+    .e-left-btn:disabled,
     .e-right-btn:disabled {
       color: $gantt-bigger-tooltip-disabled-button-color;
     }
@@ -1750,27 +1736,16 @@
     }
 
     .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:first-of-type {
-      background-color: $gantt-bigger-tooltip-button-color;
-      border-color: $gantt-bigger-tooltip-button-color;
-      color: $gantt-bigger-tooltip-button-text-color;
-      font-size: 12px;
-      line-height: 18px;
-      padding: 0 8px 0 0;
+      @include button-styles($gantt-bigger-tooltip-button-color, $gantt-bigger-tooltip-button-color, $gantt-bigger-tooltip-button-text-color, 12px, 18px,0 8px 0 0);
     }
 
     .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:last-of-type {
-      background-color: $gantt-bigger-tooltip-button-color;
-      border-color: $gantt-bigger-tooltip-button-color;
-      color: $gantt-bigger-tooltip-button-text-color;
-      font-size: 12px;
-      line-height: 18px;
-      padding: 0 0 0 8px;
+      @include button-styles($gantt-bigger-tooltip-button-color, $gantt-bigger-tooltip-button-color, $gantt-bigger-tooltip-button-text-color, 12px, 18px,0 0 0 8px);
     }
   }
 
   .e-predecessor-dialog {
     background-color: $gantt-bigger-tooltip-dialog-color;
-
     .e-dlg-content {
       background-color: $gantt-bigger-tooltip-dialog-color;
       padding: $gantt-bigger-predecessor-dialog-padding;
@@ -1788,35 +1763,13 @@
     position: absolute;
     z-index: 1;
   }
-  .e-gantt .e-gantt-chart .e-chart-root-container .e-content td.e-chart-row-cell.e-droptop{
-    border-top: $gantt-rowdd-topbottom-border;
-    border-width: $gantt-rowdd-childborder-width;
-  }
-  .e-gantt .e-gantt-chart .e-chart-root-container .e-content td.e-chart-row-cell.e-dropbottom{
-    border-bottom: $gantt-rowdd-topbottom-border;
-    box-shadow: $gantt-rowdd-boxshadow;
-  }
-  
-  .e-gantt .e-gantt-chart .e-chart-root-container .e-content td.e-chart-row-cell.e-childborder {
-    border-bottom: $gantt-rowdd-topbottom-border;
-    border-top: $gantt-rowdd-topbottom-border;
-    box-shadow: $gantt-rowdd-boxshadow;
-  }
 }
 @media (max-width: 767px)
 {
-  .e-bigger{
-    .e-gantt {
-      .e-dialog {
-        .e-edit-form-column {
-          &:nth-child(odd),
-          &:nth-child(even) {
-            float: none;
-            padding: $gantt-mobile-bigger-dialog-edit-form-padding;
-            width: 100%;
-          }
-        }
-      }
+  .e-bigger .e-gantt .e-dialog .e-edit-form-column {
+    &:nth-child(odd),
+    &:nth-child(even) {
+      @include float-styles(none, $gantt-mobile-bigger-dialog-edit-form-padding,100%);
     }
   }
 }

@@ -1,5 +1,5 @@
 import { DateFormatOptions } from '@syncfusion/ej2-base';
-import { Chart3DAxis, Visible3DLabels } from '../axis/axis';
+import { Chart3DAxis } from '../axis/axis';
 import { setRange, triggerLabelRender } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/doubleRange';
@@ -130,7 +130,7 @@ export class DateTime3D extends NiceIntervals {
                 case 'Hours':
                     this.getHour(minimum, maximum, rangePadding, interval);
                     break;
-                case 'Minutes':
+                case 'Minutes': {
                     const minute: number = (minimum.getMinutes() / interval) * interval;
                     const endMinute: number = maximum.getMinutes() + (minimum.getMinutes() - minute);
                     if (rangePadding === 'Round') {
@@ -161,7 +161,8 @@ export class DateTime3D extends NiceIntervals {
                         ).getTime();
                     }
                     break;
-                case 'Seconds':
+                }
+                case 'Seconds': {
                     const second: number = (minimum.getSeconds() / interval) * interval;
                     const endSecond: number = maximum.getSeconds() + (minimum.getSeconds() - second);
                     if (rangePadding === 'Round') {
@@ -191,6 +192,7 @@ export class DateTime3D extends NiceIntervals {
                             )).getTime();
                     }
                     break;
+                }
                 }
             }
         }
@@ -328,7 +330,6 @@ export class DateTime3D extends NiceIntervals {
         axis.visibleLabels = [];
         let tempInterval: number = axis.visibleRange.min;
         let labelStyle: Chart3DTextFont;
-        const axisLabels: Visible3DLabels[] = axis.visibleLabels;
         if (!setRange(axis)) {
             tempInterval = this.alignRangeStart(axis, tempInterval, axis.visibleRange.interval).getTime();
         }
@@ -422,37 +423,39 @@ export class DateTime3D extends NiceIntervals {
     private alignRangeStart(axis: Chart3DAxis, sDate: number, intervalSize: number): Date {
         let sResult: Date = new Date(sDate);
         switch (axis.actualIntervalType) {
-        case 'Years':
+        case 'Years': {
             const year: number = Math.floor(Math.floor(sResult.getFullYear() / intervalSize) * intervalSize);
             sResult = new Date(year, sResult.getMonth(), sResult.getDate(), 0, 0, 0);
             return sResult;
-        case 'Months':
+        }
+        case 'Months': {
             const month: number = Math.floor(Math.floor((sResult.getMonth()) / intervalSize) * intervalSize);
             sResult = new Date(sResult.getFullYear(), month, sResult.getDate(), 0, 0, 0);
             return sResult;
-
-        case 'Days':
+        }
+        case 'Days': {
             const day: number = Math.floor(Math.floor((sResult.getDate()) / intervalSize) * intervalSize);
             sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, 0, 0, 0);
             return sResult;
-
-        case 'Hours':
+        }
+        case 'Hours': {
             const hour: number = Math.floor(Math.floor((sResult.getHours()) / intervalSize) * intervalSize);
             sResult = new Date(sResult.getFullYear(), sResult.getMonth(), sResult.getDate(), hour, 0, 0);
             return sResult;
-
-        case 'Minutes':
+        }
+        case 'Minutes': {
             const minutes: number = Math.floor(Math.floor((sResult.getMinutes()) / intervalSize) * intervalSize);
             sResult = new Date(sResult.getFullYear(), sResult.getMonth(), sResult.getDate(), sResult.getHours(), minutes, 0, 0);
             return sResult;
-
-        case 'Seconds':
+        }
+        case 'Seconds': {
             const seconds: number = Math.floor(Math.floor((sResult.getSeconds()) / intervalSize) * intervalSize);
             sResult = new Date(
                 sResult.getFullYear(), sResult.getMonth(), sResult.getDate(),
                 sResult.getHours(), sResult.getMinutes(), seconds, 0
             );
             return sResult;
+        }
         }
         return sResult;
     }

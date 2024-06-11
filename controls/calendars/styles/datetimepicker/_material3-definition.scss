@@ -40,32 +40,22 @@ $datetime-time-icon-border-style: none !default;
 $datetime-list-hover-border-color: none !default;
 $datetime-list-default-border-style: none !default;
 $datetime-default-overlay: $content-bg-color-alt1 !default;
-
-//mouse small
 $datetime-list-small-line-height: 26px !default;
 $datetime-list-small-text-indent: 12px !default;
 $datetime-list-small-font-size: 12px !default;
-
-// mouse small icon
 $datetime-icon-small-font-size: $font-icon-16 !default;
 $datetime-small-min-height: 22px !default;
 $datetime-small-min-width: 22px !default;
 $datetime-small-icon-border-radius: 14px !default;
 $datetime-time-small-icon-margin: 0 !default;
-
-//touch small
 $datetime-list-bigger-small-line-height: 40px !default;
 $datetime-list-bigger-small-text-indent: 16px !default;
 $datetime-list-bigger-small-font-size: 13px !default;
-
-// touch small icon
 $datetime-icon-bigger-small-font-size: $font-icon-20 !default;
 $datetime-bigger-small-min-height: 34px !default;
 $datetime-bigger-small-min-width: 34px !default;
 $datetime-bigger-small-icon-border-radius: 20px !default;
 $datetime-time-bigger-small-icon-margin: 0 !default;
-
-// modal full-screen popup
 $modal-datetime-position: fixed !default;
 $modal-datetime-wrapper-position: relative !default;
 $modal-datetime-wrapper-width: 100% !default;

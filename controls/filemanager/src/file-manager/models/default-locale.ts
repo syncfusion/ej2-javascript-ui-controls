@@ -2,7 +2,6 @@
  * Specifies the default locale of FileManager component
  */
 
-// eslint-disable-next-line
 export const defaultLocale: Object = {
     'NewFolder': 'New folder',
     'Upload': 'Upload',

@@ -200,43 +200,43 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * @default false.
      */
 
-     @Property(false)
-     public enable: boolean;
- 
-     /**
-      * The fill color of the tooltip that accepts value in hex as a valid CSS color string.
-      *
-      * @default null.
-      */
- 
-     @Property(null)
-     public fill: string;
- 
-     /**
-      * Format the tooltip content. Use ${value} as the placeholder text to display the corresponding progress value.
-      *
-      * @default null.
-      */
- 
-     @Property(null)
-     public format: string;
- 
-     /**
-      * If set to true, tooltip will be displayed for the progress bar on mouse hover.
-      *
-      * @default false.
-      */
- 
-     @Property(false)
-     public showTooltipOnHover: boolean;
- 
-     /**
-      * Options to customize the tooltip text.
-      *
-      */
- 
-     @Complex<FontModel>({fontFamily: null, size: '12px', fontWeight: '400', fontStyle: 'Normal', color: null}, Font)
-     public textStyle: FontModel;
+    @Property(false)
+    public enable: boolean;
+
+    /**
+     * The fill color of the tooltip that accepts value in hex as a valid CSS color string.
+     *
+     * @default null.
+     */
+
+    @Property(null)
+    public fill: string;
+
+    /**
+     * Format the tooltip content. Use ${value} as the placeholder text to display the corresponding progress value.
+     *
+     * @default null.
+     */
+
+    @Property(null)
+    public format: string;
+
+    /**
+     * If set to true, tooltip will be displayed for the progress bar on mouse hover.
+     *
+     * @default false.
+     */
+
+    @Property(false)
+    public showTooltipOnHover: boolean;
+
+    /**
+     * Options to customize the tooltip text.
+     *
+     */
+
+    @Complex<FontModel>({fontFamily: null, size: '12px', fontWeight: '400', fontStyle: 'Normal', color: null}, Font)
+    public textStyle: FontModel;
 
     /**
      * Options to customize tooltip borders.

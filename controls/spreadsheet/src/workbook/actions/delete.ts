@@ -1,7 +1,7 @@
 import { Workbook, RowModel, CellModel, getCell, setCell, ActionEventArgs } from '../index';
 import { deleteAction, InsertDeleteModelArgs, refreshClipboard, ExtendedRange, MergeArgs, beforeDelete, ConditionalFormatModel, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, deleteModel } from '../../workbook/common/index';
-import { SheetModel, checkUniqueRange, refreshInsertDelete, updateRowColCount, getSheetIndex, beginAction } from '../../workbook/index';
+import { SheetModel, refreshInsertDelete, updateRowColCount, getSheetIndex, beginAction } from '../../workbook/index';
 import { deleteFormatRange } from '../../workbook/index';
 import { extend } from '@syncfusion/ej2-base';
 

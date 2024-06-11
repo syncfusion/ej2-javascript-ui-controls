@@ -1,5 +1,14 @@
-@import 'avatar/bootstrap5.scss';
-@import 'card/bootstrap5.scss';
-@import 'splitter/bootstrap5.scss';
-@import 'dashboard-layout/bootstrap5.scss';
-@import 'timeline/bootstrap5.scss';
+@import 'ej2-base/styles/definition/bootstrap5.scss';
+@import 'avatar/bootstrap5-definition.scss';
+@import 'avatar/all.scss';
+
+@import 'card/bootstrap5-definition.scss';
+@import 'card/all.scss';
+@import 'splitter/bootstrap5-definition.scss';
+@import 'splitter/icons/bootstrap5.scss';
+@import 'splitter/all.scss';
+@import 'dashboard-layout/bootstrap5-definition.scss';
+@import 'dashboard-layout/icons/bootstrap5.scss';
+@import 'dashboard-layout/all.scss';
+@import 'timeline/bootstrap5-definition.scss';
+@import 'timeline/all.scss';

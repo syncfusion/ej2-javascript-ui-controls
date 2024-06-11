@@ -27,8 +27,6 @@ export class GaugeTooltip {
     private currentRange: RangeModel;
     private isTouch: boolean;
     private svgTooltip: Tooltip;
-    private textStyle: FontModel;
-    private borderStyle: BorderModel;
     private pointerElement: Element;
     private tooltip: TooltipSettings;
     private clearTimeout: number;
@@ -37,8 +35,6 @@ export class GaugeTooltip {
         this.gauge = gauge;
         this.element = gauge.element;
         this.tooltip = <TooltipSettings>gauge.tooltip;
-        this.textStyle = this.tooltip.textStyle;
-        this.borderStyle = this.tooltip.border;
         this.tooltipId = this.gauge.element.id + '_LinearGauge_Tooltip';
         this.addEventListener();
     }
@@ -159,7 +155,9 @@ export class GaugeTooltip {
         (this.tooltip.template && tooltipPos === 'Right')) ? 20 : 0;
         this.gauge.trigger(tooltipRender, args, () => {
             let template: string | Function = (target.id.indexOf('Range') > -1) ? args.tooltip.rangeSettings.template : args.tooltip.template;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (template !== null && Object.keys(template as any).length === 1 && typeof template !== 'function') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 template = template[Object.keys(template as any)[0]];
             }
             if (!args.cancel) {
@@ -195,6 +193,11 @@ export class GaugeTooltip {
             opacity: args.tooltip.textStyle.opacity || textStyle.opacity,
             size: args.tooltip.textStyle.size || textStyle.size
         };
+        const borderStyle: BorderModel = {
+            color: tooltipBorder.color || this.gauge.themeStyle.tooltipBorderColor || 'transparent',
+            width: tooltipBorder.width || this.gauge.themeStyle.tooltipBorderWidth || 0,
+            dashArray: tooltipBorder.dashArray
+        };
         svgTooltip = new Tooltip({
             enable: true,
             header: '',
@@ -216,7 +219,7 @@ export class GaugeTooltip {
                 areaRect.height
             ),
             textStyle: textStyle,
-            border: tooltipBorder,
+            border: borderStyle,
             theme: args.gauge.theme as TooltipTheme,
             enableShadow: true
         });
@@ -334,8 +337,6 @@ export class GaugeTooltip {
             this.svgTooltip.destroy();
         }
         this.svgTooltip = null;
-        this.textStyle  = null;
-        this.borderStyle = null;
         this.pointerElement = null;
         this.tooltip = null;
         this.removeEventListener();

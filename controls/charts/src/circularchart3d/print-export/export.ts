@@ -77,7 +77,6 @@ export class CircularChartExport3D {
         }
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Gets a data URL for the rendered 3D chart as an HTML canvas element, including data URL and blob URL if available.
      *
@@ -85,6 +84,7 @@ export class CircularChartExport3D {
      * @returns {{ element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string }} - An object containing the HTML canvas element, data URL, and blob URL.
      * @private
      */
+
     public getDataUrl(chart: CircularChart3D): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string} {
         const exportUtil: ExportUtils = new ExportUtils(chart);
         return exportUtil.getDataUrl(chart as CircularChart3D);

@@ -132,8 +132,6 @@ export function isCollide(element: HTMLElement, viewPortElement: HTMLElement = n
     const left: number = elemOffset.left;
     const right: number = elemOffset.left + elementRect.width;
     const bottom: number = elemOffset.top + elementRect.height;
-    // eslint-disable-next-line
-    const topData: string = '', leftData: string = '';
     const yAxis: TopCorners = topCollideCheck(top, bottom);
     const xAxis: LeftCorners = leftCollideCheck(left, right);
     if (yAxis.topSide) {
@@ -221,8 +219,7 @@ export function flip(
  * @returns {void}
  */
 function setPopup(element: HTMLElement, pos: PositionLocation, elementRect: ClientRect): void {
-//eslint-disable-next-line
-    let left = 0, top = 0;
+    let left: number = 0; let top: number = 0;
     if (element.offsetParent != null
             && (getComputedStyle(element.offsetParent).position === 'absolute' ||
             getComputedStyle(element.offsetParent).position === 'relative' )) {
@@ -230,12 +227,12 @@ function setPopup(element: HTMLElement, pos: PositionLocation, elementRect: Clie
         left = data.left;
         top = data.top;
     }
-    let scaleX = 1;
-    let scaleY = 1;
+    let scaleX: number = 1;
+    let scaleY: number = 1;
     if (element.offsetParent) {
-        var transformStyle = getComputedStyle(element.offsetParent).transform
+        const transformStyle: string = getComputedStyle(element.offsetParent).transform;
         if (transformStyle !== 'none') {
-            var matrix = new DOMMatrix(transformStyle);
+            const matrix: DOMMatrix = new DOMMatrix(transformStyle);
             scaleX = matrix.a;
             scaleY = matrix.d;
         }
@@ -447,7 +444,7 @@ function ContainerBottom(): number {
     return (getBodyScrollTop() + getViewPortHeight());
 }
 /**
- * @returns {void}
+ * @returns {number} - returns the scroll top value
  */
 function getBodyScrollTop(): number {
     // if(targetContainer)
@@ -455,21 +452,23 @@ function getBodyScrollTop(): number {
     return parentDocument.documentElement.scrollTop || parentDocument.body.scrollTop;
 }
 /**
- * @returns {void}
+ * @returns {number} - returns the scroll left value
  */
 function getBodyScrollLeft(): number {
     // if(targetContainer)
     //     return targetContainer.scrollLeft;
     return parentDocument.documentElement.scrollLeft || parentDocument.body.scrollLeft;
 }
+
 /**
- * @returns {void}
+ * @returns {number} - returns the viewport height
  */
 function getViewPortHeight(): number {
     return  window.innerHeight;
 }
+
 /**
- * @returns {void}
+ * @returns {number} - returns the viewport width
  */
 function getViewPortWidth(): number {
     const windowWidth : number = window.innerWidth;
@@ -477,6 +476,9 @@ function getViewPortWidth(): number {
     const offsetWidth: number = (isNullOrUndefined(document.documentElement)) ? 0 : documentReact.width;
     return windowWidth - (windowWidth - offsetWidth);
 }
+/**
+ * @returns {void}
+ */
 export function destroy(): void {
     targetContainer = null;
     parentDocument = null;

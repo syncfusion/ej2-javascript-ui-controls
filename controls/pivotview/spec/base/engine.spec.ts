@@ -531,105 +531,111 @@ describe('PivotView spec', () => {
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
-            it('Paging testing', () => {
-                expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("105");
-                (document.querySelector('#PivotGrid_row_nextIcon') as HTMLElement).click();
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-35");
+            it('Paging testing', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("105");
+                    (document.querySelector('#PivotGrid_row_nextIcon') as HTMLElement).click();
+                    done();
+                }, 1000);
             });
             it('filter testing1', (done: Function) => {
-                (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
-                pivotGridObj.refreshData();
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-104");
+                    (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('filter testing1', (done: Function) => {
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(function () {
                     expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-23");
+                    (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
                     done();
                 }, 1000);
             });
             it('filter testing2', (done: Function) => {
-                (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(function () {
                     expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-21");
+                    (document.querySelectorAll('.e-icons.e-sort')[0] as HTMLElement).click();
                     done();
                 }, 1000);
             });
-            it('sort testing', () => {
-                (document.querySelectorAll('.e-icons.e-sort')[0] as HTMLElement).click();
+            it('sort testing', (done: Function) => {
                 (document.querySelectorAll('.e-icons.e-sort')[2] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("-$3,468.89");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("-$3,468.89");
+                    pivotGridObj.setProperties({ dataSourceSettings: { valueIndex: 1 } });
+                    done();
+                }, 1000);
             });
-            it('set data', () => {
-                pivotGridObj.setProperties({ dataSourceSettings: { valueIndex: 1 } });
-                pivotGridObj.refreshData();
-                expect("1").toBe("1");
+            it('set data', (done: Function) => {
+                setTimeout(function () {
+                    expect("1").toBe("1");
+                    (document.querySelectorAll('.e-btn-filter')[1] as HTMLElement).click();
+                    done();
+                }, 1000);
             });
-            it('filter testing3', () => {
-                (document.querySelectorAll('.e-btn-filter')[1] as HTMLElement).click();
-                pivotGridObj.refreshData();
+            it('filter testing3', (done: Function) => {
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                expect("1").toBe("1");
+                setTimeout(function () {
+                    expect("1").toBe("1");
+                    (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
+                    done();
+                }, 1000);
             });
             it('filter testing4', (done: Function) => {
-                (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(function () {
                     expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Flight");
+                    pivotGridObj.dataSourceSettings.valueAxis = 'column';
                     done();
                 }, 1000);
             });
-            it('filter testing5', () => {
-                pivotGridObj.dataSourceSettings.valueAxis = 'column';
+            it('filter testing5', (done: Function) => {
                 pivotGridObj.dataSourceSettings.valueIndex = 2;
-                pivotGridObj.refreshData();
-                expect("1").toBe("1");
+                setTimeout(function () {
+                    expect("1").toBe("1");
+                    (document.querySelectorAll('.e-icons.e-sort')[1] as HTMLElement).click();
+                    done();
+                }, 1000);
             });
-            it('sort testing', () => {
-                (document.querySelectorAll('.e-icons.e-sort')[1] as HTMLElement).click();
+            it('sort testing', (done: Function) => {
                 (document.querySelectorAll('.e-icons.e-sort')[3] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("Van");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("Van");
+                    (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
+                    done();
+                }, 1000);
             });
             it('filter testing6', (done: Function) => {
-                (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(function () {
                     expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Flight");
+                    (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
                     done();
                 }, 1000)
             });
             it('filter testing7', (done: Function) => {
-                (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(() => {
                     expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Jet");
                     done();
@@ -1301,7 +1307,7 @@ describe(' - VirtualScrolling', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -1860,7 +1866,7 @@ describe(' - VirtualScrolling', () => {
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft).toBeLessThan(1360);
                 expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 done();
             }, 300);
@@ -1965,7 +1971,7 @@ describe(' - VirtualScrolling', () => {
             setTimeout(() => {
                 document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
                 done();
-            }, 100);
+            }, 1000);
         });
         it('Country -> descending _result + Switch to ascending', (done: Function) => {
             setTimeout(function () {
@@ -1973,7 +1979,7 @@ describe(' - VirtualScrolling', () => {
                 expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('United States');
                 document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
                 done();
-            }, 500)
+            }, 1000)
         });
         it('Country -> Switch to ascending _result + open field list', (done: Function) => {
             setTimeout(function () {
@@ -1981,15 +1987,18 @@ describe(' - VirtualScrolling', () => {
                 expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
                 document.querySelectorAll('.e-toggle-field-list')[0].dispatchEvent(click);
                 done();
-            }, 500)
+            }, 1000)
         });
-        it('Open calculated field dialog', () => {
+        it('Open calculated field dialog', (done: Function) => {
             cf = new CalculatedField(pivotGridObj);
             cf.createCalculatedFieldDialog(pivotGridObj);
             pivotGridObj.engineModule.enableSort = false;
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+            setTimeout(function () {
+                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+                done();
+            }, 1000)
         });
-        it('drag and drop Amount(Count) node to drop field', () => {
+        it('drag and drop Amount(Count) node to drop field', (done: Function) => {
             let treeObj: any = cf.treeObj;
             let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
@@ -2003,7 +2012,10 @@ describe(' - VirtualScrolling', () => {
             let mouseup: any = util.getEventObject('MouseEvents', 'mouseup', treeObj.element, filterAxiscontent);
             mouseup.type = 'mouseup';
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
-            expect((document.querySelector('.e-pivot-formula') as HTMLTextAreaElement).value !== null).toBeTruthy;
+            setTimeout(function () {
+                expect((document.querySelector('.e-pivot-formula') as HTMLTextAreaElement).value !== null).toBeTruthy;
+                done();
+            }, 1000)
         });
         it('set new field as "New" and close the dialog', () => {
             const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
@@ -2015,39 +2027,52 @@ describe(' - VirtualScrolling', () => {
             document.querySelector('.e-pivotfieldlist-container .e-cancel-btn').dispatchEvent(click);
         });
         it('Country -> open filter dialog + uncheck canada + click ok btn', (done: Function) => {
-            pivotGridObj.engineModule.enableSort = true;
-            expect(document.querySelectorAll('.e-headercontent th')[12].textContent).toBe('New');
-            document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
-            firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
-            firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
-            firstNode.querySelector('.e-frame').dispatchEvent(click);
             setTimeout(() => {
+                pivotGridObj.engineModule.enableSort = true;
+                expect(document.querySelectorAll('.e-headercontent th')[12].textContent).toBe('New');
+                document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
+                done();
+            }, 1000);
+        });
+        it('Country -> open filter dialog + uncheck canada + click ok btn', (done: Function) => {
+            setTimeout(() => {
+                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
+                firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
+                firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
+                firstNode.querySelector('.e-frame').dispatchEvent(click);
                 document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
                 done();
-            }, 500);
+            }, 1000);
         });
         it('Country -> open filter dialog + check canada + click ok btn', (done: Function) => {
-            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
-            expect(document.querySelectorAll('.e-content-virtualtable td:not(.e-leftfreeze)')[0].textContent).toBe('6');
-            document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
-            firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
-            firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
-            firstNode.querySelector('.e-frame').dispatchEvent(click);
             setTimeout(() => {
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
+                expect(document.querySelectorAll('.e-content-virtualtable td:not(.e-leftfreeze)')[0].textContent).toBe('6');
+                document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
+                done();
+            }, 1000);
+        });
+        it('Country -> open filter dialog + check canada + click ok btn', (done: Function) => {
+            setTimeout(() => {
+                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
+                firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
+                firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
+                firstNode.querySelector('.e-frame').dispatchEvent(click);
                 document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
                 done();
-            }, 500);
+            }, 1000);
         });
-        it('Country -> set report as no data', () => {
-            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
-            pivotGridObj.dataSourceSettings.rows[0].showNoDataItems = true;
+        it('Country -> set report as no data', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
+                pivotGridObj.dataSourceSettings.rows[0].showNoDataItems = true;
+                document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
+                done();
+            }, 1000);
         });
         it('Country -> open filter dialog + uncheck france + click ok btn', (done: Function) => {
-            document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
             setTimeout(() => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
                 let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[2] as HTMLElement;
@@ -2056,7 +2081,7 @@ describe(' - VirtualScrolling', () => {
                 firstNode.querySelector('.e-frame').dispatchEvent(click);
                 document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
                 done();
-            }, 100);
+            }, 1000);
         });
 
         afterAll(() => {

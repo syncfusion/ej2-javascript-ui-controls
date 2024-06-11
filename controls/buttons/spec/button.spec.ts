@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from '../src/button/button';
-import { createElement, detach } from '@syncfusion/ej2-base';
+import { Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
 /**
@@ -12,9 +12,13 @@ describe('Button', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
+    });
+    beforeEach((): void => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
     });
 
     let button: Button;
@@ -370,4 +374,94 @@ describe('Button', () => {
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    describe('Null or undefined value testing', () => {
+        afterEach(() => {
+            button.destroy();
+        });
+
+        it('Primary button testing', () => {
+            button = new Button({ isPrimary: null });
+            button.appendTo('#button');
+            expect(button.isPrimary).toEqual(null);
+            button = new Button({ isPrimary: undefined });
+            button.appendTo('#button');
+            expect(button.isPrimary).toEqual(false);
+        });
+
+        it('Disable state testing', () => {
+            button = new Button({ disabled: null });
+            button.appendTo('#button');
+            expect(button.disabled).toEqual(null);
+            button = new Button({ disabled: undefined });
+            button.appendTo('#button');
+            expect(button.disabled).toEqual(false);
+        });
+
+        it('Icon button testing', () => {
+            button = new Button({ iconCss: null });
+            button.appendTo('#button');
+            expect(button.iconCss).toEqual(null);
+            button = new Button({ iconCss: undefined });
+            button.appendTo('#button');
+            expect(button.iconCss).toEqual('');
+        });
+
+        it('Icon Position button testing', () => {
+            button = new Button({ iconPosition: null });
+            button.appendTo('#button');
+            expect(button.iconCss).toEqual('');
+            button = new Button({ iconPosition: undefined });
+            button.appendTo('#button');
+            expect(button.iconCss).toEqual('');
+        });
+
+        it('RTL testing', () => {
+            button = new Button({ enableRtl: null });
+            button.appendTo('#button');
+            expect(button.enableRtl).toEqual(false);
+            button = new Button({ enableRtl: undefined });
+            button.appendTo('#button');
+            expect(button.enableRtl).toEqual(false);
+        });
+
+        it('CSS class testing', () => {
+            button = new Button({ cssClass: null });
+            button.appendTo('#button');
+            expect(button.cssClass).toEqual(null);
+            button = new Button({ cssClass: undefined });
+            button.appendTo('#button');
+            expect(button.cssClass).toEqual('');
+        });
+
+        it('Content testing', () => {
+            button = new Button({ content: null }, '#button');
+            expect(button.content).toEqual(null);
+            button = new Button({ content: undefined }, '#button');
+            expect(button.content).toEqual('');
+        });
+
+        it('Toggle Button Testing', () => {
+            button = new Button({ isToggle: null }, '#button');
+            expect(button.isToggle).toEqual(null);
+            button = new Button({ isToggle: undefined }, '#button');
+            expect(button.isToggle).toEqual(false);
+        });
+
+        it('EnablePersistence Button Testing', () => {
+            button = new Button({ enablePersistence: null }, '#button');
+            expect(button.enablePersistence).toEqual(null);
+            button = new Button({ enablePersistence: undefined }, '#button');
+            expect(button.enablePersistence).toEqual(false);
+        });
+
+        it('Enable Html Sanitizer testing', () => {
+            button = new Button({ enableHtmlSanitizer: null }, '#button');
+            expect(button.enableHtmlSanitizer).toEqual(null);
+            button = new Button({ enableHtmlSanitizer: undefined }, '#button');
+            expect(button.enableHtmlSanitizer).toEqual(true);
+        });
+
+    });
+
 });

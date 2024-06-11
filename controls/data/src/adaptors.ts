@@ -109,6 +109,7 @@ export class JsonAdaptor extends Adaptor {
         const lazyLoad: object = {};
         let keyCount: number = 0;
         const group: object[] = [];
+        const sort: { comparer: (a: Object, b: Object) => number, fieldName: string }[] = [];
         let page: { pageIndex: number, pageSize: number };
         for (let i: number = 0; i < query.lazyLoad.length; i++) {
             keyCount++;
@@ -117,12 +118,15 @@ export class JsonAdaptor extends Adaptor {
         const agg: { [key: string]: Object } = {};
         for (let i: number = 0; i < query.queries.length; i++) {
             key = query.queries[i];
-            if ((key.fn === 'onPage' || key.fn === 'onGroup') && query.lazyLoad.length) {
+            if ((key.fn === 'onPage' || key.fn === 'onGroup' || key.fn === 'onSortBy') && query.lazyLoad.length) {
                 if (key.fn === 'onGroup') {
                     group.push(key.e);
                 }
                 if (key.fn === 'onPage') {
                     page = key.e as { pageIndex: number, pageSize: number };
+                }
+                if (key.fn === 'onSortBy') {
+                    sort.unshift(key.e as { comparer: (a: Object, b: Object) => number, fieldName: string });
                 }
                 continue;
             }
@@ -142,7 +146,7 @@ export class JsonAdaptor extends Adaptor {
 
         if (keyCount) {
             const args: LazyLoadGroupArgs = {
-                query: query, lazyLoad: lazyLoad as LazyLoad, result: result as Object[], group: group, page: page
+                query: query, lazyLoad: lazyLoad as LazyLoad, result: result as Object[], group: group, page: page, sort: sort
             };
             const lazyLoadData: { result: Object[], count: number } = this.lazyLoadGroup(args);
             result = lazyLoadData.result;
@@ -176,6 +180,11 @@ export class JsonAdaptor extends Adaptor {
             if (args.group.length !== req.level) {
                 const field: string = (<{ fieldName?: string }>args.group[req.level]).fieldName;
                 result = DataUtil.group(result, field, agg, null, null, (<{ comparer?: Function }>args.group[0]).comparer, true);
+                result = this.onSortBy(result, args.sort[parseInt(req.level.toString(), 10)], args.query, true);
+            } else {
+                for (let i: number = args.sort.length - 1; i >= req.level; i--) {
+                    result = this.onSortBy(result, args.sort[parseInt(i.toString(), 10)], args.query, false);
+                }
             }
             count = result.length;
             const data: Object[] = result;
@@ -189,6 +198,11 @@ export class JsonAdaptor extends Adaptor {
             result = DataUtil.group(result, field, agg, null, null, (<{ comparer?: Function }>args.group[0]).comparer, true);
             count = result.length;
             const data: Object[] = result;
+            if (args.sort.length) {
+                const sort: { comparer: (a: Object, b: Object) => number, fieldName: string } = args.sort.length > 1 ?
+                args.sort.filter((x) => x.fieldName === field)[0] : args.sort[0];
+                result = this.onSortBy(result, sort, args.query, true);
+            }
             if (args.page) {
                 result = this.onPage(result, args.page, args.query);
             }
@@ -310,8 +324,9 @@ export class JsonAdaptor extends Adaptor {
      * @param e.comparer
      * @param e.fieldName
      * @param query
+     * @param isLazyLoadGroupSort
      */
-    public onSortBy(ds: Object[], e: { comparer: (a: Object, b: Object) => number, fieldName: string }, query: Query): Object[] {
+    public onSortBy(ds: Object[], e: { comparer: (a: Object, b: Object) => number, fieldName: string }, query: Query, isLazyLoadGroupSort?: boolean): Object[] {
         if (!ds || !ds.length) { return ds; }
         let fnCompare: Function;
         let field: string[] | string = <string[] | string>DataUtil.getValue(e.fieldName, query);
@@ -335,7 +350,7 @@ export class JsonAdaptor extends Adaptor {
             }
             return ds;
         }
-        return DataUtil.sort(ds, <string>field, e.comparer);
+        return DataUtil.sort(ds, isLazyLoadGroupSort ? 'key' : <string>field, e.comparer);
     }
 
     /**
@@ -1575,8 +1590,9 @@ export class ODataAdaptor extends UrlAdaptor {
      */
     public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs, query: Query, original?: CrudOptions): Object {
         const initialGuid: string = e.guid = DataUtil.getGuid(this.options.batchPre);
-        const url: string = this.rootUrl ? this.rootUrl + '/' + this.options.batch :
-            dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        const url: string = (dm.dataSource.batchUrl || this.rootUrl) ?
+            (dm.dataSource.batchUrl || this.rootUrl) + '/' + this.options.batch :
+            (dm.dataSource.batchUrl || dm.dataSource.url).replace(/\/*$/, '/' + this.options.batch);
         e.url = this.resourceTableName ? this.resourceTableName : e.url;
         const args: RemoteArgs = {
             url: e.url,
@@ -2979,6 +2995,7 @@ export interface LazyLoadGroupArgs {
     lazyLoad: LazyLoad;
     result: Object[];
     group: Object[];
+    sort: { comparer: (a: Object, b: Object) => number, fieldName: string }[];
     page: { pageIndex: number, pageSize: number };
 }
 

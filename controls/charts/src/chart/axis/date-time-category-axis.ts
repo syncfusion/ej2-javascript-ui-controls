@@ -1,12 +1,8 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
 import { Axis } from '../axis/axis';
 import { Category } from '../axis/category-axis';
 import { triggerLabelRender, valueToCoefficient } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { withIn, firstToLowerCase } from '../../common/utils/helper';
-import { IntervalType } from '../../common/utils/enum';
 import { Chart } from '../chart';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
@@ -23,6 +19,7 @@ export class DateTimeCategory extends Category {
      * Constructor for the category module.
      *
      * @private
+     * @param {Chart} chart - Specifies the chart.
      */
     constructor(chart: Chart) {
         super(chart);
@@ -83,7 +80,8 @@ export class DateTimeCategory extends Category {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (this.chart.stockChart || isRangeNavigator) {
                 if (axis.intervalType === 'Auto') {
-                    if ((((!isRangeNavigator && i === 1) || this.StartOfWeek(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1], axis, i, previousIndex))
+                    if ((((!isRangeNavigator && i === 1) || this.StartOfWeek(axis.labels.map(Number)[i as number],
+                                                                             axis.labels.map(Number)[i - 1], axis, i, previousIndex))
                     || axis.isIndexed) && withIn(i, axis.visibleRange)) {
                         triggerLabelRender(
                             this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i as number], axis.format) :
@@ -93,8 +91,8 @@ export class DateTimeCategory extends Category {
                         previousIndex = i;
                     }
                 }
-                else if ((((!isRangeNavigator && i === 1) || !this.sameInterval(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1],
-                                             axis.actualIntervalType, i))
+                else if ((((!isRangeNavigator && i === 1) || !this.sameInterval(axis.labels.map(Number)[i as number],
+                                                                                axis.labels.map(Number)[i - 1], axis.actualIntervalType, i))
                     || axis.isIndexed) && withIn(i, axis.visibleRange)) {
                     if ((!isRangeNavigator && i === 1) || this.isMaximum(i, previousIndex, axis)) {
                         triggerLabelRender(
@@ -124,7 +122,13 @@ export class DateTimeCategory extends Category {
         }
     }
 
-    /** @private */
+    /**
+     * Calculate the Blazor custom format for axis.
+     *
+     * @param {Axis} axis - The axis for which the custom format is calculated.
+     * @returns {string} - The custom format string.
+     * @private
+     */
     private blazorCustomFormat(axis: Axis): string {
         if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
             return 'yyyy';
@@ -147,7 +151,13 @@ export class DateTimeCategory extends Category {
         return texts.join(', ');
     }
     /**
-     * get same interval
+     * Get the same interval.
+     *
+     * @param {number} currentDate - The current date.
+     * @param {number} previousDate - The previous date.
+     * @param {RangeIntervalType} type - The type of range interval.
+     * @param {number} index - The index of the interval.
+     * @returns {boolean} - Indicates if the intervals are the same.
      */
     public sameInterval(currentDate: number, previousDate: number, type: RangeIntervalType, index: number): boolean {
         let sameValue: boolean;
@@ -195,6 +205,13 @@ export class DateTimeCategory extends Category {
 
     /**
      * To check whether the current label comes in the same week as the previous label week.
+     *
+     * @param {number} currentDate - The current date.
+     * @param {number} previousDate - The previous date.
+     * @param {Axis} axis - The axis.
+     * @param {number} index - The current index.
+     * @param {number} previousIndex - The previous index.
+     * @returns {boolean} - Indicates if the labels fall in the same week.
      */
     private StartOfWeek(currentDate: number, previousDate: number, axis: Axis, index: number, previousIndex: number): boolean {
         if (index === 0) {
@@ -216,6 +233,11 @@ export class DateTimeCategory extends Category {
     }
     /**
      * To check whether the distance between labels is above the axisLabel maximum length.
+     *
+     * @param {number} index - The current index.
+     * @param {number} previousIndex - The previous index.
+     * @param {Axis} axis - The axis.
+     * @returns {boolean} - Indicates if the distance between labels exceeds the maximum length.
      */
     public isMaximum(index: number, previousIndex: number, axis: Axis): boolean {
         if (index === 0) {
@@ -227,9 +249,10 @@ export class DateTimeCategory extends Category {
         return (pointX - previousPointX >= (axis.labels.length >= 15 ? axisLabelMaximumLength : axisLabelMaximumLength / 2));
     }
     /**
-     * Get module name
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
          * Returns the module name
@@ -243,7 +266,6 @@ export class DateTimeCategory extends Category {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
          * Destroy method performed here

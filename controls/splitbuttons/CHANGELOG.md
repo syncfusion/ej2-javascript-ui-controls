@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
-
-### ButtonGroup
-
-#### Bug Fixes
-
-- Issue in "box shadow correction while clicking single or multiple selection mode buttons" has been resolved.
-
-## 25.1.38 (2024-04-02)
+## 26.1.35 (2024-06-11)
 
 ### DropDownButton
 
@@ -18,69 +10,17 @@
 
 - Issue in "keyboard action not working in DropDownButton when its append on span tag" has been resolved.
 
-## 25.1.37 (2024-03-26)
-
-### DropDownButton
-
-#### Breaking Changes
-
-- Now, the default value of [`enableHtmlSanitizer`](https://helpej2.syncfusion.com/documentation/api/drop-down-button/#enablehtmlsanitizer) property is true to prevent the XSS attacks in the DropDownButton component.
-
-### ProgressButton
-
-#### Breaking Changes
-
-- Now, the default value of [`enableHtmlSanitizer`](https://helpej2.syncfusion.com/documentation/api/progress-button/#enablehtmlsanitizer) property is true to prevent the XSS attacks in the ProgressButton component.
-
 ### SplitButton
 
-#### Breaking Changes
-
-- Now, the default value of [`enableHtmlSanitizer`](https://helpej2.syncfusion.com/documentation/api/split-button/#enablehtmlsanitizer) property is true to prevent the XSS attacks in the SplitButton component.
-
-## 24.2.7 (2024-02-20)
-
-### ProgressButton
+#### Bug Fixes
 
 - `#I554000` - Console error is thrown when clicking the progress button  has been resolved.
-
-## 24.2.5 (2024-02-13)
-
-### SplitButton
-
-#### Bug Fixes
-
-- `#I552152` - Issue in "Split button select event not triggered while using keyboard action" has been resolved.
-
-## 24.1.46 (2024-01-17)
-
-### DropDownButton
-
-#### Bug Fixes
-
-- `#I863317` -  Issue in "DropDownButton list items do not meet WCAG AA standards for focus indicators" has been resolved.
-
-### ButtonGroup
-
-#### Bug Fixes
-
-- `#I534148` -  Issue in "Focus Css style not removed after clicking outside from button group button in bootstrap4 theme" has been resolved.
-
-## 24.1.45 (2024-01-09)
 
 ### DropDownButton
 
 #### Bug Fixes
 
 - `#I863317` - `Dropdownitems` not disabled initially when updating the property dynamically has been resolved.
-
-## 24.1.41 (2023-12-18)
-
-### DropDownButton
-
-#### Bug Fixes
-
-- `#I524330` - Issue DropDownButton Popup not repositioning on the resizing window has been resolved.
 
 ### DropDownButton
 

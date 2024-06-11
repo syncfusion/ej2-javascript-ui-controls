@@ -7,7 +7,6 @@ import { IAxisSet } from './engine';
  */
 
 export class PivotExportUtil {
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     public static getClonedPivotValues(pivotValues: IAxisSet[][]): IAxisSet[][] {
         const clonedSets: IAxisSet[][] = [];
         for (let i: number = 0; i < pivotValues.length; i++) {
@@ -26,7 +25,7 @@ export class PivotExportUtil {
 
     private static getClonedPivotValueObj(data: { [key: string]: Object }): { [key: string]: Object } {
         let keyPos: number = 0;
-        let framedSet: any = {};
+        let framedSet: { [key: string]: Object } = {};
         if (!(data === null || data === undefined)) {
             const fields: string[] = Object.keys(data);
             while (keyPos < fields.length) {
@@ -49,5 +48,4 @@ export class PivotExportUtil {
         }
         return false;
     }
-    /* eslint-enable @typescript-eslint/no-explicit-any */
 }

@@ -6,7 +6,9 @@ $rte-list-btn-line-height: 30px !default;
 $rte-big-list-btn-line-height: 36px !default;
 $rte-split-btn-line-height: 33px !default;
 $rte-big-split-btn-line-height: 40px !default;
+$rte-qt-item-btn-line-height: 32px;
 
+$rte-table-multicell-select-bg-color: rgba($primary, .1) !default;
 $rte-list-btn-flex: unset !default;
 $rte-list-btn-line-height: unset !default;
 $rte-border-color: $gray-300 !default;
@@ -94,7 +96,7 @@ $rte-error-character-count-color: $danger !default;
 $rte-img-border: solid 2px $primary !default;
 $rte-font-family: $font-family !default;
 $rte-content-color: $rte-content-font-color !default;
-$rte-content-blockquote-border-left-color: solid 2px $gray-900 !default;
+$rte-content-blockquote-border-left-color: solid 3px $gray-400 !default;
 $rte-dropdown-selection-bgcolor: $primary !default;
 $rte-format-btn-min-width: 75px !default;
 $rte-font-name-btn-min-width: 67px !default;
@@ -117,7 +119,7 @@ $rte-big-dropdown-btn-color-content-height: 36px !default;
 $rte-font-icon-width: 30px !default;
 $rte-font-arrow-width: 20px !default;
 $rte-font-arrow-touch-width: 25px !default;
-$rte-font-icon-line-height: 1 !default;
+$rte-font-icon-line-height: 30px !default;
 $rte-colorpicker-padding: 1.5px 0 !default;
 $rte-dropdown-selection-color: $primary-font !default;
 $rte-anchor-color: $primary !default;
@@ -157,7 +159,7 @@ $rte-dropdown-caret-icon-size: 8px !default;
 $rte-big-dropdown-caret-icon-size: 10px !default;
 $rte-toolbar-icon-size: 16px !default;
 $rte-toolbar-big-icon-size: 18px !default;
-$rte-toolbar-hor-nav-border-width: 0 0 0 1px !default;
+$rte-toolbar-hor-nav-border-width: 0 0 0 0 !default;
 
 $rte-resize-handler-width: 15px;
 $rte-resize-handler-height: 15px;
@@ -182,7 +184,7 @@ $rte-link-dlg-max-height: 368px !default;
 $rte-file-browser-dlg-max-height: 557px !default;
 $rte-table-dlg-max-height: 264px !default;
 $rte-edit-table-dlg-max-height: 333px !default;
-$rte-formatlists-dropdown-line-height: 22px;
+$rte-formatlists-dropdown-line-height: 30px;
 $rte-big-formatlists-dropdown-line-height: 1;
 $rte-quick-toolbar-item-margin: 0 6px !default;
 $rte-big-quick-toolbar-item-margin: 0 6px !default;
@@ -238,7 +240,7 @@ $rte-big-dropdown-btn-color-content-padding: 1px !default;
 $rte-tb-expended-min-height: 38px !default;
 $rte-big-tb-expended-min-height: 54px !default;
 $rte-tb-expended-padding-left: 1px !default;
-$rte-tb-expended-hover-padding-left: 1px !default;
+$rte-tb-expended-hover-padding-left: 0 !default;
 $rte-toolbar-expaned-minwidth: 100% !default;
 
 $rte-emoji-pop-background: $content-popup-bg;
@@ -251,6 +253,8 @@ $rte-emoji-tbar-btn-selected-font-color: $white;
 $rte-emoji-tbar-btn-hover: $gray-600;
 $rte-emoji-btn-height: 247px;
 $rte-emoji-grp-btn-line-height: 1px;
+$rte-emoji-grp-btn-height: 40px;
+$rte-emoji-grp-btn-width: 40px;
 $rte-emoji-headname-font-weight: 400;
 $rte-emoji-headname-color: $gray-700;
 $rte-big-emoji-btn-height: 247px;
@@ -404,7 +408,7 @@ $rte-format-painter-cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiI
   .e-rte-quick-popup .e-rte-quick-toolbar .e-tbar-btn.e-rte-inline-dropdown {
     & .e-rte-color-content {
       line-height: 26px;
-      min-height: 26px;
+      min-height: 30px;
       min-width: 26px;
     }
 
@@ -457,8 +461,8 @@ $rte-format-painter-cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiI
         &.e-tbar-btn.e-btn:hover,
         &.e-tbar-btn.e-btn.e-active,
         &.e-tbar-btn.e-btn.e-active:hover {
-          padding-bottom: 0;
-          padding-top: 0;
+          padding-bottom: 1px;
+          padding-top: 1px;
         }
 
         &.e-active {

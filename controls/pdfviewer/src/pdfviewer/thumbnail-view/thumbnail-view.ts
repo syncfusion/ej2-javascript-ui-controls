@@ -1,12 +1,13 @@
-/* eslint-disable */
 import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
 import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 
 /**
  * The `ThumbnailView` module is used to handle thumbnail view navigation of PDF viewer.
+ *
+ * @param {Event} event - args
+ * @returns {void}
  */
 export class ThumbnailView {
-
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private previousElement: HTMLElement;
@@ -16,7 +17,7 @@ export class ThumbnailView {
     private thumbnailLimit: number = 30;
     private thumbnailThreshold: number = 50;
     private thumbnailTopMargin: number = 10;
-    private thumbnailTop = 8;
+    private thumbnailTop: number = 8;
     private isRendered: boolean = false;
     private list: any[] = [];
     /**
@@ -38,11 +39,10 @@ export class ThumbnailView {
     public thumbnailView: HTMLElement;
 
     /**
-     * @param pdfViewer
-     * @param pdfViewerBase
-     * @param pdfViewer
-     * @param pdfViewerBase
+     * @param {PdfViewer} pdfViewer - It describes about the pdfviewer
+     * @param {PdfViewerBase} pdfViewerBase - It describes about the pdfviewer base
      * @private
+     * @returns {void}
      */
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
@@ -51,65 +51,63 @@ export class ThumbnailView {
 
     /**
      * @private
+     * @returns {void}
      */
     public createThumbnailContainer(): void {
-        const proxy: ThumbnailView = this;
-        // eslint-disable-next-line max-len
         this.thumbnailView = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_view', className: 'e-pv-thumbnail-view e-pv-thumbnail-row' });
         this.pdfViewerBase.navigationPane.sideBarContent.appendChild(this.thumbnailView);
         this.pdfViewerBase.navigationPane.sideBarContent.addEventListener('scrollend', this.thumbnailOnScroll);
     }
 
     private thumbnailOnScroll = (event: any): void => {
-        for(let i: number = 0; i<this.thumbnailPageSize.length;i++){
-            let scrollPosition: number = this.pdfViewerBase.navigationPane.sideBarContent.scrollTop;
-            const index: number = this.thumbnailPageSize.findIndex(page => page.top >= scrollPosition);
+        for (let i: number = 0; i < this.thumbnailPageSize.length; i++){
+            const scrollPosition: number = this.pdfViewerBase.navigationPane.sideBarContent.scrollTop;
+            const index: number = this.thumbnailPageSize.findIndex((page: any) => page.top >= scrollPosition);
             if (index !== -1) {
-                const number = Math.floor((index) / 50) * 50;
+                const number: number = Math.floor((index) / 50) * 50;
                 this.updateScrollTopForThumbnail(number);
                 break;
             }
         }
-    }
+    };
 
     /**
      * Open the thumbnail pane of the PdfViewer.
      *
-     * @returns void
+     * @returns {void}
      */
     public openThumbnailPane(): void {
         if (this.pdfViewerBase.navigationPane) {
             this.pdfViewerBase.navigationPane.openThumbnailPane();
-        } 
+        }
     }
 
     /**
      * Close the thumbnail pane of the PdfViewer.
      *
-     * @returns void
+     * @returns {void}
      */
     public closeThumbnailPane(): void {
         if (this.pdfViewerBase.navigationPane) {
             this.pdfViewerBase.navigationPane.closeThumbnailPane();
         }
-    };
-    
+    }
+
     /**
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public createRequestForThumbnails(): void {
-        const proxy: ThumbnailView = this;
         // eslint-disable-next-line
+        const proxy: ThumbnailView = this;
         for (let i: number = 0; i < proxy.pdfViewer.pageCount; i++) {
             proxy.renderThumbnailEmptyPage(i);
         }
         if (proxy.pdfViewer.isThumbnailViewOpen) {
             this.isThubmnailOpen = true;
-            // eslint-disable-next-line max-len
             proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
             document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
-            let bookmarkContent: any = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
+            const bookmarkContent: any = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
             if (bookmarkContent) {
                 bookmarkContent.style.display = 'none';
             }
@@ -121,10 +119,11 @@ export class ThumbnailView {
     }
 
     private isThumbnailViewOpen(): void {
+        // eslint-disable-next-line
         const proxy: ThumbnailView = this;
         if (proxy.pdfViewer.isThumbnailViewOpen) {
             proxy.pdfViewerBase.navigationPane.setThumbnailSelectionIconTheme();
-            proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true; // eslint-disable-next-line max-len
+            proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true;
             this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';
             if (this.pdfViewer.enableRtl) {
                 proxy.pdfViewerBase.viewerContainer.style.right = this.pdfViewerBase.navigationPane.getViewerContainerLeft() + 'px';
@@ -140,8 +139,9 @@ export class ThumbnailView {
 
     /**
      * Checks if thumbnails have been requested for the given page number.
-     * @param pageNumber The page number to check.
-     * @returns True if thumbnails have been requested, otherwise false.
+     *
+     * @param {number} pageNumber The page number to check.
+     * @returns {boolean} True if thumbnails have been requested, otherwise false.
      */
     private thumbnailsRequestedForPage(pageNumber: number): boolean {
         for (const requestedPage of this.list) {
@@ -173,26 +173,24 @@ export class ThumbnailView {
     }
 
     /**
+     * @param {number} pageIndex - It describes about the page index
      * @private
      * @returns {void}
-    */
+     */
     private renderThumbnailEmptyPage(pageIndex: number): void {
         if (this.thumbnailView) {
-            // eslint-disable-next-line max-len
             const pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + pageIndex, attrs: { 'aria-label': 'Thumbnail of Page' + (pageIndex + 1), 'tabindex': '-1', 'role': 'link' }, className: 'e-pv-thumbnail-anchor-node' }) as HTMLAnchorElement;
-            // eslint-disable-next-line max-len
             const thumbnail: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_' + pageIndex, className: 'e-pv-thumbnail e-pv-thumbnail-column' });
-            // eslint-disable-next-line max-len
             this.thumbnailSelectionRing = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageIndex, className: 'e-pv-thumbnail-selection-ring' });
             thumbnail.appendChild(this.thumbnailSelectionRing);
-            // eslint-disable-next-line max-len
-            const thumbnailPageNumber: HTMLElement = createElement('div', { id: this.pdfViewer.element.id+ '_thumbnail_pagenumber_' + pageIndex, className: 'e-pv-thumbnail-number' });
+            const thumbnailPageNumber: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_pagenumber_' + pageIndex, className: 'e-pv-thumbnail-number' });
             thumbnailPageNumber.textContent = (pageIndex + 1).toString();
             thumbnail.appendChild(thumbnailPageNumber);
             let height: number = 180;
-            // eslint-disable-next-line max-len
             this.thumbnailImage = createElement('img', { id: this.pdfViewer.element.id + '_thumbnail_image_' + pageIndex, className: 'e-pv-thumbnail-image' }) as HTMLImageElement;
-            if (this.pdfViewerBase.pageSize[pageIndex] && (this.pdfViewerBase.pageSize[pageIndex].height < this.pdfViewerBase.pageSize[pageIndex].width)) {
+            if (this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)] &&
+            (this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height <
+            this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width)) {
                 this.thumbnailImage.style.height = '86px';
                 this.thumbnailImage.style.width = '126px';
                 thumbnail.style.height = '100px';
@@ -203,14 +201,14 @@ export class ThumbnailView {
                 thumbnail.style.marginRight = '0px';
                 height = 140;
             }
-            if(pageIndex !== 0) {
-                this.thumbnailTop = this.thumbnailPageSize[pageIndex - 1].top + this.thumbnailPageSize[pageIndex-1].height;
-                let thumbnailSize = {height: height, top:  this.thumbnailTop};
-                this.thumbnailPageSize[pageIndex] =  thumbnailSize;
+            if (pageIndex !== 0) {
+                this.thumbnailTop = this.thumbnailPageSize[pageIndex - 1].top + this.thumbnailPageSize[pageIndex - 1].height;
+                const thumbnailSize: any = {height: height, top:  this.thumbnailTop};
+                this.thumbnailPageSize[parseInt(pageIndex.toString(), 10)] =  thumbnailSize;
             }
             else {
-                let thumbnailSize: any = {height: height, top:  this.thumbnailTop};
-                this.thumbnailPageSize[pageIndex] =  thumbnailSize;
+                const thumbnailSize: any = {height: height, top:  this.thumbnailTop};
+                this.thumbnailPageSize[parseInt(pageIndex.toString(), 10)] =  thumbnailSize;
             }
             this.thumbnailSelectionRing.appendChild(this.thumbnailImage);
             pageLink.appendChild(thumbnail);
@@ -224,20 +222,20 @@ export class ThumbnailView {
     }
 
     /**
+     * @param {ThumbnailView} prox - It describes about the prox
      * @private
      * @returns {void}
-    */
+     */
     public renderViewPortThumbnailImage(prox?: ThumbnailView): void {
         const proxy: ThumbnailView = prox ? prox : this;
         // Removed the condition to skip multiple request for thumbnail image.
         proxy.startIndex = proxy.thumbnailLimit;
-        // eslint-disable-next-line max-len
         this.list.push(proxy.startIndex);
-        // eslint-disable-next-line max-len
         if (this.pdfViewerBase.pageSize.length === this.pdfViewerBase.pageCount && !this.isRendered) {
             this.renderDiv();
         }
-        proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
+        proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ?
+            proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
         if (!this.pdfViewerBase.clientSideRendering) {
             let digitalSignaturePresent: boolean = false;
             for (let i: number = proxy.startIndex; i < proxy.thumbnailLimit; i++) {
@@ -245,44 +243,41 @@ export class ThumbnailView {
                     digitalSignaturePresent = true;
                 }
             }
-            let digitalSignatureList: string = "";
+            let digitalSignatureList: string = '';
             if (digitalSignaturePresent) {
                 digitalSignatureList = proxy.pdfViewerBase.digitalSignaturePages.toString();
             }
-            // eslint-disable-next-line max-len
-            const jsonObject: object = { startPage: proxy.startIndex.toString(), endPage: proxy.thumbnailLimit.toString(), sizeX: "99.7", sizeY: "141", hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId, digitalSignaturePresent: digitalSignaturePresent, digitalSignaturePageList: digitalSignatureList };
+            const jsonObject: object = { startPage: proxy.startIndex.toString(), endPage: proxy.thumbnailLimit.toString(), sizeX: '99.7', sizeY: '141', hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId, digitalSignaturePresent: digitalSignaturePresent, digitalSignaturePageList: digitalSignatureList };
             if (this.pdfViewerBase.jsonDocumentId) {
-                // eslint-disable-next-line
                 (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
             }
             this.thumbnailRequestHandler = new AjaxHandler(this.pdfViewer);
             this.thumbnailRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
             this.thumbnailRequestHandler.responseType = 'json';
-            if ((proxy.startIndex.toString() !== proxy.thumbnailLimit.toString()) && proxy.thumbnailLimit > 0 && !isNullOrUndefined(proxy.pdfViewerBase.hashId)) {
+            if ((proxy.startIndex.toString() !== proxy.thumbnailLimit.toString()) && proxy.thumbnailLimit > 0 &&
+            !isNullOrUndefined(proxy.pdfViewerBase.hashId)) {
                 this.pdfViewerBase.requestCollection.push(this.thumbnailRequestHandler);
                 this.thumbnailRequestHandler.send(jsonObject);
             }
-            // eslint-disable-next-line
-            this.thumbnailRequestHandler.onSuccess = function (result: any) {
-                // eslint-disable-next-line
-                let data: any = result.data;
-                let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
+            this.thumbnailRequestHandler.onSuccess = function (result: any): void {
+                const data: any = result.data;
+                const redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
                 if (!redirect) {
                     proxy.updateThumbnailCollection(data);
                 }
             };
-            // eslint-disable-next-line
-            this.thumbnailRequestHandler.onFailure = function (result: any) {
-                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderThumbnail);
+            this.thumbnailRequestHandler.onFailure = function (result: any): void {
+                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText,
+                                                      proxy.pdfViewer.serverActionSettings.renderThumbnail);
             };
-            // eslint-disable-next-line
-            this.thumbnailRequestHandler.onError = function (result: any) {
+            this.thumbnailRequestHandler.onError = function (result: any): void {
                 proxy.pdfViewerBase.openNotificationPopup();
-                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderThumbnail);
+                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText,
+                                                      proxy.pdfViewer.serverActionSettings.renderThumbnail);
             };
         } else {
             for (let count: number = proxy.startIndex; count < proxy.thumbnailLimit; count++) {
-                let currentPageImage: HTMLImageElement = this.getThumbnailImageElement(count);
+                const currentPageImage: HTMLImageElement = this.getThumbnailImageElement(count);
                 if ((currentPageImage && currentPageImage.src === '') || (isNullOrUndefined(currentPageImage) && !isNullOrUndefined(this.pdfViewer.pageOrganizer))) {
                     this.pdfViewerBase.pdfViewerRunner.postMessage({
                         pageIndex: count,
@@ -295,32 +290,34 @@ export class ThumbnailView {
     }
 
     /**
+     * @param {any} event - It describes about the event
      * @private
+     * @returns {void}
      */
     public thumbnailOnMessage(event: any): void {
         if (event.data.message === 'renderThumbnail') {
-            let canvas: HTMLCanvasElement = document.createElement('canvas');
-            let { value, width, height, pageIndex } = event.data;
+            const canvas: HTMLCanvasElement = document.createElement('canvas');
+            const { value, width, height, pageIndex } = event.data;
             canvas.width = width;
             canvas.height = height;
-            const canvasContext = canvas.getContext('2d');
-            const imageData = canvasContext.createImageData(width, height);
+            const canvasContext: CanvasRenderingContext2D = canvas.getContext('2d');
+            const imageData: ImageData = canvasContext.createImageData(width, height);
             imageData.data.set(value);
             canvasContext.putImageData(imageData, 0, 0);
-            let imageUrl: string = canvas.toDataURL();
+            const imageUrl: string = canvas.toDataURL();
             this.pdfViewerBase.releaseCanvas(canvas);
-            let currentPageImage: HTMLImageElement = this.getThumbnailImageElement(pageIndex);
-            if(currentPageImage){
+            const currentPageImage: HTMLImageElement = this.getThumbnailImageElement(pageIndex);
+            if (currentPageImage){
                 currentPageImage.src = imageUrl;
             }
-            let data = ({
+            const data: any = ({
                 thumbnailImage: imageUrl,
                 startPage: this.startIndex,
                 endPage: this.thumbnailLimit,
                 uniqueId: this.pdfViewerBase.documentId,
                 pageIndex: pageIndex
             });
-            if(!Browser.isDevice || this.pdfViewer.enableDesktopMode){
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode){
                 this.updateThumbnailCollection(data);
             }
             else{
@@ -328,17 +325,18 @@ export class ThumbnailView {
                     this.pdfViewer.pageOrganizer.updatePreviewCollection(data);
                 }
             }
-            
+
         }
     }
 
     /**
-   * @param jsonData
-   * @private
-   */
-    // eslint-disable-next-line
+     * @param {any} data - It describes about the data
+     * @private
+     * @returns {void}
+     */
     public updateThumbnailCollection(data: any): void {
         if (data) {
+            // eslint-disable-next-line
             const proxy: ThumbnailView = this;
             if (typeof data !== 'object') {
                 try {
@@ -356,16 +354,18 @@ export class ThumbnailView {
     }
 
     private renderDiv(data?: any): void {
-        // eslint-disable-next-line
         if ((this.pdfViewerBase.pageSize.length === this.pdfViewerBase.pageCount || !isNullOrUndefined(data)) && !this.isRendered) {
             for (let i: number = 100; i < this.pdfViewer.pageCount; i++) {
-                let thumbnail: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_' + i);
-                let pageLink: HTMLAnchorElement = document.getElementById('page_' + i) as HTMLAnchorElement;
-                let thumbnailPageNumber: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_pagenumber_' + i);
-                let currentPageImage: any = this.getThumbnailImageElement(i);
+                const thumbnail: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_' + i);
+                const pageLink: HTMLAnchorElement = document.getElementById('page_' + i) as HTMLAnchorElement;
+                const thumbnailPageNumber: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_pagenumber_' + i);
+                const currentPageImage: HTMLImageElement = this.getThumbnailImageElement(i);
                 let height: number = 180;
-                // eslint-disable-next-line
-                if ((this.pdfViewerBase.pageSize[i] && (this.pdfViewerBase.pageSize[i].height < this.pdfViewerBase.pageSize[i].width)) || (data && (data.pageRotation[i] === 1 || data.pageRotation[i] === 3))) {
+                if ((this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)] &&
+                (this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)].height <
+                this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)].width)) ||
+                (data && (data.pageRotation[parseInt(i.toString(), 10)] === 1 ||
+                data.pageRotation[parseInt(i.toString(), 10)] === 3))) {
                     currentPageImage.style.height = '86px';
                     currentPageImage.style.width = '126px';
                     thumbnail.style.height = '100px';
@@ -376,27 +376,27 @@ export class ThumbnailView {
                     thumbnail.style.marginRight = '0px';
                     height = 140;
                 }
-                this.thumbnailTop = this.thumbnailPageSize[i-1].top + this.thumbnailPageSize[i-1].height;
-                let thumbnailSize: any = {height: height, top:  this.thumbnailTop};
-                this.thumbnailPageSize[i] =  thumbnailSize;
+                this.thumbnailTop = this.thumbnailPageSize[i - 1].top + this.thumbnailPageSize[i - 1].height;
+                const thumbnailSize: any = {height: height, top:  this.thumbnailTop};
+                this.thumbnailPageSize[parseInt(i.toString(), 10)] =  thumbnailSize;
             }
             this.isRendered = true;
         }
     }
 
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - It describes about the page number
      * @private
+     * @returns {void}
      */
     public gotoThumbnailImage(pageNumber: number): void {
         const shouldScroll: boolean = this.checkThumbnailScroll(pageNumber);
         if (this.thumbnailView) {
-            const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[pageNumber] as HTMLAnchorElement;
+            const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[parseInt(pageNumber.toString(), 10)] as HTMLAnchorElement;
             if (thumbnailChild) {
                 const thumbnailDiv: HTMLElement = thumbnailChild.children[0] as HTMLElement;
                 let offsetTop: number;
                 if (shouldScroll) {
-                    // eslint-disable-next-line
                     if (this.pdfViewerBase.pageSize.length === this.pdfViewerBase.pageCount && !this.isRendered) {
                         this.renderDiv();
                     }
@@ -424,8 +424,9 @@ export class ThumbnailView {
 
     /**
      * Determines if there is a need to request thumbnails based on the current page number.
-     * @param currentPageNumber The current page number.
-     * @returns The page number to request thumbnails for.
+     *
+     * @param {number} currentPageNumber The current page number.
+     * @returns {number} The page number to request thumbnails for.
      */
     private determineThumbnailsRequest(currentPageNumber: number): number {
         const pageCount: number = this.pdfViewer.pageCount;
@@ -434,8 +435,8 @@ export class ThumbnailView {
         if (this.list.length === numberOfBatches) {
             return pageCount;
         }
-        for (let i:number = 0; i < this.list.length; i++) {
-            if (currentPageNumber === this.list[i]) {
+        for (let i: number = 0; i < this.list.length; i++) {
+            if (currentPageNumber === this.list[parseInt(i.toString(), 10)]) {
                 currentPageNumber += batchSize;
                 i = -1; // Resetting i to -1 to start from the beginning of the list again
             }
@@ -452,20 +453,18 @@ export class ThumbnailView {
             if (numVisibleThumbs > 0) {
                 const visibleFirstPageID: number = this.getPageNumberFromID(visibleThumbs.first.id);
                 // account for only one thumbnail being visible.
-                // eslint-disable-next-line max-len
-                const visibleLastPageID: number = (numVisibleThumbs > 1 ? this.getPageNumberFromID(visibleThumbs.last.id) : visibleFirstPageID);
+                const visibleLastPageID: number = (numVisibleThumbs > 1 ?
+                    this.getPageNumberFromID(visibleThumbs.last.id) : visibleFirstPageID);
                 if (pageNumber <= visibleFirstPageID || pageNumber >= visibleLastPageID) {
                     shouldScroll = true;
                 } else {
-                    // eslint-disable-next-line
-                    visibleThumbs.views.some(view => {
+                    visibleThumbs.views.some((view: any) => {
                         const pageID: string[] = view.id.split('_');
                         const thumbPageNumber: string = pageID[pageID.length - 1];
-                        // eslint-disable-next-line radix
-                        if (parseInt(thumbPageNumber) !== pageNumber) {
+                        if (parseInt(thumbPageNumber, 10) !== pageNumber) {
                             return false;
                         }
-                        shouldScroll = view.percent < 100 && (view.view.offsetWidth > view.view.offsetHeight && view.percent < 97); 
+                        shouldScroll = view.percent < 100 && (view.view.offsetWidth > view.view.offsetHeight && view.percent < 97);
                         return true;
                     });
                 }
@@ -473,30 +472,34 @@ export class ThumbnailView {
         }
         return shouldScroll;
     }
+
     private getPageNumberFromID(pageId: string): number {
         const pageID: string[] = pageId.split('_');
         const pageNumber: string = pageID[pageID.length - 1];
-        // eslint-disable-next-line radix
-        return parseInt(pageNumber);
+        return parseInt(pageNumber, 10);
     }
+
     private setFocusStyle(thumbnail: HTMLElement, pageNumber: number): void {
         if (thumbnail.children[0].id === this.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageNumber) {
             this.setMouseFocusStyle(thumbnail.children[0] as HTMLElement);
         }
     }
 
-    // eslint-disable-next-line
     private renderThumbnailImage(data: any, pageNumber?: number): void {
         if (this.thumbnailView && data) {
-            this.pdfViewerBase.clientSideRendering ? this.renderClientThumbnailImage(data) : this.renderServerThumbnailImage(data);
+            if (this.pdfViewerBase.clientSideRendering) {
+                this.renderClientThumbnailImage(data);
+            } else {
+                this.renderServerThumbnailImage(data);
+            }
         }
-        if(!isNullOrUndefined(data) && !isNullOrUndefined(this.pdfViewer.pageOrganizer)){
+        if (!isNullOrUndefined(data) && !isNullOrUndefined(this.pdfViewer.pageOrganizer)){
             this.pdfViewer.pageOrganizer.getData(data, this.pdfViewerBase.clientSideRendering);
         }
         this.thumbnailLimit = this.determineThumbnailsRequest(!isNullOrUndefined(pageNumber) ? pageNumber : this.thumbnailLimit);
-        if (this.thumbnailLimit !== this.pdfViewerBase.pageCount && (this.thumbnailView || !isNullOrUndefined(this.pdfViewer.pageOrganizer))) {
-            // eslint-disable-next-line
-            let isIE: boolean = !!(document as any).documentMode;
+        if (this.thumbnailLimit !== this.pdfViewerBase.pageCount && (this.thumbnailView ||
+             !isNullOrUndefined(this.pdfViewer.pageOrganizer))) {
+            const isIE: boolean = !!(document as any).documentMode;
             if (!isIE) {
                 Promise.all([this.createRequestForThumbnailImages()]);
             } else {
@@ -506,14 +509,12 @@ export class ThumbnailView {
     }
 
     private createRequestForThumbnailImages(): Promise<any> {
+        // eslint-disable-next-line
         const proxy: ThumbnailView = this;
-        // eslint-disable-next-line
-        let isIE: boolean = !!(document as any).documentMode;
+        const isIE: boolean = !!(document as any).documentMode;
         if (!isIE) {
-        // eslint-disable-next-line
-        return new Promise<any>(
-            // eslint-disable-next-line
-            function (renderThumbnailImage: any, reject: any): any {
+            return new Promise<any>(
+                function (renderThumbnailImage: any, reject: any): any {
                     proxy.renderViewPortThumbnailImage(proxy);
                 });
         } else {
@@ -522,9 +523,7 @@ export class ThumbnailView {
         }
     }
 
-
-    // eslint-disable-next-line
-    private renderServerThumbnailImage(data: any) {
+    private renderServerThumbnailImage(data: any): void {
         const startPage: number = !isNullOrUndefined(data && (data.startPage)) ? data.startPage : this.startIndex;
         const endPage: number = !isNullOrUndefined(data && (data.endPage)) ? data.endPage : this.thumbnailLimit;
         for (let i: number = startPage; i < endPage; i++) {
@@ -533,41 +532,40 @@ export class ThumbnailView {
         this.isThumbnailViewOpen();
     }
 
-    // eslint-disable-next-line
-    private renderClientThumbnailImage(data: any) {
+    private renderClientThumbnailImage(data: any): void {
         const pageIndex: number = data.pageIndex;
         this.thumbnailImageRender(pageIndex, data);
     }
 
-    // eslint-disable-next-line
-    private thumbnailImageRender(pageIndex: number, data: any) {
-        // eslint-disable-next-line max-len
+    private thumbnailImageRender(pageIndex: number, data: any): void {
         if (!isNullOrUndefined(data.pageRotation) && Object.keys(data.pageRotation).length > 0 && !this.isRendered) {
             this.renderDiv(data);
         }
-        // eslint-disable-next-line max-len
-        let thumbnail: HTMLElement =  document.getElementById(this.pdfViewer.element.id + '_thumbnail_' + pageIndex);
-        let pageLink: HTMLAnchorElement = document.getElementById('page_'  + pageIndex) as HTMLAnchorElement;
-        let thumbnailPageNumber: HTMLElement = document.getElementById(this.pdfViewer.element.id+ '_thumbnail_pagenumber_' + pageIndex);
-        let currentPageImage: any = this.getThumbnailImageElement(pageIndex);
+        const thumbnail: HTMLElement =  document.getElementById(this.pdfViewer.element.id + '_thumbnail_' + pageIndex);
+        const pageLink: HTMLAnchorElement = document.getElementById('page_'  + pageIndex) as HTMLAnchorElement;
+        const thumbnailPageNumber: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_pagenumber_' + pageIndex);
+        const currentPageImage: HTMLImageElement = this.getThumbnailImageElement(pageIndex);
         if (!isNullOrUndefined(thumbnail) && !isNullOrUndefined(currentPageImage)) {
-        currentPageImage.src = this.pdfViewerBase.clientSideRendering || typeof data.thumbnailImage === 'string' || data.thumbnailImage instanceof String ? data.thumbnailImage : data.thumbnailImage[pageIndex];
-        currentPageImage.alt = this.pdfViewer.element.id + '_thumbnail_page_' + pageIndex;
-        if (this.pdfViewerBase.pageSize[pageIndex] && (this.pdfViewerBase.pageSize[pageIndex].height < this.pdfViewerBase.pageSize[pageIndex].width)) {
-            currentPageImage.style.height = '86px';
-            currentPageImage.style.width = '126px';
-            thumbnail.style.height = '100px';
-            thumbnail.style.width = '140px';
-            // pageLink.style.left = '-25px';
-            thumbnailPageNumber.style.left = '18px';
-            pageLink.style.marginRight = '41px';
-            thumbnail.style.marginLeft = '-5px';
-            thumbnail.style.marginRight = '0px';            
-        }
-        if(pageIndex === 0) {
-            this.pdfViewerBase.navigationPane.enableThumbnailButton();
-            this.isThumbnailViewOpen();
-        }
+            currentPageImage.src = this.pdfViewerBase.clientSideRendering || typeof data.thumbnailImage === 'string' || data.thumbnailImage instanceof String ? data.thumbnailImage : data.thumbnailImage[parseInt(pageIndex.toString(), 10)];
+            currentPageImage.alt = this.pdfViewer.element.id + '_thumbnail_page_' + pageIndex;
+            pageLink.setAttribute('aria-label', `Thumbnail of Page ${pageIndex + 1}`);
+            if (this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)] &&
+            (this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height <
+            this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width)) {
+                currentPageImage.style.height = '86px';
+                currentPageImage.style.width = '126px';
+                thumbnail.style.height = '100px';
+                thumbnail.style.width = '140px';
+                // pageLink.style.left = '-25px';
+                thumbnailPageNumber.style.left = '18px';
+                pageLink.style.marginRight = '41px';
+                thumbnail.style.marginLeft = '-5px';
+                thumbnail.style.marginRight = '0px';
+            }
+            if (pageIndex === 0) {
+                this.pdfViewerBase.navigationPane.enableThumbnailButton();
+                this.isThumbnailViewOpen();
+            }
         }
     }
 
@@ -579,6 +577,7 @@ export class ThumbnailView {
             this.thumbnailSelectionRing.addEventListener('mouseleave', this.thumbnailMouseLeave);
         }
     }
+
     private unwireUpEvents(): void {
         if (this.thumbnailSelectionRing && this.thumbnailImage) {
             this.thumbnailSelectionRing.removeEventListener('click', this.thumbnailClick);
@@ -589,48 +588,52 @@ export class ThumbnailView {
     }
 
     /**
-     * @param event
+     * @param {MouseEvent} event - It describes about the event
+     * @param {boolean} isKeyboard - It describes about the isKeyboard value
      * @private
+     * @returns {void}
      */
     public thumbnailClick = (event: MouseEvent, isKeyboard?: boolean): void => {
+        // eslint-disable-next-line
         const proxy: ThumbnailView = this;
-        const pageNumber: number = proxy.getPageNumberFromID(event.srcElement.id);
+        const target: HTMLElement = event.target as HTMLElement;
+        const pageNumber: number = proxy.getPageNumberFromID(target.id);
         if (proxy.previousElement) {
             proxy.previousElement.classList.remove('e-pv-thumbnail-selection');
             proxy.previousElement.classList.remove('e-pv-thumbnail-focus');
             proxy.previousElement.classList.add('e-pv-thumbnail-selection-ring');
         }
-        if (event.srcElement.parentElement.id === proxy.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageNumber) {
-            proxy.setSelectionStyle(event.srcElement.parentElement);
-            proxy.previousElement = event.srcElement.parentElement;
-        } else if (event.srcElement.id === proxy.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageNumber) {
-            proxy.setSelectionStyle(event.srcElement as HTMLElement);
-            proxy.previousElement = event.srcElement as HTMLElement;
+        if (target.parentElement.id === proxy.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageNumber) {
+            proxy.setSelectionStyle(target.parentElement);
+            proxy.previousElement = target.parentElement;
+        } else if (target.id === proxy.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageNumber) {
+            proxy.setSelectionStyle(target as HTMLElement);
+            proxy.previousElement = target as HTMLElement;
         }
         proxy.pdfViewer.fireThumbnailClick(pageNumber + 1);
         proxy.isThumbnailClicked = true;
         proxy.goToThumbnailPage(pageNumber + 1);
-        if(!isKeyboard){
+        if (!isKeyboard){
             proxy.pdfViewerBase.focusViewerContainer();
         }
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
-            // eslint-disable-next-line
-            let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
+            const currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber, 10);
             this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
         }
     };
 
     /**
-     * @param event
+     * @param {KeyboardEvent} event - It describes about the event
      * @private
+     * @returns {void}
      */
     private thumbnailKeydown = (event: KeyboardEvent): void => {
-        if (event && event.key === "Enter" || event.key === " ") {
+        if (event && event.key === 'Enter' || event.key === ' ') {
             this.thumbnailClick(event as any, true);
             event.preventDefault();
             event.stopPropagation();
         }
-    }
+    };
 
     private goToThumbnailPage(pageNumber: number): void {
         if (pageNumber > 0 && pageNumber <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageNumber) {
@@ -639,6 +642,7 @@ export class ThumbnailView {
             this.isThumbnailClicked = false;
         }
     }
+
     private setSelectionStyle(thumbnailElement: HTMLElement): void {
         thumbnailElement.classList.remove('e-pv-thumbnail-selection-ring');
         thumbnailElement.classList.remove('e-pv-thumbnail-hover');
@@ -647,21 +651,23 @@ export class ThumbnailView {
     }
 
     /**
-     * @param event
+     * @param {MouseEvent} event - It describes about the event
      * @private
+     * @returns {void}
      */
     public thumbnailMouseOver = (event: MouseEvent): void => {
+        // eslint-disable-next-line
         const proxy: ThumbnailView = this;
-        const pageNumber: number = proxy.getPageNumberFromID(event.srcElement.id);
-        if (event.srcElement.id === proxy.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageNumber) {
-            proxy.setMouseOverStyle(event.srcElement as HTMLElement);
-        } else if (event.srcElement.id === proxy.pdfViewer.element.id + '_thumbnail_image_' + pageNumber) {
-            proxy.setMouseOverStyle(event.srcElement.parentElement);
+        const target: HTMLElement = event.target as HTMLElement;
+        const pageNumber: number = proxy.getPageNumberFromID(target.id);
+        if (target.id === proxy.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageNumber) {
+            proxy.setMouseOverStyle(target as HTMLElement);
+        } else if (target.id === proxy.pdfViewer.element.id + '_thumbnail_image_' + pageNumber) {
+            proxy.setMouseOverStyle(target.parentElement);
         }
     };
 
     private setMouseOverStyle(thumbnailElement: HTMLElement): void {
-        // eslint-disable-next-line max-len
         if (!thumbnailElement.classList.contains('e-pv-thumbnail-selection')) {
             thumbnailElement.classList.remove('e-pv-thumbnail-selection-ring');
             if (!thumbnailElement.classList.contains('e-pv-thumbnail-focus')) {
@@ -671,16 +677,19 @@ export class ThumbnailView {
     }
 
     /**
-     * @param event
+     * @param {MouseEvent} event - It describes about the event
      * @private
+     * @returns {void}
      */
     public thumbnailMouseLeave = (event: MouseEvent): void => {
+        // eslint-disable-next-line
         const proxy: ThumbnailView = this;
-        const pageNumber: number = proxy.getPageNumberFromID(event.srcElement.id);
-        if (event.srcElement.parentElement.id === proxy.pdfViewer.element.id + '_thumbnail_view') {
-            proxy.setMouseLeaveStyle(event.srcElement.children[0].children[0] as HTMLElement);
-        } else if (event.srcElement.parentElement.id === proxy.pdfViewer.element.id + '_thumbnail_' + pageNumber) {
-            proxy.setMouseLeaveStyle(event.srcElement.parentElement.children[0] as HTMLElement);
+        const target: HTMLElement = event.target as HTMLElement;
+        const pageNumber: number = proxy.getPageNumberFromID(target.id);
+        if (target.parentElement.id === proxy.pdfViewer.element.id + '_thumbnail_view') {
+            proxy.setMouseLeaveStyle(target.children[0].children[0] as HTMLElement);
+        } else if (target.parentElement.id === proxy.pdfViewer.element.id + '_thumbnail_' + pageNumber) {
+            proxy.setMouseLeaveStyle(target.parentElement.children[0] as HTMLElement);
         }
     };
 
@@ -712,8 +721,10 @@ export class ThumbnailView {
             this.previousElement = thumbnailDiv;
         }
     }
+
     /**
      * @private
+     * @returns {void}
      */
     public clear(): void {
         this.startIndex = 0;
@@ -743,7 +754,6 @@ export class ThumbnailView {
         this.unwireUpEvents();
     }
 
-
     private getVisibleThumbs(): IVisibleThumbnail {
         return this.getVisibleElements(this.pdfViewerBase.navigationPane.sideBarContent, this.thumbnailView.children);
     }
@@ -754,15 +764,15 @@ export class ThumbnailView {
         const left: number = scrollElement.scrollLeft;
         const right: number = left + scrollElement.clientWidth;
         /**
-         * @param thumbnailViewChildrenElement
+         * @param {HTMLElement} thumbnailViewChildrenElement - It describes about the thumbnail view children element
+         * @returns {boolean} - boolean
          */
         function isThumbnailElementBottomAfterViewTop(thumbnailViewChildrenElement: HTMLElement): boolean {
             const elementBottom: number =
                 thumbnailViewChildrenElement.offsetTop + thumbnailViewChildrenElement.clientTop + thumbnailViewChildrenElement.clientHeight;
             return elementBottom > top;
         }
-        // eslint-disable-next-line
-        let visible: Array<IVisibleThumbnailElement> = [];
+        const visible: Array<IVisibleThumbnailElement> = [];
         let thumbnailView: HTMLElement;
         let element: HTMLElement;
         let currentHeight: number;
@@ -776,7 +786,6 @@ export class ThumbnailView {
         let percentVisible: number;
         let firstVisibleElementInd: number = thumbnailViewChildren.length === 0 ? 0 :
             this.binarySearchFirstItem(thumbnailViewChildren, isThumbnailElementBottomAfterViewTop);
-
         if (thumbnailViewChildren.length > 0) {
             firstVisibleElementInd =
                 this.backtrackBeforeAllVisibleElements(firstVisibleElementInd, thumbnailViewChildren, top);
@@ -791,7 +800,6 @@ export class ThumbnailView {
             viewHeight = element.clientHeight;
             viewRight = currentWidth + viewWidth;
             viewBottom = currentHeight + viewHeight;
-
             if (lastEdge === -1) {
                 if (viewBottom >= bottom) {
                     lastEdge = viewBottom;
@@ -799,17 +807,14 @@ export class ThumbnailView {
             } else if (currentHeight > lastEdge) {
                 break;
             }
-
             if (viewBottom <= top || currentHeight >= bottom ||
                 viewRight <= left || currentWidth >= right) {
                 continue;
             }
-
             hiddenHeight = Math.max(0, top - currentHeight) +
                 Math.max(0, viewBottom - bottom);
             hiddenWidth = Math.max(0, left - currentWidth) +
                 Math.max(0, viewRight - right);
-            // eslint-disable-next-line no-bitwise
             percentVisible = ((viewHeight - hiddenHeight) * (viewWidth - hiddenWidth) * 100 / viewHeight / viewWidth) | 0;
             visible.push({
                 id: thumbnailView.id,
@@ -819,13 +824,11 @@ export class ThumbnailView {
                 percent: percentVisible
             });
         }
-
         const first: IVisibleThumbnailElement = visible[0];
         const last: IVisibleThumbnailElement = visible[visible.length - 1];
         return { first: first, last: last, views: visible };
     }
 
-    // eslint-disable-next-line
     private binarySearchFirstItem(items: HTMLCollection, condition: any): number {
         let minIndex: number = 0;
         let maxIndex: number = items.length - 1;
@@ -836,7 +839,6 @@ export class ThumbnailView {
             return minIndex;
         }
         while (minIndex < maxIndex) {
-            // eslint-disable-next-line no-bitwise
             const currentIndex: number = (minIndex + maxIndex) >> 1;
             if (condition(this.getThumbnailElement(currentIndex))) {
                 maxIndex = currentIndex;
@@ -868,40 +870,52 @@ export class ThumbnailView {
     }
 
     /**
+     * @param {number} index - It describes about the index value
      * @private
+     * @returns {HTMLElement} - html element
      */
     private getThumbnailElement(index: number): HTMLElement {
-        const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[index] as HTMLAnchorElement;
+        const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[parseInt(index.toString(), 10)] as HTMLAnchorElement;
         return thumbnailChild.children[0] as HTMLElement;
     }
+
     /**
+     * @param {number} index - It describes about the index value
      * @private
+     * @returns {HTMLElement} - html element
      */
     private getThumbnailLinkElement(index: number): HTMLElement {
-        const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[index] as HTMLAnchorElement;
+        const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[parseInt(index.toString(), 10)] as HTMLAnchorElement;
         return thumbnailChild;
     }
+
     /**
+     * @param {number} index - It describes about the index value
      * @private
+     * @returns {HTMLImageElement} - html image element
      */
     private getThumbnailImageElement(index: number): HTMLImageElement {
-        if(isNullOrUndefined(this.thumbnailView)){
+        if (isNullOrUndefined(this.thumbnailView)){
             return null;
         }
-        const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[index] as HTMLAnchorElement;
-        if(thumbnailChild)
-            return thumbnailChild.children[0].children[0].children[0] as HTMLImageElement;
-        else    
-            return null;
+        const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[parseInt(index.toString(), 10)] as HTMLAnchorElement;
+        if (thumbnailChild)
+        {return thumbnailChild.children[0].children[0].children[0] as HTMLImageElement; }
+        else
+        {return null; }
     }
+
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.clear();
     }
+
     /**
      * @private
+     * @returns {string} - string
      */
     public getModuleName(): string {
         return 'ThumbnailView';
@@ -920,6 +934,7 @@ export interface IVisibleThumbnailElement {
     view: HTMLElement
     percent: number
 }
+
 /**
  * The `IVisibleThumbnail` module is used to handle visible thumbnail collection of PDF viewer.
  *
@@ -928,6 +943,6 @@ export interface IVisibleThumbnailElement {
 export interface IVisibleThumbnail {
     first: IVisibleThumbnailElement
     last: IVisibleThumbnailElement
-    // eslint-disable-next-line
+
     views: Array<IVisibleThumbnailElement>;
 }

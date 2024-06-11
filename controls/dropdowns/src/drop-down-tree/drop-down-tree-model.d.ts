@@ -1,4 +1,4 @@
-import { Input, InputObject, FloatLabelType, TextBox, InputEventArgs } from '@syncfusion/ej2-inputs';import { createCheckBox } from '@syncfusion/ej2-buttons';import { NotifyPropertyChanges, INotifyPropertyChanged, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Component, EventHandler, attributes, formatUnit, ChildProperty, remove, L10n, extend } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, prepend, Complex, closest, setValue, getValue, compile, append } from '@syncfusion/ej2-base';import { select, selectAll, isNullOrUndefined as isNOU, matches, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Popup } from '@syncfusion/ej2-popups';import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs, NodeExpandEventArgs } from '@syncfusion/ej2-navigations';import { NodeCheckEventArgs, FailureEventArgs} from '@syncfusion/ej2-navigations';
+import { Input, InputObject, FloatLabelType, TextBox, InputEventArgs } from '@syncfusion/ej2-inputs';import { createCheckBox } from '@syncfusion/ej2-buttons';import { NotifyPropertyChanges, INotifyPropertyChanged, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Component, EventHandler, attributes, formatUnit, ChildProperty, remove, L10n, extend } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, prepend, Complex, closest, setValue, getValue, compile, append } from '@syncfusion/ej2-base';import { select, selectAll, isNullOrUndefined as isNOU, matches, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Popup } from '@syncfusion/ej2-popups';import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs } from '@syncfusion/ej2-navigations';import { NodeCheckEventArgs, FailureEventArgs} from '@syncfusion/ej2-navigations';
 import {Mode,ExpandOn,TreeFilterType,SortOrder,DdtBeforeOpenEventArgs,DdtChangeEventArgs,DdtPopupEventArgs,DdtDataBoundEventArgs,DdtFilteringEventArgs,DdtFocusEventArgs,DdtKeyPressEventArgs,DdtSelectEventArgs} from "./drop-down-tree";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -393,7 +393,7 @@ export interface DropDownTreeModel extends ComponentModel{
     /**
      * Specifies whether to destroy the popup or to maintain it in DOM when it is closed.
      * When this property is set to false, then the popup will not be removed from DOM once it is closed.
-     * 
+     *
      * @default true
      * @deprecated
      */
@@ -488,91 +488,91 @@ export interface DropDownTreeModel extends ComponentModel{
     /**
      * Triggers when the data fetch request from the remote server fails.
      *
-     * @event
+     * @event actionFailure
      */
     actionFailure?: EmitType<Object>;
 
     /**
      * Fires when popup opens before animation.
      *
-     * @event
+     * @event beforeOpen
      */
     beforeOpen?: EmitType<DdtBeforeOpenEventArgs>;
 
     /**
      * Triggers when an item in a popup is selected or when the model value is changed by user.
      *
-     * @event
+     * @event change
      */
     change?: EmitType<DdtChangeEventArgs>;
 
     /**
      * Fires when popup close after animation completion.
      *
-     * @event
+     * @event close
      */
     close?: EmitType<DdtPopupEventArgs>;
 
     /**
      * Triggers when the Dropdown Tree input element gets focus-out.
      *
-     * @event
+     * @event blur
      */
     blur?: EmitType<Object>;
 
     /**
      * Triggers when the Dropdown Tree is created successfully.
      *
-     * @event
+     * @event created
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when data source is populated in the Dropdown Tree.
      *
-     * @event
+     * @event dataBound
      */
     dataBound?: EmitType<DdtDataBoundEventArgs>;
 
     /**
      * Triggers when the Dropdown Tree is destroyed successfully.
      *
-     * @event
+     * @event destroyed
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers on typing a character in the filter bar when the **allowFiltering** is enabled.
      *
-     * @event
+     * @event filtering
      */
     filtering?: EmitType<DdtFilteringEventArgs>;
 
     /**
      * Triggers when the Dropdown Tree input element is focused.
      *
-     * @event
+     * @event focus
      */
     focus?: EmitType<DdtFocusEventArgs>;
 
     /**
      * Triggers when key press is successful. It helps to customize the operations at key press.
      *
-     * @event
+     * @event keyPress
      */
     keyPress?: EmitType<DdtKeyPressEventArgs>;
 
     /**
      * Fires when popup opens after animation completion.
      *
-     * @event
+     * @event open
      */
     open?: EmitType<DdtPopupEventArgs>;
 
     /**
      * Triggers when an item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
      *
-     * @event
+     * @event select
      */
     select?: EmitType<DdtSelectEventArgs>;
 

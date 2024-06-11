@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
 import { ProgressBar } from '../../progressbar';
 import { ProgressAnimation } from '../utils/progress-animation';
 import { PathOption, getElement, Size, measureText } from '@syncfusion/ej2-svg-base';
@@ -33,7 +30,11 @@ export class Circular {
     constructor(progress: ProgressBar) {
         this.progress = progress;
     }
-    /** To render the circular track */
+    /**
+     * To render the circular track.
+     *
+     * @returns {void}
+     */
     public renderCircularTrack(): void {
         const progress: ProgressBar = this.progress;
         const circularTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularTrackGroup' });
@@ -76,7 +77,14 @@ export class Circular {
         progress.svgObject.appendChild(circularTrackGroup);
     }
 
-    /** To render the circular progress */
+    /**
+     * Renders circular progress to update previous progress.
+     *
+     * @param {number} previousEnd - The previous end value of the progress.
+     * @param {number} previousTotalEnd - The previous total end value of the progress.
+     * @param {boolean} refresh - Indicates whether to refresh the progress.
+     * @returns {void}
+     */
     public renderCircularProgress(previousEnd?: number, previousTotalEnd?: number, refresh?: boolean): void {
         const progress: ProgressBar = this.progress;
         const startAngle: number = progress.startAngle;
@@ -150,11 +158,11 @@ export class Circular {
                     circularProgressGroup, radius, strokeWidth, circularPath, progressEndAngle, progressEnd, refresh
                 );
             }
-            if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') || progress.isIndeterminate) {
+            if (((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') || progress.isIndeterminate) {
                 this.delay = (progress.secondaryProgress !== null) ? 300 : progress.animation.delay;
                 linearClipPath = progress.createClipPath(progress.clipPath, null, refresh ? previousPath : '', refresh);
                 circularProgressGroup.appendChild(progress.clipPath);
-                if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate && !progress.isActive) {
+                if (((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate && !progress.isActive) {
                     (<SVGPathElement>circularProgress).style.clipPath = 'url(#' + progress.element.id + '_clippath)';
                     this.animation.doCircularAnimation(
                         this.centerX, this.centerY, radius, progressEndAngle, progressEnd, linearClipPath, progress,
@@ -179,7 +187,15 @@ export class Circular {
         }
     }
 
-    /** To render the circular buffer */
+    /**
+     * Renders circular buffer for the progress bar.
+     *
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {number} radius - The radius of the circular buffer.
+     * @param {number} progressTotalAngle - The total angle covered by the progress.
+     * @returns {void}
+     * @private
+     */
     private renderCircularBuffer(progress: ProgressBar, radius: number, progressTotalAngle: number): void {
         let bufferClipPath: Element;
         let circularBuffer: Element;
@@ -220,7 +236,7 @@ export class Circular {
             }
         }
         circularBufferGroup.appendChild(circularBuffer);
-        if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && !progress.isActive) {
+        if (((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && !progress.isActive) {
             bufferClipPath = progress.createClipPath(progress.bufferClipPath, null, '', false);
             circularBufferGroup.appendChild(progress.bufferClipPath);
             circularBuffer.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathBuffer)');
@@ -232,7 +248,12 @@ export class Circular {
         progress.svgObject.appendChild(circularBufferGroup);
     }
 
-    /** To render the circular Label */
+    /**
+     * To render the circular Label.
+     *
+     * @param {boolean} isProgressRefresh - Indicates whether progress should be refreshed. Defaults to false.
+     * @returns {void}
+     */
     public renderCircularLabel(isProgressRefresh: boolean = false): void {
         let end: number;
         let circularLabel: Element;
@@ -264,7 +285,7 @@ export class Circular {
             );
             circularLabel = progress.renderer.createText(option, argsData.text);
             circularLabelGroup.appendChild(circularLabel);
-            if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate) {
+            if (((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate) {
                 end = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
                 end = (progress.value < progress.minimum) ? 0 : end;
                 this.animation.doLabelAnimation(circularLabel, isProgressRefresh ? progress.previousWidth :
@@ -275,7 +296,19 @@ export class Circular {
         }
     }
 
-    /** To render a progressbar active state */
+    /**
+     * Renders the active state of the circular progress.
+     *
+     * @param {Element} progressGroup - The group element containing the progress.
+     * @param {number} radius - The radius of the circular progress.
+     * @param {number} strokeWidth - The width of the progress stroke.
+     * @param {string} circularPath - The path representing the circular progress.
+     * @param {number} endAngle - The angle at which the progress ends.
+     * @param {number} totalEnd - The total end value of the progress.
+     * @param {boolean} refresh - Indicates whether the progress should be refreshed.
+     * @returns {void}
+     * @private
+     */
     private renderActiveState(
         progressGroup: Element, radius: number, strokeWidth: number, circularPath: string,
         endAngle: number, totalEnd: number, refresh: boolean
@@ -309,7 +342,14 @@ export class Circular {
         );
     }
 
-    /** Checking the segment size */
+    /**
+     * Validates the segment size for the progress bar.
+     *
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {number} thickness - The thickness of the progress segments.
+     * @returns {string} - The validated segment size.
+     * @private
+     */
     private validateSegmentSize(progress: ProgressBar, thickness: number): string {
         let validSegment: string;
         let progressSegment: number;
@@ -328,7 +368,12 @@ export class Circular {
         return validSegment;
     }
 
-    /** checking progress color */
+    /**
+     * Checks and retrieves the color for the circular progress.
+     *
+     * @returns {string} - The color for the circular progress.
+     * @private
+     */
     private checkingCircularProgressColor(): string {
         let circularColor: string;
         const progress: ProgressBar = this.progress;

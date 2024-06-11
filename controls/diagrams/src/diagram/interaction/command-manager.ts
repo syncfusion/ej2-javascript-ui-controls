@@ -91,7 +91,7 @@ export class CommandHandler {
     /**   @private  */
     public oldSelectedObjects: object = {};
     /**   @private  */
-    public changedNodeZIndexes:object = {};
+    public changedNodeZIndexes: object = {};
     /**   @private  */
     public connectorsTable: Object[] = [];
     /** @private */
@@ -109,7 +109,7 @@ export class CommandHandler {
     public canUpdateTemplate: boolean = false;
 
     private childTable: {} = {};
-    private objectStore:any = [];
+    private objectStore: any = [];
     private parentTable: {} = {};
     private blazor: string = 'Blazor';
     private blazorInterop: string = 'sfBlazor';
@@ -223,26 +223,21 @@ export class CommandHandler {
             }
         }
         //840454- support to provide isSticky property for tooltip in diagram control
-        (this.diagram.tooltipObject as Tooltip).isSticky = false;        
-        if (isBlazor() && isTooltipVisible) {
-            this.diagram.tooltipObject.close();
-        }
+        (this.diagram.tooltipObject as Tooltip).isSticky = false;
         if ((node as Node).tooltip) {
             (this.diagram.tooltipObject as DiagramTooltipModel).openOn = ((node as Node).tooltip as DiagramTooltipModel).openOn;
         }
         // Task 834121: Content-Security-Policy support for diagram
-        if (typeof content === 'string'){
-            this.diagram.tooltipObject.content = initializeCSPTemplate(function() {return content});
-        }else{
+        if (typeof content === 'string') {
+            this.diagram.tooltipObject.content = initializeCSPTemplate(function (): string | Function | HTMLElement {
+                return content;
+            });
+        } else {
             this.diagram.tooltipObject.content = content;
         }
         this.diagram.tooltipObject.offsetX = 0;
         this.diagram.tooltipObject.offsetY = 0;
-        if (isBlazor()) {
-            (this.diagram.tooltipObject as BlazorTooltip).updateTooltip(targetEle);
-        } else {
-            (this.diagram.tooltipObject as Tooltip).refresh(targetEle);
-        }
+        (this.diagram.tooltipObject as Tooltip).refresh(targetEle);
         if (isTooltipVisible) {
             setTimeout(
                 () => {
@@ -304,7 +299,8 @@ export class CommandHandler {
         nodeNewChanges[parseInt(nodeIndex.toString(), 10)] = nodeNewProperty;
         this.diagram.nodePropertyChange(droppedObject as Node, nodeOldProperty as Node, nodeNewProperty as Node);
         this.diagram.updateSelector();
-        this.diagram.connectorPropertyChange(targetConnector as Connector, connectorOldProperty as Connector, connectorNewProperty as Connector);
+        this.diagram.connectorPropertyChange(targetConnector as Connector, connectorOldProperty as Connector,
+                                             connectorNewProperty as Connector);
         //Check Whether the connector connects with the node
         if (existingConnector.sourceID !== '' && existingConnector.targetID !== ''){
             const newConnector: ConnectorModel = {
@@ -391,37 +387,7 @@ export class CommandHandler {
      * @private
      */
     public updateConnectorValue(args: IBlazorConnectionChangeEventArgs): void {
-        if (args.cancel) {
-            this.enableCloneObject(true);
-            this.ismouseEvents(true);
-            this.insertBlazorObject(args.connector as Connector);
-            const newChanges: Connector = {} as Connector;
-            const oldChanges: Connector = {} as Connector;
-            const connector: Connector = this.diagram.nameTable[args.connector.id];
-            const nodeEndId: string = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
-            const portEndId: string = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
-            const connectionEnd: boolean = args.connectorEnd === 'ConnectorTargetEnd';
-            const newValue: ConnectorValue = connectionEnd ? args.newValue.connectorTargetValue : args.newValue.connectorSourceValue;
-            const oldValue: ConnectorValue = connectionEnd ? args.oldValue.connectorTargetValue : args.oldValue.connectorSourceValue;
-            oldChanges[`${nodeEndId}`] = newValue.nodeId;
-            oldChanges[`${portEndId}`] = newValue.portId;
-            newChanges[`${nodeEndId}`] = oldValue.nodeId;
-            newChanges[`${portEndId}`] = oldValue.portId;
-            if (args.cancel && args.connectorEnd !== 'ConnectorTargetEnd') {
-                connector.sourceID = oldValue.nodeId;
-                if (args.connector.sourcePortID) {
-                    connector.sourcePortID = oldValue.portId;
-                }
-                this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
-            }
-            if (args.cancel && args.connectorEnd === 'ConnectorTargetEnd') {
-                if (args.connector.targetPortID) {
-                    connector.targetPortID = oldValue.portId;
-                }
-                connector.targetID = oldValue.nodeId;
-                this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
-            }
-        }
+        //remove Blazor code
     }
 
     /**
@@ -480,7 +446,6 @@ export class CommandHandler {
     public disConnect(
         obj: IElement, endPoint?: string, canCancel?: boolean)
         : IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs {
-        const checkBlazor: boolean = isBlazor();
         let oldChanges: Connector = {} as Connector; let newChanges: Connector = {} as Connector;
         let returnargs: IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs;
         let selectorModel: SelectorModel; let connector: Connector;
@@ -491,9 +456,6 @@ export class CommandHandler {
             connector = this.diagram.currentDrawingObject as Connector;
         }
         if (obj && connector && (hasSingleConnection(this.diagram) || this.diagram.currentDrawingObject)) {
-            if (isBlazor()) {
-                this.diagram.insertValue(cloneObject(connector), false);
-            }
             if (endPoint && (endPoint === 'ConnectorSourceEnd' || endPoint === 'ConnectorTargetEnd')) {
                 const nodeEndId: string = endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                 const portEndId: string = endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
@@ -523,18 +485,7 @@ export class CommandHandler {
                     connector: cloneBlazorObject(connector), oldValue: oldChanges,
                     newValue: newChanges, cancel: false, state: 'Changing', connectorEnd: endPoint
                 };
-                if (isBlazor()) {
-                    arg = {
-                        connector: cloneBlazorObject(connector),
-                        oldValue: { connector: cloneBlazorObject(oldChanges) as Connector },
-                        newValue: { connector: cloneBlazorObject(newChanges) as Connector },
-                        cancel: false, state: 'Changed', connectorEnd: endPoint
-                    } as IBlazorConnectionChangeEventArgs;
-                    returnargs = arg;
-                }
-                if (!checkBlazor) {
-                    this.triggerEvent(DiagramEvent.connectionChange, arg);
-                }
+                this.triggerEvent(DiagramEvent.connectionChange, arg);
                 if (arg.cancel) {
                     connector.sourceID = oldChanges.sourceID; connector.sourcePortID = oldChanges.sourcePortID;
                     connector.targetID = oldChanges.targetID; connector.targetPortID = oldChanges.targetPortID;
@@ -545,16 +496,7 @@ export class CommandHandler {
                         connector: connector, oldValue: oldChanges,
                         newValue: newChanges, cancel: false, state: 'Changed', connectorEnd: endPoint
                     };
-                    if (isBlazor()) {
-                        arg = {
-                            connector: cloneBlazorObject(connector), oldValue: { connector: oldChanges },
-                            newValue: { connector: newChanges }, cancel: false, state: 'Changed', connectorEnd: endPoint
-                        } as IBlazorConnectionChangeEventArgs;
-                        returnargs = arg;
-                    }
-                    if (!checkBlazor) {
-                        this.triggerEvent(DiagramEvent.connectionChange, arg);
-                    }
+                    this.triggerEvent(DiagramEvent.connectionChange, arg);
                 }
             }
         }
@@ -565,7 +507,6 @@ export class CommandHandler {
     private connectionEventChange(
         connector: Connector, oldChanges: Connector, newChanges: Connector, endPoint: string, canCancel?: boolean)
         : IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs {
-        const checkBlazor: boolean = isBlazor();
         const nodeEndId: string = endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
         const portEndId: string = endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
         let connectedNode: Node;
@@ -581,76 +522,17 @@ export class CommandHandler {
             connector: cloneBlazorObject(connector), oldValue: { nodeId: oldChanges[`${nodeEndId}`], portId: oldChanges[`${portEndId}`] },
             newValue: { nodeId: newChanges[`${nodeEndId}`], portId: newChanges[`${portEndId}`] }
         };
-        if (isBlazor()) {
-            arg = {
-                connector: cloneBlazorObject(connector),
-                cancel: false, state: 'Changing', connectorEnd: endPoint,
-                oldValue: undefined, newValue: undefined
-            };
-            if (endPoint === 'ConnectorSourceEnd') {
-                (arg as IBlazorConnectionChangeEventArgs).oldValue = {
-                    connectorSourceValue: {
-                        portId: oldChanges[`${portEndId}`], nodeId: oldChanges[`${nodeEndId}`]
-                    }
-                };
-                (arg as IBlazorConnectionChangeEventArgs).newValue = {
-                    connectorSourceValue: { nodeId: newChanges[`${nodeEndId}`], portId: newChanges[`${portEndId}`] }
-                };
-            } else {
-                (arg as IBlazorConnectionChangeEventArgs).oldValue = {
-                    connectorTargetValue: { nodeId: oldChanges[`${nodeEndId}`], portId: oldChanges[`${portEndId}`] }
-                };
-                (arg as IBlazorConnectionChangeEventArgs).newValue = {
-                    connectorTargetValue: { nodeId: newChanges[`${nodeEndId}`], portId: newChanges[`${portEndId}`] }
-                };
-            }
-            returnargs = arg;
-        }
-        if (!checkBlazor) {
-            this.triggerEvent(DiagramEvent.connectionChange, arg);
-        }
-        if (arg.cancel || (isBlazor() && canCancel)) {
-            connector[`${nodeEndId}`] = oldChanges[`${nodeEndId}`];
-            connector[`${portEndId}`] = oldChanges[`${portEndId}`];
-            newChanges = oldChanges;
-        } else {
-            this.diagram.connectorPropertyChange(connector as Connector, oldChanges, newChanges);
-            this.diagram.updateDiagramObject(connector);
-            arg = {
-                connector: cloneBlazorObject(connector), oldValue: { nodeId: oldChanges[`${nodeEndId}`], portId: oldChanges[`${portEndId}`] },
-                newValue: {
-                    nodeId: newChanges[`${nodeEndId}`],
-                    portId: newChanges[`${portEndId}`]
-                },
-                cancel: false, state: 'Changing', connectorEnd: endPoint
-            };
-            if (isBlazor()) {
-                arg = {
-                    connector: cloneBlazorObject(connector),
-                    oldValue: undefined,
-                    newValue: undefined,
-                    cancel: false, state: 'Changing', connectorEnd: endPoint
-                };
-                if (endPoint === 'ConnectorSourceEnd') {
-
-                    (arg as IBlazorConnectionChangeEventArgs).newValue = {
-                        connectorSourceValue: { portId: newChanges[`${portEndId}`], nodeId: newChanges[`${nodeEndId}`] }
-                    };
-                    (arg as IBlazorConnectionChangeEventArgs).oldValue = {
-                        connectorSourceValue: { portId: oldChanges[`${portEndId}`], nodeId: oldChanges[`${nodeEndId}`] }
-                    };
-                } else {
-                    (arg as IBlazorConnectionChangeEventArgs).oldValue = {
-                        connectorTargetValue: { nodeId: oldChanges[`${nodeEndId}`], portId: oldChanges[`${portEndId}`] }
-                    };
-                    (arg as IBlazorConnectionChangeEventArgs).newValue = {
-                        connectorTargetValue: { portId: newChanges[`${portEndId}`], nodeId: newChanges[`${nodeEndId}`] }
-                    };
-                }
-                returnargs = arg;
-            }
-
-        }
+        this.triggerEvent(DiagramEvent.connectionChange, arg);
+        this.diagram.connectorPropertyChange(connector as Connector, oldChanges, newChanges);
+        this.diagram.updateDiagramObject(connector);
+        arg = {
+            connector: cloneBlazorObject(connector), oldValue: { nodeId: oldChanges[`${nodeEndId}`], portId: oldChanges[`${portEndId}`] },
+            newValue: {
+                nodeId: newChanges[`${nodeEndId}`],
+                portId: newChanges[`${portEndId}`]
+            },
+            cancel: false, state: 'Changing', connectorEnd: endPoint
+        };
         if (this.enableCloneObject) {
             if (connectedNode === undefined) {
                 connectedNode = this.diagram.nameTable[oldChanges[`${nodeEndId}`]];
@@ -658,54 +540,39 @@ export class CommandHandler {
                 this.diagram.insertValue(nodeObject, true);
             }
         }
-        if(this.diagram.bpmnModule){
-            if((connector as any).isBpmnAnnotationConnector){
-                let textAnnotationNode: NodeModel = this.diagram.nameTable[connector.targetID];
+        if (this.diagram.bpmnModule) {
+            if ((connector as any).isBpmnAnnotationConnector) {
+                const textAnnotationNode: NodeModel = this.diagram.nameTable[connector.targetID];
                 (textAnnotationNode.shape as BpmnShape).textAnnotation.textAnnotationTarget = connector.sourceID;
             }
         }
         return returnargs;
     }
 
-    /**
-     * insertBlazorObject method\
-     *
-     * @returns { void }    insertBlazorObject method .\
-     * @param {IElement} object - provide the object value.
-     * @param {boolean} isNode - provide the isNode value.
-     * @private
-     */
-    public insertBlazorObject(object: SelectorModel | Node | Connector, isNode?: boolean): void {
-        let node: NodeModel; let connector: ConnectorModel;
-        if (object instanceof Selector) {
-            this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
-            for (let i: number = 0; i < object.nodes.length; i++) {
-                node = this.diagram.getObject(object.nodes[parseInt(i.toString(), 10)].id) as NodeModel;
-                this.diagram.insertValue(cloneObject(node), true);
-            }
-            for (let i: number = 0; i < object.connectors.length; i++) {
-                connector = this.diagram.getObject(object.connectors[parseInt(i.toString(), 10)].id) as ConnectorModel;
-                this.diagram.insertValue(cloneObject(connector), false);
-            }
-        } else {
-            object = this.diagram.getObject((object as Node | Connector).id);
-            this.diagram.insertValue(cloneObject(object), (object instanceof Node) ? true : false);
-        }
-    }
-    /**
-     * updatePropertiesToBlazor method\
-     *
-     * @returns { void }    updatePropertiesToBlazor method .\
-     * @param {MouseEventArgs} args - provide the args value.
-     * @param {PointModel} labelDrag - provide the labelDrag value.
-     * @private
-     */
-    public updatePropertiesToBlazor(args: MouseEventArgs, labelDrag: boolean): void {
-        this.enableCloneObject(false);
-        this.ismouseEvents(false);
-        this.getBlazorOldValues(args, labelDrag);
-        this.updateBlazorSelector();
-    }
+    // /**
+    //  * insertBlazorObject method\
+    //  *
+    //  * @returns { void }    insertBlazorObject method .\
+    //  * @param {IElement} object - provide the object value.
+    //  * @param {boolean} isNode - provide the isNode value.
+    //  * @private
+    //  */
+    // public insertBlazorObject(object: SelectorModel | Node | Connector, isNode?: boolean): void {
+    // }
+    // /**
+    //  * updatePropertiesToBlazor method\
+    //  *
+    //  * @returns { void }    updatePropertiesToBlazor method .\
+    //  * @param {MouseEventArgs} args - provide the args value.
+    //  * @param {PointModel} labelDrag - provide the labelDrag value.
+    //  * @private
+    //  */
+    // public updatePropertiesToBlazor(args: MouseEventArgs, labelDrag: boolean): void {
+    //     this.enableCloneObject(false);
+    //     this.ismouseEvents(false);
+    //     // this.getBlazorOldValues(args, labelDrag);
+    //     // this.updateBlazorSelector();
+    // }
     /**
      * insertSelectedObjects method\
      *
@@ -713,7 +580,7 @@ export class CommandHandler {
      * @private
      */
     public insertSelectedObjects(): void {
-        this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
+        // this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
     }
     /**
      * findTarget method\
@@ -733,8 +600,7 @@ export class CommandHandler {
             if (element && element.id === argsTarget.id + '_content') {
                 return argsTarget;
             }
-            if (source && argsTarget.shape.type === 'Bpmn' && ((!isBlazor() && (argsTarget.shape as BpmnShape).shape === 'Activity') ||
-                (isBlazor() && (argsTarget.shape as DiagramShape).bpmnShape === 'Activity'))) {
+            if (source && argsTarget.shape.type === 'Bpmn' && ((!isBlazor() && (argsTarget.shape as BpmnShape).shape === 'Activity'))) {
                 if ((argsTarget.shape as BpmnShape).activity.subProcess.type === 'Transaction') {
                     const transaction: BpmnTransactionSubProcessModel = (argsTarget.shape as BpmnShape).activity.subProcess.transaction;
                     if (transaction.success.visible && element.id.indexOf(argsTarget.id + '_success') === 0) {
@@ -865,34 +731,10 @@ export class CommandHandler {
                 newValue: { nodeId: newChanges[`${nodeEndId}`], portId: newChanges[`${portEndId}`] },
                 cancel: false, state: 'Changing', connectorEnd: endPoint
             };
-            if (isBlazor()) {
-                arg = {
-                    connector: cloneBlazorObject(connector),
-                    oldValue: undefined,
-                    newValue: undefined,
-                    cancel: false, state: 'Changing', connectorEnd: endPoint
-                };
-                if (endPoint === 'ConnectorSourceEnd') {
-                    (arg as IBlazorConnectionChangeEventArgs).oldValue = {
-                        connectorSourceValue: { portId: oldChanges[`${portEndId}`], nodeId: oldChanges[`${nodeEndId}`] }
-                    };
-                    (arg as IBlazorConnectionChangeEventArgs).newValue = {
-                        connectorSourceValue: { portId: newChanges[`${portEndId}`], nodeId: newChanges[`${nodeEndId}`] }
-                    };
-                } else {
-                    (arg as IBlazorConnectionChangeEventArgs).newValue = {
-                        connectorTargetValue: { portId: newChanges[`${portEndId}`], nodeId: newChanges[`${nodeEndId}`] }
-                    };
-                    (arg as IBlazorConnectionChangeEventArgs).oldValue = {
-                        connectorTargetValue: { portId: oldChanges[`${portEndId}`], nodeId: oldChanges[`${nodeEndId}`] }
-                    };
-                }
-                returnargs = arg;
-            }
             if (!checkBlazor) {
                 this.triggerEvent(DiagramEvent.connectionChange, arg);
             }
-            if (arg.cancel || (isBlazor() && canCancel)) {
+            if (arg.cancel) {
                 connector[`${nodeEndId}`] = oldNodeId; connector[`${portEndId}`] = oldPortId;
                 newChanges[`${nodeEndId}`] = oldNodeId; newChanges[`${portEndId}`] = oldPortId;
             } else {
@@ -903,30 +745,6 @@ export class CommandHandler {
                     newValue: { nodeId: newChanges[`${nodeEndId}`], portId: newChanges[`${portEndId}`] }, cancel: false,
                     state: 'Changing', connectorEnd: endPoint
                 };
-                if (isBlazor()) {
-                    arg = {
-                        newValue: undefined,
-                        connector: cloneBlazorObject(connector),
-                        oldValue: undefined,
-                        cancel: false, state: 'Changing', connectorEnd: endPoint
-                    };
-                    if (endPoint === 'ConnectorSourceEnd') {
-                        (arg as IBlazorConnectionChangeEventArgs).oldValue = {
-                            connectorSourceValue: { portId: oldChanges[`${portEndId}`], nodeId: oldChanges[`${nodeEndId}`] }
-                        };
-                        (arg as IBlazorConnectionChangeEventArgs).newValue = {
-                            connectorTargetValue: { portId: newChanges[`${portEndId}`], nodeId: newChanges[`${nodeEndId}`] }
-                        };
-                    } else {
-                        (arg as IBlazorConnectionChangeEventArgs).oldValue = {
-                            connectorTargetValue: { portId: oldChanges[`${portEndId}`], nodeId: oldChanges[`${nodeEndId}`] }
-                        };
-                        (arg as IBlazorConnectionChangeEventArgs).newValue = {
-                            connectorTargetValue: { portId: newChanges[`${portEndId}`], nodeId: newChanges[`${nodeEndId}`] }
-                        };
-                    }
-                }
-
             }
         }
         this.renderHighlighter(args, undefined, endPoint === 'ConnectorSourceEnd');
@@ -956,20 +774,9 @@ export class CommandHandler {
             this.diagram.refreshDiagramLayer();
         }
     }
-    private UpdateBlazorDiagramModelLayers(layer: Layer, isRemove: boolean): void {
-        const blazorInterop: string = 'sfBlazor';
-        const updatedModel: object = cloneBlazorObject(layer);
-        const blazor: string = 'Blazor';
-        if (window && window[`${blazor}`]) {
-            const obj: object = {
-                'methodName': 'UpdateBlazorDiagramModelLayers',
-                'diagramobj': JSON.stringify(updatedModel), 'isRemove': isRemove
-            };
-            if (!this.diagram.isLoading) {
-                window[`${blazorInterop}`].updateBlazorProperties(obj, this.diagram);
-            }
-        }
-    }
+    // private UpdateBlazorDiagramModelLayers(layer: Layer, isRemove: boolean): void {
+    // comment blazor code
+    // }
     /**
      * addLayer method\
      *
@@ -989,9 +796,9 @@ export class CommandHandler {
         (layer as Layer).objectZIndex = -1;
         (layer as Layer).zIndexTable = {};
         this.diagram.layers.push(layer);
-        if (isServerUpdate) {
-            this.UpdateBlazorDiagramModelLayers(layer as Layer, false);
-        }
+        // if (isServerUpdate) {
+        //     this.UpdateBlazorDiagramModelLayers(layer as Layer, false);
+        // }
         this.diagram.layerZIndexTable[layer.zIndex] = layer.id;
         this.diagram.activeLayer = layer;
         const layers: string[] = layer.objects;
@@ -1010,7 +817,7 @@ export class CommandHandler {
      */
     public getObjectLayer(objectName: string): LayerModel {
         const layers: LayerModel[] = this.diagram.layers;
-        if(layers.length > 1){
+        if (layers.length > 1) {
             for (let i: number = 0; i < layers.length; i++) {
                 const objIndex: number = layers[parseInt(i.toString(), 10)].objects.indexOf(objectName);
                 if (objIndex > -1) {
@@ -1058,9 +865,9 @@ export class CommandHandler {
                     }
                 }
             }
-            if (isServerUpdate) {
-                this.UpdateBlazorDiagramModelLayers(this.diagram.layers[parseInt(index.toString(), 10)] as Layer, true);
-            }
+            // if (isServerUpdate) {
+            //     this.UpdateBlazorDiagramModelLayers(this.diagram.layers[parseInt(index.toString(), 10)] as Layer, true);
+            // }
             delete this.diagram.layerZIndexTable[layers.zIndex];
             this.diagram.layers.splice(index, 1);
             if (this.diagram.mode !== 'SVG') {
@@ -1078,18 +885,21 @@ export class CommandHandler {
      */
     public moveObjects(objects: string[], targetLayer?: string): void {
         this.diagram.startGroupAction();
-        var connectorObjectsDetails = {};
-        let childNodes:any = [];
-            for(let i:number = 0; i < objects.length; i++){
-                let obj = this.diagram.nameTable[objects[parseInt(i.toString(), 10)]];
-                if(obj instanceof Node){
-                    let detail = {inEdges:obj.inEdges,outEdges:obj.outEdges}
-                    connectorObjectsDetails[`${obj.id}`] = cloneObject(detail);
-                }else if(obj instanceof Connector){
-                    let detail = {sourceID:obj.sourceID,targetID:obj.targetID,sourcePortID:obj.sourcePortID,targetPortID:obj.targetPortID}
-                    connectorObjectsDetails[`${obj.id}`] = cloneObject(detail);
-                }
+        const connectorObjectsDetails: any = {};
+        let childNodes: any = [];
+        for (let i: number = 0; i < objects.length; i++) {
+            const obj: Node | Connector = this.diagram.nameTable[objects[parseInt(i.toString(), 10)]];
+            if (obj instanceof Node) {
+                const detail: object = { inEdges: obj.inEdges, outEdges: obj.outEdges };
+                connectorObjectsDetails[`${obj.id}`] = cloneObject(detail);
+            } else if (obj instanceof Connector) {
+                const detail: object = {
+                    sourceID: obj.sourceID, targetID: obj.targetID,
+                    sourcePortID: obj.sourcePortID, targetPortID: obj.targetPortID
+                };
+                connectorObjectsDetails[`${obj.id}`] = cloneObject(detail);
             }
+        }
         const layer: LayerModel = this.getLayer(targetLayer) || this.diagram.activeLayer;
         this.diagram.setActiveLayer(layer.id);
         let targerNodes: NodeModel | ConnectorModel;
@@ -1099,57 +909,57 @@ export class CommandHandler {
             if (index > -1) {
                 targerNodes = this.diagram.nameTable[`${i}`];
                 childNodes = [];
-                if((targerNodes as Node).children){
-                   for(const node of (targerNodes as Node).children){
-                     childNodes.push(this.diagram.nameTable[`${node}`]);
-                   }
+                if ((targerNodes as Node).children) {
+                    for (const node of (targerNodes as Node).children) {
+                        childNodes.push(this.diagram.nameTable[`${node}`]);
+                    }
                 }
                 this.diagram.unSelect(targerNodes);
                 //875087 - Restrict removing dependent connectors when moveing between layers
                 this.diagram.deleteDependentConnector = false;
                 this.diagram.remove(this.diagram.nameTable[`${i}`]);
                 this.diagram.deleteDependentConnector = true;
-                if(childNodes.length > 0){
-                    let addedObj;
-                    for(const node of childNodes){
+                if (childNodes.length > 0) {
+                    let addedObj: Node | Connector;
+                    for (const node of childNodes) {
                         addedObj = this.diagram.add(node as NodeModel);
-                        this.setConnectorDetails(addedObj || node as NodeModel,connectorObjectsDetails);
+                        this.setConnectorDetails(addedObj || node as NodeModel, connectorObjectsDetails);
                         (targerNodes as Node).children.push(addedObj.id);
                     }
                     addedObj = this.diagram.add(targerNodes);
-                    this.setConnectorDetails(addedObj || targerNodes,connectorObjectsDetails);
-                }else{
-                    let addedObj = this.diagram.add(targerNodes);
-                    this.setConnectorDetails(addedObj || targerNodes,connectorObjectsDetails);
+                    this.setConnectorDetails(addedObj || targerNodes, connectorObjectsDetails);
+                } else {
+                    const addedObj: Node | Connector = this.diagram.add(targerNodes);
+                    this.setConnectorDetails(addedObj || targerNodes, connectorObjectsDetails);
                 }
-                if((targerNodes as Node).parentId){
-                    let parentId = (targerNodes as Node).parentId;
-                    let group = this.diagram.nameTable[`${parentId}`];
-                    this.diagram.addChildToGroup(group,targerNodes.id);
+                if ((targerNodes as Node).parentId) {
+                    const parentId: string = (targerNodes as Node).parentId;
+                    const group: NodeModel = this.diagram.nameTable[`${parentId}`];
+                    this.diagram.addChildToGroup(group, targerNodes.id);
                 }
             }
         }
         this.diagram.endGroupAction();
-    };
-    private setConnectorDetails(obj: ConnectorModel | NodeModel,connectorObjectsDetails:object){
-        let details =  connectorObjectsDetails[obj.id];
-        if(obj instanceof Node){
-            if(details){
-                if(details.inEdges && details.inEdges.length > 0){
-                    for(let i:number =0;i<details.inEdges.length;i++){
-                        let con = this.diagram.nameTable[details.inEdges[parseInt(i.toString(), 10)]];
+    }
+    private setConnectorDetails(obj: ConnectorModel | NodeModel, connectorObjectsDetails: object): void {
+        const details: any = connectorObjectsDetails[obj.id];
+        if (obj instanceof Node) {
+            if (details) {
+                if (details.inEdges && details.inEdges.length > 0) {
+                    for (let i: number = 0; i < details.inEdges.length; i++) {
+                        const con: ConnectorModel = this.diagram.nameTable[details.inEdges[parseInt(i.toString(), 10)]];
                         con.targetID = obj.id;
                     }
-               }
-               if(details.outEdges && details.outEdges.length > 0){
-                    for(let i:number =0;i<details.outEdges.length;i++){
-                        let con = this.diagram.nameTable[details.outEdges[parseInt(i.toString(), 10)]];
+                }
+                if (details.outEdges && details.outEdges.length > 0) {
+                    for (let i: number = 0; i < details.outEdges.length; i++) {
+                        const con: ConnectorModel = this.diagram.nameTable[details.outEdges[parseInt(i.toString(), 10)]];
                         con.sourceID = obj.id;
                     }
                 }
             }
-        }else if (obj instanceof Connector){
-            if(details){
+        } else if (obj instanceof Connector) {
+            if (details) {
                 obj.sourceID = details.sourceID;
                 obj.targetID = details.targetID;
                 obj.sourcePortID = details.sourcePortID;
@@ -1276,7 +1086,7 @@ export class CommandHandler {
             this.startGroupAction();
             for (const item of selectedItems) {
                 if (this.diagram.nameTable[item.id]) {
-                        this.diagram.remove(item);
+                    this.diagram.remove(item);
                 }
             }
             this.endGroupAction();
@@ -1321,7 +1131,8 @@ export class CommandHandler {
         obj.children = [];
         selectedItems = this.diagram.selectedItems.nodes;
         selectedItems = selectedItems.concat(this.diagram.selectedItems.connectors);
-        const order: (NodeModel | ConnectorModel)[] = selectedItems.sort(function (a, b) {
+        const order: (NodeModel | ConnectorModel)[] = selectedItems.sort(function (a: NodeModel | ConnectorModel,
+                                                                                   b: NodeModel | ConnectorModel): number {
             return a.zIndex - b.zIndex;
         });
         for (let i: number = 0; i < order.length; i++) {
@@ -1329,8 +1140,8 @@ export class CommandHandler {
                 obj.children.push(order[parseInt(i.toString(), 10)].id);
             }
         }
-        //867606 - Exception throws while grouping the existing group nodes 
-        if (obj.children.length > 1) {
+        //867606 - Exception throws while grouping the existing group nodes
+        if (obj.children.length > 0) {
             const group: Node | Connector = this.diagram.add(obj as IElement);
             if (group) {
                 this.select(group);
@@ -1339,7 +1150,7 @@ export class CommandHandler {
             this.addHistoryEntry(entry);
             this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;
             this.diagram.protectPropertyChange(protectedChange);
-            this.updateBlazorSelector();
+            // this.updateBlazorSelector();
         }
     }
 
@@ -1374,8 +1185,7 @@ export class CommandHandler {
                 if ((node as Node).ports && (node as Node).ports.length > 0) {
                     this.diagram.removePorts((node as Node), (node as Node).ports);
                 }
-                if ((node as Node).annotations && (node as Node).annotations.length > 0
-                    && (!isBlazor() || isBlazor() && node.annotations[0].content !== '')) {
+                if ((node as Node).annotations && (node as Node).annotations.length > 0 && (!isBlazor())) {
                     this.diagram.removeLabels((node as Node), (node as Node).annotations);
                 }
                 const parentNode: NodeModel = this.diagram.nameTable[(node as Node).parentId];
@@ -1447,7 +1257,6 @@ export class CommandHandler {
                 let groupAction: boolean = false;
                 const objectTable: {} = {};
                 const keyTable: {} = {};
-
                 if (this.clipboardData.pasteIndex !== 0) {
                     this.clearSelection();
                 }
@@ -1458,7 +1267,7 @@ export class CommandHandler {
                 for (const copy of copiedItems) {
                     objectTable[copy.id] = copy;
                 }
-                let copiedObject: (NodeModel | ConnectorModel)[] = [];
+                const copiedObject: (NodeModel | ConnectorModel)[] = [];
                 if (multiSelect) {
                     // This bool is also consider to prevent selection change event is triggered after every object clone
                     this.diagram.isServerUpdate = true;
@@ -1466,10 +1275,10 @@ export class CommandHandler {
                 for (let j: number = 0; j < copiedItems.length; j++) {
                     const copy: NodeModel | ConnectorModel = copiedItems[parseInt(j.toString(), 10)];
                     //EJ2-841227-Copy paste of child node from group node
-                    if((copy as Node).parentId){
-                        let parentObj: NodeModel = this.diagram.getObject((copy as Node).parentId);
-                        if(parentObj.shape.type !== "SwimLane" && (copy as Node).parentId){
-                        (copy as Node).parentId = "";
+                    if ((copy as Node).parentId) {
+                        const parentObj: NodeModel = this.diagram.getObject((copy as Node).parentId);
+                        if (parentObj.shape.type !== 'SwimLane' && (copy as Node).parentId) {
+                            (copy as Node).parentId = '';
                         }
                     }
                     if (getObjectType(copy) === Connector) {
@@ -1485,26 +1294,21 @@ export class CommandHandler {
                             clonedObj.targetID = keyTable[`${nodeId}`];
                         }
                         //To check if the connector is cloned already for text annotation node.
-                        let allowClone = true;
-                        if(clonedObj.targetID){
-                            let targetNode: Node = this.diagram.nameTable[clonedObj.targetID];
-                            if((targetNode.shape as BpmnShape).shape === 'TextAnnotation' && targetNode.inEdges && targetNode.inEdges.length > 0){
+                        let allowClone: boolean = true;
+                        if (clonedObj.targetID) {
+                            const targetNode: Node = this.diagram.nameTable[clonedObj.targetID];
+                            if ((targetNode.shape as BpmnShape).shape === 'TextAnnotation' && targetNode.inEdges && targetNode.inEdges.length > 0) {
                                 allowClone = false;
                             }
                         }
-                        if(allowClone){
+                        if (allowClone) {
                             const newObj: ConnectorModel = this.cloneConnector(clonedObj, multiSelect);
                             copiedObject.push(newObj);
                             keyTable[copy.id] = newObj.id;
                         }
                     } else {
                         const newNode: NodeModel = this.cloneNode(copy as NodeModel, multiSelect);
-                        if (isBlazor() && newNode && newNode.children && newNode.children.length > 0) {
-                            copiedObject = copiedObject.concat(this.cloneGroupChildCollection);
-                            this.cloneGroupChildCollection = [];
-                        } else {
-                            copiedObject.push(newNode);
-                        }
+                        copiedObject.push(newNode);
                         //bpmn text annotations will not be pasted
                         if (newNode) {
                             keyTable[copy.id] = newNode.id;
@@ -1537,8 +1341,8 @@ export class CommandHandler {
                 }
                 if (multiSelect) {
                     this.diagram.isServerUpdate = false;
-                    this.diagram.UpdateBlazorDiagramModelCollection(copiedItems[0] as Node, copiedObject);
-                    this.getBlazorOldValues();
+                    // this.diagram.UpdateBlazorDiagramModelCollection(copiedItems[0] as Node, copiedObject);
+                    // this.getBlazorOldValues();
                     this.diagram.select(copiedObject, true);
                 }
                 if (groupAction === true) {
@@ -1596,8 +1400,7 @@ export class CommandHandler {
             pasteSwimLane(clone(temp), this.diagram, this.clipboardData, node, true);
         } else if (node.children && node.children.length && (!children || !children.length)) {
             newNode = this.cloneGroup(node, multiSelect);
-        } else if (node.shape && ((!isBlazor() && (node.shape as BpmnShape).shape === 'TextAnnotation') ||
-            (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'TextAnnotation')) && node.id.indexOf('_textannotation_') !== -1 &&
+        } else if (node.shape && ((!isBlazor() && (node.shape as BpmnShape).shape === 'TextAnnotation')) && node.id.indexOf('_textannotation_') !== -1 &&
             this.diagram.nameTable[node.id]) {
             const checkAnnotation: string[] = node.id.split('_textannotation_');
             //const parentNode: Node;
@@ -1620,9 +1423,9 @@ export class CommandHandler {
             }
         } else {
             this.translateObject(cloneObject as Node, groupnodeID);
-            (cloneObject as Node).zIndex =Number.MIN_VALUE;
+            (cloneObject as Node).zIndex = Number.MIN_VALUE;
             if (children) { (cloneObject as Node).children = children; }
-            if((cloneObject as Node).shape && ((cloneObject as Node).shape as BpmnShape).shape === 'TextAnnotation'){
+            if ((cloneObject as Node).shape && ((cloneObject as Node).shape as BpmnShape).shape === 'TextAnnotation') {
                 (cloneObject as any).isTextAnnotationCopied = true;
             }
             newNode = this.diagram.add(cloneObject) as Node;
@@ -1660,7 +1463,8 @@ export class CommandHandler {
             && (node.shape as BpmnShape).activity.subProcess.processes.length) {
             const process: string[] = (node.shape as BpmnShape).activity.subProcess.processes;
             for (let g: number = 0; g < process.length; g++) {
-                const child: Node = this.diagram.nameTable[process[parseInt(g.toString(), 10)]] || this.clipboardData.processTable[process[parseInt(g.toString(), 10)]];
+                const child: Node = this.diagram.nameTable[process[parseInt(g.toString(), 10)]]
+                    || this.clipboardData.processTable[process[parseInt(g.toString(), 10)]];
                 for (const j of child.outEdges) {
                     if (connector.indexOf(j) < 0) {
                         connector.push(j);
@@ -1733,7 +1537,7 @@ export class CommandHandler {
             if (connectorObj[parseInt(k.toString(), 10)].sourceID || connectorObj[parseInt(k.toString(), 10)].targetID) {
                 for (let j: number = 0; j < oldID.length; j++) {
                     if (connectorObj[parseInt(k.toString(), 10)].sourceID === (oldID[parseInt(j.toString(), 10)])) {
-                        sourceId = connectorObj[parseInt(k.toString(), 10)].sourceID 
+                        sourceId = connectorObj[parseInt(k.toString(), 10)].sourceID;
                         connectorObj[parseInt(k.toString(), 10)].sourceID += id;
                     }
                     if (connectorObj[parseInt(k.toString(), 10)].targetID === (oldID[parseInt(j.toString(), 10)])) {
@@ -1820,11 +1624,6 @@ export class CommandHandler {
      * @private
      */
     public drawObject(obj: Node | Connector): Node | Connector {
-        let oldProtectPropertyChangeValue: boolean;
-        if (isBlazor()) {
-            oldProtectPropertyChangeValue = this.diagram.getProtectPropertyChangeValue();
-            this.diagram.protectPropertyChange(true);
-        }
         let newObj: Node | Connector;
         //let cloneObject: Node | Connector;
         if (obj && obj.shape) {
@@ -1842,24 +1641,12 @@ export class CommandHandler {
             newObj.id = (this.diagram.drawingObject.id || 'node') + randomId();
         } else {
             newObj = new Connector(this.diagram, 'connectors', cloneObject, true);
-            if (isBlazor() && !this.diagram.drawingObject) {
-                newObj.type === 'Orthogonal';
-            }
             newObj.id = (this.diagram.drawingObject ? (this.diagram.drawingObject.id ? this.diagram.drawingObject.id : 'connector')
                 : 'connector') + randomId();
-        }
-        if (isBlazor()) {
-            updateDefaultValues(
-                newObj, cloneObject,
-                (getObjectType(this.diagram.drawingObject) === Node) ? this.diagram.nodeDefaults : this.diagram.connectorDefaults
-            );
         }
         this.diagram.initObject(newObj as Node | Connector);
         this.diagram.updateDiagramObject(newObj);
         this.diagram.currentDrawingObject = newObj;
-        if (isBlazor()) {
-            this.diagram.protectPropertyChange(oldProtectPropertyChangeValue);
-        }
         return newObj;
     }
 
@@ -1915,49 +1702,6 @@ export class CommandHandler {
         this.diagram.startTextEdit(obj, annotation instanceof TextElement ? (annotation.id).split('_')[1] : undefined);
     }
 
-    private updateArgsObject(
-        obj: (NodeModel | ConnectorModel)[], arg1: IBlazorSelectionChangeEventArgs, argValue: DiagramEventObjectCollection): void {
-        if (obj) {
-            let connector: boolean;
-            for (let i: number = 0; i < obj.length; i++) {
-                connector = (getObjectType(obj[parseInt(i.toString(), 10)]) === Connector);
-                if (connector) {
-                    // In Blazor web assembly, deserialize the object. Itb takes time. - Suganthi
-                    //argValue.connectors.push(cloneBlazorObject(obj[i]));
-                    argValue.connectorCollection.push(obj[parseInt(i.toString(), 10)].id);
-                } else {
-                    //argValue.nodes.push(cloneBlazorObject(obj[i]));
-                    argValue.nodeCollection.push(obj[parseInt(i.toString(), 10)].id);
-                }
-                //connector ? argValue.connectors.push(cloneBlazorObject(obj[i])) : argValue.nodes.push(cloneBlazorObject(obj[i]));
-            }
-        }
-    }
-
-    private updateSelectionChangeEventArgs(
-        arg: IBlazorSelectionChangeEventArgs | ISelectionChangeEventArgs,
-        obj: (NodeModel | ConnectorModel)[],
-        oldValue?: (NodeModel | ConnectorModel)[]): IBlazorSelectionChangeEventArgs | ISelectionChangeEventArgs {
-        if (isBlazor()) {
-            arg = {
-                cause: this.diagram.diagramActions, newValue: {}, oldValue: {},
-                state: arg.state, type: arg.type, cancel: false
-            } as IBlazorSelectionChangeEventArgs;
-            const argOldValue: DiagramEventObjectCollection = arg.oldValue; const argNewValue: DiagramEventObjectCollection = arg.newValue;
-            argOldValue.connectors = [];
-            argOldValue.nodes = [];
-            argNewValue.connectors = [];
-            argNewValue.nodes = [];
-            argOldValue.nodeCollection = [];
-            argOldValue.connectorCollection = [];
-            argNewValue.nodeCollection = [];
-            argNewValue.connectorCollection = [];
-            this.updateArgsObject(this.getSelectedObject(), arg, argNewValue);
-            this.updateArgsObject(oldValue, arg, argOldValue);
-            return arg;
-        }
-        return arg;
-    }
     /**
      * isUserHandle method\
      *
@@ -2000,9 +1744,9 @@ export class CommandHandler {
             const swimlaneNode: NodeModel = this.diagram.getObject((obj[0] as Node).parentId);
             (obj[0].shape as any).header = [];
             let laneId: string = '';
-            for (let j = 0; j < obj.length; j++) {
-                for (let i = 0; i < (swimlaneNode.shape as SwimLaneModel).lanes.length; i++) {
-                    const parentId = (obj[0] as Node).id.split((obj[0] as Node).parentId);
+            for (let j: number = 0; j < obj.length; j++) {
+                for (let i: number = 0; i < (swimlaneNode.shape as SwimLaneModel).lanes.length; i++) {
+                    const parentId: string[] = (obj[0] as Node).id.split((obj[0] as Node).parentId);
                     laneId = parentId[1].slice(0, -1);
                     if (laneId === (swimlaneNode.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].id) {
                         (obj[0].shape as any).header.push((swimlaneNode.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].header);
@@ -2017,7 +1761,7 @@ export class CommandHandler {
         } else {
             this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
         }
-        const oldSelectedItems = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
+        const oldSelectedItems: NodeModel[] = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
         const canDoMultipleSelection: number = canMultiSelect(this.diagram);
         const canDoSingleSelection: number = canSingleSelect(this.diagram);
         if (canDoSingleSelection || canDoMultipleSelection) {
@@ -2044,7 +1788,9 @@ export class CommandHandler {
                     } else {
                         if ((i > 0 || multipleSelection) && (newObj as Node).children && !(newObj as Node).parentId) {
                             for (let i: number = 0; i < this.diagram.selectedItems.nodes.length; i++) {
-                                let parentNode: NodeModel = this.diagram.nameTable[(this.diagram.selectedItems.nodes[parseInt(i.toString(), 10)] as Node).parentId];
+                                let parentNode: NodeModel =
+                                    this.diagram.nameTable[(
+                                        this.diagram.selectedItems.nodes[parseInt(i.toString(), 10)] as Node).parentId];
                                 if (parentNode) {
                                     parentNode = this.findParent((parentNode as Node));
                                     if (parentNode) {
@@ -2072,74 +1818,23 @@ export class CommandHandler {
                 cause: this.diagram.diagramActions, state: 'Changed', type: 'Addition', cancel: false
             };
             this.diagram.renderSelector(multipleSelection || (obj && obj.length > 1));
-            this.updateBlazorSelectorModel(oldValue);
-            if (isBlazor() && this.diagram.selectionChange) {
-                arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
-                this.updateBlazorSelector();
-            }
+            // this.updateBlazorSelectorModel(oldValue);
             if (!isBlazor()) {
                 this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-            } else {
-                let blazorArgs: void | object;
-                if (window && window[this.blazor] && this.diagram.selectionChange) {
-                    const eventObj: object = { 'EventName': 'selectionChange', args: JSON.stringify(arg) };
-                    blazorArgs = await window[this.blazorInterop].updateBlazorDiagramEvents(eventObj, this.diagram);
-                }
-                // let blazorArgs: void | object = await this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-                if (blazorArgs && (blazorArgs as IBlazorSelectionChangeEventArgs).cancel) {
-                    let selectedObjects: (NodeModel | ConnectorModel)[] = [];
-                    if ((blazorArgs as IBlazorSelectionChangeEventArgs).oldValue.nodes.length > 0) {
-                        selectedObjects = (blazorArgs as IBlazorSelectionChangeEventArgs).oldValue.nodes;
-                    }
-                    if ((blazorArgs as IBlazorSelectionChangeEventArgs).oldValue.connectors.length > 0) {
-                        selectedObjects = selectedObjects.concat((blazorArgs as IBlazorSelectionChangeEventArgs).oldValue.connectors);
-                    }
-                    if (selectedObjects) {
-                        if (selectedObjects.length > 0) {
-                            for (let i: number = 0; i < selectedObjects.length; i++) {
-                                this.select(
-                                    this.diagram.nameTable[selectedObjects[parseInt(i.toString(), 10)].id], (i !== 0 && selectedObjects.length > 1) ? true : false);
-                            }
-                        } else {
-                            this.clearSelection();
-                        }
-                    }
-                }
             }
-            this.diagram.enableServerDataBinding(true); this.updateBlazorSelector();
+            this.diagram.enableServerDataBinding(true);
         }
     }
 
-    /**
-     * updateBlazorSelector method\
-     *
-     * @returns { void }    updateBlazorSelector method .\
-     * @private
-     */
-    public updateBlazorSelector(): void {
-        if (isBlazor() && this.oldSelectedObjects) {
-            this.newSelectedObjects = cloneSelectedObjects(this.diagram);
-            const result: object = this.deepDiffer.map(cloneObject(this.newSelectedObjects), this.oldSelectedObjects);
-            const diffValue: object = this.deepDiffer.frameObject({}, result);
-            const diff: object = this.deepDiffer.removeEmptyValues(diffValue);
-            (diff as SelectorModel).nodes = [];
-            for (let i: number = 0; i < this.diagram.selectedItems.nodes.length; i++) {
-                (diff as SelectorModel).nodes.push(this.diagram.selectedItems.nodes[parseInt(i.toString(), 10)].id as NodeModel);
-            }
-            (diff as SelectorModel).connectors = [];
-            for (let i: number = 0; i < this.diagram.selectedItems.connectors.length; i++) {
-                (diff as SelectorModel).connectors.push(this.diagram.selectedItems.connectors[parseInt(i.toString(), 10)].id as ConnectorModel);
-            }
-            const blazorInterop: string = 'sfBlazor';
-            const blazor: string = 'Blazor';
-            if (window && window[`${blazor}`]) {
-                const obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': { selectedItems: diff } };
-                window[`${blazorInterop}`].updateBlazorProperties(obj, this.diagram);
-            }
-            this.oldSelectedObjects = undefined;
-            this.newSelectedObjects = undefined;
-        }
-    }
+    // /**
+    //  * updateBlazorSelector method\
+    //  *
+    //  * @returns { void }    updateBlazorSelector method .\
+    //  * @private
+    //  */
+    // public updateBlazorSelector(): void {
+    //     //remove blazor code
+    // }
     /**
      * findParent method\
      *
@@ -2272,39 +1967,21 @@ export class CommandHandler {
         }
     }
 
-    private getObjectCollectionId(isNode: boolean, clearSelection?: boolean): string[] {
-        const id: string[] = [];
-        let i: number = 0;
-        const selectedObject: (NodeModel | ConnectorModel)[] = isNode ? this.diagram.selectedItems.nodes
-            : this.diagram.selectedItems.connectors;
-        while (!clearSelection && i < selectedObject.length) {
-            id[parseInt(i.toString(), 10)] = selectedObject[parseInt(i.toString(), 10)].id;
-            i++;
-        }
-        return id;
-    }
+    // private getObjectCollectionId(isNode: boolean, clearSelection?: boolean): string[] {
+    //     const id: string[] = [];
+    //     let i: number = 0;
+    //     const selectedObject: (NodeModel | ConnectorModel)[] = isNode ? this.diagram.selectedItems.nodes
+    //         : this.diagram.selectedItems.connectors;
+    //     while (!clearSelection && i < selectedObject.length) {
+    //         id[parseInt(i.toString(), 10)] = selectedObject[parseInt(i.toString(), 10)].id;
+    //         i++;
+    //     }
+    //     return id;
+    // }
 
-    private updateBlazorSelectorModel(oldItemsCollection: (NodeModel | ConnectorModel)[], clearSelection?: boolean): void {
-        const blazorInterop: string = 'sfBlazor';
-        if (window && window[`${blazorInterop}`]) {
-            let i: number = 0;
-            let nodes: string[] = [];
-            let connectors: string[] = [];
-            const oldItems: string[] = [];
-            while (oldItemsCollection && i < oldItemsCollection.length) {
-                oldItems[parseInt(i.toString(), 10)] = oldItemsCollection[parseInt(i.toString(), 10)].id;
-                i++;
-            }
-            i = 0;
-            nodes = this.getObjectCollectionId(true, clearSelection);
-            connectors = this.getObjectCollectionId(false, clearSelection);
-            const items: object = { nodes: nodes, connectors: connectors };
-            const newItems: object = cloneBlazorObject(items);
-            if (window[`${blazorInterop}`].updateDiagramCollection) {
-                window[`${blazorInterop}`].updateDiagramCollection.call(this.diagram, 'selectedItems', newItems, oldItems, false, true);
-            }
-        }
-    }
+    // private updateBlazorSelectorModel(oldItemsCollection: (NodeModel | ConnectorModel)[], clearSelection?: boolean): void {
+    // remove blazor code
+    // }
     /**
      * labelSelect method\
      *
@@ -2328,7 +2005,6 @@ export class CommandHandler {
         selectorModel.annotation = (this.findTarget(textWrapper, obj as IElement)) as PathAnnotationModel | ShapeAnnotationModel;
         selectorModel.init(this.diagram);
         this.diagram.renderSelector(false);
-        this.updateBlazorSelector();
     }
 
     /**
@@ -2341,8 +2017,8 @@ export class CommandHandler {
     public unSelect(obj: NodeModel | ConnectorModel): void {
         const objArray: (NodeModel | ConnectorModel)[] = [];
         objArray.push(obj);
-        const items = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
-        const selectedObjects = items.filter(function (items) {
+        const items: NodeModel[] = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
+        const selectedObjects: NodeModel[] = items.filter(function (items: NodeModel): boolean {
             return items.id !== obj.id;
         });
         let arg: ISelectionChangeEventArgs | IBlazorSelectionChangeEventArgs = {
@@ -2370,7 +2046,7 @@ export class CommandHandler {
                 oldValue: items, newValue: selectedObjects, cause: this.diagram.diagramActions,
                 state: 'Changed', type: 'Removal', cancel: false
             };
-            this.updateBlazorSelectorModel(objArray);
+            // this.updateBlazorSelectorModel(objArray);
             arg = {
                 oldValue: cloneBlazorObject(items) as NodeModel[], newValue: selectedObjects, cause: this.diagram.diagramActions,
                 state: 'Changed', type: 'Removal', cancel: arg.cancel
@@ -2380,16 +2056,7 @@ export class CommandHandler {
                 selectormodel.wrapper.children.splice(index, 1);
                 this.diagram.updateSelector();
                 if (!this.diagram.currentSymbol) {
-                    if (isBlazor()) {
-                        arg = this.updateSelectionChangeEventArgs(arg, [], objArray);
-                        this.updateBlazorSelector();
-                        if (window && window[this.blazor] && this.diagram.selectionChange) {
-                            const eventObj: object = { 'EventName': 'selectionChange', args: JSON.stringify(arg) };
-                            window[this.blazorInterop].updateBlazorDiagramEvents(eventObj, this.diagram);
-                        }
-                    } else {
-                        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-                    }
+                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                 }
             }
         }
@@ -2401,21 +2068,21 @@ export class CommandHandler {
      * @param {DiagramElement[]} child - provide the objects value.
      * @private
      */
-    public getChildElements(child: DiagramElement[]): string[] {
-        const children: string[] = [];
-        for (let i: number = 0; i < child.length; i++) {
-            const childNode: DiagramElement = child[parseInt(i.toString(), 10)];
-            if ((childNode as Container).children && (childNode as Container).children.length > 0) {
-                children.concat(this.getChildElements((childNode as Container).children));
-            } else {
-                children.push(childNode.id);
-                if (childNode instanceof TextElement) {
-                    children.push(childNode.id + '_text');
-                }
-            }
-        }
-        return children;
-    }
+    // public getChildElements(child: DiagramElement[]): string[] {
+    //     const children: string[] = [];
+    //     for (let i: number = 0; i < child.length; i++) {
+    //         const childNode: DiagramElement = child[parseInt(i.toString(), 10)];
+    //         if ((childNode as Container).children && (childNode as Container).children.length > 0) {
+    //             // children.concat(this.getChildElements((childNode as Container).children));
+    //         } else {
+    //             children.push(childNode.id);
+    //             if (childNode instanceof TextElement) {
+    //                 children.push(childNode.id + '_text');
+    //             }
+    //         }
+    //     }
+    //     return children;
+    // }
     /**
      * moveSvgNode method\
      *
@@ -2431,9 +2098,8 @@ export class CommandHandler {
     }
 
     private moveAfterSvgNode(nodeId: string, targetID: string): void {
-        const diagramDiv = getDiagramElement(targetID + '_groupElement', this.diagram.element.id);
-        const backNode = getDiagramElement(nodeId + '_groupElement', this.diagram.element.id);
-        
+        const diagramDiv: HTMLElement = getDiagramElement(targetID + '_groupElement', this.diagram.element.id);
+        const backNode: HTMLElement = getDiagramElement(nodeId + '_groupElement', this.diagram.element.id);
         diagramDiv.insertAdjacentElement('afterend', backNode);
     }
 
@@ -2522,17 +2188,17 @@ export class CommandHandler {
             }
             let objectId: string = (object && object.id);
             for (let i: number = 0; i < objects.length; i++) {
-                const clonedObject = cloneObject(objects[parseInt(i.toString(), 10)]);
+                const clonedObject: object = cloneObject(objects[parseInt(i.toString(), 10)]);
                 objectId = objects[parseInt(i.toString(), 10)].id;
                 const index: number = this.diagram.nameTable[`${objectId}`].zIndex;
                 const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
                 const zIndexTable: {} = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).zIndexTable;
-                let layerObjects = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).objects;
-                let minZindex = null;
-                let targetId = '';
-                for(let i:number = 0;i<layerObjects.length;i++){
-                    let obj = this.diagram.nameTable[layerObjects[parseInt(i.toString(), 10)]];
-                    if(minZindex === null || obj.zIndex < minZindex){
+                const layerObjects: string[] = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).objects;
+                let minZindex: any = null;
+                let targetId: string = '';
+                for (let i: number = 0; i < layerObjects.length; i++) {
+                    const obj: NodeModel | ConnectorModel = this.diagram.nameTable[layerObjects[parseInt(i.toString(), 10)]];
+                    if (minZindex === null || obj.zIndex < minZindex) {
                         minZindex = obj.zIndex;
                         targetId = obj.id;
                     }
@@ -2545,14 +2211,20 @@ export class CommandHandler {
                 if (this.diagram.nodes.length !== 1 && (this.diagram.nameTable[`${objectId}`].children === undefined ||
                     this.checkObjectBehind(objectId, zIndexTable, index))) {
                     const obj: NodeModel = this.diagram.nameTable[`${objectId}`];
-                    if(obj.zIndex > minZindex && obj.shape.type !== 'SwimLane'){
-                        let clonedNode = cloneObject(obj);
+                    if (obj.zIndex > minZindex && obj.shape.type !== 'SwimLane') {
+                        const clonedNode: NodeModel | ConnectorModel = cloneObject(obj);
                         obj.zIndex = minZindex - ((objects.indexOf(obj) !== -1 ? objects.indexOf(obj) : 0) + 1);
+                        if(obj.children){
+                            minZindex =  this.findLowestZIndex(obj as Node,layerObjects) || minZindex;
+                        }
                         this.triggerOrderCommand(clonedNode, obj, obj);
-                    }else if(obj.shape.type === 'SwimLane') {
+                        if (obj.children) {
+                            this.updateGroupZindex(obj as Node,'SendToBack',minZindex);
+                        }
+                    } else if (obj.shape.type === 'SwimLane') {
                         tempIndex = this.swapZIndexObjects(index, zIndexTable, objectId, tempTable);
                     }
-                    
+
                     // for (let i: number = index; i > 0; i--) {
                     //     if (zIndexTable[parseInt(i.toString(), 10)]) {
                     //         //When there are empty records in the zindex table
@@ -2614,16 +2286,39 @@ export class CommandHandler {
             }
         }
         this.diagram.protectPropertyChange(false);
-        if (isBlazor()) {
-            this.getZIndexObjects();
-        }
     }
 
-    private updateLayerZindexTable(layerIndex:number){
-        let layer:LayerModel = this.diagram.layers[parseInt(layerIndex.toString(), 10)];
+    private updateGroupZindex  (parent: Node,command:string,index:number){
+        if(command === 'SendToBack' || command === 'SendBackward'){
+            let parentZindex = parent.zIndex;
+            for(let i=0;i<parent.children.length;i++){
+                let child = this.diagram.nameTable[parent.children[parseInt(i.toString(), 10)]];
+                if(child.children){
+                    child.zIndex = parentZindex -(i+1);
+                    this.updateGroupZindex(child,command,child.zIndex);
+                }else{
+                    child.zIndex = parentZindex -(i+1);
+                }
+            }
+        }else if(command === 'BringToFront' || command === 'BringForward'){
+            for(let i=0;i<parent.children.length;i++){
+                let child = this.diagram.nameTable[parent.children[parseInt(i.toString(), 10)]];
+                if(child.children){
+                    child.zIndex = index +(i+1);
+                    this.updateGroupZindex(child,command,child.zIndex);
+                }else{
+                    child.zIndex = index +(i+1);
+                }
+            }
+        }
+
+    }
+
+    private updateLayerZindexTable(layerIndex: number): void {
+        const layer: LayerModel = this.diagram.layers[parseInt(layerIndex.toString(), 10)];
         (layer as Layer).zIndexTable = {};
-        for(let i:number =0;i<layer.objects.length;i++){
-            let obj = this.diagram.nameTable[layer.objects[parseInt(i.toString(), 10)]];
+        for (let i: number = 0; i < layer.objects.length; i++) {
+            const obj: NodeModel | ConnectorModel = this.diagram.nameTable[layer.objects[parseInt(i.toString(), 10)]];
             (layer as Layer).zIndexTable[obj.zIndex] = obj.id;
         }
     }
@@ -2635,7 +2330,8 @@ export class CommandHandler {
         let j: number = 1;
         // Get the swimlane's Children count
         for (let i: number = 0; i <= index; i++) {
-            if (zIndexTable[parseInt(i.toString(), 10)] && this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].parentId === objectId) {
+            if (zIndexTable[parseInt(i.toString(), 10)]
+                && this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].parentId === objectId) {
                 // Get the swimlane's first children position from z index table
                 if (childIndex === -1) {
                     childIndex = i;
@@ -2703,49 +2399,49 @@ export class CommandHandler {
         }
     }
     private getZIndexObjects(): void {
-        const element: (NodeModel | ConnectorModel)[] = [];
-        let i: number; let j: number;
-        for (i = 0; i < this.diagram.nodes.length; i++) {
-            element.push(this.diagram.nodes[parseInt(i.toString(), 10)]);
-        }
-        for (j = 0; j < this.diagram.connectors.length; j++) {
-            element.push(this.diagram.connectors[parseInt(j.toString(), 10)]);
-        }
-        this.updateBlazorZIndex(element);
+        // const element: (NodeModel | ConnectorModel)[] = [];
+        // let i: number; let j: number;
+        // for (i = 0; i < this.diagram.nodes.length; i++) {
+        //     element.push(this.diagram.nodes[parseInt(i.toString(), 10)]);
+        // }
+        // for (j = 0; j < this.diagram.connectors.length; j++) {
+        //     element.push(this.diagram.connectors[parseInt(j.toString(), 10)]);
+        // }
+        // this.updateBlazorZIndex(element);
     }
 
     private updateBlazorZIndex(element: (NodeModel | ConnectorModel)[]): void {
-        const blazorInterop: string = 'sfBlazor';
-        const blazor: string = 'Blazor';
-        let diagramobject: object = {};
-        const nodeObject: NodeModel[] = [];
-        const connectorObject: ConnectorModel[] = [];
-        let k: number;
-        if (element && element.length > 0) {
-            for (k = 0; k < element.length; k++) {
-                const elementObject: (NodeModel | ConnectorModel) = element[parseInt(k.toString(), 10)];
-                if (elementObject instanceof Node) {
-                    nodeObject.push(this.getBlazorObject(elementObject));
-                } else if (elementObject instanceof Connector) {
-                    connectorObject.push(this.getBlazorObject(elementObject));
-                }
-            }
-        }
-        diagramobject = {
-            nodes: nodeObject,
-            connectors: connectorObject
-        };
-        if (window && window[`${blazor}`]) {
-            const obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramobject };
-            window[`${blazorInterop}`].updateBlazorProperties(obj, this.diagram);
-        }
+        // const blazorInterop: string = 'sfBlazor';
+        // const blazor: string = 'Blazor';
+        // let diagramobject: object = {};
+        // const nodeObject: NodeModel[] = [];
+        // const connectorObject: ConnectorModel[] = [];
+        // let k: number;
+        // if (element && element.length > 0) {
+        //     for (k = 0; k < element.length; k++) {
+        //         const elementObject: (NodeModel | ConnectorModel) = element[parseInt(k.toString(), 10)];
+        //         if (elementObject instanceof Node) {
+        //             nodeObject.push(this.getBlazorObject(elementObject));
+        //         } else if (elementObject instanceof Connector) {
+        //             connectorObject.push(this.getBlazorObject(elementObject));
+        //         }
+        //     }
+        // }
+        // diagramobject = {
+        //     nodes: nodeObject,
+        //     connectors: connectorObject
+        // };
+        // if (window && window[`${blazor}`]) {
+        //     const obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramobject };
+        //     window[`${blazorInterop}`].updateBlazorProperties(obj, this.diagram);
+        // }
     }
-    private getBlazorObject(objectName: (NodeModel | ConnectorModel)): object {
-        const object: object = {
-            sfIndex: getIndex(this.diagram, objectName.id),
-            zIndex: objectName.zIndex
-        };
-        return object;
+    private getBlazorObject(objectName: (NodeModel | ConnectorModel)): any {
+        // const object: object = {
+        //     sfIndex: getIndex(this.diagram, objectName.id),
+        //     zIndex: objectName.zIndex
+        // };
+        // return object;
     }
     //Checks whether the target is a child node.
     private checkParentExist(target: string): string {
@@ -2758,13 +2454,13 @@ export class CommandHandler {
 
     //Checks whether the selected node is not a parent of another node.
     public checkObjectBehind(objectId: string, zIndexTable: {}, index: number): boolean {
-        for (let i: number = 0; i < index; i++) {
-            const z: string = zIndexTable[parseInt(i.toString(), 10)];
-            if (this.diagram.nameTable[`${z}`] && objectId !== this.diagram.nameTable[`${z}`].parentId) {
-                return true;
-            }
-        }
-        return false;
+        // for (let i: number = 0; i < index; i++) {
+        //     const z: string = zIndexTable[parseInt(i.toString(), 10)];
+        //     if (this.diagram.nameTable[`${z}`] && objectId !== this.diagram.nameTable[`${z}`].parentId) {
+        //         return true;
+        //     }
+        // }
+        return true;
     }
 
     /**
@@ -2789,16 +2485,16 @@ export class CommandHandler {
                 objects = objects.concat(selectedItems.connectors);
             }
             for (let i: number = 0; i < objects.length; i++) {
-                const clonedObject = cloneObject(objects[parseInt(i.toString(), 10)]);
+                const clonedObject: object = cloneObject(objects[parseInt(i.toString(), 10)]);
                 objectName = objects[parseInt(i.toString(), 10)].id;
                 const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
                 const zIndexTable: {} = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).zIndexTable;
                 const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-                let layerObjects = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).objects;
-                let maxZindex = null;
-                for(let i:number = 0;i<layerObjects.length;i++){
-                    let obj = this.diagram.nameTable[layerObjects[parseInt(i.toString(), 10)]];
-                    if(maxZindex === null || obj.zIndex > maxZindex){
+                const layerObjects: string[] = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).objects;
+                let maxZindex: any = null;
+                for (let i: number = 0; i < layerObjects.length; i++) {
+                    const obj: (NodeModel | ConnectorModel) = this.diagram.nameTable[layerObjects[parseInt(i.toString(), 10)]];
+                    if (maxZindex === null || obj.zIndex > maxZindex) {
                         maxZindex = obj.zIndex;
                     }
                 }
@@ -2816,7 +2512,8 @@ export class CommandHandler {
                 const object: NodeModel = this.diagram.nameTable[`${objectName}`];
                 if (object.shape.type === 'SwimLane') {
                     for (let i: number = tabelLength; i >= index; i--) {
-                        if (zIndexTable[parseInt(i.toString(), 10)] && !(this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].parentId === objectName)) {
+                        if (zIndexTable[parseInt(i.toString(), 10)]
+                            && !(this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].parentId === objectName)) {
                             length = i;
                             tabelLength = length;
                             break;
@@ -2824,9 +2521,23 @@ export class CommandHandler {
                     }
                 }
                 const obj: NodeModel = this.diagram.nameTable[`${objectName}`];
-                if(obj.zIndex < maxZindex && obj.shape.type !== 'SwimLane'){
-                    let clonedNode = cloneObject(obj);
-                    obj.zIndex = maxZindex + ((objects.indexOf(obj) !== -1 ? objects.indexOf(obj) : 0) + 1);
+                if (obj.zIndex < maxZindex && obj.shape.type !== 'SwimLane') {
+                    const clonedNode: NodeModel = cloneObject(obj);
+                    let parentZindex = 0;
+                    if (obj.children) {
+                        maxZindex = this.findGreatestZIndex(obj as Node,layerObjects) || maxZindex;
+                        this.updateGroupZindex(obj as Node,'BringToFront',maxZindex);
+
+                        for(let i=0;i<obj.children.length;i++){
+                            let child = this.diagram.nameTable[obj.children[parseInt(i.toString(), 10)]];
+                            if(child.zIndex > parentZindex){
+                                parentZindex = child.zIndex;
+                            }
+                        }
+                    }else{
+                        parentZindex = maxZindex;
+                    }
+                    obj.zIndex = parentZindex + ((objects.indexOf(obj) !== -1 ? objects.indexOf(obj) : 0) + 1);
                     this.triggerOrderCommand(clonedNode, obj, obj);
                 }
                 // for (let i: number = index; i < tabelLength; i++) {
@@ -2855,14 +2566,15 @@ export class CommandHandler {
                 //     this.diagram.nameTable[`${objectName}`].zIndex = tabelLength;
                 //     this.triggerOrderCommand(clonedObject, objects[parseInt(i.toString(), 10)], objects[parseInt(i.toString(), 10)]);
                 // }
-                else if(obj.shape.type === 'SwimLane') {
+                else if (obj.shape.type === 'SwimLane') {
                     let childCount: number = 0;
                     let childIndex: number = -1;
                     let tempIndex: number = 0;
                     let laneIndex: number = 0;
                     const cloneTable: {} = JSON.parse(JSON.stringify(zIndexTable));
                     for (let i: number = 0; i <= index; i++) {
-                        if (zIndexTable[parseInt(i.toString(), 10)] && this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].parentId === objectName) {
+                        if (zIndexTable[parseInt(i.toString(), 10)]
+                            && this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].parentId === objectName) {
                             if (childIndex === -1) {
                                 childIndex = i;
                                 tempIndex = i;
@@ -2871,7 +2583,8 @@ export class CommandHandler {
                         }
                     }
                     for (let i: number = 0; i <= tabelLength; i++) {
-                        if (tempTable[parseInt(i.toString(), 10)] && tempTable[parseInt(i.toString(), 10)] !== objectName && this.diagram.nameTable[tempTable[parseInt(i.toString(), 10)]].parentId !== objectName) {
+                        if (tempTable[parseInt(i.toString(), 10)] && tempTable[parseInt(i.toString(), 10)] !== objectName
+                            && this.diagram.nameTable[tempTable[parseInt(i.toString(), 10)]].parentId !== objectName) {
                             const node: Node = this.diagram.nameTable[tempTable[parseInt(i.toString(), 10)]];
                             const swimlaneObject: Node = this.diagram.nameTable[`${objectName}`];
                             if (node.zIndex >= swimlaneObject.zIndex) {
@@ -2880,7 +2593,7 @@ export class CommandHandler {
                         }
                     }
                     let k: number = childIndex;
-                    for (let i = 0; i <= childCount; i++) {
+                    for (let i: number = 0; i <= childCount; i++) {
                         while (!zIndexTable[parseInt(k.toString(), 10)]) {
                             k++;
                         }
@@ -2961,7 +2674,7 @@ export class CommandHandler {
                     //     this.updateLayerZindexTable(layerNum);
                     // }
                     const obj: NodeModel = this.diagram.nameTable[`${objectName}`];
-                    let i: number = obj.shape.type !== 'SwimLane' ? maxZindex : tempIndex;
+                    const i: number = obj.shape.type !== 'SwimLane' ? maxZindex : tempIndex;
                     // if (i !== tempIndex) {
                     //     i = (obj.children && obj.children.length > 0) ? index : 1;
                     // }
@@ -2973,9 +2686,9 @@ export class CommandHandler {
                     // EJ2-46656 - CR issue fix
                     target = this.resetTargetNode(objectName, target, i, zIndexTable);
                     //EJ2-69654 - Send to back command not working when there is single node in layer
-                    if (target){
+                    if (target) {
                         target = this.diagram.nameTable[`${target}`].parentId ? this.checkParentExist(target) : target;
-                        this.moveAfterSvgNode(objectName,target);
+                        this.moveAfterSvgNode(objectName, target);
                     }
                     const diagramLayer: SVGGElement = this.diagram.diagramLayer as SVGGElement;
                     let element: HTMLElement = getDiagramElement(objectName + '_groupElement', this.diagram.element.id);
@@ -3005,13 +2718,38 @@ export class CommandHandler {
             }
         }
         this.diagram.protectPropertyChange(false);
-        if (isBlazor()) {
-            this.getZIndexObjects();
-        }
     }
 
-    private triggerOrderCommand(oldObj : NodeModel | ConnectorModel, newObj : NodeModel | ConnectorModel, obj: NodeModel | ConnectorModel){
-        const clonedObject = cloneObject(oldObj);
+    private findGreatestZIndex (parent:Node,layerObjects:string[]) {
+        let layerObj = this.diagram.nodes.filter((node: any)=>layerObjects.indexOf(node.id) !== -1);
+        // Get zIndex values of nodes excluding children of the parent
+        let zIndexes = layerObj.filter((node: any) => node.parentId === "" && node.id !== parent.id).map(node => (node as Node).zIndex);
+        // Sort zIndexes in descending order
+        zIndexes.sort((a, b) => b - a);
+        // Find the greatest zIndex excluding children
+        if(zIndexes.length >0){
+            return zIndexes[0];
+        }
+        return null;
+    }
+
+    private findLowestZIndex (parent:Node,layerObjects:string[]) {
+        let layerObj = this.diagram.nodes.filter((node: any)=>layerObjects.indexOf(node.id) !== -1);
+        // Get zIndex values of nodes excluding children of the parent
+        let zIndexes = layerObj.filter((node:any) => node.parentId === "" && node.id !== parent.id).map(node => (node as Node).zIndex);
+        // Sort zIndexes in ascending order
+        zIndexes.sort((a, b) => a - b);
+
+        // Find the lowest zIndex excluding children
+        if(zIndexes.length > 0){
+            return zIndexes[0];
+        }
+        return null;
+    };
+
+    private triggerOrderCommand(oldObj: NodeModel | ConnectorModel, newObj: NodeModel | ConnectorModel,
+                                obj: NodeModel | ConnectorModel): void {
+        const clonedObject: object = cloneObject(oldObj);
         // EJ2-61653 - Added below code to get only changed values (zIndex) and passed as an argument to property change event
         const oldValue: NodeModel | ConnectorModel = {
             zIndex: (clonedObject as NodeModel | ConnectorModel).zIndex
@@ -3020,7 +2758,7 @@ export class CommandHandler {
             zIndex: newObj.zIndex
         };
         const arg: IPropertyChangeEventArgs = {
-            element: obj, cause: this.diagram.diagramActions, diagramAction : this.diagram.getDiagramAction(this.diagram.diagramActions),
+            element: obj, cause: this.diagram.diagramActions, diagramAction: this.diagram.getDiagramAction(this.diagram.diagramActions),
             oldValue: oldValue, newValue: newValue
         };
         this.diagram.triggerEvent(DiagramEvent.propertyChange, arg);
@@ -3038,11 +2776,19 @@ export class CommandHandler {
      *  @param { string } sortID - Provide the sortID element .
      * @private
      */
-    public sortByZIndex(nodeArray: Object[], sortID?: string): Object[] {
-        const id: string = sortID ? sortID : 'zIndex';
-        nodeArray = nodeArray.sort((a: Object, b: Object): number => {
-            return a[`${id}`] - b[`${id}`];
-        });
+    public sortByZIndex(nodeArray: Object[], sortID?: string, command?:string): Object[] {
+        if(command === 'BringForward'){
+            const id: string = sortID ? sortID : 'zIndex';
+            nodeArray = nodeArray.sort((a: Object, b: Object): number => {
+                return  b[`${id}`] - a[`${id}`] ;
+            });
+        }else{
+            const id: string = sortID ? sortID : 'zIndex';
+            nodeArray = nodeArray.sort((a: Object, b: Object): number => {
+                return a[`${id}`] - b[`${id}`];
+            });
+        }
+
         return nodeArray;
     }
     /**
@@ -3059,11 +2805,11 @@ export class CommandHandler {
         selectedObject = selectedObject.concat(selector.connectors);
         if (isRedo) {
             if (action === 'SendBackward') {
-                for(let i:number=0;i<selectedObject.length;i++){
+                for (let i: number = 0; i < selectedObject.length; i++) {
                     this.sendBackward(selectedObject[parseInt(i.toString(), 10)]);
                 }
             } else if (action === 'SendForward') {
-                for(let i:number=0;i<selectedObject.length;i++){
+                for (let i: number = 0; i < selectedObject.length; i++) {
                     this.sendForward(selectedObject[parseInt(i.toString(), 10)]);
                 }
             } else if (action === 'BringToFront') {
@@ -3089,7 +2835,7 @@ export class CommandHandler {
             } else if (action === 'BringToFront') {
                 if (selectedObject[0].shape.type === 'SwimLane') {
                     this.sendToBack(selectedObject[0]);
-                } 
+                }
                 // else {
                 //     const k: number = 1;
                 //     for (let j: number = endZIndex; j > startZIndex; j--) {
@@ -3128,26 +2874,26 @@ export class CommandHandler {
                 const node: NodeModel = this.diagram.nameTable[selectedObject[0].id];
                 node.zIndex = undoObject.zIndex;
                 (this.diagram.layers[parseInt(layerIndex.toString(), 10)] as Layer).zIndexTable[undoObject.zIndex] = undoObject.id;
-                this.updateLayerZindexTable(layer.zIndex)
+                this.updateLayerZindexTable(layer.zIndex);
             }
             if (this.diagram.mode === 'SVG') {
                 if (action === 'SendBackward') {
                     //To iterate all the elements in diagram to change the zindex
-                    for(let i:number=0;i<selectedObject.length;i++){
+                    for (let i: number = 0; i < selectedObject.length; i++) {
                         this.moveSBObject(selectedObject[parseInt(i.toString(), 10)].id);
                     }
                 } else if (action === 'SendForward') {
                     //To iterate all the elements in diagram to change the zindex
-                    for(let i:number=0;i<selectedObject.length;i++){
+                    for (let i: number = 0; i < selectedObject.length; i++) {
                         this.moveFBObject(selectedObject[parseInt(i.toString(), 10)].id);
                     }
-                } 
+                }
                 // else if (action === 'BringToFront') {
                 //     if (selectedObject[0].shape.type !== 'SwimLane') {
                 //         this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
                 //     }
                 // }
-                 else if (action === 'SendToBack' || action === 'BringToFront') {
+                else if (action === 'SendToBack' || action === 'BringToFront') {
                     if (selectedObject[0].shape.type !== 'SwimLane') {
                         // const layer: LayerModel = this.getObjectLayer(selectedObject[0].id);
                         // for (let i: number = 0; i <= selectedObject[0].zIndex; i++) {
@@ -3156,19 +2902,19 @@ export class CommandHandler {
                         //         this.updateNativeNodeIndex(selectedObject[0].id);
                         //     }
                         // }
-                        const zIndexArray = layer.objects.map(x => this.diagram.nameTable[`${x}`].zIndex);
-                        const filteredZIndexArray = zIndexArray.filter(zIndex => zIndex > startZIndex);
-                        const filteredZIndexArray2 = zIndexArray.filter(zIndex => zIndex < startZIndex);
-                        const nextLowestZindex = filteredZIndexArray2.length > 0 ? Math.max(...filteredZIndexArray2) : startZIndex;
-                        const nextGreatestZIndex = filteredZIndexArray.length > 0 ? Math.min(...filteredZIndexArray) : startZIndex;
-                        if(startZIndex !== nextGreatestZIndex){
-                            let first:string = (layer as Layer).zIndexTable[parseInt(nextGreatestZIndex.toString(), 10)];
-                            let second:string = (layer as Layer).zIndexTable[parseInt(startZIndex.toString(), 10)];
-                            this.moveSvgNode(second,first);
-                        }else if(action === 'SendToBack'){
-                            let first:string =  (layer as Layer).zIndexTable[parseInt(startZIndex.toString(), 10)];
-                            let second:string =  (layer as Layer).zIndexTable[parseInt(nextLowestZindex.toString(), 10)];
-                            this.moveAfterSvgNode(first,second);
+                        const zIndexArray: any[] = layer.objects.map((x: string) => this.diagram.nameTable[`${x}`].zIndex);
+                        const filteredZIndexArray: any[] = zIndexArray.filter((zIndex: any) => zIndex > startZIndex);
+                        const filteredZIndexArray2: any[] = zIndexArray.filter((zIndex: any) => zIndex < startZIndex);
+                        const nextLowestZindex: number = filteredZIndexArray2.length > 0 ? Math.max(...filteredZIndexArray2) : startZIndex;
+                        const nextGreatestZIndex: number = filteredZIndexArray.length > 0 ? Math.min(...filteredZIndexArray) : startZIndex;
+                        if (startZIndex !== nextGreatestZIndex) {
+                            const first: string = (layer as Layer).zIndexTable[parseInt(nextGreatestZIndex.toString(), 10)];
+                            const second: string = (layer as Layer).zIndexTable[parseInt(startZIndex.toString(), 10)];
+                            this.moveSvgNode(second, first);
+                        } else if (action === 'SendToBack') {
+                            const first: string = (layer as Layer).zIndexTable[parseInt(startZIndex.toString(), 10)];
+                            const second: string = (layer as Layer).zIndexTable[parseInt(nextLowestZindex.toString(), 10)];
+                            this.moveAfterSvgNode(first, second);
                         }
                     }
                 }
@@ -3179,33 +2925,33 @@ export class CommandHandler {
         }
     }
 
-    private moveSBObject = function (targetId: string):void {
+    private moveSBObject: (targetId: string) => void = function (targetId: string): void {
         if (targetId) {
             this.moveBackUndoNode(targetId);
-            let node:NodeModel = this.diagram.getObject(targetId);
-            if(node.shape.type == "Native" || node.shape.type == "HTML" ){
+            const node: NodeModel = this.diagram.getObject(targetId);
+            if (node.shape.type === 'Native' || node.shape.type === 'HTML') {
                 this.updateNativeNodeIndex(targetId);
             }
         }
     };
     //The below method is for undo process for sendBackward command
-    private moveBackUndoNode = function(targetId: string):void {
-        let originalZIndexTable:object = {};  // New variable to store original zIndex values
+    private moveBackUndoNode: (targetId: string) => void = function (targetId: string): void {
+        const originalZIndexTable: object = {};  // New variable to store original zIndex values
         // Store original zIndex values
-        for (let i:number = 0; i < this.diagram.nodes.length; i++) {
-            let node1 = this.diagram.nodes[parseInt(i.toString(), 10)];
+        for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+            const node1: NodeModel = this.diagram.nodes[parseInt(i.toString(), 10)];
             originalZIndexTable[node1.id] = node1.zIndex;
         }
-        for (let j:number = 0; j < this.diagram.connectors.length; j++) {
-            let connector = this.diagram.connectors[parseInt(j.toString(), 10)];
+        for (let j: number = 0; j < this.diagram.connectors.length; j++) {
+            const connector: ConnectorModel = this.diagram.connectors[parseInt(j.toString(), 10)];
             originalZIndexTable[connector.id] = connector.zIndex;
         }
-        const sortedNodeIds: string[] = Object.keys(originalZIndexTable).sort((a, b) => originalZIndexTable[`${a}`] - originalZIndexTable[`${b}`]);
+        const sortedNodeIds: string[] = Object.keys(originalZIndexTable).sort((a: string, b: string) => originalZIndexTable[`${a}`] - originalZIndexTable[`${b}`]);
         const currentIndex: number = sortedNodeIds.indexOf(targetId);
         //This method moves the node/connector based on their zindex
         if (currentIndex !== -1) {
-            if (currentIndex == sortedNodeIds.length - 1) {
-                var nextNodeId = sortedNodeIds[currentIndex - 1];
+            if (currentIndex === sortedNodeIds.length - 1) {
+                const nextNodeId: string = sortedNodeIds[currentIndex - 1];
                 if (nextNodeId) {
                     const diagramDiv: HTMLElement = getDiagramElement(targetId + '_groupElement', this.diagram.element.id);
                     const backNode: HTMLElement = getDiagramElement(nextNodeId + '_groupElement', this.diagram.element.id);
@@ -3214,74 +2960,74 @@ export class CommandHandler {
                 }
             }
             else {
-                var nextNodeId = sortedNodeIds[currentIndex + 1];
+                const nextNodeId: string = sortedNodeIds[currentIndex + 1];
                 let backNode: HTMLElement;
                 if (nextNodeId) {
                     const diagramDiv: HTMLElement = getDiagramElement(targetId + '_groupElement', this.diagram.element.id);
-                    backNode= getDiagramElement(nextNodeId + '_groupElement', this.diagram.element.id);
-                    let target = this.diagram.getObject(targetId);
-                    let newnode = this.diagram.getObject(nextNodeId);
+                    backNode = getDiagramElement(nextNodeId + '_groupElement', this.diagram.element.id);
+                    const target: Node = this.diagram.getObject(targetId);
+                    const newnode: Node = this.diagram.getObject(nextNodeId);
 
-                    if(newnode.parentId && newnode.parentId != target.parentId){
+                    if (newnode.parentId && newnode.parentId !== target.parentId) {
                         backNode = getDiagramElement(newnode.parentId + '_groupElement', this.diagram.element.id);
                     }
-                    if(target.parentId != newnode.id){
+                    if (target.parentId !== newnode.id) {
                         diagramDiv.parentNode.insertBefore(diagramDiv, backNode);
                     }
                 }
             }
         }
     };
-    private moveFBObject = function (targetId: string):void {
+    private moveFBObject: (targetId: string) => void = function (targetId: string): void {
         if (targetId) {
             this.moveForwardUndoNode(targetId);
-            let node:NodeModel = this.diagram.getObject(targetId);
-            if(node.shape.type == "Native" || node.shape.type == "HTML" ){
+            const node: NodeModel = this.diagram.getObject(targetId);
+            if (node.shape.type === 'Native' || node.shape.type === 'HTML') {
                 this.updateNativeNodeIndex(targetId);
             }
         }
     };
-     //The below method is for undo process for moveForward command
-    private moveForwardUndoNode = function(targetID: string):void {
-        let originalZIndexTable:object = {};  // New variable to store original zIndex values
+    //The below method is for undo process for moveForward command
+    private moveForwardUndoNode: (targetID: string) => void = function (targetID: string): void {
+        const originalZIndexTable: object = {};  // New variable to store original zIndex values
         // Store original zIndex values
-        for (let i = 0; i < this.diagram.nodes.length; i++) {
-            let node1 = this.diagram.nodes[parseInt(i.toString(), 10)];
+        for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+            const node1: NodeModel = this.diagram.nodes[parseInt(i.toString(), 10)];
             originalZIndexTable[node1.id] = node1.zIndex;
         }
-        for (let j = 0; j < this.diagram.connectors.length; j++) {
-            let connector = this.diagram.connectors[parseInt(j.toString(), 10)];
+        for (let j: number = 0; j < this.diagram.connectors.length; j++) {
+            const connector: ConnectorModel = this.diagram.connectors[parseInt(j.toString(), 10)];
             originalZIndexTable[connector.id] = connector.zIndex;
         }
-        const sortedNodeIds: string[] = Object.keys(originalZIndexTable).sort((a, b) => originalZIndexTable[`${a}`] - originalZIndexTable[`${b}`]);
+        const sortedNodeIds: string[] = Object.keys(originalZIndexTable).sort((a: string, b: string) => originalZIndexTable[`${a}`] - originalZIndexTable[`${b}`]);
         const currentIndex: number = sortedNodeIds.indexOf(targetID);
         //This method moves the node/connector based on their zindex
         if (currentIndex !== -1) {
-            if(currentIndex == sortedNodeIds.length-1){
-                let nextNodeId = sortedNodeIds[currentIndex - 1];
+            if (currentIndex === sortedNodeIds.length - 1) {
+                const nextNodeId: string = sortedNodeIds[currentIndex - 1];
                 if (nextNodeId) {
                     const diagramDiv: HTMLElement = getDiagramElement(targetID + '_groupElement', this.diagram.element.id);
                     const backNode: HTMLElement = getDiagramElement(nextNodeId + '_groupElement', this.diagram.element.id);
-                    diagramDiv.parentNode.insertBefore(diagramDiv,backNode);
-                    diagramDiv.parentNode.insertBefore(backNode,diagramDiv);
+                    diagramDiv.parentNode.insertBefore(diagramDiv, backNode);
+                    diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
                 }
             }
-            else{
-                let nextNodeId = sortedNodeIds[currentIndex + 1];
+            else {
+                const nextNodeId: string = sortedNodeIds[currentIndex + 1];
                 if (nextNodeId) {
                     const diagramDiv: HTMLElement = getDiagramElement(targetID + '_groupElement', this.diagram.element.id);
                     const backNode: HTMLElement = getDiagramElement(nextNodeId + '_groupElement', this.diagram.element.id);
-                    diagramDiv.parentNode.insertBefore(diagramDiv,backNode);
+                    diagramDiv.parentNode.insertBefore(diagramDiv, backNode);
                 }
             }
         }
     };
 
     private moveObject(sourceId: string, targetId: string): void {
-        if (targetId) {
-            this.moveSvgNode(sourceId, targetId);
-            this.updateNativeNodeIndex(sourceId, targetId);
-        }
+        // if (targetId) {
+        //     this.moveSvgNode(sourceId, targetId);
+        //     this.updateNativeNodeIndex(sourceId, targetId);
+        // }
     }
     /**
      * sendForward method\
@@ -3294,31 +3040,36 @@ export class CommandHandler {
         this.diagram.protectPropertyChange(true);
 
         if (hasSelection(this.diagram) || obj) {
-            const elements: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0]
-                : this.diagram.selectedItems.connectors[0]);
-            const clonedObjects = cloneObject(elements);
+            const elements: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length
+                ? this.diagram.selectedItems.nodes[0] : this.diagram.selectedItems.connectors[0]);
+            const clonedObjects: object = cloneObject(elements);
             let nodeId: string = (obj && obj.id);
             nodeId = nodeId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
                 : this.diagram.selectedItems.connectors[0].id);
 
             const layerIndex: number = this.diagram.layers.indexOf(this.getObjectLayer(nodeId));
-            const originalNameTable = cloneObject(this.diagram.nameTable);
+            const originalNameTable: object = cloneObject(this.diagram.nameTable);
             const zIndexTable: {} = (this.diagram.layers[parseInt(layerIndex.toString(), 10)] as Layer).zIndexTable;
             //const tabelLength: number = Object.keys(zIndexTable).length;
             const index: NodeModel = this.diagram.nameTable[`${nodeId}`];
             const intersectArray: NodeModel[] = [];
             let temp: Object[] = this.diagram.spatialSearch.findObjects(index.wrapper.bounds);
             if (temp.length > 2) {
-                temp = this.sortByZIndex(temp);
+                temp = this.sortByZIndex(temp,undefined,'BringForward');
             }
             for (const i of temp) {
                 if (index.id !== (i as NodeModel).id) {
                     const currentLayer: number = this.getObjectLayer((i as NodeModel).id).zIndex;
-                    if (layerIndex === currentLayer && (Number(this.diagram.nameTable[`${nodeId}`].zIndex) < Number((i as NodeModel).zIndex)) &&
+                    if (layerIndex === currentLayer && (Number(this.diagram.nameTable[`${nodeId}`].zIndex) < Number((i as NodeModel).zIndex)) && (i as Node).parentId === '' &&
                         index.wrapper.bounds.intersects((i as NodeModel).wrapper.bounds)) {
                         intersectArray.push((i as NodeModel));
-                        break;
                     }
+                }
+            }
+            for (let i: number = intersectArray.length - 1; i >= 0; i--) {
+                const child: Node = this.diagram.nameTable[intersectArray[parseInt(i.toString(), 10)].id];
+                if (child.parentId === nodeId) {
+                    intersectArray.splice(i, 1);
                 }
             }
             if (intersectArray.length > 0) {
@@ -3331,15 +3082,15 @@ export class CommandHandler {
                         intersectArray[0] = obj;
                     }
                 }
-                let originalZIndexTable:object = {};  // New variable to store original zIndex values
+                const originalZIndexTable: object = {};  // New variable to store original zIndex values
                 // Store original zIndex values for nodes
-                for (let i:number = 0; i < this.diagram.nodes.length; i++) {
-                    let node1 = this.diagram.nodes[parseInt(i.toString(), 10)];
+                for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+                    const node1: NodeModel = this.diagram.nodes[parseInt(i.toString(), 10)];
                     originalZIndexTable[node1.id] = node1.zIndex;
                 }
                 // Store original zIndex values for connectors
-                for (let j:number = 0; j < this.diagram.connectors.length; j++) {
-                    let connector = this.diagram.connectors[parseInt(j.toString(), 10)];
+                for (let j: number = 0; j < this.diagram.connectors.length; j++) {
+                    const connector: ConnectorModel = this.diagram.connectors[parseInt(j.toString(), 10)];
                     originalZIndexTable[connector.id] = connector.zIndex;
                 }
                 const overlapObject: number = intersectArray[0].zIndex;
@@ -3347,68 +3098,71 @@ export class CommandHandler {
                 const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
                 this.diagram.startGroupAction();
                 //To store the zindex values as key value pair
-                let zIndex:Object = {};
-                intersectArray.forEach(function (item) {
+                const zIndex: Object = {};
+                intersectArray.forEach(function (item: NodeModel): void {
                     zIndex[item.id] = item.zIndex;
                 });
                 // To store the intersecting zindex value
-                let greaterItems:number[] = [];
+                const greaterItems: number[] = [];
                 if (index) {
-                    let tempIndex = index.zIndex;
-                    // @ts-nocheck
+                    const tempIndex: number = index.zIndex;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-nochec
                     if (Object.keys(zIndex).length > 0) {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        Object.values(zIndex).forEach(function (val: number) {
+                        Object.values(zIndex).forEach(function (val: number): void {
                             if (val >= tempIndex) {
                                 greaterItems.push(val);
                             }
                         });
                         if (greaterItems.length !== 0) {
-                            this.updateZIndexBySendForward(index, greaterItems);
+                            this.updateZIndexBySendForward(index, greaterItems,layerIndex);
                         }
                     }
                 }
-                const changedNodeZIndexesArray:(NodeModel | ConnectorModel)[] = [];
+                const changedNodeZIndexesArray: (NodeModel | ConnectorModel)[] = [];
                 Object.keys(this.changedNodeZIndexes).forEach((nodeId: string) => {
-                    const originalZIndex = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
-                    const changedZIndex = this.changedNodeZIndexes[`${nodeId}`];
+                    const originalZIndex: any = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
+                    const changedZIndex: any = this.changedNodeZIndexes[`${nodeId}`];
                     //By comparing with changedNodeZIndexes to store the changed elements in undo
                     if (originalZIndex !== changedZIndex) {
-                        const node = cloneObject(originalNameTable[`${nodeId}`]);
+                        const node: (NodeModel | ConnectorModel) = cloneObject(originalNameTable[`${nodeId}`]);
                         changedNodeZIndexesArray.push(node);
                     }
                 });
                 this.updateLayerZindexTable(layerIndex);
                 undoObject.nodes.splice(0, undoObject.nodes.length);
                 changedNodeZIndexesArray.forEach((node: Node|Connector) => {
-                    const clonedNode = cloneObject(node);
+                    const clonedNode: object = cloneObject(node);
                     undoObject.nodes.push(clonedNode);
                 });
                 if (this.diagram.mode === 'SVG') {
-                    let nodeIdToUpdate:string = intersectArray[intersectArray.length - 1].id;
-                    let element:NodeModel |ConnectorModel =intersectArray[intersectArray.length - 1];
+                    const nodeIdToUpdate: string = intersectArray[intersectArray.length - 1].id;
+                    const element: NodeModel | ConnectorModel = intersectArray[intersectArray.length - 1];
                     if (element && !(element.shape.type === 'HTML'
-                    || element.shape.type === 'Native')){
-                        this.moveForwardSvgNode(nodeId);
+                        || element.shape.type === 'Native')) {
+                        // this.moveForwardSvgNode(nodeId);
+                        this.moveAfterSvgNode(nodeId,nodeIdToUpdate);
                     }
                     this.updateNativeNodeIndex(nodeIdToUpdate, nodeId);
                 } else {
                     this.diagram.refreshCanvasLayers();
                 }
-                const changeNodeZIndexesArray:(NodeModel | ConnectorModel)[] = [];
+                const changeNodeZIndexesArray: (NodeModel | ConnectorModel)[] = [];
                 Object.keys(this.changedNodeZIndexes).forEach((nodeId: string) => {
-                    const originalZIndex = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
-                    const changedZIndex = this.changedNodeZIndexes[`${nodeId}`];
+                    const originalZIndex: any = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
+                    const changedZIndex: any = this.changedNodeZIndexes[`${nodeId}`];
                     //By comparing with changedNodeZIndexes to store the changed elements in redo
                     if (originalZIndex !== changedZIndex) {
-                        const node = cloneObject(this.diagram.nameTable[`${nodeId}`]);
+                        const node: (NodeModel | ConnectorModel) = cloneObject(this.diagram.nameTable[`${nodeId}`]);
                         changeNodeZIndexesArray.push(node);
                     }
                 });
                 const redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
                 redoObject.nodes.splice(0, redoObject.nodes.length);
-                changeNodeZIndexesArray.forEach((node: Node|Connector) => {
-                    const clonedNode = cloneObject(node);
+                changeNodeZIndexesArray.forEach((node: Node | Connector) => {
+                    const clonedNode: object = cloneObject(node);
                     redoObject.nodes.push(clonedNode);
                 });
                 const historyEntry: HistoryEntry = {
@@ -3420,28 +3174,53 @@ export class CommandHandler {
                 }
                 this.diagram.endGroupAction();
             }
-            if (isBlazor()) {
-                const elements: (NodeModel | ConnectorModel)[] = [];
-                elements.push(index);
-                elements.push(intersectArray[intersectArray.length - 1]);
-                this.updateBlazorZIndex(elements);
-            }
         }
         this.diagram.protectPropertyChange(false);
 
     }
-    //This method changes all the zindex values based on the selected node/connector 
-    private updateZIndexBySendForward(selectedNode:NodeModel | ConnectorModel, greaterItems: number[])
-    {
-        let clonedNode = cloneObject(selectedNode);
-        selectedNode.zIndex =Math.min(...greaterItems);
-        selectedNode.zIndex++;
+    //This method changes all the zindex values based on the selected node/connector
+    private updateZIndexBySendForward(selectedNode: NodeModel | ConnectorModel, greaterItems: number[],layerNum:number): void {
+        const clonedNode: object = cloneObject(selectedNode);
+        selectedNode.zIndex = Math.min(...greaterItems);
+        let highChildIndex = Math.min(...greaterItems);
+        let index = Math.min(...greaterItems);
+        let highIndex;
+        const layerObjects = this.diagram.layers[parseInt(layerNum.toString(), 10)].objects;
+        const objects:NodeModel[]|ConnectorModel[] = this.diagram.nodes.filter((node: any)=>layerObjects.indexOf(node.id) !== -1);
+        if ((selectedNode as Node).children) {
+            this.updateGroupZindex(selectedNode as Node, 'BringForward', selectedNode.zIndex);
+        }
+        var frontNode = objects.filter(x=>x.zIndex === Math.min(...greaterItems) && x.id !== selectedNode.id);
+        if (frontNode && frontNode.length > 0 && frontNode[0].children) {
+            var frontNodeIndex = Math.min(...greaterItems);
+            for (var i = 0; i < frontNode[0].children.length; i++) {
+                var frontNodeChild = this.diagram.nameTable[frontNode[0].children[parseInt(i.toString(), 10)]];
+                frontNodeChild.zIndex = frontNodeIndex - (i+1);
+                highChildIndex = frontNodeIndex - (i+1);
+
+
+            }
+            this.arrangeZIndexForLowerNodes(highChildIndex,frontNode[0] as Node,objects)
+        }
+        if ((selectedNode as Node).children) {
+            highIndex = this.findGreatestChildZIndex(selectedNode as Node);
+            selectedNode.zIndex = highIndex + 1;
+            highIndex = selectedNode.zIndex;
+        }
+        else {
+            selectedNode.zIndex++;
+            highIndex = selectedNode.zIndex;
+        }
         this.triggerOrderCommand(clonedNode, selectedNode, selectedNode);
-        for(let i:number=0;i<this.diagram.nodes.length;i++){
-            let node=this.diagram.nodes[parseInt(i.toString(), 10)];
-            if (node.zIndex >= selectedNode.zIndex && node !== selectedNode){
+        
+        const sortedObjects = objects.slice().sort((a:any, b:any) => a.zIndex - b.zIndex);
+        for(let i:number=0;i<sortedObjects.length;i++){
+            let node=sortedObjects[parseInt(i.toString(), 10)];
+            if (node.zIndex > index && node !== selectedNode  && (node as Node).parentId !== selectedNode.id && (node as Node).parentId !== frontNode[0].id){
                 let clonedNode = cloneObject(node);
-                node.zIndex++;
+                node.zIndex = highIndex + 1;
+                highIndex++;
+                // node.zIndex++;
                 this.triggerOrderCommand(clonedNode, node, node);
             }
             let originalZIndex:number = node.zIndex;
@@ -3452,21 +3231,24 @@ export class CommandHandler {
                 this.changedNodeZIndexes[node.id] = originalZIndex;
             }
         }
-        for(let i:number=0;i<this.diagram.connectors.length;i++){
-            let connector=this.diagram.connectors[parseInt(i.toString(), 10)];
-            if (connector.zIndex >= selectedNode.zIndex && connector !== selectedNode){
-                let clonedNode = cloneObject(connector);
-                connector.zIndex++;
-                this.triggerOrderCommand(clonedNode, connector, connector);
-            }
-            let originalZIndex:number = connector.zIndex;
-            //changedNodeZIndexes store the zindex values with connector id as key value pair
-            if (this.changedNodeZIndexes.hasOwnProperty(connector.id)) {
-                this.changedNodeZIndexes[connector.id] = originalZIndex;
-            } else {
-                this.changedNodeZIndexes[connector.id] = originalZIndex;
+    }
+
+    private arrangeZIndexForLowerNodes(index:number,parent:Node,objects:NodeModel[]){
+        let lesserIndexNodes = objects.filter(x=>x.zIndex <= index && (x as Node).parentId !== parent.id);
+        lesserIndexNodes.sort((a, b) => b.zIndex - a.zIndex);
+        for(let i=0;i<lesserIndexNodes.length;i++){
+            lesserIndexNodes[parseInt(i.toString(), 10)].zIndex = index - (i+1);
+        }
+    }
+    private findGreatestChildZIndex(parent:Node){
+        let highestZIndex = parent.zIndex;
+        for (let i = 0; i < parent.children.length; i++) {
+            let child = this.diagram.nameTable[parent.children[parseInt(i.toString(), 10)]];
+            if (child.zIndex > highestZIndex) {
+                highestZIndex = child.zIndex;
             }
         }
+        return highestZIndex;
     }
 
     /**
@@ -3475,30 +3257,29 @@ export class CommandHandler {
      * @returns { void }    moveForwardSvgNode method .\
      * @param {string} targetID - provide the objects value.
      * @private
-    */
+     */
     public moveForwardSvgNode(targetID: string): void {
-        const sortedNodeIds: string[] = Object.keys(this.changedNodeZIndexes).sort((a, b) => this.changedNodeZIndexes[`${a}`] - this.changedNodeZIndexes[`${b}`]);
+        const sortedNodeIds: string[] = Object.keys(this.changedNodeZIndexes).sort((a: string, b: string) => this.changedNodeZIndexes[`${a}`] - this.changedNodeZIndexes[`${b}`]);
         const currentIndex: number = sortedNodeIds.indexOf(targetID);
         if (currentIndex !== -1) {
             //This logic moves the node/connector based on their zindex
-            if(currentIndex == sortedNodeIds.length-1){
-                let nextNodeId = sortedNodeIds[currentIndex - 1];
+            if (currentIndex === sortedNodeIds.length - 1) {
+                const nextNodeId: string = sortedNodeIds[currentIndex - 1];
                 if (nextNodeId) {
                     const diagramDiv: HTMLElement = getDiagramElement(targetID + '_groupElement', this.diagram.element.id);
                     const backNode: HTMLElement = getDiagramElement(nextNodeId + '_groupElement', this.diagram.element.id);
-                    diagramDiv.parentNode.insertBefore(diagramDiv,backNode);
-                    diagramDiv.parentNode.insertBefore(backNode,diagramDiv);
+                    diagramDiv.parentNode.insertBefore(diagramDiv, backNode);
+                    diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
                 }
             }
-            else{
-                let nextNodeId = sortedNodeIds[currentIndex + 1];
+            else {
+                const nextNodeId: string = sortedNodeIds[currentIndex + 1];
                 if (nextNodeId) {
                     const diagramDiv: HTMLElement = getDiagramElement(targetID + '_groupElement', this.diagram.element.id);
                     const backNode: HTMLElement = getDiagramElement(nextNodeId + '_groupElement', this.diagram.element.id);
-                    diagramDiv.parentNode.insertBefore(diagramDiv,backNode);
+                    diagramDiv.parentNode.insertBefore(diagramDiv, backNode);
                 }
             }
-           
         }
     }
     /**
@@ -3512,14 +3293,14 @@ export class CommandHandler {
         this.diagram.protectPropertyChange(true);
 
         if (hasSelection(this.diagram) || obj) {
-            const element: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0]
-                : this.diagram.selectedItems.connectors[0]);
-            const clonedObject = cloneObject(element);
+            const element: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length
+                ? this.diagram.selectedItems.nodes[0] : this.diagram.selectedItems.connectors[0]);
+            const clonedObject: object = cloneObject(element);
             let objectId: string = (obj && obj.id);
             objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
                 : this.diagram.selectedItems.connectors[0].id);
             const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
-            const originalNameTable = cloneObject(this.diagram.nameTable);
+            const originalNameTable: object = cloneObject(this.diagram.nameTable);
             const zIndexTable: {} = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).zIndexTable;
             //const tabelLength: number = Object.keys(zIndexTable).length;
             const node: NodeModel = this.diagram.nameTable[`${objectId}`];
@@ -3531,7 +3312,7 @@ export class CommandHandler {
             for (const i of temp) {
                 if (node.id !== (i as NodeModel).id) {
                     const currentLayer: number = this.getObjectLayer((i as NodeModel).id).zIndex;
-                    if (layerNum === currentLayer && (Number(this.diagram.nameTable[`${objectId}`].zIndex) > Number((i as NodeModel).zIndex)) &&
+                    if (layerNum === currentLayer && (Number(this.diagram.nameTable[`${objectId}`].zIndex) > Number((i as NodeModel).zIndex)) && (i as Node).parentId === '' &&
                         node.wrapper.bounds.intersects((i as NodeModel).wrapper.bounds)) {
                         intersectArray.push((i as NodeModel));
                     }
@@ -3543,7 +3324,6 @@ export class CommandHandler {
                     intersectArray.splice(i, 1);
                 }
             }
-            
             if (intersectArray.length > 0) {
                 const child: Node = this.diagram.nameTable[intersectArray[intersectArray.length - 1].id];
                 if (child.parentId) {
@@ -3554,64 +3334,67 @@ export class CommandHandler {
                         intersectArray[intersectArray.length - 1] = obj;
                     }
                 }
-                let originalZIndexTable:object = {};  // New variable to store original zIndex values
+                const originalZIndexTable: object = {};  // New variable to store original zIndex values
 
                 // Store original zIndex values for nodes
-                for (let i:number = 0; i < this.diagram.nodes.length; i++) {
-                    let node1 = this.diagram.nodes[parseInt(i.toString(), 10)];
+                for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+                    const node1: NodeModel = this.diagram.nodes[parseInt(i.toString(), 10)];
                     originalZIndexTable[node1.id] = node1.zIndex;
                 }
                 // Store original zIndex values for connectors
-                for (let j:number = 0; j < this.diagram.connectors.length; j++) {
-                    let connector = this.diagram.connectors[parseInt(j.toString(), 10)];
+                for (let j: number = 0; j < this.diagram.connectors.length; j++) {
+                    const connector: ConnectorModel = this.diagram.connectors[parseInt(j.toString(), 10)];
                     originalZIndexTable[connector.id] = connector.zIndex;
                 }
                 const overlapObject: number = intersectArray[intersectArray.length - 1].zIndex;
                 const temp: string = zIndexTable[parseInt(overlapObject.toString(), 10)];
                 const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
                 this.diagram.startGroupAction();
-                let zIndex:Object = {};
-                intersectArray.forEach(function (item) {
+                const zIndex: Object = {};
+                intersectArray.forEach(function (item: NodeModel): void {
                     zIndex[item.id] = item.zIndex;
                 });
-                let lesserItems:number[] = [];
+                const lesserItems: number[] = [];
                 if (node) {
-                    let tempIndex = node.zIndex;
-                    // @ts-nocheck
+                    const tempIndex: number = node.zIndex;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-nochec
                     if (Object.keys(zIndex).length > 0) {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        Object.values(zIndex).forEach(function (val: number) {
+                        Object.values(zIndex).forEach(function (val: number): void {
                             if (val <= tempIndex) {
                                 lesserItems.push(val);
                             }
                         });
                         if (lesserItems.length !== 0) {
-                                this.updateZIndexBySendBackward(node, lesserItems);
+                            this.updateZIndexBySendBackward(node, lesserItems,layerNum);
                         }
                     }
                 }
-                const changedNodeZIndexesArray:(NodeModel | ConnectorModel)[] = [];
+                const changedNodeZIndexesArray: (NodeModel | ConnectorModel)[] = [];
                 Object.keys(this.changedNodeZIndexes).forEach((nodeId: string) => {
-                    const originalZIndex = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
-                    const changedZIndex = this.changedNodeZIndexes[`${nodeId}`];
+                    const originalZIndex: any = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
+                    const changedZIndex: any = this.changedNodeZIndexes[`${nodeId}`];
                     //By comparing with changedNodeZIndexes to store the changed elements in undo
                     if (originalZIndex !== changedZIndex) {
-                        const node = cloneObject(originalNameTable[`${nodeId}`]);
+                        const node: (NodeModel | ConnectorModel) = cloneObject(originalNameTable[`${nodeId}`]);
                         changedNodeZIndexesArray.push(node);
                     }
                 });
                 this.updateLayerZindexTable(layerNum);
                 undoObject.nodes.splice(0, undoObject.nodes.length);
-                changedNodeZIndexesArray.forEach((node: Node|Connector) => {
-                    const clonedNode = cloneObject(node);
+                changedNodeZIndexesArray.forEach((node: Node | Connector) => {
+                    const clonedNode: object = cloneObject(node);
                     undoObject.nodes.push(clonedNode);
                 });
                 if (this.diagram.mode === 'SVG') {
-                    let nodeIdToUpdate:string  = intersectArray[intersectArray.length - 1].id;
-                    let element:NodeModel |ConnectorModel =intersectArray[intersectArray.length - 1];
+                    const nodeIdToUpdate: string = intersectArray[intersectArray.length - 1].id;
+                    const element: NodeModel | ConnectorModel = intersectArray[intersectArray.length - 1];
                     if (element && !(element.shape.type === 'HTML'
-                    || element.shape.type === 'Native')){
-                        this.moveBackSvgNode(objectId);
+                        || element.shape.type === 'Native')) {
+                        // this.moveBackSvgNode(objectId);
+                        this.moveSvgNode(objectId, nodeIdToUpdate);
                     }
                     const node: NodeModel = this.diagram.nameTable[`${nodeIdToUpdate}`];
                     if (node.children && node.children.length > 0) {
@@ -3619,29 +3402,23 @@ export class CommandHandler {
                     } else {
                         this.updateNativeNodeIndex(objectId, nodeIdToUpdate);
                     }
-                    if (isBlazor()) {
-                        const elements: (NodeModel | ConnectorModel)[] = [];
-                        elements.push(node);
-                        elements.push(intersectArray[intersectArray.length - 1]);
-                        this.updateBlazorZIndex(elements);
-                    }
                 } else {
                     this.diagram.refreshCanvasLayers();
                 }
-                const changeNodeZIndexesArray:(NodeModel | ConnectorModel)[] = [];
+                const changeNodeZIndexesArray: (NodeModel | ConnectorModel)[] = [];
                 Object.keys(this.changedNodeZIndexes).forEach((nodeId: string) => {
-                    const originalZIndex = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
-                    const changedZIndex = this.changedNodeZIndexes[`${nodeId}`];
+                    const originalZIndex: any = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
+                    const changedZIndex: any = this.changedNodeZIndexes[`${nodeId}`];
                     //By comparing with changedNodeZIndexes to store the changed elements in redo
                     if (originalZIndex !== changedZIndex) {
-                        const node = cloneObject(this.diagram.nameTable[`${nodeId}`]);
+                        const node: (NodeModel | ConnectorModel) = cloneObject(this.diagram.nameTable[`${nodeId}`]);
                         changeNodeZIndexesArray.push(node);
                     }
                 });
                 const redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
                 redoObject.nodes.splice(0, redoObject.nodes.length);
-                changeNodeZIndexesArray.forEach((node: Node|Connector) => {
-                    const clonedNode = cloneObject(node);
+                changeNodeZIndexesArray.forEach((node: Node | Connector) => {
+                    const clonedNode: NodeModel = cloneObject(node);
                     redoObject.nodes.push(clonedNode);
                 });
                 const entry: HistoryEntry = { type: 'SendBackward', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
@@ -3654,18 +3431,40 @@ export class CommandHandler {
         this.diagram.protectPropertyChange(false);
 
     }
-    //This method changes all the zindex values based on the selected node/connector 
-    private updateZIndexBySendBackward(selectedNode:NodeModel | ConnectorModel, lesserItems: number[])
-    {
-        let clonedNode = cloneObject(selectedNode);
-        selectedNode.zIndex =Math.max(...lesserItems);
-        selectedNode.zIndex--;
+    //This method changes all the zindex values based on the selected node/connector
+    private updateZIndexBySendBackward(selectedNode: NodeModel | ConnectorModel, lesserItems: number[],layerNum:number): void {
+        const clonedNode: (NodeModel | ConnectorModel) = cloneObject(selectedNode);
+        selectedNode.zIndex = Math.max(...lesserItems);
+        let index = selectedNode.zIndex;
+        let lowChildIndex = Math.max(...lesserItems);
+        const layerObjects = this.diagram.layers[parseInt(layerNum.toString(), 10)].objects;
+        const objects:NodeModel[]|ConnectorModel[] = this.diagram.nodes.filter((node: any)=>layerObjects.indexOf(node.id) !== -1);
+        let backNode = objects.filter(x=>x.zIndex === Math.max(...lesserItems) && x.id !== selectedNode.id);
+        if(backNode && backNode.length > 0 && backNode[0].children){
+            let backNodeIndex = Math.max.apply(Math, lesserItems);
+                for(let i=0;i<backNode[0].children.length;i++){
+                    let backNodeChild = this.diagram.nameTable[backNode[0].children[parseInt(i.toString(), 10)]];
+                    backNodeChild.zIndex = backNodeIndex - (i+1);
+                    lowChildIndex = backNodeIndex - (i+1)
+                }
+        }
+        selectedNode.zIndex = lowChildIndex-1;
+        let lowIndex;
         this.triggerOrderCommand(clonedNode, selectedNode, selectedNode);
-        for(let i:number=0;i<this.diagram.nodes.length;i++){
-            let node=this.diagram.nodes[parseInt(i.toString(), 10)];
-            if (node.zIndex <= selectedNode.zIndex && node !== selectedNode){
+        if((selectedNode as Node).children){
+            this.updateGroupZindex(selectedNode as Node,'SendBackward',selectedNode.zIndex);
+            lowIndex = this.findLowestChildZIndex(selectedNode as NodeModel);
+        }else{
+            lowIndex = selectedNode.zIndex;
+        }
+      
+        const sortedObjects = objects.slice().sort((a:any, b:any) => b.zIndex - a.zIndex);
+        for(let i:number=0;i<sortedObjects.length;i++){
+            let node=sortedObjects[parseInt(i.toString(), 10)];
+            if (node.zIndex < index && node !== selectedNode  && (node as Node).parentId !== selectedNode.id && (node as Node).parentId !== backNode[0].id){
                 let clonedNode = cloneObject(node);
-                node.zIndex--;
+                node.zIndex = lowIndex -1;
+                lowIndex--;
                 this.triggerOrderCommand(clonedNode, node, node);
             }
             let originalZIndex:number = node.zIndex;
@@ -3676,39 +3475,36 @@ export class CommandHandler {
                 this.changedNodeZIndexes[`${node.id}`] = originalZIndex;
             }
         }
-        for(let i:number=0;i<this.diagram.connectors.length;i++){
-            let connector=this.diagram.connectors[parseInt(i.toString(), 10)];
-            if (connector.zIndex <= selectedNode.zIndex && connector !== selectedNode){
-                let clonedNode = cloneObject(connector);
-                connector.zIndex--;
-                this.triggerOrderCommand(clonedNode, connector, connector);
-            }
-            let originalZIndex:number = connector.zIndex;
-            if (this.changedNodeZIndexes.hasOwnProperty(connector.id)) {
-                this.changedNodeZIndexes[connector.id] = originalZIndex;
-            } else {
-                this.changedNodeZIndexes[connector.id] = originalZIndex;
-            }
-        }
+
     }
 
+    private findLowestChildZIndex(parent:NodeModel){
+        let lowestZIndex = parent.zIndex;
+        for(let i=0;i<parent.children.length;i++){
+            let child = this.diagram.nameTable[parent.children[parseInt(i.toString(), 10)]];
+            if(child.zIndex < lowestZIndex){
+                lowestZIndex = child.zIndex;
+            }
+        }
+        return lowestZIndex;
+    }
     /**
      * moveBackSvgNode method\
      *
      * @returns { void }    moveBackSvgNode method .\
      * @param {string} targetID - provide the objects value.
      * @private
-    */
+     */
     public moveBackSvgNode(targetID: string): void {
-        const sortedNodeIds: string[] = Object.keys(this.changedNodeZIndexes).sort((a, b) => this.changedNodeZIndexes[`${a}`] - this.changedNodeZIndexes[`${b}`]);
+        const sortedNodeIds: string[] = Object.keys(this.changedNodeZIndexes).sort((a: string, b: string) => this.changedNodeZIndexes[`${a}`] - this.changedNodeZIndexes[`${b}`]);
         const currentIndex: number = sortedNodeIds.indexOf(targetID);
         //This logic moves the node/connector based on their zindex
         if (currentIndex !== -1) {
-            let nextNodeId = sortedNodeIds[currentIndex + 1];
+            const nextNodeId: string = sortedNodeIds[currentIndex + 1];
             if (nextNodeId) {
                 const diagramDiv: HTMLElement = getDiagramElement(targetID + '_groupElement', this.diagram.element.id);
                 const backNode: HTMLElement = getDiagramElement(nextNodeId + '_groupElement', this.diagram.element.id);
-                diagramDiv.parentNode.insertBefore(diagramDiv,backNode);
+                diagramDiv.parentNode.insertBefore(diagramDiv, backNode);
             }
         }
     }
@@ -3849,27 +3645,27 @@ export class CommandHandler {
      * @private
      */
     public updateBlazorProperties(isObjectInteraction?: boolean): void {
-        const blazorInterop: string = 'sfBlazor';
-        const blazor: string = 'Blazor';
-        if (!isObjectInteraction) {
-            if (window && window[`${blazor}`]) {
-                const obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.diagramObject };
-                window[`${blazorInterop}`].updateBlazorProperties(obj, this.diagram);
-            }
-        } else {
-            if (window && window[`${blazor}`] && JSON.stringify(this.deepDiffer.diagramObject) !== '{}') {
-                const obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
-                if (!this.diagram.isLoading) {
-                    window[`${blazorInterop}`].updateBlazorProperties(obj, this.diagram);
-                }
-            }
-        }
-        //this.diagram.enableServerDataBinding(true);
-        this.deepDiffer.newNodeObject = [];
-        this.deepDiffer.newConnectorObject = [];
-        this.diagramObject = [];
-        this.diagram.oldNodeObjects = [];
-        this.diagram.oldConnectorObjects = [];
+        // const blazorInterop: string = 'sfBlazor';
+        // const blazor: string = 'Blazor';
+        // if (!isObjectInteraction) {
+        //     if (window && window[`${blazor}`]) {
+        //         const obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.diagramObject };
+        //         // window[`${blazorInterop}`].updateBlazorProperties(obj, this.diagram);
+        //     }
+        // } else {
+        //     if (window && window[`${blazor}`] && JSON.stringify(this.deepDiffer.diagramObject) !== '{}') {
+        //         const obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
+        //         if (!this.diagram.isLoading) {
+        //             // window[`${blazorInterop}`].updateBlazorProperties(obj, this.diagram);
+        //         }
+        //     }
+        // }
+        // //this.diagram.enableServerDataBinding(true);
+        // this.deepDiffer.newNodeObject = [];
+        // this.deepDiffer.newConnectorObject = [];
+        // this.diagramObject = [];
+        // this.diagram.oldNodeObjects = [];
+        // this.diagram.oldConnectorObjects = [];
     }
 
     /**
@@ -3880,9 +3676,9 @@ export class CommandHandler {
      * @private
      */
     public enableCloneObject(value: boolean): void {
-        if ((!this.diagram.lineRoutingModule || !(this.diagram.constraints & DiagramConstraints.LineRouting))) {
-            this.diagram.canEnableBlazorObject = value;
-        }
+        // if ((!this.diagram.lineRoutingModule || !(this.diagram.constraints & DiagramConstraints.LineRouting))) {
+        //     this.diagram.canEnableBlazorObject = value;
+        // }
     }
     /**
      * ismouseEvents method\
@@ -3892,30 +3688,25 @@ export class CommandHandler {
      * @private
      */
     public ismouseEvents(value: boolean): void {
-        if (value) {
-            this.diagram.blazorActions = this.diagram.addConstraints(this.diagram.blazorActions, BlazorAction.interaction);
-        } else {
-            this.diagram.blazorActions = this.diagram.removeConstraints(this.diagram.blazorActions, BlazorAction.interaction);
-        }
+        // if (value) {
+        //     this.diagram.blazorActions = this.diagram.addConstraints(this.diagram.blazorActions, BlazorAction.interaction);
+        // } else {
+        //     this.diagram.blazorActions = this.diagram.removeConstraints(this.diagram.blazorActions, BlazorAction.interaction);
+        // }
     }
 
 
-    /**
-     * updateLayerObject method\
-     *
-     * @returns {  void }    updateLayerObject method .\
-     *  @param { object } oldDiagram - Provide the previousObject element .
-     *  @param { boolean } temp - Provide the temp element .
-     * @private
-     */
-    public updateLayerObject(oldDiagram: object, temp?: boolean): void {
-        if (isBlazor()) {
-            let diffLayers: object = {};
-            diffLayers = this.deepDiffer.getLayerObject(oldDiagram, temp, this.diagram);
-            this.diagramObject = diffLayers;
-            this.updateBlazorProperties();
-        }
-    }
+    // /**
+    //  * updateLayerObject method\
+    //  *
+    //  * @returns {  void }    updateLayerObject method .\
+    //  *  @param { object } oldDiagram - Provide the previousObject element .
+    //  *  @param { boolean } temp - Provide the temp element .
+    //  * @private
+    //  */
+    // public updateLayerObject(oldDiagram: object, temp?: boolean): void {
+    // comment blazor code
+    // }
     /* tslint:enable:no-string-literal */
     /**
      * getDiagramOldValues method\
@@ -3937,7 +3728,7 @@ export class CommandHandler {
         diff = this.deepDiffer.changeSegments(diff, newObject);
         this.diagramObject = diff;
         if (!(this.diagram.blazorActions & BlazorAction.ClearObject)) {
-            this.updateBlazorProperties();
+            // this.updateBlazorProperties();
         }
     }
     /* tslint:disable */
@@ -3950,54 +3741,20 @@ export class CommandHandler {
      * @private
      */
     public getBlazorOldValues(args?: MouseEventArgs, labelDrag?: boolean): void {
-        if (isBlazor()) {
-            const oldNodeObject: Node[] = this.diagram.oldNodeObjects;
-            for (let i: number = 0; i < oldNodeObject.length; i++) {
-                if (oldNodeObject[parseInt(i.toString(), 10)].id) {
-                    if (this.diagram.oldNodeObjects[parseInt(i.toString(), 10)] instanceof Node) {
-                        this.diagram.oldNodeObjects[parseInt(i.toString(), 10)] = cloneBlazorObject(this.diagram.oldNodeObjects[parseInt(i.toString(), 10)]) as Node;
-                    }
-                    this.deepDiffer.getDifferenceValues(this.diagram.nameTable[oldNodeObject[parseInt(i.toString(), 10)].id], args, labelDrag, this.diagram);
-                }
-            }
-            const oldConnectorObject: Connector[] = this.diagram.oldConnectorObjects;
-            for (let i: number = 0; i < oldConnectorObject.length; i++) {
-                if (oldConnectorObject[parseInt(i.toString(), 10)].id) {
-                    if (this.diagram.oldConnectorObjects[parseInt(i.toString(), 10)] instanceof Connector) {
-                        this.diagram.oldConnectorObjects[parseInt(i.toString(), 10)] = cloneBlazorObject(this.diagram.oldConnectorObjects[parseInt(i.toString(), 10)]) as Connector;
-                    }
-                    this.deepDiffer.getDifferenceValues(this.diagram.nameTable[oldConnectorObject[parseInt(i.toString(), 10)].id], args, labelDrag, this.diagram);
-                }
-            }
-            if (oldNodeObject.length > 0 || oldConnectorObject.length > 0) {
-                this.updateBlazorProperties(true);
-            }
-        }
+        //comment blazor code
     }
 
-    /**
-     * getObjectChanges method\
-     *
-     * @returns {  void }    getObjectChanges method .\
-     *  @param { Object[] } previousObject - Provide the previousObject element .
-     *  @param { Object[] } currentObject - Provide the previousObject element .
-     *  @param { Object[] } previousObject - Provide the previousObject element .
-     * @private
-     */
-
-    public getObjectChanges(previousObject: Object[], currentObject: Object[], changedNodes: Object[]): void {
-        for (let i: number = 0; i < previousObject.length; i++) {
-            const value: object = this.deepDiffer.map(currentObject[parseInt(i.toString(), 10)], previousObject[parseInt(i.toString(), 10)]);
-            const result: object = this.deepDiffer.frameObject({}, value);
-            let change: object = this.deepDiffer.removeEmptyValues(result);
-            if ((change as any).children) {
-                (change as any).children = (cloneObject(currentObject[parseInt(i.toString(), 10)]) as any).children;
-            }
-            change = this.deepDiffer.changeSegments(change, currentObject[parseInt(i.toString(), 10)]);
-            (change as any).sfIndex = getIndex(this.diagram, (currentObject[parseInt(i.toString(), 10)] as Node).id);
-            changedNodes.push(change);
-        }
-    }
+    // /**
+    //  * getObjectChanges method\
+    //  *
+    //  * @returns {  void }    getObjectChanges method .\
+    //  *  @param { Object[] } previousObject - Provide the previousObject element .
+    //  *  @param { Object[] } currentObject - Provide the previousObject element .
+    //  *  @param { Object[] } previousObject - Provide the previousObject element .
+    //  * @private
+    //  */
+    // public getObjectChanges(previousObject: Object[], currentObject: Object[], changedNodes: Object[]): void {
+    // }
 
     /**
      * clearObjectSelection method\
@@ -4037,12 +3794,10 @@ export class CommandHandler {
                 oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
                 state: 'Changing', type: 'Removal', cancel: false
             };
-            this.updateBlazorSelectorModel(arrayNodes, true);
+            // this.updateBlazorSelectorModel(arrayNodes, true);
             if (triggerAction) {
                 if (!isBlazor()) {
                     this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-                } else {
-                    this.oldSelectedObjects = cloneObject(selectormodel);
                 }
             }
             if (!arg.cancel) {
@@ -4063,38 +3818,12 @@ export class CommandHandler {
                         oldValue: cloneBlazorObject(arrayNodes) as NodeModel[], newValue: [], cause: this.diagram.diagramActions,
                         state: 'Changed', type: 'Removal', cancel: false
                     };
-                    if (isBlazor()) {
-                        arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
-                        this.updateBlazorSelector();
-                    }
                     if (!isBlazor()) {
                         this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-                    } else {
-                        let blazarArgs: void | object;
-                        if (window && window[this.blazor] && this.diagram.selectionChange) {
-                            const eventObj: object = { 'EventName': 'selectionChange', args: JSON.stringify(arg) };
-                            blazarArgs = await window[this.blazorInterop].updateBlazorDiagramEvents(eventObj, this.diagram);
-                        }
-                        // let blazarArgs: void | object = await this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-                        if (blazarArgs && (blazarArgs as IBlazorSelectionChangeEventArgs).cancel && !isTriggered) {
-                            let selectNodes: (NodeModel | ConnectorModel)[] = [];
-                            if ((blazarArgs as IBlazorSelectionChangeEventArgs).oldValue.nodes.length > 0) {
-                                selectNodes = (blazarArgs as IBlazorSelectionChangeEventArgs).oldValue.nodes;
-                            }
-                            if ((blazarArgs as IBlazorSelectionChangeEventArgs).oldValue.connectors.length > 0) {
-                                selectNodes = selectNodes.concat((blazarArgs as IBlazorSelectionChangeEventArgs).oldValue.connectors);
-                            }
-
-                            if (selectNodes) {
-                                for (let i: number = 0; i < selectNodes.length; i++) {
-                                    this.select(this.diagram.nameTable[selectNodes[parseInt(i.toString(), 10)].id], (i !== 0 && selectNodes.length > 1) ? true : false);
-                                }
-                            }
-                        }
                     }
                 }
             }
-            this.updateBlazorSelector();
+            // this.updateBlazorSelector();
             this.diagram.enableServerDataBinding(enableServerDataBinding);
         }
     }
@@ -4533,11 +4262,13 @@ export class CommandHandler {
             }
         } else {
             if (target && !targetPortId && connector.sourceID !== target.id &&
-                connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null && target && target instanceof Node && canChangeSegment) {
+                connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null
+                && target && target instanceof Node && canChangeSegment) {
                 this.changeSourceEndToNode(connector, target);
             }
             if (target && targetPortId && connector.sourcePortID !== targetPortId &&
-                connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null && target && target instanceof Node && canChangeSegment) {
+                connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null
+                && target && target instanceof Node && canChangeSegment) {
                 this.changeSourceEndToPort(connector, target, targetPortId);
             }
         }
@@ -4777,7 +4508,8 @@ Remove terinal segment in initial
         }
     }
 
-    private translateSubsequentSegment(connector: ConnectorModel, seg: BezierSegmentModel, isSourceEnd: boolean, deltaLength?: number, deltaAngle?: number) {
+    private translateSubsequentSegment(connector: ConnectorModel, seg: BezierSegmentModel, isSourceEnd: boolean,
+                                       deltaLength?: number, deltaAngle?: number) {
         const index: number = (connector.segments.indexOf(seg));
         const segment: BezierSegment = connector.segments[parseInt(index.toString(), 10)] as BezierSegment;
         if (!(connector.bezierSettings.smoothness & BezierSmoothness.SymmetricAngle)) {
@@ -5298,7 +5030,8 @@ Remove terinal segment in initial
      *
      * @private
      */
-    public scaleObject(sw: number, sh: number, pivot: PointModel, obj: IElement, element: DiagramElement, refObject: IElement, canUpdate?: boolean): void {
+    public scaleObject(sw: number, sh: number, pivot: PointModel, obj: IElement, element: DiagramElement,
+                       refObject: IElement, canUpdate?: boolean): void {
         sw = sw < 0 ? 1 : sw; sh = sh < 0 ? 1 : sh;
         let oldValues: NodeModel = {} as Node;
         if (sw !== 1 || sh !== 1) {
@@ -5414,7 +5147,8 @@ Remove terinal segment in initial
             const clonedSelectedItems: object = cloneObject(this.diagram.selectedItems);
             const nodeModel: NodeModel = {
                 offsetX: (clonedSelectedItems as any).offsetX, offsetY: (clonedSelectedItems as any).offsetY,
-                height: (clonedSelectedItems as any).height, width: (clonedSelectedItems as any).width, rotateAngle: (clonedSelectedItems as any).rotateAngle
+                height: (clonedSelectedItems as any).height, width: (clonedSelectedItems as any).width,
+                rotateAngle: (clonedSelectedItems as any).rotateAngle
             };
             const obj: Node = new Node(this.diagram, 'nodes', nodeModel, true);
             obj.wrapper = (clonedSelectedItems as any).wrapper;
@@ -5442,10 +5176,18 @@ Remove terinal segment in initial
         for (let i: number = 0; i < objects.length; i++) {
             const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, -selector.rotateAngle, pivot.x, pivot.y);
-            objects[parseInt(i.toString(), 10)].sourcePoint = transformPointByMatrix(matrix, objects[parseInt(i.toString(), 10)].sourcePoint);
-            objects[parseInt(i.toString(), 10)].targetPoint = transformPointByMatrix(matrix, objects[parseInt(i.toString(), 10)].targetPoint);
-            const p1: PointModel = { x: objects[parseInt(i.toString(), 10)].sourcePoint.x, y: objects[parseInt(i.toString(), 10)].sourcePoint.y };
-            const p2: PointModel = { x: objects[parseInt(i.toString(), 10)].targetPoint.x, y: objects[parseInt(i.toString(), 10)].targetPoint.y };
+            objects[parseInt(i.toString(), 10)].sourcePoint
+                = transformPointByMatrix(matrix, objects[parseInt(i.toString(), 10)].sourcePoint);
+            objects[parseInt(i.toString(), 10)].targetPoint
+                = transformPointByMatrix(matrix, objects[parseInt(i.toString(), 10)].targetPoint);
+            const p1: PointModel = {
+                x: objects[parseInt(i.toString(), 10)].sourcePoint.x,
+                y: objects[parseInt(i.toString(), 10)].sourcePoint.y
+            };
+            const p2: PointModel = {
+                x: objects[parseInt(i.toString(), 10)].targetPoint.x,
+                y: objects[parseInt(i.toString(), 10)].targetPoint.y
+            };
             bounds = (this.calculateBounds(p1, p2));
             if (desiredBounds === undefined) {
                 desiredBounds = bounds;
@@ -5583,22 +5325,26 @@ Remove terinal segment in initial
             if(label.horizontalAlignment === 'Center'){
                 currentPosition = (newPosition) ? newPosition : { x: offsetX + tx, y: offsetY - (textWrapper.actualSize.height)/2  + ty};
             }
-            else if(label.horizontalAlignment === 'Right'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX + (textWrapper.actualSize.width)/2 + tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
+            else if (label.horizontalAlignment === 'Right') {
+                currentPosition = (newPosition) ? newPosition :
+                    { x: offsetX + (textWrapper.actualSize.width) / 2 + tx, y: offsetY - (textWrapper.actualSize.height) / 2 + ty };
             }
-            else if(label.horizontalAlignment === 'Left'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 + tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
+            else if (label.horizontalAlignment === 'Left') {
+                currentPosition = (newPosition) ? newPosition :
+                    { x: offsetX - (textWrapper.actualSize.width) / 2 + tx, y: offsetY - (textWrapper.actualSize.height) / 2 + ty };
             }
             break;
         case 'Bottom':
             if(label.horizontalAlignment === 'Center'){
                 currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
             }
-            else if(label.horizontalAlignment === 'Right'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.actualSize.width)/2 +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
+            else if (label.horizontalAlignment === 'Right') {
+                currentPosition = (newPosition) ? newPosition :
+                    { x: offsetX + (textWrapper.actualSize.width) / 2 + tx, y: offsetY + (textWrapper.actualSize.height) / 2 + ty };
             }
-            else if(label.horizontalAlignment === 'Left'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
+            else if (label.horizontalAlignment === 'Left') {
+                currentPosition = (newPosition) ? newPosition :
+                    { x: offsetX - (textWrapper.actualSize.width) / 2 + tx, y: offsetY + (textWrapper.actualSize.height) / 2 + ty };
             }
             break;
         }
@@ -5667,25 +5413,29 @@ Remove terinal segment in initial
             }
             break;
         case 'Top':
-            if(port.horizontalAlignment === 'Center'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX + tx, y: offsetY - (textWrapper.actualSize.height)/2  + ty};
+            if (port.horizontalAlignment === 'Center') {
+                currentPosition = (newPosition) ? newPosition : { x: offsetX + tx, y: offsetY - (textWrapper.actualSize.height) / 2 + ty };
             }
-            else if(port.horizontalAlignment === 'Right'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX + (textWrapper.actualSize.width)/2 + tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
+            else if (port.horizontalAlignment === 'Right') {
+                currentPosition = (newPosition) ? newPosition :
+                    { x: offsetX + (textWrapper.actualSize.width) / 2 + tx, y: offsetY - (textWrapper.actualSize.height) / 2 + ty };
             }
-            else if(port.horizontalAlignment === 'Left'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 + tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
+            else if (port.horizontalAlignment === 'Left') {
+                currentPosition = (newPosition) ? newPosition :
+                    { x: offsetX - (textWrapper.actualSize.width) / 2 + tx, y: offsetY - (textWrapper.actualSize.height) / 2 + ty };
             }
             break;
         case 'Bottom':
-            if(port.horizontalAlignment === 'Center'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
+            if (port.horizontalAlignment === 'Center') {
+                currentPosition = (newPosition) ? newPosition : { x: offsetX + tx, y: offsetY + (textWrapper.actualSize.height) / 2 + ty };
             }
-            else if(port.horizontalAlignment === 'Right'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.actualSize.width)/2 +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
+            else if (port.horizontalAlignment === 'Right') {
+                currentPosition = (newPosition) ? newPosition :
+                    { x: offsetX + (textWrapper.actualSize.width) / 2 + tx, y: offsetY + (textWrapper.actualSize.height) / 2 + ty };
             }
-            else if(port.horizontalAlignment === 'Left'){
-                currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
+            else if (port.horizontalAlignment === 'Left') {
+                currentPosition = (newPosition) ? newPosition :
+                    { x: offsetX - (textWrapper.actualSize.width) / 2 + tx, y: offsetY + (textWrapper.actualSize.height) / 2 + ty };
             }
             break;
         }
@@ -6071,7 +5821,7 @@ Remove terinal segment in initial
             return true;
         }
         return false;
-    };
+    }
      // Checks if any HTML object is being dragged and reset the canvas to clear the shadow of the HTML node border.
      private checkHtmlObjectDrag(obj: SelectorModel | NodeModel | ConnectorModel){
         let isHtmlObjDragged = false;
@@ -6085,7 +5835,7 @@ Remove terinal segment in initial
                 this.resetOverviewCanvas();
             }
         }
-    };
+    }
     //Resetting Overview canvas  
     private resetOverviewCanvas(){
         for (const temp of this.diagram.views) {
@@ -6100,7 +5850,7 @@ Remove terinal segment in initial
                 setAttributeHtml(rect, attr);
             }
         }
-    };
+    }
     /** @private */
     public scaleSelectedItems(sx: number, sy: number, pivot: PointModel): boolean {
         let obj: SelectorModel | NodeModel | ConnectorModel = this.diagram.selectedItems;
@@ -6179,10 +5929,6 @@ Remove terinal segment in initial
         this.diagram.blazorActions |= BlazorAction.expandNode;
         let objects: ILayout = {};
         if (!canLayout) {
-            // BLAZ-22230 - Added below code to check if its blazor means then we set canUpdateTemplate as true
-            if(isBlazor()) {
-                this.canUpdateTemplate = true;
-            }
             if(this.layoutAnimateModule && this.layoutAnimateModule.setIntervalObject.length > 0){
                 this.layoutAnimateModule.stopCurrentAnimation(this.objectStore[0],diagram,node);
                 this.objectStore = [];
@@ -6318,18 +6064,12 @@ Remove terinal segment in initial
                     if (actualObject.offsetX !== actualObject.wrapper.offsetX || actualObject.offsetY !== actualObject.wrapper.offsetY ||
                         actualObject.width !== actualObject.wrapper.width || actualObject.height !== actualObject.wrapper.height ||
                         actualObject.rotateAngle !== actualObject.wrapper.rotateAngle) {
-                        if (isBlazor()) {
-                            previousNodeObject.push(cloneObject(actualObject, undefined, undefined, true));
-                        }
                         actualObject.offsetX += offsetX; actualObject.offsetY += offsetY;
                         actualObject.width += width; actualObject.height += height; actualObject.rotateAngle += rotateAngle;
                         this.diagram.nodePropertyChange(actualObject as Node, {} as Node, {
                             offsetX: actualObject.offsetX, offsetY: actualObject.offsetY,
                             width: actualObject.width, height: actualObject.height, rotateAngle: actualObject.rotateAngle
                         } as Node);
-                        if (isBlazor()) {
-                            updateNodeObject.push(cloneObject(actualObject, undefined, undefined, true));
-                        }
                     }
                     objects = this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect);
                 } else if (actualObject instanceof Selector) {
@@ -6363,9 +6103,6 @@ Remove terinal segment in initial
             for (let i: number = 0; i < connectors.length; i++) {
                 const connector: Object = this.diagram.nameTable[connectors[i]];
                 if (connector instanceof Connector && connector.type === 'Orthogonal') {
-                    if (isBlazor()) {
-                        previousConnectorObject.push(cloneObject(connector, undefined, undefined, true));
-                    }
                     // EJ2-65876 - Exception occurs on line routing injection module
                     //Bug 850195: Exception occurs due to line routing constraints enabled
                     if(connector.sourceID && connector.targetID && connector.sourceID != connector.targetID && this.diagram.layout.type !== 'ComplexHierarchicalTree'){
@@ -6378,23 +6115,9 @@ Remove terinal segment in initial
                             this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
                         }
                     }
-                    if (isBlazor()) {
-                        updateConnectorObject.push(cloneObject(connector, undefined, undefined, true));
-                    }
                 }
             }
             this.updateSelector();
-            if (isBlazor()) {
-                this.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
-                this.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-                const blazorInterop: string = 'sfBlazor';
-                const blazor: string = 'Blazor';
-                const diagramObject: Object = { nodes: changeNodes, connectors: changeConnectors };
-                if (window && window[blazor] && (changeConnectors.length + changeNodes.length)) {
-                    const obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                    window[blazorInterop].updateBlazorProperties(obj, this.diagram);
-                }
-            }
             this.diagram.protectPropertyChange(false);
         }
     }
@@ -6795,16 +6518,9 @@ Remove terinal segment in initial
         const panx: number = canPanX(this.diagram);
         const pany: number = canPanY(this.diagram);
         const canPan:boolean = true;
-        if (isBlazor()) {
-            this.diagram.setCursor('grabbing');
-            this.diagram.scroller.zoom(
-                1, (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
-                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
-        } else {
-            this.diagram.pan(
-                (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
-                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint, canPan);
-        }
+        this.diagram.pan(
+            (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
+            (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint, canPan);
     }
 
     /**
@@ -6856,18 +6572,17 @@ Remove terinal segment in initial
     public isParentAsContainer(node: NodeModel, isChild?: boolean): boolean {
         return checkParentAsContainer(this.diagram, node, isChild);
     }
-    /** 
-     * @returns { boolean }     isParentAsContainer method .\
+    /**
+     * @returns { boolean } isParentAsContainer method .\
      * @param {NodeModel} node - provide the target Node value.
      * @private
-    */
+     */
     public isTargetSubProcess(node: NodeModel): boolean {
-        if(node && node.shape && node.shape.type === 'Bpmn' && (node.shape as BpmnShape).activity && (node.shape as BpmnShape).activity.activity === "SubProcess"){
+        if (node && node.shape && node.shape.type === 'Bpmn' && (node.shape as BpmnShape).activity && (node.shape as BpmnShape).activity.activity === 'SubProcess') {
             return true;
         }
         return false;
     }
-
 
 
     /**
@@ -6881,24 +6596,24 @@ Remove terinal segment in initial
      */
     public dropChildToContainer(parent: NodeModel, node: NodeModel): void {
         if (!(this.diagram.diagramActions & DiagramAction.PreventLaneContainerUpdate)) {
-                addChildToContainer(this.diagram, parent, node);
-                if((node as any).hasTextAnnotation){
-                    for(let i = 0; i<(node as Node).outEdges.length;i++){
-                        let con = this.diagram.nameTable[(node as Node).outEdges[parseInt(i.toString(), 10)]];
-                        if((con as any).isBpmnAnnotationConnector){
-                            const annotationNode = this.diagram.nameTable[con.targetID];
-                            addChildToContainer(this.diagram, parent, annotationNode);
-                        }
+            addChildToContainer(this.diagram, parent, node);
+            if ((node as any).hasTextAnnotation) {
+                for (let i = 0; i < (node as Node).outEdges.length; i++) {
+                    const con = this.diagram.nameTable[(node as Node).outEdges[parseInt(i.toString(), 10)]];
+                    if ((con as any).isBpmnAnnotationConnector) {
+                        const annotationNode = this.diagram.nameTable[con.targetID];
+                        addChildToContainer(this.diagram, parent, annotationNode);
                     }
                 }
+            }
         }
     }
     /**
-    * @returns { void }     updateLaneChildrenZindex method .\
-    * @param {NodeModel} node - provide the node value.
-    * @param {IElement} target - provide the target value.
-    * @private
-    */
+     * @returns { void }     updateLaneChildrenZindex method .\
+     * @param {NodeModel} node - provide the node value.
+     * @param {IElement} target - provide the target value.
+     * @private
+     */
     public updateLaneChildrenZindex(node: Node, target: IElement): void {
         const lowerIndexobject: Node = this.findLeastIndexObject(node, target) as Node;
         const swimlane: Node = this.diagram.nameTable[(target as Node).parentId];

@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -12,7 +9,11 @@ import { Chart } from '../chart';
 export class BollingerBands extends TechnicalAnalysis {
 
     /**
-     * Initializes the series collection to represent bollinger band.
+     * Initializes the series collection for a technical indicator.
+     *
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the series collection is initialized.
+     * @param {Chart} chart - The chart associated with the technical indicator.
+     * @returns {void}
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         indicator.targetSeries = [];
@@ -38,6 +39,8 @@ export class BollingerBands extends TechnicalAnalysis {
      * Defines the predictions using Bollinger Band Approach
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         const enableBand: boolean = indicator.bandColor !== 'transparent' && indicator.bandColor !== 'none';
@@ -143,19 +146,20 @@ export class BollingerBands extends TechnicalAnalysis {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys the bollinger band
+         * Destroys the bollinger band.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'BollingerBandsIndicator';
     }

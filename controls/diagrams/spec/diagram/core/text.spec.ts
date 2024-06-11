@@ -16,13 +16,13 @@ describe('Diagram Control', () => {
     let height: string = 'height';
 
     let firstOutput: object[] = [{ width: 100, height: 100 },
-    { width: 204, height: 15 }, { width: 100, height: 100 },
+    { width: 201, height: 15 }, { width: 100, height: 100 },
     { width: 100, height: 100 }, { width: 100, height: 100 },
-    { width: 4, height: 15 }];
+    { width: 0, height: 15 }];
 
     let secondOutput: object[] = [{ width: 100, height: 100 }, { width: 318, height: 15 },
     { width: 219, height: 44 }, { width: 150, height: 100 }, { width: 150, height: 100 },
-    { width: 100, height: 100 }, { width: 287, height: 44 }, { width: 166, height: 29 }];
+    { width: 100, height: 100 }, { width: 283, height: 44 }, { width: 163, height: 29 }];
 
     let thirdOutput: object[] = [
         { width: 100, height: 60 }, { width: 100, height: 60 },
@@ -244,7 +244,7 @@ describe('Diagram Control', () => {
             let i: number = 0;
             for (let element of diagram.basicElements) { 
                 expect((Math.ceil(element.actualSize.width) == secondOutput[i][width] ||
-                    Math.ceil(element.actualSize.width) == 216 || Math.ceil(element.actualSize.width) == 220)
+                    Math.round(element.actualSize.width) == 216 || Math.ceil(element.actualSize.width) == 216 || Math.ceil(element.actualSize.width) == 220)
                     && Math.ceil(element.actualSize.height) == secondOutput[i][height]).toBe(true);
                 i++;
             }

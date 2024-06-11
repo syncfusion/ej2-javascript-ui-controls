@@ -3,8 +3,8 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs  } from '../../src/index';
-import { dialogEditData,crDialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1,splitTasksData2,splitTasksData3, CR886052} from '../base/data-source.spec';
-import { createGantt, destroyGantt, triggerMouseEvent,  } from '../base/gantt-util.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459} from '../base/data-source.spec';
+import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -3496,7 +3496,7 @@ describe('Validation Rule in Edit Dialog', function () {
            triggerMouseEvent(resourceCheckbox1, 'click');
            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
            triggerMouseEvent(saveButton, 'click');
-           expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(48);
+           expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(50.4);
            expect(ganttObj.currentViewData.length).toBe(5);
        });
    });
@@ -5282,10 +5282,2787 @@ describe('Validation Rule with change in taskfield and column', () => {
     });
     describe('Dialog Edit-882368:Dialog editing is not working properly', () => {
         let ganttObj: Gantt;
+        let dataSource = [
+            {
+                taskId: 1,
+                taskName: 'Grava',
+                propertyModelActivityId: 2,
+                actualStartDate: '2021-12-08T00:00:00',
+                actualEndDate: '2024-04-01T00:00:00',
+                basePlanStartDate: '23/12/2021 (IST)',
+                basePlanEndDate: '12/10/2024 (IST)',
+                revisionNo: 1,
+                subTasks: [
+                    {
+                        taskId: 2,
+                        blockId: 1,
+                        parentId: 1,
+                        taskName: 'TOWER 10',
+                        startDate: '2021-12-23T00:00:00',
+                        endDate: '2024-09-12T00:00:00',
+                        propertyModelActivityId: 3,
+                        actualStartDate: '2021-12-08T00:00:00',
+                        actualEndDate: '2024-04-01T00:00:00',
+                        basePlanStartDate: '23/12/2021 (IST)',
+                        basePlanEndDate: '03/09/2024 (IST)',
+                        revisionNo: 1,
+                        subTasks: [
+                            {
+                                taskId: 3,
+                                blockId: 1,
+                                siteDrawingTypeId: 1,
+                                parentId: 2,
+                                taskName: 'Structural',
+                                startDate: '2021-12-23T00:00:00',
+                                endDate: '2024-09-12T00:00:00',
+                                propertyModelActivityId: 4,
+                                actualStartDate: '2021-12-08T00:00:00',
+                                actualEndDate: '2024-04-01T00:00:00',
+                                basePlanStartDate: '23/12/2021 (IST)',
+                                basePlanEndDate: '03/09/2024 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 9,
+                                        blockId: 1,
+                                        floorId: 1,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-B07',
+                                        startDate: '2021-12-23T00:00:00',
+                                        endDate: '2022-04-16T00:00:00',
+                                        propertyModelActivityId: 10,
+                                        
+                                        actualStartDate: '2021-12-08T00:00:00',
+                                        actualEndDate: '2022-08-17T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '23/12/2021 (IST)',
+                                        basePlanEndDate: '16/04/2022 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 15,
+                                                blockId: 1,
+                                                floorId: 1,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 10,
+                                                modelActivityName: 'FDL Jump Lift and Service lift area',
+                                                parentId: 9,
+                                                taskName: 'FDL Jump Lift and Service lift area',
+                                                startDate: '2021-12-23T00:00:00',
+                                                endDate: '2021-12-23T00:00:00',
+                                                propertyModelActivityId: 16,
+                                                
+                                                actualStartDate: '2021-12-08T00:00:00',
+                                                actualEndDate: '2022-01-12T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '23/12/2021 (IST)',
+                                                basePlanEndDate: '17/01/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '36 days',
+                                                id: 5,
+                                            },
+                                            {
+                                                taskId: 16,
+                                                blockId: 1,
+                                                floorId: 1,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 11,
+                                                modelActivityName: 'FDL Isolated Footing',
+                                                parentId: 9,
+                                                taskName: 'FDL Isolated Footing',
+                                                startDate: '2021-12-23T00:00:00',
+                                                endDate: '2021-12-23T00:00:00',
+                                                propertyModelActivityId: 17,
+                                                
+                                                actualStartDate: '2021-12-08T00:00:00',
+                                                actualEndDate: '2021-02-10T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '23/12/2021 (IST)',
+                                                basePlanEndDate: '23/12/2021 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '302 days',
+                                                id: 6,
+                                            },
+                                            {
+                                                taskId: 17,
+                                                blockId: 1,
+                                                floorId: 1,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 9,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2021-12-24T00:00:00',
+                                                endDate: '2022-02-07T00:00:00',
+                                                propertyModelActivityId: 18,
+                                                
+                                                actualStartDate: '2022-01-03T00:00:00',
+                                                actualEndDate: '2022-03-19T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '24/12/2021 (IST)',
+                                                basePlanEndDate: '07/02/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '76 days',
+                                                id: 7,
+                                            },
+                                            {
+                                                taskId: 18,
+                                                blockId: 1,
+                                                floorId: 1,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 12,
+                                                modelActivityName: 'FDL Raft',
+                                                parentId: 9,
+                                                taskName: 'FDL Raft',
+                                                startDate: '2021-12-29T00:00:00',
+                                                endDate: '2022-02-10T00:00:00',
+                                                propertyModelActivityId: 19,
+                                                
+                                                actualStartDate: '2021-12-08T00:00:00',
+                                                actualEndDate: '2022-01-18T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '29/12/2021 (IST)',
+                                                basePlanEndDate: '10/02/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '42 days',
+                                                id: 8,
+                                            },
+                                            {
+                                                taskId: 19,
+                                                blockId: 1,
+                                                floorId: 1,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 13,
+                                                modelActivityName: 'FDL SubSoil Drainage & Grade Slab',
+                                                parentId: 9,
+                                                taskName: 'FDL SubSoil Drainage & Grade Slab',
+                                                startDate: '2022-01-19T00:00:00',
+                                                endDate: '2022-04-16T00:00:00',
+                                                propertyModelActivityId: 20,
+                                                
+                                                actualStartDate: '2022-02-10T00:00:00',
+                                                actualEndDate: '2022-08-17T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '19/01/2022 (IST)',
+                                                basePlanEndDate: '16/04/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '189 days',
+                                                id: 9,
+                                            },
+                                        ],
+                                        actualDuration: '253 days',
+                                        id: 4,
+                                    },
+                                    {
+                                        taskId: 22,
+                                        blockId: 1,
+                                        floorId: 42,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-B06',
+                                        startDate: '2022-02-02T00:00:00',
+                                        endDate: '2022-05-16T00:00:00',
+                                        propertyModelActivityId: 23,
+                                        
+                                        actualStartDate: '2022-02-17T00:00:00',
+                                        actualEndDate: '2022-05-31T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '02/02/2022 (IST)',
+                                        basePlanEndDate: '16/05/2022 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 30,
+                                                blockId: 1,
+                                                floorId: 42,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 22,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-02-02T00:00:00',
+                                                endDate: '2022-04-15T00:00:00',
+                                                propertyModelActivityId: 31,
+                                                
+                                                actualStartDate: '2022-03-09T00:00:00',
+                                                actualEndDate: '2022-04-18T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '02/02/2022 (IST)',
+                                                basePlanEndDate: '15/04/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '41 days',
+                                                id: 11,
+                                            },
+                                            {
+                                                taskId: 31,
+                                                blockId: 1,
+                                                floorId: 42,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 22,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2022-03-16T00:00:00',
+                                                endDate: '2022-04-15T00:00:00',
+                                                propertyModelActivityId: 32,
+                                                
+                                                actualStartDate: '2022-02-17T00:00:00',
+                                                actualEndDate: '2022-04-18T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '16/03/2022 (IST)',
+                                                basePlanEndDate: '15/04/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '61 days',
+                                                id: 12,
+                                            },
+                                            {
+                                                taskId: 32,
+                                                blockId: 1,
+                                                floorId: 42,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 22,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2022-03-29T00:00:00',
+                                                endDate: '2022-05-11T00:00:00',
+                                                propertyModelActivityId: 33,
+                                                
+                                                actualStartDate: '2022-03-11T00:00:00',
+                                                actualEndDate: '2022-05-31T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '29/03/2022 (IST)',
+                                                basePlanEndDate: '11/05/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '82 days',
+                                                id: 13,
+                                            },
+                                            {
+                                                taskId: 34,
+                                                blockId: 1,
+                                                floorId: 42,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 22,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2022-04-19T00:00:00',
+                                                endDate: '2022-05-16T00:00:00',
+                                                propertyModelActivityId: 35,
+                                                
+                                                actualStartDate: '2022-04-12T00:00:00',
+                                                actualEndDate: '2022-04-28T00:00:00',
+                                                
+                                               
+                                                basePlanStartDate: '19/04/2022 (IST)',
+                                                basePlanEndDate: '16/05/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '17 days',
+                                                id: 14,
+                                            },
+                                        ],
+                                        actualDuration: '104 days',
+                                        id: 10,
+                                    },
+                                    {
+                                        taskId: 35,
+                                        blockId: 1,
+                                        floorId: 41,
+                                        siteDrawingTypeId: 1,
+                                        parentId: 3,
+                                        taskName: 'Level-B05',
+                                        startDate: '2022-05-02T00:00:00',
+                                        endDate: '2022-06-21T00:00:00',
+                                        propertyModelActivityId: 36,
+                                        actualStartDate: '2022-04-14T00:00:00',
+                                        actualEndDate: '2022-05-30T00:00:00',
+                                        basePlanStartDate: '02/05/2022 (IST)',
+                                        basePlanEndDate: '21/06/2022 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 41,
+                                                blockId: 1,
+                                                floorId: 41,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 35,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2022-05-02T00:00:00',
+                                                endDate: '2022-05-12T00:00:00',
+                                                propertyModelActivityId: 42,
+                                                predecessor: '',
+                                                actualStartDate: '2022-04-14T00:00:00',
+                                                actualEndDate: '2022-05-05T00:00:00',
+                                                displayPredecessor: '',
+                                                basePlanStartDate: '02/05/2022 (IST)',
+                                                basePlanEndDate: '12/05/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '22 days',
+                                                id: 16,
+                                            },
+                                            {
+                                                taskId: 42,
+                                                blockId: 1,
+                                                floorId: 41,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 35,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2022-05-02T00:00:00',
+                                                endDate: '2022-05-16T00:00:00',
+                                                propertyModelActivityId: 43,
+                                                predecessor: '',
+                                                actualStartDate: '2022-04-19T00:00:00',
+                                                actualEndDate: '2022-05-20T00:00:00',
+                                                displayPredecessor: '',
+                                                basePlanStartDate: '02/05/2022 (IST)',
+                                                basePlanEndDate: '16/05/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '32 days',
+                                                id: 17,
+                                            },
+                                            {
+                                                taskId: 43,
+                                                blockId: 1,
+                                                floorId: 41,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 35,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-05-18T00:00:00',
+                                                endDate: '2022-06-19T00:00:00',
+                                                propertyModelActivityId: 44,
+                                                predecessor: '34FS+1',
+                                                actualStartDate: '2022-04-30T00:00:00',
+                                                actualEndDate: '2022-05-18T00:00:00',
+                                                displayPredecessor: '34FS+1 day',
+                                                basePlanStartDate: '18/05/2022 (IST)',
+                                                basePlanEndDate: '19/06/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '19 days',
+                                                id: 18,
+                                            },
+                                            {
+                                                taskId: 44,
+                                                blockId: 1,
+                                                floorId: 41,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 35,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2022-05-07T00:00:00',
+                                                endDate: '2022-05-26T00:00:00',
+                                                propertyModelActivityId: 45,
+                                                predecessor: '',
+                                                actualStartDate: '2022-04-22T00:00:00',
+                                                actualEndDate: '2022-05-11T00:00:00',
+                                                displayPredecessor: '',
+                                                basePlanStartDate: '07/05/2022 (IST)',
+                                                basePlanEndDate: '26/05/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '20 days',
+                                                id: 19,
+                                            },
+                                            {
+                                                taskId: 45,
+                                                blockId: 1,
+                                                floorId: 41,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 35,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2022-05-17T00:00:00',
+                                                endDate: '2022-06-09T00:00:00',
+                                                propertyModelActivityId: 46,
+                                                predecessor: '44FS-10,41FS,42FS',
+                                                actualStartDate: '2022-05-02T00:00:00',
+                                                actualEndDate: '2022-05-30T00:00:00',
+                                                displayPredecessor: '44FS-10 days,41FS,42FS',
+                                                basePlanStartDate: '17/05/2022 (IST)',
+                                                basePlanEndDate: '09/06/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '29 days',
+                                                id: 20,
+                                            },
+                                            {
+                                                taskId: 47,
+                                                blockId: 1,
+                                                floorId: 41,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 35,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2022-06-02T00:00:00',
+                                                endDate: '2022-06-21T00:00:00',
+                                                propertyModelActivityId: 48,
+                                                predecessor: '45SS+16,43FF-10',
+                                                actualStartDate: '2022-05-17T00:00:00',
+                                                actualEndDate: '2022-05-25T00:00:00',
+                                                displayPredecessor: '45SS+16 days,43FF-10 days',
+                                                basePlanStartDate: '02/06/2022 (IST)',
+                                                basePlanEndDate: '21/06/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '9 days',
+                                                id: 21,
+                                            },
+                                        ],
+                                        actualDuration: '47 days',
+                                        id: 15,
+                                    },
+                                    {
+                                        taskId: 48,
+                                        blockId: 1,
+                                        floorId: 40,
+                                        siteDrawingTypeId: 1,
+                                        parentId: 3,
+                                        taskName: 'Level-B04',
+                                        startDate: '2022-06-12T00:00:00',
+                                        endDate: '2022-07-21T00:00:00',
+                                        propertyModelActivityId: 49,
+                                        actualStartDate: '2022-05-22T00:00:00',
+                                        actualEndDate: '2022-09-17T00:00:00',
+                                        basePlanStartDate: '12/06/2022 (IST)',
+                                        basePlanEndDate: '21/07/2022 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 54,
+                                                blockId: 1,
+                                                floorId: 40,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 48,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2022-06-12T00:00:00',
+                                                endDate: '2022-06-24T00:00:00',
+                                                propertyModelActivityId: 55,
+                                                predecessor: '47SS+10',
+                                                actualStartDate: '2022-05-23T00:00:00',
+                                                actualEndDate: '2022-06-03T00:00:00',
+                                                displayPredecessor: '47SS+10 days',
+                                                basePlanStartDate: '12/06/2022 (IST)',
+                                                basePlanEndDate: '24/06/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '12 days',
+                                                id: 23,
+                                            },
+                                            {
+                                                taskId: 55,
+                                                blockId: 1,
+                                                floorId: 40,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 48,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2022-06-12T00:00:00',
+                                                endDate: '2022-06-26T00:00:00',
+                                                propertyModelActivityId: 56,
+                                                predecessor: '47SS+10',
+                                                actualStartDate: '2022-05-23T00:00:00',
+                                                actualEndDate: '2022-06-17T00:00:00',
+                                                displayPredecessor: '47SS+10 days',
+                                                basePlanStartDate: '12/06/2022 (IST)',
+                                                basePlanEndDate: '26/06/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '26 days',
+                                                id: 24,
+                                            },
+                                            {
+                                                taskId: 56,
+                                                blockId: 1,
+                                                floorId: 40,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 48,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-06-13T00:00:00',
+                                                endDate: '2022-07-05T00:00:00',
+                                                propertyModelActivityId: 57,
+                                                predecessor: '47SS+11',
+                                                actualStartDate: '2022-06-02T00:00:00',
+                                                actualEndDate: '2022-06-22T00:00:00',
+                                                displayPredecessor: '47SS+11 days',
+                                                basePlanStartDate: '13/06/2022 (IST)',
+                                                basePlanEndDate: '05/07/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '21 days',
+                                                id: 25,
+                                            },
+                                            {
+                                                taskId: 57,
+                                                blockId: 1,
+                                                floorId: 40,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 48,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2022-06-14T00:00:00',
+                                                endDate: '2022-07-03T00:00:00',
+                                                propertyModelActivityId: 58,
+                                                predecessor: '47SS+12',
+                                                actualStartDate: '2022-05-22T00:00:00',
+                                                actualEndDate: '2022-06-19T00:00:00',
+                                                displayPredecessor: '47SS+12 days',
+                                                basePlanStartDate: '14/06/2022 (IST)',
+                                                basePlanEndDate: '03/07/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '29 days',
+                                                id: 26,
+                                            },
+                                            {
+                                                taskId: 58,
+                                                blockId: 1,
+                                                floorId: 40,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 48,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2022-06-19T00:00:00',
+                                                endDate: '2022-07-12T00:00:00',
+                                                propertyModelActivityId: 59,
+                                                predecessor: '57FS-15',
+                                                actualStartDate: '2022-05-24T00:00:00',
+                                                actualEndDate: '2022-09-17T00:00:00',
+                                                displayPredecessor: '57FS-15 days',
+                                                basePlanStartDate: '19/06/2022 (IST)',
+                                                basePlanEndDate: '12/07/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '117 days',
+                                                id: 27,
+                                            },
+                                            {
+                                                taskId: 60,
+                                                blockId: 1,
+                                                floorId: 40,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 48,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2022-07-02T00:00:00',
+                                                endDate: '2022-07-21T00:00:00',
+                                                propertyModelActivityId: 61,
+                                                predecessor: '58SS+13,55FS,54FS',
+                                                actualStartDate: '2022-06-12T00:00:00',
+                                                actualEndDate: '2022-06-25T00:00:00',
+                                                displayPredecessor: '58SS+13 days,55FS,54FS',
+                                                basePlanStartDate: '02/07/2022 (IST)',
+                                                basePlanEndDate: '21/07/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '14 days',
+                                                id: 28,
+                                            },
+                                        ],
+                                        actualDuration: '119 days',
+                                        id: 22,
+                                    },
+                                    {
+                                        taskId: 61,
+                                        blockId: 1,
+                                        floorId: 39,
+                                        siteDrawingTypeId: 1,
+                                        parentId: 3,
+                                        taskName: 'Level-B03',
+                                        startDate: '2022-07-10T00:00:00',
+                                        endDate: '2022-08-20T00:00:00',
+                                        propertyModelActivityId: 62,
+                                        actualStartDate: '2022-06-16T00:00:00',
+                                        actualEndDate: '2022-09-23T00:00:00',
+                                        basePlanStartDate: '10/07/2022 (IST)',
+                                        basePlanEndDate: '20/08/2022 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 68,
+                                                blockId: 1,
+                                                floorId: 39,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 61,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2022-07-10T00:00:00',
+                                                endDate: '2022-07-24T00:00:00',
+                                                propertyModelActivityId: 69,
+                                                predecessor: '60SS+8',
+                                                actualStartDate: '2022-06-17T00:00:00',
+                                                actualEndDate: '2022-07-26T00:00:00',
+                                                displayPredecessor: '60SS+8 days',
+                                                basePlanStartDate: '10/07/2022 (IST)',
+                                                basePlanEndDate: '24/07/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '40 days',
+                                                id: 30,
+                                            },
+                                            {
+                                                taskId: 67,
+                                                blockId: 1,
+                                                floorId: 39,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 61,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2022-07-10T00:00:00',
+                                                endDate: '2022-07-22T00:00:00',
+                                                propertyModelActivityId: 68,
+                                                predecessor: '60SS+8',
+                                                actualStartDate: '2022-06-16T00:00:00',
+                                                actualEndDate: '2022-06-30T00:00:00',
+                                                displayPredecessor: '60SS+8 days',
+                                                basePlanStartDate: '10/07/2022 (IST)',
+                                                basePlanEndDate: '22/07/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '15 days',
+                                                id: 31,
+                                            },
+                                            {
+                                                taskId: 69,
+                                                blockId: 1,
+                                                floorId: 39,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 61,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-07-11T00:00:00',
+                                                endDate: '2022-08-02T00:00:00',
+                                                propertyModelActivityId: 70,
+                                                predecessor: '60SS+9',
+                                                actualStartDate: '2022-06-25T00:00:00',
+                                                actualEndDate: '2022-07-18T00:00:00',
+                                                displayPredecessor: '60SS+9 days',
+                                                basePlanStartDate: '11/07/2022 (IST)',
+                                                basePlanEndDate: '02/08/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '24 days',
+                                                id: 32,
+                                            },
+                                            {
+                                                taskId: 70,
+                                                blockId: 1,
+                                                floorId: 39,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 61,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2022-07-12T00:00:00',
+                                                endDate: '2022-07-31T00:00:00',
+                                                propertyModelActivityId: 71,
+                                                predecessor: '60SS+10',
+                                                actualStartDate: '2022-06-21T00:00:00',
+                                                actualEndDate: '2022-07-11T00:00:00',
+                                                displayPredecessor: '60SS+10 days',
+                                                basePlanStartDate: '12/07/2022 (IST)',
+                                                basePlanEndDate: '31/07/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '21 days',
+                                                id: 33,
+                                            },
+                                            {
+                                                taskId: 71,
+                                                blockId: 1,
+                                                floorId: 39,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 61,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2022-07-19T00:00:00',
+                                                endDate: '2022-08-11T00:00:00',
+                                                propertyModelActivityId: 72,
+                                                predecessor: '70FS-13',
+                                                actualStartDate: '2022-06-25T00:00:00',
+                                                actualEndDate: '2022-09-23T00:00:00',
+                                                displayPredecessor: '70FS-13 days',
+                                                basePlanStartDate: '19/07/2022 (IST)',
+                                                basePlanEndDate: '11/08/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '91 days',
+                                                id: 34,
+                                            },
+                                            {
+                                                taskId: 73,
+                                                blockId: 1,
+                                                floorId: 39,
+                                                siteDrawingTypeId: 1,
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 61,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2022-08-01T00:00:00',
+                                                endDate: '2022-08-20T00:00:00',
+                                                propertyModelActivityId: 74,
+                                                predecessor: '71SS+13,67FS,68FS',
+                                                actualStartDate: '2022-07-11T00:00:00',
+                                                actualEndDate: '2022-07-22T00:00:00',
+                                                displayPredecessor: '71SS+13 days,67FS,68FS',
+                                                basePlanStartDate: '01/08/2022 (IST)',
+                                                basePlanEndDate: '20/08/2022 (IST)',
+                                                revisionNo: 1,
+                                                actualDuration: '12 days',
+                                                id: 35,
+                                            },
+                                        ],
+                                        actualDuration: '100 days',
+                                        id: 29,
+                                    },
+                                    {
+                                        taskId: 74,
+                                        blockId: 1,
+                                        floorId: 38,
+                                        siteDrawingTypeId: 1,
+                                        parentId: 3,
+                                        taskName: 'Level-B02',
+                                        startDate: '2022-08-09T00:00:00',
+                                        endDate: '2022-09-20T00:00:00',
+                                        propertyModelActivityId: 75,
+                                        actualStartDate: '2022-07-15T00:00:00',
+                                        actualEndDate: '2022-08-18T00:00:00',
+                                        basePlanStartDate: '09/08/2022 (IST)',
+                                        basePlanEndDate: '20/09/2022 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 80,
+                                                blockId: 1,
+                                                floorId: 38,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 74,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2022-08-09T00:00:00',
+                                                endDate: '2022-08-21T00:00:00',
+                                                propertyModelActivityId: 81,
+                                                predecessor: '73SS+8',
+                                                actualStartDate: '2022-07-16T00:00:00',
+                                                actualEndDate: '2022-07-27T00:00:00',
+                                                
+                                                displayPredecessor: '73SS+8 days',
+                                                basePlanStartDate: '09/08/2022 (IST)',
+                                                basePlanEndDate: '21/08/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '12 days',
+                                                id: 37,
+                                            },
+                                            {
+                                                taskId: 81,
+                                                blockId: 1,
+                                                floorId: 38,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 74,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2022-08-09T00:00:00',
+                                                endDate: '2022-08-23T00:00:00',
+                                                propertyModelActivityId: 82,
+                                                predecessor: '73SS+8',
+                                                actualStartDate: '2022-07-15T00:00:00',
+                                                actualEndDate: '2022-07-30T00:00:00',
+                                                
+                                                displayPredecessor: '73SS+8 days',
+                                                basePlanStartDate: '09/08/2022 (IST)',
+                                                basePlanEndDate: '23/08/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '16 days',
+                                                id: 38,
+                                            },
+                                            {
+                                                taskId: 82,
+                                                blockId: 1,
+                                                floorId: 38,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 74,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-08-10T00:00:00',
+                                                endDate: '2022-09-01T00:00:00',
+                                                propertyModelActivityId: 83,
+                                                predecessor: '73SS+9',
+                                                actualStartDate: '2022-07-26T00:00:00',
+                                                actualEndDate: '2022-08-12T00:00:00',
+                                                
+                                                displayPredecessor: '73SS+9 days',
+                                                basePlanStartDate: '10/08/2022 (IST)',
+                                                basePlanEndDate: '01/09/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '18 days',
+                                                id: 39,
+                                            },
+                                            {
+                                                taskId: 83,
+                                                blockId: 1,
+                                                floorId: 38,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 74,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2022-08-11T00:00:00',
+                                                endDate: '2022-08-30T00:00:00',
+                                                propertyModelActivityId: 84,
+                                                predecessor: '73SS+10',
+                                                actualStartDate: '2022-07-19T00:00:00',
+                                                actualEndDate: '2022-08-03T00:00:00',
+                                                
+                                                displayPredecessor: '73SS+10 days',
+                                                basePlanStartDate: '11/08/2022 (IST)',
+                                                basePlanEndDate: '30/08/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '16 days',
+                                                id: 40,
+                                            },
+                                            {
+                                                taskId: 84,
+                                                blockId: 1,
+                                                floorId: 38,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 74,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2022-08-19T00:00:00',
+                                                endDate: '2022-09-11T00:00:00',
+                                                propertyModelActivityId: 85,
+                                                predecessor: '83FS-12',
+                                                actualStartDate: '2022-07-23T00:00:00',
+                                                actualEndDate: '2022-08-17T00:00:00',
+                                                
+                                                displayPredecessor: '83FS-12 days',
+                                                basePlanStartDate: '19/08/2022 (IST)',
+                                                basePlanEndDate: '11/09/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '26 days',
+                                                id: 41,
+                                            },
+                                            {
+                                                taskId: 86,
+                                                blockId: 1,
+                                                floorId: 38,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 74,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2022-09-01T00:00:00',
+                                                endDate: '2022-09-20T00:00:00',
+                                                propertyModelActivityId: 87,
+                                                predecessor: '84SS+13,80FS,81FS',
+                                                actualStartDate: '2022-08-05T00:00:00',
+                                                actualEndDate: '2022-08-18T00:00:00',
+                                                
+                                                displayPredecessor: '84SS+13 days,80FS,81FS',
+                                                basePlanStartDate: '01/09/2022 (IST)',
+                                                basePlanEndDate: '20/09/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '14 days',
+                                                id: 42,
+                                            },
+                                        ],
+                                        actualDuration: '35 days',
+                                        id: 36,
+                                    },
+                                    {
+                                        taskId: 87,
+                                        blockId: 1,
+                                        floorId: 37,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-B01',
+                                        startDate: '2022-09-09T00:00:00',
+                                        endDate: '2022-10-20T00:00:00',
+                                        propertyModelActivityId: 88,
+                                        
+                                        actualStartDate: '2022-08-08T00:00:00',
+                                        actualEndDate: '2022-09-23T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '09/09/2022 (IST)',
+                                        basePlanEndDate: '20/10/2022 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 93,
+                                                blockId: 1,
+                                                floorId: 37,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 87,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2022-09-09T00:00:00',
+                                                endDate: '2022-09-21T00:00:00',
+                                                propertyModelActivityId: 94,
+                                                predecessor: '86SS+8',
+                                                actualStartDate: '2022-08-08T00:00:00',
+                                                actualEndDate: '2022-08-22T00:00:00',
+                                                
+                                                displayPredecessor: '86SS+8 days',
+                                                basePlanStartDate: '09/09/2022 (IST)',
+                                                basePlanEndDate: '21/09/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '15 days',
+                                                id: 44,
+                                            },
+                                            {
+                                                taskId: 94,
+                                                blockId: 1,
+                                                floorId: 37,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 87,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2022-09-09T00:00:00',
+                                                endDate: '2022-09-23T00:00:00',
+                                                propertyModelActivityId: 95,
+                                                predecessor: '86SS+8',
+                                                actualStartDate: '2022-08-09T00:00:00',
+                                                actualEndDate: '2022-08-23T00:00:00',
+                                                
+                                                displayPredecessor: '86SS+8 days',
+                                                basePlanStartDate: '09/09/2022 (IST)',
+                                                basePlanEndDate: '23/09/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '15 days',
+                                                id: 45,
+                                            },
+                                            {
+                                                taskId: 95,
+                                                blockId: 1,
+                                                floorId: 37,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 87,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-09-10T00:00:00',
+                                                endDate: '2022-10-02T00:00:00',
+                                                propertyModelActivityId: 96,
+                                                predecessor: '86SS+9',
+                                                actualStartDate: '2022-08-16T00:00:00',
+                                                actualEndDate: '2022-09-01T00:00:00',
+                                                
+                                                displayPredecessor: '86SS+9 days',
+                                                basePlanStartDate: '10/09/2022 (IST)',
+                                                basePlanEndDate: '02/10/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '17 days',
+                                                id: 46,
+                                            },
+                                            {
+                                                taskId: 96,
+                                                blockId: 1,
+                                                floorId: 37,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 87,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2022-09-11T00:00:00',
+                                                endDate: '2022-09-30T00:00:00',
+                                                propertyModelActivityId: 97,
+                                                predecessor: '86SS+10',
+                                                actualStartDate: '2022-08-12T00:00:00',
+                                                actualEndDate: '2022-08-30T00:00:00',
+                                                
+                                                displayPredecessor: '86SS+10 days',
+                                                basePlanStartDate: '11/09/2022 (IST)',
+                                                basePlanEndDate: '30/09/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '19 days',
+                                                id: 47,
+                                            },
+                                            {
+                                                taskId: 97,
+                                                blockId: 1,
+                                                floorId: 37,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 87,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2022-09-19T00:00:00',
+                                                endDate: '2022-10-12T00:00:00',
+                                                propertyModelActivityId: 98,
+                                                predecessor: '96FS-12',
+                                                actualStartDate: '2022-08-17T00:00:00',
+                                                actualEndDate: '2022-09-23T00:00:00',
+                                                
+                                                displayPredecessor: '96FS-12 days',
+                                                basePlanStartDate: '19/09/2022 (IST)',
+                                                basePlanEndDate: '12/10/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '38 days',
+                                                id: 48,
+                                            },
+                                            {
+                                                taskId: 99,
+                                                blockId: 1,
+                                                floorId: 37,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 87,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2022-10-02T00:00:00',
+                                                endDate: '2022-10-20T00:00:00',
+                                                propertyModelActivityId: 100,
+                                                predecessor: '97SS+13,93FS,94FS',
+                                                actualStartDate: '2022-08-29T00:00:00',
+                                                actualEndDate: '2022-09-09T00:00:00',
+                                                
+                                                displayPredecessor: '97SS+13 days,93FS,94FS',
+                                                basePlanStartDate: '02/10/2022 (IST)',
+                                                basePlanEndDate: '20/10/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '12 days',
+                                                id: 49,
+                                            },
+                                        ],
+                                        actualDuration: '47 days',
+                                        id: 43,
+                                    },
+                                    {
+                                        taskId: 100,
+                                        blockId: 1,
+                                        floorId: 36,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-MZ',
+                                        startDate: '2022-10-10T00:00:00',
+                                        endDate: '2022-11-20T00:00:00',
+                                        propertyModelActivityId: 101,
+                                        
+                                        actualStartDate: '2022-09-06T00:00:00',
+                                        actualEndDate: '2023-01-18T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '10/10/2022 (IST)',
+                                        basePlanEndDate: '20/11/2022 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 108,
+                                                blockId: 1,
+                                                floorId: 36,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 100,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-10-11T00:00:00',
+                                                endDate: '2022-10-25T00:00:00',
+                                                propertyModelActivityId: 109,
+                                                predecessor: '99SS+9',
+                                                actualStartDate: '2022-09-06T00:00:00',
+                                                actualEndDate: '2022-09-26T00:00:00',
+                                                
+                                                displayPredecessor: '99SS+9 days',
+                                                basePlanStartDate: '11/10/2022 (IST)',
+                                                basePlanEndDate: '25/10/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '21 days',
+                                                id: 51,
+                                            },
+                                            {
+                                                taskId: 107,
+                                                blockId: 1,
+                                                floorId: 36,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 100,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2022-10-10T00:00:00',
+                                                endDate: '2022-10-24T00:00:00',
+                                                propertyModelActivityId: 108,
+                                                predecessor: '99SS+8',
+                                                actualStartDate: '2022-09-06T00:00:00',
+                                                actualEndDate: '2022-09-26T00:00:00',
+                                                
+                                                displayPredecessor: '99SS+8 days',
+                                                basePlanStartDate: '10/10/2022 (IST)',
+                                                basePlanEndDate: '24/10/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '21 days',
+                                                id: 52,
+                                            },
+                                            {
+                                                taskId: 106,
+                                                blockId: 1,
+                                                floorId: 36,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 100,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2022-10-10T00:00:00',
+                                                endDate: '2022-10-22T00:00:00',
+                                                propertyModelActivityId: 107,
+                                                predecessor: '99SS+8',
+                                                actualStartDate: '2022-09-06T00:00:00',
+                                                actualEndDate: '2022-09-14T00:00:00',
+                                                
+                                                displayPredecessor: '99SS+8 days',
+                                                basePlanStartDate: '10/10/2022 (IST)',
+                                                basePlanEndDate: '22/10/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '9 days',
+                                                id: 53,
+                                            },
+                                            {
+                                                taskId: 110,
+                                                blockId: 1,
+                                                floorId: 36,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 100,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2022-10-21T00:00:00',
+                                                endDate: '2022-11-13T00:00:00',
+                                                propertyModelActivityId: 111,
+                                                predecessor: '108FS-5',
+                                                actualStartDate: '2022-09-13T00:00:00',
+                                                actualEndDate: '2023-01-18T00:00:00',
+                                                
+                                                displayPredecessor: '108FS-5 days',
+                                                basePlanStartDate: '21/10/2022 (IST)',
+                                                basePlanEndDate: '13/11/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '128 days',
+                                                id: 54,
+                                            },
+                                            {
+                                                taskId: 112,
+                                                blockId: 1,
+                                                floorId: 36,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 100,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2022-11-03T00:00:00',
+                                                endDate: '2022-11-20T00:00:00',
+                                                propertyModelActivityId: 113,
+                                                predecessor: '110SS+13,106FS,107FS',
+                                                actualStartDate: '2022-10-08T00:00:00',
+                                                actualEndDate: '2022-10-21T00:00:00',
+                                                
+                                                displayPredecessor: '110SS+13 days,106FS,107FS',
+                                                basePlanStartDate: '03/11/2022 (IST)',
+                                                basePlanEndDate: '20/11/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '14 days',
+                                                id: 55,
+                                            },
+                                        ],
+                                        actualDuration: '135 days',
+                                        id: 50,
+                                    },
+                                    {
+                                        taskId: 113,
+                                        blockId: 1,
+                                        floorId: 35,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-LG',
+                                        startDate: '2022-11-11T00:00:00',
+                                        endDate: '2023-01-05T00:00:00',
+                                        propertyModelActivityId: 114,
+                                        
+                                        actualStartDate: '2022-09-06T00:00:00',
+                                        actualEndDate: '2023-01-09T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '11/11/2022 (IST)',
+                                        basePlanEndDate: '05/01/2023 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 121,
+                                                blockId: 1,
+                                                floorId: 35,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 113,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-11-12T00:00:00',
+                                                endDate: '2023-01-04T00:00:00',
+                                                propertyModelActivityId: 122,
+                                                predecessor: '112SS+9',
+                                                actualStartDate: '2022-10-14T00:00:00',
+                                                actualEndDate: '2022-11-11T00:00:00',
+                                                
+                                                displayPredecessor: '112SS+9 days',
+                                                basePlanStartDate: '12/11/2022 (IST)',
+                                                basePlanEndDate: '04/01/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '29 days',
+                                                id: 57,
+                                            },
+                                            {
+                                                taskId: 122,
+                                                blockId: 1,
+                                                floorId: 35,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 113,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2022-11-13T00:00:00',
+                                                endDate: '2022-12-02T00:00:00',
+                                                propertyModelActivityId: 123,
+                                                predecessor: '112SS+10',
+                                                actualStartDate: '2022-09-06T00:00:00',
+                                                actualEndDate: '2022-11-02T00:00:00',
+                                                
+                                                displayPredecessor: '112SS+10 days',
+                                                basePlanStartDate: '13/11/2022 (IST)',
+                                                basePlanEndDate: '02/12/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '58 days',
+                                                id: 58,
+                                            },
+                                            {
+                                                taskId: 120,
+                                                blockId: 1,
+                                                floorId: 35,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 113,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2022-11-11T00:00:00',
+                                                endDate: '2022-12-20T00:00:00',
+                                                propertyModelActivityId: 121,
+                                                predecessor: '112SS+8',
+                                                actualStartDate: '2022-09-10T00:00:00',
+                                                actualEndDate: '2022-11-03T00:00:00',
+                                                
+                                                displayPredecessor: '112SS+8 days',
+                                                basePlanStartDate: '11/11/2022 (IST)',
+                                                basePlanEndDate: '20/12/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '55 days',
+                                                id: 59,
+                                            },
+                                            {
+                                                taskId: 119,
+                                                blockId: 1,
+                                                floorId: 35,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 113,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2022-11-11T00:00:00',
+                                                endDate: '2022-11-23T00:00:00',
+                                                propertyModelActivityId: 120,
+                                                predecessor: '112SS+8',
+                                                actualStartDate: '2022-09-21T00:00:00',
+                                                actualEndDate: '2022-11-28T00:00:00',
+                                                
+                                                displayPredecessor: '112SS+8 days',
+                                                basePlanStartDate: '11/11/2022 (IST)',
+                                                basePlanEndDate: '23/11/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '69 days',
+                                                id: 60,
+                                            },
+                                            {
+                                                taskId: 123,
+                                                blockId: 1,
+                                                floorId: 35,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 113,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2022-11-21T00:00:00',
+                                                endDate: '2022-12-10T00:00:00',
+                                                propertyModelActivityId: 124,
+                                                predecessor: '122FS-12',
+                                                actualStartDate: '2022-10-07T00:00:00',
+                                                actualEndDate: '2023-01-09T00:00:00',
+                                                
+                                                displayPredecessor: '122FS-12 days',
+                                                basePlanStartDate: '21/11/2022 (IST)',
+                                                basePlanEndDate: '10/12/2022 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '95 days',
+                                                id: 61,
+                                            },
+                                            {
+                                                taskId: 125,
+                                                blockId: 1,
+                                                floorId: 35,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 113,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2022-12-21T00:00:00',
+                                                endDate: '2023-01-05T00:00:00',
+                                                propertyModelActivityId: 126,
+                                                predecessor: '123SS+8,119FS,120FS',
+                                                actualStartDate: '2022-11-01T00:00:00',
+                                                actualEndDate: '2022-11-15T00:00:00',
+                                                
+                                                displayPredecessor: '123SS+8 days,119FS,120FS',
+                                                basePlanStartDate: '21/12/2022 (IST)',
+                                                basePlanEndDate: '05/01/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '15 days',
+                                                id: 62,
+                                            },
+                                        ],
+                                        actualDuration: '126 days',
+                                        id: 56,
+                                    },
+                                    {
+                                        taskId: 126,
+                                        blockId: 1,
+                                        floorId: 34,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-UG',
+                                        startDate: '2022-12-27T00:00:00',
+                                        endDate: '2023-02-15T00:00:00',
+                                        propertyModelActivityId: 127,
+                                        
+                                        actualStartDate: '2022-11-03T00:00:00',
+                                        actualEndDate: '2023-04-14T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '27/12/2022 (IST)',
+                                        basePlanEndDate: '15/02/2023 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 132,
+                                                blockId: 1,
+                                                floorId: 34,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 126,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2022-12-27T00:00:00',
+                                                endDate: '2023-01-11T00:00:00',
+                                                propertyModelActivityId: 133,
+                                                predecessor: '125SS+6',
+                                                actualStartDate: '2022-11-10T00:00:00',
+                                                actualEndDate: '2022-12-27T00:00:00',
+                                                
+                                                displayPredecessor: '125SS+6 days',
+                                                basePlanStartDate: '27/12/2022 (IST)',
+                                                basePlanEndDate: '11/01/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '48 days',
+                                                id: 64,
+                                            },
+                                            {
+                                                taskId: 133,
+                                                blockId: 1,
+                                                floorId: 34,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 126,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2022-12-27T00:00:00',
+                                                endDate: '2023-01-29T00:00:00',
+                                                propertyModelActivityId: 134,
+                                                predecessor: '125SS+6',
+                                                actualStartDate: '2022-11-03T00:00:00',
+                                                actualEndDate: '2022-12-22T00:00:00',
+                                                
+                                                displayPredecessor: '125SS+6 days',
+                                                basePlanStartDate: '27/12/2022 (IST)',
+                                                basePlanEndDate: '29/01/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '50 days',
+                                                id: 65,
+                                            },
+                                            {
+                                                taskId: 134,
+                                                blockId: 1,
+                                                floorId: 34,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 126,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2022-12-28T00:00:00',
+                                                endDate: '2023-02-02T00:00:00',
+                                                propertyModelActivityId: 135,
+                                                predecessor: '125SS+7',
+                                                actualStartDate: '2022-11-27T00:00:00',
+                                                actualEndDate: '2022-12-21T00:00:00',
+                                                
+                                                displayPredecessor: '125SS+7 days',
+                                                basePlanStartDate: '28/12/2022 (IST)',
+                                                basePlanEndDate: '02/02/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '25 days',
+                                                id: 66,
+                                            },
+                                            {
+                                                taskId: 135,
+                                                blockId: 1,
+                                                floorId: 34,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 126,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2022-12-29T00:00:00',
+                                                endDate: '2023-01-27T00:00:00',
+                                                propertyModelActivityId: 136,
+                                                predecessor: '125SS+8',
+                                                actualStartDate: '2022-11-17T00:00:00',
+                                                actualEndDate: '2022-12-20T00:00:00',
+                                                
+                                                displayPredecessor: '125SS+8 days',
+                                                basePlanStartDate: '29/12/2022 (IST)',
+                                                basePlanEndDate: '27/01/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '34 days',
+                                                id: 67,
+                                            },
+                                            {
+                                                taskId: 136,
+                                                blockId: 1,
+                                                floorId: 34,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 126,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2023-01-22T00:00:00',
+                                                endDate: '2023-02-12T00:00:00',
+                                                propertyModelActivityId: 137,
+                                                predecessor: '135FS-12,134FS-12',
+                                                actualStartDate: '2022-11-03T00:00:00',
+                                                actualEndDate: '2023-04-14T00:00:00',
+                                                
+                                                displayPredecessor: '135FS-12 days,134FS-12 days',
+                                                basePlanStartDate: '22/01/2023 (IST)',
+                                                basePlanEndDate: '12/02/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '163 days',
+                                                id: 68,
+                                            },
+                                            {
+                                                taskId: 138,
+                                                blockId: 1,
+                                                floorId: 34,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 126,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2023-01-30T00:00:00',
+                                                endDate: '2023-02-15T00:00:00',
+                                                propertyModelActivityId: 139,
+                                                predecessor: '136SS+8,132FS,133FS',
+                                                actualStartDate: '2022-12-25T00:00:00',
+                                                actualEndDate: '2023-01-06T00:00:00',
+                                                
+                                                displayPredecessor: '136SS+8 days,132FS,133FS',
+                                                basePlanStartDate: '30/01/2023 (IST)',
+                                                basePlanEndDate: '15/02/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '13 days',
+                                                id: 69,
+                                            },
+                                        ],
+                                        actualDuration: '163 days',
+                                        id: 63,
+                                    },
+                                    {
+                                        taskId: 139,
+                                        blockId: 1,
+                                        floorId: 33,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-01',
+                                        startDate: '2023-02-05T00:00:00',
+                                        endDate: '2023-03-30T00:00:00',
+                                        propertyModelActivityId: 140,
+                                        
+                                        actualStartDate: '2022-12-28T00:00:00',
+                                        actualEndDate: '2023-04-13T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '05/02/2023 (IST)',
+                                        basePlanEndDate: '30/03/2023 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 147,
+                                                blockId: 1,
+                                                floorId: 33,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 139,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2023-02-06T00:00:00',
+                                                endDate: '2023-02-28T00:00:00',
+                                                propertyModelActivityId: 148,
+                                                predecessor: '138SS+7',
+                                                actualStartDate: '2023-01-15T00:00:00',
+                                                actualEndDate: '2023-02-21T00:00:00',
+                                                
+                                                displayPredecessor: '138SS+7 days',
+                                                basePlanStartDate: '06/02/2023 (IST)',
+                                                basePlanEndDate: '28/02/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '38 days',
+                                                id: 71,
+                                            },
+                                            {
+                                                taskId: 148,
+                                                blockId: 1,
+                                                floorId: 33,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 139,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2023-02-07T00:00:00',
+                                                endDate: '2023-02-26T00:00:00',
+                                                propertyModelActivityId: 149,
+                                                predecessor: '138SS+8',
+                                                actualStartDate: '2023-01-05T00:00:00',
+                                                actualEndDate: '2023-02-23T00:00:00',
+                                                
+                                                displayPredecessor: '138SS+8 days',
+                                                basePlanStartDate: '07/02/2023 (IST)',
+                                                basePlanEndDate: '26/02/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '50 days',
+                                                id: 72,
+                                            },
+                                            {
+                                                taskId: 145,
+                                                blockId: 1,
+                                                floorId: 33,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 139,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2023-02-05T00:00:00',
+                                                endDate: '2023-03-11T00:00:00',
+                                                propertyModelActivityId: 146,
+                                                predecessor: '138SS+6',
+                                                actualStartDate: '2022-12-28T00:00:00',
+                                                actualEndDate: '2023-01-19T00:00:00',
+                                                
+                                                displayPredecessor: '138SS+6 days',
+                                                basePlanStartDate: '05/02/2023 (IST)',
+                                                basePlanEndDate: '11/03/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '23 days',
+                                                id: 73,
+                                            },
+                                            {
+                                                taskId: 146,
+                                                blockId: 1,
+                                                floorId: 33,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 139,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2023-02-05T00:00:00',
+                                                endDate: '2023-03-11T00:00:00',
+                                                propertyModelActivityId: 147,
+                                                predecessor: '138SS+6',
+                                                actualStartDate: '2022-12-31T00:00:00',
+                                                actualEndDate: '2023-01-25T00:00:00',
+                                                
+                                                displayPredecessor: '138SS+6 days',
+                                                basePlanStartDate: '05/02/2023 (IST)',
+                                                basePlanEndDate: '11/03/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '26 days',
+                                                id: 74,
+                                            },
+                                            {
+                                                taskId: 149,
+                                                blockId: 1,
+                                                floorId: 33,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 139,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2023-02-21T00:00:00',
+                                                endDate: '2023-03-16T00:00:00',
+                                                propertyModelActivityId: 150,
+                                                predecessor: '148FS-8,147FS-8',
+                                                actualStartDate: '2023-01-18T00:00:00',
+                                                actualEndDate: '2023-04-13T00:00:00',
+                                                
+                                                displayPredecessor: '148FS-8 days,147FS-8 days',
+                                                basePlanStartDate: '21/02/2023 (IST)',
+                                                basePlanEndDate: '16/03/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '86 days',
+                                                id: 75,
+                                            },
+                                            {
+                                                taskId: 151,
+                                                blockId: 1,
+                                                floorId: 33,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 139,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2023-03-12T00:00:00',
+                                                endDate: '2023-03-30T00:00:00',
+                                                propertyModelActivityId: 152,
+                                                predecessor: '149SS+8,145FS,146FS',
+                                                actualStartDate: '2023-02-04T00:00:00',
+                                                actualEndDate: '2023-02-24T00:00:00',
+                                                
+                                                displayPredecessor: '149SS+8 days,145FS,146FS',
+                                                basePlanStartDate: '12/03/2023 (IST)',
+                                                basePlanEndDate: '30/03/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '21 days',
+                                                id: 76,
+                                            },
+                                        ],
+                                        actualDuration: '107 days',
+                                        id: 70,
+                                    },
+                                    {
+                                        taskId: 152,
+                                        blockId: 1,
+                                        floorId: 43,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-02',
+                                        startDate: '2023-03-18T00:00:00',
+                                        endDate: '2023-04-12T00:00:00',
+                                        propertyModelActivityId: 153,
+                                        
+                                        actualStartDate: '2023-02-05T00:00:00',
+                                        actualEndDate: '2023-04-19T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '18/03/2023 (IST)',
+                                        basePlanEndDate: '12/04/2023 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 158,
+                                                blockId: 1,
+                                                floorId: 43,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 152,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2023-03-18T00:00:00',
+                                                endDate: '2023-03-27T00:00:00',
+                                                propertyModelActivityId: 159,
+                                                predecessor: '151SS+6',
+                                                actualStartDate: '2023-02-05T00:00:00',
+                                                actualEndDate: '2023-03-27T00:00:00',
+                                                
+                                                displayPredecessor: '151SS+6 days',
+                                                basePlanStartDate: '18/03/2023 (IST)',
+                                                basePlanEndDate: '27/03/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '51 days',
+                                                id: 78,
+                                            },
+                                            {
+                                                taskId: 159,
+                                                blockId: 1,
+                                                floorId: 43,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 152,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2023-03-18T00:00:00',
+                                                endDate: '2023-03-30T00:00:00',
+                                                propertyModelActivityId: 160,
+                                                predecessor: '151SS+6',
+                                                actualStartDate: '2023-02-05T00:00:00',
+                                                actualEndDate: '2023-03-17T00:00:00',
+                                                
+                                                displayPredecessor: '151SS+6 days',
+                                                basePlanStartDate: '18/03/2023 (IST)',
+                                                basePlanEndDate: '30/03/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '41 days',
+                                                id: 79,
+                                            },
+                                            {
+                                                taskId: 160,
+                                                blockId: 1,
+                                                floorId: 43,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 152,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2023-03-19T00:00:00',
+                                                endDate: '2023-03-30T00:00:00',
+                                                propertyModelActivityId: 161,
+                                                predecessor: '151SS+7',
+                                                actualStartDate: '2023-02-27T00:00:00',
+                                                actualEndDate: '2023-03-14T00:00:00',
+                                                
+                                                displayPredecessor: '151SS+7 days',
+                                                basePlanStartDate: '19/03/2023 (IST)',
+                                                basePlanEndDate: '30/03/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '16 days',
+                                                id: 80,
+                                            },
+                                            {
+                                                taskId: 161,
+                                                blockId: 1,
+                                                floorId: 43,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 152,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2023-03-20T00:00:00',
+                                                endDate: '2023-03-31T00:00:00',
+                                                propertyModelActivityId: 162,
+                                                predecessor: '151SS+8',
+                                                actualStartDate: '2023-02-21T00:00:00',
+                                                actualEndDate: '2023-03-13T00:00:00',
+                                                
+                                                displayPredecessor: '151SS+8 days',
+                                                basePlanStartDate: '20/03/2023 (IST)',
+                                                basePlanEndDate: '31/03/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '21 days',
+                                                id: 81,
+                                            },
+                                            {
+                                                taskId: 162,
+                                                blockId: 1,
+                                                floorId: 43,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 152,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2023-03-27T00:00:00',
+                                                endDate: '2023-04-07T00:00:00',
+                                                propertyModelActivityId: 163,
+                                                predecessor: '160FS-5,161FS-5',
+                                                actualStartDate: '2023-02-08T00:00:00',
+                                                actualEndDate: '2023-04-19T00:00:00',
+                                                
+                                                displayPredecessor: '160FS-5 days,161FS-5 days',
+                                                basePlanStartDate: '27/03/2023 (IST)',
+                                                basePlanEndDate: '07/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '71 days',
+                                                id: 82,
+                                            },
+                                            {
+                                                taskId: 164,
+                                                blockId: 1,
+                                                floorId: 43,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 152,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2023-04-04T00:00:00',
+                                                endDate: '2023-04-12T00:00:00',
+                                                propertyModelActivityId: 165,
+                                                predecessor: '162SS+8,158FS,159FS',
+                                                actualStartDate: '2023-02-07T00:00:00',
+                                                actualEndDate: '2023-03-20T00:00:00',
+                                                
+                                                displayPredecessor: '162SS+8 days,158FS,159FS',
+                                                basePlanStartDate: '04/04/2023 (IST)',
+                                                basePlanEndDate: '12/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '42 days',
+                                                id: 83,
+                                            },
+                                        ],
+                                        actualDuration: '74 days',
+                                        id: 77,
+                                    },
+                                    {
+                                        taskId: 165,
+                                        blockId: 1,
+                                        floorId: 31,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-03',
+                                        startDate: '2023-04-10T00:00:00',
+                                        endDate: '2023-04-25T00:00:00',
+                                        propertyModelActivityId: 166,
+                                        
+                                        actualStartDate: '2023-03-09T00:00:00',
+                                        actualEndDate: '2023-05-13T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '10/04/2023 (IST)',
+                                        basePlanEndDate: '25/04/2023 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 171,
+                                                blockId: 1,
+                                                floorId: 31,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 165,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2023-04-10T00:00:00',
+                                                endDate: '2023-04-14T00:00:00',
+                                                propertyModelActivityId: 172,
+                                                predecessor: '164SS+6',
+                                                actualStartDate: '2023-03-11T00:00:00',
+                                                actualEndDate: '2023-03-29T00:00:00',
+                                                
+                                                displayPredecessor: '164SS+6 days',
+                                                basePlanStartDate: '10/04/2023 (IST)',
+                                                basePlanEndDate: '14/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '19 days',
+                                                id: 85,
+                                            },
+                                            {
+                                                taskId: 172,
+                                                blockId: 1,
+                                                floorId: 31,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 165,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2023-04-10T00:00:00',
+                                                endDate: '2023-04-14T00:00:00',
+                                                propertyModelActivityId: 173,
+                                                predecessor: '164SS+6',
+                                                actualStartDate: '2023-03-09T00:00:00',
+                                                actualEndDate: '2023-04-08T00:00:00',
+                                                
+                                                displayPredecessor: '164SS+6 days',
+                                                basePlanStartDate: '10/04/2023 (IST)',
+                                                basePlanEndDate: '14/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '31 days',
+                                                id: 86,
+                                            },
+                                            {
+                                                taskId: 174,
+                                                blockId: 1,
+                                                floorId: 31,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 165,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2023-04-10T00:00:00',
+                                                endDate: '2023-04-14T00:00:00',
+                                                propertyModelActivityId: 175,
+                                                predecessor: '164SS+6',
+                                                actualStartDate: '2023-03-15T00:00:00',
+                                                actualEndDate: '2023-04-08T00:00:00',
+                                                
+                                                displayPredecessor: '164SS+6 days',
+                                                basePlanStartDate: '10/04/2023 (IST)',
+                                                basePlanEndDate: '14/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '25 days',
+                                                id: 87,
+                                            },
+                                            {
+                                                taskId: 173,
+                                                blockId: 1,
+                                                floorId: 31,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 165,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2023-04-11T00:00:00',
+                                                endDate: '2023-04-15T00:00:00',
+                                                propertyModelActivityId: 174,
+                                                predecessor: '164SS+7',
+                                                actualStartDate: '2023-04-01T00:00:00',
+                                                actualEndDate: '2023-04-13T00:00:00',
+                                                
+                                                displayPredecessor: '164SS+7 days',
+                                                basePlanStartDate: '11/04/2023 (IST)',
+                                                basePlanEndDate: '15/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '13 days',
+                                                id: 88,
+                                            },
+                                            {
+                                                taskId: 175,
+                                                blockId: 1,
+                                                floorId: 31,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 165,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2023-04-14T00:00:00',
+                                                endDate: '2023-04-21T00:00:00',
+                                                propertyModelActivityId: 176,
+                                                predecessor: '173SS+3,174SS+3',
+                                                actualStartDate: '2023-03-15T00:00:00',
+                                                actualEndDate: '2023-05-13T00:00:00',
+                                                
+                                                displayPredecessor: '173SS+3 days,174SS+3 days',
+                                                basePlanStartDate: '14/04/2023 (IST)',
+                                                basePlanEndDate: '21/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '60 days',
+                                                id: 89,
+                                            },
+                                            {
+                                                taskId: 177,
+                                                blockId: 1,
+                                                floorId: 31,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 165,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2023-04-19T00:00:00',
+                                                endDate: '2023-04-25T00:00:00',
+                                                propertyModelActivityId: 178,
+                                                predecessor: '175SS+5,171FS,172FS',
+                                                actualStartDate: '2023-04-07T00:00:00',
+                                                actualEndDate: '2023-04-18T00:00:00',
+                                                
+                                                displayPredecessor: '175SS+5 days,171FS,172FS',
+                                                basePlanStartDate: '19/04/2023 (IST)',
+                                                basePlanEndDate: '25/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '12 days',
+                                                id: 90,
+                                            },
+                                        ],
+                                        actualDuration: '66 days',
+                                        id: 84,
+                                    },
+                                    {
+                                        taskId: 178,
+                                        blockId: 1,
+                                        floorId: 30,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-04',
+                                        startDate: '2023-04-24T00:00:00',
+                                        endDate: '2023-05-09T00:00:00',
+                                        propertyModelActivityId: 179,
+                                        
+                                        actualStartDate: '2023-04-10T00:00:00',
+                                        actualEndDate: '2023-06-17T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '24/04/2023 (IST)',
+                                        basePlanEndDate: '09/05/2023 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 184,
+                                                blockId: 1,
+                                                floorId: 30,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 178,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2023-04-24T00:00:00',
+                                                endDate: '2023-04-28T00:00:00',
+                                                propertyModelActivityId: 185,
+                                                predecessor: '177SS+5',
+                                                actualStartDate: '2023-04-11T00:00:00',
+                                                actualEndDate: '2023-04-18T00:00:00',
+                                                
+                                                displayPredecessor: '177SS+5 days',
+                                                basePlanStartDate: '24/04/2023 (IST)',
+                                                basePlanEndDate: '28/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '8 days',
+                                                id: 92,
+                                            },
+                                            {
+                                                taskId: 185,
+                                                blockId: 1,
+                                                floorId: 30,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 178,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2023-04-24T00:00:00',
+                                                endDate: '2023-04-28T00:00:00',
+                                                propertyModelActivityId: 186,
+                                                predecessor: '177SS+5',
+                                                actualStartDate: '2023-04-10T00:00:00',
+                                                actualEndDate: '2023-05-01T00:00:00',
+                                                
+                                                displayPredecessor: '177SS+5 days',
+                                                basePlanStartDate: '24/04/2023 (IST)',
+                                                basePlanEndDate: '28/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '22 days',
+                                                id: 93,
+                                            },
+                                            {
+                                                taskId: 187,
+                                                blockId: 1,
+                                                floorId: 30,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 178,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2023-04-24T00:00:00',
+                                                endDate: '2023-04-28T00:00:00',
+                                                propertyModelActivityId: 188,
+                                                predecessor: '177SS+5',
+                                                actualStartDate: '2023-04-17T00:00:00',
+                                                actualEndDate: '2023-04-25T00:00:00',
+                                                
+                                                displayPredecessor: '177SS+5 days',
+                                                basePlanStartDate: '24/04/2023 (IST)',
+                                                basePlanEndDate: '28/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '9 days',
+                                                id: 94,
+                                            },
+                                            {
+                                                taskId: 186,
+                                                blockId: 1,
+                                                floorId: 30,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 178,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2023-04-25T00:00:00',
+                                                endDate: '2023-04-29T00:00:00',
+                                                propertyModelActivityId: 187,
+                                                predecessor: '177SS+6',
+                                                actualStartDate: '2023-04-22T00:00:00',
+                                                actualEndDate: '2023-05-06T00:00:00',
+                                                
+                                                displayPredecessor: '177SS+6 days',
+                                                basePlanStartDate: '25/04/2023 (IST)',
+                                                basePlanEndDate: '29/04/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '15 days',
+                                                id: 95,
+                                            },
+                                            {
+                                                taskId: 188,
+                                                blockId: 1,
+                                                floorId: 30,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 178,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2023-04-28T00:00:00',
+                                                endDate: '2023-05-05T00:00:00',
+                                                propertyModelActivityId: 189,
+                                                predecessor: '186SS+3,187SS+3',
+                                                actualStartDate: '2023-04-15T00:00:00',
+                                                actualEndDate: '2023-06-17T00:00:00',
+                                                
+                                                displayPredecessor: '186SS+3 days,187SS+3 days',
+                                                basePlanStartDate: '28/04/2023 (IST)',
+                                                basePlanEndDate: '05/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '64 days',
+                                                id: 96,
+                                            },
+                                            {
+                                                taskId: 190,
+                                                blockId: 1,
+                                                floorId: 30,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 178,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2023-05-03T00:00:00',
+                                                endDate: '2023-05-09T00:00:00',
+                                                propertyModelActivityId: 191,
+                                                predecessor: '188SS+5,184FS,185FS',
+                                                actualStartDate: '2023-04-27T00:00:00',
+                                                actualEndDate: '2023-05-08T00:00:00',
+                                                
+                                                displayPredecessor: '188SS+5 days,184FS,185FS',
+                                                basePlanStartDate: '03/05/2023 (IST)',
+                                                basePlanEndDate: '09/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '12 days',
+                                                id: 97,
+                                            },
+                                        ],
+                                        actualDuration: '69 days',
+                                        id: 91,
+                                    },
+                                    {
+                                        taskId: 191,
+                                        blockId: 1,
+                                        floorId: 29,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-05',
+                                        startDate: '2023-05-08T00:00:00',
+                                        endDate: '2023-05-23T00:00:00',
+                                        propertyModelActivityId: 192,
+                                        
+                                        actualStartDate: '2023-04-27T00:00:00',
+                                        actualEndDate: '2023-06-17T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '08/05/2023 (IST)',
+                                        basePlanEndDate: '23/05/2023 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 199,
+                                                blockId: 1,
+                                                floorId: 29,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 191,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2023-05-09T00:00:00',
+                                                endDate: '2023-05-20T00:00:00',
+                                                propertyModelActivityId: 200,
+                                                predecessor: '190SS+6',
+                                                actualStartDate: '2023-04-27T00:00:00',
+                                                actualEndDate: '2023-05-23T00:00:00',
+                                                
+                                                displayPredecessor: '190SS+6 days',
+                                                basePlanStartDate: '09/05/2023 (IST)',
+                                                basePlanEndDate: '20/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '27 days',
+                                                id: 99,
+                                            },
+                                            {
+                                                taskId: 197,
+                                                blockId: 1,
+                                                floorId: 29,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 191,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2023-05-08T00:00:00',
+                                                endDate: '2023-05-12T00:00:00',
+                                                propertyModelActivityId: 198,
+                                                predecessor: '190SS+5',
+                                                actualStartDate: '2023-04-29T00:00:00',
+                                                actualEndDate: '2023-05-04T00:00:00',
+                                                
+                                                displayPredecessor: '190SS+5 days',
+                                                basePlanStartDate: '08/05/2023 (IST)',
+                                                basePlanEndDate: '12/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '6 days',
+                                                id: 100,
+                                            },
+                                            {
+                                                taskId: 198,
+                                                blockId: 1,
+                                                floorId: 29,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 191,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2023-05-08T00:00:00',
+                                                endDate: '2023-05-12T00:00:00',
+                                                propertyModelActivityId: 199,
+                                                predecessor: '190SS+5',
+                                                actualStartDate: '2023-04-30T00:00:00',
+                                                actualEndDate: '2023-05-17T00:00:00',
+                                                
+                                                displayPredecessor: '190SS+5 days',
+                                                basePlanStartDate: '08/05/2023 (IST)',
+                                                basePlanEndDate: '12/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '18 days',
+                                                id: 101,
+                                            },
+                                            {
+                                                taskId: 200,
+                                                blockId: 1,
+                                                floorId: 29,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 191,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2023-05-08T00:00:00',
+                                                endDate: '2023-05-12T00:00:00',
+                                                propertyModelActivityId: 201,
+                                                predecessor: '190SS+5',
+                                                actualStartDate: '2023-05-03T00:00:00',
+                                                actualEndDate: '2023-05-13T00:00:00',
+                                                
+                                                displayPredecessor: '190SS+5 days',
+                                                basePlanStartDate: '08/05/2023 (IST)',
+                                                basePlanEndDate: '12/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '11 days',
+                                                id: 102,
+                                            },
+                                            {
+                                                taskId: 201,
+                                                blockId: 1,
+                                                floorId: 29,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 191,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2023-05-12T00:00:00',
+                                                endDate: '2023-05-19T00:00:00',
+                                                propertyModelActivityId: 202,
+                                                predecessor: '199SS+3,200SS+3',
+                                                actualStartDate: '2023-05-02T00:00:00',
+                                                actualEndDate: '2023-06-17T00:00:00',
+                                                
+                                                displayPredecessor: '199SS+3 days,200SS+3 days',
+                                                basePlanStartDate: '12/05/2023 (IST)',
+                                                basePlanEndDate: '19/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '47 days',
+                                                id: 103,
+                                            },
+                                            {
+                                                taskId: 203,
+                                                blockId: 1,
+                                                floorId: 29,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 191,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2023-05-17T00:00:00',
+                                                endDate: '2023-05-23T00:00:00',
+                                                propertyModelActivityId: 204,
+                                                predecessor: '201SS+5,197FS,198FS',
+                                                actualStartDate: '2023-05-15T00:00:00',
+                                                actualEndDate: '2023-05-23T00:00:00',
+                                                
+                                                displayPredecessor: '201SS+5 days,197FS,198FS',
+                                                basePlanStartDate: '17/05/2023 (IST)',
+                                                basePlanEndDate: '23/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '9 days',
+                                                id: 104,
+                                            },
+                                        ],
+                                        actualDuration: '52 days',
+                                        id: 98,
+                                    },
+                                    {
+                                        taskId: 204,
+                                        blockId: 1,
+                                        floorId: 28,
+                                        siteDrawingTypeId: 1,
+                                        
+                                        
+                                        
+                                        
+                                        parentId: 3,
+                                        taskName: 'Level-06',
+                                        startDate: '2023-05-22T00:00:00',
+                                        endDate: '2023-06-06T00:00:00',
+                                        propertyModelActivityId: 205,
+                                        
+                                        actualStartDate: '2023-05-17T00:00:00',
+                                        actualEndDate: '2023-07-01T00:00:00',
+                                        
+                                       
+                                        basePlanStartDate: '22/05/2023 (IST)',
+                                        basePlanEndDate: '06/06/2023 (IST)',
+                                        revisionNo: 1,
+                                        subTasks: [
+                                            {
+                                                taskId: 210,
+                                                blockId: 1,
+                                                floorId: 28,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 1,
+                                                modelActivityName: 'Precast Column Erection',
+                                                parentId: 204,
+                                                taskName: 'Precast Column Erection',
+                                                startDate: '2023-05-22T00:00:00',
+                                                endDate: '2023-05-26T00:00:00',
+                                                propertyModelActivityId: 211,
+                                                predecessor: '203SS+5',
+                                                actualStartDate: '2023-05-17T00:00:00',
+                                                actualEndDate: '2023-05-30T00:00:00',
+                                                
+                                                displayPredecessor: '203SS+5 days',
+                                                basePlanStartDate: '22/05/2023 (IST)',
+                                                basePlanEndDate: '26/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '14 days',
+                                                id: 106,
+                                            },
+                                            {
+                                                taskId: 211,
+                                                blockId: 1,
+                                                floorId: 28,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 2,
+                                                modelActivityName: 'Precast Walls Erection',
+                                                parentId: 204,
+                                                taskName: 'Precast Walls Erection',
+                                                startDate: '2023-05-22T00:00:00',
+                                                endDate: '2023-05-26T00:00:00',
+                                                propertyModelActivityId: 212,
+                                                predecessor: '203SS+5',
+                                                actualStartDate: '2023-05-17T00:00:00',
+                                                actualEndDate: '2023-06-01T00:00:00',
+                                                
+                                                displayPredecessor: '203SS+5 days',
+                                                basePlanStartDate: '22/05/2023 (IST)',
+                                                basePlanEndDate: '26/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '16 days',
+                                                id: 107,
+                                            },
+                                            {
+                                                taskId: 213,
+                                                blockId: 1,
+                                                floorId: 28,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 4,
+                                                modelActivityName: 'CIS Column casting',
+                                                parentId: 204,
+                                                taskName: 'CIS Column casting',
+                                                startDate: '2023-05-22T00:00:00',
+                                                endDate: '2023-05-26T00:00:00',
+                                                propertyModelActivityId: 214,
+                                                predecessor: '203SS+5',
+                                                actualStartDate: '2023-05-24T00:00:00',
+                                                actualEndDate: '2023-05-28T00:00:00',
+                                                
+                                                displayPredecessor: '203SS+5 days',
+                                                basePlanStartDate: '22/05/2023 (IST)',
+                                                basePlanEndDate: '26/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '5 days',
+                                                id: 108,
+                                            },
+                                            {
+                                                taskId: 212,
+                                                blockId: 1,
+                                                floorId: 28,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 3,
+                                                modelActivityName: 'CIS walls casting',
+                                                parentId: 204,
+                                                taskName: 'CIS walls casting',
+                                                startDate: '2023-05-23T00:00:00',
+                                                endDate: '2023-05-27T00:00:00',
+                                                propertyModelActivityId: 213,
+                                                predecessor: '203SS+6',
+                                                actualStartDate: '2023-05-24T00:00:00',
+                                                actualEndDate: '2023-06-01T00:00:00',
+                                                
+                                                displayPredecessor: '203SS+6 days',
+                                                basePlanStartDate: '23/05/2023 (IST)',
+                                                basePlanEndDate: '27/05/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '9 days',
+                                                id: 109,
+                                            },
+                                            {
+                                                taskId: 214,
+                                                blockId: 1,
+                                                floorId: 28,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 5,
+                                                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                                parentId: 204,
+                                                taskName: 'Precast Beams & HCS/SS Erection',
+                                                startDate: '2023-05-26T00:00:00',
+                                                endDate: '2023-06-02T00:00:00',
+                                                propertyModelActivityId: 215,
+                                                predecessor: '212SS+3,213SS+3',
+                                                actualStartDate: '2023-05-19T00:00:00',
+                                                actualEndDate: '2023-07-01T00:00:00',
+                                                
+                                                displayPredecessor: '212SS+3 days,213SS+3 days',
+                                                basePlanStartDate: '26/05/2023 (IST)',
+                                                basePlanEndDate: '02/06/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '44 days',
+                                                id: 110,
+                                            },
+                                            {
+                                                taskId: 216,
+                                                blockId: 1,
+                                                floorId: 28,
+                                                siteDrawingTypeId: 1,
+                                                
+                                                
+                                                modelActivityId: 7,
+                                                modelActivityName: 'Topping and Slab Casting',
+                                                parentId: 204,
+                                                taskName: 'Topping and Slab Casting',
+                                                startDate: '2023-05-31T00:00:00',
+                                                endDate: '2023-06-06T00:00:00',
+                                                propertyModelActivityId: 217,
+                                                predecessor: '214SS+5,210FS,211FS',
+                                                actualStartDate: '2023-05-31T00:00:00',
+                                                actualEndDate: '2023-06-07T00:00:00',
+                                                
+                                                displayPredecessor: '214SS+5 days,210FS,211FS',
+                                                basePlanStartDate: '31/05/2023 (IST)',
+                                                basePlanEndDate: '06/06/2023 (IST)',
+                                                revisionNo: 1,
+                                                
+                                                actualDuration: '8 days',
+                                                id: 111,
+                                            },
+                                        ],
+                                        actualDuration: '46 days',
+                                        id: 105,
+                                    }
+                                ],
+                                actualDuration: '846 days',
+                                id: 3,
+                            }
+                        ],
+                        actualDuration: '846 days',
+                        id: 2,
+                    },
+                ],
+                actualDuration: '846 days',
+                id: 1,
+            },
+        ]
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
-                    dataSource: crDialogEditData,
+                    dataSource: dataSource,
                     taskFields: {
                         id: 'taskId',
                         name: 'taskName',
@@ -5320,16 +8097,544 @@ describe('Validation Rule with change in taskfield and column', () => {
                     height: '450px',
                 }, done);
         });
-        it('multiple dependency-connected tasks ', (done: Function) => {
+        it('multiple dependency-connected tasks ', () => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType == "openEditDialog") {
                     expect(args.requestType == "openEditDialog").toBe(true);
                 }
-                done()
             }
             ganttObj.openEditDialog(58);
         });
         afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+describe('Edit date in RTL mode', () => {
+        let ganttObj: Gantt;
+        let projectNewData = [
+            {
+              TaskID: 1,
+              TaskName: 'Product Concept',
+              StartDate: new Date('04/02/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 2,
+                  TaskName: 'Defining the product  and its usage',
+                  BaselineStartDate: new Date('04/02/2019'),
+                  BaselineEndDate: new Date('04/06/2019'),
+                  StartDate: new Date('04/02/2019'),
+                  Duration: 3,
+                  Progress: 30,
+                },
+                {
+                  TaskID: 3,
+                  TaskName: 'Defining target audience',
+                  StartDate: new Date('04/02/2019'),
+                  Duration: 3,
+                  Indicators: [
+                    {
+                      date: '04/10/2019',
+                      iconClass:
+                        'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                      name: 'Indicator title',
+                      tooltip: 'tooltip',
+                    },
+                  ],
+                },
+                {
+                  TaskID: 4,
+                  TaskName: 'Prepare product sketch and notes',
+                  StartDate: new Date('04/02/2019'),
+                  Duration: 3,
+                  Progress: 30,
+                },
+              ],
+            },
+            {
+              TaskID: 5,
+              TaskName: 'Concept Approval',
+              StartDate: new Date('04/02/2024'),
+              Duration: 0,
+            },
+            {
+              TaskID: 6,
+              TaskName: 'Market Research',
+              StartDate: new Date('04/02/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 7,
+                  TaskName: 'Demand Analysis',
+                  StartDate: new Date('04/04/2019'),
+                  EndDate: new Date('04/21/2019'),
+                  subtasks: [
+                    {
+                      TaskID: 8,
+                      TaskName: 'Customer strength',
+                      BaselineStartDate: new Date('04/08/2019'),
+                      BaselineEndDate: new Date('04/12/2019'),
+                      StartDate: new Date('04/04/2019'),
+                      Duration: 4,
+                      Predecessor: '5',
+                      Progress: 30,
+                    },
+                    {
+                      TaskID: 9,
+                      TaskName: 'Market opportunity analysis',
+                      StartDate: new Date('04/04/2019'),
+                      Duration: 4,
+                    },
+                  ],
+                },
+                {
+                  TaskID: 10,
+                  TaskName: 'Competitor Analysis',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 4,
+                  Progress: 30,
+                },
+                {
+                  TaskID: 11,
+                  TaskName: 'Product strength analysis',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 4,
+                  Predecessor: '9',
+                },
+                {
+                  TaskID: 12,
+                  TaskName: 'Research complete',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 0,
+                  Predecessor: '10',
+                },
+              ],
+            },
+            {
+              TaskID: 13,
+              TaskName: 'Product Design and Development',
+              StartDate: new Date('04/04/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 14,
+                  TaskName: 'Functionality design',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 7,
+                  Progress: 30,
+                },
+                {
+                  TaskID: 15,
+                  TaskName: 'Quality design',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 5,
+                },
+                {
+                  TaskID: 16,
+                  TaskName: 'Define Reliability',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 5,
+                  Progress: 30,
+                },
+                {
+                  TaskID: 17,
+                  TaskName: 'Identifying raw materials ',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 4,
+                },
+                {
+                  TaskID: 18,
+                  TaskName: 'Define cost plan',
+                  StartDate: new Date('04/04/2019'),
+                  EndDate: new Date('04/21/2019'),
+                  subtasks: [
+                    {
+                      TaskID: 19,
+                      TaskName: 'Manufacturing cost',
+                      StartDate: new Date('04/04/2019'),
+                      Duration: 1,
+                      Progress: 30,
+                    },
+                    {
+                      TaskID: 20,
+                      TaskName: 'Selling cost',
+                      StartDate: new Date('04/04/2019'),
+                      Duration: 1,
+                    },
+                  ],
+                },
+                {
+                  TaskID: 21,
+                  TaskName: 'Development of the final design',
+                  StartDate: new Date('04/04/2019'),
+                  EndDate: new Date('04/21/2019'),
+                  subtasks: [
+                    {
+                      TaskID: 22,
+                      TaskName: 'Defining dimensions and package volume',
+                      StartDate: new Date('04/04/2019'),
+                      Duration: 2,
+                      Progress: 30,
+                    },
+                    {
+                      TaskID: 23,
+                      TaskName: 'Develop design to meet industry standards',
+                      StartDate: new Date('04/04/2019'),
+                      Duration: 3,
+                    },
+                    {
+                      TaskID: 24,
+                      TaskName: 'Include all the details',
+                      StartDate: new Date('04/04/2019'),
+                      Duration: 5,
+                    },
+                  ],
+                },
+                {
+                  TaskID: 25,
+                  TaskName: 'CAD Computer-aided design',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 10,
+                  Progress: 30,
+                },
+                {
+                  TaskID: 26,
+                  TaskName: 'CAM Computer-aided manufacturing',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 10,
+                },
+              ],
+            },
+            {
+              TaskID: 27,
+              TaskName: 'Prototype Testing',
+              StartDate: new Date('04/04/2019'),
+              Duration: 12,
+              Progress: 30,
+            },
+            {
+              TaskID: 28,
+              TaskName: 'Include feedback',
+              StartDate: new Date('04/04/2019'),
+              Duration: 5,
+            },
+            {
+              TaskID: 29,
+              TaskName: 'Manufacturing',
+              StartDate: new Date('04/04/2019'),
+              Duration: 9,
+              Progress: 30,
+            },
+            {
+              TaskID: 30,
+              TaskName: 'Assembling materials to finished goods',
+              StartDate: new Date('04/04/2019'),
+              Duration: 12,
+            },
+            {
+              TaskID: 31,
+              TaskName: 'Feedback and Testing',
+              StartDate: new Date('04/04/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 32,
+                  TaskName: 'Internal testing and feedback',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 5,
+                  Progress: 30,
+                },
+                {
+                  TaskID: 33,
+                  TaskName: 'Customer testing and feedback',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 7,
+                  Progress: 30,
+                },
+              ],
+            },
+            {
+              TaskID: 34,
+              TaskName: 'Product Development',
+              StartDate: new Date('04/04/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 35,
+                  TaskName: 'Important improvements',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 2,
+                  Progress: 30,
+                },
+                {
+                  TaskID: 36,
+                  TaskName: 'Address any unforeseen issues',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 2,
+                  Progress: 30,
+                },
+              ],
+            },
+            {
+              TaskID: 37,
+              TaskName: 'Final Product',
+              StartDate: new Date('04/04/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 38,
+                  TaskName: 'Branding product',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 5,
+                },
+                {
+                  TaskID: 39,
+                  TaskName: 'zzz',
+                  StartDate: new Date('04/04/2019'),
+                  Duration: 10,
+                  Progress: 30,
+                },
+              ],
+            },
+          ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+  allowReordering: true,
+  enableMultiTaskbar: true,
+  enableUndoRedo: true,
+  enableTimelineVirtualization: true,
+  // autoCalculateDateScheduling: false,
+  // allowTaskbarDragAndDrop: true,
+  // showOverAllocation: true,
+  enableCriticalPath: true, 
+  queryTaskbarInfo(args) {
+    if (args.data.isCritical && !args.data.hasChildRecords) {
+      args.taskbarBgColor = 'rgb(242, 210, 189)';
+      args.progressBarBgColor = 'rgb(201, 169, 166)';
+    }
+  },
+  enableImmutableMode: true,
+  enableContextMenu: true,
+  enableRtl: true,
+  taskFields: {
+    id: 'TaskID',
+    name: 'TaskName',
+    startDate: 'StartDate',
+    endDate: 'EndDate',
+    duration: 'Duration',
+    progress: 'Progress',
+    dependency: 'Predecessor',
+    baselineStartDate: 'BaselineStartDate',
+    baselineEndDate: 'BaselineEndDate',
+    child: 'subtasks',
+    indicators: 'Indicators',
+  },
+  renderBaseline: true,
+  baselineColor: 'red',
+  editSettings: {
+    allowAdding: true,
+    allowEditing: true,
+    allowDeleting: true,
+    allowTaskbarEditing: true,
+    newRowPosition: 'Top',
+    showDeleteConfirmDialog: true,
+    mode: 'Auto',
+  },
+  columns: [
+    { field: 'TaskID', headerText: 'Task ID' },
+    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+    { field: 'Predecessor', headerText: 'Predecessor', allowReordering: false },
+    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+    { field: 'EndDate', headerText: 'EndDate', allowSorting: false },
+    { field: 'Duration', headerText: 'Duration' },
+    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+    { field: 'CustomColumn', headerText: 'CustomColumn' },
+  ],
+  sortSettings: {
+    columns: [
+      { field: 'TaskID', direction: 'Ascending' },
+      { field: 'TaskName', direction: 'Ascending' },
+    ],
+  },
+  toolbar: [
+    'Add',
+    'Edit',
+    'Update',
+    'Delete',
+    'Cancel',
+    'Search',
+    'Undo',
+    'Redo',
+  ],
+  undoRedoActions: [
+    'Sorting',
+    'Add',
+    'ColumnReorder',
+    'ColumnResize',
+    'ColumnState',
+    'Delete',
+    'Edit',
+    'Filtering',
+    'Indent',
+    'Outdent',
+    'NextTimeSpan',
+    'PreviousTimeSpan',
+    'RowDragAndDrop',
+    'Search',
+  ],
+  // treeColumnIndex: 1,
+  // allowKeyboard: false,
+  allowParentDependency: false,
+  enablePredecessorValidation: false,
+  allowExcelExport: true,
+  allowPdfExport: true,
+  allowSelection: true,
+  allowRowDragAndDrop: true,
+  selectedRowIndex: 1,
+  splitterSettings: {
+    columnIndex: 4,
+  },
+  selectionSettings: {
+    type: 'Multiple',
+  },
+  tooltipSettings: {
+    showTooltip: true,
+  },
+  allowFiltering: true,
+  gridLines: 'Both',
+  showColumnMenu: true,
+  connectorLineBackground: 'red',
+  connectorLineWidth: 4,
+  highlightWeekends: true,
+  timelineSettings: {
+    showTooltip: true,
+    topTier: {
+      unit: 'Week',
+      format: 'dd/MM/yyyy',
+    },
+    bottomTier: {
+      unit: 'Day',
+      count: 1,
+    },
+  },
+  eventMarkers: [
+    {
+      day: '04/10/2019',
+      cssClass: 'e-custom-event-marker',
+      label: 'Project approval and kick-off',
+    },
+  ],
+  height: '550px',
+  //   allowUnscheduledTasks: true,
+  projectStartDate: new Date('03/25/2019'),
+  projectEndDate: new Date('05/30/2024'),
+
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+            ganttObj.openEditDialog(4);
+        });
+        it('edit start date with critical path', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if(args.requestType == 'save') {
+                    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('05/10/2024');
+                }
+            };
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            SD.value = new Date('05/10/2024');
+            SD.dataBind();
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('Add Dialog in manual task', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: dialogData1,
+                    allowSorting: true,
+                    enableContextMenu: true,
+                    height: '450px',
+                    allowSelection: true,
+                    highlightWeekends: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        endDate: 'EndDate',
+                        dependency: 'Predecessor',
+                        child: 'Children',
+                        manual: 'isManual',
+                    },
+                    taskMode: 'Manual',
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowRowDragAndDrop: true,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    columns: [
+                        { field: 'TaskID', visible: true },
+                        { field: 'TaskName' },
+                        { field: 'isManual' },
+                        { field: 'StartDate' },
+                        { field: 'Duration' },
+                        { field: 'Progress' }
+                    ],
+                    validateManualTasksOnLinking: true,
+                    treeColumnIndex: 1,
+                    allowReordering: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    projectStartDate: new Date('02/20/2017'),
+                    projectEndDate: new Date('03/30/2017'),
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+            triggerMouseEvent(add, 'click');
+            setTimeout(done, 500);
+        });
+        it('Add new record', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.action === 'add') {
+                    expect(ganttObj.currentViewData.length).toEqual(5);
+                }
+            };
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+        afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
@@ -5388,7 +8693,171 @@ describe('Validation Rule with change in taskfield and column', () => {
             triggerMouseEvent(saveRecord, 'click');
             expect(ganttObj.element.getElementsByClassName('e-row')[2].children[3].innerHTML).toBe('2/5/2019');           
         });
-    });
+      });
+    describe('Edit Dialog while selection in row', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: dialogData1,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Both',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_edit') as HTMLElement;
+            triggerMouseEvent(add, 'click');
+            setTimeout(done, 500);
+        });
+        it('Edit record', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.action === 'edit') {
+                    expect(ganttObj.currentViewData.length).toEqual(1);
+                }
+            };
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    })
+    describe('Edit Dialog while selection is cell', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: dialogData1,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Cell',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_edit') as HTMLElement;
+            triggerMouseEvent(add, 'click');
+            setTimeout(done, 500);
+        });
+        it('Edit record', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.action === 'edit') {
+                    expect(ganttObj.currentViewData.length).toEqual(1);
+                }
+            };
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    })
     describe('Split task Cr-885547', function () {
         let ganttObj: Gantt;
         beforeAll(function (done) {
@@ -5516,7 +8985,7 @@ describe('Validation Rule with change in taskfield and column', () => {
                           gridObj.appendTo(elem);
                         },
                       },
-                    
+
                     },
                 ],
                 editDialogFields: [
@@ -5563,5 +9032,67 @@ describe('Validation Rule with change in taskfield and column', () => {
             triggerMouseEvent(saveRecord, 'click');
             expect(ganttObj.currentViewData.length).toBe(12);
             expect(ganttObj['columnByField'].Customfield.visible).toBe(true);
+        });
+    });
+    describe('MT:887459-Page is automatically getting refreshed after pressing ENTER Key in custom column tab ', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: MT887459,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true,
+                },
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+                }, done);
+            });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+            ganttObj.openEditDialog(2);
+        });
+        it('Dialog Custom Tab', () => {
+            let selectCustomTab: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_Tab > div.e-tab-header.e-control.e-toolbar.e-lib.e-keyboard > div > div:nth-child(4)') as HTMLElement;
+            triggerMouseEvent(selectCustomTab, 'click');
+            let customField: any = document.querySelector('#' + ganttObj.element.id + 'CustomColumn') as HTMLInputElement;
+            triggerMouseEvent(customField, 'dblclick');
+            if (customField) {
+                triggerKeyboardEvent(customField, 'keydown', 'Enter');
+                expect(document.getElementById(ganttObj.element.id + '_dialog')).toBeDefined();
+            }
         });
     });

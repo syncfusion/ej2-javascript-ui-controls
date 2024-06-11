@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { getPoint, withInRange, ChartLocation } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from './chart-series';
@@ -15,12 +12,18 @@ import { Axis } from '../../chart/axis/axis';
 export class StepAreaSeries extends LineBase {
 
     /**
-     * Render StepArea series.
+     * Render Step Area series.
      *
+     * @param {Series} series - The series to be rendered.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
+     * @param {boolean} isInverted - Specifies whether the chart is inverted.
+     * @param {boolean} pointAnimate - Specifies whether the point has to be animated or not.
+     * @param {boolean} pointUpdate - Specifies whether the point has to be updated or not.
      * @returns {void}
      * @private
      */
-    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate?: boolean, pointUpdate?: boolean): void {
         let currentPoint: ChartLocation;
         let secondPoint: ChartLocation;
         let start: ChartLocation = null;
@@ -87,8 +90,7 @@ export class StepAreaSeries extends LineBase {
             series.chart.element.id + '_Series_' + series.index, series.interior,
             0, 'transparent', series.opacity, series.dashArray, direction
         );
-        this.appendLinePath(options, series, '');
-
+        this[pointAnimate ? 'addAreaPath' : 'appendLinePath'](options, series, '');
         /**
          * To draw border for the path directions of area
          */
@@ -98,9 +100,35 @@ export class StepAreaSeries extends LineBase {
                 series.chart.element.id + '_Series_border_' + series.index, 'transparent',
                 series.border.width, series.border.color ? series.border.color : series.interior, 1, series.dashArray, emptyPointDirection
             );
-            this.appendLinePath(options, series, '');
+            this[pointAnimate ? 'addAreaPath' : 'appendLinePath'](options, series, '');
         }
-        this.renderMarker(series);
+        if (!pointUpdate) {this.renderMarker(series); }
+    }
+
+    /**
+     * To animate point for step area series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
+        for (let i: number = 0; i < point.length; i++) {
+            if (series.marker && series.marker.visible) {
+                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
+                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
     }
     /**
      * Animates the series.
@@ -120,15 +148,17 @@ export class StepAreaSeries extends LineBase {
      */
     public destroy(): void {
         /**
-         * Destroy method calling here
+         * Destroy method calling here.
          */
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'StepAreaSeries';
     }

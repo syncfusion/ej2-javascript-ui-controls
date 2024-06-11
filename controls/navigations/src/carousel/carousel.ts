@@ -90,6 +90,7 @@ export type CarouselIndicatorsType = 'Default' | 'Dynamic' | 'Fraction' | 'Progr
  * Specifies the action (touch & mouse) which enables the slide swiping action in carousel.
  * * Touch - Enables or disables the swiping action in touch interaction.
  * * Mouse - Enables or disables the swiping action in mouse interaction.
+ *
  * @aspNumberEnum
  */
 export enum CarouselSwipeMode {
@@ -591,15 +592,16 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 this.renderPlayButton();
                 break;
             case 'items':
-            case 'dataSource':
-                const selectedData = prop === 'dataSource' ? this.dataSource : this.items;
-                if (selectedData.length > 0 && this.selectedIndex >= selectedData.length) {
+            case 'dataSource': {
+                const selectedData: Record<string, any>[] | CarouselItem[] = prop === 'dataSource' ? this.dataSource : this.items;
+                if (!isNullOrUndefined(selectedData) && selectedData.length > 0 && this.selectedIndex >= selectedData.length) {
                     this.setActiveSlide(selectedData.length - 1, 'Previous');
                     this.autoSlide();
                 }
                 this.reRenderSlides();
                 this.reRenderIndicators();
                 break;
+            }
             case 'partialVisible':
                 if (this.partialVisible) {
                     addClass([this.element], CLS_PARTIAL);
@@ -675,7 +677,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                     this.renderSlide(item, item.template, index, this.itemsContainer, true);
                 });
             }
-            else if (this.dataSource.length > 0) {
+            else if (!isNullOrUndefined(this.dataSource) && this.dataSource.length > 0) {
                 this.dataSource.slice(-numOfItems).forEach((item: Record<string, any>, index: number) => {
                     this.renderSlide(item, this.itemTemplate, index, this.itemsContainer, true);
                 });
@@ -686,7 +688,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             this.items.forEach((item: CarouselItemModel, index: number) => {
                 this.renderSlide(item, item.template, index, this.itemsContainer);
             });
-        } else if (this.dataSource.length > 0) {
+        } else if (!isNullOrUndefined(this.dataSource) && this.dataSource.length > 0) {
             this.slideItems = this.dataSource;
             this.dataSource.forEach((item: Record<string, any>, index: number) => {
                 this.renderSlide(item, this.itemTemplate, index, this.itemsContainer);
@@ -698,7 +700,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                     this.renderSlide(item, item.template, index, this.itemsContainer, true);
                 });
             }
-            else if (this.dataSource.length > 0) {
+            else if (!isNullOrUndefined(this.dataSource) && this.dataSource.length > 0) {
                 this.dataSource.slice(0, numOfItems).forEach((item: Record<string, any>, index: number) => {
                     this.renderSlide(item, this.itemTemplate, index, this.itemsContainer, true);
                 });
@@ -826,7 +828,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderIndicators(): void {
-        if (!this.showIndicators) {
+        if (!this.showIndicators || isNullOrUndefined(this.indicatorsType)) {
             return;
         }
         let indicatorClass: string = 'e-default';
@@ -949,8 +951,8 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             return;
         }
         let itemInterval: number = this.interval;
-        if (this.items.length > 0 && !isNullOrUndefined(this.items[this.selectedIndex].interval)) {
-            itemInterval = this.items[this.selectedIndex].interval;
+        if (this.items.length > 0 && !isNullOrUndefined(this.items[this.selectedIndex || 0].interval)) {
+            itemInterval = this.items[this.selectedIndex || 0].interval;
         }
         this.autoSlideInterval = setInterval(() => this.autoSlideChange(), itemInterval);
     }
@@ -961,7 +963,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getSlideIndex(direction: CarouselSlideDirection): number {
-        let currentIndex: number = this.selectedIndex;
+        let currentIndex: number = this.selectedIndex || 0;
         if (direction === 'Previous') {
             currentIndex--;
             if (currentIndex < 0) {
@@ -980,6 +982,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (this.element.querySelectorAll(`.${CLS_ITEM}.${CLS_PREV_SLIDE},.${CLS_ITEM}.${CLS_NEXT_SLIDE}`).length > 0) {
             return;
         }
+        currentIndex = isNullOrUndefined(currentIndex) ? 0 : currentIndex;
         const allSlides: HTMLElement[] = [].slice.call(this.element.querySelectorAll(`.${CLS_ITEM}:not(.e-cloned)`));
         const activeSlide: HTMLElement = this.element.querySelector(`.${CLS_ITEM}.${CLS_ACTIVE}`);
         if (isNullOrUndefined(activeSlide) && this.showIndicators) {
@@ -1386,7 +1389,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         let distanceX: number = this.getTranslateValue(this.itemsContainer) - this.initialTranslate;
         distanceX = distanceX < 0 ? distanceX * -1 : distanceX;
         if (this.isSwipe) {
-            const offsetDist = distanceX * (Browser.isDevice ? 6 : 1.66);
+            const offsetDist: number = distanceX * (Browser.isDevice ? 6 : 1.66);
             this.itemsContainer.style.transitionDuration = (((Browser.isDevice ? distanceX : offsetDist) / time) / 10) + 's';
         }
         const slideWidth: number = this.itemsContainer.firstElementChild.clientWidth;

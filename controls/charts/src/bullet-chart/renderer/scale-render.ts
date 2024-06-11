@@ -1,6 +1,3 @@
-/* eslint-disable radix */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { BulletChart } from '../bullet-chart';
 import { DataManager } from '@syncfusion/ej2-data';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -68,9 +65,9 @@ export class ScaleGroup {
     /**
      * To render range scale of the bulletChart graph.
      *
-     * @param {Element} scaleGroup
+     * @param {Element} scaleGroup - The group element to contain the scale.
+     * @returns {number[]} - Array representing the range scale.
      */
-
     public drawScaleGroup(scaleGroup: Element): number[] {
         const rangeGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_rangeGroup' });
         const max: number = this.bulletChart.maximum;
@@ -96,7 +93,6 @@ export class ScaleGroup {
             }
             rect = new RectOption(
                 bullet.svgObject.id + '_range_' + i,
-                // tslint:disable-next-line:no-string-literal
                 ranges[i as number].color || this.bulletChart.themeStyle.rangeStrokes[i as number]['color'],
                 { width: 1 }, ranges[i as number].opacity,
                 new Rect(locX, locY, ((bullet.orientation === 'Horizontal') ? area : fillRange),
@@ -122,7 +118,8 @@ export class ScaleGroup {
     /**
      * To render the feature bar of the bulletChart chart.
      *
-     * @param {number} dataCount Count of the bar.
+     * @param {number} dataCount - Count of the bars.
+     * @returns {void}
      */
     public renderFeatureBar(dataCount: number): void {
         if (dataCount === 0) {
@@ -131,9 +128,11 @@ export class ScaleGroup {
         this.renderCommonFeatureBar(dataCount, this.isHorizontal);
     }
     /**
-     * To render the horizontal feature bar of the bulletChart chart
+     * To render the horizontal feature bar of the bulletChart chart.
      *
-     * @param {number} dataCount Count of the bar.
+     * @param {number} dataCount - Count of the bars.
+     * @param {boolean} isHorizontal - Indicates whether the bars are horizontal.
+     * @returns {void}
      */
     private renderCommonFeatureBar(dataCount: number, isHorizontal: boolean): void {
         let categoryValue: string;
@@ -177,7 +176,8 @@ export class ScaleGroup {
                 this.featureBarBounds[i as number] = { x: bounds.pointX, y: lPoint, width: bounds.width, height: bulletChart.valueHeight };
                 // Drawing category text element
                 if (!isNullOrUndefined(categoryValue)) {
-                    const categoryTextSize: Size = measureText(categoryValue, bulletChart.categoryLabelStyle, bulletChart.themeStyle.axisLabelFont);
+                    const categoryTextSize: Size = measureText(categoryValue, bulletChart.categoryLabelStyle,
+                                                               bulletChart.themeStyle.axisLabelFont);
                     const categorySize: number = isHorizontal ? categoryTextSize.width : categoryTextSize.height;
                     const initialRect: Rect = bulletChart.initialClipRect;
                     let x: number;
@@ -191,14 +191,15 @@ export class ScaleGroup {
                             initialRect.y + initialRect.height + padding + categorySize / 2;
                         categoryOptions = this.drawcategory(lPoint + bulletChart.valueHeight / 2, x, categoryValue);
                     }
-                    bulletChart.categoryLabelStyle.fontFamily = bulletChart.categoryLabelStyle.fontFamily || bulletChart.themeStyle.axisLabelFont.fontFamily;
+                    bulletChart.categoryLabelStyle.fontFamily = bulletChart.categoryLabelStyle.fontFamily ||
+                                                                bulletChart.themeStyle.axisLabelFont.fontFamily;
                     textElement(
-                        categoryOptions, bulletChart.categoryLabelStyle,bulletChart.categoryLabelStyle.color || bulletChart.themeStyle.axisLabelFont.color,
-                        this.scaleSettingsGroup 
+                        categoryOptions, bulletChart.categoryLabelStyle, bulletChart.categoryLabelStyle.color ||
+                        bulletChart.themeStyle.axisLabelFont.color, this.scaleSettingsGroup
                     );
                 }
             }
-            if ((bulletChart.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') {
+            if ((bulletChart.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') {
                 this.doValueBarAnimation();
             }
         }
@@ -238,7 +239,7 @@ export class ScaleGroup {
     }
 
     private drawcategory(lPointX: number, lPointY: number, categoryValue: string): TextOption {
-        const fontsize: number = parseInt(this.bulletChart.categoryLabelStyle.size);
+        const fontsize: number = parseInt(this.bulletChart.categoryLabelStyle.size, 10);
         const categoryOptions: TextOption = {
             'id': '',
             'anchor': 'middle',
@@ -255,7 +256,8 @@ export class ScaleGroup {
     /**
      * To render comparative symbol of the bulletChart chart.
      *
-     * @param {number} dataCount Data count value.
+     * @param {number} dataCount - Data count value.
+     * @returns {void}
      */
     public renderComparativeSymbol(dataCount: number): void {
         if (dataCount === 0) {
@@ -313,7 +315,7 @@ export class ScaleGroup {
                 this.scaleSettingsGroup.appendChild(comparativeGroup);
             }
             values = [];
-            if ((bulletChart.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') {
+            if ((bulletChart.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') {
                 this.doTargetBarAnimation(0);
             }
         }
@@ -329,7 +331,7 @@ export class ScaleGroup {
         const ly: number = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
         const id: string = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
         const className: string = bulletChart.svgObject.id + '_ComparativeMeasure';
-        let targetColor: string = bulletChart.dataSource[k as number][bulletChart.targetColor] || bulletChart.targetColor;
+        const targetColor: string = bulletChart.dataSource[k as number][bulletChart.targetColor] || bulletChart.targetColor;
         if (targetType === 'Rect') {
             shapeObject = isHorizontal ? this.compareMeasure(x1, y1, y2, k, value) : this.compareVMeasure(y1, y2, x1, k);
             shapeElement = bulletChart.renderer.drawLine(shapeObject);
@@ -399,7 +401,8 @@ export class ScaleGroup {
             const valueDiff: number = bulletChart.maximum - value;
             const orientation: string = ((!bulletChart.enableRtl) ? 'forward' : 'backward') + this.scaleOrientation.toLowerCase();
             categoryValue = isNullOrUndefined(categoryValue) ? '' : categoryValue;
-            const stringLength: number = measureText(categoryValue.toString(), bulletChart.labelStyle, this.bulletChart.themeStyle.axisLabelFont).width;
+            const stringLength: number = measureText(categoryValue.toString(), bulletChart.labelStyle,
+                                                     this.bulletChart.themeStyle.axisLabelFont).width;
             switch (orientation) {
             case 'forwardhorizontal':
             case 'backwardvertical':
@@ -462,7 +465,7 @@ export class ScaleGroup {
         }
         valueBarElement.style.visibility = 'hidden';
         new Animation({}).animate(valueBarElement, {
-            duration: (animateDuration === 0 && animationMode === 'Enable') ? 1000: animateDuration,
+            duration: (animateDuration === 0 && animationMode === 'Enable') ? 1000 : animateDuration,
             delay: animateOption.delay,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {
@@ -512,7 +515,7 @@ export class ScaleGroup {
         const threshold: number = this.comparative.length;
         const duration: number = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : option.duration;
         new Animation({}).animate(targetBarelement, {
-            duration: (duration === 0 && animationMode === 'Enable') ? 1000: duration,
+            duration: (duration === 0 && animationMode === 'Enable') ? 1000 : duration,
             delay: option.delay,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {

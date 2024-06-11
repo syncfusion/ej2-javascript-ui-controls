@@ -68,6 +68,7 @@ export class WListLevel {
     }
     /**
      * Sets the boolean that specifies that the format for the numbering at this level should be in the decimal format.
+     * @param {boolean} isLegalStyleNumbering - Specifies the value.
      */
     public set isLegalStyleNumbering(isLegalStyleNumbering: boolean) {
         this.setPropertyValue('isLegalStyleNumbering', isLegalStyleNumbering);
@@ -156,6 +157,7 @@ export class WListLevel {
     /**
      * Disposes the internal objects which are maintained.
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.uniqueListLevel)) {
@@ -173,6 +175,7 @@ export class WListLevel {
     }
     /**
      * @private
+     * @returns {void}
      */
     public clearFormat(): void {
         if (!isNullOrUndefined(this.uniqueListLevel)) {

@@ -106,7 +106,7 @@ describe('GridLayout', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -7633,7 +7633,6 @@ describe('GridLayout', () => {
         detach(ele);
     });
 
-
     it('Continious Pushing the panes with spacing in topAdjustable in allowFlating case', () => {
         let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
         let parentEle: HTMLElement = createElement('div', { id: 'container' });
@@ -7810,7 +7809,6 @@ describe('GridLayout', () => {
         gridLayOut.destroy();
         detach(ele);
     });
-
 
     it('restricting swapping of panles above due to inbetween blockage and allowPushing right even with left inadequate spacing', () => {
         let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
@@ -8047,3 +8045,254 @@ describe('GridLayout', () => {
         }
             });
  });
+
+describe('Null or undefined value testing ', () => {
+    let dashboardObj: any;
+    let ele: HTMLElement;
+    beforeEach(() => {
+        ele = createElement('div', { id: 'dashboard' });
+        let parentEle: HTMLElement = createElement('div', { id: 'container' });
+        parentEle.style.width = '1264px';
+        parentEle.appendChild(ele);
+        document.body.appendChild(parentEle);
+    });
+    afterEach(() => {
+        if (dashboardObj) {
+            dashboardObj.destroy();
+            detach(ele);
+        }
+    });
+
+    it('allowDragging', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            allowDragging : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.allowDragging).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            allowDragging : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.allowDragging).toBe(true);
+        dashboardObj.destroy();
+    });
+    it('allowResizing', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            allowResizing : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.allowResizing).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            allowResizing : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.allowResizing).toBe(false);
+        dashboardObj.destroy();
+    });
+
+    it('allowPushing', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            allowPushing : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.allowPushing).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            allowPushing : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.allowPushing).toBe(true);
+        dashboardObj.destroy();
+    });
+
+    it('enableHtmlSanitizer', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            enableHtmlSanitizer : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.enableHtmlSanitizer).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            enableHtmlSanitizer : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.enableHtmlSanitizer).toBe(true);
+        dashboardObj.destroy();
+    });
+    it('allowFloating', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            allowFloating : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.allowFloating).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            allowFloating : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.allowFloating).toBe(true);
+        dashboardObj.destroy();
+    });
+    it('cellAspectRatio', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            cellAspectRatio : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.cellAspectRatio).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            cellAspectRatio : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.cellAspectRatio).toBe(1);
+        dashboardObj.destroy();
+    });
+    it('cellSpacing', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            cellSpacing : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.cellSpacing).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            cellSpacing : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.cellSpacing).toEqual([5, 5]);
+        dashboardObj.destroy();
+    });
+    it('columns', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            columns : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.columns).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            columns : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.columns).toBe(1);
+        dashboardObj.destroy();
+    });
+    it('showGridLines', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            showGridLines : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.showGridLines).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            showGridLines : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.showGridLines).toBe(false);
+        dashboardObj.destroy();
+    });
+    it('draggableHandle', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            draggableHandle : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.draggableHandle).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            draggableHandle : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.draggableHandle).toBe(null);
+        dashboardObj.destroy();
+    });
+    it('mediaQuery', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            mediaQuery : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.mediaQuery).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            mediaQuery : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.mediaQuery).toBe('max-width: 600px');
+        dashboardObj.destroy();
+    });
+    it('panels', () => {
+        dashboardObj = new DashboardLayout({
+            panels : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.panels.length).toBe(0);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.panels.length).toBe(0);
+        dashboardObj.destroy();
+    });
+    it('resizableHandles', () => {
+        dashboardObj = new DashboardLayout({
+            panels: [
+                { "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, },
+            ],
+            resizableHandles : null
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.resizableHandles).toBe(null);
+        dashboardObj.destroy();
+        dashboardObj = new DashboardLayout({
+            panels: [{ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, }],
+            resizableHandles : undefined
+        });
+        dashboardObj.appendTo('#dashboard');
+        expect(dashboardObj.resizableHandles[0]).toBe('e-south-east');
+        dashboardObj.destroy();
+    });
+});

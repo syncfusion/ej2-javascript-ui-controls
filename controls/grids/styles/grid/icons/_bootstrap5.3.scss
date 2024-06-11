@@ -1,0 +1,228 @@
+@include export-module('grid-bootstrap5-icons') {
+
+  .e-icon-check::before {
+    content: '\e774';
+  }
+
+  #{&}.e-grid,
+  .e-grid-menu {
+
+    &.e-rtl .e-icon-rowdragicon::before,
+    .e-icon-rowdragicon::before,
+    .e-group-animate .e-drag.e-icon-drag::before {
+      content: '\e726';
+    }
+
+    .e-icon-grightarrow::before,
+    .e-group-animate .e-nextgroup.e-icon-next::before {
+      content: '\e748';
+    }
+
+    .e-icon-ascending::before {
+      content: '\e7df';
+    }
+
+    .e-icon-descending::before {
+      content: '\e7d8';
+    }
+
+    .e-icon-hide::before,
+    .e-ungroupbutton.e-icon-hide::before {
+      content: '\e7e7';
+    }
+
+    .e-icon-rowselect::before {
+      content: '\e7d4';
+    }
+
+    .e-icon-sortdirect::before {
+      content: '\e824';
+    }
+
+    .e-icon-gdownarrow::before {
+      content: '\e729';
+    }
+
+    .e-columnchooserdiv::before,
+    .e-excl-filter-icon::before,
+    .e-icon-filter::before,
+    .e-icon-filter.e-filtered::before,
+    .e-resfilter-icon::before {
+      content: '\e7f7';
+    }
+
+    .e-ressort-icon::before {
+      content: '\e823';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e72c';
+    }
+
+    &.e-rtl {
+      .e-icon-grightarrow::before {
+        content: '\e765';
+      }
+    }
+
+    .e-icon-group::before,
+    .e-icon-ungroup::before {
+      content: '\e724';
+    }
+
+    .e-icon-reorderuparrow::before {
+      content: '\e87a';
+    }
+
+    .e-columnchooser-btn::before,
+    .e-cc-icon::before,
+    .e-icon-reorderdownarrow::before {
+      content: '\e70d';
+    }
+
+    .e-print::before {
+      content: '\e75d';
+    }
+
+    .e-add::before {
+      content: '\e805';
+    }
+
+    .e-resback-icon::before {
+      content: '\e773';
+    }
+
+    .e-wordexport::before {
+      content: '\e7d0';
+    }
+
+    .e-pdfexport::before {
+      content: '\e700';
+    }
+
+    .e-csvexport::before {
+      content: '\e7ba';
+    }
+
+    .e-excelexport::before {
+      content: '\e7c1';
+    }
+
+    .e-edit::before {
+      content: '\e730';
+    }
+
+    .e-responsivetoolbaritems-btn::before,
+    .e-columnmenu::before,
+    .e-columnmenu.e-filtered::before {
+      content: '\e770';
+    }
+
+    .e-delete::before {
+      content: '\e820';
+    }
+
+    .e-ccsearch-icon.e-cc-cancel::before,
+    .e-chkcancel-icon::before,
+    .e-cancel-icon::before,
+    .e-cancel::before {
+      content: '\e7e7';
+    }
+
+    .e-copy::before {
+      content: '\e77c';
+    }
+
+    .e-save::before,
+    .e-update::before {
+      content: '\e7c8';
+    }
+
+    .e-search-icon::before,
+    .e-ccsearch-icon::before {
+      content: '\e754';
+    }
+
+    .e-columnchooser::before {
+      content: '\e21e'; // icon not found
+    }
+  }
+}
+
+.e-responsive-dialog {
+  & .e-resfilterback::before {
+    content: '\e773';
+  }
+
+  &.e-rtl .e-resfilterback::before {
+    content: '\e7f9';
+  }
+
+  & .e-resfilter-icon.e-icons::before,
+  & .e-filterset::before {
+    content: '\e7f7';
+  }
+
+  & .e-search-icon::before,
+  & .e-ccdlg span.e-ccsearch-icon::before {
+    content: '\e754';
+  }
+
+  & .e-chkcancel-icon::before,
+  & .e-ccdlg span.e-cc-cancel::before {
+    content: '\e7e7';
+  }
+
+  & .e-icon-filter-clear::before {
+    content: '\e72c';
+  }
+
+  & .e-resascending-icon.e-icons::before {
+    content: '\e7df';
+  }
+
+  & .e-resdescending-icon.e-icons::before {
+    content: '\e7d8';
+  }
+
+  & .e-resgroup-icon.e-icons::before,
+  & .e-resungroup-icon.e-icons::before {
+    content: '\e724';
+  }
+}
+
+.e-grid-toolbarmenu .e-responsivetoolbar-menu {
+  .e-menu-icon.e-pdfexport::before {
+    content: '\e700';
+  }
+  .e-menu-icon.e-excelexport::before {
+    content: '\e7c1';
+  }
+  .e-menu-icon.e-csvexport::before {
+    content: '\e7ba';
+  }
+}
+
+.e-row-responsive-filter {
+  & .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e773';
+    }
+  }
+
+  &.e-rtl .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e7f9';
+    }
+  }
+}
+
+.e-checkboxfilter {
+  .e-search-icon::before {
+    content: '\e754';
+  }
+
+  .e-chkcancel-icon::before {
+    content: '\e7e7';
+  }
+}

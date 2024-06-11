@@ -1,9 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable prefer-const */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { BulletChart } from '../bullet-chart';
 import { compile as templateComplier } from '@syncfusion/ej2-base';
 import { stringToNumber } from '../../common/utils/helper';
@@ -27,6 +21,7 @@ export class BulletTooltip {
      * Constructor for tooltip module.
      *
      * @private
+     * @param {BulletChart} bullet - The bullet chart control.
      */
     constructor(bullet: BulletChart) {
         this.control = bullet;
@@ -36,20 +31,26 @@ export class BulletTooltip {
 
     /**
      * To create tooltip div element.
+     *
+     * @param {PointerEvent} e - The pointer event.
+     * @param {string} targetClass - The class name of the target element.
+     * @param {string} targetId - The id of the target element.
+     * @param {number} mouseX - The X-coordinate of the mouse.
+     * @returns {void}
      */
     public _elementTooltip(e: PointerEvent, targetClass: string, targetId: string, mouseX: number): void {
-        let tooltipDiv: HTMLDivElement = <HTMLDivElement>this.control.createElement('div');
+        const tooltipDiv: HTMLDivElement = <HTMLDivElement>this.control.createElement('div');
         tooltipDiv.id = 'tooltip';
         tooltipDiv.className = 'tooltipDiv';
-        let target: Element = e.target as Element;
-        let pageX: number = mouseX + 20;
-        let pageY: number = e.clientY;
+        const target: Element = e.target as Element;
+        const pageX: number = mouseX + 20;
+        const pageY: number = e.clientY;
         let str: string = '';
-        let font: string = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
-        this.control.themeStyle.tooltipLabelFont.fontStyle;
-        let fill: string = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
-        let color: string = this.control.themeStyle.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
-        let style: string = 'left:' + pageX + 'px;' + 'top:' + pageY + 'px;' +
+        const font: string = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
+            this.control.themeStyle.tooltipLabelFont.fontStyle;
+        const fill: string = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
+        const color: string = this.control.themeStyle.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
+        const style: string = 'left:' + pageX + 'px;' + 'top:' + pageY + 'px;' +
             'display: block; position: absolute; "z-index": "13000",cursor: default;' +
             'font-family: Segoe UI;' + 'color:' + color + '; font-size: 13px; background-color:' +
             fill + '; border: 1px solid #707070;' + 'font-style:' + font + ';';
@@ -69,51 +70,53 @@ export class BulletTooltip {
 
     /**
      * To display the bullet chart tooltip.
+     *
+     * @param {PointerEvent} e - The pointer event.
+     * @param {string} targetClass - The class name of the target element.
+     * @param {string} targetId - The id of the target element.
+     * @param {number} mouseX - The X-coordinate of the mouse.
+     * @param {number} mouseY - The Y-coordinate of the mouse.
+     * @returns {void}
      */
-    // tslint:disable-next-line:max-func-body-length
     public _displayTooltip(e: PointerEvent, targetClass: string, targetId: string, mouseX: number, mouseY: number): void {
         if (targetClass !== 'undefined' && this.control.tooltip.enable && (targetClass === this.control.svgObject.id + '_FeatureMeasure' ||
             targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
-            let data: IBulletTooltipContent;
-            let tooltipData: IBulletTooltipContent;
-            let measureId: string;
-            let currentVal: number;
             let targetVal: string[] = [];
-            let categoryVal: number;
             let tooltipdiv: HTMLDivElement;
-            let format: string = this.bulletAxis.getFormat(this.control);
-            let isCustomFormat: boolean = format.match('{value}') !== null;
-            measureId = targetId.substring(targetId.lastIndexOf('_') + 1);
+            const format: string = this.bulletAxis.getFormat(this.control);
+            const isCustomFormat: boolean = format.match('{value}') !== null;
+            const measureId: string = targetId.substring(targetId.lastIndexOf('_') + 1);
             let targetValues: string[] = [];
             this.bulletAxis.format = this.bulletAxis.bulletChart.intl.getNumberFormat({
                 format: isCustomFormat ? '' : format, useGrouping: this.bulletAxis.bulletChart.enableGroupSeparator
             });
-            currentVal = this.control.dataSource[measureId as string][this.control.valueField];
+            const currentVal: number = this.control.dataSource[measureId as string][this.control.valueField];
             targetVal = targetVal.concat(this.control.dataSource[measureId as string ][this.control.targetField]);
-            categoryVal = this.control.dataSource[measureId as string][this.control.categoryField];
+            const categoryVal: number = this.control.dataSource[measureId as string][this.control.categoryField];
             let labelCurrentText: string = currentVal ? (currentVal).toString() : '';
-            let labelTargetText: string = targetVal ? (targetVal).toString() : '';
+            const labelTargetText: string = targetVal ? (targetVal).toString() : '';
             let labelCategoryText: string = categoryVal ? (categoryVal).toString() : '';
             labelCurrentText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +currentVal);
             for (let i: number = 0; i < targetVal.length; i++) {
-                targetValues = targetValues.concat(this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +targetVal[i as number]));
+                targetValues = targetValues.concat(this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat,
+                                                                               format, +targetVal[i as number]));
             }
             labelCategoryText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +categoryVal);
-            data = { value: labelCurrentText, target: targetValues, category: labelCategoryText };
-            tooltipData = { value: labelCurrentText, target: labelTargetText, category: labelCategoryText };
-            let style: string = 'position: absolute; z-index: 13000; display: block;';
+            const data: IBulletTooltipContent = { value: labelCurrentText, target: targetValues, category: labelCategoryText };
+            const tooltipData: IBulletTooltipContent = { value: labelCurrentText, target: labelTargetText, category: labelCategoryText };
+            const style: string = 'position: absolute; z-index: 13000; display: block;';
             if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
                 tooltipdiv = <HTMLDivElement>this.control.createElement('div');
                 tooltipdiv.id = 'tooltipDiv' + this.control.element.id;
                 tooltipdiv.style.cssText = style;
                 document.getElementById(this.control.element.id + '_Secondary_Element').appendChild(tooltipdiv);
             }
-            let argsData: IBulletchartTooltipEventArgs = {
+            const argsData: IBulletchartTooltipEventArgs = {
                 value: data.value, target: data.target, name: tooltipRender
             };
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 this.updateTemplateFn();
-                let elem: Element = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
+                const elem: Element = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
                 let templateElement: HTMLCollection = this.templateFn(
                     tooltipData, this.control, 'template', elem.id + '_blazorTemplate', '', null, elem
                 );
@@ -138,14 +141,14 @@ export class BulletTooltip {
                 this.control.trigger(tooltipRender, argsData);
                 tooltipdiv.innerHTML = argsData.text;
                 tooltipdiv.style.font = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
-                this.control.themeStyle.tooltipLabelFont.fontStyle;
+                    this.control.themeStyle.tooltipLabelFont.fontStyle;
                 tooltipdiv.style.color = this.control.themeStyle.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
                 tooltipdiv.style.fontSize = this.control.themeStyle.titleFont.size;
             }
-            let fill: string = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
-            let borderWidth: number = ((this.control.theme === 'Fabric' || this.control.theme === 'Fluent' && !this.control.tooltip.border.width) ? 1 : this.control.tooltip.border.width);
-            let borderColor: string = ((this.control.theme === 'Fabric' || this.control.theme === 'Fluent' && !this.control.tooltip.border.color) ? '#D2D0CE' : this.control.tooltip.border.color);
-            let borderDashArray: string = this.control.tooltip.border.dashArray ? "dashed " + borderColor + "; border-dasharray: " + this.control.tooltip.border.dashArray + ';' : 'Solid' + ' ' + borderColor + ';'
+            const fill: string = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
+            const borderWidth: number = ((this.control.theme === 'Fabric' || this.control.theme === 'Fluent' && !this.control.tooltip.border.width) ? 1 : this.control.tooltip.border.width);
+            const borderColor: string = ((this.control.theme === 'Fabric' || this.control.theme === 'Fluent' && !this.control.tooltip.border.color) ? '#D2D0CE' : this.control.tooltip.border.color);
+            const borderDashArray: string = this.control.tooltip.border.dashArray ? 'dashed ' + borderColor + '; border-dasharray: ' + this.control.tooltip.border.dashArray + ';' : 'Solid' + ' ' + borderColor + ';';
             let xPos: number = mouseX;
             let yPos: number = mouseY;
             xPos = ((xPos + stringToNumber(tooltipdiv.getAttribute('width'), this.control.containerWidth) < window.innerWidth) ?
@@ -167,27 +170,39 @@ export class BulletTooltip {
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 tooltipdiv.style.cssText = 'position: absolute;left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;';
             } else {
-                let fontFamily: string = this.control.tooltip.textStyle.fontFamily || this.control.themeStyle.tooltipLabelFont.fontFamily;
-                let color: string = this.control.tooltip.textStyle.color || this.control.themeStyle.tooltipLabelFont.color;
+                const fontFamily: string = this.control.tooltip.textStyle.fontFamily || this.control.themeStyle.tooltipLabelFont.fontFamily;
+                const color: string = this.control.tooltip.textStyle.color || this.control.themeStyle.tooltipLabelFont.color;
                 const divStyle: string = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
                     '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +
                     'border-radius: 5px 5px 5px 5px;' + 'background-color:' + fill + ';' + 'color:' +
-                    color + '; border:' + borderWidth + 'px '+ borderDashArray +
+                    color + '; border:' + borderWidth + 'px ' + borderDashArray +
                     'padding-bottom: 7px;' + 'font-style:' + this.control.themeStyle.tooltipLabelFont.fontStyle +
-                    '; padding-left: 10px; font-family:' + fontFamily + '; font-size:'+ this.control.tooltip.textStyle.size +'; padding-right: 10px; padding-top: 7px';
+                    '; padding-left: 10px; font-family:' + fontFamily + '; font-size:' + this.control.tooltip.textStyle.size + '; padding-right: 10px; padding-top: 7px';
                 tooltipdiv.style.cssText = divStyle;
+                if (this.control.theme.indexOf('Fluent2') > -1) {
+                    const shadowId: string = this.control.element.id + '_shadow';
+                    const shadow: string = `<filter id="${shadowId}" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>` +
+                        `<feOffset dx="-1" dy="3.6" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.2"/>` +
+                        `</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+                    const defElement: Element = this.control.renderer.createDefs();
+                    defElement.setAttribute('id', this.control.element.id + 'SVG_tooltip_definition');
+                    tooltipdiv.appendChild(defElement);
+                    defElement.innerHTML = shadow;
+                    tooltipdiv.style.filter = `url(#${shadowId})`;
+                }
                 if ((targetClass === this.control.svgObject.id + '_FeatureMeasure') ||
                     (targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
                     document.getElementById(targetId).setAttribute('opacity', '0.6');
                 }
             }
-            // tslint:disable-next-line:no-any
             if ((this.control as any).isReact) { (this.control as any).renderReactTemplates(); }
         }
     }
 
     /**
      * To update template values in the tooltip.
+     *
+     * @returns {void}
      */
     public updateTemplateFn(): void {
         if (this.control.tooltip.template) {
@@ -205,6 +220,8 @@ export class BulletTooltip {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'BulletTooltip';

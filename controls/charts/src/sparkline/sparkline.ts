@@ -19,7 +19,6 @@ import { getThemeColor } from './utils/helper';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { getElement } from '../common/utils/helper';
 
-/* eslint-disable */
 /**
  * Represents the Sparkline control.
  * ```html
@@ -55,18 +54,21 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public border: SparklineBorderModel;
     /**
      * To configure Sparkline series type.
+     *
      * @default 'Line'
      */
     @Property('Line')
     public type: SparklineType;
     /**
      * To configure Sparkline series type.
+     *
      * @default 'None'
      */
     @Property('None')
     public rangePadding: SparklineRangePadding;
     /**
      * To configure sparkline data source.
+     *
      * @isGenericType true
      * @default null
      */
@@ -74,96 +76,112 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public dataSource: Object[] | DataManager;
     /**
      * Specifies the query for filter the data.
+     *
      * @default null
      */
     @Property(null)
     public query: Query;
     /**
      * To configure sparkline series value type.
+     *
      * @default 'Numeric'
      */
     @Property('Numeric')
     public valueType: SparklineValueType;
     /**
      * To configure sparkline series xName.
+     *
      * @default null
      */
     @Property(null)
     public xName: string;
     /**
      * To configure sparkline series yName.
+     *
      * @default null
      */
     @Property(null)
     public yName: string;
     /**
      * To configure sparkline series fill.
+     *
      * @default '#00bdae'
      */
     @Property('#00bdae')
     public fill: string;
     /**
      * To configure sparkline series highest y value point color.
+     *
      * @default ''
      */
     @Property('')
     public highPointColor: string;
     /**
      * To configure sparkline series lowest y value point color.
+     *
      * @default ''
      */
     @Property('')
     public lowPointColor: string;
     /**
      * To configure sparkline series first x value point color.
+     *
      * @default ''
      */
     @Property('')
     public startPointColor: string;
     /**
      * To configure sparkline series last x value point color.
+     *
      * @default ''
      */
     @Property('')
     public endPointColor: string;
     /**
      * To configure sparkline series negative y value point color.
+     *
      * @default ''
      */
     @Property('')
     public negativePointColor: string;
     /**
      * To configure sparkline winloss series tie y value point color.
+     *
      * @default ''
      */
     @Property('')
     public tiePointColor: string;
     /**
      * To configure sparkline series color palette. It applicable to column and pie type series.
+     *
      * @default []
      */
     @Property([])
     public palette: string[];
     /**
      * To configure sparkline line series width.
+     *
      * @default '1'
      */
     @Property(1)
     public lineWidth: number;
     /**
      * To configure sparkline line series opacity.
+     *
      * @default '1'
      */
     @Property(1)
     public opacity: number;
     /**
      * To apply internationalization for sparkline.
+     *
      * @default null
      */
     @Property(null)
     public format: string;
     /**
-     * To enable the separator
+     * To enable the separator.
+     *
      * @default false
      */
     @Property(false)
@@ -205,6 +223,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public padding: PaddingModel;
     /**
      * To configure sparkline theme.
+     *
      * @default 'Material'
      */
     @Property('Material')
@@ -214,90 +233,103 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers after sparkline rendered.
-     * @event
+     *
+     * @event loaded
      */
     @Event()
     public loaded: EmitType<ISparklineLoadedEventArgs>;
 
     /**
      * Triggers before sparkline render.
-     * @event
+     *
+     * @event load
      */
     @Event()
     public load: EmitType<ISparklineLoadEventArgs>;
 
     /**
      * Triggers before sparkline tooltip render.
-     * @event
+     *
+     * @event tooltipInitialize
      */
     @Event()
     public tooltipInitialize: EmitType<ITooltipRenderingEventArgs>;
 
     /**
      * Triggers before sparkline series render.
-     * @event
+     *
+     * @event seriesRendering
      */
     @Event()
     public seriesRendering: EmitType<ISeriesRenderingEventArgs>;
 
     /**
      * Triggers before sparkline axis render.
-     * @event
+     *
+     * @event axisRendering
      */
     @Event()
     public axisRendering: EmitType<IAxisRenderingEventArgs>;
 
     /**
      * Triggers before sparkline points render.
-     * @event
+     *
+     * @event pointRendering
      */
     @Event()
     public pointRendering: EmitType<ISparklinePointEventArgs>;
 
     /**
      * Triggers while mouse move on the sparkline point region.
-     * @event
+     *
+     * @event pointRegionMouseMove
      */
     @Event()
     public pointRegionMouseMove: EmitType<IPointRegionEventArgs>;
 
     /**
      * Triggers while mouse click on the sparkline point region.
-     * @event
+     *
+     * @event pointRegionMouseClick
      */
     @Event()
     public pointRegionMouseClick: EmitType<IPointRegionEventArgs>;
 
     /**
      * Triggers while mouse move on the sparkline container.
-     * @event
+     *
+     * @event sparklineMouseMove
      */
     @Event()
     public sparklineMouseMove: EmitType<ISparklineMouseEventArgs>;
 
     /**
      * Triggers while mouse click on the sparkline container.
-     * @event
+     *
+     * @event sparklineMouseClick
      */
     @Event()
     public sparklineMouseClick: EmitType<ISparklineMouseEventArgs>;
 
     /**
      * Triggers before the sparkline datalabel render.
-     * @event
+     *
+     * @event dataLabelRendering
      */
     @Event()
     public dataLabelRendering: EmitType<IDataLabelRenderingEventArgs>;
 
     /**
      * Triggers before the sparkline marker render.
-     * @event
+     *
+     * @event markerRendering
      */
     @Event()
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
     /**
      * Triggers on resizing the sparkline.
-     * @event
+     *
+     * @event resize
      */
     @Event()
     public resize: EmitType<ISparklineResizeEventArgs>;
@@ -306,53 +338,61 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * SVG renderer object.
+     *
      * @private
      */
     public renderer: SvgRenderer;
     /**
      * Sparkline renderer object.
+     *
      * @private
      */
     public sparklineRenderer: SparklineRenderer;
     /**
-     * Sparkline SVG element's object
+     * Sparkline SVG element's object.
+     *
      * @private
      */
     public svgObject: Element;
     /** @private */
-    public isDevice: Boolean = Browser.isDevice;
+    public isDevice: boolean = Browser.isDevice;
     /** @private */
     public intervalDivs: number[] = [10, 5, 2, 1];
     /** @private */
-    public isTouch: Boolean;
+    public isTouch: boolean;
     /** @private */
     public mouseX: number;
     /** @private */
     public mouseY: number;
     /**
-     * resize event timer
+     * resize event timer.
+     *
      * @private
      */
     public resizeTo: number;
     /**
-     * Sparkline available height, width
+     * Sparkline available height, width.
+     *
      * @private
      */
     public availableSize: Size;
 
     /**
-     * Sparkline theme support
+     * Sparkline theme support.
+     *
      *  @private
      */
     public sparkTheme: IThemes;
 
     /**
-     * localization object 
+     * localization object.
+     *
      * @private
      */
     public localeObject: L10n;
     /**
      * To process sparkline data internally.
+     *
      * @private
      */
     public sparklineData: Object[] | DataManager;
@@ -363,6 +403,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Internal use of internationalization instance.
+     *
      * @private
      */
     public intl: Internationalization;
@@ -373,13 +414,18 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     // Sparkline rendering starts from here.
 
     /**
-     * Constructor for creating the Sparkline widget
+     * Constructor for creating the Sparkline widget.
+     *
+     * @param {SparklineModel} options - The options to configure the Sparkline widget.
+     * @param {string | HTMLElement} element - The target element to render the Sparkline widget.
      */
     constructor(options?: SparklineModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
     }
     /**
      * Initializing pre-required values for sparkline.
+     *
+     * @returns {void}
      */
     protected preRender(): void {
 
@@ -404,6 +450,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Sparkline Elements rendering starting.
+     *
+     * @returns {void}
      */
     protected render(): void {
         // Sparkline rendering splitted into rendering and calculations
@@ -414,6 +462,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * @private
+     * @returns {void}
      */
     public processSparklineData(): void {
         this.sparklineRenderer.processData();
@@ -423,7 +472,9 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.trigger('loaded', { sparkline: this });
     }
     /**
-     * To render sparkline elements
+     * To render sparkline elements.
+     *
+     * @returns {void}
      */
     public renderSparkline(): void {
         // To render the sparkline elements
@@ -435,10 +486,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.sparklineRenderer.renderSeries();
     }
     /**
-     * Create secondary element for the tooltip
+     * Create secondary element for the tooltip.
+     *
+     * @returns {void}
      */
     private createDiv(): void {
-        let tooltipDiv: Element = document.createElement('div');
+        const tooltipDiv: Element = document.createElement('div');
         tooltipDiv.id = this.element.id + '_Secondary_Element';
         (tooltipDiv as HTMLElement).style.position = 'relative';
         this.element.appendChild(tooltipDiv);
@@ -447,24 +500,28 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.element.style.position = 'relative';
     }
     /**
-     * To set the left and top position for data label template for sparkline
+     * To set the left and top position for data label template for sparkline.
+     *
+     * @returns {void}
      */
     private setSecondaryElementPosition(): void {
-        let element: HTMLDivElement = getIdElement(this.element.id + '_Secondary_Element') as HTMLDivElement;
+        const element: HTMLDivElement = getIdElement(this.element.id + '_Secondary_Element') as HTMLDivElement;
         if (!element) {
             return;
         }
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgRect: ClientRect = getIdElement(this.element.id + '_svg').getBoundingClientRect();
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const svgRect: ClientRect = getIdElement(this.element.id + '_svg').getBoundingClientRect();
         element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
     }
     /**
+     * Render the sparkline border.
+     *
      * @private
-     * Render the sparkline border
+     * @returns {void}
      */
     private renderBorder(): void {
-        let width: number = this.containerArea.border.width;
+        const width: number = this.containerArea.border.width;
         let borderRect: RectOption;
         if (width > 0 || this.containerArea.background !== 'transparent') {
             borderRect = new RectOption(
@@ -473,7 +530,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
             this.svgObject.appendChild(drawRectangle(this, borderRect) as SVGRectElement);
         }
         // Used to create clip path sparkline
-        let padding: PaddingModel = this.padding;
+        const padding: PaddingModel = this.padding;
         if (this.markerSettings.visible.length) {
             padding.left = 0;
             padding.right = 0;
@@ -484,12 +541,14 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
             this.element.id + '_sparkline_clip_rect', 'transparent', { color: 'transparent', width: 0 }, 1,
             new Rect(padding.left, padding.top, this.availableSize.width - (padding.left + padding.right),
                      this.availableSize.height - (padding.top + padding.bottom)));
-        let clipPath: Element = this.renderer.createClipPath({ id: this.element.id + '_sparkline_clip_path' });
+        const clipPath: Element = this.renderer.createClipPath({ id: this.element.id + '_sparkline_clip_path' });
         drawRectangle(this, borderRect, clipPath);
         this.svgObject.appendChild(clipPath);
     }
     /**
-     * To create svg element for sparkline
+     * To create svg element for sparkline.
+     *
+     * @returns {void}
      */
     private createSVG(): void {
 
@@ -498,7 +557,9 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         createSvg(this);
     }
     /**
-     * To Remove the Sparkline SVG object
+     * To Remove the Sparkline SVG object.
+     *
+     * @returns {void}
      */
     private removeSvg(): void {
         if (this.svgObject) {
@@ -516,7 +577,9 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * Method to set culture for sparkline
+     * Method to set culture for sparkline.
+     *
+     * @returns {void}
      */
     private setCulture(): void {
         this.intl = new Internationalization();
@@ -524,9 +587,10 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * Keyboard navigation is used to set the tab theme color for the sparkline
+     * Keyboard navigation is used to set the tab theme color for the sparkline.
+     *
+     * @returns {void}
      */
-
     private setTheme(): void {
         /*! Set theme */
         this.sparkTheme = getThemeColor(this.theme);
@@ -541,12 +605,13 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * To provide the array of modules needed for sparkline rendering
-     * @return {ModuleDeclaration[]}
-     * @private 
+     * To provide the array of modules needed for sparkline rendering.
+     *
+     * @returns {ModuleDeclaration[]} - The array of modules required for Sparkline rendering.
+     * @private
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
 
         if (this.tooltipSettings.visible || this.tooltipSettings.trackLineSettings.visible) {
             modules.push({
@@ -557,11 +622,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         return modules;
     }
     /**
-     * Method to unbind events for sparkline chart
+     * Method to unbind events for sparkline chart.
+     *
+     * @returns {void}
      */
     private unWireEvents(): void {
-        let move: string = Browser.touchMoveEvent;
-        let cancel: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancel: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! UnBind the Event handler */
 
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.sparklineMove);
@@ -576,10 +642,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
     }
     /**
-     * Method to bind events for the sparkline
+     * Method to bind events for the sparkline.
+     *
+     * @returns {void}
      */
     private wireEvents(): void {
-        let cancel: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancel: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
         /*! Bind the Event handler */
         EventHandler.add(this.element, Browser.touchMoveEvent, this.sparklineMove, this);
@@ -597,10 +665,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
     /**
      * Sparkline resize event.
+     *
      * @private
+     * @returns {boolean} - false
      */
-    public sparklineResize(e: Event): boolean {
-        let args: ISparklineResizeEventArgs = {
+    public sparklineResize(): boolean {
+        const args: ISparklineResizeEventArgs = {
             name: 'resize',
             previousSize: this.availableSize,
             sparkline: this,
@@ -628,21 +698,23 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         return false;
     }
     /**
-     * Handles the mouse move on sparkline. 
-     * @return {boolean}
+     * Handles the mouse move on sparkline.
+     *
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {boolean} - false
      * @private
      */
     public sparklineMove(e: PointerEvent): boolean {
         this.setSparklineMouseXY(e);
         this.notify(Browser.touchMoveEvent, e);
-        let args: ISparklineMouseEventArgs = {
+        const args: ISparklineMouseEventArgs = {
             name: 'sparklineMouseMove', cancel: false,
             sparkline: this, event: e
         };
         this.trigger(args.name, args);
-        let pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
+        const pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
-            let pointArgs: IPointRegionEventArgs = {
+            const pointArgs: IPointRegionEventArgs = {
                 name: 'pointRegionMouseMove', cancel: false,
                 event: e, sparkline: this,
                 pointIndex: pointClick.pointIndex
@@ -652,20 +724,22 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         return false;
     }
     /**
-     * Handles the mouse click on sparkline. 
-     * @return {boolean}
+     * Handles the mouse click on sparkline.
+     *
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {boolean} - false
      * @private
      */
     public sparklineClick(e: PointerEvent): boolean {
         this.setSparklineMouseXY(e);
-        let args: ISparklineMouseEventArgs = {
+        const args: ISparklineMouseEventArgs = {
             name: 'sparklineMouseClick', cancel: false,
             sparkline: this, event: e
         };
         this.trigger(args.name, args);
-        let pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
+        const pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
-            let pointArgs: IPointRegionEventArgs = {
+            const pointArgs: IPointRegionEventArgs = {
                 name: 'pointRegionMouseClick', cancel: false,
                 event: e, sparkline: this,
                 pointIndex: pointClick.pointIndex
@@ -676,10 +750,13 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
     /**
      * To check mouse event target is point region or not.
+     *
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {{isPointRegion: boolean, pointIndex: number}} - Object containing whether the target is within a point region and the index of the point.
      */
     private isPointRegion(e: PointerEvent): { isPointRegion: boolean, pointIndex: number } {
-        let startId: string = this.element.id + '_';
-        let id: string[] = (e.target as Element).id.replace(startId, '').split('_');
+        const startId: string = this.element.id + '_';
+        const id: string[] = (e.target as Element).id.replace(startId, '').split('_');
         if (id[1] === this.type.toLowerCase()) {
             let index: number = parseInt(id[2], 10);
             if ((isNullOrUndefined(index) || isNaN(index)) && (this.type === 'Line' || this.type === 'Area')) {
@@ -694,8 +771,10 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         return { isPointRegion: false, pointIndex: null };
     }
     /**
-     * Handles the mouse end. 
-     * @return {boolean}
+     * Handles the mouse end.
+     *
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {boolean} - false
      * @private
      */
     public sparklineMouseEnd(e: PointerEvent): boolean {
@@ -704,8 +783,10 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         return false;
     }
     /**
-     * Handles the mouse leave on sparkline. 
-     * @return {boolean}
+     * Handles the mouse leave on sparkline.
+     *
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {boolean} - false
      * @private
      */
     public sparklineMouseLeave(e: PointerEvent): boolean {
@@ -717,7 +798,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Handles the keyboard onkeydown on sparkline.
      *
-     * @returns {boolean} false
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {boolean} - false
      * @private
      */
     public chartKeyDown(e: KeyboardEvent): boolean {
@@ -734,7 +816,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Handles the keyboard onkeydown on sparkline.
      *
-     * @returns {boolean} false
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {boolean} - false
      * @private
      */
     public chartKeyUp(e: KeyboardEvent): boolean {
@@ -757,7 +840,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
             if (this.previousTargetId !== '') {
                 if (this.previousTargetId.indexOf('_sparkline_') > -1 && targetId.indexOf('_sparkline_') === -1) {
                     groupElement = getElement(this.element.id + '_sparkline_g') as HTMLElement;
-                    this.setTabIndex(groupElement.children[this.currentPointIndex] as HTMLElement, groupElement.firstElementChild as HTMLElement);
+                    this.setTabIndex(groupElement.children[this.currentPointIndex] as HTMLElement,
+                                     groupElement.firstElementChild as HTMLElement);
                 }
             }
             this.previousTargetId = targetId;
@@ -776,23 +860,23 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
                 }
                 if (targetId.indexOf('_marker') > -1) {
                     this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
-                        getElement(this.element.id + '_sparkline_marker_g').childElementCount);
+                                                                 getElement(this.element.id + '_sparkline_marker_g').childElementCount);
                     currentPoint = getElement(this.element.id + '_sparkline_marker_' +
                         this.currentPointIndex);
                 }
                 else if (targetId.indexOf('_column') > -1) {
                     this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
-                        getElement(this.element.id + '_sparkline_g').childElementCount);
+                                                                 getElement(this.element.id + '_sparkline_g').childElementCount);
                     currentPoint = getElement(this.element.id + '_sparkline_column_' + this.currentPointIndex);
                 }
                 else if (targetId.indexOf('_winloss') > -1) {
                     this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
-                        getElement(this.element.id + '_sparkline_g').childElementCount);
+                                                                 getElement(this.element.id + '_sparkline_g').childElementCount);
                     currentPoint = getElement(this.element.id + '_sparkline_winloss_' + this.currentPointIndex);
                 }
                 else if (targetId.indexOf('_pie') > -1) {
                     this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
-                        getElement(this.element.id + '_sparkline_g').childElementCount);
+                                                                 getElement(this.element.id + '_sparkline_g').childElementCount);
                     currentPoint = getElement(this.element.id + '_sparkline_pie_' + this.currentPointIndex);
                 }
                 targetId = this.focusChild(currentPoint as HTMLElement);
@@ -824,7 +908,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
                     pointIndex = +(targetId.split('_sparkline_')[1].split('column_')[1]);
                 }
                 if (this.sparklineTooltipModule) {
-                    this.sparklineTooltipModule.renderTooltip(this.sparklineRenderer.visiblePoints[pointIndex]);
+                    this.sparklineTooltipModule.renderTooltip(this.sparklineRenderer.visiblePoints[pointIndex as number]);
                 }
             }
             break;
@@ -862,14 +946,17 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * Method to set mouse x, y from events
+     * Method to set mouse x, y from events.
+     *
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {void}
      */
     private setSparklineMouseXY(e: PointerEvent): void {
         let pageY: number;
         let pageX: number;
         if (e.type.indexOf('touch') > -1) {
             this.isTouch = true;
-            let touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
+            const touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
             pageX = touchArg.changedTouches[0].clientX;
             pageY = touchArg.changedTouches[0].clientY;
         } else {
@@ -877,44 +964,47 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
             pageY = e.clientY;
             pageX = e.clientX;
         }
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgRect: ClientRect = getIdElement(this.element.id + '_svg').getBoundingClientRect();
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const svgRect: ClientRect = getIdElement(this.element.id + '_svg').getBoundingClientRect();
         this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     }
     /**
      * To change rendering while property value modified.
+     *
      * @private
+     * @param {SparklineModel} newProp - new SparklineModel.
+     * @returns {void}
      */
-    public onPropertyChanged(newProp: SparklineModel, oldProp: SparklineModel): void {
+    public onPropertyChanged(newProp: SparklineModel): void {
         let render: boolean = false;
         let refresh: boolean = false;
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'xName':
-                case 'yName':
-                case 'axisSettings':
-                case 'rangeBandSettings':
-                case 'type':
-                case 'valueType':
-                case 'enableRtl':
-                    refresh = true;
-                    break;
-                case 'dataSource':
-                    refresh = true;
-                    break;
-                case 'border':
-                case 'markerSettings':
-                case 'dataLabelSettings':
-                case 'tooltipSettings':
-                case 'startPointColor':
-                case 'highPointColor':
-                case 'lowPointColor':
-                case 'endPointColor':
-                case 'negativePointColor':
-                case 'theme':
-                    render = true;
-                    break;
+            case 'xName':
+            case 'yName':
+            case 'axisSettings':
+            case 'rangeBandSettings':
+            case 'type':
+            case 'valueType':
+            case 'enableRtl':
+                refresh = true;
+                break;
+            case 'dataSource':
+                refresh = true;
+                break;
+            case 'border':
+            case 'markerSettings':
+            case 'dataLabelSettings':
+            case 'tooltipSettings':
+            case 'startPointColor':
+            case 'highPointColor':
+            case 'lowPointColor':
+            case 'endPointColor':
+            case 'negativePointColor':
+            case 'theme':
+                render = true;
+                break;
             }
         }
         if (refresh) {
@@ -928,22 +1018,28 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
     /**
      * To render sparkline series and appending.
+     *
+     * @returns {void}
      */
     private refreshSparkline(): void {
-        // Issue fix. React had native render method. So OnProperty change used render method won't wrok. 
+        // Issue fix. React had native render method. So OnProperty change used render method won't wrok.
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
     }
     /**
-     * Get component name
+     * Get component name.
+     *
+     * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {
         return 'sparkline';
     }
 
     /**
-     * Destroy the component
+     * Destroy the component.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.sparklineData = [];
@@ -962,7 +1058,9 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
+     * @returns {string} -  The properties to be maintained in the persisted state.
      */
     public getPersistData(): string {
         return '';

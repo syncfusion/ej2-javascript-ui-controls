@@ -1,4 +1,4 @@
-import { Chart, Alignment, Font } from '..';
+import { Chart, Alignment } from '..';
 import { AxisModel } from '../axis/axis-model';
 import { Axis } from '../axis/axis';
 import { SeriesModel } from '../series/chart-series-model';
@@ -227,9 +227,9 @@ export interface ITextRenderEventArgs extends IChartEventArgs {
     color: string;
     /** Defines the current label border. */
     border: BorderModel;
-    /** Defines the current label template. 
-     * 
-     * @aspType string 
+    /** Defines the current label template.
+     *
+     * @aspType string
      */
     template: string | Function;
     /** Defines the current font. */
@@ -291,6 +291,8 @@ export interface IMouseEventArgs extends IChartEventArgs {
     x: number;
     /** Defines current mouse y location. */
     y: number;
+    /** Defines collection of axes data where the key is the axis name and the value is the axis values for the location.*/
+    axisData: { [key: string]: number };
 }
 
 export interface IDragCompleteEventArgs extends IChartEventArgs {
@@ -301,7 +303,7 @@ export interface IDragCompleteEventArgs extends IChartEventArgs {
 export interface ISelectionCompleteEventArgs extends IChartEventArgs {
     /** Defines current selected Data X, Y values. */
     selectedDataValues: { x ?: string | number | Date, y ?: number, seriesIndex ?: number, pointIndex ?: number }[];
-    chart:Chart;
+    chart: Chart;
 }
 
 export interface ILoadedEventArgs extends IChartEventArgs {

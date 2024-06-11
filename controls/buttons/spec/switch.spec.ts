@@ -37,7 +37,7 @@ describe('Switch', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -497,6 +497,85 @@ describe('Switch', () => {
         const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    describe('Null or undefined value testing', () => {
+        afterEach(() => {
+            specSwitch.destroy();
+        });
+
+        it('Switch with on and off label', () => {
+            specSwitch = new Switch({ onLabel: null, offLabel: null }, '#specSwitch');
+            expect(specSwitch.onLabel).toEqual(null);
+            expect(specSwitch.offLabel).toEqual(null);
+            specSwitch = new Switch({ onLabel: undefined, offLabel: undefined }, '#specSwitch');
+            expect(specSwitch.onLabel).toEqual('');
+            expect(specSwitch.offLabel).toEqual('');
+        });
+
+        it('Switch with checked state', () => {
+            specSwitch = new Switch({ checked: null }, '#specSwitch');
+            expect(specSwitch.checked).toEqual(null);
+            specSwitch = new Switch({ checked: undefined }, '#specSwitch');
+            expect(specSwitch.checked).toEqual(false);
+        });
+
+        it('Switch with disabled state', () => {
+            specSwitch = new Switch({ disabled: null }, '#specSwitch');
+            expect(specSwitch.disabled).toEqual(null);
+            specSwitch = new Switch({ disabled: undefined }, '#specSwitch');
+            expect(specSwitch.disabled).toEqual(false);
+        });
+
+        it('Switch with RTL', () => {
+            specSwitch = new Switch({ enableRtl: null }, '#specSwitch');
+            expect(specSwitch.enableRtl).toEqual(false);
+            specSwitch = new Switch({ enableRtl: undefined }, '#specSwitch');
+            expect(specSwitch.enableRtl).toEqual(false);
+        });
+
+        it('Switch with Locale', () => {
+            specSwitch = new Switch({ locale: null }, '#specSwitch');
+            expect(specSwitch.locale).toEqual('en-US');
+            specSwitch = new Switch({ locale: undefined }, '#specSwitch');
+            expect(specSwitch.locale).toEqual('en-US');
+        });
+
+        it('Switch with name property', () => {
+            specSwitch = new Switch({ name: null }, '#specSwitch');
+            expect(specSwitch.name).toEqual(null);
+            specSwitch = new Switch({ name: undefined }, '#specSwitch');
+            expect(specSwitch.name).toEqual('');
+        });
+
+        it('Switch with value property', () => {
+            specSwitch = new Switch({ value: undefined }, '#specSwitch');
+            expect(specSwitch.value).toEqual('');
+            specSwitch = new Switch({ value: null }, '#specSwitch');
+            expect(specSwitch.value).toEqual(null);
+        });
+
+        it('Switch with cssClass', () => {
+            specSwitch = new Switch({ cssClass: undefined }, '#specSwitch');
+            expect(specSwitch.cssClass).toEqual('');
+            specSwitch = new Switch({ cssClass: null }, '#specSwitch');
+            expect(specSwitch.cssClass).toEqual(null);
+        });
+
+        it('Switch with persistence', () => {
+            specSwitch = new Switch({ enablePersistence: null }, '#specSwitch');
+            expect(specSwitch.enablePersistence).toEqual(null);
+            specSwitch = new Switch({ enablePersistence: undefined }, '#specSwitch');
+            expect(specSwitch.enablePersistence).toEqual(false);
+        });
+
+        it('Switch with persistence', () => {
+            specSwitch = new Switch({ htmlAttributes: null }, '#specSwitch');
+            expect(specSwitch.htmlAttributes).toEqual(null);
+            specSwitch = new Switch({ enablePersistence: undefined }, '#specSwitch');
+            expect(specSwitch.htmlAttributes).toEqual({});
+        });
+
     });
 });
 

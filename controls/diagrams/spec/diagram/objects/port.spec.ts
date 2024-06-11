@@ -7,7 +7,7 @@ import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
-import { PortVisibility, PortConstraints, SelectorConstraints, ConnectorConstraints, NodeConstraints } from '../../../src/diagram/enum/enum';
+import { PortVisibility, PortConstraints, NodeConstraints, ConnectorConstraints, SelectorConstraints } from '../../../src/diagram/enum/enum';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Connector, ICollectionChangeEventArgs } from '../../../src/index';
@@ -925,6 +925,152 @@ describe('Port Draw Connection from group node', () => {
         console.log(diagram.connectors[0].id);
         console.log(diagram.connectors[0].sourceID);
         expect(diagram.connectors.length > 0 && diagram.connectors[0].sourceID === 'group_1').toBe(true);
+        done();
+    });
+});
+describe('Connector Port Drag', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramConPort' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: 1000, height: 700,
+            connectors: [
+                {
+                    id: 'connector1', sourcePoint: { x: 200, y: 300 }, targetPoint: { x: 350, y: 300 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Top', horizontalAlignment: 'Right', }],
+                },
+                {
+                    id: 'connector2', sourcePoint: { x: 200, y: 330 }, targetPoint: { x: 350, y: 330 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Bottom', horizontalAlignment: 'Right' }],
+                },
+                {
+                    id: 'connector3', sourcePoint: { x: 200, y: 360 }, targetPoint: { x: 350, y: 360 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Center', horizontalAlignment: 'Right' }],
+                },
+                {
+                    id: 'connector4', sourcePoint: { x: 200, y: 390 }, targetPoint: { x: 350, y: 390 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Top', horizontalAlignment: 'Left', }],
+                },
+                {
+                    id: 'connector5', sourcePoint: { x: 200, y: 420 }, targetPoint: { x: 350, y: 420 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Bottom', horizontalAlignment: 'Left' }],
+                },
+                {
+                    id: 'connector6', sourcePoint: { x: 200, y: 450 }, targetPoint: { x: 350, y: 450 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Center', horizontalAlignment: 'Left' }],
+                },
+                {
+                    id: 'connector7', sourcePoint: { x: 200, y: 480 }, targetPoint: { x: 350, y: 480 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Top', horizontalAlignment: 'Center', }],
+                },
+                {
+                    id: 'connector8', sourcePoint: { x: 200, y: 510 }, targetPoint: { x: 350, y: 510 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Bottom', horizontalAlignment: 'Center' }],
+                },
+                {
+                    id: 'connector9', sourcePoint: { x: 200, y: 540 }, targetPoint: { x: 350, y: 540 },
+                    ports: [{ id: 'port1', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Drag, verticalAlignment: 'Center', horizontalAlignment: 'Center' }],
+                }
+            ]
+        });
+        diagram.appendTo('#diagramConPort');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking connector port drag basedd on alignments TopRight', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector1_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y + 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y + 3);
+        done();
+    });
+    it('Checking connector port drag basedd on alignments BottomRight', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector2_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        done();
+    });
+    it('Checking connector port drag basedd on alignments CenterRight', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector3_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        done();
+    });
+    it('Checking connector port drag basedd on alignments TopLeft', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector4_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        done();
+    });
+    it('Checking connector port drag basedd on alignments BottomLeft', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector5_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        done();
+    });
+    it('Checking connector port drag basedd on alignments CenterLeft', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector6_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        done();
+    });
+    it('Checking connector port drag basedd on alignments TopCenter', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector7_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        done();
+    });
+    it('Checking connector port drag basedd on alignments BottomCenter', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector8_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        done();
+    });
+    it('Checking connector port drag basedd on alignments CenterCenter', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('connector9_port1_groupElement');
+        let bounds: any = port.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 3, bounds.y+ 3);
         done();
     });
 });

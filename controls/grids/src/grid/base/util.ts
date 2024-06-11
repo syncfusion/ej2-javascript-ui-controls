@@ -312,7 +312,7 @@ export function extend(copied: Object, first: Object, second?: Object, exclude?:
  * @hidden
  */
 export function setColumnIndex(columnModel: Column[], ind: number = 0): number {
-    for (let i: number = 0, len: number = columnModel.length; i < len; i++) {
+    for (let i: number = 0, len: number = (!isNullOrUndefined(columnModel) ? columnModel.length : 0); i < len; i++) {
         if ((columnModel[parseInt(i.toString(), 10)] as Column).columns) {
             (columnModel[parseInt(i.toString(), 10)] as Column).index = isNullOrUndefined(
                 (columnModel[parseInt(i.toString(), 10)] as Column).index) ? ind
@@ -337,7 +337,7 @@ export function setColumnIndex(columnModel: Column[], ind: number = 0): number {
  * @hidden
  */
 export function prepareColumns(columns: Column[] | string[] | ColumnModel[], autoWidth?: boolean, gObj?: IGrid): Column[] {
-    for (let c: number = 0, len: number = columns.length; c < len; c++) {
+    for (let c: number = 0, len: number = (!isNullOrUndefined(columns) ? columns.length : 0); c < len; c++) {
 
         let column: Column;
 
@@ -639,17 +639,12 @@ export function getRowHeight(element?: HTMLElement): number {
     return rowHeight;
 }
 
-/** @hidden */
-let actualRowHeight: number;
 /**
  * @param {HTMLElement} element - Defines the HTMl element
  * @returns {number} Returns the row height
  * @hidden
  */
 export function getActualRowHeight(element?: HTMLElement): number {
-    if (actualRowHeight !== undefined) {
-        return rowHeight;
-    }
     const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden', attrs: { role: 'grid' } });
     table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
     element.appendChild(table);
@@ -928,7 +923,7 @@ export function removeAddCboxClasses(elem: Element, checked: boolean): void {
  * @hidden
  */
 export function refreshForeignData(row: IRow<Column>, columns: Column[], data: Object): void {
-    for (let i: number = 0; i < columns.length; i++) {
+    for (let i: number = 0; i < (!isNullOrUndefined(columns) ? columns.length : 0); i++) {
         setValue(columns[parseInt(i.toString(), 10)].field, getForeignData(columns[parseInt(i.toString(), 10)], data), row.foreignKeyData);
     }
 
@@ -1219,7 +1214,7 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
  * @returns {string[]} Returns the string
  * @hidden
  */
-function getPrototypesOfObj(obj: Object): string[] {
+export function getPrototypesOfObj(obj: Object): string[] {
     let keys: string[] = [];
     while (Object.getPrototypeOf(obj) && Object.keys(Object.getPrototypeOf(obj)).length) {
         keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
@@ -1235,7 +1230,7 @@ function getPrototypesOfObj(obj: Object): string[] {
  */
 export function measureColumnDepth(column: Column[]): number {
     let max: number = 0;
-    for (let i: number = 0; i < column.length; i++) {
+    for (let i: number = 0; i < (!isNullOrUndefined(column) ? column.length : 0); i++) {
         const depth: number = checkDepth(column[parseInt(i.toString(), 10)], 0);
         if (max < depth) {
             max = depth;

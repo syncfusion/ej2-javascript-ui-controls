@@ -1,4 +1,7 @@
 import { ProgressBar} from '../src/index';
+/**
+ * Sample of progress bar.
+ */
 let uploadProgress: ProgressBar = new ProgressBar({
         type: 'Linear',
         height: '60',

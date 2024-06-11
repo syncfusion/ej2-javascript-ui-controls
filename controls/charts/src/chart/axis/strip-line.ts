@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable max-len */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
 /**
  * StripLine src
  */
@@ -29,6 +25,7 @@ export class StripLine {
      * @param {number} startValue startValue
      * @param {Axis} segmentAxis segmentAxis
      * @param {Chart} chart chart instance
+     * @returns {Rect} rect
      */
     private measureStripLine(
         axis: Axis, stripline: StripLineSettingsModel, seriesClipRect: Rect, startValue: number, segmentAxis: Axis, chart: Chart
@@ -84,14 +81,16 @@ export class StripLine {
         return new Rect(0, 0, 0, 0);
     }
     /**
-     * To get from to value from start, end, size, start from axis
+     * Retrieves the 'from' and 'to' values from start, end, size, starting from the axis.
      *
-     * @param {number} start start
-     * @param {number} end end
-     * @param {number} size size
-     * @param {boolean} startFromAxis startFromAxis
-     * @param {Axis} axis axis
-     * @param {StripLineSettingsModel} stripline stripline
+     * @param {number} start - The start value.
+     * @param {number} end - The end value.
+     * @param {number} size - The size value.
+     * @param {boolean} startFromAxis - Indicates whether to start from the axis.
+     * @param {Axis} axis - The axis.
+     * @param {StripLineSettingsModel} stripline - The strip line settings.
+     * @returns {{ from: number, to: number }} - The 'from' and 'to' values.
+     * @private
      */
     private getFromTovalue(
         start: number, end: number, size: number, startFromAxis: boolean, axis: Axis,
@@ -100,7 +99,8 @@ export class StripLine {
         if (axis.valueType === 'Double' && size !== null && !startFromAxis && stripline.start == null) { from += size; }
         let to: number = this.getToValue(Math.max(start, isNullOrUndefined(end) ? start : end), from, size, axis, end, stripline);
         from = this.findValue(from, axis); to = this.findValue(to, axis);
-        return { from: valueToCoefficient(axis.isAxisInverse ? to : from, axis), to: valueToCoefficient(axis.isAxisInverse ? from : to, axis) };
+        return { from: valueToCoefficient(axis.isAxisInverse ? to : from, axis),
+            to: valueToCoefficient(axis.isAxisInverse ? from : to, axis) };
     }
     /**
      * Finding end value of the strip line
@@ -111,6 +111,7 @@ export class StripLine {
      * @param {Axis} axis axis
      * @param {number} end end
      * @param {StripLineSettingsModel} stripline stripline
+     * @returns {number} number
      */
     private getToValue(
         to: number, from: number, size: number, axis: Axis, end: number, stripline: StripLineSettingsModel
@@ -148,6 +149,7 @@ export class StripLine {
      *
      * @param {number} value value
      * @param {Axis} axis axis
+     * @returns {number} - To returns a strip line value.
      */
     private findValue(value: number, axis: Axis): number {
         if (value < axis.visibleRange.min) {
@@ -175,6 +177,7 @@ export class StripLine {
      * @param {Chart} chart chart
      * @param {ZIndex} position position
      * @param {Axis[]} axes axes
+     * @returns {void}
      * @private
      */
     public renderStripLine(chart: Chart, position: ZIndex, axes: Axis[]): void {
@@ -227,7 +230,7 @@ export class StripLine {
                                 );
                             }
                             count++;
-                            startValue = this.getStartValue(axis, stripline, startValue, chart);
+                            startValue = this.getStartValue(axis, stripline, startValue);
                         }
                     } else {
                         this.renderStripLineElement(
@@ -268,6 +271,7 @@ export class StripLine {
      * @param {Element} parent parent
      * @param {Chart} chart chart
      * @param {Axis} axis axis
+     * @returns {void}
      */
     private renderPath(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart, axis: Axis
@@ -302,6 +306,7 @@ export class StripLine {
      * @param {string} id id
      * @param {Element} parent parent
      * @param {Chart} chart chart
+     * @returns {void}
      */
     private renderRectangle(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart
@@ -330,6 +335,7 @@ export class StripLine {
      * @param {string} id id
      * @param {Element} parent parent
      * @param {Chart} chart chart
+     * @returns {void}
      */
     private drawImage(stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart): void {
         if (stripline.sizeType === 'Pixel') {
@@ -337,7 +343,7 @@ export class StripLine {
             rect.height = rect.height ? rect.height : stripline.size;
         }
         const image: ImageOption = new ImageOption(rect.height, rect.width, stripline.imageUrl, rect.x, rect.y, id, 'visible', 'none');
-        let htmlObject: HTMLElement = chart.renderer.drawImage(image) as HTMLElement;
+        const htmlObject: HTMLElement = chart.renderer.drawImage(image) as HTMLElement;
         appendChildElement(chart.enableCanvas, parent, htmlObject, chart.redraw, true, 'x', 'y', null, null, true, true);
     }
 
@@ -350,6 +356,7 @@ export class StripLine {
      * @param {Element} parent parent
      * @param {Chart} chart chart
      * @param {Axis} axis axis
+     * @returns {void}
      */
     private renderText(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart, axis: Axis
@@ -383,7 +390,8 @@ export class StripLine {
         textElement(
             chart.renderer,
             new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'),
-            stripline.textStyle, stripline.textStyle.color || chart.themeStyle.stripLineLabelFont.color, parent, null, null, null, null, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.stripLineLabelFont
+            stripline.textStyle, stripline.textStyle.color || chart.themeStyle.stripLineLabelFont.color, parent,
+            null, null, null, null, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.stripLineLabelFont
         );
     }
     private invertAlignment(anchor: Anchor): Anchor {
@@ -403,10 +411,9 @@ export class StripLine {
      * @param {Axis} axis axis
      * @param {StripLineSettingsModel} stripline stripline
      * @param {number} startValue startValue
-     * @param {Chart} chart chart instance
      * @returns {number} next start value of the recurrence strip line
      */
-    private getStartValue(axis: Axis, stripline: StripLineSettingsModel, startValue: number, chart: Chart): number {
+    private getStartValue(axis: Axis, stripline: StripLineSettingsModel, startValue: number): number {
         if (axis.valueType === 'DateTime') {
             return (this.getToValue(
                 null, startValue,
@@ -418,11 +425,13 @@ export class StripLine {
         }
     }
     /**
-     * Finding segment axis for segmented strip line
+     * Finds the segment axis for a segmented strip line.
      *
-     * @param {Axis[]} axes axes collection
-     * @param {Axis} axis axis
-     * @param {StripLineSettingsModel} stripline stripline
+     * @param {Axis[]} axes - The collection of axes.
+     * @param {Axis} axis - The axis.
+     * @param {StripLineSettingsModel} stripline - The strip line settings.
+     * @returns {Axis} - The segment axis.
+     * @private
      */
     private getSegmentAxis(axes: Axis[], axis: Axis, stripline: StripLineSettingsModel): Axis {
         let segment: Axis;
@@ -450,6 +459,7 @@ export class StripLine {
      * @param {number} startValue startValue
      * @param {Axis} segmentAxis segmentAxis
      * @param {number} count count
+     * @returns {void}
      */
     private renderStripLineElement(
         axis: Axis, stripline: StripLineSettingsModel, seriesClipRect: Rect, id: string, striplineGroup: Element, chart: Chart,
@@ -469,9 +479,11 @@ export class StripLine {
         }
     }
     /**
-     * To find the factor of the text
+     * Finds the factor of the text based on its anchor position.
      *
-     * @param {Anchor} anchor text anchor
+     * @param {Anchor} anchor - The text anchor position.
+     * @returns {number} - The factor.
+     * @private
      */
     private factor(anchor: Anchor): number {
         let factor: number = 0;
@@ -486,11 +498,13 @@ export class StripLine {
         return factor;
     }
     /**
-     * To find the start value of the text
+     * Finds the start value of the text based on its alignment.
      *
-     * @param {number} xy xy values
-     * @param {number} size text size
-     * @param {Anchor} textAlignment text alignment
+     * @param {number} xy - The coordinate value.
+     * @param {number} size - The size of the text.
+     * @param {Anchor} textAlignment - The text alignment.
+     * @returns {number} - The start value.
+     * @private
      */
     private getTextStart(xy: number, size: number, textAlignment: Anchor): number {
         const padding: number = 5;
@@ -508,6 +522,7 @@ export class StripLine {
      * To get the module name for `StripLine`.
      *
      * @private
+     * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {
         return 'StripLine';
@@ -516,6 +531,7 @@ export class StripLine {
      * To destroy the `StripLine` module.
      *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         // destroy peform here

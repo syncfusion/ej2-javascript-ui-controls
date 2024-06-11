@@ -50,6 +50,13 @@
     }
   }
 
+  @if $skin-name == 'fluent2' {
+    .e-btn:focus-visible,
+    input:focus-visible+label.e-btn { // only for keybord
+      box-shadow: $btn-keyboard-focus-box-shadow !important;
+    }
+  }
+
     //Focus state for Normal and Outline GroupButton
     .e-btn:focus,
     input:focus-visible+label.e-btn,
@@ -72,72 +79,47 @@
 
       &.e-primary {
         @include primary-focus;
-        @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-          box-shadow: none;
-        }
+        @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' {
           border-color: $btn-primary-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-primary-color;
-        @if $skin-name == 'fabric' {
-          border-color: transparent;
-        }
       }
 
       &.e-success {
         @include success-focus;
-        @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-          box-shadow: none;
-        }
+        @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' {
           border-color: $btn-success-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-success-color;
-        @if $skin-name == 'fabric' {
-          border-color: transparent;
-        }
       }
 
       &.e-info {
         @include info-focus;
-        @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-          box-shadow: none;
-        }
+        @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' {
           border-color: $btn-info-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-info-color;
-        @if $skin-name == 'fabric' {
-          border-color: transparent;
-        }
       }
 
       &.e-warning {
         @include warning-focus;
-        @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-          box-shadow: none;
-        }
+        @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' {
           border-color: $btn-warning-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-warning-color;
-        @if $skin-name == 'fabric' {
-          border-color: transparent;
-        }
       }
 
       &.e-danger {
         @include danger-focus;
-        @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-          box-shadow: none;
-        }
+        @include box-shadow-theme;
         @if $skin-name == 'bootstrap5' {
           border-color: $btn-danger-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-danger-color;
-        @if $skin-name == 'fabric' {
-          border-color: transparent;
-        }
       }
 
       &.e-link {
@@ -150,18 +132,14 @@
 
       &.e-outline {
         @include outline-focus;
-        @if $skin-name != 'bootstrap5' $skin-name != 'bootstrap4' and and $skin-name != 'tailwind' {
-          box-shadow: none;
-        }
+        @include outline-box-shadow-theme;
         @if $skin-name == 'bootstrap5' {
           border-color: $btn-outline-focus-bgcolor;
         }
 
         &.e-primary {
           @include outline-primary-focus;
-          @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-            box-shadow: none;
-          }
+          @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' {
             border-color: $btn-outline-primary-focus-bgcolor;
           }
@@ -169,9 +147,7 @@
 
         &.e-success {
           @include outline-success-focus;
-          @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-            box-shadow: none;
-          }
+          @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' {
             border-color: $btn-success-focus-bgcolor;
           }
@@ -179,9 +155,7 @@
 
         &.e-info {
           @include outline-info-focus;
-          @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-            box-shadow: none;
-          }
+          @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' {
             border-color: $btn-info-hover-bgcolor;
           }
@@ -189,9 +163,7 @@
 
         &.e-warning {
           @include outline-warning-focus;
-          @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-            box-shadow: none;
-          }
+          @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' {
             border-color: $btn-warning-hover-bgcolor;
           }
@@ -199,9 +171,7 @@
 
         &.e-danger {
           @include outline-danger-focus;
-          @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
-            box-shadow: none;
-          }
+          @include outline-box-shadow-theme;
           @if $skin-name == 'bootstrap5' {
             border-color: $btn-danger-hover-bgcolor;
           }
@@ -214,84 +184,60 @@
     input:active+label.e-btn,
     input:checked+label.e-btn {
       @include button-active;
-      @if $skin-name == 'Material3' {
-        box-shadow: none;
-      }
+      @include Mat3-box-shadow-none;
 
       &.e-primary {
         @include primary-active;
-        @if $skin-name == 'Material3' {
-          box-shadow: none;
-        }
+        @include Mat3-box-shadow-none;
       }
 
       &.e-success {
         @include success-active;
-        @if $skin-name == 'Material3' {
-          box-shadow: none;
-        }
+        @include Mat3-box-shadow-none;
       }
 
       &.e-info {
         @include info-active;
-        @if $skin-name == 'Material3' {
-          box-shadow: none;
-        }
+        @include Mat3-box-shadow-none;
       }
 
       &.e-warning {
         @include warning-active;
-        @if $skin-name == 'Material3' {
-          box-shadow: none;
-        }
+        @include Mat3-box-shadow-none;
       }
 
       &.e-danger {
         @include danger-active;
-        @if $skin-name == 'Material3' {
-          box-shadow: none;
-        }
+        @include Mat3-box-shadow-none;
       }
 
       &.e-outline {
         @include outline-active;
-        @if $skin-name == 'Material3' {
-          box-shadow: none;
-        }
+        @include Mat3-box-shadow-none;
 
         &.e-primary {
           @include outline-primary-active;
-          @if $skin-name == 'Material3' {
-            box-shadow: none;
-          }
+          @include Mat3-box-shadow-none;
         }
 
         &.e-success {
           @include outline-success-active;
-          @if $skin-name == 'Material3' {
-            box-shadow: none;
-          }
+          @include Mat3-box-shadow-none;
         }
 
         &.e-info {
           @include outline-info-active;
-          @if $skin-name == 'Material3' {
-            box-shadow: none;
-          }
+          @include Mat3-box-shadow-none;
         }
 
         &.e-warning {
           @include outline-warning-active;
-          @if $skin-name == 'Material3' {
-            box-shadow: none;
-          }
+          @include Mat3-box-shadow-none;
         }
 
         &.e-danger {
           @include outline-danger-active;
-          @if $skin-name == 'Material3' {
-            box-shadow: none;
-          }
+          @include Mat3-box-shadow-none;
         }
       }
     }

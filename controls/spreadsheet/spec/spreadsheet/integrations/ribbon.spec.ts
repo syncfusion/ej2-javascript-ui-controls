@@ -224,7 +224,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 expect(cell.value).toEqual('');
                 expect(cell.style).toBeNull();
                 done();
-            }, 100);
+            });
         });
 
         it('Cut-redo testing', (done: Function) => {
@@ -237,7 +237,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 expect(cell.style.fontStyle).toEqual('italic');
                 expect(cell.style.textDecoration).toEqual('underline');
                 done();
-            }, 10);
+            });
         });
 
         it('Copy testing', (done: Function) => {
@@ -263,7 +263,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 expect(cell.value).toEqual('');
                 expect(cell.style).toBeNull();
                 done();
-            }, 100);
+            });
         });
 
         it('Copy-redo testing', (done: Function) => {
@@ -276,7 +276,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 expect(cell.style.fontStyle).toEqual('italic');
                 expect(cell.style.textDecoration).toEqual('underline');
                 done()
-            }, 10);
+            });
         });
 
         it('Paste testing', (): void => {
@@ -716,7 +716,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 expect(helper.getInstance().sheets[0].frozenRows).toBe(4);
                 expect(helper.getInstance().sheets[0].frozenColumns).toBe(0);
                 done();
-            });
+            }, 50);
         });
         it('Apply Freeze Column->', (done: Function) => {
             helper.click('#' + helper.id + '_freezecolumns');

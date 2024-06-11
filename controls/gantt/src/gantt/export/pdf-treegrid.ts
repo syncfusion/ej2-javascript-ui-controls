@@ -142,7 +142,7 @@ export class PdfTreeGrid extends PdfLayoutElement {
             return this.drawHelper(arg1, arg2, null);
         } else if (arg2 instanceof PointF && typeof (arg2 as RectangleF).width === 'undefined' && arg3 instanceof PdfLayoutFormat) {
             return this.drawHelper(arg1, arg2.x, arg2.y, arg3);
-        } else if (typeof arg2 === 'number' && typeof arg3 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 == null)) {
+        } else if (typeof arg2 === 'number' && typeof arg3 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 === null)) {
             const width: number = (arg1.graphics.clientSize.width - arg2);
             const layoutRectangle: RectangleF = new RectangleF(arg2, arg3, width, 0);
             return this.drawHelper(arg1, layoutRectangle, arg4);
@@ -315,7 +315,7 @@ export class PdfTreeGrid extends PdfLayoutElement {
                         colSpan = cell.columnSpan;
                         currentCellIndex = j;
                         cell.isCellMergeStart = true;
-                        let totalColumnWidth: any = this.columns.columns[currentCellIndex as number].width;
+                        let totalColumnWidth: number = this.columns.columns[currentCellIndex as number].width;
                         //Set Column merges.
                         while (colSpan > 1) {
                             currentCellIndex++;

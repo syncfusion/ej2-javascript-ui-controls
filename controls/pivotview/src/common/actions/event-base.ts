@@ -288,8 +288,10 @@ export class EventBase {
             const members: string[] = [];
             for (let i: number = 0; i < treeData.length; i++) {
                 members.push(treeData[i as number].caption as string);
-            } // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const fieldName: string = treeData[0].caption !== 'Grand Total' || treeData[0].caption === undefined ? (treeData[0].htmlAttributes as any)['data-fieldName'] : (treeData[1].htmlAttributes as any)['data-fieldName'];
+            }
+            const fieldName: string = treeData[0].caption !== 'Grand Total' || treeData[0].caption === undefined ?
+                (treeData[0].htmlAttributes as { [key: string]: string })['data-fieldName'] :
+                (treeData[1].htmlAttributes as { [key: string]: string })['data-fieldName'];
             const engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
             const fieldInfo: IField = engineModule.fieldList[fieldName as string];
             const membersInfo: string[] = fieldInfo && fieldInfo.membersOrder ? [...fieldInfo.membersOrder] as string[] : [];
@@ -675,8 +677,13 @@ export class EventBase {
         }
     }
 
-    /* eslint-disable-next-line */
-    /** @hidden */
+    /**
+     * @param {string} fieldName - fieldName.
+     * @param {string} item - fieldName.
+     * @param {Object} filterObj - filter Object.
+     * @returns {Object} -  An object mapping keys to string.
+     * @hidden
+     */
     public getParentNode(fieldName: string, item: string, filterObj: { [key: string]: string }): { [key: string]: string } {
         const members: IMembers = this.parent.engineModule.fieldList[fieldName as string].members;
         if (members[item as string].parent && item !== members[item as string].parent) {

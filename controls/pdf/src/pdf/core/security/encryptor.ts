@@ -56,18 +56,18 @@ export class _PdfEncryptor {
         if (!Number.isInteger(keyLength) || keyLength < 40 || keyLength % 8 !== 0) {
             throw new FormatError('invalid key length');
         }
-        const ownerPassword: Uint8Array = (_stringToBytes(dictionary.get('O')) as Uint8Array).subarray(0, 32);
-        const userPassword: Uint8Array = (_stringToBytes(dictionary.get('U')) as Uint8Array).subarray(0, 32);
+        const ownerPassword: Uint8Array = (_stringToBytes(dictionary.get('O'), false, true) as Uint8Array).subarray(0, 32);
+        const userPassword: Uint8Array = (_stringToBytes(dictionary.get('U'), false, true) as Uint8Array).subarray(0, 32);
         const flag: number = dictionary.get('P');
         const revision: number = dictionary.get('R');
         this._encryptMetaData = (algorithm === 4 || algorithm === 5) && dictionary.get('EncryptMetadata') !== false;
-        const fileIdBytes: Uint8Array = (_stringToBytes(id) as Uint8Array);
+        const fileIdBytes: Uint8Array = (_stringToBytes(id, false, true) as Uint8Array);
         let passwordBytes: Uint8Array;
         if (password) {
             if (revision === 6) {
                 password = encodeURIComponent(password);
             }
-            passwordBytes = _stringToBytes(password) as Uint8Array;
+            passwordBytes = _stringToBytes(password, false, true) as Uint8Array;
         }
         let encryptionKey: Uint8Array;
         if (algorithm !== 5) {
@@ -97,15 +97,15 @@ export class _PdfEncryptor {
                 }
             }
         } else {
-            const ownerValidationKey: Uint8Array = _stringToBytes(dictionary.get('O')) as Uint8Array;
+            const ownerValidationKey: Uint8Array = _stringToBytes(dictionary.get('O'), false, true) as Uint8Array;
             const ownerValidationSalt: Uint8Array = ownerValidationKey.subarray(32, 40);
             const ownerKeySalt: Uint8Array = ownerValidationKey.subarray(40, 48);
-            const userValidationKey: Uint8Array = _stringToBytes(dictionary.get('U')) as Uint8Array;
+            const userValidationKey: Uint8Array = _stringToBytes(dictionary.get('U'), false, true) as Uint8Array;
             const uBytes: Uint8Array = userValidationKey.subarray(0, 48);
             const userValidationSalt: Uint8Array = userValidationKey.subarray(32, 40);
             const userKeySalt: Uint8Array = userValidationKey.subarray(40, 48);
-            const ownerEncryption: Uint8Array = _stringToBytes(dictionary.get('OE')) as Uint8Array;
-            const userEncryption: Uint8Array = _stringToBytes(dictionary.get('UE')) as Uint8Array;
+            const ownerEncryption: Uint8Array = _stringToBytes(dictionary.get('OE'), false, true) as Uint8Array;
+            const userEncryption: Uint8Array = _stringToBytes(dictionary.get('UE'), false, true) as Uint8Array;
             let algorithm: _AdvancedEncryption | _BasicEncryption;
             if (revision === 6) {
                 algorithm = new _AdvancedEncryption();
@@ -1581,7 +1581,7 @@ export class _CipherTransform {
         return new _PdfDecryptStream(stream, length, this._streamCipher);
     }
     decryptString(s: string): string {
-        return _bytesToString(this._stringCipher._decryptBlock((_stringToBytes(s) as Uint8Array), true));
+        return _bytesToString(this._stringCipher._decryptBlock((_stringToBytes(s, false, true) as Uint8Array), true));
     }
     encryptString(s: string): string {
         if (this._stringCipher instanceof _AdvancedEncryptionBaseCipher) {
@@ -1596,12 +1596,12 @@ export class _CipherTransform {
                     iv[Number.parseInt(i.toString(), 10)] = Math.floor(256 * Math.random());
                 }
             }
-            const data: Uint8Array = this._stringCipher._encrypt(_stringToBytes(s) as Uint8Array, iv);
+            const data: Uint8Array = this._stringCipher._encrypt(_stringToBytes(s, false, true) as Uint8Array, iv);
             const buffer: Uint8Array = new Uint8Array(16 + data.length);
             buffer.set(iv);
             buffer.set(data, 16);
             return _bytesToString(buffer);
         }
-        return _bytesToString(this._stringCipher._encrypt(_stringToBytes(s) as Uint8Array));
+        return _bytesToString(this._stringCipher._encrypt(_stringToBytes(s, false, true) as Uint8Array));
     }
 }

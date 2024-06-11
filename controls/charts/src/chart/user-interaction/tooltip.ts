@@ -1,8 +1,3 @@
-/* eslint-disable security/detect-non-literal-regexp */
-/* eslint-disable max-len */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { extend, Browser, remove } from '@syncfusion/ej2-base';
 import { PointData, ChartLocation } from '../../common/utils/helper';
@@ -23,9 +18,9 @@ import { TooltipSettingsModel } from '../../common/model/base-model';
  */
 export class Tooltip extends BaseTooltip {
     /**
-     * Constructor for tooltip module.
+     * Constructor for the Touch module.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
      */
     constructor(chart: Chart) {
         super(chart);
@@ -34,7 +29,9 @@ export class Tooltip extends BaseTooltip {
     }
 
     /**
-     * @hidden
+     * Adds event listeners for the chart.
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -200,7 +197,7 @@ export class Tooltip extends BaseTooltip {
         };
         const borderWidth : number = this.chart.border.width;
         const padding : number = 3;
-        const tooltip: TooltipSettingsModel = this.chart.tooltip
+        const tooltip: TooltipSettingsModel = this.chart.tooltip;
         const chartTooltipSuccess: Function = (argsData: ITooltipRenderEventArgs) => {
             if (!argsData.cancel) {
                 if (point.series.type === 'BoxAndWhisker') {
@@ -219,7 +216,8 @@ export class Tooltip extends BaseTooltip {
                     this.chart, isFirst, location,
                     point.series.clipRect, point.point, this.findShapes(),
                     this.findMarkerHeight(<PointData>this.currentPoints[0]),
-                    new Rect(borderWidth, borderWidth, this.chart.availableSize.width - padding - borderWidth * 2, this.chart.availableSize.height - padding - borderWidth * 2),
+                    new Rect(borderWidth, borderWidth, this.chart.availableSize.width - padding - borderWidth * 2,
+                             this.chart.availableSize.height - padding - borderWidth * 2),
                     this.chart.crosshair.enable, null, this.getTemplateText(point),
                     this.template ? argsData.template : ''
                 );
@@ -301,7 +299,6 @@ export class Tooltip extends BaseTooltip {
         return this.parseTemplate(pointData.point, series, this.getFormat(this.chart, series), series.xAxis, series.yAxis);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getTemplateText(data: any): Points | Points[] {
         if (this.template && this.chart.tooltip.shared) {
             const point: Points[] = [];
@@ -403,12 +400,13 @@ export class Tooltip extends BaseTooltip {
                 argument.headerText = this.findHeader(data);
                 (<PointData[]>this.currentPoints).push(data);
                 if (this.template != null) {
-                    argument.template.push(this.template.toString())
-                };
+                    argument.template.push(this.template.toString());
+                }
                 argument.text.push(this.getTooltipText(data));
                 pointXValue = (!chart.requireInvertedAxis) ? chart.mouseX - data.series.clipRect.x : chart.mouseY - data.series.clipRect.y;
                 pointYValue = chart.mouseY - data.series.clipRect.y;
-                if (data.point.symbolLocations && data.point.symbolLocations.length && Math.abs(pointXValue - data.point.symbolLocations[0].x) <= closestXValue &&
+                if (data.point.symbolLocations && data.point.symbolLocations.length &&
+                    Math.abs(pointXValue - data.point.symbolLocations[0].x) <= closestXValue &&
                     Math.abs(data.point.symbolLocations[0].y - pointYValue) < Math.abs(closetYValue - pointYValue)) {
                     closestXValue = Math.abs(pointXValue - data.point.symbolLocations[0].x);
                     closetYValue = data.point.symbolLocations[0].y;
@@ -454,9 +452,10 @@ export class Tooltip extends BaseTooltip {
         }
     }
     private triggerSharedTooltip(
-        argument: ISharedTooltipRenderEventArgs, point: PointData, extraPoints: PointData[], chart: Chart, isFirst: boolean, dataCollection: PointData[]
+        argument: ISharedTooltipRenderEventArgs, point: PointData, extraPoints: PointData[], chart: Chart,
+        isFirst: boolean, dataCollection: PointData[]
     ): void {
-        let tooltipTemplate: string[] = argument.template;
+        const tooltipTemplate: string[] = argument.template;
         const argsData: ISharedTooltipRenderEventArgs = {
             cancel: false, name: sharedTooltipRender, text: argument.text, headerText: argument.headerText,
             textStyle: argument.textStyle, template: tooltipTemplate,
@@ -470,7 +469,8 @@ export class Tooltip extends BaseTooltip {
         const currentPoints: PointData[] = [];
         if (chart.stockChart) {
             toolbarHeight = chart.stockChart.enablePeriodSelector ? chart.stockChart.toolbarHeight : 0;
-            titleHeight = measureText(this.chart.stockChart.title, this.chart.stockChart.titleStyle, this.chart.themeStyle.tooltipLabelFont).height + 10;
+            titleHeight = measureText(this.chart.stockChart.title, this.chart.stockChart.titleStyle,
+                                      this.chart.themeStyle.tooltipLabelFont).height + 10;
         }
         const sharedTooltip: Function = (argsData: ISharedTooltipRenderEventArgs) => {
             if (!argsData.cancel) {
@@ -490,13 +490,13 @@ export class Tooltip extends BaseTooltip {
                     if (argsData.template.length > currentPoints.length ) {
                         argsData.template = argsData.template.splice(argsData.template.length - 1);
                     }
-                   }
-                   else {
+                }
+                else {
                     if (argsData.template.length > currentPoints.length ) {
                         argsData.template.splice(argsData.template.length - 1);
                     }
                 }
-                const tooltip: TooltipSettingsModel = this.chart.tooltip
+                const tooltip: TooltipSettingsModel = this.chart.tooltip;
                 this.findMouseValue(point, this.chart);
                 let location: ChartLocation = this.findSharedLocation();
                 location = location ? location : new ChartLocation(null, null);
@@ -505,9 +505,12 @@ export class Tooltip extends BaseTooltip {
                 location = (location.x === null && location.y === null) ? null : location;
                 this.createTooltip(
                     chart, isFirst, location,
-                    this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, dataCollection.length === 1 ? dataCollection[0].point : null,
+                    this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null,
+                    dataCollection.length === 1 ? dataCollection[0].point : null,
                     this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
-                    new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth), this.chart.availableSize.width - padding - borderWidth * 2, this.chart.availableSize.height - padding - borderWidth * 2),
+                    new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth),
+                             this.chart.availableSize.width - padding - borderWidth * 2,
+                             this.chart.availableSize.height - padding - borderWidth * 2),
                     this.chart.crosshair.enable, extraPoints,
                     this.template ? this.getTemplateText(dataCollection) : null,
                     this.template ? argsData.template.join('') : ''
@@ -547,7 +550,8 @@ export class Tooltip extends BaseTooltip {
     }
 
     private getBoxLocation(data: PointData): ChartLocation {
-        const location: ChartLocation = this.lierIndex > 3 ? (data.point.outliers.length > 0 ? data.point.symbolLocations[this.lierIndex - 4] : null) :
+        const location: ChartLocation = this.lierIndex > 3 ? (data.point.outliers.length > 0 ?
+            data.point.symbolLocations[this.lierIndex - 4] : null) :
             {
                 x: data.point.regions[0].x + (data.point.regions[0].width / 2),
                 y: data.point.regions[0].y + (data.point.regions[0].height / 2)
@@ -558,8 +562,9 @@ export class Tooltip extends BaseTooltip {
     private parseTemplate(point: Points, series: Series, format: string, xAxis: Axis, yAxis: Axis): string {
         let val: RegExp;
         let textValue: string;
+        const regExp: RegExpConstructor = RegExp;
         for (const dataValue of Object.keys(point)) {
-            val = new RegExp('${point' + '.' + dataValue + '}', 'gm');
+            val = new regExp('${point' + '.' + dataValue + '}', 'gm');
             format = format.replace(
                 val.source, this.formatPointValue(
                     point, val.source === '${point.x}' ? xAxis : yAxis,
@@ -582,7 +587,7 @@ export class Tooltip extends BaseTooltip {
         }
 
         for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {
-            val = new RegExp('${series' + '.' + dataValue + '}', 'gm');
+            val = new regExp('${series' + '.' + dataValue + '}', 'gm');
             textValue = series[dataValue as string];
             format = format.replace(val.source, textValue);
         }
@@ -673,6 +678,8 @@ export class Tooltip extends BaseTooltip {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**

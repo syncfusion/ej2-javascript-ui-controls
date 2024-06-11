@@ -22,7 +22,7 @@ export class CommonKeyboardInteraction {
         altJ: 'alt+J'
     };
     private keyboardModule: KeyboardEvents;
-    private timeOutObj: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    private timeOutObj: ReturnType<typeof setTimeout>;
     /**
      * Constructor
      *

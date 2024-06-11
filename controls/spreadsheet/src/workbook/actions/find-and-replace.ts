@@ -1,5 +1,5 @@
-import { Workbook, SheetModel, RowModel, CellModel, getCell, getSheet, isHiddenRow, isHiddenCol, getColumn } from '../base/index';
-import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndexes, getSheetIndexFromAddress } from '../common/index';
+import { Workbook, SheetModel, RowModel, CellModel, getCell, getSheet, isHiddenRow, isHiddenCol, getColumn, getRow } from '../base/index';
+import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndexes, getSheetIndexFromAddress, isReadOnly, workbookReadonlyAlert } from '../common/index';
 import { goto, replace, replaceAll, showFindAlert, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel, FindArgs } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
@@ -321,6 +321,10 @@ export class WorkbookFindAndReplace {
                 return;
             }
         }
+        if (isReadOnly(getCell(activeCell[0], activeCell[1], sheet), getColumn(sheet, activeCell[1]), getRow(sheet, activeCell[0]))) {
+            this.parent.notify(workbookReadonlyAlert, null);
+            return;
+        }
         const eventArgs: BeforeReplaceEventArgs & { sheetIndex: number } = { address: `${sheet.name}!${getCellAddress(activeCell[0], activeCell[1])}`, cancel: false,
             compareValue: args.value, replaceValue: args.replaceValue, sheetIndex: sheetIndex };
         if (args.isAction) {
@@ -383,6 +387,9 @@ export class WorkbookFindAndReplace {
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
                         if (row.cells && row.cells[startColumn as number]) {
+                            if (isReadOnly(getCell(startRow, startColumn, sheet), getColumn(sheet, startColumn), getRow(sheet, startRow))) {
+                                continue;
+                            }
                             cellval = this.parent.getDisplayText(sheet.rows[startRow as number].cells[startColumn as number]).toString();
                             if (cellval) {
                                 if (args.isCSen) {

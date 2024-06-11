@@ -1,4 +1,4 @@
-import { formatUnit, createElement } from '@syncfusion/ej2-base';
+import {createElement } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 
 /**
@@ -49,7 +49,7 @@ export class VirtualContentRenderer {
             const virtualTable: string = (document.getElementsByClassName('e-virtualtable')[1] as HTMLElement).style.transform;
             const treegridVirtualHeight: string = (this.parent.treeGrid.element.getElementsByClassName('e-virtualtable')[0] as HTMLElement).style.transform;
             let translateXValue: string;
-            if (virtualTable !== "") {
+            if (virtualTable !== '') {
                 translateXValue = virtualTable.match(/translate.*\((.+)\)/)[1].split(', ')[0];
             }
             else {

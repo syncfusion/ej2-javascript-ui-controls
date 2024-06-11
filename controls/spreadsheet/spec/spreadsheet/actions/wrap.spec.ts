@@ -263,7 +263,7 @@ describe('Wrap ->', () => {
                         expect(helper.invoke('getRow', [21]).style.height).toBe('5px');
                         expect(helper.getInstance().sheets[0].rows[21].height).toBe(5);
                         done();
-                    }, 10);
+                    }, 30);
                 });
             });
         });

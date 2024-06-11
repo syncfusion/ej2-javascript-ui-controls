@@ -24,6 +24,12 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
             args: [context]
         });
     }
+    if (context.allowPrint) {
+        modules.push({
+            member: 'print',
+            args: [context]
+        });
+    }
     if (context.allowOpen) {
         modules.push({
             member: 'workbookOpen',

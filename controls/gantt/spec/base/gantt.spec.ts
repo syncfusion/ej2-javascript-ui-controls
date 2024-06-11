@@ -3,12 +3,15 @@
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
-import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, cr884998 } from '../base/data-source.spec';
+import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs,ExcelExport ,PdfExport ,Reorder, Resize} from '../../src/index';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu);
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
+Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu, ExcelExport , PdfExport, Reorder, Resize);
 describe('Gantt - Base', () => {
 
     describe('Gantt base module', () => {
@@ -1561,48 +1564,1376 @@ describe('Milestone Baseline render', () => {
             }
         });
     });
-    describe('Checking for empty element', () => {
-        let ganttObj: Gantt;
-        beforeAll((done: Function) => {
-            ganttObj = createGantt({
-                dataSource: cr884998,
-                taskFields: {
-                    id: 'taskId',
-                    name: 'taskName',
-                    startDate: 'startDate',
-                    endDate: 'endDate',
-                    duration: 'duration',
-                    progress: 'realized',
-                    dependency: 'dependencies',
-                    segments: 'parts',
-                    parentID: 'parentId',
-                    baselineStartDate: 'baselineStartDate',
-                    baselineEndDate: 'baselineEndDate'
-                },
-                gridLines:'Both',
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
-                },
-                queryTaskbarInfo:function(args) {
-
-                },
-                readOnly: false,
-                taskbarHeight: 20,
-                rowHeight: 40,
-                height: '550px'
-            }, done);
-
-        });
-        it('check flat data', () => {
-            expect(ganttObj.flatData.length > 0).toBe(true);
-        });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
             }
-        });
+        }, done);
     });
+    it('UpdateOffsetOnTaskbarEdit', () => {
+        ganttObj.UpdateOffsetOnTaskbarEdit = null;
+        ganttObj.dataBind();
+        expect(ganttObj.UpdateOffsetOnTaskbarEdit).toBe(null);
+        ganttObj.UpdateOffsetOnTaskbarEdit = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.UpdateOffsetOnTaskbarEdit).toBe(undefined);
+    });
+    it('addDialogFields', () => {
+        ganttObj.addDialogFields = null;
+        ganttObj.dataBind();
+        expect(ganttObj.addDialogFields).toBe(null);
+        ganttObj.addDialogFields = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.addDialogFields).toBe(undefined);
+    });
+    it('ExcelExport', () => {
+        ganttObj.excelExport = null;
+        ganttObj.dataBind();
+        expect(ganttObj.excelExport).toBe(null);
+        ganttObj.excelExport = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.excelExport).toBe(undefined);
+    });
+    it('allowFiltering', () => {
+        ganttObj.allowFiltering = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowFiltering).toBe(null);
+        ganttObj.allowFiltering = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowFiltering).toBe(undefined);
+    });
+    it('allowKeyboard', () => {
+        ganttObj.allowKeyboard = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowKeyboard).toBe(null);
+        ganttObj.allowKeyboard = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowKeyboard).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('allowParentDependency', () => {
+        ganttObj.allowParentDependency = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowParentDependency).toBe(null);
+        ganttObj.allowParentDependency = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowParentDependency).toBe(undefined);
+    });
+    it('allowPdfExport', () => {
+        ganttObj.pdfExport = null;
+        ganttObj.dataBind();
+        expect(ganttObj.pdfExport).toBe(null);
+        ganttObj.pdfExport = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.pdfExport).toBe(undefined);
+    });
+    it('allowReordering', () => {
+        ganttObj.allowReordering = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowReordering).toBe(null);
+        ganttObj.allowReordering = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowReordering).toBe(undefined);
+    });
+    it('allowResizing', () => {
+        ganttObj.allowResizing = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowResizing).toBe(null);
+        ganttObj.allowResizing = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowResizing).toBe(undefined);
+    });
+    it('allowRowDragAndDrop', () => {
+        ganttObj.allowRowDragAndDrop = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowRowDragAndDrop).toBe(null);
+        ganttObj.allowRowDragAndDrop = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowRowDragAndDrop).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('allowSelection', () => {
+        ganttObj.allowSelection = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowSelection).toBe(null);
+        ganttObj.allowSelection = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowSelection).toBe(undefined);
+    });
+    it('allowSorting', () => {
+        ganttObj.allowSorting = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowSorting).toBe(null);
+        ganttObj.allowSorting = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowSorting).toBe(undefined);
+    });
+    it('allowTaskbarDragAndDrop', () => {
+        ganttObj.allowTaskbarDragAndDrop = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowTaskbarDragAndDrop).toBe(null);
+        ganttObj.allowTaskbarDragAndDrop = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowTaskbarDragAndDrop).toBe(undefined);
+    });
+    it('allowTaskbarOverlap', () => {
+        ganttObj.allowTaskbarOverlap = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowTaskbarOverlap).toBe(null);
+        ganttObj.allowTaskbarOverlap = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowTaskbarOverlap).toBe(undefined);
+    });
+    it('allowUnscheduledTasks', () => {
+        ganttObj.allowUnscheduledTasks = null;
+        ganttObj.dataBind();
+        expect(ganttObj.allowUnscheduledTasks).toBe(null);
+        ganttObj.allowUnscheduledTasks = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.allowUnscheduledTasks).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('autoCalculateDateScheduling', () => {
+        ganttObj.autoCalculateDateScheduling = null;
+        ganttObj.dataBind();
+        expect(ganttObj.autoCalculateDateScheduling).toBe(null);
+        ganttObj.autoCalculateDateScheduling = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.autoCalculateDateScheduling).toBe(undefined);
+    });
+    it('autoFocusTasks', () => {
+        ganttObj.autoFocusTasks = null;
+        ganttObj.dataBind();
+        expect(ganttObj.autoFocusTasks).toBe(null);
+        ganttObj.autoFocusTasks = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.autoFocusTasks).toBe(undefined);
+    });
+    it('baselineColor', () => {
+        ganttObj.baselineColor = null;
+        ganttObj.dataBind();
+        expect(ganttObj.baselineColor).toBe(null);
+        ganttObj.baselineColor = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.baselineColor).toBe(undefined);
+    });
+    it('collapseAllParentTasks', () => {
+        ganttObj.collapseAllParentTasks = null;
+        ganttObj.dataBind();
+        expect(ganttObj.collapseAllParentTasks).toBe(null);
+        ganttObj.collapseAllParentTasks = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.collapseAllParentTasks).toBe(undefined);
+    });
+    it('columnMenuModule', () => {
+        ganttObj.columnMenuModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.columnMenuModule).toBe(null);
+        ganttObj.columnMenuModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.columnMenuModule).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('connectorLineBackground', () => {
+        ganttObj.connectorLineBackground = null;
+        ganttObj.dataBind();
+        expect(ganttObj.connectorLineBackground).toBe(null);
+        ganttObj.connectorLineBackground = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.connectorLineBackground).toBe(undefined);
+    });
+    it('criticalPathModule', () => {
+        ganttObj.criticalPathModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.criticalPathModule).toBe(null);
+        ganttObj.criticalPathModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.criticalPathModule).toBe(undefined);
+    });
+    it('currentZoomingLevel', () => {
+        ganttObj.currentZoomingLevel = null;
+        ganttObj.dataBind();
+        expect(ganttObj.currentZoomingLevel).toBe(null);
+        ganttObj.currentZoomingLevel = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.currentZoomingLevel).toBe(undefined);
+    });
+    it('dataSource', () => {
+        ganttObj.dataSource = null;
+        ganttObj.dataBind();
+        expect(ganttObj.currentViewData.length).toBe(0);
+        ganttObj.dataSource = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.currentViewData.length).toBe(0);
+    });
+    it('dateFormat', () => {
+        ganttObj.dateFormat = null;
+        ganttObj.dataBind();
+        expect(ganttObj.dateFormat).toBe(null);
+        ganttObj.dateFormat = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.dateFormat).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('dayMarkersModule', () => {
+        ganttObj.dayMarkersModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.dayMarkersModule).toBe(null);
+        ganttObj.dayMarkersModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.dayMarkersModule).toBe(undefined);
+    });
+    it('disableHtmlEncode', () => {
+        ganttObj.disableHtmlEncode = null;
+        ganttObj.dataBind();
+        expect(ganttObj.disableHtmlEncode).toBe(null);
+        ganttObj.disableHtmlEncode = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.disableHtmlEncode).toBe(undefined);
+    });
+    it('durationUnit', () => {
+        ganttObj.durationUnit = null;
+        ganttObj.dataBind();
+        expect(ganttObj.durationUnit).toBe(null);
+        ganttObj.durationUnit = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.durationUnit).toBe(undefined);
+    });
+    it('editDialogFields', () => {
+        ganttObj.editDialogFields = null;
+        ganttObj.dataBind();
+        expect(ganttObj.editDialogFields).toBe(null);
+        ganttObj.editDialogFields = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.editDialogFields).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('enableContextMenu', () => {
+        ganttObj.enableContextMenu = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableContextMenu).toBe(null);
+        ganttObj.enableContextMenu = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableContextMenu).toBe(undefined);
+    });
+    it('enableCriticalPath', () => {
+        ganttObj.enableCriticalPath = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableCriticalPath).toBe(null);
+        ganttObj.enableCriticalPath = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableCriticalPath).toBe(undefined);
+    });
+    it('enableHtmlSanitizer', () => {
+        ganttObj.enableHtmlSanitizer = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableHtmlSanitizer).toBe(null);
+        ganttObj.enableHtmlSanitizer = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableHtmlSanitizer).toBe(undefined);
+    });
+    it('enableImmutableMode', () => {
+        ganttObj.enableImmutableMode = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableImmutableMode).toBe(null);
+        ganttObj.enableImmutableMode = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableImmutableMode).toBe(undefined);
+    });
+    it('enableMultiTaskbar', () => {
+        ganttObj.enableMultiTaskbar = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableMultiTaskbar).toBe(null);
+        ganttObj.enableMultiTaskbar = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableMultiTaskbar).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('enablePersistence', () => {
+        ganttObj.enablePersistence = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enablePersistence).toBe(null);
+        ganttObj.enablePersistence = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enablePersistence).toBe(undefined);
+    });
+    it('enablePredecessorValidation', () => {
+        ganttObj.enablePredecessorValidation = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enablePredecessorValidation).toBe(null);
+        ganttObj.enablePredecessorValidation = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enablePredecessorValidation).toBe(undefined);
+    });
+    it('enableRtl', () => {
+        ganttObj.enableRtl = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableRtl).toBe(null);
+        ganttObj.enableRtl = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableRtl).toBe(undefined);
+    });
+    it('enableTimelineVirtualization', () => {
+        ganttObj.enableTimelineVirtualization = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableTimelineVirtualization).toBe(null);
+        ganttObj.enableTimelineVirtualization = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableTimelineVirtualization).toBe(undefined);
+    });
+    it('enableUndoRedo', () => {
+        ganttObj.enableUndoRedo = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableUndoRedo).toBe(null);
+        ganttObj.enableUndoRedo = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableUndoRedo).toBe(undefined);
+    });
+    it('enableVirtualMaskRow', () => {
+        ganttObj.enableVirtualMaskRow = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableVirtualMaskRow).toBe(null);
+        ganttObj.enableVirtualMaskRow = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableVirtualMaskRow).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('enableVirtualization', () => {
+        ganttObj.enableVirtualization = null;
+        ganttObj.dataBind();
+        expect(ganttObj.enableVirtualization).toBe(null);
+        ganttObj.enableVirtualization = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.enableVirtualization).toBe(undefined);
+    });
+    it('eventMarkers', () => {
+        ganttObj.eventMarkers = null;
+        ganttObj.dataBind();
+        expect(ganttObj.eventMarkers.length).toBe(0);
+        ganttObj.eventMarkers = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.eventMarkers.length).toBe(0);
+    });
+    it('excelExportModule', () => {
+        ganttObj.excelExportModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.excelExportModule).toBe(null);
+        ganttObj.excelExportModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.excelExportModule).toBe(undefined);
+    });
+
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('filterModule', () => {
+        ganttObj.filterModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.filterModule).toBe(null);
+        ganttObj.filterModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.filterModule).toBe(undefined);
+    });
+    it('gridLines', () => {
+        ganttObj.gridLines = null;
+        ganttObj.dataBind();
+        expect(ganttObj.gridLines).toBe(null);
+        ganttObj.gridLines = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.gridLines).toBe(undefined);
+    });
+    it('height', () => {
+        ganttObj.height = null;
+        ganttObj.dataBind();
+        expect(ganttObj.height).toBe(null);
+        ganttObj.height = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.height).toBe(undefined);
+    });
+    it('highlightWeekends', () => {
+        ganttObj.highlightWeekends = null;
+        ganttObj.dataBind();
+        expect(ganttObj.highlightWeekends).toBe(null);
+        ganttObj.highlightWeekends = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.highlightWeekends).toBe(undefined);
+    });
+    it('holidays', () => {
+        ganttObj.holidays = null;
+        ganttObj.dataBind();
+        expect(ganttObj.holidays.length).toBe(0);
+        ganttObj.holidays = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.holidays.length).toBe(0);
+    });
+    it('includeWeekend', () => {
+        ganttObj.includeWeekend = null;
+        ganttObj.dataBind();
+        expect(ganttObj.includeWeekend).toBe(null);
+        ganttObj.includeWeekend = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.includeWeekend).toBe(undefined);
+    });
+    it('keyboardModule', () => {
+        ganttObj.keyboardModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.keyboardModule).toBe(null);
+        ganttObj.keyboardModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.keyboardModule).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+    it('loadChildOnDemand', () => {
+        ganttObj.loadChildOnDemand = null;
+        ganttObj.dataBind();
+        expect(ganttObj.loadChildOnDemand).toBe(null);
+        ganttObj.loadChildOnDemand = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.loadChildOnDemand).toBe(undefined);
+    });
+    it('indicatorType', () => {
+        ganttObj.loadingIndicator.indicatorType = null;
+        ganttObj.dataBind();
+        expect(ganttObj.loadingIndicator.indicatorType).toBe(null);
+        ganttObj.loadingIndicator.indicatorType = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.loadingIndicator.indicatorType).toBe(undefined);
+    });
+    it('locale', () => {
+        ganttObj.locale = null;
+        ganttObj.dataBind();
+        expect(ganttObj.locale).toBe(null);
+        ganttObj.locale = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.locale).toBe(undefined);
+    });
+    it('template', () => {
+        ganttObj.milestoneTemplate = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.milestoneTemplate).toBe(undefined);
+        ganttObj.parentTaskbarTemplate = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.parentTaskbarTemplate).toBe(undefined);
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+
+    it('pdfExportModule', () => {
+        ganttObj.pdfExportModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.pdfExportModule).toBe(null);
+        ganttObj.pdfExportModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.pdfExportModule).toBe(undefined);
+    });
+    it('projectEndDate', () => {
+        ganttObj.projectEndDate = null;
+        ganttObj.dataBind();
+        expect(ganttObj.projectEndDate).toBe(null);
+        ganttObj.projectEndDate = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.projectEndDate).toBe(undefined);
+    });
+    it('projectStartDate', () => {
+        ganttObj.projectStartDate = null;
+        ganttObj.dataBind();
+        expect(ganttObj.projectStartDate).toBe(null);
+        ganttObj.projectStartDate = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.projectStartDate).toBe(undefined);
+    });
+    it('query', () => {
+        ganttObj.query = null;
+        ganttObj.dataBind();
+        expect(ganttObj.query).toBe(null);
+        ganttObj.query = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.query).toBe(undefined);
+    });
+    it('readOnly', () => {
+        ganttObj.readOnly = null;
+        ganttObj.dataBind();
+        expect(ganttObj.readOnly).toBe(null);
+        ganttObj.readOnly = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.readOnly).toBe(undefined);
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+
+    it('renderBaseline', () => {
+        ganttObj.renderBaseline = null;
+        ganttObj.dataBind();
+        expect(ganttObj.renderBaseline).toBe(null);
+        ganttObj.renderBaseline = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.renderBaseline).toBe(undefined);
+    });
+    it('showColumnMenu', () => {
+        ganttObj.showColumnMenu = null;
+        ganttObj.dataBind();
+        expect(ganttObj.showColumnMenu).toBe(null);
+        ganttObj.showColumnMenu = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.showColumnMenu).toBe(undefined);
+    });
+    it('showInlineNotes', () => {
+        ganttObj.showInlineNotes = null;
+        ganttObj.dataBind();
+        expect(ganttObj.showInlineNotes).toBe(null);
+        ganttObj.showInlineNotes = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.showInlineNotes).toBe(undefined);
+    });
+    it('showOverAllocation', () => {
+        ganttObj.showOverAllocation = null;
+        ganttObj.dataBind();
+        expect(ganttObj.showOverAllocation).toBe(null);
+        ganttObj.showOverAllocation = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.showOverAllocation).toBe(undefined);
+    });
+    it('sortModule', () => {
+        ganttObj.sortModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.sortModule).toBe(null);
+        ganttObj.sortModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.sortModule).toBe(undefined);
+    });
+    it('taskbarTemplate', () => {
+        ganttObj.taskbarTemplate = null;
+        ganttObj.dataBind();
+        expect(ganttObj.taskbarTemplate).toBe(null);
+        ganttObj.taskbarTemplate = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.taskbarTemplate).toBe(undefined);
+    });
+    it('timezone', () => {
+        ganttObj.timezone = null;
+        ganttObj.dataBind();
+        expect(ganttObj.timezone).toBe(null);
+        ganttObj.timezone = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.timezone).toBe(undefined);
+    });
+    it('toolbar', () => {
+        ganttObj.toolbar = null;
+        ganttObj.dataBind();
+        expect(ganttObj.toolbar).toBe(null);
+        ganttObj.toolbar = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.toolbar).toBe(undefined);
+    });
+    it('undoRedoActions', () => {
+        ganttObj.undoRedoActions = null;
+        ganttObj.dataBind();
+        expect(ganttObj.undoRedoActions).toBe(null);
+        ganttObj.undoRedoActions = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.undoRedoActions).toBe(undefined);
+    });
+    it('undoRedoModule', () => {
+        ganttObj.undoRedoModule= null;
+        ganttObj.dataBind();
+        expect(ganttObj.undoRedoModule).toBe(null);
+        ganttObj.undoRedoModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.undoRedoModule).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+
+    it('validateManualTasksOnLinking', () => {
+        ganttObj.validateManualTasksOnLinking = null;
+        ganttObj.dataBind();
+        expect(ganttObj.validateManualTasksOnLinking).toBe(null);
+        ganttObj.validateManualTasksOnLinking = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.validateManualTasksOnLinking).toBe(undefined);
+    });
+    it('virtualScrollModule', () => {
+        ganttObj.virtualScrollModule = null;
+        ganttObj.dataBind();
+        expect(ganttObj.virtualScrollModule).toBe(null);
+        ganttObj.virtualScrollModule = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.virtualScrollModule).toBe(undefined);
+    });
+    it('zoomingLevel', () => {
+        ganttObj.zoomingLevels = null;
+        ganttObj.dataBind();
+        expect(ganttObj.zoomingLevels).toBe(null);
+        ganttObj.zoomingLevels = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.zoomingLevels).toBe(undefined);
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            }
+        }, done);
+    });
+
+    it('rowHeight', () => {
+          ganttObj.rowHeight = null;
+          ganttObj.dataBind();
+          expect(ganttObj.rowHeight).toBe(36);
+          ganttObj.rowHeight = undefined;
+          ganttObj.dataBind();
+          expect(ganttObj.rowHeight).toBe(36);         
+    });
+    it('taskbarHeight', () => {
+        ganttObj.taskbarHeight = null;
+        ganttObj.dataBind();
+        expect(ganttObj.taskbarHeight).toBe(null);
+        ganttObj.taskbarHeight = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.taskbarHeight).toBe(undefined);
+    });
+    it('connectorLineWidth', () => {
+        ganttObj.connectorLineWidth = null;
+        ganttObj.dataBind();
+        expect(ganttObj.connectorLineWidth).toBe(null);
+        ganttObj.connectorLineWidth = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.connectorLineWidth).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: cellEditData,
+            resources: resourcesData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                notes: 'Notes',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate',
+                resourceInfo: 'Resource',
+                dependency: 'Predecessor',
+                indicators: 'Indicators',
+                child: 'subtasks',
+                cssClass: 'cssClass',
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            renderBaseline: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+            },
+            editDialogFields: [
+                { type: 'General' },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Notes' },
+            ],
+            splitterSettings: {
+                columnIndex: 9
+            },
+            allowSelection: true,
+            allowUnscheduledTasks: true,
+            allowFiltering: true,
+            columns: [
+                { field: 'TaskID', width: 60 },
+                { field: 'TaskName', editType: 'stringedit', width: 100 },
+                { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                { field: 'Duration', width: 100 },
+                { field: 'Predecessor', width: 100 },
+                { field: 'Progress', width: 100 },
+                { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                { field: 'Resource', width: 100 },
+                { field: 'Notes', width: 100 },
+                { field: 'Customcol', headerText: 'Custom Column', editType: 'datepickeredit', width: 100 }
+            ],
+        }, done);
+    });
+
+    it('resourceIDMapping', () => {
+          ganttObj.resourceIDMapping = null;
+          ganttObj.dataBind();
+          expect(ganttObj.resourceIDMapping).toBe(null);
+          ganttObj.resourceIDMapping = undefined;
+          ganttObj.dataBind();
+          expect(ganttObj.resourceIDMapping).toBe(undefined);         
+    });
+    it('resourceNameMapping', () => {
+        ganttObj.resourceNameMapping = null;
+        ganttObj.dataBind();
+        expect(ganttObj.resourceNameMapping).toBe(null);
+        ganttObj.resourceNameMapping = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.resourceNameMapping).toBe(undefined);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Null or undefined public properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });    
+    it('editSettings', () => {
+        ganttObj.editSettings.allowAdding = null;
+        ganttObj.editSettings.allowEditing = null;
+        ganttObj.editSettings.allowDeleting = null;
+        ganttObj.editSettings.allowTaskbarEditing = null;
+        ganttObj.dataBind();
+        expect(ganttObj.editSettings.allowAdding).toBe(null);
+        expect(ganttObj.editSettings.allowEditing).toBe(null);
+        expect(ganttObj.editSettings.allowDeleting).toBe(null);
+        expect(ganttObj.editSettings.allowTaskbarEditing).toBe(null);
+        ganttObj.editSettings.allowAdding = undefined;
+        ganttObj.editSettings.allowEditing = undefined;
+        ganttObj.editSettings.allowDeleting = undefined;
+        ganttObj.editSettings.allowTaskbarEditing = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.editSettings.allowAdding).toBe(undefined);
+        expect(ganttObj.editSettings.allowEditing).toBe(undefined);
+        expect(ganttObj.editSettings.allowDeleting).toBe(undefined);
+        expect(ganttObj.editSettings.allowTaskbarEditing).toBe(undefined);
+    });
+    it('filtersettings  ', () => {
+        ganttObj.filterSettings.columns = null;
+        ganttObj.filterSettings.hierarchyMode= null;
+        ganttObj.filterSettings.ignoreAccent = null;
+        ganttObj.filterSettings.operators = null;
+        ganttObj.filterSettings.type = null;
+        ganttObj.dataBind();
+        expect(ganttObj.filterSettings.columns.length).toBe(0);
+        expect(ganttObj.filterSettings.hierarchyMode).toBe(null);
+        expect(ganttObj.filterSettings.ignoreAccent).toBe(null);
+        expect(ganttObj.filterSettings.operators).toBe(null);
+        expect(ganttObj.filterSettings.type).toBe(null);
+        ganttObj.filterSettings.columns = undefined;
+        ganttObj.filterSettings.hierarchyMode= undefined;
+        ganttObj.filterSettings.ignoreAccent = undefined;
+        ganttObj.filterSettings.operators = undefined;
+        ganttObj.filterSettings.type = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.filterSettings.columns.length).toBe(0);
+        expect(ganttObj.filterSettings.hierarchyMode).toBe(undefined);
+        expect(ganttObj.filterSettings.ignoreAccent).toBe(undefined);
+        expect(ganttObj.filterSettings.operators).toBe(undefined);
+        expect(ganttObj.filterSettings.type).toBe(undefined);      
+    });
+    it('labelSettings', () => {
+        ganttObj.labelSettings.leftLabel = null;
+        ganttObj.labelSettings.rightLabel = null;
+        ganttObj.labelSettings.taskLabel = null;
+        ganttObj.dataBind();
+        expect(ganttObj.labelSettings.leftLabel).toBe(null);
+        expect(ganttObj.labelSettings.rightLabel).toBe(null);
+        expect(ganttObj.labelSettings.taskLabel).toBe(null);
+        ganttObj.labelSettings.leftLabel = undefined;
+        ganttObj.labelSettings.rightLabel = undefined;
+        ganttObj.labelSettings.taskLabel = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.labelSettings.leftLabel).toBe(undefined);
+        expect(ganttObj.labelSettings.rightLabel).toBe(undefined);
+        expect(ganttObj.labelSettings.taskLabel).toBe(undefined);
+    });
+    it('sortSettings  ', () => {
+        ganttObj.sortSettings.allowUnsort = null;
+        ganttObj.sortSettings.columns = null;
+        ganttObj.dataBind();
+        expect( ganttObj.sortSettings.allowUnsort).toBe(null);
+        expect(ganttObj.sortSettings.columns.length).toBe(0);
+        ganttObj.sortSettings.allowUnsort = null;
+        ganttObj.sortSettings.columns = null;
+        ganttObj.dataBind();
+        expect( ganttObj.sortSettings.allowUnsort).toBe(null);
+        expect(ganttObj.sortSettings.columns.length).toBe(0);
+    });
+    it('timelineSettings  ', () => {
+        ganttObj.timelineSettings.bottomTier.count = null;
+        ganttObj.timelineSettings.bottomTier.format = null;
+        ganttObj.timelineSettings.bottomTier.formatter = null;
+        ganttObj.timelineSettings.bottomTier.unit = null;
+        ganttObj.timelineSettings.showTooltip = null;
+        ganttObj.timelineSettings.timelineUnitSize = null;
+        ganttObj.timelineSettings.timelineViewMode = null;
+        ganttObj.timelineSettings.topTier.count = null;
+        ganttObj.timelineSettings.topTier.format = null;
+        ganttObj.timelineSettings.topTier.formatter = null;
+        ganttObj.timelineSettings.topTier.unit = null;
+        ganttObj.timelineSettings.updateTimescaleView = null;
+        ganttObj.timelineSettings.weekStartDay = null;
+        ganttObj.timelineSettings.weekendBackground = null;
+        ganttObj.dataBind();
+        expect(ganttObj.timelineSettings.bottomTier.count).toBe(null);
+        expect(ganttObj.timelineSettings.bottomTier.format).toBe(null);
+        expect(ganttObj.timelineSettings.bottomTier.formatter).toBe(null);
+        expect(ganttObj.timelineSettings.bottomTier.unit).toBe(null);
+        expect(ganttObj.timelineSettings.showTooltip).toBe(null);
+        expect(ganttObj.timelineSettings.timelineUnitSize).toBe(null);
+        expect(ganttObj.timelineSettings.timelineViewMode).toBe(null);
+        expect(ganttObj.timelineSettings.topTier.count).toBe(null);
+        expect(ganttObj.timelineSettings.topTier.format).toBe(null);
+        expect(ganttObj.timelineSettings.topTier.formatter).toBe(null);
+        expect(ganttObj.timelineSettings.topTier.unit).toBe(null);
+        expect(ganttObj.timelineSettings.updateTimescaleView).toBe(null);
+        expect(ganttObj.timelineSettings.weekendBackground).toBe(null);
+        ganttObj.timelineSettings.bottomTier.count = undefined;
+        ganttObj.timelineSettings.bottomTier.format = undefined;
+        ganttObj.timelineSettings.bottomTier.formatter = undefined;
+        ganttObj.timelineSettings.bottomTier.unit = undefined;
+        ganttObj.timelineSettings.showTooltip = undefined;
+        ganttObj.timelineSettings.timelineUnitSize = undefined;
+        ganttObj.timelineSettings.timelineViewMode = undefined;
+        ganttObj.timelineSettings.topTier.count = undefined;
+        ganttObj.timelineSettings.topTier.format = undefined;
+        ganttObj.timelineSettings.topTier.formatter = undefined;
+        ganttObj.timelineSettings.topTier.unit = undefined;
+        ganttObj.timelineSettings.updateTimescaleView = undefined;
+        ganttObj.timelineSettings.weekStartDay = undefined;
+        ganttObj.timelineSettings.weekendBackground = undefined;
+        ganttObj.dataBind();
+        expect(ganttObj.timelineSettings.bottomTier.count).toBe(undefined);
+        expect(ganttObj.timelineSettings.bottomTier.format).toBe(undefined);
+        expect(ganttObj.timelineSettings.bottomTier.formatter).toBe(undefined);
+        expect(ganttObj.timelineSettings.bottomTier.unit).toBe(undefined);
+        expect(ganttObj.timelineSettings.showTooltip).toBe(undefined);
+        expect(ganttObj.timelineSettings.timelineUnitSize).toBe(undefined);
+        expect(ganttObj.timelineSettings.timelineViewMode).toBe(undefined);
+        expect(ganttObj.timelineSettings.topTier.count).toBe(undefined);
+        expect(ganttObj.timelineSettings.topTier.format).toBe(undefined);
+        expect(ganttObj.timelineSettings.topTier.formatter).toBe(undefined);
+        expect(ganttObj.timelineSettings.topTier.unit).toBe(undefined);
+        expect(ganttObj.timelineSettings.updateTimescaleView).toBe(undefined);
+        expect(ganttObj.timelineSettings.weekendBackground).toBe(undefined);
+      
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Checking for empty element', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: cr884998,
+            taskFields: {
+                id: 'taskId',
+                name: 'taskName',
+                startDate: 'startDate',
+                endDate: 'endDate',
+                duration: 'duration',
+                progress: 'realized',
+                dependency: 'dependencies',
+                segments: 'parts',
+                parentID: 'parentId',
+                baselineStartDate: 'baselineStartDate',
+                baselineEndDate: 'baselineEndDate'
+            },
+            gridLines:'Both',
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            queryTaskbarInfo:function(args) {
+
+            },
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px'
+        }, done);
+
+    });
+    it('check flat data', () => {
+        expect(ganttObj.flatData.length > 0).toBe(true);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Checking element on hover', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: publicProperty,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true
+            },
+            labelSettings:{
+                leftLabel:'TaskName'
+            }
+        }, done);
+    });
+
+    it('checking elemnent', () => {
+        let dragElement: HTMLElement = ganttObj.chartPane.querySelectorAll('.e-taskbar-main-container')[2] as HTMLElement
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft, dragElement.offsetTop);
+        let label: HTMLElement = ganttObj.chartPane.querySelectorAll('.e-left-label-inner-div')[2] as HTMLElement
+        triggerMouseEvent(label, 'mousemove', label.offsetLeft, label.offsetTop);
+        expect(document.getElementsByClassName('e-left-resize-gripper').length === 0).toBe(true)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

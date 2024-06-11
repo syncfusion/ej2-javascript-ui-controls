@@ -453,8 +453,8 @@ export interface PdfAnnotationBaseModel {
     template?: any;
 
     /**
-      * specifies the custom stamp template size of the annotation.
-      */
+     * specifies the custom stamp template size of the annotation.
+     */
     templateSize?: any;
 
     /**
@@ -570,7 +570,7 @@ export interface PdfAnnotationBaseModel {
     /**
      * specifies the allowed interactions of the locked annotation.
      */
-    allowedInteractions?: AllowedInteraction;
+    allowedInteractions?: AllowedInteraction[];
 
     /**
      * specifies whether the annotations are included or not in print actions.
@@ -584,6 +584,7 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents the page rotation angle
+     *
      * @private
      *
      */
@@ -591,6 +592,7 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents the stamp icon name
+     *
      * @private
      *
      */
@@ -598,6 +600,7 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents the annotation is added programmatically.
+     *
      * @private
      *
      */
@@ -605,6 +608,7 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents the annotation is transparent.
+     *
      * @private
      *
      */
@@ -839,9 +843,9 @@ export interface PdfFormFieldBaseModel {
     isTransparent?: boolean;
 
     /**
-     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false. 
+     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false.
      * If set, the field is automatically divided into as many equally spaced position, or  combs, as the value of MaxLength, and the text is laid out into the combs.
-     * 
+     *
      * @default false
      */
     insertSpaces?: boolean;
@@ -867,6 +871,11 @@ export interface PdfFormFieldBaseModel {
      * Gets or sets the items selected in the drop down/ listbox.
      */
     selectedIndex?: number[];
+
+    /**
+     * specifies the custom data of the form field.
+     */
+    customData?: object;
 
 }
 

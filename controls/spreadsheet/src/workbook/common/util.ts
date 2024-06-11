@@ -1,10 +1,11 @@
-import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes } from './../index';
+import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes, RowModel } from './../index';
 import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
 import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs, checkDateFormat, checkNumberFormat, DateFormatCheckArgs } from './../index';
 import { isUndefined, defaultCurrencyCode, getNumberDependable, getNumericObject, Internationalization } from '@syncfusion/ej2-base';
 import { parseThousandSeparator } from './internalization';
 import { AutoDetectGeneralFormatArgs, isNumber } from './../index';
+import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 
 /**
  * Check whether the text is formula or not.
@@ -271,6 +272,7 @@ export function columnIndex(cell: string): number {
  * @param {number} index - specify the index
  * @param {boolean} increase - specify the boolean value.
  * @param {string} layout - specify the string
+ * @param {number} count - specify the count.
  * @returns {number} - To skip the hidden index
  *
  */
@@ -341,7 +343,7 @@ export function getUpdatedFormula(
             cIdxValue = cIdxValue.slice(1);
         }
         cIdxValue = cIdxValue.split('(').join(context.listSeparator).split(')').join(context.listSeparator);
-        const formulaOperators: string[] = ['+', '-', '*', '/', '>=', '<=', '<>', '>', '<', '=', '%']; let splitArray: string[];
+        const formulaOperators: string[] = ['+', '-', '*', '/', '>=', '<=', '<>', '>', '<', '=', '%', '&']; let splitArray: string[];
         let value: string = cIdxValue;
         for (let i: number = 0; i < formulaOperators.length; i++) {
             splitArray = value.split(formulaOperators[i as number]);
@@ -358,7 +360,9 @@ export function getUpdatedFormula(
             } else {
                 cellRef = splitArray[j as number].toUpperCase();
             }
-            if (isCellReference(cellRef) && !cellRef.includes('$')) {
+            if (isCellReference(cellRef.trim()) && !cellRef.includes('$')) {
+                const leadingSpaces: string = getLeadingSpaces(cellRef);
+                const trailingSpaces: string = getTrailingSpaces(cellRef);
                 const range: number[] = getRangeIndexes(cellRef);
                 const newRange: number[] = [currIndexes[0] - (prevIndexes[0] - range[0]), currIndexes[1] - (prevIndexes[1] - range[1]),
                     currIndexes[0] - (prevIndexes[0] - range[2]), currIndexes[1] - (prevIndexes[1] - range[3])];
@@ -378,7 +382,7 @@ export function getUpdatedFormula(
                 if (isSheetRef) {
                     newRef = `${cellRefArr[0]}!${newRef}`;
                 }
-                refObj[splitArray[j as number]] = newRef;
+                refObj[splitArray[j as number]] = `${leadingSpaces}${newRef}${trailingSpaces}`;
                 if (splitArray[j as number].includes(':')) {
                     newAddress.splice(0, 0, refObj);
                 } else {
@@ -406,7 +410,50 @@ export function getUpdatedFormula(
     }
 }
 
-/**@hidden */
+/**
+ * Retrieves the leading spaces from a given string.
+ *
+ * @param {string} string - The input string from which to retrieve leading spaces.
+ * @returns {string} - A string containing all leading spaces from the input string.
+ * @hidden
+ */
+export function getLeadingSpaces(string: string): string {
+    let leadingSpaces: string = '';
+    for (let i: number = 0; i < string.length; i++) {
+        if (string[i as number] === ' ') {
+            leadingSpaces += ' ';
+        } else {
+            break;
+        }
+    }
+    return leadingSpaces;
+}
+
+/**
+ * Retrieves the trailing spaces from a given string.
+ *
+ * @param {string} string - The input string from which to retrieve trailing spaces.
+ * @returns {string} - A string containing all trailing spaces from the input string.
+ * @hidden
+ */
+export function getTrailingSpaces(string: string): string {
+    let trailingSpaces: string = '';
+    for (let i: number = string.length - 1; i >= 0; i--) {
+        if (string[i as number] === ' ') {
+            trailingSpaces = ' ' + trailingSpaces;
+        } else {
+            break;
+        }
+    }
+    return trailingSpaces;
+}
+
+/**
+ * @param {Workbook} context - Specifies the context.
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {CellUpdateArgs} prop - Specifies the props.
+ * @returns {boolean} - returns args cancel value.
+ * @hidden */
 export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdateArgs): boolean {
     const args: BeforeCellUpdateArgs = { cell: prop.cell, rowIndex: prop.rowIdx, colIndex: prop.colIdx, cancel: false, sheet: sheet.name };
     if (!prop.preventEvt) { // Prevent event triggering for public method cell update.
@@ -483,7 +530,7 @@ export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel):
             }
         }
         return true;
-    }
+    };
     const isEmptyColumn: Function = (idx: number): boolean => {
         for (let i: number = sRowIdx; i <= eRowIdx; i++) {
             if (!isUndefined(getCell(i, idx, sheet, null, true).value)) {
@@ -491,7 +538,7 @@ export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel):
             }
         }
         return true;
-    }
+    };
     for (let i: number = sRowIdx; i <= usedRowIdx; i++) { // To find end row index
         if (isUndefined(getCell(i, colIdx, sheet, null, true).value) && isEmptyRow(i)) {
             break;
@@ -525,6 +572,7 @@ export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel):
 /**
  * @param {InsertDeleteModelArgs} args - row index
  * @param {number[]} formatRange - format range index
+ * @param {boolean} isAction - specifies isAction.
  * @returns {number[]} - retruns updated range
  * @hidden
  */
@@ -622,7 +670,14 @@ export function deleteFormatRange(args: InsertDeleteModelArgs, formatRange: numb
     }
 }
 
-/** @hidden */
+/**
+ * @param {ConditionalFormat[]} curCF - Specifies current Conditional formatting.
+ * @param {ConditionalFormatModel[]} cfRule - Specifies conditional formatting rules.
+ * @param {number} rowIdx - Specifies the row index.
+ * @param {number} colIdx -Specifies the col index.
+ * @returns {void} - Updates Conditional formatting model.
+ * @hidden
+ */
 export function updateCFModel(curCF: ConditionalFormat[], cfRule: ConditionalFormatModel[], rowIdx: number, colIdx: number): void {
     let cfRange: string[]; let indexes: number[];
     for (let i: number = curCF.length - 1; i >= 0; i--) {
@@ -639,10 +694,15 @@ export function updateCFModel(curCF: ConditionalFormat[], cfRule: ConditionalFor
     }
 }
 
-/** @hidden */
+/**
+ * @param {number} indexes - Specifies the indexes.
+ * @param {string} range - Specifies the range.
+ * @returns {boolean} - Return is range or not.
+ * @hidden
+ */
 export function checkRange(indexes: number[][], range: string): boolean {
     const ranges: string[] = range.trim().split(',');
-    let left: boolean; let right: boolean; let top: boolean; let bottom; let cfIdx: number[];
+    let left: boolean; let right: boolean; let top: boolean; let bottom: boolean; let cfIdx: number[];
     const checkRange: (idx: number[]) => boolean = (idx: number[]): boolean => {
         for (let i: number = 0; i < ranges.length; i++) {
             cfIdx = getRangeIndexes(
@@ -722,7 +782,16 @@ export function checkRange(indexes: number[][], range: string): boolean {
     return false;
 }
 
-/** @hidden */
+/**
+ * @param {string[]} valArr - Specifies the value array.
+ * @param {string} locale - Specifies the locale.
+ * @param {string} curSymbol - Specifies the currency symbol.
+ * @param {Object} numObj - Specifies the number object.
+ * @param {string} numObj.decimal - Specifies decimal.
+ * @param {string} numObj.group - Specifies group separator.
+ * @returns {string[]} - Returns parsed Local Number.
+ * @hidden
+ */
 export function parseLocaleNumber(
     valArr: string[], locale: string, curSymbol?: string, numObj?: { decimal: string, group: string }): string[] {
     let numVal: string; let groupArr: string[];
@@ -753,7 +822,11 @@ export function parseLocaleNumber(
  *
  * @param {Workbook} parent - Specify the Workbook object.
  * @param {number} viewport - Specifies the top, bottom, left, and right index of the current viewport.
- * @returns {number[][]} - Returns the viewport indexes.
+ * @param {number} viewport.topIndex - Specifies the top index of the current viewport.
+ * @param {number} viewport.leftIndex - Specifies the left index of the current viewport.
+ * @param {number} viewport.bottomIndex - Specifies the bottom index of the current viewport.
+ * @param {number} viewport.rightIndex - Specifies the right index of the current viewport.
+ * @returns {number} - Returns the viewport indexes.
  * @hidden
  */
 export function getViewportIndexes(
@@ -775,7 +848,7 @@ export function getViewportIndexes(
         }
         if (froezenCol) {
             indexes.push([viewport.topIndex + froezenRow, topLeftCell[1], viewport.bottomIndex,
-            froezenCol - 1]);
+                froezenCol - 1]);
         }
     }
     return indexes;
@@ -784,15 +857,9 @@ export function getViewportIndexes(
 /**
  * If the primary cell in the merged range row/column is hidden, then this method will update
  * the next visible row/column index within the merged range.
- * 
- * @param {SheetModel} args.sheet - Specifies the active sheet model.
- * @param {CellModel} args.cell - Specifies the primary merged cell model.
- * @param {number} args.rowIdx - Specifies the row index of the primary merged cell. If the row is hidden,
- * then this method will update the next visible row index.
- * @param {number} args.colIdx - Specifies the column index of the primary merged cell. If the column is hidden,
- * then this method will update the next visible column index.
- * @param {boolean} args.isMergedHiddenCell - If either row or column index is changed, we set this property as true.
- * @hidden
+ *
+ * @param {VisibleMergeIndexArgs} args - Specifies the args.
+ * @returns {void} - Update the next visible row/column index within the merged range.
  */
 export function setVisibleMergeIndex(args: VisibleMergeIndexArgs): void {
     if (isHiddenRow(args.sheet, args.rowIdx)) {
@@ -836,4 +903,54 @@ export function getAutoDetectFormatParser(context: Workbook): (cell: CellModel) 
             }
         }
     };
+}
+
+/**
+ *
+ * @param {DataManager} dataManager - Specifies the Datamanager.
+ * @param {Predicate[]} predicates - Specifies the predicates.
+ * @param {Predicate[]} equalOrPredicates - Specifies the equal or predicates.
+ * @returns {Object[]} - Returns apply predicates object.
+ * @hidden
+ */
+export function applyPredicates(dataManager: DataManager, predicates: Predicate[], equalOrPredicates?: Predicate[][]): Object[] {
+    let query: Query = new Query();
+    if (predicates.length) {
+        query.where(Predicate.and(predicates));
+    }
+    let result: Object[] = dataManager.executeLocal(query);
+    if (equalOrPredicates) {
+        for (let idx: number = 0, predicateCollLen: number = equalOrPredicates.length; idx < predicateCollLen; idx++) {
+            if (!result.length) { break; }
+            query = new Query();
+            if (equalOrPredicates[idx as number].length) {
+                query.where(Predicate.or(equalOrPredicates[idx as number]));
+            }
+            result = new DataManager(result).executeLocal(query) as { [key: string]: CellModel }[];
+        }
+    }
+    return result;
+}
+
+/**
+ * Checks whether the cell is read-only or not.
+ *
+ * @param {CellModel} cell - The cell to check.
+ * @param {ColumnModel} column - The column associated with the cell.
+ * @param {RowModel} row - The row associated with the cell.
+ * @returns {boolean} - Returns true if the cell is read-only, otherwise false.
+ * @hidden
+ */
+export function isReadOnly(cell: CellModel, column: ColumnModel, row: RowModel): boolean {
+    if (!cell) {
+        cell = {};
+    }
+    if (cell.isReadOnly === true) {
+        return true;
+    } else if (row && row.isReadOnly === true) {
+        return true;
+    } else if (column && column.isReadOnly === true) {
+        return true;
+    }
+    return false;
 }

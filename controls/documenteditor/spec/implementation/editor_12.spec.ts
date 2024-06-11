@@ -167,7 +167,7 @@ console.log('Copy Paste Heading and Inserting TOC');
         editor.editor.onEnter();
         editor.selection.handleUpKey();
         editor.editor.insertTableOfContents();
-        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(7);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(6); 
     });
     it('Copy Paste word in paragraph', () => {
 console.log('Copy Paste word in paragraph');

@@ -108,7 +108,7 @@ export class RowHistoryFormat {
         //backup current format values.
         const currentRowHeightType: HeightType = this.rowFormat.heightType;
         //Restore old values.
-        let row: TableRowWidget = table.childWidgets[this.rowFormat.ownerBase.index] as TableRowWidget;
+        const row: TableRowWidget = table.childWidgets[this.rowFormat.ownerBase.index] as TableRowWidget;
         owner.editorModule.tableResize.updateRowHeight(row, isRedo ? this.displacement : (-this.displacement));
         owner.documentHelper.layout.reLayoutTable(table);
         if (this.rowFormat.heightType !== this.rowHeightType) {

@@ -4,7 +4,7 @@ import { NodeCutter } from './nodecutter';
 import * as CONSTANT from './../base/constant';
 import { detach, Browser, isNullOrUndefined as isNOU, createElement, closest } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
-import { updateTextNode,nestedListCleanUp } from './../../common/util';
+import { updateTextNode, nestedListCleanUp } from './../../common/util';
 
 /**
  * Insert a HTML Node or Text
@@ -445,7 +445,7 @@ export class InsertHtml {
                         detach(currentNode.nextSibling);
                     }
                 } else if ((currentNode.nodeName === '#text' || currentNode.nodeName === 'BR') && !isNOU(currentNode.parentElement) &&
-                (currentNode.parentElement.nodeName === 'LI' ||  currentNode.parentElement.closest('LI') || (blockNode === editNode && currentNode.parentElement === blockNode )) &&
+                (currentNode.parentElement.nodeName === 'LI' || currentNode.parentElement.closest('LI') || (blockNode === editNode && currentNode.parentElement === blockNode )) &&
                 currentNode.parentElement.textContent.trim().length > 0) {
                     splitedElm = currentNode;
                     if (currentNode.parentElement.nodeName === 'LI' && !isNOU(currentNode.nextSibling) &&
@@ -456,7 +456,7 @@ export class InsertHtml {
                         range.deleteContents();
                         const value: Node = range.startContainer;
                         if (!isNOU(value) && value.nodeName === 'LI' && !isNOU(value.parentElement) && (value.parentElement.nodeName === 'OL' || value.parentElement.nodeName === 'UL') && value.textContent.trim() === '') {
-                            (value.parentElement as HTMLElement).querySelectorAll('li').forEach((item) => {
+                            (value.parentElement as HTMLElement).querySelectorAll('li').forEach((item: HTMLLIElement) => {
                                 item.remove();
                             });
                         }
@@ -532,7 +532,7 @@ export class InsertHtml {
     }
     private static removeEmptyElements(element: HTMLElement): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
-        const nonSvgEmptyElements: Element[] = Array.from(emptyElements).filter(element => {
+        const nonSvgEmptyElements: Element[] = Array.from(emptyElements).filter((element: Element) => {
             // Check if the element is an SVG element or an ancestor of an SVG element
             return !element.closest('svg') && !element.closest('canvas');
         });
@@ -565,9 +565,11 @@ export class InsertHtml {
         }
         return null;
     }
-    private static insertTableInList(range: Range, insertNode: HTMLTableElement, parentNode: Node, currentNode: Node, nodeCutter: NodeCutter): void {
+    private static insertTableInList(range: Range, insertNode: HTMLTableElement,
+                                     parentNode: Node, currentNode: Node, nodeCutter: NodeCutter): void {
         if (range.collapsed) {
             const isStart: boolean = range.startOffset === 0;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const isEnd: boolean = (range.startContainer.textContent as any).trimEnd().length === range.startOffset;
             if (isStart || isEnd) {
                 if (isStart) {
@@ -577,7 +579,7 @@ export class InsertHtml {
                 }
             } else {
                 const preNode: Node = nodeCutter.SplitNode(range, parentNode as HTMLElement, true);
-                const sibNode: Node = preNode.previousSibling; 
+                const sibNode: Node = preNode.previousSibling;
                 sibNode.appendChild(insertNode);
             }
         } else {

@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { Chart } from '../chart';
-import { Axis } from '../axis/axis';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
 import { Series, Points } from './chart-series';
 import { Mean, RectOption, pathAnimation, getElement, appendChildElement, appendClipElement } from '../../common/utils/helper';
@@ -143,15 +140,15 @@ export class ErrorBar {
     //calculations for eror bar types
     private calculateFixedValue(
         point: Points, series: Series, isInverted: boolean,
-        errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
+        errorX: number, errorY: number
     ): string[] {
-        const errorbar: ErrorBarSettingsModel = series.errorBar;
+        // const errorbar: ErrorBarSettingsModel = series.errorBar;
         return this.findLocation(point, series, isInverted, errorX, errorY);
     }
 
     private calculatePercentageValue(
         point: Points, series: Series, isInverted: boolean,
-        errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
+        errorX: number, errorY: number
     ): string[] {
         errorX = (errorX / 100) * point.xValue;
         errorY = (errorY / 100) * point.yValue;
@@ -161,7 +158,7 @@ export class ErrorBar {
 
     private calculateStandardDeviationValue(
         point: Points, series: Series, isInverted: boolean,
-        errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
+        errorX: number, errorY: number
     ): string[] {
         const getMean: Mean = this.meanCalculation(series, series.errorBar.mode);
         errorX = errorX * (getMean.horizontalSquareRoot + getMean.horizontalMean);
@@ -171,7 +168,7 @@ export class ErrorBar {
     }
     private calculateStandardErrorValue(
         point: Points, series: Series, isInverted: boolean,
-        errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
+        errorX: number, errorY: number
     ): string[] {
         const length: number = series.points.length;
         const getMean: Mean = this.meanCalculation(series, series.errorBar.mode);
@@ -182,9 +179,9 @@ export class ErrorBar {
 
     private calculateCustomValue(
         point: Points, series: Series, isInverted: boolean,
-        errorX: number, errorY: number, xAxis: Axis, yAxis: Axis
+        errorX: number, errorY: number
     ): string[] {
-        const errorbar: ErrorBarSettingsModel = series.errorBar;
+        // const errorbar: ErrorBarSettingsModel = series.errorBar;
         return this.findLocation(point, series, isInverted, errorX, errorY);
 
     }
@@ -308,7 +305,7 @@ export class ErrorBar {
     }
 
     private createElement(series: Series, chart: Chart): void {
-        const explodeValue: number = 5;
+        // const explodeValue: number = 5;
         const transform: string = chart.chartAreaType === 'Cartesian' ?
             'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
         const markerHeight: number = (series.marker.height) / 2;

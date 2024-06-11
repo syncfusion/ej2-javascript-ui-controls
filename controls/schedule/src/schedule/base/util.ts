@@ -80,7 +80,7 @@ export function getTranslateX(element: HTMLElement | Element): number {
 export function getWeekFirstDate(date: Date, firstDayOfWeek: number): Date {
     const date1: Date = new Date(date.getTime());
     firstDayOfWeek = (firstDayOfWeek - date1.getDay() + 7 * (-1)) % 7;
-    return new Date(date1.setDate(date1.getDate() + firstDayOfWeek));
+    return new Date(date1.setDate(date1.getDate() + (isNaN(firstDayOfWeek) ? 0 : firstDayOfWeek)));
 }
 
 /**

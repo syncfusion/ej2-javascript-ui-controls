@@ -34,7 +34,7 @@ export interface IBulletStyle {
     subTitleFont: FontModel;
     legendLabelFont: FontModel;
     axisLabelFont: FontModel;
-    dataLabelFont:FontModel;
+    dataLabelFont: FontModel;
     tooltipLabelFont: FontModel;
     legendTitleFont?: FontModel;
 }

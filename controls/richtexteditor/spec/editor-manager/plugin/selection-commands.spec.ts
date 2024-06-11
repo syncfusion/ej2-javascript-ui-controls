@@ -292,22 +292,22 @@ describe('Selection commands', () => {
         let text1: Text = node1.childNodes[0] as Text;
         ptag = node1;
         domSelection.setSelectionText(document, text1, text1, 0, 26);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(102, 102, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', null, 'rgb(102, 102, 0)');
         expect((node1.childNodes[0] as HTMLElement).style.color).toEqual('rgb(102, 102, 0)');
         expect((node1.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontname tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'Arial');
+        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', null, 'Arial');
         expect((ptag.childNodes[0] as HTMLElement).style.fontFamily).toEqual('Arial');
         expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontsize tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '20px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', null, '20px');
         expect((ptag.childNodes[0] as HTMLElement).style.fontSize).toEqual('20px');
         expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply backgroundcolor tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', null, 'rgb(246, 198, 206)');
         expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 206)');
         expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
@@ -323,22 +323,22 @@ describe('Selection commands', () => {
             .childNodes[0].textContent).toEqual('the rich text editor (rte)');
     });
     it('Re - Apply backgroundcolor tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 2)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P',  null,'rgb(246, 198, 2)');
         expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 2)');
         expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontsize tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '40px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', null, '40px');
         expect((ptag.childNodes[0] as HTMLElement).style.fontSize).toEqual('40px');
         expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontname tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'monospace');
+        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', null, 'monospace');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.fontFamily).toEqual('monospace');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontcolor tag for text node', () => {
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(226, 10, 10)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', null, 'rgb(226, 10, 10)');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.color).toEqual('rgb(226, 10, 10)');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
@@ -346,22 +346,22 @@ describe('Selection commands', () => {
         fontTag = ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0];
         let text1: Text = fontTag.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 3, 10);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(102, 102, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', null, 'rgb(102, 102, 0)');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).style.color).toEqual('rgb(102, 102, 0)');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontname tag for already applied specific text node', () => {
-        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'Arial');
+        SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', null, 'Arial');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).style.fontFamily).toEqual('Arial');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontsize tag for already applied specific text node', () => {
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '20px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', null, '20px');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).style.fontSize).toEqual('20px');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply backgroundcolor tag for already applied specific text node', () => {
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', null, 'rgb(246, 198, 206)');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 206)');
         expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
@@ -486,7 +486,7 @@ describe('Selection commands', () => {
     it('transparent background color not apllied issue', () => {
         let node1: Node = document.getElementById('format6');
         domSelection.setSelectionText(document, node1, node1, 0, node1.childNodes.length);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', '');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P',  null,'');
         expect((document.getElementById('format6').childNodes[1] as HTMLElement).style.color).toEqual('');
     });
     it('Apply fontsize tag for list elements', () => {
@@ -495,7 +495,7 @@ describe('Selection commands', () => {
         let node2: Node = document.getElementById('paragraph26');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '36px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', null, '36px');
         expect(document.getElementById('paragraph20').parentElement.style.fontSize).toEqual('36px');
         expect(document.getElementById('paragraph21').parentElement.style.fontSize).toEqual('36px');
         expect(document.getElementById('paragraph22').parentElement.style.fontSize).toEqual('36px');
@@ -510,7 +510,7 @@ describe('Selection commands', () => {
         let node2: Node = document.getElementById('paragraph35');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(83, 129, 53)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', null, 'rgb(83, 129, 53)');
         expect(document.getElementById('paragraph30').parentElement.style.color).toEqual('rgb(83, 129, 53)');
         expect(document.getElementById('paragraph31').parentElement.style.color).toEqual('rgb(83, 129, 53)');
         expect(document.getElementById('paragraph32').parentElement.style.color).toEqual('rgb(83, 129, 53)');
@@ -526,7 +526,7 @@ describe('Selection commands', () => {
         let node2: Node = document.getElementById('paragraph26');
         let listNode2: Text = node2.childNodes[0].childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 5, 5);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '10px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', null, '10px');
         expect(document.getElementById('paragraph20').parentElement.style.fontSize).not.toEqual('10px');
         expect(((document.getElementById('paragraph20').firstElementChild as HTMLElement).tagName.toLowerCase()) === 'span').toBe(true);
         expect((document.getElementById('paragraph20').childNodes[1] as HTMLElement).style.fontSize).toEqual('10px');
@@ -545,7 +545,7 @@ describe('Selection commands', () => {
         let node2: Node = document.getElementById('paragraph28');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '36px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', null, '36px');
         expect(document.getElementById('paragraph27').parentElement.style.fontSize).toEqual('36px');
         expect(document.getElementById('paragraph28').parentElement.style.fontSize).toEqual('36px');
     });
@@ -696,7 +696,7 @@ describe('EJ2-59075 - The font name is not getting properly while loading custom
     it('The font name is not changed properly issue - EJ2-59075 ', (done) => {
         let focusNode = rteObj.inputElement.querySelector('.focusNode');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 1, 1);
-        SelectionCommands.applyFormat(document, 'fontname', rteObj.inputElement, 'P', 'Arial');
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.inputElement, 'P', null, 'Arial');
         expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span class="focusNode" style="font-family: Arial;"><br></span></p>`);
         done();
     });
@@ -780,7 +780,7 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         SelectionCommands.applyFormat(document, 'underline', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
-        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', null, 'rgb(246, 198, 206)');
         expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span></em></strong><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
         done();
     });
@@ -810,8 +810,8 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         SelectionCommands.applyFormat(document, 'underline', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
-        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', 'rgb(83, 129, 53)');
-        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', null, 'rgb(83, 129, 53)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', null, 'rgb(246, 198, 206)');
         expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span></em></strong></span></span><span style="color: rgb(83, 129, 53); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
         done();
     });
@@ -838,8 +838,8 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
     it('Case 5 of the formating issue - EJ2-58803 ', (done) => {
         let focusNode = rteObj.inputElement.querySelector('.focusNode');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 11, 11);
-        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
-        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', 'rgb(83, 129, 53)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', null, 'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', null, 'rgb(83, 129, 53)');
         expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span></em></strong></span></span><span style="color: rgb(83, 129, 53); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);"><strong><em><span class="focusNode" style="text-decoration: underline;">​</span></em></strong></span></span></p>`);
         done();
     });
@@ -1057,7 +1057,7 @@ describe('EJ2-52390 - When using the list which contains multiple spans inside w
     it('Applying background color for the range li nodes', (done) => {
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.children[0].firstElementChild.firstElementChild.firstElementChild.firstChild.firstChild, rteObj.inputElement.children[0].firstElementChild.lastElementChild.firstElementChild.firstChild.firstChild, 0, 125);
         expect((rteObj as any).inputElement.children[0].firstElementChild.children[0].firstElementChild.style.backgroundColor).toBe('rgb(255, 255, 0)');
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', null, 'rgb(246, 198, 206)');
         expect((rteObj as any).inputElement.children[0].firstElementChild.children[0].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
         expect((rteObj as any).inputElement.children[0].firstElementChild.children[1].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
         expect((rteObj as any).inputElement.children[0].firstElementChild.children[2].firstElementChild.style.backgroundColor).toBe('rgb(246, 198, 206)');
@@ -1119,7 +1119,7 @@ describe('Font size change with br', () => {
         let node2: Node = document.getElementById('paragraphlast');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 0);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '36px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', null, '36px');
         let brelement = document.querySelectorAll('br');
         for (let i: number = 0; i < brelement.length; i++) {
             expect(brelement[i].parentElement.style.fontSize).toBe('36px');
@@ -1132,7 +1132,7 @@ describe('Font size change with br', () => {
         let node2: Node = document.getElementById('paragraphlast');
         let listNode2: Text = node2.childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 0, 0);
-        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '8px');
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', null, '8px');
         let brelement = document.querySelectorAll('br');
         for (let i: number = 0; i < brelement.length; i++) {
             expect(brelement[i].parentElement.style.fontSize).toBe('8px');
@@ -1274,8 +1274,8 @@ describe('EJ2-46060: List not generated after enter key press and bold format ch
         let node1: Node = rteObj.element.querySelectorAll('.e-content p')[1];
         domSelection.setSelectionText(document, node1, node1, 0, 0);
         (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-        (rteObj.element.querySelectorAll(".e-toolbar-item")[6] as HTMLElement).click();
-        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerHTML.replace(/\uFEFF/g,"")).toBe('<p><strong>a</strong><br></p><ol><li><br></li></ol>');    
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[7] as HTMLElement).click();
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerHTML.replace(/\uFEFF/g,"")).toBe('<p><strong>a</strong><br></p><ol><li><br></li></ol>');
     });
     afterEach(() => {
         destroy(rteObj);
@@ -1402,7 +1402,7 @@ describe('BLAZ-29736 - Font Color not Applying for the hyperlink Text', () => {
         range.setStart(rteObj.element.querySelector('a').childNodes[0], 0);
         range.setEnd(rteObj.element.querySelector('a').childNodes[0], 6);
         domSelection.setRange(document, range);
-        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(255, 0, 0)');
         const spanElem = rteObj.element.querySelector('.e-content').querySelector('span');
         expect(spanElem.parentElement.nodeName).toEqual('A');
         expect(spanElem.querySelector('a')).toEqual(null);
@@ -1420,7 +1420,7 @@ describe('EJ2-70136 - Font Size value not updating while on selected text', () =
         });
     });
     it('EJ2-70136 - Font Size value not updating while on selected text', (done) => {
-        let rteEle = rteObj.element;
+        let rteEle = rteObj.rootContainer;
         let focusNode = rteObj.inputElement.querySelector('.focusNode');
         const range:Range = new Range();
         range.setStart(focusNode.childNodes[0],0);
@@ -1429,7 +1429,7 @@ describe('EJ2-70136 - Font Size value not updating while on selected text', () =
         let fontSizePicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
         fontSizePicker.click();
         setTimeout(() => {
-            var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[5];
+            var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[6];
             fontSizeChooser.click();
             setTimeout(() => {
                 expect(rteEle.childNodes[2].childNodes[0].innerHTML).toBe('<p class="focusNode"><span style="font-size: 24pt;">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/">HTML markup</a></span><span style="font-size: 24pt;"> or </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/">markdown</a></span><span style="font-size: 24pt;"> of the content</span></p>');
@@ -1467,13 +1467,13 @@ describe('EJ2-70405 - Background Color not applied properly when nested styles a
         SelectionCommands.applyFormat(document, 'underline', rteObj.element.querySelector('.e-content'), 'P');
         SelectionCommands.applyFormat(document, 'strikethrough', rteObj.element.querySelector('.e-content'), 'P');
         // Apply font family
-        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', 'Arial');
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', null, 'Arial');
         // Apply font color
-        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(255, 0, 0)');
         // Apply background color
-        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(0, 255, 0)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(0, 255, 0)');
         // Apply font size
-        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', '24pt');
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', null, '24pt');
         const allSpanNodes = rteObj.element.querySelector('.e-content').querySelectorAll('span');
         expect(allSpanNodes.length).toEqual(6);
         // Test font size
@@ -1514,7 +1514,7 @@ describe('EJ2-69958 - Font size fails to works properly after applying the subsc
         SubscriptPicker.click();
         let fontSizePicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
         fontSizePicker.click();
-        var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[5];
+        var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[6];
         fontSizeChooser.click();
         expect(focusNode.childNodes[1].style.fontSize).toEqual('24pt');
     });
@@ -1552,13 +1552,13 @@ describe('EJ2-70405 - Background Color not applied properly when nested styles a
         SelectionCommands.applyFormat(document, 'underline', rteObj.element.querySelector('.e-content'), 'P');
         SelectionCommands.applyFormat(document, 'strikethrough', rteObj.element.querySelector('.e-content'), 'P');
         // Apply font family
-        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', 'Arial');
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', null, 'Arial');
         // Apply font color
-        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(255, 0, 0)');
         // Apply background color
-        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(0, 255, 0)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(0, 255, 0)');
         // Apply font size
-        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', '24pt');
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', null, '24pt');
         const imageCaptionWrapper = rteObj.element.querySelector('.e-img-inner');
         expect(imageCaptionWrapper.firstChild.nodeName).toEqual('SPAN');
         expect(imageCaptionWrapper.firstChild.style.fontSize).toEqual('24pt');
@@ -1589,7 +1589,7 @@ describe('Reverting font color to the list element.', () => {
         range.setStart(spanELemCollection[0].firstChild, 0);
         range.setEnd(spanELemCollection[2].firstChild, spanELemCollection[2].firstChild.textContent.length);
         domSelection.setRange(document, range);
-        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(255, 0, 0)');
         const updatedSpanElemCollection = rteObj.inputElement.querySelectorAll('span');
         expect(updatedSpanElemCollection.length).toEqual(3);
         const liElementCollection = rteObj.inputElement.querySelectorAll('li');
@@ -1619,7 +1619,7 @@ describe('850066 - Font color does not applied not properly', () => {
         range.setEnd(rteObj.element.querySelector('.li6').childNodes[0], 7);
         domSelection.setRange(document, range);
         // Apply font color
-        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(255, 0, 0)');
         let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
         expect(fristLI.style.color === 'rgb(255, 0, 0)').toEqual(true);
         let lastLI: HTMLElement = rteObj.element.querySelector('.li6')
@@ -1631,7 +1631,7 @@ describe('850066 - Font color does not applied not properly', () => {
         range.setEnd(rteObj.element.querySelector('.li5').childNodes[0], 2);
         domSelection.setRange(document, range);
         // Apply font color
-        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(255, 0, 0)');
         let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
         expect(fristLI.style.color === '').toEqual(true);
         let thirdLI: HTMLElement = rteObj.element.querySelector('.li3')
@@ -1661,7 +1661,7 @@ describe('872185 - Font family does not applied properly in nested list', () => 
         range.setEnd(rteObj.element.querySelector('.li6').childNodes[0], 12);
         domSelection.setRange(document, range);
         // Apply font name
-        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', 'Impact,Charcoal,sans-serif');
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', null, 'Impact,Charcoal,sans-serif');
         let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
         expect(fristLI.style.fontFamily === 'Impact, Charcoal, sans-serif').toEqual(true);
     });
@@ -1686,35 +1686,35 @@ describe(' 873091 - Hyperlinks got removed when we apply font color to the link 
         let parentP: Node = document.getElementById('parentP');
         let text: Text = anchorNode.nextSibling as Text;
         domSelection.setSelectionText(document, anchorNode, text, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentP, 'P', 'rgb(102, 102, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentP, 'P', null, 'rgb(102, 102, 0)');
         expect((anchorNode as HTMLElement).style.color === 'rgb(102, 102, 0)').toEqual(true);
     });
     it('Test for backgroundColor applied strong element',()=>{
         let strongNode: Node = document.getElementById('strongNode');
         let parentP: Node = document.getElementById('parentP');
         domSelection.setSelectionText(document, strongNode, strongNode, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontcolor', parentP, 'P', 'rgb(102, 102, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', parentP, 'P', null, 'rgb(102, 102, 0)');
         expect((strongNode as HTMLElement).parentElement.style.color === 'rgb(102, 102, 0)').toEqual(true);
     });
     it('Test for background color applied italic element',()=>{
         let bgNode: Node = document.getElementById('bgNode');
         let parentP: Node = document.getElementById('parentP');
         domSelection.setSelectionText(document, bgNode, bgNode, 0, 1);
-        SelectionCommands.applyFormat(document, 'backgroundcolor', parentP, 'P', 'rgb(102, 102, 0)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentP, 'P', null, 'rgb(102, 102, 0)');
         expect((bgNode as HTMLElement).parentElement.style.backgroundColor === 'rgb(102, 102, 0)').toEqual(true);
     });
     it('Test for fontSize applied strong element',()=>{
         let fontSizeNode: Node = document.getElementById('fontSizeEle');
         let parentP: Node = document.getElementById('parentP');
         domSelection.setSelectionText(document, fontSizeNode, fontSizeNode, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontsize', parentP, 'P', '16pt');
+        SelectionCommands.applyFormat(document, 'fontsize', parentP, 'P', null, '16pt');
         expect((fontSizeNode as HTMLElement).parentElement.style.fontSize === '16pt').toEqual(true);
     });
     it('Test for fontFamily applied italic element',()=>{
         let fontFamNode: Node = document.getElementById('fontFamNode');
         let parentP: Node = document.getElementById('parentP');
         domSelection.setSelectionText(document, fontFamNode, fontFamNode, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontname', parentP, 'P', 'Tahoma,Geneva,sans-serif');
+        SelectionCommands.applyFormat(document, 'fontname', parentP, 'P', null, 'Tahoma,Geneva,sans-serif');
         expect((fontFamNode as HTMLElement).parentElement.style.fontFamily === 'Tahoma, Geneva, sans-serif').toEqual(true);
     });
 });
@@ -1739,7 +1739,7 @@ describe('876813 - Font color did not apply all lists properly', () => {
         range.setEnd(rteObj.element.querySelector('.li6').childNodes[0], 7);
         domSelection.setRange(document, range);
         // Apply font size
-        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', '18pt');
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', null, '18pt');
         let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
         expect(fristLI.style.fontSize === '18pt').toEqual(true);
         let lastLI: HTMLElement = rteObj.element.querySelector('.li6')
@@ -1751,7 +1751,7 @@ describe('876813 - Font color did not apply all lists properly', () => {
         range.setEnd(rteObj.element.querySelector('.li5').childNodes[0], 2);
         domSelection.setRange(document, range);
         // Apply font size
-        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', '18pt');
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', null, '18pt');
         let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
         expect(fristLI.style.fontSize === '').toEqual(true);
         let thirdLI: HTMLElement = rteObj.element.querySelector('.li3')
@@ -1800,7 +1800,7 @@ describe("876837: Bold format not applied to the list number when already bold c
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node1.childNodes[1] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontname', text1, 'P', 'Tahoma,Geneva,sans-serif');
+        SelectionCommands.applyFormat(document, 'fontname', text1, 'P',  null,'Tahoma,Geneva,sans-serif');
         let LiContent=document.querySelector('li');
         let style1=LiContent.getAttribute('style');
         expect(style1).toEqual('font-family: Tahoma, Geneva, sans-serif;');
@@ -1810,7 +1810,7 @@ describe("876837: Bold format not applied to the list number when already bold c
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node1.childNodes[1] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontcolor', text1, 'P', 'rgb(255, 0, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', text1, 'P', null, 'rgb(255, 0, 0)');
         let LiContent=document.querySelector('li');
         let style1=LiContent.getAttribute('style');
         expect(style1).toEqual('color: rgb(255, 0, 0); text-decoration: inherit;');
@@ -1820,9 +1820,35 @@ describe("876837: Bold format not applied to the list number when already bold c
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node1.childNodes[1] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontsize', text1, 'P', '14px');
+        SelectionCommands.applyFormat(document, 'fontsize', text1, 'P', null, '14px');
         let LiContent=document.querySelector('li');
         let style1=LiContent.getAttribute('style');
         expect(style1).toEqual('font-size: 14px;');
+    });
+});
+describe('888161 - Font color applied to full line instead of selected text', () => {
+    let innervalue: string = `<ul><li>hello <span style="background-color: rgb(255, 255, 0);">word </span>this is me</li></ul>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline', 'FontColor', 'BackgroundColor']
+            }
+        });
+        done();
+    });
+    afterAll((done: DoneFn) => {
+        destroy(rteObj);
+        done();
+    });
+
+    it('select text and apply background color and font color', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('span');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode, focusNode, 0, 1);
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', null, 'rgb(102, 102, 0)');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<ul><li>hello <span style="color: rgb(102, 102, 0); text-decoration: inherit;"><span style="background-color: rgb(255, 255, 0);">word </span></span>this is me</li></ul>`);
+        done();
     });
 });

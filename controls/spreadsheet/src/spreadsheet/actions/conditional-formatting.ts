@@ -123,7 +123,7 @@ export class ConditionalFormatting {
         } else {
             cfType = this.getType(action);
         }
-        let cf: ConditionalFormatModel = {
+        const cf: ConditionalFormatModel = {
             type: cfType,
             cFColor: this.getCFColor(dlgCont.querySelector('.e-cfsub').getElementsByTagName('input')[0].value),
             range: this.parent.getActiveSheet().selectedRange
@@ -136,42 +136,42 @@ export class ConditionalFormatting {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let result: HighlightCell | TopBottom;
         switch (action) {
-            case l10n.getConstant('GreaterThan') + '...':
-                result = 'GreaterThan';
-                break;
-            case l10n.getConstant('LessThan') + '...':
-                result = 'LessThan';
-                break;
-            case l10n.getConstant('Between') + '...':
-                result = 'Between';
-                break;
-            case l10n.getConstant('CFEqualTo') + '...':
-                result = 'EqualTo';
-                break;
-            case l10n.getConstant('TextThatContains') + '...':
-                result = 'ContainsText';
-                break;
-            case l10n.getConstant('ADateOccuring') + '...':
-                result = 'DateOccur';
-                break;
-            case l10n.getConstant('Top10Items') + '...':
-                result = 'Top10Items';
-                break;
-            case l10n.getConstant('Bottom10Items') + '...':
-                result = 'Bottom10Items';
-                break;
-            case l10n.getConstant('Top10') + ' %...':
-                result = 'Top10Percentage';
-                break;
-            case l10n.getConstant('Bottom10') + ' %...':
-                result = 'Bottom10Percentage';
-                break;
-            case l10n.getConstant('AboveAverage') + '...':
-                result = 'AboveAverage';
-                break;
-            case l10n.getConstant('BelowAverage') + '...':
-                result = 'BelowAverage';
-                break;
+        case l10n.getConstant('GreaterThan') + '...':
+            result = 'GreaterThan';
+            break;
+        case l10n.getConstant('LessThan') + '...':
+            result = 'LessThan';
+            break;
+        case l10n.getConstant('Between') + '...':
+            result = 'Between';
+            break;
+        case l10n.getConstant('CFEqualTo') + '...':
+            result = 'EqualTo';
+            break;
+        case l10n.getConstant('TextThatContains') + '...':
+            result = 'ContainsText';
+            break;
+        case l10n.getConstant('ADateOccuring') + '...':
+            result = 'DateOccur';
+            break;
+        case l10n.getConstant('Top10Items') + '...':
+            result = 'Top10Items';
+            break;
+        case l10n.getConstant('Bottom10Items') + '...':
+            result = 'Bottom10Items';
+            break;
+        case l10n.getConstant('Top10') + ' %...':
+            result = 'Top10Percentage';
+            break;
+        case l10n.getConstant('Bottom10') + ' %...':
+            result = 'Bottom10Percentage';
+            break;
+        case l10n.getConstant('AboveAverage') + '...':
+            result = 'AboveAverage';
+            break;
+        case l10n.getConstant('BelowAverage') + '...':
+            result = 'BelowAverage';
+            break;
         }
         return result;
     }
@@ -180,21 +180,21 @@ export class ConditionalFormatting {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let result: CFColor = 'RedFT';
         switch (value) {
-            case l10n.getConstant('LightRedFillWithDarkRedText'):
-                result = 'RedFT';
-                break;
-            case l10n.getConstant('YellowFillWithDarkYellowText'):
-                result = 'YellowFT';
-                break;
-            case l10n.getConstant('GreenFillWithDarkGreenText'):
-                result = 'GreenFT';
-                break;
-            case l10n.getConstant('RedFill'):
-                result = 'RedF';
-                break;
-            case l10n.getConstant('RedText'):
-                result = 'RedT';
-                break;
+        case l10n.getConstant('LightRedFillWithDarkRedText'):
+            result = 'RedFT';
+            break;
+        case l10n.getConstant('YellowFillWithDarkYellowText'):
+            result = 'YellowFT';
+            break;
+        case l10n.getConstant('GreenFillWithDarkGreenText'):
+            result = 'GreenFT';
+            break;
+        case l10n.getConstant('RedFill'):
+            result = 'RedF';
+            break;
+        case l10n.getConstant('RedText'):
+            result = 'RedT';
+            break;
         }
         return result;
     }
@@ -209,8 +209,8 @@ export class ConditionalFormatting {
         const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header' });
         value1Text.innerText = dlgText;
         const value1Inp: HTMLInputElement =
-        this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text', 
-        'aria-label': dlgText } }) as HTMLInputElement;
+        this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text',
+            'aria-label': dlgText } }) as HTMLInputElement;
         const duplicateSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
 
         const subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
@@ -301,45 +301,45 @@ export class ConditionalFormatting {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let result: string = '';
         switch (action) {
-            case l10n.getConstant('GreaterThan') + '...':
-                result = l10n.getConstant('FormatCellsGreaterThan');
-                break;
-            case l10n.getConstant('LessThan') + '...':
-                result = l10n.getConstant('FormatCellsLessThan');
-                break;
-            case l10n.getConstant('Between') + '...':
-                result = l10n.getConstant('FormatCellsBetween');
-                break;
-            case l10n.getConstant('CFEqualTo') + '...':
-                result = l10n.getConstant('FormatCellsEqualTo');
-                break;
-            case l10n.getConstant('TextThatContains') + '...':
-                result = l10n.getConstant('FormatCellsThatContainTheText');
-                break;
-            case l10n.getConstant('ADateOccuring') + '...':
-                result = l10n.getConstant('FormatCellsThatContainADateOccurring');
-                break;
-            case l10n.getConstant('DuplicateValues') + '...':
-                result = l10n.getConstant('FormatCellsDuplicate');
-                break;
-            case l10n.getConstant('Top10Items') + '...':
-                result = l10n.getConstant('FormatCellsTop');
-                break;
-            case l10n.getConstant('Top10') + ' %...':
-                result = l10n.getConstant('FormatCellsTop');
-                break;
-            case l10n.getConstant('Bottom10Items') + '...':
-                result = l10n.getConstant('FormatCellsBottom');
-                break;
-            case l10n.getConstant('Bottom10') + ' %...':
-                result = l10n.getConstant('FormatCellsBottom');
-                break;
-            case l10n.getConstant('AboveAverage') + '...':
-                result = l10n.getConstant('FormatCellsAbove');
-                break;
-            case l10n.getConstant('BelowAverage') + '...':
-                result = l10n.getConstant('FormatCellsBelow');
-                break;
+        case l10n.getConstant('GreaterThan') + '...':
+            result = l10n.getConstant('FormatCellsGreaterThan');
+            break;
+        case l10n.getConstant('LessThan') + '...':
+            result = l10n.getConstant('FormatCellsLessThan');
+            break;
+        case l10n.getConstant('Between') + '...':
+            result = l10n.getConstant('FormatCellsBetween');
+            break;
+        case l10n.getConstant('CFEqualTo') + '...':
+            result = l10n.getConstant('FormatCellsEqualTo');
+            break;
+        case l10n.getConstant('TextThatContains') + '...':
+            result = l10n.getConstant('FormatCellsThatContainTheText');
+            break;
+        case l10n.getConstant('ADateOccuring') + '...':
+            result = l10n.getConstant('FormatCellsThatContainADateOccurring');
+            break;
+        case l10n.getConstant('DuplicateValues') + '...':
+            result = l10n.getConstant('FormatCellsDuplicate');
+            break;
+        case l10n.getConstant('Top10Items') + '...':
+            result = l10n.getConstant('FormatCellsTop');
+            break;
+        case l10n.getConstant('Top10') + ' %...':
+            result = l10n.getConstant('FormatCellsTop');
+            break;
+        case l10n.getConstant('Bottom10Items') + '...':
+            result = l10n.getConstant('FormatCellsBottom');
+            break;
+        case l10n.getConstant('Bottom10') + ' %...':
+            result = l10n.getConstant('FormatCellsBottom');
+            break;
+        case l10n.getConstant('AboveAverage') + '...':
+            result = l10n.getConstant('FormatCellsAbove');
+            break;
+        case l10n.getConstant('BelowAverage') + '...':
+            result = l10n.getConstant('FormatCellsBelow');
+            break;
         }
         return result;
     }
@@ -347,9 +347,9 @@ export class ConditionalFormatting {
     private updateResult(
         cf: ConditionalFormat, sheet: SheetModel, isDataBar: boolean, isColorScale: boolean, isAverage: boolean, isTopBottom: boolean,
         isIconSets: boolean, input: string): void {
-        let valueObj: { [key: string]: boolean } = {}; let dupValueObj: { [key: string]: boolean } = {};
+        const valueObj: { [key: string]: boolean } = {}; const dupValueObj: { [key: string]: boolean } = {};
         const rangeArr: string[] = cf.range.split(','); let result: string[] | number[] = [];
-        let rangeIndexes: number[]; let val: string; let count: number;
+        let rangeIndexes: number[]; let val: string;
         let updateFn: Function;
         if (isDataBar) {
             updateFn = (): void => {
@@ -380,7 +380,6 @@ export class ConditionalFormatting {
                 }
             };
         } else if (isTopBottom) {
-            count = 0;
             updateFn = (): void => {
                 if (isNumber(val)) {
                     (<number[]>result).push(parseFloat(val));
@@ -401,7 +400,7 @@ export class ConditionalFormatting {
         } else {
             updateFn = (): void => {
                 if (valueObj[`${val}`]) {
-                    if (val !== "") {
+                    if (val !== '') {
                         if (!dupValueObj[`${val}`]) {
                             dupValueObj[`${val}`] = true;
                             (<string[]>result).push(val);
@@ -427,7 +426,6 @@ export class ConditionalFormatting {
                         val = cell.value.toString().toLowerCase();
                         updateFn();
                     }
-                    count++;
                 }
             }
         }
@@ -511,12 +509,13 @@ export class ConditionalFormatting {
                 cf.cFColor = 'RedFT';
             }
         }
-        let isAverage: boolean; let isTopBottom: boolean; let isIconSets: boolean;
+        const isAverage: boolean = cf.type.includes('Average');
+        const isTopBottom: boolean = cf.type.includes('10') && isNumber(value1);
+        const isIconSets: boolean = (cf.type.includes('Three') || cf.type.includes('Four') || cf.type.includes('Five'));
         const isDataBar: boolean = cf.type.includes('DataBar');
         const isColorScale: boolean = cf.type.includes('ColorScale');
-        if ((!args.isRender || !cf.result) && (cf.type === 'Duplicate' || cf.type === 'Unique' || isDataBar || isColorScale ||
-            (isAverage = cf.type.includes('Average')) || (isTopBottom = cf.type.includes('10') && isNumber(value1)) ||
-            (isIconSets = (cf.type.includes('Three') || cf.type.includes('Four') || cf.type.includes('Five'))))) {
+        if ((!args.isRender || !cf.result) && (cf.type === 'Duplicate' || cf.type === 'Unique' || isDataBar
+            || isColorScale || isAverage || isTopBottom || isIconSets)) {
             this.updateResult(cf, sheet, isDataBar, isColorScale, isAverage, isTopBottom, isIconSets, value1);
         }
         const updateCF: Function = (rIdx: number, cIdx: number, cell: CellModel, td: HTMLElement): void => {
@@ -524,58 +523,58 @@ export class ConditionalFormatting {
             let isApply: boolean; let dateEventArgs: DateFormatCheckArgs;
             let isValueCFRule: boolean = true;
             switch (cf.type) {
-                case 'GreaterThan':
-                case 'LessThan':
-                    isApply = this.isGreaterThanLessThan(cf, cellVal, value1);
-                    break;
-                case 'Between':
-                    isApply = isNumber(cellVal) && this.isBetWeen(cf, cellVal, value1, value2);
-                    break;
-                case 'EqualTo':
-                    isApply = isNumber(cellVal) && this.isEqualTo(cf, cellVal, value1);
-                    break;
-                case 'ContainsText':
-                    isApply = cellVal && this.isContainsText(cellVal, value1);
-                    break;
-                case 'DateOccur':
-                    dateEventArgs = { value: value1, cell: {}, updatedVal: '' };
-                    this.parent.notify(checkDateFormat, dateEventArgs);
-                    isApply = cellVal === dateEventArgs.updatedVal;
-                    break;
-                case 'Unique':
-                    isApply = (<string[]>cf.result).indexOf(cellVal.toLowerCase()) === -1;
-                    break;
-                case 'Duplicate':
-                    isApply = (<string[]>cf.result).indexOf(cellVal.toLowerCase()) > -1;
-                    break;
-                case 'Top10Items':
-                case 'Bottom10Items':
-                case 'Top10Percentage':
-                case 'Bottom10Percentage':
-                    if (cf.result) {
-                        let value: number = parseFloat(cellVal);
-                        if (isDateTime(cellVal)) {
-                            value = dateToInt(cellVal);
-                        }
-                        isApply = (<number[]>cf.result).indexOf(value) > -1;
+            case 'GreaterThan':
+            case 'LessThan':
+                isApply = this.isGreaterThanLessThan(cf, cellVal, value1);
+                break;
+            case 'Between':
+                isApply = isNumber(cellVal) && this.isBetWeen(cf, cellVal, value1, value2);
+                break;
+            case 'EqualTo':
+                isApply = isNumber(cellVal) && this.isEqualTo(cf, cellVal, value1);
+                break;
+            case 'ContainsText':
+                isApply = cellVal && this.isContainsText(cellVal, value1);
+                break;
+            case 'DateOccur':
+                dateEventArgs = { value: value1, cell: {}, updatedVal: '' };
+                this.parent.notify(checkDateFormat, dateEventArgs);
+                isApply = cellVal === dateEventArgs.updatedVal;
+                break;
+            case 'Unique':
+                isApply = (<string[]>cf.result).indexOf(cellVal.toLowerCase()) === -1;
+                break;
+            case 'Duplicate':
+                isApply = (<string[]>cf.result).indexOf(cellVal.toLowerCase()) > -1;
+                break;
+            case 'Top10Items':
+            case 'Bottom10Items':
+            case 'Top10Percentage':
+            case 'Bottom10Percentage':
+                if (cf.result) {
+                    let value: number = parseFloat(cellVal);
+                    if (isDateTime(cellVal)) {
+                        value = dateToInt(cellVal);
                     }
-                    break;
-                case 'AboveAverage':
-                    isApply = cf.result.length && parseFloat(cellVal) > <number>cf.result[0];
-                    break;
-                case 'BelowAverage':
-                    isApply = cf.result.length && parseFloat(cellVal) < <number>cf.result[0];
-                    break;
-                default:
-                    isValueCFRule = false;
-                    if (isDataBar) {
-                        this.applyDataBars(cellVal, cf, td, rIdx);
-                    } else if (isColorScale) {
-                        this.applyColorScale(cellVal, cf, td, cell, rIdx, cIdx);
-                    } else {
-                        this.applyIconSet(cellVal, cf, td);
-                    }
-                    break;
+                    isApply = (<number[]>cf.result).indexOf(value) > -1;
+                }
+                break;
+            case 'AboveAverage':
+                isApply = cf.result.length && parseFloat(cellVal) > <number>cf.result[0];
+                break;
+            case 'BelowAverage':
+                isApply = cf.result.length && parseFloat(cellVal) < <number>cf.result[0];
+                break;
+            default:
+                isValueCFRule = false;
+                if (isDataBar) {
+                    this.applyDataBars(cellVal, cf, td, rIdx);
+                } else if (isColorScale) {
+                    this.applyColorScale(cellVal, cf, td, cell, rIdx, cIdx);
+                } else {
+                    this.applyIconSet(cellVal, cf, td);
+                }
+                break;
             }
             if (args.isAction && isValueCFRule) {
                 this.parent.trigger(
@@ -711,46 +710,46 @@ export class ConditionalFormatting {
     private getIconList(iconName: string): string {
         const result: string = '3arrows-1,3arrows-2,3arrows-3';
         switch (iconName) {
-            case 'ThreeArrows':
-                return '3arrows-1,3arrows-2,3arrows-3';
-            case 'ThreeArrowsGray':
-                return '3arrowsgray-1,3arrowsgray-2,3arrowsgray-3';
-            case 'FourArrowsGray':
-                return '4arrowsgray-1,4arrowsgray-2,4arrowsgray-3,4arrowsgray-4';
-            case 'FourArrows':
-                return '4arrows-1,4arrows-2,4arrows-3,4arrows-4';
-            case 'FiveArrowsGray':
-                return '5arrowsgray-1,5arrowsgray-2,5arrowsgray-3,5arrowsgray-4,5arrowsgray-5';
-            case 'FiveArrows':
-                return '5arrows-1,5arrows-2,5arrows-3,5arrows-4,5arrows-5';
-            case 'ThreeTrafficLights1':
-                return '3trafficlights-1,3trafficlights-2,3trafficlights-3';
-            case 'ThreeTrafficLights2':
-                return '3rafficlights2-1,3rafficlights2-2,3rafficlights2-3';
-            case 'ThreeSigns':
-                return '3signs-1,3signs-2,3signs-3';
-            case 'FourTrafficLights':
-                return '4trafficlights-1,4trafficlights-2,4trafficlights-3,4trafficlights-4';
-            case 'FourRedToBlack':
-                return '4redtoblack-1,4redtoblack-2,4redtoblack-3,4redtoblack-4';
-            case 'ThreeSymbols':
-                return '3symbols-1,3symbols-2,3symbols-3';
-            case 'ThreeSymbols2':
-                return '3symbols2-1,3symbols2-2,3symbols2-3';
-            case 'ThreeFlags':
-                return '3flags-1,3flags-2,3flags-3';
-            case 'FourRating':
-                return '4rating-1,4rating-2,4rating-3,4rating-4';
-            case 'FiveQuarters':
-                return '5quarters-1,5quarters-2,5quarters-3,5quarters-4,5quarters-5';
-            case 'FiveRating':
-                return '5rating-1,5rating-2,5rating-3,5rating-4,5rating-5';
-            case 'ThreeTriangles':
-                return '3triangles-1,3triangles-2,3triangles-3';
-            case 'ThreeStars':
-                return '3stars-1,3stars-2,3stars-3';
-            case 'FiveBoxes':
-                return '5boxes-1,5boxes-2,5boxes-3,5boxes-4,5boxes-5';
+        case 'ThreeArrows':
+            return '3arrows-1,3arrows-2,3arrows-3';
+        case 'ThreeArrowsGray':
+            return '3arrowsgray-1,3arrowsgray-2,3arrowsgray-3';
+        case 'FourArrowsGray':
+            return '4arrowsgray-1,4arrowsgray-2,4arrowsgray-3,4arrowsgray-4';
+        case 'FourArrows':
+            return '4arrows-1,4arrows-2,4arrows-3,4arrows-4';
+        case 'FiveArrowsGray':
+            return '5arrowsgray-1,5arrowsgray-2,5arrowsgray-3,5arrowsgray-4,5arrowsgray-5';
+        case 'FiveArrows':
+            return '5arrows-1,5arrows-2,5arrows-3,5arrows-4,5arrows-5';
+        case 'ThreeTrafficLights1':
+            return '3trafficlights-1,3trafficlights-2,3trafficlights-3';
+        case 'ThreeTrafficLights2':
+            return '3rafficlights2-1,3rafficlights2-2,3rafficlights2-3';
+        case 'ThreeSigns':
+            return '3signs-1,3signs-2,3signs-3';
+        case 'FourTrafficLights':
+            return '4trafficlights-1,4trafficlights-2,4trafficlights-3,4trafficlights-4';
+        case 'FourRedToBlack':
+            return '4redtoblack-1,4redtoblack-2,4redtoblack-3,4redtoblack-4';
+        case 'ThreeSymbols':
+            return '3symbols-1,3symbols-2,3symbols-3';
+        case 'ThreeSymbols2':
+            return '3symbols2-1,3symbols2-2,3symbols2-3';
+        case 'ThreeFlags':
+            return '3flags-1,3flags-2,3flags-3';
+        case 'FourRating':
+            return '4rating-1,4rating-2,4rating-3,4rating-4';
+        case 'FiveQuarters':
+            return '5quarters-1,5quarters-2,5quarters-3,5quarters-4,5quarters-5';
+        case 'FiveRating':
+            return '5rating-1,5rating-2,5rating-3,5rating-4,5rating-5';
+        case 'ThreeTriangles':
+            return '3triangles-1,3triangles-2,3triangles-3';
+        case 'ThreeStars':
+            return '3stars-1,3stars-2,3stars-3';
+        case 'FiveBoxes':
+            return '5boxes-1,5boxes-2,5boxes-3,5boxes-4,5boxes-5';
         }
         return result;
     }
@@ -764,7 +763,7 @@ export class ConditionalFormatting {
                 if (style.backgroundColor) {
                     this.parent.notify(
                         applyCellFormat, <CellFormatArgs>{ style: { backgroundColor: style.backgroundColor }, td: td, rowIdx: rIdx,
-                        colIdx: cIdx });
+                            colIdx: cIdx });
                 }
             }
             return;
@@ -1010,24 +1009,24 @@ export class ConditionalFormatting {
 
     private setCFStyle(style: CellStyleModel, cf: ConditionalFormatModel): CellStyleModel {
         switch (cf.cFColor) {
-            case 'RedFT':
-                style.backgroundColor = '#ffc7ce';
-                style.color = '#9c0055';
-                break;
-            case 'YellowFT':
-                style.backgroundColor = '#ffeb9c';
-                style.color = '#9c6500';
-                break;
-            case 'GreenFT':
-                style.backgroundColor = '#c6efce';
-                style.color = '#006100';
-                break;
-            case 'RedF':
-                style.backgroundColor = '#ffc7ce';
-                break;
-            case 'RedT':
-                style.color = '#9c0055';
-                break;
+        case 'RedFT':
+            style.backgroundColor = '#ffc7ce';
+            style.color = '#9c0055';
+            break;
+        case 'YellowFT':
+            style.backgroundColor = '#ffeb9c';
+            style.color = '#9c6500';
+            break;
+        case 'GreenFT':
+            style.backgroundColor = '#c6efce';
+            style.color = '#006100';
+            break;
+        case 'RedF':
+            style.backgroundColor = '#ffc7ce';
+            break;
+        case 'RedT':
+            style.color = '#9c0055';
+            break;
         }
         return style;
     }

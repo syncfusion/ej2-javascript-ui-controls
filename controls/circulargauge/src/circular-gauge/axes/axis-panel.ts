@@ -448,11 +448,10 @@ export class AxisLayoutPanel {
                 progress: (): void => {
                     element.style.visibility = 'visible';
                 },
-                // eslint-disable-next-line
                 end: (): void => {
                     element.style.visibility = 'visible';
-                    let axisElement: Element = document.getElementById(this.gauge.element.id + '_Axis_Labels_' + axisIndex);
-                    if (this.gauge.axes[axisIndex as number].showLastLabel && parseInt(element.id.split('Label_')[1]) === (axisElement.childElementCount - 2)) {
+                    const axisElement: Element = document.getElementById(this.gauge.element.id + '_Axis_Labels_' + axisIndex);
+                    if (this.gauge.axes[axisIndex as number].showLastLabel && parseInt(element.id.split('Label_')[1], 10) === (axisElement.childElementCount - 2)) {
                         (axisElement as HTMLElement).style.visibility = 'visible';
                         element = document.getElementById(this.gauge.element.id + '_Axis_' + axisIndex + '_Label_' + (axisElement.childElementCount - 1));
                         if (element) {
@@ -477,8 +476,8 @@ export class AxisLayoutPanel {
                     tickIndex += 1;
                     this.elementLabelAnimation(document.getElementById(gauge.element.id + '_Axis_' + axisIndex + '_Label_' + tickIndex),
                                                axisIndex, tickIndex, gauge);
-                    let axisElement: Element = document.getElementById(this.gauge.element.id + '_Axis_Labels_' + axisIndex);
-                    if (this.gauge.axes[axisIndex as number].showLastLabel && parseInt(element.id.split('Label_')[1]) === (axisElement.childElementCount - 2)) {
+                    const axisElement: Element = document.getElementById(this.gauge.element.id + '_Axis_Labels_' + axisIndex);
+                    if (this.gauge.axes[axisIndex as number].showLastLabel && parseInt(element.id.split('Label_')[1], 10) === (axisElement.childElementCount - 2)) {
                         element = document.getElementById(this.gauge.element.id + '_Axis_' + axisIndex + '_Label_' + (axisElement.childElementCount - 1));
                         if (element) {
                             element.style.visibility = 'visible';
@@ -565,8 +564,9 @@ export class AxisLayoutPanel {
                 this.axisOption[axisIndex as number].isMinorTick)) {
                 this.tickElementAnimation(document.getElementById(gauge.element.id + '_Axis_Major_TickLine_' + axisIndex + '_' + 0),
                                           document.getElementById(gauge.element.id + '_Axis_' + axisIndex + '_Label_' + 0), duration,
-                                          axisIndex, this.axisOption[axisIndex as number].isMajorTick && this.axisOption[axisIndex as number].isMinorTick
-                                          ? 0 : -1, 'major', this.axisOption[axisIndex as number], gauge);
+                                          axisIndex, this.axisOption[axisIndex as number].isMajorTick &&
+                                          this.axisOption[axisIndex as number].isMinorTick
+                                              ? 0 : -1, 'major', this.axisOption[axisIndex as number], gauge);
             } else if (this.axisOption[axisIndex as number].isMinorTick) {
                 this.tickElementAnimation(document.getElementById(gauge.element.id + '_Axis_Minor_TickLine_' + axisIndex + '_' + 0),
                                           document.getElementById(gauge.element.id + '_Axis_' + axisIndex + '_Label_' + 0), duration,
@@ -581,7 +581,8 @@ export class AxisLayoutPanel {
         const axisElement: HTMLElement = document.getElementById(gauge.element.id + '_AxisLine_' + axisIndex);
         const axisOption: ICircularGaugeAnimation = this.axisOption[axisIndex as number];
         new Animation({}).animate(axisElement, {
-            duration: (this.axisOption[axisIndex as number].majorTickCount === 0 ? 0 : duration / this.axisOption[axisIndex as number].majorTickCount),
+            duration: (this.axisOption[axisIndex as number].majorTickCount === 0 ? 0
+                : duration / this.axisOption[axisIndex as number].majorTickCount),
             progress: (): void => {
                 axisElement.style.visibility = 'visible';
             },
@@ -605,7 +606,8 @@ export class AxisLayoutPanel {
                                  tickIndex: number, type: string, axis: any, gauge: CircularGauge): void {
         if (tickElement && this.gauge.isAnimationProgress) {
             new Animation({}).animate(<HTMLElement>tickElement, {
-                duration: (axis.isMinorTick ? axis.minorTickCount === 0 ? 0 : (duration / axis.minorTickCount) / this.allowAxisCount[axisIndex as number] :
+                duration: (axis.isMinorTick ? axis.minorTickCount === 0 ? 0
+                    : (duration / axis.minorTickCount) / this.allowAxisCount[axisIndex as number] :
                     axis.majorTickCount === 0 ? 0 : (duration / axis.majorTickCount) / this.allowAxisCount[axisIndex as number]),
                 progress: (): void => {
                     tickElement.style.visibility = 'visible';
@@ -622,11 +624,14 @@ export class AxisLayoutPanel {
                             this.prevAnimatedMinorTickValue[axisIndex as number] = currentTickValue;
                             this.prevAnimatedMinorTickIndex[axisIndex as number] = tickIndex;
                         }
-                        let minorTickInterval: number = (gauge.axes[axisIndex as number].minorTicks.interval != null ? gauge.axes[axisIndex as number].minorTicks.interval :
+                        const minorTickInterval: number = (gauge.axes[axisIndex as number].minorTicks.interval != null
+                            ? gauge.axes[axisIndex as number].minorTicks.interval :
                             ((gauge.axes[axisIndex as number] as Axis).visibleRange.interval / 2));
-                        const minorTickValue: number = minorTickInterval < (gauge.axes[axisIndex as number] as Axis).visibleRange.interval ? currentTickValue +
+                        const minorTickValue: number = minorTickInterval < (gauge.axes[axisIndex as number] as
+                            Axis).visibleRange.interval ? currentTickValue +
                             minorTickInterval : this.prevAnimatedMinorTickValue[axisIndex as number] + minorTickInterval;
-                        const majorTickValue = this.prevAnimatedMajorTickValue[axisIndex as number] + (gauge.axes[axisIndex as number] as Axis).visibleRange.interval;
+                        const majorTickValue: number = this.prevAnimatedMajorTickValue[axisIndex as number]
+                        + (gauge.axes[axisIndex as number] as Axis).visibleRange.interval;
                         type = minorTickValue < majorTickValue ? 'minor' : 'major';
                         if (type === 'major' && axis.majorTickCount !== axis.minorTickCount && tickIndex !== 0 && this.prevAnimatedTickType === 'minor') {
                             tickIndex = this.prevAnimatedMajorTickIndex[axisIndex as number];
@@ -689,14 +694,16 @@ export class AxisLayoutPanel {
                 if (options.axisLabelCount > 0) {
                     if (gauge.axes[axisIndex as number].labelStyle.hiddenLabel === 'First') {
                         this.elementLabelAnimation(document.getElementById(gauge.element.id + '_Axis_' + axisIndex + '_Label_' + 1),
-                            axisIndex, 0, gauge);
+                                                   axisIndex, 0, gauge);
                     } else {
                         this.elementLabelAnimation(document.getElementById(gauge.element.id + '_Axis_' + axisIndex + '_Label_' + 0),
-                            axisIndex, 0, gauge);
+                                                   axisIndex, 0, gauge);
                     }
                 }
-            } else if ((this.rangeAnimationCount == 0 && !options.isMajorTick && !options.isMinorTick && !options.isAxisLabel && options.isRange)
-                || this.rangeAnimationCount == 0 && this.gauge.isAnimationProgress && !options.isMajorTick && !options.isMinorTick && !options.isAxisLabel && options.isRange) {
+            } else if ((this.rangeAnimationCount === 0 && !options.isMajorTick &&
+                        !options.isMinorTick && !options.isAxisLabel && options.isRange)
+                        || this.rangeAnimationCount === 0 && this.gauge.isAnimationProgress
+                        && !options.isMajorTick && !options.isMinorTick && !options.isAxisLabel && options.isRange) {
                 this.rangeAnimationCount++;
                 this.rangeAnimation(gauge);
             }
@@ -715,7 +722,8 @@ export class AxisLayoutPanel {
     private rangeElementAnimation(rangeElement: Element, axisIndex: number, gauge: CircularGauge): void {
         let height: number = 0;
         const opacity: number = 1;
-        const isRangeAbsent: boolean = rangeElement.childElementCount > 0 && gauge.axes[axisIndex as number].ranges[0].start !== gauge.axes[axisIndex as number].ranges[0].end;
+        const isRangeAbsent: boolean = rangeElement.childElementCount > 0 &&
+        gauge.axes[axisIndex as number].ranges[0].start !== gauge.axes[axisIndex as number].ranges[0].end;
         new Animation({}).animate(<HTMLElement>rangeElement, {
             duration: isRangeAbsent ? gauge.loadingAnimationDuration[axisIndex as number] : 0,
             progress: (args: AnimationOptions): void => {
@@ -726,7 +734,7 @@ export class AxisLayoutPanel {
             },
             end: (): void => {
                 rangeElement['style']['opacity'] = opacity;
-                let axisElement: Element = document.getElementById(this.gauge.element.id + '_Axis_Labels_' + axisIndex);
+                const axisElement: Element = document.getElementById(this.gauge.element.id + '_Axis_Labels_' + axisIndex);
                 if (!isNullOrUndefined(axisElement)) {
                     (axisElement as HTMLElement).style.visibility = 'visible';
                 }
@@ -741,7 +749,8 @@ export class AxisLayoutPanel {
                             }
                         });
                         if (axis.pointers.length === 0 && this.gauge.isAnimationProgress) {
-                            if (this.gauge.loadingAnimationDuration[axisIndex as number] > 0 && !isNullOrUndefined(this.gauge.annotationsModule)) {
+                            if (this.gauge.loadingAnimationDuration[axisIndex as number] > 0 &&
+                                !isNullOrUndefined(this.gauge.annotationsModule)) {
                                 this.gauge.annotationsModule.annotationAnimation(this.gauge);
                             }
                         } else {
@@ -777,7 +786,7 @@ export class AxisLayoutPanel {
                     isMinorTick = true;
                     axisCount++;
                     minorTickCount = element.children[j as number].childElementCount;
-                    if (!isMajorTick) { splitUpCount++; }                    
+                    if (!isMajorTick) { splitUpCount++; }
                 } else if (elementId.indexOf('_Axis_Labels_') > 0) {
                     isLabel = true;
                     axisCount++;
@@ -786,7 +795,10 @@ export class AxisLayoutPanel {
                         (this.gauge.axes[i as number].labelStyle.font.size !== '0px' && this.gauge.axes[i as number].labelStyle.font.size !== '0')) { splitUpCount++; }
                 } else if (elementId.indexOf('_Axis_Ranges_') > 0) {
                     isrange = true;
-                    if (this.gauge.axes[i as number].ranges.length === 1 && (!isNullOrUndefined(this.gauge.axes[i as number].ranges) && this.gauge.axes[i as number].ranges[0].start === 0 && this.gauge.axes[i as number].ranges[0].end === 0)) {
+                    if (this.gauge.axes[i as number].ranges.length === 1
+                        && (!isNullOrUndefined(this.gauge.axes[i as number].ranges)
+                        && this.gauge.axes[i as number].ranges[0].start === 0
+                        && this.gauge.axes[i as number].ranges[0].end === 0)) {
                         splitUpCount++;
                     }
                 } else if (elementId.indexOf('_Axis_Pointers_') > 0) {
@@ -806,7 +818,9 @@ export class AxisLayoutPanel {
             isAxisLine = false; isMajorTick = false; majorTickCount = 0;
             isMinorTick = false; labelCount = 0; minorTickCount = 0;
             isLabel = false; isrange = false; isPointer = false;
-            if (this.gauge.axes[i as number].annotations != null && this.gauge.axes[i as number].annotations.length > 0 && !isNullOrUndefined(this.gauge.annotationsModule)) {
+            if (this.gauge.axes[i as number].annotations != null
+                && this.gauge.axes[i as number].annotations.length > 0
+                && !isNullOrUndefined(this.gauge.annotationsModule)) {
                 splitUpCount++;
             }
             this.gauge.loadingAnimationDuration.push(splitUpCount === 0 ? duration : duration / splitUpCount);

@@ -433,7 +433,7 @@ export class AxisHelper {
             labels = axis.tooltipLabels;
         }
         let padding: number = 10;
-        let labelPadding: number = 5;
+        const labelPadding: number = 5;
         let lableStartY: number = rect.y + (axis.isInversed ? 0 : rect.height);
         let anchor: string = axis.opposedPosition ? 'start' : 'end';
         padding = axis.opposedPosition ? padding : -padding;
@@ -536,7 +536,7 @@ export class AxisHelper {
             label = this.getMaxLabel(wrappedLabel, axis);
             if (label.indexOf('...') !== -1) {
                 const xValue: number = axis.opposedPosition ? x : (x - ( axis.angle % 360 !== 0 ? (rotateSize.width / 2) : elementSize.width));
-                const yValue: number = y - (axis.angle % 360 !== 0 ? (rotateSize.height / 2) : elementSize.height)
+                const yValue: number = y - (axis.angle % 360 !== 0 ? (rotateSize.height / 2) : elementSize.height);
                 label = labels[i as number].indexOf('<br>') !== -1 || labels[i as number].indexOf('<br/>') !== -1 ? labels[i as number].replace(/<br\s*\/?>/g, ' ') : labels[i as number];
                 this.heatMap.tooltipCollection.push(
                     new CanvasTooltip(
@@ -565,8 +565,8 @@ export class AxisHelper {
         endX = axis.isInversed ? startX - interval : startX + interval;
         let endY1: number = axis.isInversed ? (lableX + width + padding) : (lableX - padding);
         let endY2: number = axis.isInversed ? (lableX - padding) : (lableX + width + padding);
-        endY2 = axis.textStyle.textAlignment == 'Near' && axis.isInversed ? endY2 + padding : axis.textStyle.textAlignment == 'Far' && !axis.isInversed ? endY2 - padding : endY2;
-        endY1 = axis.textStyle.textAlignment == 'Far' && axis.isInversed ? endY1 - padding : axis.textStyle.textAlignment == 'Near' && !axis.isInversed ? endY1 + padding : endY1;
+        endY2 = axis.textStyle.textAlignment === 'Near' && axis.isInversed ? endY2 + padding : axis.textStyle.textAlignment === 'Far' && !axis.isInversed ? endY2 - padding : endY2;
+        endY1 = axis.textStyle.textAlignment === 'Far' && axis.isInversed ? endY1 - padding : axis.textStyle.textAlignment === 'Near' && !axis.isInversed ? endY1 + padding : endY1;
         switch (axis.border.type) {
         case 'Rectangle':
             path = ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
@@ -695,83 +695,93 @@ export class AxisHelper {
         axis.multiLevelLabels.map((multiLevel: MultiLevelLabels, level: number) => {
             labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_XAxisMultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
-                if (this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark') {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}, true);
-                }
-                if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Inter' }}, true);
-                }
-                if (this.heatMap.theme === 'Material3' || this.heatMap.theme === 'Material3Dark') {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Roboto' }}, true);
-                }
-                if (this.heatMap.theme === 'Fluent' || this.heatMap.theme === 'FluentDark') {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (multiLevel as any).setProperties({ textStyle : { fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' }}, true);
-                }
-                tooltip = false;
-                start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
-                end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
-                startX = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);
-                startY = axis.multiLevelPosition[level as number].y;
-                endX = position + this.calculateWidth(axis, categoryLabel.end, end, axis.rect);
-                labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
-                gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(endX - startX) : categoryLabel.maximumTextWidth) - padding;
-                y = startY + (opposedPosition ? -((axis.xAxisMultiLabelHeight[level as number] - labelSize.height)) : labelSize.height);
-                x = !isInversed ? startX + padding : startX - gap;
-                if (multiLevel.alignment === 'Center') {
-                    x = ((endX - startX) / 2) + startX;
-                    x -= (labelSize.width > gap ? gap : labelSize.width) / 2;
-                } else if (multiLevel.alignment === 'Far') {
-                    x = !isInversed ? endX - padding : startX - padding;
-                    x -= (labelSize.width > gap ? gap : labelSize.width);
-                } else {
-                    x = !isInversed ? startX + padding : endX + padding;
-                }
-                if (multiLevel.overflow === 'None' && labelSize.width > Math.abs(endX - startX)) {
-                    x = !isInversed ? startX + padding : startX - labelSize.width - padding;
-                    anchor = 'start';
-                }
-                const textBasic: TextBasic = new TextBasic(
-                    x, y, anchor, categoryLabel.text, 0,
-                    'translate(0,0)');
-
-                const options: TextOption = new TextOption(
-                    this.heatMap.element.id + '_XAxis_MultiLevel' + level + '_Text' + i, textBasic, multiLevel.textStyle,
-                    multiLevel.textStyle.color || this.heatMap.themeStyle.axisLabel);
-                if (multiLevel.overflow === 'Wrap') {
-                    options.text = textWrap(categoryLabel.text, gap, multiLevel.textStyle);
-                    textLength = options.text.length;
-                } else if (multiLevel.overflow === 'Trim') {
-                    options.text = textTrim(gap, categoryLabel.text, multiLevel.textStyle);
-                    textLength = 1;
-                }
-                if (multiLevel.overflow === 'Wrap' && options.text.length > 1) {
-                    this.drawSvgCanvas.createWrapText(options, multiLevel.textStyle, labelElement);
-                    for (let i: number = 0; i < options.text.length; i++) {
-                        if (options.text[i as number].indexOf('...') !== -1) {
-                            tooltip = true;
-                            break;
-                        }
+                if (!isNullOrUndefined(categoryLabel.start) && !isNullOrUndefined(categoryLabel.end)) {
+                    if (this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (multiLevel as any).setProperties({ textStyle: { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } }, true);
                     }
-                } else {
-                    this.drawSvgCanvas.createText(options, labelElement, options.text);
-                }
-                if (!this.heatMap.enableCanvasRendering) {
-                    parent.appendChild(labelElement);
-                }
-                if (options.text.indexOf('...') !== -1 || options.text[0].indexOf('...') !== -1 || tooltip) {
-                    this.heatMap.tooltipCollection.push(
-                        new CanvasTooltip(
-                            categoryLabel.text,
-                            new Rect(x, y - labelSize.height, gap, labelSize.height * textLength)));
-                }
-                if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
-                    pathRect = this.renderXAxisLabelBorder(
-                        level, axis, startX, startY, endX, pathRect, level, labelSize, gap, x
-                    );
+                    if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (multiLevel as any).setProperties({ textStyle: { fontFamily: 'Inter' } }, true);
+                    }
+                    if (this.heatMap.theme === 'Material3' || this.heatMap.theme === 'Material3Dark') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (multiLevel as any).setProperties({ textStyle: { fontFamily: 'Roboto' } }, true);
+                    }
+                    if (this.heatMap.theme === 'Fluent' || this.heatMap.theme === 'FluentDark') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (multiLevel as any).setProperties({ textStyle: { fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' } }, true);
+                    }
+                    if (this.heatMap.theme === 'Fluent2') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (multiLevel as any).setProperties({ textStyle: { color: '#242424', size: '12px', fontWeight: '400', fontFamily: 'Segoe UI' } }, true);
+                    }
+                    if (this.heatMap.theme === 'Fluent2Dark' || this.heatMap.theme === 'Fluent2HighContrast') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (multiLevel as any).setProperties({ textStyle: { color: '#FFFFFF', size: '12px', fontWeight: '400', fontFamily: 'Segoe UI' } }, true);
+                    }
+                    tooltip = false;
+                    start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
+                    end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
+                    startX = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);
+                    startY = axis.multiLevelPosition[level as number].y;
+                    endX = position + this.calculateWidth(axis, categoryLabel.end, end, axis.rect);
+                    labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                    gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(endX - startX) : categoryLabel.maximumTextWidth) - padding;
+                    y = startY + (opposedPosition ? -((axis.xAxisMultiLabelHeight[level as number] - labelSize.height)) : labelSize.height);
+                    x = !isInversed ? startX + padding : startX - gap;
+                    if (multiLevel.alignment === 'Center') {
+                        x = ((endX - startX) / 2) + startX;
+                        x -= (labelSize.width > gap ? gap : labelSize.width) / 2;
+                    } else if (multiLevel.alignment === 'Far') {
+                        x = !isInversed ? endX - padding : startX - padding;
+                        x -= (labelSize.width > gap ? gap : labelSize.width);
+                    } else {
+                        x = !isInversed ? startX + padding : endX + padding;
+                    }
+                    if (multiLevel.overflow === 'None' && labelSize.width > Math.abs(endX - startX)) {
+                        x = !isInversed ? startX + padding : startX - labelSize.width - padding;
+                        anchor = 'start';
+                    }
+                    const textBasic: TextBasic = new TextBasic(
+                        x, y, anchor, categoryLabel.text, 0,
+                        'translate(0,0)');
+
+                    const options: TextOption = new TextOption(
+                        this.heatMap.element.id + '_XAxis_MultiLevel' + level + '_Text' + i, textBasic, multiLevel.textStyle,
+                        multiLevel.textStyle.color || this.heatMap.themeStyle.axisLabel);
+                    if (multiLevel.overflow === 'Wrap') {
+                        options.text = textWrap(categoryLabel.text, gap, multiLevel.textStyle);
+                        textLength = options.text.length;
+                    } else if (multiLevel.overflow === 'Trim') {
+                        options.text = textTrim(gap, categoryLabel.text, multiLevel.textStyle);
+                        textLength = 1;
+                    }
+                    if (multiLevel.overflow === 'Wrap' && options.text.length > 1) {
+                        this.drawSvgCanvas.createWrapText(options, multiLevel.textStyle, labelElement);
+                        for (let i: number = 0; i < options.text.length; i++) {
+                            if (options.text[i as number].indexOf('...') !== -1) {
+                                tooltip = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        this.drawSvgCanvas.createText(options, labelElement, options.text);
+                    }
+                    if (!this.heatMap.enableCanvasRendering) {
+                        parent.appendChild(labelElement);
+                        }
+                    if (options.text.indexOf('...') !== -1 || options.text[0].indexOf('...') !== -1 || tooltip) {
+                        this.heatMap.tooltipCollection.push(
+                            new CanvasTooltip(
+                                categoryLabel.text,
+                                new Rect(x, y - labelSize.height, gap, labelSize.height * textLength)));
+                    }
+                    if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
+                        pathRect = this.renderXAxisLabelBorder(
+                            level, axis, startX, startY, endX, pathRect, level, labelSize, gap, x
+                        );
+                    }
                 }
             });
             if (pathRect !== '') {
@@ -860,6 +870,14 @@ export class AxisHelper {
                 if (this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (multiLevel as any).setProperties({ textStyle : { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}, true);
+                }
+                if (this.heatMap.theme === 'Fluent2') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { color: '#242424', size: '12px', fontWeight: '400', fontFamily: 'Segoe UI' }}, true);
+                }
+                if (this.heatMap.theme === 'Fluent2Dark' || this.heatMap.theme === 'Fluent2HighContrast') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { color: '#FFFFFF', size: '12px', fontWeight: '400', fontFamily: 'Segoe UI' }}, true);
                 }
                 start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
                 end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
@@ -1088,5 +1106,17 @@ export class AxisHelper {
             }
         }
         return position;
+    }
+
+    /**
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        this.drawSvgCanvas = null;
+        this.element = null;
+        this.htmlObject = null;
+        this.initialClipRect = null;
+        this.heatMap = null;
     }
 }

@@ -81,7 +81,7 @@ export class AggregateMenu {
                     } else {
                         this.menuInfo[isStringField as number].open(pos.top +
                             (window.scrollY || document.documentElement.scrollTop), pos.left);
-                    } /* eslint-enable security/detect-non-literal-fs-filename */
+                    }
                 }
             });
         } catch (execption) {
@@ -320,8 +320,7 @@ export class AggregateMenu {
         filterWrapperDiv1.appendChild(optionWrapperDiv2);
         filterWrapperDiv1.appendChild(optionWrapperDiv3);
         mainDiv.appendChild(filterWrapperDiv1);
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const popupInstance: AggregateMenu = this;
+        const popupInstance: AggregateMenu = this as AggregateMenu;
         const optionWrapper1: DropDownList = new DropDownList({
             dataSource: summaryDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             fields: { value: 'value', text: 'text' },
@@ -355,7 +354,7 @@ export class AggregateMenu {
                 optionWrapper3.dataSource = fieldItemDataSource;
                 optionWrapper3.value = fieldItemDataSource[0];
                 optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
-                (optionWrapper3 as any).itemData = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+                optionWrapper3['itemData'] = null;
                 optionWrapper3.dataBind();
             }
         });

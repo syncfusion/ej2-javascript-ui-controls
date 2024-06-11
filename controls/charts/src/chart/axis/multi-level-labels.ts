@@ -1,9 +1,3 @@
-/* eslint-disable no-self-assign */
-/* eslint-disable no-case-declarations */
-/* eslint-disable max-len */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 /**
  * MultiLevel Labels src
  */
@@ -47,6 +41,7 @@ export class MultiLevelLabel {
      * Constructor for the logerithmic module.
      *
      * @private
+     * @param {Chart} chart - Specifies the chart.
      */
     constructor(chart: Chart) {
         this.chart = chart;
@@ -55,6 +50,8 @@ export class MultiLevelLabel {
 
     /**
      * Binding events for multi level module.
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -62,8 +59,9 @@ export class MultiLevelLabel {
     }
 
     /**
-     * Finds multilevel label height.
+     * Gets the height of multilevel labels for the axis.
      *
+     * @param {Axis} axis - The axis.
      * @returns {void}
      */
     public getMultilevelLabelsHeight(axis: Axis): void {
@@ -92,7 +90,8 @@ export class MultiLevelLabel {
                     const len: number = axis.multiLevelLabels[index as number].categories.length;
                     gap = ((i === 0 || i === len - 1) && axis.labelPlacement === 'OnTicks' && axis.edgeLabelPlacement === 'Shift') ? gap / 2 : gap;
                     if ((labelSize.width > gap - padding) && gap > 0 && (multiLevel.overflow === 'Wrap') && !isVertical) {
-                        height = (height * (textWrap(categoryLabel.text, gap - padding, multiLevel.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.axisLabelFont).length));
+                        height = (height * (textWrap(categoryLabel.text, gap - padding, multiLevel.textStyle, this.chart.enableRtl,
+                                                     null, null, this.chart.themeStyle.axisLabelFont).length));
                     }
                     multiLevelLabelsHeight[index as number] = !multiLevelLabelsHeight[index as number] ? height :
                         ((multiLevelLabelsHeight[index as number] < height) ? height : multiLevelLabelsHeight[index as number]);
@@ -112,9 +111,13 @@ export class MultiLevelLabel {
         }
     }
     /**
-     * render x axis multi level labels
+     * Renders the multilevel labels for the X-axis.
      *
      * @private
+     * @param {Axis} axis - The X-axis.
+     * @param {number} index - The index of the axis.
+     * @param {Element} parent - The parent element to render the multilevel labels.
+     * @param {Rect} axisRect - The axis rectangle.
      * @returns {void}
      */
     public renderXAxisMultiLevelLabels(axis: Axis, index: number, parent: Element, axisRect: Rect): void {
@@ -155,8 +158,9 @@ export class MultiLevelLabel {
                     gap = ((categoryLabel.maximumTextWidth === null) ? endX - startX : categoryLabel.maximumTextWidth) - padding;
                     x = startX + axisRect.x + padding;
                     y = (((opposedPosition && !isOutside) || (!opposedPosition && isOutside)) ? (startY + axisRect.y +
-                            labelSize.height / 2 + padding + this.xAxisPrevHeight[level as number]) : (axisRect.y - startY + labelSize.height / 2 -
-                                this.xAxisMultiLabelHeight[level as number] - this.xAxisPrevHeight[level as number])) + scrollBarHeight;
+                            labelSize.height / 2 + padding + this.xAxisPrevHeight[level as number]) :
+                        (axisRect.y - startY + labelSize.height / 2 - this.xAxisMultiLabelHeight[level as number] -
+                        this.xAxisPrevHeight[level as number])) + scrollBarHeight;
                     if (argsData.alignment === 'Center') {
                         x += (endX - startX - padding) / 2; anchor = 'middle';
                     } else if (argsData.alignment === 'Far') {
@@ -208,21 +212,23 @@ export class MultiLevelLabel {
                                     else if (argsData.alignment === 'Far') {
                                         options.x = axisRect.width + axisRect.x;
                                     }
-                                    else {
-                                        options.x = options.x;
-                                    }
                                     gap = gap / 2;
                                 }
                                 break;
                             }
                         }
                         options.text = (multiLevel.overflow === 'Wrap') ?
-                            textWrap(argsData.text, gap, argsData.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.axisLabelFont) : textTrim(gap, argsData.text, argsData.textStyle, this.chart.enableRtl, this.chart.themeStyle.axisLabelFont);
+                            textWrap(argsData.text, gap, argsData.textStyle, this.chart.enableRtl, null, null,
+                                     this.chart.themeStyle.axisLabelFont) :
+                            textTrim(gap, argsData.text, argsData.textStyle, this.chart.enableRtl,
+                                     this.chart.themeStyle.axisLabelFont);
                         options.x = options.x - padding / 2;
                     }
                     textElement(
-                        this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabelFont.color,
-                        this.labelElement, false, this.chart.redraw, true, null, null, null, null, null, this.chart.enableCanvas, null, this.chart.themeStyle.axisLabelFont
+                        this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color ||
+                        this.chart.themeStyle.axisLabelFont.color,
+                        this.labelElement, false, this.chart.redraw, true, null, null, null, null, null,
+                        this.chart.enableCanvas, null, this.chart.themeStyle.axisLabelFont
                     );
                     if (this.chart.enableCanvas) {
                         const textSize: Size = measureText(argsData.text, argsData.textStyle, this.chart.themeStyle.axisLabelFont);
@@ -248,10 +254,23 @@ export class MultiLevelLabel {
         }
     }
     /**
-     * render x axis multi level labels border
+     * Renders the border for the X-axis labels.
      *
      * @private
-     * @returns {void}
+     * @param {number} labelIndex - The index of the label.
+     * @param {number} gap - The gap between labels.
+     * @param {Axis} axis - The X-axis.
+     * @param {number} startX - The starting X-coordinate.
+     * @param {number} startY - The starting Y-coordinate.
+     * @param {Size} labelSize - The size of the label.
+     * @param {TextOption} textOptions - The text options for the label.
+     * @param {Rect} axisRect - The axis rectangle.
+     * @param {Alignment} alignment - The alignment of the label.
+     * @param {string} path - The SVG path.
+     * @param {boolean} isOutside - Indicates if the label is outside the axis.
+     * @param {boolean} opposedPosition - Indicates if the axis is in the opposed position.
+     * @param {number} categoryIndex - The index of the category.
+     * @returns {string} - The SVG path.
      */
     private renderXAxisLabelBorder(
         labelIndex: number, gap: number, axis: Axis, startX: number, startY: number, labelSize: Size, textOptions: TextOption,
@@ -271,16 +290,18 @@ export class MultiLevelLabel {
         switch (borderType) {
         case 'WithoutTopandBottomBorder':
         case 'Rectangle':
-        case 'WithoutTopBorder':
+        case 'WithoutTopBorder': {
             const len: number = axis.multiLevelLabels[labelIndex as number].categories.length;
             const lastX: number = (categoryIndex === len - 1 && (x + width > axisRect.width)) ? axisRect.width + axisRect.x : x + width;
-            const initialX: number = (categoryIndex === 0 && axis.multiLevelLabels[labelIndex as number].categories[0].start <= 0 ) ? axisRect.x : x;
+            const initialX: number = (categoryIndex === 0 &&
+                axis.multiLevelLabels[labelIndex as number].categories[0].start <= 0 ) ? axisRect.x : x;
             height = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? height : -height;
             path += 'M ' + initialX + ' ' + y + ' L ' + initialX + ' ' + (y + height) + ' M ' + (lastX) + ' '
                     + y + ' L ' + (lastX) + ' ' + (y + height);
             path += (borderType !== 'WithoutTopandBottomBorder') ? (' L' + ' ' + (initialX) + ' ' + (y + height) + ' ') : ' ';
             path += (borderType === 'Rectangle') ? ('M ' + initialX + ' ' + y + ' L ' + (lastX) + ' ' + y) : ' ';
             break;
+        }
         case 'Brace':
             if (alignment === 'Near') {
                 value = textOptions.x; value1 = textOptions.x + labelSize.width + 2;
@@ -323,9 +344,12 @@ export class MultiLevelLabel {
         return path;
     }
     /**
-     * render y axis multi level labels
+     * Renders the multi-level labels for the Y-axis.
      *
-     * @private
+     * @param {Axis} axis - The Y-axis.
+     * @param {number} index - The index of the axis.
+     * @param {Element} parent - The parent element to which the labels are appended.
+     * @param {Rect} rect - The axis rectangle.
      * @returns {void}
      */
     public renderYAxisMultiLevelLabels(axis: Axis, index: number, parent: Element, rect: Rect): void {
@@ -361,7 +385,8 @@ export class MultiLevelLabel {
                 argsData = this.triggerMultiLabelRender(
                     axis, categoryLabel.text, multiLevel.textStyle, multiLevel.alignment, categoryLabel.customAttributes);
                 if (!argsData.cancel) {
-                    const maximumWidth: number = ((categoryLabel.maximumTextWidth === null ? (this.yAxisMultiLabelHeight[level as number] / 2) : categoryLabel.maximumTextWidth / 2));
+                    const maximumWidth: number = ((categoryLabel.maximumTextWidth === null ?
+                        (this.yAxisMultiLabelHeight[level as number] / 2) : categoryLabel.maximumTextWidth / 2));
                     labelSize = measureText(argsData.text, argsData.textStyle, this.chart.themeStyle.axisLabelFont);
                     gap = endY - startY;
                     x = rect.x - startX - this.yAxisPrevHeight[level as number] -
@@ -395,13 +420,16 @@ export class MultiLevelLabel {
                             argsData.text, argsData.textStyle, this.chart.enableRtl, this.chart.themeStyle.axisLabelFont) : options.text;
                     options.text = (multiLevel.overflow === 'Wrap') ?
                         textWrap(argsData.text, (categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level as number] :
-                            categoryLabel.maximumTextWidth), argsData.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.axisLabelFont) : options.text;
+                            categoryLabel.maximumTextWidth), argsData.textStyle, this.chart.enableRtl,
+                                 null, null, this.chart.themeStyle.axisLabelFont) : options.text;
                     if (typeof options.text !== 'string' && options.text.length > 1) {
                         options.y -= (padding * options.text.length / 2);
                     }
                     textElement(
-                        this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabelFont.color,
-                        this.labelElement, this.chart.redraw, true, null, null, null, null, null, null, this.chart.enableCanvas, null, this.chart.themeStyle.axisLabelFont
+                        this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color ||
+                        this.chart.themeStyle.axisLabelFont.color,
+                        this.labelElement, this.chart.redraw, true, null, null, null, null, null, null,
+                        this.chart.enableCanvas, null, this.chart.themeStyle.axisLabelFont
                     );
                     if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                         path = this.renderYAxisLabelBorder(
@@ -421,10 +449,23 @@ export class MultiLevelLabel {
         }
     }
     /**
-     * render y axis multi level labels border
+     * Renders the border for the Y-axis labels.
      *
-     * @private
-     * @returns {void}
+     * @param {number} labelIndex - The index of the label.
+     * @param {number} gap - The gap between labels.
+     * @param {Axis} axis - The Y-axis.
+     * @param {number} endY - The end Y-coordinate.
+     * @param {number} startX - The start X-coordinate.
+     * @param {number} startY - The start Y-coordinate.
+     * @param {Size} labelSize - The size of the label.
+     * @param {TextOption} textOptions - The text options for the label.
+     * @param {Rect} rect - The axis rectangle.
+     * @param {Alignment} alignment - The alignment of the label.
+     * @param {string} path - The path for rendering.
+     * @param {boolean} isOutside - Indicates whether the label is outside.
+     * @param {boolean} opposedPosition - Indicates whether the label position is opposed.
+     * @param {number} categoryIndex - The index of the category.
+     * @returns {string} - The path for rendering the label border.
      */
     private renderYAxisLabelBorder(
         labelIndex: number, gap: number, axis: Axis, endY: number, startX: number, startY: number, labelSize: Size, textOptions: TextOption,
@@ -436,7 +477,8 @@ export class MultiLevelLabel {
         const y: number = rect.y + rect.height - endY;
         let scrollBarHeight: number = isOutside && isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
         scrollBarHeight = scrollBarHeight * (opposedPosition ? 1 : -1);
-        let width: number = (groupLabel.categories[categoryIndex as number].maximumTextWidth === null ? this.yAxisMultiLabelHeight[labelIndex as number] :
+        let width: number = (groupLabel.categories[categoryIndex as number].maximumTextWidth === null ?
+            this.yAxisMultiLabelHeight[labelIndex as number] :
             (groupLabel.categories[categoryIndex as number].maximumTextWidth)) + padding;
         const x: number = (((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? rect.x - startX -
             this.yAxisPrevHeight[labelIndex as number] : rect.x + startX + this.yAxisPrevHeight[labelIndex as number]) + scrollBarHeight;
@@ -552,10 +594,11 @@ export class MultiLevelLabel {
         return argsData;
     }
     /**
-     * Triggers the event.
+     * Handles the click event for multi-level labels.
      *
-     * @returns {void}
-     * @private
+     * @param {string} labelIndex - The index of the clicked label.
+     * @param {number} axisIndex - The index of the axis.
+     * @returns {IMultiLevelLabelClickEventArgs} - The event arguments for multi-level label click.
      */
     public MultiLevelLabelClick(labelIndex: string, axisIndex: number): IMultiLevelLabelClickEventArgs {
         const level: number =  parseInt(labelIndex.substr(0, 1), 10);
@@ -577,6 +620,7 @@ export class MultiLevelLabel {
     /**
      * To click the multi level label
      *
+     * @param {Event} event - The click event.
      * @returns {void}
      * @private
      */
@@ -606,6 +650,7 @@ export class MultiLevelLabel {
      * To get the module name for `MultiLevelLabel`.
      *
      * @private
+     * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {
         return 'MultiLevelLabel';
@@ -614,6 +659,7 @@ export class MultiLevelLabel {
      * To destroy the `MultiLevelLabel` module.
      *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         // destroy peform here

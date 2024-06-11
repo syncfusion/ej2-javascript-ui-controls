@@ -49,4 +49,4 @@ export const stopElement: string = 'stop';
 /**
  * Render for the tooltip.
  */
- export const tooltipRender: string  = 'tooltipRender';
+export const tooltipRender: string  = 'tooltipRender';

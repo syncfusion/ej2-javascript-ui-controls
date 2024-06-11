@@ -44,10 +44,10 @@ describe('Gantt spec for critical path', () => {
             }, done);
         });
         it('Initial rendering critical path ', () => {
-            expect(ganttObj.flatData[5].isCritical).toBe(true);
-            expect(ganttObj.flatData[12].isCritical).toBe(true);
-            expect(ganttObj.flatData[16].isCritical).toBe(true);
-            expect(ganttObj.flatData[17].isCritical).toBe(true);
+            expect(ganttObj.flatData[5].isCritical).toBe(false);
+            expect(ganttObj.flatData[12].isCritical).toBe(false);
+            expect(ganttObj.flatData[16].isCritical).toBe(false);
+            expect(ganttObj.flatData[17].isCritical).toBe(false);
         });
         it('Drag and Drop', () => {
             ganttObj.actionComplete = (args) => {
@@ -111,7 +111,7 @@ describe('Gantt spec for critical path', () => {
         it('Progress Resizing', () => {
             ganttObj.actionComplete = (args) => {
                 if (args.requestType == 'save' && args.taskBarEditAction == 'ProgressResizing') {
-                    expect(args.data.isCritical).toBe(true);
+                    expect(args.data.isCritical).toBe(false);
                 }
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(12) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
@@ -223,7 +223,7 @@ describe('Gantt spec for critical path', () => {
             ganttObj.actionComplete = (args) => {
                 if (args.requestType == 'save' && args.taskBarEditAction == 'RightResizing') {
                     expect(args.data.isCritical).toBe(true);
-                    expect(ganttObj.flatData[4].isCritical).toBe(true);
+                    expect(ganttObj.flatData[4].isCritical).toBe(false);
                 }
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(6) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
@@ -1014,7 +1014,7 @@ describe('Gantt spec for critical path', () => {
             }, done);
         });
         it('Initial rendering critical path for resource view', () => {
-            expect(ganttObj.flatData[11].isCritical).toBe(true);
+            expect(ganttObj.flatData[11].isCritical).toBe(false);
             expect(ganttObj.flatData[12].isCritical).toBe(false);
         });
         afterAll(() => {
@@ -1085,7 +1085,7 @@ describe('Gantt spec for critical path', () => {
             }, done);
         });
         it('Initial rendering critical path for resource view', () => {
-            expect(ganttObj.flatData[11].isCritical).toBe(true);
+            expect(ganttObj.flatData[11].isCritical).toBe(false);
             expect(ganttObj.flatData[12].isCritical).toBe(false);
         });
         afterAll(() => {
@@ -1203,7 +1203,7 @@ describe('Gantt spec for critical path', () => {
             }, done);
         });
         it('Initial rendering critical path for resource view', () => {
-            expect(ganttObj.flatData[11].isCritical).toBe(true);
+            expect(ganttObj.flatData[11].isCritical).toBe(false);
             expect(ganttObj.flatData[12].isCritical).toBe(false);
         });
         afterAll(() => {
@@ -1418,7 +1418,7 @@ describe('clone taskbar Right resizing taskbar', () => {
     it('Progress Resizing', () => {
         ganttObj.actionComplete = (args) => {
             if (args.requestType == 'save' && args.taskBarEditAction == 'ProgressResizing') {
-                expect(args.data.isCritical).toBe(true);
+                expect(args.data.isCritical).toBe(false);
             }
         }
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(12) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
@@ -1771,7 +1771,195 @@ describe('CR: 883874-Critical path of task connected dependent tasks have not ch
     it('Verifying the critical path if offset is 1-Day', () => {
         expect(ganttObj.currentViewData[0].isCritical).toBe(true);
         expect(ganttObj.currentViewData[1].isCritical).toBe(true);
-        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(1);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(-1);
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Invalid critical task', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                {
+                    TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
+                    Predecessor: '2', Progress: 30
+                },
+            ]
+        },
+        {
+            TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
+            Indicators: [
+                {
+                    'date': '04/10/2019',
+                    'name': 'Design Phase',
+                    'tooltip': 'Design phase completed',
+                    'iconClass': 'okIcon e-icons'
+                }
+            ],
+        },
+        {
+            TaskID: 6,
+            TaskName: 'Market research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
+                            Predecessor: '5', Progress: 30
+                        },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
+                    ]
+                },
+                {
+                    TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
+                    Predecessor: '7, 8', Progress: 30
+                },
+                { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
+                {
+                    TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: '10',
+                    Indicators: [
+                        {
+                            'date': '04/27/2019',
+                            'name': 'Research completed',
+                            'tooltip': 'Research completed',
+                            'iconClass': 'description e-icons'
+                        }
+                    ],
+                }
+            ]
+        },
+        {
+            TaskID: 13,
+            TaskName: 'Product design and development',
+            StartDate: new Date('04/04/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'),
+                    Duration: 3, Progress: 30, Predecessor: '12'
+                },
+                { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 3, Predecessor: '12' },
+                { TaskID: 16, TaskName: 'Define reliability', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30, Predecessor: '15' },
+                { TaskID: 17, TaskName: 'Identifying raw materials', StartDate: new Date('04/04/2019'), Duration: 2, Predecessor: '15' },
+                {
+                    TaskID: 18,
+                    TaskName: 'Define cost plan',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'),
+                            Duration: 2, Progress: 30, Predecessor: '17'
+                        },
+                        { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 2, Predecessor: '17' }
+                    ]
+                },
+                {
+                    TaskID: 21,
+                    TaskName: 'Development of the final design',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'),
+                            Duration: 2, Progress: 30, Predecessor: '19,20'
+                        },
+                        {
+                            TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'),
+                            Duration: 2, Predecessor: '22'
+                        },
+                        { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 3, Predecessor: '23' }
+                    ]
+                },
+                {
+                    TaskID: 25, TaskName: 'CAD computer-aided design', StartDate: new Date('04/04/2019'),
+                    Duration: 3, Progress: 30, Predecessor: '24'
+                },
+                { TaskID: 26, TaskName: 'CAM computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 3, Predecessor: '25' },
+                {
+                    TaskID: 27, TaskName: 'Design complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: '26',
+                }
+            ]
+        },
+        { TaskID: 28, TaskName: 'Prototype testing', StartDate: new Date('04/04/2019'), Duration: 4, Progress: 30, Predecessor: '27' },
+        { TaskID: 29, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '28ss', Indicators: [
+                {
+                    'date': '05/24/2019',
+                    'name': 'Production phase',
+                    'tooltip': 'Production phase completed',
+                    'iconClass': 'okIcon e-icons'
+                }
+            ], },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+        height: '450px',
+        enableCriticalPath: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Delete', 'CriticalPath'],
+        columns: [
+            { field: 'TaskID', width: 80 },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Predecessor' },
+            { field: 'Progress' },
+        ],
+        labelSettings: {
+            leftLabel: 'TaskName'
+        },
+        projectStartDate: new Date('03/24/2019'),
+        projectEndDate: new Date('07/06/2019')
+        }, done);
+    });
+    it('Verifying the critical path task', () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save') {
+                expect(ganttObj.flatData[10].ganttProperties.isCritical).toBe(false);
+            }
+        }
+        let predecessor: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(12) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(predecessor, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as any).ej2_instances[0];
+        input.value = '10FS,11FS';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(13) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
     });
     afterAll(() => {
         if(ganttObj){

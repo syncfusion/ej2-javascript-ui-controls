@@ -755,9 +755,6 @@ export class SfdtReader {
                     paragraph.paragraphFormat = new WParagraphFormat(paragraph);
                     if (block[inlinesProperty[this.keywordIndex]].length > 0) {
                         hasValidElmts = this.parseParagraph(block[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat, undefined, isFootnoteEndnote && i === 0);
-                        if (block.hasOwnProperty(isCreatedUsingHtmlSpanTagProperty[this.keywordIndex])) {
-                            paragraph.isCreatedUsingHtmlSpanTag = HelperMethods.parseBoolValue(block[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]]);
-                        }
                     }
                     if (!(isSectionBreak && block === data[data.length - 1] && block[inlinesProperty[this.keywordIndex]].length === 0 && !hasValidElmts)) {
                         this.parseCharacterFormat(this.keywordIndex, block[characterFormatProperty[this.keywordIndex]], paragraph.characterFormat);
@@ -1123,9 +1120,6 @@ export class SfdtReader {
             lineWidget = new LineWidget(paragraph);
         } else {
             isContentControl = true;
-        }
-        if (data.hasOwnProperty(isCreatedUsingHtmlSpanTagProperty[this.keywordIndex])) {
-            paragraph.isCreatedUsingHtmlSpanTag = HelperMethods.parseBoolValue(data[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]]);
         }
         let hasValidElmts: boolean = false;
         let revision: Revision;

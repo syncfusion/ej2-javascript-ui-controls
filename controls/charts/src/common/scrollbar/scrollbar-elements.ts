@@ -1,4 +1,3 @@
-/* eslint-disable valid-jsdoc */
 import { ScrollBar } from './scrollbar';
 import { Chart } from '../../chart/chart';
 import { RectOption, CircleOption } from '../utils/helper';
@@ -6,10 +5,11 @@ import { PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { IScrollbarThemeStyle } from '../../chart/index';
 import { ScrollbarSettingsModel } from '../../chart/index';
 
-// eslint-disable-next-line jsdoc/require-param
 /**
  * Create scrollbar svg.
  *
+ * @param {ScrollBar} scrollbar - The scrollbar instance.
+ * @param {SvgRenderer} renderer - The SVG renderer.
  * @returns {void}
  */
 export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): void {
@@ -188,7 +188,8 @@ export class ScrollElements {
         this.slider = renderer.drawRectangle(new RectOption(
             this.chartId + 'scrollBarThumb_' + scroll.axis.name,
             scrollBar.scrollbarColor || style.thumb, { width: 1, color: scrollBar.scrollbarColor || style.thumb }, 1, new Rect(
-                scrollBar.enableZoom ? this.thumbRectX : this.thumbRectX - scroll.height / 2, 0, scrollBar.enableZoom ? this.thumbRectWidth : this.thumbRectWidth + scroll.height / 2, scroll.height
+                scrollBar.enableZoom ? this.thumbRectX : this.thumbRectX - scroll.height / 2, 0, scrollBar.enableZoom ?
+                    this.thumbRectWidth : this.thumbRectWidth + scroll.height / 2, scroll.height
             ), scrollBar.scrollbarRadius, scrollBar.scrollbarRadius
         ));
         parent.appendChild(this.slider);
@@ -255,17 +256,17 @@ export class ScrollElements {
         this.gripCircle = renderer.createGroup({
             id: this.chartId + 'scrollBar_gripCircle_' + scroll.axis.name,
             transform: 'translate(' + (!scrollBar.enableZoom ? ((this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 2 : 0) * padding) - scrollBar.height / 2) : (this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 1 : -1) * padding)) +
-                ',' + (scroll.isVertical ? (scroll.height / 2 + padding / 2) - 0.5 : (scroll.height / 2 - padding / 2) -0.5) + ') rotate(' + (scroll.isVertical ? '180' : '0') + ')'
+                ',' + (scroll.isVertical ? (scroll.height / 2 + padding / 2) - 0.5 : (scroll.height / 2 - padding / 2) - 0.5) + ') rotate(' + (scroll.isVertical ? '180' : '0') + ')'
         });
-        for (let i: number = 1; i <= 6; i++) {
+        for (let i: number = 1; i <= (scroll.component.theme.indexOf('Fluent2') > -1 ? 10 : 6); i++) {
             option.id = this.chartId + 'scrollBar_gripCircle' + i + '_' + scroll.axis.name;
             option.cx = sidePadding;
             option.cy = topPadding;
             this.gripCircle.appendChild(
                 renderer.drawCircle(option  )
             );
-            sidePadding = i === 3 ? 0 : (sidePadding + 5);
-            topPadding = i >= 3 ? 5 : 0;
+            sidePadding = i === (scroll.component.theme.indexOf('Fluent2') > -1 ? 5 : 3) ? 0 : (sidePadding + 5);
+            topPadding = i >= (scroll.component.theme.indexOf('Fluent2') > -1 ? 5 : 3) ? 5 : 0;
         }
         if (scrollBar.height >= 12) { parent.appendChild(this.gripCircle); }
     }

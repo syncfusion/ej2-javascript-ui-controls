@@ -1,5 +1,5 @@
-import { isNullOrUndefined } from "@syncfusion/ej2-base";
-import { MajorMinorFontScheme } from "./major-minor-font-scheme";
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { MajorMinorFontScheme } from './major-minor-font-scheme';
 
 /**
  * @private
@@ -31,7 +31,7 @@ export class FontScheme {
         this.majFontScheme = new MajorMinorFontScheme();
         this.minFontScheme = new MajorMinorFontScheme();
     }
-    
+
     public copyFormat(fontScheme: FontScheme): void {
         if (!isNullOrUndefined(fontScheme)) {
             this.schemeName = fontScheme.schemeName;
@@ -51,7 +51,7 @@ export class FontScheme {
 /**
  * @private
  */
- export class FontSchemeStruct {
+export class FontSchemeStruct {
     private fontName: string;
     private fontTypeface: string;
     private pnose: string;

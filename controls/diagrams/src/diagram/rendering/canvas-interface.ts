@@ -149,7 +149,7 @@ export interface PathSegment {
 
 /** @private */
 export interface IKeyDownType {
-    type?:string;
+    type?: string;
 }
 
 /** @private */

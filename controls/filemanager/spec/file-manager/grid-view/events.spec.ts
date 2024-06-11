@@ -578,7 +578,7 @@ describe('FileManager control Grid view', () => {
                 setTimeout(function () {
                     let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                     expect(gridLi.length).toEqual(3);
-                    expect(gridLi[1].querySelector('.e-fe-text').innerText).toBe("2");
+                    expect(gridLi[1].querySelector('.e-fe-grid-name').innerText).toBe("2");
                     done();
                 }, 500);
             }, 500);
@@ -845,6 +845,29 @@ describe('FileManager control Grid view', () => {
             }, 500);
         });
 
+        it('for details with OK button', (done: Function) => {
+            name = 'File Details';
+            feObj.detailsviewModule.gridObj.selectRows([1]);
+            let items: any = document.getElementById('file_tb_details');
+            items.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(singleSelectionDetails)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_dialog_title').textContent).toBe('Documents');
+                expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder');
+                // Get the OK button element
+                const okButton: any = document.querySelector('#file_dialog .e-footer-content button');
+                okButton.click();
+                expect(i).toBe(2);
+                expect(j).toBe(1);
+                expect(k).toBe(1);
+                done();
+            }, 500);
+        });
+
         it('for Multiple details', (done: Function) => {
             name = 'File Details';
             feObj.detailsviewModule.gridObj.selectRows([1, 2]);
@@ -860,6 +883,29 @@ describe('FileManager control Grid view', () => {
                 expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder');
                 let item: any = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
                 item.click();
+                expect(i).toBe(2);
+                expect(j).toBe(1);
+                expect(k).toBe(1);
+                done();
+            }, 500);
+        });
+
+        it('for Multiple details with OK button', (done: Function) => {
+            name = 'File Details';
+            feObj.detailsviewModule.gridObj.selectRows([1, 2]);
+            let items: any = document.getElementById('file_tb_details');
+            items.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(getMultipleDetails)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_dialog_title').textContent).toBe('Documents, Employees');
+                expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder');
+                // Get the OK button element
+                const okButton: any = document.querySelector('#file_dialog .e-footer-content button');
+                okButton.click();
                 expect(i).toBe(2);
                 expect(j).toBe(1);
                 expect(k).toBe(1);

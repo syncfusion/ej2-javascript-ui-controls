@@ -357,6 +357,82 @@ describe('Map layer testing', () => {
             ];
             colormap.refresh();
         });
+        it('Desaturation color mappping testing spec with multi colors', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_14_dataIndex_50');
+                expect(spec.getAttribute('fill')).toBe('#FF0000');
+                done();
+            };
+            colormap.layers[0].shapeSettings.colorValuePath = 'Candidate';
+            colormap.layers[0].shapeSettings.valuePath = 'Electors';
+            colormap.layers[0].shapeSettings.colorMapping = [
+                {
+                    from: 1, to: 7, value: 'Romney', color: ['#FF0000', '#008000'], minOpacity: 0.25, maxOpacity: 1
+                }
+            ];
+            colormap.refresh();
+        });
+        it('color value as null and color as object', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_14_dataIndex_50');
+                expect(spec.getAttribute('fill')).toBe('#33CCFF');
+                done();
+            };
+            colormap.layers[0].shapeSettings.colorValuePath = 'Candidate';
+            colormap.layers[0].shapeSettings.colorMapping = [
+                {
+                    value: 'Romney', color: '#33CCFF'
+                },
+                {
+                    color: ['red', 'blue']
+                }
+            ];
+            colormap.refresh();
+        });
+        it('shapeData path value is wrong', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_6_dataIndex_0');
+                expect(spec.getAttribute('fill')).toBe('#FF0000');
+                done();
+            };
+            colormap.layers[0].shapeDataPath = 'State1';
+            colormap.layers[0].shapeSettings.valuePath = 'Electors';
+            colormap.layers[0].shapeSettings.colorValuePath = 'Candidate';
+            colormap.layers[0].shapeSettings.colorMapping = [
+                {
+                    from: 1, to: 7, value: 'Romney', color: ['#FF0000', '#008000'], minOpacity: 0.25, maxOpacity: 1
+                }
+            ];
+            colormap.refresh();
+        });
+        it('shape property path value is wrong', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_6_dataIndex_0');
+                expect(spec.getAttribute('fill')).toBe('#FF0000');
+                done();
+            };
+            colormap.layers[0].shapeDataPath = 'State1';
+            colormap.layers[0].shapePropertyPath = 'States';
+            colormap.layers[0].shapeSettings.valuePath = 'Electors';
+            colormap.layers[0].shapeSettings.colorValuePath = 'Candidate';
+            colormap.layers[0].shapeSettings.colorMapping = [
+                {
+                    from: 1, to: 7, value: 'Romney', color: ['#FF0000', '#008000'], minOpacity: 0.25, maxOpacity: 1
+                }
+            ];
+            colormap.refresh();
+        });
+        it('datasource as null', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_0_dataIndex_null');
+                expect(spec.getAttribute('fill')).toBe('Orange');
+                done();
+            };
+            colormap.layers[0].dataSource = null;
+            colormap.layers[0].shapeDataPath = 'State';
+            colormap.layers[0].shapePropertyPath = 'name';            
+            colormap.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

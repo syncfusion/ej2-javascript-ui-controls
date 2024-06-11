@@ -668,5 +668,16 @@ describe('FileManager control Grid view', () => {
                 done();
             }, 100);
         });
+        
+        it('for popup close', (done: Function) => {
+            expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
+            feObj.createFolder();
+            setTimeout(function () {
+                expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(true);
+                feObj.closeDialog();
+                expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(false);
+                done();
+            }, 100);
+        });
     });
 });

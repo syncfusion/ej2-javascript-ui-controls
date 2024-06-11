@@ -1,0 +1,14 @@
+@include export-module('dropdowntree-fluent2-icons') {
+  .e-ddt {
+    .e-ddt-icon::before {
+      content: '\e729';
+      padding: 3px;
+    }
+
+    .e-chips-close::before,
+    .e-clear-icon::before {
+      content: '\e7e7';
+      font-family: 'e-icons';
+    }
+  }
+}

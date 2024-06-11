@@ -1,14 +1,14 @@
 import { addClass, Browser, EventHandler, detach, removeClass, select, selectAll, KeyboardEvents} from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { setStyleAttribute, extend } from '@syncfusion/ej2-base';
-import { Toolbar as tool, OverflowMode, ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { Toolbar as tool, OverflowMode } from '@syncfusion/ej2-navigations';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { RenderType, ToolbarType, ToolbarItems } from '../base/enum';
 import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase, isIDevice, getTooltipText } from '../base/util';
 import { updateDropDownFontFormatLocale } from '../base/util';
 import * as model from '../models/items';
-import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions, IColorPickerRenderArgs, ICssClassArgs } from '../base/interface';
+import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IColorPickerRenderArgs, ICssClassArgs } from '../base/interface';
 import { IToolbarItemModel, IToolsItems, IUpdateItemsModel, IDropDownRenderArgs, ISetToolbarStatusArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -78,11 +78,8 @@ export class Toolbar {
             (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
             break;
         case 'enter':
-            if ((e.target as Element).classList.contains('e-hor-nav')) {
-                this.adjustContentHeight(e.target as Element, true);
-            }
-            if (!isNullOrUndefined(e.target as Element) && ((e.target as Element).classList.contains("e-rte-fontcolor-dropdown") || (e.target as Element).classList.contains("e-rte-backgroundcolor-dropdown"))) {
-                this.parent.notify(events.showColorPicker, { toolbarClick: (e.target as Element).classList.contains("e-rte-fontcolor-dropdown") ? "fontcolor" : "backgroundcolor" });
+            if (!isNOU(e.target as Element) && ((e.target as Element).classList.contains('e-rte-fontcolor-dropdown') || (e.target as Element).classList.contains('e-rte-backgroundcolor-dropdown'))) {
+                this.parent.notify(events.showColorPicker, { toolbarClick: (e.target as Element).classList.contains('e-rte-fontcolor-dropdown') ? 'fontcolor' : 'backgroundcolor' });
             }
         }
     }
@@ -98,9 +95,9 @@ export class Toolbar {
                     className: classes.CLS_TB_WRAP
                 });
                 this.tbElement = this.tbWrapper.firstElementChild as HTMLElement;
-                this.parent.element.insertBefore(this.tbWrapper, this.editPanel);
+                this.parent.rootContainer.insertBefore(this.tbWrapper, this.editPanel);
             } else {
-                this.parent.element.insertBefore(this.tbElement, this.editPanel);
+                this.parent.rootContainer.insertBefore(this.tbElement, this.editPanel);
             }
         }
     }
@@ -174,11 +171,11 @@ export class Toolbar {
         }
     }
 
-    private toggleFloatClass(e?: Event): void {
+    private toggleFloatClass(): void {
         const floatOffset: number = this.parent.floatingToolbarOffset;
         if (this.parent.toolbarSettings.enableFloating) {
-           addClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
-           setStyleAttribute(this.tbElement.parentElement, { top: (floatOffset) + 'px' });
+            addClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
+            setStyleAttribute(this.tbElement.parentElement, { top: (floatOffset) + 'px' });
         }
         else {
             removeClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
@@ -230,10 +227,7 @@ export class Toolbar {
             } as IColorPickerRenderArgs);
             this.refreshToolbarOverflow();
         }
-        const divEle: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA) as HTMLElement;
-        const iframeEle: HTMLElement = this.parent.element.querySelector('.e-source-content') as HTMLElement;
-        if ((!this.parent.iframeSettings.enable && (!isNOU(divEle) && divEle.style.display === 'block')) ||
-          (this.parent.iframeSettings.enable && (!isNOU(iframeEle) && iframeEle.style.display === 'block'))) {
+        if (this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-source-code-enabled')) {
             this.parent.notify(events.updateToolbarItem, {
                 targetItem: 'SourceCode', updateItem: 'Preview',
                 baseToolbar: this.parent.getBaseToolbarObject()
@@ -537,29 +531,6 @@ export class Toolbar {
         }
     }
 
-    private toolbarClickHandler(e: ClickEventArgs): void {
-        const trg: Element = closest(e.originalEvent.target as Element, '.e-hor-nav');
-        this.adjustContentHeight(trg, false);
-    }
-
-    private adjustContentHeight(trg: Element, isKeyboard?: boolean): void {
-        if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNOU(trg)) {
-            const hasActiveClass: boolean = trg.classList.contains('e-nav-active');
-            const isExpand: boolean = isKeyboard ? (hasActiveClass ? false : true) : (hasActiveClass ? true : false);
-            if (isExpand) {
-                addClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
-            } else {
-                removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
-            }
-            this.parent.setContentHeight('Toolbar', isExpand);
-        } else if (Browser.isDevice || this.parent.inlineMode.enable) {
-            this.isToolbar = true;
-        }
-        if (isNOU(trg) && this.parent.toolbarSettings.type === ToolbarType.Expand && this.parent.toolbarModule.getExpandTBarPopHeight() === 0) {
-            removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
-        }
-    }
-
     protected wireEvents(): void {
         if (this.parent.inlineMode.enable && isIDevice()) {
             return;
@@ -587,15 +558,11 @@ export class Toolbar {
         this.parent.on(events.disableFullScreen, this.hideScreen, this);
         this.parent.on(events.updateToolbarItem, this.updateItem, this);
         this.parent.on(events.beforeDropDownOpen, this.dropDownBeforeOpenHandler, this);
-        this.parent.on(events.expandPopupClick, this.parent.setContentHeight, this.parent);
         this.parent.on(events.focusChange, this.focusChangeHandler, this);
         this.parent.on(events.mouseDown, this.mouseDownHandler, this);
         this.parent.on(events.sourceCodeMouseDown, this.mouseDownHandler, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
-        if (!this.parent.inlineMode.enable && !isIDevice()) {
-            this.parent.on(events.toolbarClick, this.toolbarClickHandler, this);
-        }
     }
 
     protected removeEventListener(): void {
@@ -612,15 +579,11 @@ export class Toolbar {
         this.parent.off(events.disableFullScreen, this.parent.fullScreenModule.hideFullScreen);
         this.parent.off(events.updateToolbarItem, this.updateItem);
         this.parent.off(events.beforeDropDownOpen, this.dropDownBeforeOpenHandler);
-        this.parent.off(events.expandPopupClick, this.parent.setContentHeight);
         this.parent.off(events.focusChange, this.focusChangeHandler);
         this.parent.off(events.mouseDown, this.mouseDownHandler);
         this.parent.off(events.sourceCodeMouseDown, this.mouseDownHandler);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.moduleDestroy, this.moduleDestroy);
-        if (!this.parent.inlineMode.enable && !isIDevice()) {
-            this.parent.off(events.toolbarClick, this.toolbarClickHandler);
-        }
     }
 
     // eslint-disable-next-line @typescript-eslint/tslint/config
@@ -638,8 +601,7 @@ export class Toolbar {
         if (!this.parent.inlineMode.enable){
             this.refreshToolbarOverflow();
         }
-        const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
-        this.parent.setContentHeight('Refresh', isExpand);
+        this.parent.autoResize();
     }
     /**
      * Called internally if any of the property value changed.

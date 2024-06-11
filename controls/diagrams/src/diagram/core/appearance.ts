@@ -10,9 +10,7 @@ import { TextDecoration, WhiteSpace, TextWrap, TextAlign, GradientType, TextOver
 // eslint-disable-next-line prefer-const
 let getGradientType: Function = (obj: Gradient): Object => {
     if (obj) {
-        if (isBlazor()) {
-            return DiagramGradient;
-        }
+        //Removed isBlazor code
         switch (obj.type) {
         case 'Linear':
             return LinearGradient;

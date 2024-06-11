@@ -352,5 +352,41 @@ describe('Diagram Control', () => {
             expect(obj.id === 'subProcess' && (obj.shape as BpmnShape).activity.subProcess.processes.length > 0).toBe(true);
             done()
         });
+
+        it('Adding subProcess inside the subProcess', (done: Function) => {
+            let subProcess1 =   {
+                id: 'subProcess1', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                offsetX: 200, offsetY: 200,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false,
+                            processes:['subProcess2']
+                        }
+                    },
+                },
+            };
+            let start = {id:'start',width:50,height:40,shape:{type:'Bpmn',shape:'Event'}};
+            let subProcess2 = {
+                id: 'subProcess2', maxHeight: 300, maxWidth: 300, minWidth: 100, minHeight: 100,
+                offsetX: 200, offsetY: 200,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false,
+                            processes:['start']
+                        }
+                    },
+                },
+            };
+            diagram.add(start as NodeModel);
+            diagram.add(subProcess2 as NodeModel);
+            diagram.add(subProcess1 as NodeModel);
+            let sub = diagram.nameTable['subProcess1'];
+            expect(sub.shape && sub.shape.activity && sub.shape.activity.subProcess.processes[0] === 'subProcess2').toBe(true);
+            done()
+        });
     });
 });

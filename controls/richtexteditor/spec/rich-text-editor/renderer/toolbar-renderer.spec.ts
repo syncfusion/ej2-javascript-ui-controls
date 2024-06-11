@@ -20,7 +20,8 @@ describe('Toolbar - Renderer', () => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Formats', 'Alignments']
-                }
+                },
+                value: "<h1>Rich Text Editor</h1>"
             });
             rteEle = rteObj.element;
         });
@@ -28,6 +29,7 @@ describe('Toolbar - Renderer', () => {
         it(' Open the DropDownButton with modal', () => {
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
             (trgEle.firstElementChild as HTMLElement).click();
+            expect(document.querySelectorAll('.e-item.e-active').length == 1).toBe(true);
             expect(document.querySelector(".e-popup-overlay")).toBe(null);
         });
 
@@ -163,7 +165,7 @@ describe('Toolbar - Renderer', () => {
             let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[0];
             (trgEle.firstElementChild as HTMLElement).click();
             dispatchEvent(trgEle.firstElementChild, 'mousedown');
-            let activeEle = (document.querySelector('.e-dropdown-popup .e-segoe-ui.e-active') as HTMLElement);
+            let activeEle = (document.querySelector('.e-dropdown-popup .e-default.e-active') as HTMLElement);
             expect(!isNullOrUndefined(activeEle)).toBe(true);
         });
         it('Check the fontSize dropdown active element', function () {

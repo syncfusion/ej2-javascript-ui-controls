@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { employeeData2, employeeData3  } from '../base/datasource.spec';
+import { employeeData2, employeeData3, sampleData  } from '../base/datasource.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { Page } from '../../src/treegrid/actions/page';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
@@ -8,10 +8,11 @@ import { Filter } from '../../src/treegrid/actions/filter';
 import { DetailRow } from '../../src/treegrid/actions/detail-row';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CellSaveEventArgs, actionComplete } from '../../src';
+import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 import { CellEditArgs, dataBound } from '@syncfusion/ej2-grids';
 
 
-TreeGrid.Inject(Page, DetailRow, Toolbar, Sort, Filter);
+TreeGrid.Inject(Page, DetailRow, Toolbar, Sort, Filter, VirtualScroll);
 let template : string = `<table id = "table1">
 <colgroup>
     <col width="35%">
@@ -723,6 +724,69 @@ describe('EJ2-49013 - Issue with collapseAll method in detail template sample ',
         gridObj.expandAll();
         expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(0);
         done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Detail template with virtualization', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData3,
+                childMapping: 'Children',
+                treeColumnIndex: 0,
+                detailTemplate: template,
+                enableVirtualization: true,
+                height: 335,
+                width: 'auto',
+                columns: [
+                    { field: 'Name', headerText: 'First Name', width: '160' },
+                    { field: 'DOB', headerText: 'DOB', width: '85', type: 'date', format: 'yMd', textAlign: 'Right' },
+                    { field: 'Designation', headerText: 'Designation', width: '147' },
+                    { field: 'EmpID', headerText: 'EmployeeID', width: '125'},
+                    { field: 'Country', headerText: 'Country' , width: '148'},
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).toHaveBeenCalled();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Stacked Header', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                detailTemplate: template,
+                columns: [
+                    {headerText: 'Task Details', textAlign: 'Center', columns: [
+                        { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+                        { field: 'taskName', headerText: 'Task Name', width: 250 }
+                    ]},
+                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 }
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).toHaveBeenCalled();
     });
     afterAll(() => {
         destroy(gridObj);

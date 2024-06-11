@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
 import { RangeNavigator } from '../range-navigator';
 import { valueToCoefficient, textElement, firstToLowerCase, withIn } from '../../common/utils/helper';
 import { PathOption, Rect, measureText, TextOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -11,8 +8,6 @@ import { FontModel } from '../../common/model/base-model';
 import { Axis, VisibleLabels } from '../../chart/axis/axis';
 import { MajorGridLinesModel, MajorTickLinesModel } from '../../chart/axis/axis-model';
 import { ILabelRenderEventsArgs } from '../model/range-navigator-interface';
-import { DateTimeCategory } from '../../chart/axis/date-time-category-axis';
-
 
 /**
  * class for axis
@@ -30,7 +25,9 @@ export class RangeNavigatorAxis extends DateTime {
     public gridLines: Element;
 
     /**
-     * To render grid lines of axis
+     * To render grid lines of axis.
+     *
+     * @returns {void}
      */
     public renderGridLines(): void {
         let pointX: number = 0;
@@ -94,7 +91,9 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * To render of axis labels
+     * To render of axis labels.
+     *
+     * @returns {void}
      */
     public renderAxisLabels(): void {
         const axis: Axis = this.rangeNavigator.chartSeries.xAxis;
@@ -142,9 +141,10 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * To find secondary level label type
+     * To find the secondary level label type.
      *
-     * @param {RangeIntervalType} type type of range interval
+     * @param {RangeIntervalType} type - The type of range interval.
+     * @returns {RangeIntervalType} - The secondary level label type.
      */
     private getSecondaryLabelType(type: RangeIntervalType): RangeIntervalType {
         const types: RangeIntervalType[] = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
@@ -152,9 +152,10 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * To find labels for date time category axis
+     * To find labels for date time category axis.
      *
-     * @param {Axis} axis range axis
+     * @param {Axis} axis - Range axis.
+     * @returns {void}
      */
     private findSecondaryAxisLabels(axis: Axis): void {
         axis.visibleLabels = [];
@@ -188,9 +189,11 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * To find labels for date time axis
+     * To find labels for date time axis.
      *
-     * @param {Axis} axis range axis
+     * @param {Axis} axis - Range axis.
+     * @param {number} interval - Interval for the date time axis.
+     * @returns {void}
      */
     private findAxisLabels(axis: Axis, interval: number): void {
         axis.visibleLabels = [];
@@ -253,11 +256,12 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * To find date time formats for Quarter and week interval type
+     * To find date time formats for Quarter and week interval type.
      *
-     * @param {string} text text
-     * @param {Axis} axis axis
-     * @param {number} index index
+     * @param {string} text - The text.
+     * @param {Axis} axis - The axis.
+     * @param {number} index - The index.
+     * @returns {string} - The modified text.
      */
     private dateFormats(text: string, axis: Axis, index: number): string {
         let changedText: string = text;
@@ -285,10 +289,11 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * To find the y co-ordinate for axis labels
+     * To find the y co-ordinate for axis labels.
      *
-     * @param {RangeNavigator} control - rangeNavigator
-     * @param {boolean} isSecondary sets true if the axis is secondary axis
+     * @param {RangeNavigator} control - The RangeNavigator control.
+     * @param {boolean} isSecondary - If sets to true, indicates that the axis is a secondary axis.
+     * @returns {number} - The y-coordinate for the labels.
      */
     private findLabelY(control: RangeNavigator, isSecondary: boolean): number {
         let pointY: number;
@@ -318,13 +323,14 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * It places the axis labels and returns border for secondary axis labels
+     * It places the axis labels and returns border for secondary axis labels.
      *
-     * @param {Axis} axis axis for the lables placed
-     * @param {number} pointY y co-ordinate for axis labels
-     * @param {string} id id for the axis elements
-     * @param {RangeNavigator} control range navigator
-     * @param {Element} labelElement parent element in which axis labels appended
+     * @param {Axis} axis - Axis for the lables placed.
+     * @param {number} pointY - The y co-ordinate for axis labels.
+     * @param {string} id - The id for the axis elements.
+     * @param {RangeNavigator} control - The range navigator control.
+     * @param {Element} labelElement - The parent element in which the axis labels are appended.
+     * @returns {string} - The border for the secondary axis labels.
      */
     private placeAxisLabels(axis: Axis, pointY: number, id: string, control: RangeNavigator, labelElement: Element): string {
         const maxLabels: number = axis.visibleLabels.length;
@@ -423,17 +429,26 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * To check label is intersected with successive label or not
+     * To check label is intersected with successive label or not.
+     *
+     * @param {Axis} axis - The axis for which the labels are placed.
+     * @param {number} currentX - The x-coordinate for the current label.
+     * @param {number} currentWidth - The width of the current label.
+     * @param {number} prevX - The x-coordinate for the previous label.
+     * @param {number} prevWidth - The width of the previous label.
+     * @returns {boolean} - True if the labels intersect; otherwise, false.
      */
     private isIntersect(axis: Axis, currentX: number, currentWidth: number, prevX: number, prevWidth: number): boolean {
         return (axis.isInversed) ? (currentX + currentWidth / 2 > prevX - prevWidth / 2) :
             (currentX - currentWidth / 2 < prevX + prevWidth / 2);
     }
+
     /**
-     * To find suitable label format for Quarter and week Interval types
+     * To find suitable label format for Quarter and week Interval types.
      *
-     * @param {Axis} axis RangeNavigator axis
-     * @param {RangeNavigator} control RangeNavigator instance
+     * @param {Axis} axis - RangeNavigator axis.
+     * @param {RangeNavigator} control - RangeNavigator instance.
+     * @returns {void}
      */
     private findSuitableFormat(axis: Axis, control: RangeNavigator): void {
         const labels: VisibleLabels[] = axis.visibleLabels;
@@ -484,10 +499,11 @@ export class RangeNavigatorAxis extends DateTime {
     }
 
     /**
-     * Alignment position for secondary level labels in date time axis
+     * Alignment position for secondary level labels in date time axis.
      *
-     * @param {Axis} axis axis
-     * @param {number} index label index
+     * @param {Axis} axis - The axis.
+     * @param {number} index - The index of the label.
+     * @returns {number} - The alignment position for the secondary axis labels.
      */
     private findAlignment(axis: Axis, index: number): number {
         const label: VisibleLabels = axis.visibleLabels[index as number];

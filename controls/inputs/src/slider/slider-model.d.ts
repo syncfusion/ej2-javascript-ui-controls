@@ -352,7 +352,7 @@ export interface SliderModel extends ComponentModel{
     /**
      * Triggers when the Slider is successfully created.
      *
-     * @event
+     * @event created
      */
     created?: EmitType<Object>;
 
@@ -360,14 +360,16 @@ export interface SliderModel extends ComponentModel{
      * We can trigger change event whenever Slider value is changed.
      *  In other term, this event will be triggered while drag the slider thumb.
      * {% codeBlock src='slider/changeEvent/index.md' %}{% endcodeBlock %}
-     * @event
+     *
+     * @event change
      */
     change?: EmitType<SliderChangeEventArgs>;
 
     /**
      * Fires whenever the Slider value is changed.
      * In other term, this event will be triggered, while drag the slider thumb completed.
-     * @event
+     *
+     * @event changed
      */
     changed?: EmitType<SliderChangeEventArgs>;
 
@@ -375,21 +377,24 @@ export interface SliderModel extends ComponentModel{
      * Triggers on rendering the ticks element in the Slider,
      * which is used to customize the ticks labels dynamically.
      * {% codeBlock src='slider/renderingticksEvent/index.md' %}{% endcodeBlock %}
-     * @event
+     *
+     * @event renderingTicks
      */
     renderingTicks?: EmitType<SliderTickEventArgs>;
 
     /**
      * Triggers when the ticks are rendered on the Slider.
      * {% codeBlock src='slider/renderedticksEvent/index.md' %}{% endcodeBlock %}
-     * @event
+     *
+     * @event renderedTicks
      */
     renderedTicks?: EmitType<SliderTickRenderedEventArgs>;
 
     /**
      * Triggers when the Sider tooltip value is changed.
      * {% codeBlock src='slider/tooltipChangeEvent/index.md' %}{% endcodeBlock %}
-     * @event
+     *
+     * @event tooltipChange
      */
     tooltipChange?: EmitType<SliderTooltipEventArgs>;
 

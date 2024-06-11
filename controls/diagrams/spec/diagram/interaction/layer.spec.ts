@@ -635,7 +635,137 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Changing layer zindex in Canvas mode', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let selArray: any = [];
 
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramCanvas' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+
+                {
+                    id: 'node1', height: 75, width: 75, offsetX: 100, offsetY: 100, annotations: [{ content: 'Layer1' }]
+                },
+                {
+                    id: 'node2', height: 75, width: 75, offsetX: 400, offsetY: 100, annotations: [{ content: 'Layer1' }]
+                },
+                {
+                    id: 'node3', height: 75, width: 75, offsetX: 150, offsetY: 150, annotations: [{ content: 'Layer2' }]
+                },
+                {
+                    id: 'node4', height: 75, width: 75, offsetX: 450, offsetY: 150, annotations: [{ content: 'Layer2' }]
+                },
+                {
+                    id: 'node5', height: 75, width: 75, offsetX: 100, offsetY: 300, annotations: [{ content: 'Layer3' }]
+                },
+                {
+                    id: 'node6', height: 75, width: 75, offsetX: 400, offsetY: 300, annotations: [{ content: 'Layer3' }]
+                },
+                {
+                    id: 'node7', height: 75, width: 75, offsetX: 150, offsetY: 350, annotations: [{ content: 'Layer4' }]
+                },
+                {
+                    id: 'node8', height: 75, width: 75, offsetX: 450, offsetY: 350, annotations: [{ content: 'Layer4' }]
+                },
+                {
+                    id: 'node9', height: 75, width: 75, offsetX: 600, offsetY: 100, annotations: [{ content: 'Layer2' }]
+                },
+                {
+                    id: 'node10', height: 75, width: 75, offsetX: 800, offsetY: 300, annotations: [{ content: 'Layer2' }]
+                },
+                {
+                    id: 'node11', height: 75, width: 75, offsetX: 650, offsetY: 150, annotations: [{ content: 'Layer3' }]
+                },
+                {
+                    id: 'node12', height: 75, width: 75, offsetX: 850, offsetY: 350, annotations: [{ content: 'Layer3' }]
+                },
+
+            ];
+            let layers: LayerModel[] = [
+                {
+                    id: 'default_layer',
+                    visible: true,
+                    objects: ['node1', 'node2'],
+                    lock: false,
+                    zIndex: 1
+                },
+                {
+                    id: 'Layer2',
+                    visible: true,
+                    objects: ['node3', 'node4', 'node9', 'node10'],
+                    lock: false,
+                    zIndex: 0
+                },
+                {
+                    id: 'Layer3',
+                    visible: true,
+                    objects: ['node5', 'node6', 'node11', 'node12'],
+                    lock: false,
+                },
+                {
+                    id: 'Layer4',
+                    visible: true,
+                    objects: ['node7', 'node8'],
+                    lock: false,
+                }
+            ];
+
+            diagram = new Diagram({
+                width: 1000, height: 600,
+                nodes: nodes,
+                layers: layers,
+                mode:'Canvas'
+            });
+            diagram.appendTo('#diagramCanvas');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking zIndex of the layers', (done: Function) => {
+            expect(diagram.commandHandler.getLayer('default_layer').zIndex === 1).toBe(true);
+            expect(diagram.commandHandler.getLayer('Layer2').zIndex === 0).toBe(true);
+            done();
+        });
+        it('Checking object send forward', (done: Function) => {
+            let node: NodeModel = diagram.getObject('node2');
+            diagram.select([node]);
+            diagram.moveForward();
+            expect(node.zIndex === 1).toBe(true);
+            done();
+        });
+        it('Checking the order commands', (done: Function) => {
+            diagram.select([diagram.nodes[0]]);
+            diagram.sendToBack();
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[1] as Layer).zIndexTable[0]).toBe(true);
+            done();
+            diagram.bringToFront();
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[1] as Layer).zIndexTable[2]).toBe(true);
+            done();
+        });
+        it('Checking bringLayerForward Function', (done: Function) => {
+            diagram.bringLayerForward('Layer2');
+            expect(diagram.commandHandler.getLayer('default_layer').zIndex === 0).toBe(true);
+            expect(diagram.commandHandler.getLayer('Layer2').zIndex === 1).toBe(true);
+            done();
+        });
+        it('Checking sendLayerBackward Function', (done: Function) => {
+            diagram.sendLayerBackward('Layer2');
+            expect(diagram.commandHandler.getLayer('default_layer').zIndex === 1).toBe(true);
+            expect(diagram.commandHandler.getLayer('Layer2').zIndex === 0).toBe(true);
+            done();
+        });
+    });
     describe('multiplelayer canvas', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1198,7 +1328,7 @@ describe('875087: Connector disappears when moved to another layer with Node con
         let group: NodeModel = {
             id: 'group',children:['node3','node4'],padding:{left:10,right:10,top:10,bottom:10},style:{strokeColor:'black'}
         };
-        
+
         diagram = new Diagram({
             width: '1000px', height: '600px',
             nodes: [node, node2,node3,node4,group], connectors: [connector],
@@ -1216,7 +1346,7 @@ describe('875087: Connector disappears when moved to another layer with Node con
             objects: ['node13'],
             lock: false,
           };
-      
+
           diagram.addLayer(layer);
           let node = {
             id: 'node13',

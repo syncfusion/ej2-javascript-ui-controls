@@ -128,7 +128,7 @@ export class MindMap {
             root: layoutProp.fixedNode
         };
         //(EJ2-277624)-Vertical orientation is not working in mindmap
-        if ((layout as ILayout).orientation == 'Vertical') {
+        if ((layout as ILayout).orientation === 'Vertical') {
             (layout as Layout).orientation = (side === 'Left') ? 'TopToBottom' : 'BottomToTop';
         }
         else {

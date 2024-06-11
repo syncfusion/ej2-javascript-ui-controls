@@ -1,5 +1,5 @@
-import { ChartTheme } from "../../common/utils/enum";
-import { Chart3DThemeStyle } from "./chart3d-Interface";
+import { ChartTheme } from '../../common/utils/enum';
+import { Chart3DThemeStyle } from './chart3d-Interface';
 
 /**
  * Gets the 3D theme color based on the specified chart theme.
@@ -31,28 +31,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#222222',
             leftWallColor: '#272727',
             chartTitleFont: {
-                color: '#FFFFFF', fontFamily: 'Segoe UI'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#969696', fontFamily: 'Segoe UI'
+                color: '#969696', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#FFFFFF', fontFamily: 'Segoe UI'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#969696', fontFamily: 'Segoe UI'
+                color: '#969696', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#000000', fontFamily: 'Segoe UI'
+                color: '#000000', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#000000', fontFamily: 'Segoe UI'
+                color: '#000000', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#969696', fontFamily: 'Segoe UI'
+                color: '#969696', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#FFFFFF', fontFamily: 'Segoe UI'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -77,28 +77,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             leftWallColor: '#272727',
             tabColor: theme === 'MaterialDark' ? '#00B0FF' : theme === 'FabricDark' ? '#0074CC' : '#0070F0',
             chartTitleFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: theme === 'MaterialDark' ? '#000000' : theme === 'FabricDark' ? '#000000' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? '#000000' : theme === 'FabricDark' ? '#000000' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -121,28 +121,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#F9F9F9',
             leftWallColor: '#EBEBEB',
             chartTitleFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#222222', fontFamily: 'Helvetica'
+                color: '#222222', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#666666', fontFamily: 'Helvetica'
+                color: '#666666', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica'
+                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#222222', fontFamily: 'Helvetica'
+                color: '#222222', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -165,28 +165,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#F9F9F9',
             leftWallColor: '#EBEBEB',
             chartTitleFont: {
-                color: '#374151', fontFamily: 'Inter'
+                color: '#374151', fontFamily: 'Inter', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#222222', fontFamily: 'Inter'
+                color: '#222222', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#374151', fontFamily: 'Inter'
+                color: '#374151', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#374151', fontFamily: 'Inter'
+                color: '#374151', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Inter'
+                color: '#F9FAFB', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#374151', fontFamily: 'Inter'
+                color: '#374151', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#FFFFFF', fontFamily: 'Inter'
+                color: '#FFFFFF', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#374151', fontFamily: 'Inter'
+                color: '#374151', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -209,28 +209,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#222222',
             leftWallColor: '#272727',
             chartTitleFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#1F2937', fontFamily: 'Inter'
+                color: '#1F2937', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#9CA3AF', fontFamily: 'Inter'
+                color: '#9CA3AF', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -253,28 +253,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#F9F9F9',
             leftWallColor: '#EBEBEB',
             chartTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica'
+                color: '#343A40', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#222222', fontFamily: 'Helvetica'
+                color: '#222222', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica'
+                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#343A40', fontFamily: 'Helvetica'
+                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica'
+                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica'
+                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#FFFFFF', fontFamily: 'Helvetica'
+                color: '#FFFFFF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica'
+                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -297,28 +297,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#222222',
             leftWallColor: '#272727',
             chartTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#000000', fontFamily: 'Helvetica'
+                color: '#000000', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -341,28 +341,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#F9F9F9',
             leftWallColor: '#EBEBEB',
             chartTitleFont: {
-                color: '#201F1E', fontFamily: 'Segoe UI'
+                color: '#201F1E', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#222222', fontFamily: 'Segoe UI'
+                color: '#222222', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#201F1E', fontFamily: 'Segoe UI'
+                color: '#201F1E', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#49454E', fontFamily: 'Segoe UI'
+                color: '#49454E', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#323130', fontFamily: 'Segoe UI'
+                color: '#323130', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#201F1E', fontFamily: 'Segoe UI'
+                color: '#201F1E', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#FFFFFF', fontFamily: 'Segoe UI'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#323129', fontFamily: 'Segoe UI'
+                color: '#323129', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -385,28 +385,116 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#222222',
             leftWallColor: '#272727',
             chartTitleFont: {
-                color: '#C8C6C4', fontFamily: 'Segoe UI'
+                color: '#C8C6C4', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#D2D0CE', fontFamily: 'Segoe UI'
+                color: '#D2D0CE', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#F3F2F1', fontFamily: 'Segoe UI'
+                color: '#F3F2F1', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#D2D0CE', fontFamily: 'Segoe UI'
+                color: '#D2D0CE', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F3F2F1', fontFamily: 'Segoe UI'
+                color: '#F3F2F1', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#F3F2F2', fontFamily: 'Segoe UI'
+                color: '#F3F2F2', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#000000', fontFamily: 'Segoe UI'
+                color: '#000000', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#F3F2F1', fontFamily: 'Segoe UI'
+                color: '#F3F2F1', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+            }
+        };
+        break;
+    case 'Fluent2':
+        style = {
+            axisLabel: '#616161',
+            axisTitle: '#242424',
+            majorGridLine: '#EDEBE9',
+            minorGridLine: '#EDEBE9',
+            majorTickLine: '#D2D0CE',
+            minorTickLine: '#D2D0CE',
+            chartTitle: '#242424',
+            legendLabel: '#242424',
+            background: 'transparent',
+            tooltipFill: '#FFFFFF',
+            tooltipBoldLabel: '#242424',
+            tooltipLightLabel: '#242424',
+            tooltipHeaderLine: '#D2D0CE',
+            tabColor: '#0078D4',
+            backWallColor: '#F9F9F9',
+            leftWallColor: '#EBEBEB',
+            chartTitleFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            axisLabelFont: {
+                color: '#616161', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            legendTitleFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
+            },
+            axisTitleFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            datalabelFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '10px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            chartSubTitleFont: {
+                color: '#616161', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+            }
+        };
+        break;
+    case 'Fluent2Dark':
+        style = {
+            axisLabel: '#FFFFFF',
+            axisTitle: '#FFFFFF',
+            majorGridLine: '#3B3A39',
+            minorGridLine: '#3B3A39',
+            majorTickLine: '#292827',
+            minorTickLine: '#292827',
+            chartTitle: '#FFFFFF',
+            legendLabel: '#FFFFFF',
+            background: 'transparent',
+            tooltipFill: '#292929',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#3B3A39',
+            tabColor: '#0078D4',
+            backWallColor: '#222222',
+            leftWallColor: '#272727',
+            chartTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            axisLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            legendTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
+            },
+            axisTitleFont: {
+                color: '#ADADAD', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            datalabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '10px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            chartSubTitleFont: {
+                color: '#ADADAD', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;
@@ -429,28 +517,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#F9F9F9',
             leftWallColor: '#EBEBEB',
             chartTitleFont: {
-                color: '#1C1B1F', fontFamily: 'Roboto'
+                color: '#1C1B1F', fontFamily: 'Roboto', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#222222', fontFamily: 'Roboto'
+                color: '#222222', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#1C1B1F', fontFamily: 'Roboto'
+                color: '#1C1B1F', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#49454E', fontFamily: 'Roboto'
+                color: '#49454E', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F4EFF4', fontFamily: 'Roboto'
+                color: '#F4EFF4', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#1C1B1F', fontFamily: 'Roboto'
+                color: '#1C1B1F', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#FFFFFF', fontFamily: 'Roboto'
+                color: '#FFFFFF', fontFamily: 'Roboto', size: '10px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#49454E', fontFamily: 'Roboto'
+                color: '#49454E', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -473,28 +561,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             backWallColor: '#222222',
             leftWallColor: '#272727',
             chartTitleFont: {
-                color: '#E6E1E5', fontFamily: 'Roboto'
+                color: '#E6E1E5', fontFamily: 'Roboto', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#CAC4D0', fontFamily: 'Roboto'
+                color: '#CAC4D0', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#E6E1E5', fontFamily: 'Roboto'
+                color: '#E6E1E5', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#CAC4D0', fontFamily: 'Roboto'
+                color: '#CAC4D0', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#313033', fontFamily: 'Roboto'
+                color: '#313033', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#E6E1E5', fontFamily: 'Roboto'
+                color: '#E6E1E5', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#000000', fontFamily: 'Roboto'
+                color: '#000000', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#CAC4D0', fontFamily: 'Roboto'
+                color: '#CAC4D0', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -517,28 +605,28 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             leftWallColor: '#EBEBEB',
             tabColor: theme === 'Material' ? '#ff4081' : theme === 'Fabric' ? '#0078D6' : '#317AB9',
             chartTitleFont: {
-                color: theme === 'Material' ? 'rgba(0, 0, 0, 1)' : theme === 'Fabric' ? '#333333' : '#212529', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'Material' ? 'rgba(0, 0, 0, 1)' : theme === 'Fabric' ? '#333333' : '#212529', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#222222', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+                color: '#222222', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: theme === 'Material' ? 'rgba(0, 0, 0, 1)' : theme === 'Fabric' ? '#333333' : '#212529', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'Material' ? 'rgba(0, 0, 0, 1)' : theme === 'Fabric' ? '#333333' : '#212529', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: theme === 'Material' ? 'rgba(97, 97, 97, 1)' : theme === 'Fabric' ? '#666666' : '#666666', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'Material' ? 'rgba(97, 97, 97, 1)' : theme === 'Fabric' ? '#666666' : '#666666', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: theme === 'Material' ? 'rgba(249, 250, 251, 1)' : theme === 'Fabric' ? '#333333' : '#F9FAFB', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'Material' ? 'rgba(249, 250, 251, 1)' : theme === 'Fabric' ? '#333333' : '#F9FAFB', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: theme === 'Material' ? 'rgba(0, 0, 0, 1)' : theme === 'Fabric' ? '#333333' : '#212529', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'Material' ? 'rgba(0, 0, 0, 1)' : theme === 'Fabric' ? '#333333' : '#212529', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#FFFFFF', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+                color: '#FFFFFF', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: theme === 'Material' ? 'rgba(0, 0, 0, 1)' : theme === 'Fabric' ? '#333333' : '#212529', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'Material' ? 'rgba(0, 0, 0, 1)' : theme === 'Fabric' ? '#333333' : '#212529', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -608,6 +696,14 @@ export function get3DSeriesColor(theme: ChartTheme): string[] {
     case 'Fluent':
         palette = ['#2196F5', '#FC7400', '#EDBB40', '#AF4BCF', '#FF7266',
             '#1BD565', '#EE993D', '#5887FF', '#EC548D', '#7D39C0'];
+        break;
+    case 'Fluent2':
+        palette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F',
+            '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
+        break;
+    case 'Fluent2Dark':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
         break;
     case 'Material3':
         palette = ['#6A56FF', '#00DBFF', '#FFB400', '#F7523F', '#963C70',

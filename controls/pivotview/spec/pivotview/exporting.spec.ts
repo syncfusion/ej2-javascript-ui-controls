@@ -33,7 +33,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -108,7 +108,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -166,244 +166,6 @@ describe('PDF Export', () => {
         });
     });
 
-    describe('Olap specified export', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        if (document.getElementById(elem.id)) {
-            remove(document.getElementById(elem.id));
-        }
-        document.body.appendChild(elem);
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll(() => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll);
-            pivotGridObj = new PivotView({
-                dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008R2',
-                    cube: 'Adventure Works',
-                    providerType: 'SSAS',
-                    url: 'https://demos.telerik.com/olap/msmdpump.dll',
-                    localeIdentifier: 1033,
-                    allowLabelFilter: true,
-                    allowValueFilter: true,
-                    formatSettings: [{ name: '[Measures].[Customer Count]', format: 'N2' }],
-                    rows: [
-                        { name: '[Date].[Date]', caption: 'Date Fiscal' },
-                    ],
-                    columns: [
-                        { name: '[Customer].[Customer Geography]', caption: 'Customer Geography' },
-                        { name: '[Measures]', caption: 'Measures' },
-                    ], 
-                    values: [
-                        { name: '[Measures].[Customer Count]', caption: 'Customer Count' },
-                        { name: '[Measures].[Internet Sales Amount]', caption: 'Internet Sales Amount' },
-                    ],
-                    valueAxis: 'column'
-                },
-                enableVirtualization: true,
-                exportAllPages: true,
-                beforeExport: function (args) {
-                    pivotGridObj.exportSpecifiedPages = { rowSize: 10, columnSize: 5 }
-                },
-                displayOption: { view: 'Both' },
-                chartSettings: {
-                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,
-                },
-                toolbar: ['Export', 'FieldList'],
-                allowExcelExport: true,
-                allowConditionalFormatting: true,
-                allowPdfExport: true,
-                showToolbar: true,
-                allowCalculatedField: true,
-                showFieldList: true,
-                showGroupingBar: true,
-                height: '500px',
-                virtualScrollSettings: { allowSinglePage: false }
-            });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        it('For olap specified export sample render', (done: Function) => {
-            setTimeout(() => {
-                expect(1).toBe(1);
-                done();
-            }, 4000);
-        });
-        it('Export', (done: Function) => {
-            setTimeout(() => {
-            let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-            util.triggerEvent(li, 'mouseover');
-            done();
-            }, 4000);
-        });
-        it('PDF Export', (done: Function) => {
-            setTimeout(() => {
-            (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-            let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-            util.triggerEvent(li, 'mouseover');
-            done();
-            }, 4000);
-        });
-        it('Excel Export', (done: Function) => {
-            setTimeout(() => {
-            (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-            let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-            util.triggerEvent(li, 'mouseover');
-            done();
-            }, 4000);
-        });
-        it('CSV Export', (done: Function) => {
-            setTimeout(() => {
-            (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-            let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-            done();
-            }, 4000);
-        });
-
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange);
-            //Check average change in memory samples to not be over 10MB
-            let memory: any = inMB(getMemoryProfile());
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        });
-    });
-
-    describe('Olap export', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        if (document.getElementById(elem.id)) {
-            remove(document.getElementById(elem.id));
-        }
-        document.body.appendChild(elem);
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll(() => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll);
-            pivotGridObj = new PivotView({
-                dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008R2',
-                    cube: 'Adventure Works',
-                    providerType: 'SSAS',
-                    url: 'https://demos.telerik.com/olap/msmdpump.dll',
-                    localeIdentifier: 1033,
-                    allowLabelFilter: true,
-                    allowValueFilter: true,
-                    formatSettings: [{ name: '[Measures].[Customer Count]', format: 'N2' }],
-                    rows: [
-                        { name: '[Date].[Date]', caption: 'Date Fiscal' },
-                    ],
-                    columns: [
-                        { name: '[Customer].[Customer Geography]', caption: 'Customer Geography' },
-                        { name: '[Measures]', caption: 'Measures' },
-                    ], 
-                    values: [
-                        { name: '[Measures].[Customer Count]', caption: 'Customer Count' },
-                        { name: '[Measures].[Internet Sales Amount]', caption: 'Internet Sales Amount' },
-                    ],
-                    valueAxis: 'column'
-                },
-                enableVirtualization: true,
-                exportAllPages: true,
-                displayOption: { view: 'Both' },
-                chartSettings: {
-                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,
-                },
-                toolbar: ['Export', 'FieldList'],
-                allowExcelExport: true,
-                allowConditionalFormatting: true,
-                allowPdfExport: true,
-                showToolbar: true,
-                allowCalculatedField: true,
-                showFieldList: true,
-                showGroupingBar: true,
-                height: '500px',
-                virtualScrollSettings: { allowSinglePage: false }
-            });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        it('For olap sample render', (done: Function) => {
-            setTimeout(() => {
-                expect(1).toBe(1);
-                done();
-            }, 4000);
-        });
-        it('Export', (done: Function) => {
-            setTimeout(() => {
-            let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-            util.triggerEvent(li, 'mouseover');
-            done();
-            }, 4000);
-        });
-        it('PDF Export', (done: Function) => {
-            setTimeout(() => {
-            (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-            let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-            util.triggerEvent(li, 'mouseover');
-            done();
-            }, 4000);
-        });
-        it('Excel Export', (done: Function) => {
-            setTimeout(() => {
-            (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-            let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-            util.triggerEvent(li, 'mouseover');
-            done();
-            }, 4000);
-        });
-        it('CSV Export', (done: Function) => {
-            setTimeout(() => {
-            (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-            let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-            done();
-            }, 4000);
-        });
-
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange);
-            //Check average change in memory samples to not be over 10MB
-            let memory: any = inMB(getMemoryProfile());
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        });
-    });
     describe('- HeaderAndFooter', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
@@ -421,7 +183,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -646,7 +408,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -739,7 +501,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -830,7 +592,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -919,7 +681,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1008,7 +770,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1097,7 +859,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1186,7 +948,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1273,7 +1035,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1361,7 +1123,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1449,7 +1211,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1537,7 +1299,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1628,7 +1390,7 @@ describe('PDF Export', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -1695,6 +1457,193 @@ describe('PDF Export', () => {
             }, 500);
         });
         it('Chart', (done: Function) => {
+            setTimeout(() => {
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
+    describe('- Applying the theme to the cells in the PDF', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll, ExcelExport);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    expandAll: false
+                },
+                actionBegin: function (args: PivotActionBeginEventArgs) {
+                    if (args.actionName === 'PDF export') {
+                        args.cancel = true;
+                        let pdfExportProperties: PdfExportProperties = {
+                            fileName: 'Export',
+                            theme: {
+                                header: {
+                                    fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, underline: true, bold: true,
+                                    strikeout: true, font: new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Underline)
+                                },
+                                record: {
+                                    fontColor: '#64FA50', fontName: 'Courier', fontSize: 17, italic: true,
+                                    border: { color: '#64FA50', lineStyle: 'Thin', dashStyle: 'Dash' },
+                                    font: new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Underline)
+                                },
+                                caption: {
+                                    fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, strikeout: true
+                                }
+                            }
+                        };
+                        pivotGridObj.pdfExport(pdfExportProperties, false, null, true);
+                    }
+                },
+                height: 800,
+                width: '100%',
+                allowPdfExport: true,
+                showFieldList: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                enableVirtualization: true
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 100);
+        });
+        it('- Exporting', (done: Function) => {
+            setTimeout(() => {
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
+    describe('- Applying the styles to the cells in the PDF', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    expandAll: false,
+                },
+                height: 800,
+                width: '100%',
+                allowPdfExport: true,
+                showFieldList: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                enableVirtualization: true,
+                actionBegin: function (args: PivotActionBeginEventArgs) {
+                    if (args.actionName === 'PDF export') {
+                        args.cancel = true;
+                        let pdfExportProperties: PdfExportProperties = {
+                            theme: {
+                                header: {
+                                    fontColor: '#64FA50', fontName: 'TimesRoman', fontSize: 17, underline: true, bold: true,
+                                    strikeout: true, font: new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Underline)
+                                },
+                                record: {
+                                    fontColor: '#64FA50', fontName: 'Symbol', fontSize: 17, italic: true,
+                                    border: { color: '#64FA50', lineStyle: 'Thin', dashStyle: 'Dash' },
+                                    font: new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Underline)
+                                }
+                            }
+                        };
+                        pivotGridObj.pdfExport(pdfExportProperties, false, null, false);
+                    }
+                },
+                onPdfCellRender: (args: PdfCellRenderArgs) => {
+                    args.style = {
+                        fontFamily: 'Helvetica',
+                        bold: true,
+                        italic: true,
+                        underline: true,
+                        strikeout: true,
+                        backgroundColor: '#000080',
+                        textBrushColor: '#000080',
+                        textPenColor: '#000000',
+                        border: { color: '#64FA50', dashStyle: 'Dash' }
+                    };
+                },
+                virtualScrollSettings: { allowSinglePage: false }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 100);
+        });
+        it('- Exporting', (done: Function) => {
             setTimeout(() => {
                 let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();

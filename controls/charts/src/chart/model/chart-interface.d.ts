@@ -276,6 +276,10 @@ export interface IMouseEventArgs extends IChartEventArgs {
     x: number;
     /** Defines current mouse y location. */
     y: number;
+    /** Defines collection of axes data where the key is the axis name and the value is the axis values for the location.*/
+    axisData: {
+        [key: string]: number;
+    };
 }
 export interface IDragCompleteEventArgs extends IChartEventArgs {
     /** Defines current selected Data X, Y values. */

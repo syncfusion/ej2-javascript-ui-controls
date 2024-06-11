@@ -9,6 +9,9 @@
 @mixin visibility($value) {
   .e-checkbox-wrapper {
     visibility: $value;
+    @if $fm-skin-name == 'fluent2' {
+      padding: 0;
+    }
   }
 }
 
@@ -31,13 +34,61 @@
   white-space: nowrap;
 }
 
-@mixin checkbox($value) {
-  .e-checkbox-wrapper {
+@mixin size($height, $width) {
+  height: $height;
+  width: $width;
+}
 
-    .e-frame {
-      border-width: 1px;
-      line-height: $value;
+@mixin checkbox($value) {
+  .e-checkbox-wrapper .e-frame {
+    border-width: 1px;
+    line-height: $value;
+    @if $fm-skin-name == 'fluent2' {
+      @include size(16px, 16px);
+      font-size: 10px;
+      margin: 0;
     }
+  }
+}
+
+@mixin icon-style($height, $width, $margin) {
+  height: $height;
+  margin: $margin;
+  width: $width;
+}
+
+@mixin empty-content($font-size, $margin, $padding, $text-align) {
+  font-size: $font-size;
+  margin: $margin;
+  padding: $padding;
+  text-align: $text-align;
+}
+
+@mixin toolbar-height($height, $min-height) {
+  height: $height;
+  min-height: $min-height;
+}
+
+@mixin margin-padding($margin, $padding) {
+  margin: $margin;
+  padding: $padding;
+}
+
+@mixin empty-style($empty-min-width, $empty-content-font-size, $empty-content-margin, $empty-content-padding, $empty-content-text-align, $empty-icon-height, $empty-icon-width, $empty-icon-margin, $empty-inner-content-font-size, $empty-inner-content-margin, $empty-inner-content-padding, $empty-inner-content-text-align) {
+  .e-empty {
+    min-width: $empty-min-width;
+  }
+
+  .e-empty-content {
+    @include empty-content($empty-content-font-size, $empty-content-margin, $empty-content-padding, $empty-content-text-align);
+  }
+
+  .e-empty-icon {
+    @include icon-style($empty-icon-height, $empty-icon-width, $empty-icon-margin);
+  }
+
+  .e-empty-inner-content {
+    @include empty-content($empty-inner-content-font-size, $empty-inner-content-margin, $empty-inner-content-padding, $empty-inner-content-text-align);
   }
 }
 
@@ -50,13 +101,12 @@
     @include user-select;
     border: 1px solid;
     position: relative;
+    @if $fm-skin-name == 'fluent2' {
+      border-radius: $fm-border-radius;
+    }
 
     .e-blur {
       opacity: .5;
-    }
-
-    .e-display-none {
-      display: none;
     }
 
     &.e-fe-drop,
@@ -72,7 +122,9 @@
     }
 
     .e-toolbar {
-      border-bottom-style: solid;
+      @if $fm-skin-name != 'fluent2' {
+        border-bottom-style: solid;
+      }
       @if $fm-skin-name == 'bootstrap-dark' {
         border-width: 1px;
       }
@@ -80,22 +132,23 @@
         border-width: 0 0 1px;
       }
 
-      @if ($fm-skin-name == 'Material3') {
-        height: $fe-tb-height;
-        min-height: $fe-tb-height;
+      @if ($fm-skin-name == 'Material3' or $fm-skin-name == 'fluent2') {
+        @include toolbar-height($fe-tb-height, $fe-tb-height);
+      }
+
+      @if ($fm-skin-name == 'fluent2') {
+        box-shadow: none;
       }
 
       @if ($fm-skin-name == 'Material3') {
-        .e-toolbar-item {
-          .e-tbar-btn {
-            .e-tbar-btn-text {
-              line-height: 18px;
-              padding: 7px 8px 7px 0;
-            }
+        .e-toolbar-item .e-tbar-btn {
+          .e-tbar-btn-text {
+            line-height: 18px;
+            padding: 7px 8px 7px 0;
+          }
 
-            .e-icons.e-btn-icon {
-              padding: 7px 8px;
-            }
+          .e-icons.e-btn-icon {
+            padding: 7px 8px;
           }
         }
 
@@ -118,10 +171,8 @@
         .e-btn-icon.e-icons.e-caret {
           font-size: $fe-tb-ddb-caret-size;
           @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
-            height: 18px;
-            margin: 2px 4px 0;
+            @include icon-style(18px, 18px, 2px 4px 0);
             padding: 1px;
-            width: 18px;
           }
           @else {
             padding: 0 8px;
@@ -132,16 +183,8 @@
           padding-right: 0;
         }
 
-        &.e-active {
-          border: $fe-tb-ddb-border;
-          padding: $fe-tb-ddb-btn-hvr-padding;
-        }
-
-        &:hover {
-          border: $fe-tb-ddb-border;
-          padding: $fe-tb-ddb-btn-hvr-padding;
-        }
-
+        &.e-active,
+        &:hover,
         &:focus {
           border: $fe-tb-ddb-border;
           padding: $fe-tb-ddb-btn-hvr-padding;
@@ -174,20 +217,18 @@
         }
       }
 
-      .e-icons .e-treeview-spinner {
-        display: none;
-      }
-
       .e-list-parent {
         margin-bottom: 0;
         margin-top: 0;
 
         .e-list-item {
-          padding-bottom: 0;
-          padding-top: 0;
+          @if $fm-skin-name != 'fluent2' {
+            padding-bottom: 0;
+            padding-top: 0;
 
-          .e-fullrow {
-            height: $fe-tv-fullrow-height;
+            .e-fullrow {
+              height: $fe-tv-fullrow-height;
+            }
           }
 
           .e-list-text {
@@ -196,7 +237,7 @@
           }
 
           &.e-fe-drop-folder > .e-fullrow {
-            @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
+            @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'fluent2' {
               border: 1px dashed;
             }
             @else {
@@ -216,21 +257,14 @@
       .e-list-text {
         display: initial;
       }
+
+      @if $fm-skin-name == 'fluent2' {
+        border: none;
+      }
     }
 
     .e-splitter {
       border-width: 0;
-
-      .e-split-bar {
-
-        .e-resize-handler {
-          display: none;
-        }
-      }
-
-      .e-display-none {
-        display: none;
-      }
     }
 
     .e-address {
@@ -254,28 +288,21 @@
         width: 200px;
 
         .e-input-group {
-          border-bottom-width: $fe-bc-search-border-bottom;
+          @if $fm-skin-name != 'fluent2' {
+            border-bottom-width: $fe-bc-search-border-bottom;
+          }
           height: $fe-search-height;
           margin: 0;
 
           @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
-            &.e-input-focus {
-              .e-input {
-                padding: 0;
-              }
+            &.e-input-focus .e-input {
+              padding: 0;
             }
           }
 
           .e-input {
-            margin: $fe-search-input-margin;
-            padding: 0;
-            @if $skin-name == 'bootstrap5' {
-              height: 26px;
-            }
-            @if $skin-name == 'material' {
-              height: 30px;
-            }
-            @if $fm-skin-name == 'Material3' {
+            @include margin-padding($fe-search-input-margin, 0);
+            @if $fm-skin-name == 'Material3' or $skin-name == 'bootstrap5' or $skin-name == 'material' {
               height: $fe-search-input-height;
             }
           }
@@ -302,9 +329,6 @@
         @else {
           padding: 5px;
         }
-        @if $fm-skin-name == 'FluentUI' {
-          font-size: 16px;
-        }
         position: absolute;
         z-index: 1;
 
@@ -316,8 +340,7 @@
       .e-addressbar-ul {
         @include ellipsis;
         list-style: none;
-        margin: $fe-bc-margin;
-        padding: $fe-bc-padding;
+        @include margin-padding($fe-bc-margin, $fe-bc-padding);
 
         .e-breadcrumb-menu {
           display: inline;
@@ -343,6 +366,9 @@
           padding: $fe-bc-text-padding;
         }
         text-decoration: none;
+        @if $fm-skin-name == 'fluent2' {
+          border-radius: 4px;
+        }
 
         &:hover {
           text-decoration: $fe-bc-li-text-decoration;
@@ -356,10 +382,11 @@
         }
 
         &:last-child {
-
           .e-list-text {
             cursor: default;
-
+            @if $fm-skin-name == 'fluent2' {
+              font-weight: 600;
+            }
             &:hover {
               text-decoration: none;
             }
@@ -369,12 +396,12 @@
         .e-icons {
           font-size: $fe-bc-icon-font-size;
           margin: $fe-bc-icon-margin;
-          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'Material3' {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'Material3' or $fm-skin-name == 'fluent2' {
             vertical-align: middle;
           }
 
           &::before {
-            @if $fm-skin-name != 'tailwind' {
+            @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'fluent2' {
               padding: $fe-bc-icon-padding;
             }
           }
@@ -390,10 +417,6 @@
       @include checkbox($fe-cb-line-height);
       border-width: 0;
       float: left;
-
-      .e-spin-show {
-        display: none;
-      }
 
       .e-gridcontent tr.e-emptyrow td.e-lastrowcell:first-child:empty {
         height: 0;
@@ -432,11 +455,8 @@
         }
       }
 
-      &.e-headercheck {
-
-        .e-gridheader .e-headercontent {
-          @include visibility(visible);
-        }
+      &.e-headercheck .e-gridheader .e-headercontent {
+        @include visibility(visible);
       }
 
       @if $fm-skin-name == 'FluentUI' {
@@ -447,7 +467,6 @@
 
       .e-content {
         overflow-y: auto !important; /* stylelint-disable-line declaration-no-important */
-
         .e-table {
           border-spacing: 0;
         }
@@ -463,8 +482,8 @@
             padding: 8px;
           }
 
-          @if $fm-skin-name == 'Material3' {
-            padding: 8px 12px;
+          @if $fm-skin-name == 'Material3' or $fm-skin-name == 'fluent2' {
+            padding: $fe-grid-content-padding;
             line-height: 20px;
 
             .e-fe-text {
@@ -525,10 +544,7 @@
       }
 
       .e-empty-content {
-        font-size: $fe-grid-empty-content-font-size;
-        margin: $fe-grid-empty-content-margin;
-        padding: $fe-grid-empty-content-padding;
-        text-align: $fe-grid-empty-content-text-align;
+        @include empty-content($fe-grid-empty-content-font-size, $fe-grid-empty-content-margin, $fe-grid-empty-content-padding, $fe-grid-empty-content-text-align);
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 24px;
         }
@@ -538,25 +554,24 @@
       }
 
       .e-empty-icon {
-        height: $fe-grid-empty-icon-height;
-        margin: $fe-grid-empty-icon-margin;
-        width: $fe-grid-empty-icon-width;
+        @include icon-style($fe-grid-empty-icon-height, $fe-grid-empty-icon-width, $fe-grid-empty-icon-margin);
         @if $fm-skin-name == 'Material3' {
           margin-top: 5%;
         }
       }
 
       .e-empty-inner-content {
-        font-size: $fe-grid-empty-inner-content-font-size;
-        margin: $fe-grid-empty-inner-content-margin;
+        @include empty-content($fe-grid-empty-inner-content-font-size, $fe-grid-empty-inner-content-margin, $fe-grid-empty-inner-content-padding, $fe-grid-empty-inner-content-text-align);
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3' {
           line-height: 22px;
+        }
+        @else if $fm-skin-name == 'fluent2' {
+          line-height: 20px;
+          color: $fe-grid-empty-inner-content-color;
         }
         @else {
           opacity: $fe-lg-icon-empty-inner-content-opacity;
         }
-        padding: $fe-grid-empty-inner-content-padding;
-        text-align: $fe-grid-empty-inner-content-text-align;
       }
 
       .e-gridpopup {
@@ -565,10 +580,6 @@
 
       .e-gridheader,
       .e-gridcontent {
-
-        .e-emptyrow {
-          display: none;
-        }
 
         .e-fe-checkbox {
           overflow: inherit;
@@ -605,17 +616,15 @@
 
         &.e-focused {
           box-shadow: none;
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'FluentUI' and $fm-skin-name != 'Material3' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'FluentUI' and $fm-skin-name != 'Material3' and $fm-skin-name != 'fluent2' {
             td {
               box-shadow: $fe-grid-row-ie-box-shadow;
-            }
-
-            td:first-child {
-              box-shadow: $fe-grid-row-fc-ie-box-shadow;
-            }
-
-            td:last-child {
-              box-shadow: $fe-grid-row-lc-ie-box-shadow;
+              &:first-child{
+                box-shadow: $fe-grid-row-fc-ie-box-shadow;
+              }
+              &:last-child{
+                box-shadow: $fe-grid-row-lc-ie-box-shadow;
+              }
             }
           }
         }
@@ -642,27 +651,17 @@
 
       .e-fe-icon {
         display: inline-block;
-        height: $fe-grid-icon-size;
-        margin: $fe-grid-icon-margin;
+        @include icon-style($fe-grid-icon-size, $fe-grid-icon-size, $fe-grid-icon-margin);
         vertical-align: middle;
-        width: $fe-grid-icon-size;
       }
     }
 
-    .e-view-container {
-      .e-grid {
-        .e-gridheader {
-          padding-right: 0 !important; /* stylelint-disable-line declaration-no-important */
-        }
-      }
+    .e-view-container .e-grid .e-gridheader {
+      padding-right: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
 
-    &.e-rtl .e-view-container {
-      .e-grid {
-        .e-gridheader {
-          padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
-        }
-      }
+    &.e-rtl .e-view-container .e-grid .e-gridheader {
+      padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
 
     .e-large-icons {
@@ -682,10 +681,7 @@
       }
 
       .e-empty-content {
-        font-size: $fe-lg-icon-empty-content-font-size;
-        margin: $fe-lg-icon-empty-content-margin;
-        padding: $fe-lg-icon-empty-content-padding;
-        text-align: $fe-lg-icon-empty-content-text-align;
+        @include empty-content($fe-lg-icon-empty-content-font-size, $fe-lg-icon-empty-content-margin, $fe-lg-icon-empty-content-padding, $fe-lg-icon-empty-content-text-align);
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 24px;
         }
@@ -695,33 +691,31 @@
       }
 
       .e-empty-icon {
-        height: $fe-lg-icon-empty-icon-height;
-        margin: $fe-lg-icon-empty-icon-margin;
-        width: $fe-lg-icon-empty-icon-width;
+        @include icon-style($fe-lg-icon-empty-icon-height, $fe-lg-icon-empty-icon-width, $fe-lg-icon-empty-icon-margin);
         @if $fm-skin-name == 'Material3' {
           margin-top: 10%;
         }
       }
 
       .e-empty-inner-content {
-        font-size: $fe-lg-icon-empty-inner-content-font-size;
-        margin: $fe-lg-icon-empty-inner-content-margin;
+        @include empty-content($fe-lg-icon-empty-inner-content-font-size, $fe-lg-icon-empty-inner-content-margin, $fe-lg-icon-empty-inner-content-padding, $fe-lg-icon-empty-inner-content-text-align);
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3' {
           line-height: 22px;
+        }
+        @else if $fm-skin-name == 'fluent2' {
+          line-height: 20px;
+          color: $fe-grid-empty-inner-content-color;
         }
         @else {
           opacity: $fe-lg-icon-empty-inner-content-opacity;
         }
-        padding: $fe-lg-icon-empty-inner-content-padding;
-        text-align: $fe-lg-icon-empty-inner-content-text-align;
       }
 
       .e-list-parent {
         display: block;
         height: 100%;
-        margin: $fe-lg-margin;
+        @include margin-padding($fe-lg-margin, $fe-lg-padding);
         overflow: auto;
-        padding: $fe-lg-padding;
       }
 
       .e-checkbox-wrapper {
@@ -740,22 +734,19 @@
       .e-list-item {
         border: $fe-lg-item-border solid;
         float: left;
-        height: $fe-lg-item-height;
-        margin: $fe-lg-item-margin;
+        @include icon-style($fe-lg-item-height, $fe-lg-item-width, $fe-lg-item-margin);
         overflow: hidden;
         padding: $fe-lg-item-padding;
-        width: $fe-lg-item-width;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3' {
-          &.e-fe-drop-folder {
+
+        &.e-fe-drop-folder {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3'{
             border: 1px dashed $fe-drop-folder-bg-color;
           }
-        }
-        @if $fm-skin-name == 'FluentUI' {
-          &.e-fe-drop-folder {
+          @else if $fm-skin-name == 'FluentUI' {
             border: 2px dashed $fe-drop-folder-bg-color;
           }
         }
-        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $skin-name == 'Material3' {
+        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $skin-name == 'Material3' or $fm-skin-name == 'fluent2' {
           border-radius: 4px;
         }
 
@@ -801,9 +792,7 @@
 
       .e-list-icon {
         display: block;
-        height: $fe-lg-icon-height;
-        margin: $fe-lg-icon-margin;
-        width: $fe-lg-icon-width;
+        @include icon-style($fe-lg-icon-height, $fe-lg-icon-width, $fe-lg-icon-margin);
         @if $fm-skin-name == 'Material3' {
           background-position: center;
         }
@@ -853,14 +842,10 @@
         .e-fe-icon {
           display: inline-block;
           @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
-            height: 20px;
-            margin: 9px 8px;
-            width: 20px;
+            @include icon-style(20px, 20px, 9px 8px);
           }
           @else {
-            height: 18px;
-            margin: auto 8px;
-            width: 18px;
+            @include icon-style(18px, 18px, auto 8px);
           }
         }
       }
@@ -870,16 +855,13 @@
         border-radius: 50%;
         font-size: 12px;
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
-          height: 20px;
+          @include icon-style(20px, 20px, -10px 0 0 -10px);
           line-height: 18px;
-          margin: -10px 0 0 -10px;
-          width: 20px;
         }
         @else {
-          height: 22px;
+          @include size(22px, 22px);
           line-height: 22px;
           margin-left: -12px;
-          width: 22px;
         }
         position: relative;
         text-align: center;
@@ -889,12 +871,9 @@
 
     &.e-rtl {
 
-      .e-treeview {
-
-        & > .e-ul {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
-            padding: 0 8px 0 0;
-          }
+      .e-treeview > .e-ul {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
+          padding: 0 8px 0 0;
         }
       }
 
@@ -932,7 +911,6 @@
           }
 
           .e-input-group {
-
             .e-input {
               @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
                 margin: 0 29px 0 0;
@@ -1019,11 +997,8 @@
         }
       }
 
-      .e-large-icons {
-
-        .e-list-item {
-          float: right;
-        }
+      .e-large-icons .e-list-item {
+        float: right;
       }
 
       .e-fe-clone .e-fe-count {
@@ -1046,11 +1021,27 @@
       border: $fe-upload-overlay-border dashed $fe-drop-border-color;
       bottom: 0;
       display: block;
-      height: calc(100% - 34px);
+      @include size(calc(100% - 34px), 100%);
+      @if $fm-skin-name == 'fluent2' {
+        width: calc(100% - 48px);
+        top: 64px;
+        height: calc(100% - 88px);
+        left: 24px;
+      }
       pointer-events: none;
       position: absolute;
       visibility: hidden;
-      width: 100%;
+    }
+
+    @if $fm-skin-name == 'fluent2' {
+      .e-grid + .e-large-icons + .e-fe-overlay {
+        top: 82px;
+      }
+
+      .e-grid:has(.e-empty) + .e-large-icons + .e-fe-overlay {
+        top: 96px;
+        height: calc(100% - 120px);
+      }
     }
 
     .e-upload-drag-hover {
@@ -1070,17 +1061,12 @@
       @include popup-active-icon;
     }
 
-    &.e-dlg-resizable {
-
-      .e-dlg-content {
-        overflow: hidden;
-      }
+    &.e-dlg-resizable .e-dlg-content {
+      overflow: hidden;
     }
 
-    &.e-dialog.e-fe-upload-dialog {
-      .e-dlg-content {
-        overflow: auto;
-      }
+    &.e-dialog.e-fe-upload-dialog .e-dlg-content {
+      overflow: auto;
     }
 
     &.e-contextmenu-wrapper ul .e-menu-item.e-separator,
@@ -1088,12 +1074,9 @@
       margin: $fe-cm-separator-margin;
     }
 
-    &.e-rtl {
-
-      .e-fe-grid {
-        display: inline-table;
-        transform: rotate(180deg);
-      }
+    &.e-rtl .e-fe-grid {
+      display: inline-table;
+      transform: rotate(180deg);
     }
 
     &.e-dialog {
@@ -1126,9 +1109,7 @@
 
       .e-fe-icon {
         display: inline-block;
-        height: 18px;
-        margin: 0 8px -2px 0;
-        width: 18px;
+        @include icon-style(18px, 18px, 0 8px -2px 0);
       }
 
       .e-fe-access-header {
@@ -1140,28 +1121,22 @@
       }
 
       .e-image {
-        height: 100%;
-        width: 100%;
+        @include size(100%, 100%);
       }
 
-      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
-        .e-dlg-content {
+      .e-dlg-content {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           padding-top: 16px;
         }
-      }
-
-      @if $fm-skin-name == 'FluentUI' {
-        .e-dlg-content {
+        @if $fm-skin-name == 'FluentUI' {
           padding-top: 2px;
         }
       }
 
       &.e-rtl {
-
         td {
           padding: $fe-dg-rtl-td-padding;
         }
-
         .e-fe-icon {
           margin: 0 0 -2px 8px;
         }
@@ -1188,18 +1163,22 @@
       border-bottom-width: 0;
       border-top-width: 0;
 
-      .e-file-select-wrap {
-        display: none;
-      }
-
-      .e-icons.e-file-delete-btn {
-        display: none;
-      }
-
       .e-upload-actions {
         border-bottom: 1px solid;
       }
     }
+  }
+
+  .e-filemanager .e-display-none,
+  .e-filemanager .e-treeview .e-icons .e-treeview-spinner,
+  .e-filemanager .e-splitter .e-split-bar .e-resize-handler,
+  .e-filemanager .e-splitter .e-display-none,
+  .e-filemanager .e-grid .e-spin-show,
+  .e-filemanager .e-grid .e-gridheader .e-emptyrow,
+  .e-filemanager .e-grid .e-gridcontent .e-emptyrow,
+  .e-fe-popup .e-upload .e-file-select-wrap,
+  .e-fe-popup .e-upload .e-icons.e-file-delete-btn {
+    display: none;
   }
 
   .e-filemanager,
@@ -1209,12 +1188,13 @@
     &.e-fe-mobile {
       
       .e-toolbar {
-        @if ($fm-skin-name == 'Material3') {
-          height: $fe-mobile-tb-height;
-          min-height: $fe-mobile-tb-height;
+        @if ($fm-skin-name == 'Material3' or $fm-skin-name == 'fluent2') {
+          @include toolbar-height($fe-mobile-tb-height, $fe-mobile-tb-height);
         }
       }
 
+      .e-toolbar .e-popup-up-icon.e-icons,
+      .e-toolbar .e-popup-down-icon.e-icons,
       .e-toolbar-items .e-toolbar-item .e-btn-icon.e-icons {
         font-size: $fe-mobile-icon-font-size;
       }
@@ -1230,81 +1210,57 @@
           &.e-fe-newfolder {
             padding-top: $fe-mobile-newfolder-padding-top;
           }
-
           &.e-fe-upload {
             padding-left: $fe-mobile-upload-padding-left;
           }
-
           &.e-fe-sort {
             padding-top: $fe-mobile-sort-padding-top;
           }
-
           &.e-fe-refresh {
             padding-top: $fe-mobile-refresh-padding-top;
           }
-
           &.e-fe-select  {
             padding-top: $fe-mobile-select-padding-top;
           }
-
           &.e-fe-large {
             padding: $fe-mobile-large-padding;
           }
-
           &.e-fe-grid {
             padding: $fe-mobile-grid-padding;
           }
-
           &.e-fe-details {
             padding-top: $fe-mobile-details-padding-top;
           }
-
           &.e-fe-delete {
             padding-left: $fe-mobile-delete-padding-left;
           }
-
           &.e-fe-rename {
             padding-left: $fe-mobile-rename-padding-left;
             padding-top: $fe-mobile-rename-padding-top;
           }
-
           &.e-fe-download {
             padding-left: $fe-mobile-download-padding-left;
           }
-
           &.e-fe-cut {
             padding-left: $fe-mobile-cut-padding-left;
             padding-top: $fe-mobile-cut-padding-top;
           }
-
           &.e-fe-copy {
             padding-left: $fe-mobile-copy-padding-left;
           }
         }
       }
 
-      .e-toolbar .e-popup-up-icon.e-icons,
-      .e-toolbar .e-popup-down-icon.e-icons {
-        font-size: $fe-mobile-icon-font-size;
-      }
-
       .e-toolbar-left {
-
         .e-icons.e-fe-sort {
           display: inline-block;
           margin: 0;
           width: 14px;
         }
 
-        .e-tbar-ddb-text {
+        .e-tbar-ddb-text,
+        .e-toolbar-item .e-tbar-btn-text {
           display: none;
-        }
-
-        .e-toolbar-item {
-
-          .e-tbar-btn-text {
-            display: none;
-          }
         }
       }
 
@@ -1336,8 +1292,7 @@
 
           .e-input-group {
             display: none;
-            height: $fe-mobile-search-height;
-            width: 100%;
+            @include size($fe-mobile-search-height, 100%);
 
             .e-clear-icon {
               margin: 2px 8px 0;
@@ -1361,8 +1316,7 @@
       .e-grid {
 
         .e-fe-grid-icon .e-fe-icon {
-          height: $fe-mobile-grid-icon-size;
-          width: $fe-mobile-grid-icon-size;
+          @include size($fe-mobile-grid-icon-size, $fe-mobile-grid-icon-size);
           @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
             margin: 0 8px 0 0;
           }
@@ -1373,7 +1327,6 @@
         }
 
         .e-content {
-
           .e-rowcell {
             border-bottom: 1px solid;
             border-bottom-color: $fe-border-color;
@@ -1398,6 +1351,17 @@
         .e-fe-text {
           @include ellipsis;
         }
+
+        @if $fm-skin-name == 'fluent2' {
+          .e-fe-text {
+            font-size: $text-base;
+            line-height: 22px;
+          }
+          .e-fe-date,
+          .e-fe-size {
+            color: $fe-grid-empty-inner-content-color;
+          }
+        }
       }
 
       .e-large-icons .e-list-parent {
@@ -1405,9 +1369,7 @@
 
         .e-list-item {
           display: inline-table;
-          height: $fe-mobile-lg-item-height;
-          margin: $fe-mobile-lg-item-margin;
-          width: $fe-mobile-lg-item-width;
+          @include icon-style($fe-mobile-lg-item-height, $fe-mobile-lg-item-width, $fe-mobile-lg-item-margin);
 
           &.e-hover,
           &:hover {
@@ -1437,28 +1399,16 @@
           }
 
           .e-list-icon {
-            height: $fe-mobile-lg-icon-height;
-            margin: $fe-mobile-lg-icon-margin;
-            width: $fe-mobile-lg-icon-width;
+            @include icon-style($fe-mobile-lg-icon-height, $fe-mobile-lg-icon-width, $fe-mobile-lg-icon-margin);
           }
         }
       }
     }
 
     &.e-fe-m-select {
-
-      .e-large-icons {
-
-        .e-list-item.e-large-icon {
-          @include visibility(visible);
-        }
-      }
-
-      .e-grid {
-
-        .e-content .e-row .e-rowcell {
-          @include visibility(visible);
-        }
+      .e-large-icons .e-list-item.e-large-icon,
+      .e-grid .e-content .e-row .e-rowcell {
+        @include visibility(visible);
       }
     }
 
@@ -1467,8 +1417,7 @@
       .e-address {
 
         .e-search-wrap {
-          margin: 0;
-          padding: 0;
+          @include margin-padding(0, 0);
           position: absolute;
           width: 100%;
 
@@ -1501,15 +1450,11 @@
     }
 
     &.e-fe-m-filter.e-rtl {
-
       .e-address {
-
         .e-search-wrap {
-
           .e-input-group .e-input {
             margin-right: 45px;
           }
-
           .e-fe-search {
             transform: rotate(180deg);
           }
@@ -1517,16 +1462,11 @@
       }
     }
 
-    &.e-rtl {
-
-      .e-grid {
-
-        .e-gridheader,
-        .e-gridcontent {
-
-          .e-fe-grid-icon {
-            padding-right: 10px;
-          }
+    &.e-rtl .e-grid {
+      .e-gridheader,
+      .e-gridcontent {
+        .e-fe-grid-icon {
+          padding-right: 10px;
         }
       }
     }
@@ -1543,11 +1483,9 @@
     }
 
     &.e-dialog {
-
       .e-dlg-header-content {
         padding: $fe-big-dg-header-font-size;
       }
-
       td {
         @include ellipsis;
         font-size: $fe-big-dg-td-font-size;
@@ -1563,16 +1501,16 @@
 
     .e-toolbar {
 
-      @if ($fm-skin-name == 'Material3') {
-        height: $fe-big-tb-height;
-        min-height: $fe-big-tb-height;
-
+      @if ($fm-skin-name == 'Material3' or $fm-skin-name == 'fluent2') {
+        @include toolbar-height($fe-big-tb-height, $fe-big-tb-height);
         .e-toolbar-item:not(.e-separator) {
           min-height: $fe-big-tb-height;
           padding: 4px;
         }
       }
 
+      .e-popup-up-icon.e-icons,
+      .e-popup-down-icon.e-icons,
       .e-toolbar-items .e-toolbar-item .e-btn-icon.e-icons {
         font-size: $fe-mobile-icon-font-size;
       }
@@ -1580,27 +1518,19 @@
       .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn {
         &.e-tbar-btn {
           padding: $fe-big-tb-ddb-btn-padding;
-        }
 
-        &.e-tbar-btn.e-active {
-          padding: $fe-big-tb-ddb-btn-hvr-padding;
-        }
-
-        &.e-tbar-btn:hover {
-          padding: $fe-big-tb-ddb-btn-hvr-padding;
-        }
-
-        &.e-tbar-btn:focus {
-          padding: $fe-big-tb-ddb-btn-hvr-padding;
+          &.e-active,
+          &:hover,
+          &:focus {
+            padding: $fe-big-tb-ddb-btn-hvr-padding;
+          }
         }
 
         &.e-tbar-btn .e-btn-icon.e-icons.e-caret {
           @if $fm-skin-name == 'tailwind' {
             font-size: 22px;
-            height: 22px;
-            margin: 4px 4px 0;
+            @include icon-style(22px, 22px, 4px 4px 0);
             padding: 1px;
-            width: 22px;
           }
           @else {
             padding: 0 10px;
@@ -1610,11 +1540,6 @@
 
       .e-toolbar-pop .e-toolbar-item .e-dropdown-btn .e-btn-icon.e-icons.e-caret {
         padding: 0 10px;
-      }
-
-      .e-popup-up-icon.e-icons,
-      .e-popup-down-icon.e-icons {
-        font-size: $fe-mobile-icon-font-size;
       }
     }
     @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
@@ -1627,17 +1552,14 @@
           }
 
           .e-fe-icon {
-            height: 24px;
-            margin: 7px 12px;
-            width: 24px;
+            @include icon-style(24px, 24px, 7px 12px);
           }
         }
 
         .e-fe-count {
           font-size: $text-sm;
-          height: 24px;
+          @include size(24px, 24px);
           line-height: 22px;
-          width: 24px;
         }
       }
     }
@@ -1651,11 +1573,9 @@
       }
 
       .e-list-parent .e-list-item {
-
         .e-fullrow {
           height: $fe-big-tv-fullrow-height;
         }
-
         .e-list-text {
           height: $fe-big-tv-node-height;
           line-height: $fe-big-tv-node-height;
@@ -1677,7 +1597,6 @@
         @if ($fm-skin-name != 'Material3') {
           height: $fe-big-bc-li-item-height;
         }
-
         .e-icons {
           font-size: $fe-big-bc-icon-font-size;
         }
@@ -1708,11 +1627,10 @@
             @if ($fm-skin-name == 'material' or $fm-skin-name == 'material-dark') {
               height: 39px;
             }
-            @if ($fm-skin-name == 'FluentUI') {
+            @else if ($fm-skin-name == 'FluentUI') {
               height: 30px;
             }
-
-            @if ($fm-skin-name == 'Material3') {
+            @else if ($fm-skin-name == 'Material3') {
               margin: $fe-big-search-input-margin;
               height: $fe-big-search-input-height;
             }
@@ -1727,30 +1645,23 @@
       }
 
       .e-fe-search {
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
-          font-size: 16px;
-        }
-        @else if $fm-skin-name == 'FluentUI' {
-          font-size: 18px;
-        }
         @if $fm-skin-name == 'tailwind' {
+          font-size: 16px;
           margin: 7px 4px;
         }
         @else if $fm-skin-name == 'bootstrap5' {
+          font-size: 16px;
           margin: 4px;
         }
         @else if $fm-skin-name == 'FluentUI' {
+          font-size: 18px;
           margin: 3px;
         }
-        @else if($fm-skin-name == 'Material3') {
-          margin: $fe-search-icon-margin;
+        @else if $fm-skin-name == 'Material3' {
+          @include margin-padding($fe-search-icon-margin, $fe-big-search-input-padding);
         }
         @else {
           margin: 7px 0;
-        }
-
-        @if ($fm-skin-name == 'Material3') {
-          padding: $fe-big-search-input-padding;
         }
       }
     }
@@ -1759,11 +1670,9 @@
       @include checkbox($fe-big-cb-line-height);
 
       .e-gridheader {
-
         .e-headercell {
           height: $fe-big-grid-header-height;
         }
-
         .e-headertext {
           font-size: $fe-big-grid-header-font-size;
         }
@@ -1814,40 +1723,21 @@
 
       .e-fe-icon {
         @if $fm-skin-name == 'tailwind' {
-          height: 24px;
-          width: 24px;
+          @include size(24px, 24px);
         }
         @else {
           margin: $fe-big-grid-icon-margin;
         }
       }
 
-      .e-empty {
-        min-width: $fe-big-grid-empty-min-width;
-      }
-
-      .e-empty-content {
-        font-size: $fe-big-grid-empty-content-font-size;
-        margin: $fe-big-grid-empty-content-margin;
-        padding: $fe-big-grid-empty-content-padding;
-        text-align: $fe-big-grid-empty-content-text-align;
-      }
-
-      .e-empty-icon {
-        height: $fe-big-grid-empty-icon-height;
-        margin: $fe-big-grid-empty-icon-margin;
-        width: $fe-big-grid-empty-icon-width;
-      }
+      @include empty-style($fe-big-grid-empty-min-width, $fe-big-grid-empty-content-font-size, $fe-big-grid-empty-content-margin, $fe-big-grid-empty-content-padding, $fe-big-grid-empty-content-text-align, $fe-big-grid-empty-icon-height, $fe-big-grid-empty-icon-width, $fe-big-grid-empty-icon-margin, $fe-big-grid-empty-inner-content-font-size, $fe-big-grid-empty-inner-content-margin, $fe-big-grid-empty-inner-content-padding, $fe-big-grid-empty-inner-content-text-align);
 
       .e-empty-inner-content {
-        font-size: $fe-big-grid-empty-inner-content-font-size;
-        margin: $fe-big-grid-empty-inner-content-margin;
         @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
           opacity: $fe-big-grid-empty-inner-content-opacity;
         }
-        padding: $fe-big-grid-empty-inner-content-padding;
-        text-align: $fe-big-grid-empty-inner-content-text-align;
       }
+
       &.e-rtl .e-checkbox-wrapper .e-frame {
         @if $fm-skin-name == 'FluentUI' {
           margin-right: -16px;
@@ -1866,9 +1756,7 @@
       }
 
       .e-list-item {
-        height: $fe-big-lg-item-height;
-        margin: $fe-big-lg-item-margin;
-        width: $fe-big-lg-item-width;
+        @include icon-style($fe-big-lg-item-height, $fe-big-lg-item-width, $fe-big-lg-item-margin);
       }
 
       .e-text-content {
@@ -1887,58 +1775,30 @@
       }
 
       .e-list-icon {
-        height: $fe-big-lg-icon-height;
-        margin: $fe-big-lg-icon-margin;
-        width: $fe-big-lg-icon-width;
+        @include icon-style($fe-big-lg-icon-height, $fe-big-lg-icon-width, $fe-big-lg-icon-margin);
       }
 
-      .e-empty {
-        min-width: $fe-big-lg-icon-empty-min-width;
-      }
-
-      .e-empty-content {
-        font-size: $fe-big-lg-icon-empty-content-font-size;
-        margin: $fe-big-lg-icon-empty-content-margin;
-        padding: $fe-big-lg-icon-empty-content-padding;
-        text-align: $fe-big-lg-icon-empty-content-text-align;
-      }
-
-      .e-empty-icon {
-        height: $fe-big-lg-icon-empty-icon-height;
-        margin: $fe-big-lg-icon-empty-icon-margin;
-        width: $fe-big-lg-icon-empty-icon-width;
-      }
+      @include empty-style($fe-big-lg-icon-empty-min-width, $fe-big-lg-icon-empty-content-font-size, $fe-big-lg-icon-empty-content-margin, $fe-big-lg-icon-empty-content-padding, $fe-big-lg-icon-empty-content-text-align, $fe-big-lg-icon-empty-icon-height, $fe-big-lg-icon-empty-icon-width, $fe-big-lg-icon-empty-icon-margin, $fe-big-lg-icon-empty-inner-content-font-size, $fe-big-lg-icon-empty-inner-content-margin, $fe-big-lg-icon-empty-inner-content-padding, $fe-big-lg-icon-empty-inner-content-text-align);
 
       .e-empty-inner-content {
-        font-size: $fe-big-lg-icon-empty-inner-content-font-size;
-        margin: $fe-big-lg-icon-empty-inner-content-margin;
         @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
           opacity: $fe-big-lg-icon-empty-inner-content-opacity;
         }
-        padding: $fe-big-lg-icon-empty-inner-content-padding;
-        text-align: $fe-big-lg-icon-empty-inner-content-text-align;
       }
     }
 
     &.e-rtl {
 
-      .e-treeview {
-
-        & > .e-ul {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
-            padding: 0 12px 0 0;
-          }
+      .e-treeview > .e-ul {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
+          padding: 0 12px 0 0;
         }
       }
 
       @if $fm-skin-name =='Material3' {
         .e-address {
-          .e-search-wrap {
-            .e-input-group {
-              .e-input {
-                margin: $fe-big-rtl-search-input-margin;
-              }
-            }
+          .e-search-wrap .e-input-group .e-input {
+            margin: $fe-big-rtl-search-input-margin;
           }
 
           .e-fe-search {
@@ -2000,7 +1860,6 @@
   }
   
   .e-content-placeholder.e-filemanager.e-placeholder-filemanager {
-    height: 100%;
-    width: 100%;
+    @include size(100%, 100%);
   }
 }

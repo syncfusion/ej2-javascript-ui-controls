@@ -1,19 +1,15 @@
-/*! FileManager's material 3 theme wise override definitions and variables */
-//layout variables
 $fm-skin-name: 'Material3' !default;
 $fe-bc-font-size: $text-sm !default;
 $fe-bc-icon-font-size: 14px !default;
 $fe-dg-td-font-size: $text-sm !default;
 $fe-lg-text-font-size: $text-xs !default;
 $fe-ddl-icon-font-size: $text-sm !default;
-
 $fe-big-bc-font-size: $text-base !default;
 $fe-big-bc-icon-font-size: 16px !default;
 $fe-big-lg-text-font-size: $text-sm !default;
 $fe-big-dg-header-padding: 21px !default;
 $fe-big-dg-td-font-size: 15px !default;
 $fe-big-dg-header-font-size: 21px !default;
-
 $fe-clone-box-shadow: $shadow !default;
 $fe-clone-border: none !default;
 $fe-tb-height: 40px !default;
@@ -51,6 +47,7 @@ $fe-grid-header-height: 32px !default;
 $fe-grid-header-font-size: 14px !default;
 $fe-grid-header-cb-padding-left: 12px !default;
 $fe-grid-content-font-size: 12px !default;
+$fe-grid-content-padding: 7px 12px !default;
 $fe-grid-content-name-font-size: 14px !default;
 $fe-grid-icon-sort-margin: 0 !default;
 $fe-grid-icon-padding: 0 0 0 6px !default;
@@ -76,7 +73,6 @@ $fe-dd-popup-blank-icon-padding-left: 40px !default;
 $fe-tv-fullrow-height: 40px !default;
 $fe-address-height: 36px !default;
 $fe-tv-node-height: 40px !default;
-
 $fe-big-tv-fullrow-height: 48px !default;
 $fe-big-address-height: 52px !default;
 $fe-big-tv-node-height: 48px !default;
@@ -111,12 +107,9 @@ $fe-big-grid-header-font-size: 14px !default;
 $fe-big-grid-content-font-size: 14px !default;
 $fe-big-grid-content-name-font-size: 16px !default;
 $fe-big-cb-line-height: 14px !default;
-
 $fe-big-rtl-search-input-margin: 0 48px 0 0 !default;
 $fe-big-rtl-search-input-padding: 10px 10px 10px 18px !default;
-
 $fe-rtl-grid-icon-margin: 0 0 0 8px !default;
-
 $fe-mobile-tb-height: 56px !default;
 $fe-mobile-lg-item-height: 96px !default;
 $fe-mobile-lg-item-width: 96px !default;
@@ -149,78 +142,59 @@ $fe-mobile-search-height: 40px !default;
 $fe-mobile-lg-item-minwidth: 140px !default;
 $fe-mobile-lg-item-width-two: calc(50% - 17px) !default;
 $fe-mobile-lg-item-width-three: calc(33.33% - 17px) !default;
-
 $fe-big-lg-icon-empty-min-width: 300px !default;
-
 $fe-big-lg-icon-empty-content-font-size: 22px !default;
 $fe-big-lg-icon-empty-content-margin: 0 auto !default;
 $fe-big-lg-icon-empty-content-padding: 12px !default;
 $fe-big-lg-icon-empty-content-text-align: center !default;
-
 $fe-big-lg-icon-empty-icon-height: 92px !default;
 $fe-big-lg-icon-empty-icon-margin: 0 auto !default;
 $fe-big-lg-icon-empty-icon-width: 92px !default;
-
 $fe-big-lg-icon-empty-inner-content-font-size: 14px !default;
 $fe-big-lg-icon-empty-inner-content-margin: 0 auto !default;
 $fe-big-lg-icon-empty-inner-content-opacity: .5 !default;
 $fe-big-lg-icon-empty-inner-content-padding: 4px !default;
 $fe-big-lg-icon-empty-inner-content-text-align: center !default;
-
 $fe-big-grid-empty-min-width: 300px !default;
-
 $fe-big-grid-empty-content-font-size: 22px !default;
 $fe-big-grid-empty-content-margin: 0 auto !default;
 $fe-big-grid-empty-content-padding: 12px !default;
 $fe-big-grid-empty-content-text-align: center !default;
-
 $fe-big-grid-empty-icon-height: 92px !default;
 $fe-big-grid-empty-icon-margin: 0 auto !default;
 $fe-big-grid-empty-icon-width: 92px !default;
-
 $fe-big-grid-empty-inner-content-font-size: 14px !default;
 $fe-big-grid-empty-inner-content-margin: 0 auto !default;
 $fe-big-grid-empty-inner-content-opacity: .5 !default;
 $fe-big-grid-empty-inner-content-padding: 6px !default;
 $fe-big-grid-empty-inner-content-text-align: center !default;
-
 $fe-grid-empty-min-width: 200px !default;
-
 $fe-grid-empty-content-font-size: $text-base !default;
 $fe-grid-empty-content-margin: 0 auto !default;
 $fe-grid-empty-content-padding: 18px 0 8px 0 !default;
 $fe-grid-empty-content-text-align: center !default;
-
 $fe-grid-empty-icon-height: 52px !default;
 $fe-grid-empty-icon-margin: 0 auto !default;
 $fe-grid-empty-icon-width: 52px !default;
-
 $fe-grid-empty-inner-content-color: rgba($content-text-color-alt1) !default;
 $fe-grid-empty-inner-content-font-size: $text-sm !default;
 $fe-grid-empty-inner-content-margin: 0 auto !default;
 $fe-grid-empty-inner-content-opacity: .5 !default;
 $fe-grid-empty-inner-content-padding: 0 !default;
 $fe-grid-empty-inner-content-text-align: center !default;
-
 $fe-lg-icon-empty-min-width: 200px !default;
-
 $fe-lg-icon-empty-content-font-size: $text-base !default;
 $fe-lg-icon-empty-content-margin: 0 auto !default;
 $fe-lg-icon-empty-content-padding: 18px 0 8px 0 !default;
 $fe-lg-icon-empty-content-text-align: center !default;
-
 $fe-lg-icon-empty-icon-height: 52px !default;
 $fe-lg-icon-empty-icon-margin: 0 auto !default;
 $fe-lg-icon-empty-icon-width: 52px !default;
-
 $fe-lg-icon-empty-inner-content-font-size: $text-sm !default;
 $fe-lg-icon-empty-inner-content-margin: 0 auto !default;
 $fe-lg-icon-empty-inner-content-padding: 0 !default;
 $fe-lg-icon-empty-inner-content-text-align: center !default;
-
 $fe-bc-icon-padding: 0 !default;
-
-// color variables
 $fe-border-color: rgba($border-light) !default;
 $fe-background: transparent;
 $fe-icon-color: rgba($icon-color) !default;

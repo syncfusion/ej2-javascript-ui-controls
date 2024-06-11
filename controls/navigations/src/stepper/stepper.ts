@@ -26,7 +26,7 @@ const LABELAFTER: string = 'e-label-after';
 const LABELBEFORE: string = 'e-label-before';
 const VERTICALSTEP: string = 'e-vertical';
 const HORIZSTEP: string = 'e-horizontal';
-const STEPICON: string = 'e-step-icon';
+const STEPICON: string = 'e-step-item';
 const STEPTEXT: string = 'e-step-text';
 const TEXT: string = 'e-text';
 const STEPSLABEL: string = 'e-step-label';
@@ -249,6 +249,9 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
      * {% codeBlock src='stepper/template/index.md' %}{% endcodeBlock %}
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property('')
@@ -258,6 +261,9 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
      * Defines the template content for the tooltip.
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property('')
@@ -299,7 +305,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
     public stepType: string | StepType;
 
     /**
-     * Event triggers after active step changed. 
+     * Event triggers after active step changed.
      *
      * @event stepChanged
      */
@@ -340,13 +346,11 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
     private textEleWidth: number;
     private tooltipObj: Tooltip;
     private tooltipOpen: boolean;
-    private isReact?: boolean;
     private templateFunction: Function;
     private keyboardModuleStepper: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
     private l10n: L10n;
     private isKeyNavFocus: boolean;
-    private isAngular: boolean;
 
     /**
      * * Constructor for creating the Stepper component.
@@ -384,7 +388,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
     /**
      * To get component name.
      *
-     * @returns {string} - Module Name
+     * @returns {string} - It returns the current module name.
      * @private
      */
     public getModuleName(): string {
@@ -420,11 +424,11 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             if (this.steps.length > 1) {
                 if (this.isAngular && this.template) {
                     setTimeout(() => {
-                        this.renderProgressBar(this.element); 
+                        this.renderProgressBar(this.element);
                     });
                 }
                 else {
-                    this.renderProgressBar(this.element); 
+                    this.renderProgressBar(this.element);
                 }
             }
             this.checkValidStep();
@@ -462,8 +466,8 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
     }
 
     private updateStepType(): void {
-        if (this.stepType.toLowerCase() === 'indicator' || 'label' || 'default') {
-            this.stepType.toLowerCase() !== 'default' ? this.element.classList.add('e-step-type-' + this.stepType.toLowerCase()) : '';
+        if (!(isNullOrUndefined(this.stepType)) && (this.stepType.toLowerCase() === 'indicator' || this.stepType.toLowerCase() === 'label' || this.stepType.toLowerCase() === 'default')) {
+            if (this.stepType.toLowerCase() !== 'default') { this.element.classList.add('e-step-type-' + this.stepType.toLowerCase()); }
             if (((this.stepType.toLowerCase() === 'indicator' || 'label') && (this.labelContainer))) { this.clearLabelPosition(); }
         }
     }
@@ -489,15 +493,20 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         for (let index: number = 0; index < this.steps.length; index++) {
             const item: StepModel = this.steps[parseInt(index.toString(), 10)];
             const status: string = item.status.toLowerCase();
-            if (isInitial && this.activeStep === 0 && index === 0) { item.status = StepStatus.InProgress; }
+            if (isInitial && this.activeStep === 0 && index === 0) {
+                const prevOnChange: boolean = this.isProtectedOnChange;
+                this.isProtectedOnChange = true;
+                item.status = StepStatus.InProgress;
+                this.isProtectedOnChange = prevOnChange;
+            }
             if (item && status !== 'notstarted' && index === this.activeStep) {
                 for (let i: number = 0; i < this.steps.length; i++) {
                     const itemElement: HTMLElement = this.stepperItemElements[parseInt(i.toString(), 10)];
                     itemElement.classList.remove(SELECTED, INPROGRESS, COMPLETED, NOTSTARTED);
                     const prevOnChange: boolean = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
-                    if (status === 'completed') { this.updateStatusClass(i, index, itemElement) }
-                    else { this.updateStatusClass(i, index, itemElement, true) }
+                    if (status === 'completed') { this.updateStatusClass(i, index, itemElement); }
+                    else { this.updateStatusClass(i, index, itemElement, true); }
                     this.isProtectedOnChange = prevOnChange;
                 }
             } else if (item && status !== 'notstarted' && index !== this.activeStep) { this.navigationHandler(this.activeStep, null, true); }
@@ -506,7 +515,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
 
     private updateStatusClass(currentStep: number, index: number, ele: HTMLElement, isInprogress?: boolean): void {
         const stepItem: StepModel = this.steps[parseInt(currentStep.toString(), 10)];
-        if (currentStep < index) { ele.classList.add(COMPLETED); stepItem.status = StepStatus.Completed }
+        if (currentStep < index) { ele.classList.add(COMPLETED); stepItem.status = StepStatus.Completed; }
         else if (currentStep === index) { ele.classList.add(isInprogress ? INPROGRESS : COMPLETED, SELECTED); }
         else { ele.classList.add(NOTSTARTED); }
     }
@@ -518,10 +527,11 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             this.stepperItemContainer.classList[(index !== 0) ? 'add' : 'remove'](NOTSTARTED);
             if (this.element.classList.contains(HORIZSTEP)) { this.stepperItemContainer.style.setProperty('--max-width', 100 / this.steps.length + '%'); }
             const stepSpan: HTMLElement = this.createElement('span', { className: 'e-step' });
+            const item: StepModel = this.steps[parseInt(index.toString(), 10)];
             if (this.renderDefault(index) && (isNullOrUndefined(this.template) || this.template === '')) {
                 const isIndicator: boolean = (!this.element.classList.contains('e-step-type-default') && this.stepType.toLowerCase() === 'indicator') ? true : false;
                 if (isIndicator) { stepSpan.classList.add('e-icons', INDICATORICON); }
-                if (!isIndicator) {
+                if (!isIndicator && item.isValid == null) {
                     stepSpan.classList.add('e-step-content');
                     stepSpan.innerHTML = (index + 1).toString();
                 }
@@ -529,15 +539,21 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             }
             else if (isNullOrUndefined(this.template) || this.template === '') {
                 let isRender: boolean = true;
-                const item: StepModel = this.steps[parseInt(index.toString(), 10)];
-                if (item.iconCss && (((!item.text && !item.label) || !this.element.classList.contains(LABELINDICATOR)))) {
-                    const itemIcon: string[] = item.iconCss.trim().split(' ');
-                    stepSpan.classList.add(ICONCSS);
-                    for (let i: number = 0; i < itemIcon.length; i++) {
-                        stepSpan.classList.add(itemIcon[parseInt(i.toString(), 10)]);
+                if ((item.iconCss || (!item.iconCss && item.text && item.label)) && (((!item.text && !item.label) ||
+                !this.element.classList.contains(LABELINDICATOR)))) {
+                    if (item.iconCss) {
+                        const itemIcon: string[] = item.iconCss.trim().split(' ');
+                        stepSpan.classList.add(ICONCSS);
+                        for (let i: number = 0; i < itemIcon.length; i++) {
+                            stepSpan.classList.add(itemIcon[parseInt(i.toString(), 10)]);
+                        }
+                        this.stepperItemContainer.classList.add(STEPICON);
+                    } else if (!item.iconCss && item.text && item.label) {
+                        stepSpan.classList.add(ICONCSS);
+                        stepSpan.innerHTML = item.text;
+                        this.stepperItemContainer.classList.add(STEPICON);
                     }
                     this.stepperItemContainer.appendChild(stepSpan);
-                    this.stepperItemContainer.classList.add(STEPICON);
                     if ((this.element.classList.contains(HORIZSTEP) && (this.labelPosition.toLowerCase() === 'start' || this.labelPosition.toLowerCase() === 'end') && item.label) ||
                         (this.element.classList.contains(VERTICALSTEP) && (this.labelPosition.toLowerCase() === 'top' || this.labelPosition.toLowerCase() === 'bottom') && item.label)) {
                         this.element.classList.add('e-label-' + this.labelPosition.toLowerCase());
@@ -548,8 +564,11 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                         isRender = false;
                     }
                 }
-                if (item.text && (!item.iconCss || !this.element.classList.contains(STEPINDICATOR)) && isRender && !(item.iconCss && item.label)) {
-                    if (!item.iconCss && this.element.classList.contains(STEPINDICATOR)) {
+                if (item.text && (!item.iconCss || !this.element.classList.contains(STEPINDICATOR)) && isRender &&
+                !(item.iconCss && item.label)) {
+                    if ((!item.iconCss && this.element.classList.contains(STEPINDICATOR)) ||
+                    ((!item.iconCss || this.element.classList.contains(LABELINDICATOR)) && !item.label)) {
+                        if (!item.iconCss && !item.label) { this.element.classList.add('e-step-type-indicator'); }
                         this.checkValidState(item, stepSpan);
                         const prevOnChange: boolean = this.isProtectedOnChange;
                         this.isProtectedOnChange = true;
@@ -557,20 +576,12 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                         this.isProtectedOnChange = prevOnChange;
                     }
                     else {
-                        this.textContainer = this.createElement('span', { className: TEXTCSS });
                         const textSpan: HTMLElement = this.createElement('span', { className: TEXT });
                         if (!item.label) {
                             textSpan.innerText = item.text;
-                            (item.isValid !== null && (!item.iconCss || this.element.classList.contains(LABELINDICATOR))) ? this.textContainer.appendChild(textSpan) : textSpan.classList.add(TEXTCSS);
-                            this.stepperItemContainer.appendChild((item.isValid !== null && (!item.iconCss || this.element.classList.contains(LABELINDICATOR))) ? this.textContainer : textSpan);
+                            textSpan.classList.add(TEXTCSS);
+                            this.stepperItemContainer.appendChild(textSpan);
                             this.stepperItemContainer.classList.add(STEPTEXT);
-                        }
-                        if (!item.iconCss || this.element.classList.contains(LABELINDICATOR)) {
-                            this.stepperItemContainer.classList.add('e-step-text-only');
-                            if (!item.label && item.isValid !== null) {
-                                const iconSpan: HTMLElement = this.createElement('span', { className: 'e-step-validation-icon e-icons' });
-                                this.textContainer.appendChild(iconSpan);
-                            }
                         }
                         if (item.label && this.element.classList.contains(LABELINDICATOR)) {
                             textSpan.innerText = item.label;
@@ -581,25 +592,20 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                         this.isProtectedOnChange = prevOnChange;
                     }
                 }
-                if (item.cssClass) {
-                    addClass([this.stepperItemContainer], item.cssClass.trim().split(' '));
-                }
-                if (item.disabled) {
-                    this.stepperItemContainer.classList[item.disabled ? 'add' : 'remove'](DISABLED);
-                    attributes(this.stepperItemContainer, { 'tabindex': '-1', 'aria-disabled': 'true' });
-                }
                 if (item.label && (!item.iconCss || !this.element.classList.contains(STEPINDICATOR)) && isRender) {
                     if (!item.iconCss && !item.text && this.element.classList.contains(STEPINDICATOR)) {
                         this.checkValidState(item, stepSpan, true);
                     }
-                    else if ((!((this.element.classList.contains(LABELINDICATOR)) && item.text)) || (this.element.classList.contains(LABELINDICATOR) && item.label)) {
+                    else if ((!((this.element.classList.contains(LABELINDICATOR)) && item.text)) ||
+                    (this.element.classList.contains(LABELINDICATOR) && item.label)) {
                         this.labelContainer = this.createElement('span', { className: STEPLABEL });
                         const labelSpan: HTMLElement = this.createElement('span', { className: LABEL });
                         labelSpan.innerText = item.label;
                         this.labelContainer.appendChild(labelSpan);
                         this.stepperItemContainer.classList.add(STEPSLABEL);
                         this.updateLabelPosition();
-                        if ((!item.iconCss && !item.text) || this.element.classList.contains(LABELINDICATOR)) {
+                        if ((!item.iconCss && !item.text && !this.stepperItemContainer.classList.contains(STEPICON)) ||
+                        this.element.classList.contains(LABELINDICATOR)) {
                             this.stepperItemContainer.classList.add('e-step-label-only');
                             if (item.isValid !== null) {
                                 const iconSpan: HTMLElement = this.createElement('span', { className: 'e-step-validation-icon e-icons' });
@@ -608,20 +614,31 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                         }
                     }
                 }
-                if (item.optional) {
-                    const optionalSpan: HTMLElement = this.createElement('span', { className: OPTIONAL });
-                    this.l10n.setLocale(this.locale);
-                    const optionalContent: string = this.l10n.getConstant('optional');
-                    optionalSpan.innerText = optionalContent;
-                    if (item.label && (this.labelContainer && ((this.element.classList.contains(LABELAFTER) && !this.stepperItemContainer.classList.contains('e-step-label-only'))
-                    || (this.element.classList.contains(HORIZSTEP) && this.element.classList.contains(LABELBEFORE) && !this.stepperItemContainer.classList.contains('e-step-label-only'))))
-                    || (this.element.classList.contains(VERTICALSTEP) && this.element.classList.contains(LABELBEFORE))) {
-                        this.labelContainer.appendChild(optionalSpan);
-                    } else {
-                        this.stepperItemContainer.appendChild(optionalSpan);
-                    }
+            }
+            if (item.optional) {
+                const optionalSpan: HTMLElement = this.createElement('span', { className: OPTIONAL });
+                this.l10n.setLocale(this.locale);
+                const optionalContent: string = this.l10n.getConstant('optional');
+                optionalSpan.innerText = optionalContent;
+                if (item.label && (this.labelContainer && ((this.element.classList.contains(LABELAFTER) && !this.stepperItemContainer.classList.contains('e-step-label-only'))
+                || (this.element.classList.contains(HORIZSTEP) && this.element.classList.contains(LABELBEFORE) && !this.stepperItemContainer.classList.contains('e-step-label-only'))))
+                || (this.element.classList.contains(VERTICALSTEP) && this.element.classList.contains(LABELBEFORE))) {
+                    this.labelContainer.appendChild(optionalSpan);
+                } else {
+                    this.stepperItemContainer.appendChild(optionalSpan);
                 }
-                if (item.isValid !== null) { item.isValid ? this.stepperItemContainer.classList.add('e-step-valid') : this.stepperItemContainer.classList.add('e-step-error'); }
+                if (item.isValid !== null) { this.stepperItemContainer.classList.add(item.isValid ? 'e-step-valid' : 'e-step-error'); }
+            }
+            if (item.cssClass) {
+                addClass([this.stepperItemContainer], item.cssClass.trim().split(' '));
+            }
+            if (item.disabled) {
+                this.stepperItemContainer.classList[item.disabled ? 'add' : 'remove'](DISABLED);
+                attributes(this.stepperItemContainer, { 'tabindex': '-1', 'aria-disabled': 'true' });
+            }
+            if (item.isValid !== null) {
+                if (item.isValid) { this.stepperItemContainer.classList.add('e-step-valid'); }
+                else { this.stepperItemContainer.classList.add('e-step-error'); }
             }
             this.renderItemContent(index, false);
             if (this.stepperItemContainer.classList.contains(INPROGRESS)) { attributes(this.stepperItemContainer, { 'tabindex': '0', 'aria-current': 'true' }); }
@@ -634,7 +651,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             });
             if (this.isAngular && this.template) {
                 setTimeout(() => {
-                    this.calculateProgressBarPosition(); 
+                    this.calculateProgressBarPosition();
                 });
             }
             else {
@@ -656,7 +673,9 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         const isBeforeLabel: boolean = (this.element.classList.contains(LABELBEFORE)) ? true : false;
         const isStepVertical: boolean = (this.element.classList.contains(VERTICALSTEP)) ? true : false;
         if (isStepVertical) {
-            const iconOnly: boolean = (this.stepperItemContainer.classList.contains(STEPICON) && !this.stepperItemContainer.classList.contains(STEPTEXT) && !this.stepperItemContainer.classList.contains(STEPSLABEL)) ? true : false;
+            const iconOnly: boolean = (this.stepperItemContainer.classList.contains(STEPICON) &&
+            !this.stepperItemContainer.classList.contains(STEPTEXT) &&
+            !this.stepperItemContainer.classList.contains(STEPSLABEL)) ? true : false;
             const textEle: HTMLElement = (this.stepperItemContainer.querySelector('.' + TEXTCSS));
             if (textEle) { this.textEleWidth = this.textEleWidth < textEle.offsetWidth ? textEle.offsetWidth : this.textEleWidth; }
             if (isBeforeLabel) {
@@ -705,7 +724,8 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         this.clearLabelPosition();
         this.labelContainer.classList.add('e-label-' + this.updateCurrentLabel());
         if (this.labelPosition.toLowerCase() === 'start' && this.orientation.toLowerCase() === 'vertical') {
-            this.stepperItemContainer.firstChild ? this.stepperItemContainer.firstChild.before(this.labelContainer) : this.stepperItemContainer.appendChild(this.labelContainer);
+            if (this.stepperItemContainer.firstChild) { this.stepperItemContainer.firstChild.before(this.labelContainer); }
+            else { this.stepperItemContainer.appendChild(this.labelContainer); }
         }
         else { this.stepperItemContainer.appendChild(this.labelContainer); }
         this.element.classList.add('e-label-' + this.updateCurrentLabel());
@@ -732,15 +752,27 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                 else {
                     iconEle = itemElement.querySelector('.' + ICONCSS);
                 }
+                if (!indicatorEle && this.element.classList.contains(STEPINDICATOR) && this.renderDefault(index)) {
+                    indicatorEle = itemElement.querySelector('.' + INDICATORICON);
+                }
                 const textLabelIcon: HTMLElement = itemElement.querySelector('.e-step-validation-icon');
                 const itemIcon: string[] = item.iconCss.trim().split(' ');
                 const validStep: boolean = itemElement.classList.contains('e-step-valid');
                 if (indicatorEle) {
-                    indicatorEle.classList.add('e-icons', validStep ? 'e-check' : 'e-circle-info');
+                    indicatorEle.classList.remove(INDICATORICON);
+                    if (indicatorEle.innerHTML !== '') { indicatorEle.innerHTML = ''; }
+                    indicatorEle.classList.add('e-icons', validStep ? 'e-check' : 'e-circle-info', ICONCSS);
+                }
+                if (this.renderDefault(index) && !this.element.classList.contains(STEPINDICATOR)) {
+                    const stepSpan: HTMLElement = itemElement.querySelector('.e-step');
+                    stepSpan.classList.add('e-icons', validStep ? 'e-check' : 'e-circle-info', ICONCSS);
                 }
                 if (iconEle) {
-                    for (let i: number = 0; i < itemIcon.length; i++) {
-                        iconEle.classList.remove(itemIcon[parseInt(i.toString(), 10)]);
+                    if (iconEle.innerHTML !== '') { iconEle.innerHTML = ''; }
+                    else if (itemIcon.length > 1) {
+                        for (let i: number = 0; i < itemIcon.length; i++) {
+                            iconEle.classList.remove(itemIcon[parseInt(i.toString(), 10)]);
+                        }
                     }
                     iconEle.classList.add('e-icons', validStep ? 'e-check' : 'e-circle-info');
                 }
@@ -795,7 +827,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                 this.updateTooltipContent(index);
                 this.tooltipObj.open(this.stepperItemElements[parseInt((index).toString(), 10)]);
                 if (this.stepType.toLocaleLowerCase() !== 'label' && ((this.stepType.toLocaleLowerCase() === 'indicator') ||
-                    (currentStep.label !== '' && currentStep.iconCss !== ''))) {
+                    (currentStep.label !== '' && currentStep.iconCss !== '') || (currentStep.label === null && currentStep.iconCss === '' && currentStep.text !== ''))) {
                     const tooltipPopupClass: string = currentStep.status.toLowerCase() === 'inprogress' ?
                         `${STEPPERTOOLTIP} ${STEPPERIPROGRESSTIP} ${this.cssClass ? this.cssClass : ''}` : `${STEPPERTOOLTIP} ${this.cssClass ? this.cssClass : ''}`;
                     this.tooltipObj.setProperties({ cssClass: tooltipPopupClass.trim() });
@@ -825,7 +857,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             }
             else {
                 const content: string = currentStep.label ? currentStep.label : currentStep.text;
-                this.tooltipObj.setProperties({ content: initializeCSPTemplate(function () { return content; }) }, true);
+                this.tooltipObj.setProperties({ content: initializeCSPTemplate(() => { return content; }) }, true);
             }
             this.renderReactTemplates();
         }
@@ -850,8 +882,8 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             this.removeItemContent(listItems[parseInt((index).toString(), 10)] as HTMLElement);
         }
         if (this.template) {
-            isrerender ? listItems[parseInt((index).toString(), 10)].classList.add(TEMPLATE) :
-                this.stepperItemContainer.classList.add(TEMPLATE);
+            if (isrerender) { listItems[parseInt((index).toString(), 10)].classList.add(TEMPLATE); }
+            else { this.stepperItemContainer.classList.add(TEMPLATE); }
             const item: StepModel = this.steps[parseInt(index.toString(), 10)];
             append(this.templateFunction({ step: item, currentStep: index }, this, 'stepperTemplate', (this.element.id + '_stepperTemplate'), this.isStringTemplate), isrerender ? listItems[parseInt((index).toString(), 10)] : this.stepperItemContainer);
         }
@@ -906,7 +938,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             element: itemElement, event: e, isInteracted: isInteracted,
             previousStep: this.activeStep, activeStep: index, cancel: false
         };
-        if (isUpdated != false) {
+        if (isUpdated !== false) {
             const previousStep: number = this.activeStep;
             this.trigger('stepChanging', eventArgs, (args: StepperChangingEventArgs) => {
                 if (args.cancel) { return; }
@@ -940,13 +972,17 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             if (i === this.activeStep) { itemElement.classList.add(SELECTED); }
             if (this.activeStep >= 0 && this.progressbar) {
                 if (this.element.classList.contains(HORIZSTEP)) {
-                    if ((this.element.classList.contains(LABELBEFORE) || this.element.classList.contains(LABELAFTER)) && !this.element.classList.contains(STEPINDICATOR) &&
+                    if ((this.element.classList.contains(LABELBEFORE) || this.element.classList.contains(LABELAFTER)) &&
+                        !this.element.classList.contains(STEPINDICATOR) &&
                         this.stepperItemElements[parseInt(this.activeStep.toString(), 10)].classList.contains(STEPICON)) {
                         const progressPos: HTMLElement = (this.element.querySelector('.e-stepper-progressbar') as HTMLElement);
-                        const selectedEle: HTMLElement = this.stepperItemElements[parseInt(this.activeStep.toString(), 10)].firstChild as HTMLElement;
-                        let value: number = this.activeStep === 0 ? 0 :(selectedEle.offsetLeft - progressPos.offsetLeft + (selectedEle.offsetWidth / 2)) / progressPos.offsetWidth * 100;
+                        const selectedEle: HTMLElement = this.stepperItemElements[parseInt(this.activeStep.toString(), 10)]
+                            .firstChild as HTMLElement;
+                        let value: number = this.activeStep === 0 ? 0 : (selectedEle.offsetLeft - progressPos.offsetLeft +
+                            (selectedEle.offsetWidth / 2)) / progressPos.offsetWidth * 100;
                         if (this.element.classList.contains(RTL)) {
-                            value = (progressPos.getBoundingClientRect().right - selectedEle.getBoundingClientRect().right + (selectedEle.offsetWidth / 2)) / progressPos.offsetWidth * 100;
+                            value = (progressPos.getBoundingClientRect().right - selectedEle.getBoundingClientRect().right +
+                            (selectedEle.offsetWidth / 2)) / progressPos.offsetWidth * 100;
                             this.progressbar.style.setProperty(PROGRESSVALUE, (value) + '%');
                         }
                         else { this.progressbar.style.setProperty(PROGRESSVALUE, (value) + '%'); }
@@ -957,12 +993,16 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                         for (let j: number = 0; j < this.stepperItemElements.length; j++) {
                             totalLiWidth = totalLiWidth + this.stepperItemElements[parseInt(j.toString(), 10)].offsetWidth;
                             if (j <= this.activeStep) {
-                                if (j < this.activeStep) { activeLiWidth = activeLiWidth + this.stepperItemElements[parseInt(j.toString(), 10)].offsetWidth; }
-                                else if (j == this.activeStep && j !== 0) { activeLiWidth = activeLiWidth + (this.stepperItemElements[parseInt(j.toString(), 10)].offsetWidth / 2); }
+                                if (j < this.activeStep) { activeLiWidth = activeLiWidth +
+                                    this.stepperItemElements[parseInt(j.toString(), 10)].offsetWidth; }
+                                else if (j === this.activeStep && j !== 0) { activeLiWidth = activeLiWidth +
+                                    (this.stepperItemElements[parseInt(j.toString(), 10)].offsetWidth / 2); }
                             }
                         }
-                        const spaceWidth: number = (this.stepperItemList.offsetWidth - totalLiWidth) / (this.stepperItemElements.length - 1);
-                        const progressValue: number = ((activeLiWidth + (spaceWidth * this.activeStep)) / this.stepperItemList.offsetWidth) * 100;
+                        const spaceWidth: number = (this.stepperItemList.offsetWidth - totalLiWidth) /
+                            (this.stepperItemElements.length - 1);
+                        const progressValue: number = ((activeLiWidth + (spaceWidth * this.activeStep)) /
+                            this.stepperItemList.offsetWidth) * 100;
                         this.progressbar.style.setProperty(PROGRESSVALUE, (progressValue) + '%');
                     }
                 } else { this.progressbar.style.setProperty(PROGRESSVALUE, ((100 / (this.steps.length - 1)) * index) + '%'); }
@@ -976,21 +1016,21 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
             if (isUpdated !== false) {
-                if (i < this.activeStep || (this.steps.length - 1 === this.activeStep && item.status.toLowerCase() === "completed")) { item.status = StepStatus.Completed; }
+                if (i < this.activeStep || (this.steps.length - 1 === this.activeStep && item.status.toLowerCase() === 'completed')) { item.status = StepStatus.Completed; }
                 else if (i === this.activeStep) { item.status = StepStatus.InProgress; }
                 else if (i > this.activeStep) { item.status = StepStatus.NotStarted; }
                 if (stepStatus && this.activeStep === i) { item.status = stepStatus; }
-                if (item.status.toLowerCase() === "completed") {
+                if (item.status.toLowerCase() === 'completed') {
                     itemElement.classList.remove(SELECTED, INPROGRESS, NOTSTARTED);
                     itemElement.classList.add(COMPLETED);
                 }
-                if (item.status.toLowerCase() === "notstarted") {
+                if (item.status.toLowerCase() === 'notstarted') {
                     itemElement.classList.remove(SELECTED, INPROGRESS, COMPLETED);
                     itemElement.classList.add(NOTSTARTED);
                 }
             }
             this.isProtectedOnChange = prevOnChange;
-            if (this.renderDefault(i) && this.element.classList.contains(STEPINDICATOR)) {
+            if (this.renderDefault(i) && this.element.classList.contains(STEPINDICATOR) && !itemElement.classList.contains('e-step-valid') && !itemElement.classList.contains('e-step-error')) {
                 if (itemElement.classList.contains(COMPLETED)) {
                     (itemElement.firstChild as HTMLElement).classList.remove('e-icons', 'e-step-indicator');
                     (itemElement.firstChild as HTMLElement).classList.add(ICONCSS, 'e-icons', 'e-check');
@@ -1114,8 +1154,8 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                 stepItems[parseInt(prevIndex.toString(), 10)].classList.remove(FOCUS);
             }
             if ((e.action === 'home' || e.action === 'end')) {
-                if (e.action === 'home') { isRTL ? index = stepItems.length - 1 : index = 0; }
-                else { isRTL ? index = 0 : index = stepItems.length - 1; }
+                if (e.action === 'home') { index = isRTL ? stepItems.length - 1 : 0; }
+                else { index = isRTL ? 0 : stepItems.length - 1; }
             }
             if (index >= 0 && index < stepItems.length) { stepItems[parseInt(index.toString(), 10)].classList.add(FOCUS); }
         } else if ((e.action === 'space' || e.action === 'enter')) {
@@ -1136,10 +1176,10 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         this.updateElementClassArray();
         this.removeItemElements();
         this.element.querySelector('.e-stepper-progressbar').remove();
-        isUpdate ? this.updatePosition() : null;
-        isStepType ? this.updateStepType() : null;
-        this.readOnly ? (!this.element.classList.contains(READONLY)) ? this.element.classList.add(READONLY) : null : null;
-        this.enableRtl ? (!this.element.classList.contains(RTL)) ? this.element.classList.add(RTL) : null : null;
+        if (isUpdate) { this.updatePosition(); }
+        if (isStepType) { this.updateStepType(); }
+        if (this.readOnly && !this.element.classList.contains(READONLY)) { this.element.classList.add(READONLY); }
+        if (this.enableRtl && !this.element.classList.contains(RTL)) { this.element.classList.add(RTL); }
         this.updateOrientaion(this.element);
         this.renderItems();
         this.renderProgressBar(this.element);
@@ -1174,7 +1214,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                                     this.steps[index as number].status = oldProp.steps[index as number].status;
                                 }
                             }
-                            else { this.removeItemElements(); this.renderItems(); this.updateStepperStatus();}
+                            else { this.removeItemElements(); this.renderItems(); this.updateStepperStatus(); }
                             this.checkValidStep();
                         }
                     }
@@ -1188,8 +1228,10 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                 this.renderStepperItems(true);
                 break;
             case 'activeStep':
-                this.activeStep = (newProp.activeStep > this.steps.length - 1 || newProp.activeStep < -1) ? oldProp.activeStep : this.activeStep;
-                if (this.activeStep >= 0 && this.stepperItemElements[parseInt(this.activeStep.toString(), 10)].classList.contains(DISABLED)) {
+                this.activeStep = (newProp.activeStep > this.steps.length - 1 || newProp.activeStep < -1) ?
+                    oldProp.activeStep : this.activeStep;
+                if (this.activeStep >= 0 && this.stepperItemElements[parseInt(this.activeStep.toString(), 10)]
+                    .classList.contains(DISABLED)) {
                     this.activeStep = oldProp.activeStep;
                 }
                 if (this.linear) {

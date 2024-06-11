@@ -33,7 +33,6 @@ describe('Map layer testing', () => {
             document.body.appendChild(ele);
             bubble = new Maps({
                 layers: [{
-                    layerType: 'Geometry',
                     shapeDataPath: 'name',
                     shapePropertyPath: 'name',
                     dataSource: cont_countriesdata,
@@ -216,6 +215,17 @@ describe('Map layer testing', () => {
                 done();
             };
             bubble.layers[0].bubbleSettings[0].dataSource = bubbleData;
+            bubble.layers[0].bubbleSettings[0].valuePath = "Measure_Example";
+            bubble.refresh();
+        });
+        it('Bubble datasource as null', (done: Function) => {
+            bubble.projectionType = 'Winkel3';
+            bubble.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + "_LayerIndex_0_bubble_Group_0");
+                expect(spec === null).toBe(true);
+                done();
+            };
+            bubble.layers[0].bubbleSettings[0].dataSource = null;
             bubble.layers[0].bubbleSettings[0].valuePath = "Measure_Example";
             bubble.refresh();
         });

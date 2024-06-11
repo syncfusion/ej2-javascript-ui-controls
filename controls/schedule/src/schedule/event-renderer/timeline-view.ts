@@ -62,8 +62,10 @@ export class TimelineEvent extends MonthEvent {
         } else {
             for (const app of appointments) {
                 const eventData: Record<string, any> = app.data as Record<string, any>;
-                if ((<Date>eventData.trimStartTime).getTime() <= date.getTime() &&
-                    (<Date>eventData.trimEndTime).getTime() > date.getTime()) {
+                if (((<Date>eventData.trimStartTime).getTime() <= date.getTime() &&
+                    (<Date>eventData.trimEndTime).getTime() > date.getTime()) ||
+                    ((<Date>eventData.trimStartTime).getTime() === date.getTime() &&
+                        (<Date>eventData.trimEndTime).getTime() === date.getTime())) {
                     appointmentsList.push(app);
                 }
             }
@@ -90,7 +92,7 @@ export class TimelineEvent extends MonthEvent {
                 const end: number = util.resetTime(endDate).getTime();
                 const appStart: number = util.resetTime(<Date>app[this.fields.startTime]).getTime();
                 const appEnd: number = util.resetTime(<Date>app[this.fields.endTime]).getTime();
-                const isEndOverlap = () => {
+                const isEndOverlap : () => boolean = () => {
                     let endTime: number = (end - (util.getDateInMs(endDate) <= 0 ? util.MS_PER_DAY : 0));
                     endTime = start > endTime ? start : endTime;
                     return appEnd >= endTime && appStart <= endTime;

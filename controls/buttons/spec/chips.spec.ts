@@ -1355,4 +1355,131 @@ describe('Chips', () => {
             });
         });
     });
+
+    describe('Null or undefined value testing', () => {
+        afterEach(() => {
+            chips.destroy();
+            element.innerText = '';
+        });
+        it('chips', () => {
+            chips = new ChipList({ chips: null }, '#chip');
+            expect(chips.chips).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ chips: undefined }, '#chip');
+            expect(chips.chips).toEqual([]);
+            chips.destroy();
+        });
+        it('text', () => {
+            chips = new ChipList({ text: null }, '#chip');
+            expect(chips.text).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ text: undefined }, '#chip');
+            expect(chips.text).toBe('');
+            chips.destroy();
+        });
+        it('avatarText', () => {
+            chips = new ChipList({ avatarText: null }, '#chip');
+            expect(chips.avatarText).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ avatarText: undefined }, '#chip');
+            expect(chips.avatarText).toBe('');
+            chips.destroy();
+        });
+        it('avatarIconCss', () => {
+            chips = new ChipList({ avatarIconCss: null }, '#chip');
+            expect(chips.avatarIconCss).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ avatarIconCss: undefined }, '#chip');
+            expect(chips.avatarIconCss).toBe('');
+            chips.destroy();
+        });
+        it('leadingIconCss', () => {
+            chips = new ChipList({ leadingIconCss: null }, '#chip');
+            expect(chips.leadingIconCss).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ leadingIconCss: undefined }, '#chip');
+            expect(chips.leadingIconCss).toBe('');
+            chips.destroy();
+        });
+        it('trailingIconCss', () => {
+            chips = new ChipList({ trailingIconCss: null }, '#chip');
+            expect(chips.trailingIconCss).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ trailingIconCss: undefined }, '#chip');
+            expect(chips.trailingIconCss).toBe('');
+            chips.destroy();
+        });
+        it('cssClass', () => {
+            chips = new ChipList({ cssClass: null }, '#chip');
+            expect(chips.cssClass).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ cssClass: undefined }, '#chip');
+            expect(chips.cssClass).toBe('');
+            chips.destroy();
+        });
+        it('selection', () => {
+            chips = new ChipList({ selection: null }, '#chip');
+            expect(chips.selection).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ selection: undefined }, '#chip');
+            expect(chips.selection).toBe('None');
+            chips.destroy();
+        });
+        it('htmlAttributes', () => {
+            chips = new ChipList({ htmlAttributes: null }, '#chip');
+            expect(chips.htmlAttributes).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ htmlAttributes: undefined }, '#chip');
+            expect(chips.htmlAttributes).not.toBe(null);
+            chips.destroy();
+        });
+        it('enableDelete', () => {
+            chips = new ChipList({ enableDelete: null }, '#chip');
+            expect(chips.enableDelete).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ enableDelete: undefined }, '#chip');
+            expect(chips.enableDelete).toBe(false);
+            chips.destroy();
+        });
+        it('leadingIconUrl', () => {
+            chips = new ChipList({ leadingIconUrl: null }, '#chip');
+            expect(chips.leadingIconUrl).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ leadingIconUrl: undefined }, '#chip');
+            expect(chips.leadingIconUrl).toBe('');
+            chips.destroy();
+        });
+        it('trailingIconUrl', () => {
+            chips = new ChipList({ trailingIconUrl: null }, '#chip');
+            expect(chips.trailingIconUrl).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ trailingIconUrl: undefined }, '#chip');
+            expect(chips.trailingIconUrl).toBe('');
+            chips.destroy();
+        });
+        it('enabled', () => {
+            chips = new ChipList({ enabled: null }, '#chip');
+            expect(chips.enabled).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ enabled: undefined }, '#chip');
+            expect(chips.enabled).toBe(true);
+            chips.destroy();
+        });
+        it('enablePersistence', () => {
+            chips = new ChipList({ enablePersistence: null }, '#chip');
+            expect(chips.enablePersistence).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ enablePersistence: undefined }, '#chip');
+            expect(chips.enablePersistence).toBe(false);
+            chips.destroy();
+        });
+        it('selectedChips', () => {
+            chips = new ChipList({ selectedChips: null }, '#chip');
+            expect(chips.selectedChips).toBe(null);
+            chips.destroy();
+            chips = new ChipList({ selectedChips: undefined }, '#chip');
+            expect(chips.selectedChips).toEqual([]);
+            chips.destroy();
+        });
+    });
 });

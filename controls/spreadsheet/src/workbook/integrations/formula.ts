@@ -154,6 +154,7 @@ export class WorkbookFormula {
             formulaInfo = (Array.from(formulas.values()));
         }
         let collection: string[];
+        const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(args.sheetId);
         switch (action) {
         case 'getLibraryFormulas':
             args.formulaCollection = Array.from(formulas.keys());
@@ -204,7 +205,7 @@ export class WorkbookFormula {
                 <number>args.rowIndex, <number>args.colIndex, <string>args.value, <boolean>args.isFormula, <number>args.sheetIndex,
                 <boolean>args.isRefreshing, <boolean>args.isDependentRefresh, <boolean>args.isRandomFormula);
             args.value = args.value ? args.value.toString().split('^+').join('^').split('&+').join('&') : args.value;
-            break
+            break;
         case 'refreshRandomFormula':
             this.refreshRandomFormula();
             this.calculateInstance.cell = '';
@@ -259,8 +260,6 @@ export class WorkbookFormula {
             break;
         case 'dependentCellsAvailable':
         case 'checkFormulaAdded':
-            // eslint-disable-next-line no-case-declarations
-            const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(args.sheetId);
             if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
                 args.address = family.parentObjectToToken.get(args.sheetId) + args.address;
             }
@@ -276,14 +275,14 @@ export class WorkbookFormula {
         const definedNames: DefineNameModel[] = this.parent.definedNames;
         if (definedNames && definedNames.length > 0) {
             for (let i: number = definedNames.length - 1; i >= 0; i--) {
-                if (definedNames[i as number].refersTo.split('=')[1].split('!')[0].split("'").join('') === sheetName) {
+                if (definedNames[i as number].refersTo.split('=')[1].split('!')[0].split('\'').join('') === sheetName) {
                     this.removeDefinedName(definedNames[i as number].name, definedNames[i as number].scope);
                 }
             }
         }
     }
     private referenceError(): string {
-        return this.calculateInstance.getErrorStrings()[CommonErrors.ref];
+        return this.calculateInstance.getErrorStrings()[CommonErrors.Ref];
     }
     private getSheetInfo(): { visibleName: string, sheet: string }[] {
         return this.sheetInfo;
@@ -330,7 +329,7 @@ export class WorkbookFormula {
                     formulaVal = formulaVal.toUpperCase();
                     sheetNameIdx = formulaVal.indexOf(prevSheetName);
                     if (sheetNameIdx > -1) {
-                        if (formulaVal[sheetNameIdx - 1] === "'" && formulaVal[sheetNameIdx + prevSheetName.length] === "'") {
+                        if (formulaVal[sheetNameIdx - 1] === '\'' && formulaVal[sheetNameIdx + prevSheetName.length] === '\'') {
                             prevSheetName = `'${prevSheetName}'`;
                         }
                         prevSheetName += this.calculateInstance.sheetToken;
@@ -339,8 +338,11 @@ export class WorkbookFormula {
                         colId = this.calculateInstance.colIndex(dependentCellRef);
                         token = dependentCellRef.slice(0, dependentCellRef.lastIndexOf(this.calculateInstance.sheetToken) + 1);
                         this.updateDataContainer(
-                            [rowId - 1, colId - 1], { value: formulaVal, visible: false, isNamedRange: namedRange, sheetId: family.tokenToParentObject.has(token) ?
-                                Number(family.tokenToParentObject.get(token)) : parseInt(dependentCellRef.split('!')[1], 10) + 1 });
+                            [rowId - 1, colId - 1], {
+                                value: formulaVal, visible: false, isNamedRange: namedRange, sheetId:
+                                family.tokenToParentObject.has(token) ? Number(family.tokenToParentObject.get(token))
+                                    : parseInt(dependentCellRef.split('!')[1], 10) + 1
+                            });
                         this.calculateInstance.refresh(fInfo.getParsedFormula());
                     }
                 }
@@ -397,7 +399,8 @@ export class WorkbookFormula {
             }
             const definedNames: DefineNameModel[] = this.parent.definedNames;
             for (let i: number = 0; i < definedNames.length; i++) {
-                if (checkIsFormula(definedNames[i as number].refersTo) && definedNames[i as number].refersTo.includes(pName) && definedNames[i as number].refersTo.match(regx)) {
+                if (checkIsFormula(definedNames[i as number].refersTo) && definedNames[i as number].refersTo.includes(pName) &&
+                    definedNames[i as number].refersTo.match(regx)) {
                     definedNames[i as number].refersTo = definedNames[i as number].refersTo.replace(regx, name);
                     if (definedNames[i as number].scope.includes(pName)) {
                         definedNames[i as number].scope = name;
@@ -409,7 +412,8 @@ export class WorkbookFormula {
         });
     }
 
-    private updateDataContainer(indexes: number[], data: { value: string, sheetId: number, isNamedRange: boolean, visible?: boolean }): void {
+    private updateDataContainer(indexes: number[],
+                                data: { value: string, sheetId: number, isNamedRange: boolean, visible?: boolean }): void {
         let sheet: SheetModel; let rowData: RowModel; let colObj: CellModel;
         for (let i: number = 0, len: number = this.parent.sheets.length; i < len; i++) {
             sheet = getSheet(this.parent, i);
@@ -533,10 +537,23 @@ export class WorkbookFormula {
             }
         }
     }
-    private refreshCalculate(
-        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean, isDependentRefresh?: boolean, isRandomFormula?: boolean): boolean {
+    /**
+     * @param {number} rowIdx - The index of the row.
+     * @param {number} colIdx - The index of the column.
+     * @param {string} value - The value of the cell.
+     * @param {boolean} isFormula - A flag indicating whether the value is a formula.
+     * @param {number} sheetIdx - The index of the sheet.
+     * @param {boolean} isRefreshing - A flag indicating whether the calculation is being refreshed.
+     * @param {boolean} [isDependentRefresh] - An optional flag indicating whether the refresh is dependent.
+     * @param {boolean} [isRandomFormula] - An optional flag indicating whether the formula is random.
+     * @returns {boolean} - A boolean indicating whether the refresh was successful.
+     * @private
+     */
+    public refreshCalculate(
+        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number,
+        isRefreshing: boolean, isDependentRefresh?: boolean, isRandomFormula?: boolean): boolean {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
-        let sheetId: string = sheet.id + '';
+        const sheetId: string = sheet.id + '';
         const sheetName: string = sheet.name;
         const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
         let cellRef: string = getColumnHeaderText(colIdx + 1) + (rowIdx + 1);
@@ -660,7 +677,7 @@ export class WorkbookFormula {
                 rowId = this.calculateInstance.rowIndex(referenceCollection[i as number]);
                 colId = this.calculateInstance.colIndex(referenceCollection[i as number]);
                 refValue = this.calculateInstance.randomValues.get(referenceCollection[i as number]);
-                let sheetId: string = (parseFloat(this.calculateInstance.getSheetToken(
+                const sheetId: string = (parseFloat(this.calculateInstance.getSheetToken(
                     referenceCollection[i as number]).split(this.calculateInstance.sheetToken).join('')) + 1).toString();
                 const tempArgs: ValueChangedArgs = new ValueChangedArgs(rowId, colId, refValue);
                 this.calculateInstance.valueChanged(sheetId, tempArgs, true, undefined, undefined, undefined, false, true);
@@ -732,7 +749,7 @@ export class WorkbookFormula {
                     updatedRef = sheetRefArr[0] + '!' + updatedRef;
                 }
             } else {
-                oprMatchArr = cellAddr.match(/[\/\+\-\*\^\>\<\>=\<=\<>]+/g);
+                oprMatchArr = cellAddr.match(/[/+\-*^><>=<=<>]+/g);
                 if (oprMatchArr) {
                     refArr = cellAddr.split(oprMatchArr[0]);
                     for (let refIdx: number = 0; refIdx < refArr.length; refIdx++) {
@@ -797,7 +814,7 @@ export class WorkbookFormula {
     private getUpdatedCellRef(cellRef: string): string {
         const orgCellRef: string = cellRef;
         cellRef = cellRef.trim();
-        let isAbsolute: boolean = cellRef.indexOf('$') === 0;
+        const isAbsolute: boolean = cellRef.indexOf('$') === 0;
         let alphabetStartIdx: number = cellRef.search(/[a-zA-Z]/);
         const digitStartIdx: number = cellRef.search(/\d/);
         alphabetStartIdx = isAbsolute ? alphabetStartIdx - 1 : alphabetStartIdx;
@@ -1030,7 +1047,7 @@ export class WorkbookFormula {
             this.clearUniqueRange(row, col, formulaSheet || args.sheet);
         }
         const getAddress: () => string = (): string => {
-            let range: string = (isAbsoluteRef ? '$' : '') + getColumnHeaderText(index[1] + 1) + (isAbsoluteRef ? '$' : '') + (index[0] + 1)
+            let range: string = (isAbsoluteRef ? '$' : '') + getColumnHeaderText(index[1] + 1) + (isAbsoluteRef ? '$' : '') + (index[0] + 1);
             if (index[0] !== index[2] || index[1] !== index[3]) {
                 range += ':' + (isAbsoluteRef ? '$' : '') + getColumnHeaderText(index[3] + 1) + (isAbsoluteRef ? '$' : '') + (index[2] + 1);
             }
@@ -1068,7 +1085,7 @@ export class WorkbookFormula {
                 range = getSwapRange(index);
                 if (updated) {
                     formulaArr[i as number] = range[2] < range[0] || range[3] < range[1] ?
-                        this.calculateInstance.getErrorStrings()[CommonErrors.ref] : !isValidCellReference ?
+                        this.calculateInstance.getErrorStrings()[CommonErrors.Ref] : !isValidCellReference ?
                             (isFullColumn ? getRangeAddress(index).replace(/\d/g, '') : getRangeAddress(index).replace(/[a-zA-Z]/g, '')) : getAddress();
                     refChanged = true;
                 }

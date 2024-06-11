@@ -4,7 +4,7 @@
  */
 import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { Alignment, LegendPosition, LegendType, LegendMode, ShapeLayerType, Type, MarkerType, Orientation, MapAjax } from '../../index';
+import { Alignment, LegendPosition, LegendType, LegendMode, Type, MarkerType, Orientation, MapAjax } from '../../index';
 import { SmartLabelMode, IntersectAction } from '../../index';
 import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsModel, NavigationLineSettingsModel, PolygonSettingsModel, ZoomToolbarTooltipSettingsModel } from './base-model';
 import { MarkerSettingsModel, MarkerClusterSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
@@ -13,7 +13,7 @@ import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSetting
 import { InitialShapeSelectionSettingsModel, InitialMarkerSelectionSettingsModel, ZoomToolbarSettingsModel, ZoomToolbarButtonSettingsModel } from './base-model';
 import { Theme } from './theme';
 import { Point, GeoLocation, Coordinate } from '../utils/helper';
-import { BingMapType, LegendArrangement, LegendShape, BubbleType, StaticMapType, ToolbarItem } from '../utils/enum';
+import { LegendArrangement, LegendShape, BubbleType, ToolbarItem } from '../utils/enum';
 import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
 
 
@@ -121,7 +121,7 @@ export class Font extends ChildProperty<Font> {
     /**
      * Gets or sets the size for the text in data label, legend and other texts.
      */
-    @Property('12px')
+    @Property(null)
     public size: string;
 
     /**
@@ -198,9 +198,9 @@ export class ZoomToolbarButtonSettings extends ChildProperty<ZoomToolbarButtonSe
     /**
      * Gets or sets the radius of the button. This property is used to modify the size of the button.
      *
-     * @default 30
+     * @default null
      */
-    @Property(30)
+    @Property(null)
     public radius: number;
     /**
      * Gets or sets the color of the icons inside the button when selection is performed.
@@ -462,7 +462,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Gets or sets the options for customizing the style properties of the border of the tooltip in layers, markers, and bubbles of maps.
      */
-    @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
+    @Complex<BorderModel>({ color: null, width: 1 }, Border)
     public border: BorderModel;
 
     /**
@@ -517,7 +517,7 @@ export class PolygonTooltipSettings extends ChildProperty<PolygonTooltipSettings
     /**
      * Gets or sets the attributes such as width, color and opacity of the border of the tooltip element of the polygon shape.
      */
-    @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
+    @Complex<BorderModel>({ color: null, width: 1 }, Border)
     public border: BorderModel;
 
     /**
@@ -1291,65 +1291,6 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      */
     @Property(true)
     public enableSelectionZooming: boolean;
-
-    /**
-     * Gets or sets the orientation of the zoom toolbar.
-     *
-     * @default Horizontal
-     * @deprecated
-     */
-    @Property('Horizontal')
-    public toolBarOrientation: Orientation;
-
-    /**
-     * Gets or sets the color for the toolbar in maps.
-     *
-     * @default null
-     * @deprecated
-     */
-    @Property(null)
-    public color: string;
-    /**
-     * Gets or sets the color for the zoom toolbar when the mouse has hovered on toolbar element in maps.
-     *
-     * @default null
-     * @deprecated
-     */
-    @Property(null)
-    public highlightColor: string;
-    /**
-     * Gets or sets the color for the zooming toolbar when clicking the zooming toolbar in maps.
-     *
-     * @default null
-     * @deprecated
-     */
-    @Property(null)
-    public selectionColor: string;
-
-    /**
-     * Gets or sets the position type of toolbar when it is placed horizontally.
-     *
-     * @default Far
-     * @deprecated
-     */
-    @Property('Far')
-    public horizontalAlignment: Alignment;
-
-    /**
-     * Gets or sets the position type of toolbar when it is placed vertically.
-     *
-     * @default Near
-     * @deprecated
-     */
-    @Property('Near')
-    public verticalAlignment: Alignment;
-    /**
-     * Gets or sets the items that are to be shown in the zooming toolbar of the maps. Zoom-in, zoom-out and reset buttons are displayed by default.
-     *
-     * @deprecated
-     */
-    @Property(['ZoomIn', 'ZoomOut', 'Reset'])
-    public toolbars: string[];
     /**
      * Enables or disables the mouse wheel zooming in maps.
      *
@@ -1581,7 +1522,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Gets or sets the options for customizing the style properties of the legend border.
      */
-    @Complex<BorderModel>({ color: '#000000', width: 0 }, Border)
+    @Complex<BorderModel>({ color: null, width: 0 }, Border)
     public border: BorderModel;
 
     /**
@@ -1804,7 +1745,7 @@ export class ShapeSettings extends ChildProperty<ShapeSettings> {
     /**
      * Gets or sets the options for customizing the style properties of the border for the shapes in maps.
      */
-    @Complex<BorderModel>({ width: null, color: '#000000' }, Border)
+    @Complex<BorderModel>({ width: null, color: null }, Border)
     public border: BorderModel;
 
     /**
@@ -2128,40 +2069,6 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      */
     @Property('Geographic')
     public geometryType: GeometryType;
-    /**
-     * Gets or sets the Bing map type for the layer. If you set GeoJSON data in the map and set the `BingMapType` value without setting the layer type as "Bing",
-     * then the map will be rendered based on the provided shape data since the default layer type will be set as "Geometry".
-     *
-     * @deprecated
-     * @default Aerial
-     */
-    @Property('Aerial')
-    public bingMapType: BingMapType;
-    /**
-     * Gets or sets the type of the static maps.
-     *
-     * @deprecated
-     * @default RoadMap
-     */
-    @Property('RoadMap')
-    public staticMapType: StaticMapType;
-    /**
-     * Gets or sets the key for the online map provider to render in the layer of the maps.
-     *
-     * @deprecated
-     * @default ''
-     */
-    @Property('')
-    public key: string;
-    /**
-     * Gets or sets the type of the layer in maps. If we use layer type with shape data property in layer of the maps
-     * then map will render based on the provided layer type.
-     *
-     * @deprecated
-     * @default Geometry
-     */
-    @Property('Geometry')
-    public layerType: ShapeLayerType;
     /**
      * Gets or sets the URL of the online map providers.
      * The online map providers will be rendered only when the shape data is not set and layer type is set with default value.

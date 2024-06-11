@@ -34,9 +34,9 @@ export interface IAccTextRenderEventArgs extends IChartEventArgs {
     color: string;
     /** Defines the current label border. */
     border: BorderModel;
-    /** Defines the current text template. 
-     * 
-     * @aspType string 
+    /** Defines the current text template.
+     *
+     * @aspType string
      */
     template: string | Function;
     /** Defines the current font. */

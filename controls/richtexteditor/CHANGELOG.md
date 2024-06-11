@@ -2,6 +2,72 @@
 
 ## [Unreleased]
 
+## 26.1.35 (2024-06-11)
+
+### RichTextEditor
+
+#### Features
+
+- **Table row and column selection**: Improved the selection of table rows and columns using the mouse or keyboard with Shift + arrow keys, setting the background color of the selected cells. Additionally, enabled table selection when pressing the backspace key after the table and the delete key before the table.
+
+- **Default Item in Font Family and Font Size**: Introducing `default` options for font family and font size. When no font family or font size is set for the selected text, it will be manually set to the default values.
+
+- `#I525279` - Added support for text formatting in selected table cells, allowing users to apply headings, paragraphs, lists, and inline formats such as bold, italic, and strikethrough to multiple cells at once. Enhanced backspace functionality for clearing selected table cell content.
+
+#### Bug Fixes
+
+- `#I583830` - Now, the `tab` key is working properly after inserting the mention list in the Rich Text Editor.
+
+- `#I572346` - Now, paste the mention tag into the Rich Text Editor, which works properly.
+
+- `#F58025` - Now, when the `cssClass` property is configured with more than one class, inserting a link into the Rich Text Editor works properly.
+
+- `#F58018` - Now, the Strikethrough toolbar item recognises the `s` tag in the RichTextEditor and highlight the toolbar item.
+
+#### Breaking Changes
+
+- The formats dropdown in the Rich Text Editor toolbar no longer includes the quotation option. Instead, a new blockquote icon has been introduced in the toolbar's default mode to facilitate applying blockquote. Additionally, the quotation can be added to the formats dropdown using the `formats` property.
+
+- Restructured the DOM element to enable flexible height for the editor area and toolbar by setting `display: flex;` on the first child of the Editor root element.
+
+**Old Element structure**
+
+``` html
+    <div id="editor" class="e-control e-richtexteditor">
+        <textarea name="editor" id="editor-value"></textarea>
+        <div class="e-toolbar-wrapper">
+            <div class="e-rte-toolbar e-toolbar"></div>
+        </div>
+        <div class="e-rte-content">
+            <span class="e-rte-placeholder"></span>
+            <div class="e-content"></div>
+            <textarea class="e-rte-srctextarea"></textarea>
+        </div>
+        <span class="e-rte-character-count"></span>
+    </div>
+```
+
+**New Element structure**
+
+``` html
+    <div id="editor"  class="e-control e-richtexteditor">
+        <div class="e-rte-container">           <!-- display: flex;-->
+            <textarea name="editor" id="editor-value"></textarea>
+            <div class="e-toolbar-wrapper">
+                <div class="e-rte-toolbar e-toolbar"></div>
+            </div>
+            <div class="e-rte-content">         <!-- flex-grow: 1;-->
+                <span class="e-rte-placeholder"></span>
+                <div class="e-content"></div>
+            </div>
+            <div class="e-source-content">
+                <textarea class="e-rte-srctextarea"></textarea>
+            </div>
+            <span class="e-rte-character-count"></span>
+        </div>
+    </div>
+```
+
 ## 25.2.7 (2024-06-04)
 
 ### RichTextEditor
@@ -68,7 +134,7 @@
 
 - `#I579856` - Now, Bold action works properly in RichTextEditor when `enterKey` is set to 'BR'.
 
-- `#I52134` - Now, the cursor position remains in the correct place when you use InsertHtml executeCommand to insert text into Rich Text Editor after the table.
+- `#I52134` - Now, the cursor position remains in the correct place when you use `InsertHtml` executeCommand to insert text into Rich Text Editor after the table.
 
 - `#I572493` - Now, added the new `requestType` property to the `imageUploadSuccess` event argument in Rich Text Editor.
 

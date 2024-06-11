@@ -431,6 +431,5 @@ describe('Diagram Control', () => {
             expect(flag).toBe(true);
             done();
         });
-        
     });
 });

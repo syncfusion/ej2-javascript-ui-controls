@@ -32,6 +32,7 @@ export class Regular {
     /**
      * @private
      * @param {WCharacterFormat} characterFormat - character format to apply.
+     * @param {string} fontToRender - font to render.
      * @returns {TextSizeInfo} returns text size information.
      */
     public getHeightInternal(characterFormat: WCharacterFormat, fontToRender: string): TextSizeInfo {

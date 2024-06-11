@@ -293,7 +293,7 @@ export class SheetTabs {
             if (disableItems.indexOf(`${id}_delete_sheet`) > -1) {
                 disableItems.push(`${id}_delete_sheet`);
             }
-            disableItems.push(`${id}_duplicate`, `${id}_rename`,`${id}_hide_sheet`, `${id}_delete_sheet`,`${id}_insert_sheet`,`${id}_move_left`,`${id}_move_right`);
+            disableItems.push(`${id}_duplicate`, `${id}_rename`, `${id}_hide_sheet`, `${id}_delete_sheet`, `${id}_insert_sheet`, `${id}_move_left`, `${id}_move_right`);
         }
         this.parent.enableContextMenuItems(disableItems, false, true);
     }

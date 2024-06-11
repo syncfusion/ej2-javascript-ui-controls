@@ -146,7 +146,7 @@ export class TrackChangesPane {
                     text: this.locale.getConstant('User') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
                 },
                 {
-                    template: createElement('div', { id: 'e-de-user-list', attrs:{'role':'button'} })
+                    template: createElement('div', { id: 'e-de-user-list', attrs: {'role': 'button'} })
                 },
                 {
                     type: 'Separator'
@@ -155,7 +155,7 @@ export class TrackChangesPane {
                     text: this.locale.getConstant('View') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
                 },
                 {
-                    template: createElement('div', { id: 'e-de-revision-list', attrs:{'role':'button'}  })
+                    template: createElement('div', { id: 'e-de-revision-list', attrs: {'role': 'button'}  })
                 },
                 {
                     prefixIcon: 'e-de-nav-left-arrow e-de-tc-tbr', align: 'Right', cssClass: 'e-de-nvgte-left',
@@ -166,7 +166,7 @@ export class TrackChangesPane {
                     tooltipText: this.locale.getConstant('Next Changes'), click: this.navigateNextChanges.bind(this)
                 },
                 {
-                    template: createElement('div', { id: 'e-de-menu-option' , attrs:{'role':'button'} }), align: 'Right', cssClass: 'e-de-tc-tbr',
+                    template: createElement('div', { id: 'e-de-menu-option' , attrs: {'role': 'button'} }), align: 'Right', cssClass: 'e-de-tc-tbr',
                     tooltipText: this.locale.getConstant('More Options') + '...'
                 }]
         });
@@ -532,6 +532,7 @@ export class TrackChangesPane {
                             this.revisions.splice(i, 0, revision);
                             this.changes.add(revision, currentChangeView);
                             this.renderedChanges.add(revision, currentChangeView);
+                            this.tableRevisions.add(revision, groupedRevision);
                         }
                     }
                 }
@@ -938,10 +939,23 @@ export class ChangesSingleView {
         changesText.style.width = '100%';
         let text: string = '';
         let toSkip: boolean = false;
+        let isHyperlinkField: boolean = false;
         for (let i: number = 0; i < range.length; i++) {
             let element:ElementBox = range[i] as ElementBox;
             if (element instanceof FieldElementBox && element.fieldType === 1) {
                 toSkip = false;
+                continue;
+            }
+            // added the condition to skip to get the field result from the field start if the link applied for multiple paragraphs.
+            if (element instanceof FieldElementBox && element.fieldType === 0) {
+                let fieldCode: string = this.owner.selectionModule.getFieldCode(element);
+                if(fieldCode.match('HYPERLINK ') && range[range.indexOf(element.fieldEnd) - 1] instanceof TextElementBox) {
+                    isHyperlinkField = true;
+                }
+            }
+            if (isHyperlinkField && element instanceof FieldElementBox &&  (element.fieldType === 2 || element.fieldType === 1)) {
+                toSkip = false;
+                isHyperlinkField = false;
                 continue;
             }
             if (toSkip || element instanceof ChartElementBox) {
@@ -959,7 +973,7 @@ export class ChangesSingleView {
                     text += '<Table of Content>';
                     changesText.appendChild(this.addSpan(text));
                     return;
-                } else if (fieldCode.match('HYPERLINK ') || fieldCode.match('MERGEFIELD') || fieldCode.match('FORMTEXT') || fieldCode.match('PAGE ')) {
+                } else if ((fieldCode.match('HYPERLINK ') && !isHyperlinkField) || fieldCode.match('MERGEFIELD') || fieldCode.match('FORMTEXT') || fieldCode.match('PAGE ')) {
                     text += this.owner.editorModule.retrieveFieldResultantText(element.fieldEnd);
                 } else if (element.formFieldData) {
                     let emptyChar: string = this.owner.documentHelper.textHelper.repeatChar(

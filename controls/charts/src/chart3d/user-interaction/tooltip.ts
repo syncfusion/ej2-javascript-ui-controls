@@ -64,7 +64,7 @@ export class Chart3DTooltipSettings extends ChildProperty<Chart3DTooltipSettings
     /**
      * Options for customizing the tooltip text appearance.
      */
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: null, color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -132,23 +132,23 @@ export class Chart3DTooltipSettings extends ChildProperty<Chart3DTooltipSettings
     @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
 
-    /** 
-     * Specifies the location of the tooltip, relative to the chart. 
-     * If x is 20, tooltip moves by 20 pixels to the right of the chart 
-     * ```html 
-     * <div id='Chart'></div> 
-     * ``` 
-     * ```typescript 
-     * let chart: Chart = new Chart({ 
-     * ... 
-     * tooltipSettings: { 
-     * enable: true, 
-     * location: { x: 100, y: 150 }, 
-     *   }, 
-     * ... 
-     * }); 
-     * chart.appendTo('#Chart'); 
-     * ``` 
+    /**
+     * Specifies the location of the tooltip, relative to the chart.
+     * If x is 20, tooltip moves by 20 pixels to the right of the chart
+     * ```html
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let chart: Chart = new Chart({
+     * ...
+     * tooltipSettings: {
+     * enable: true,
+     * location: { x: 100, y: 150 },
+     *   },
+     * ...
+     * });
+     * chart.appendTo('#Chart');
+     * ```
      */
     @Complex<LocationModel>({ x: null, y: null }, Location)
     public location: LocationModel;
@@ -368,7 +368,7 @@ export class Tooltip3D extends BaseTooltip {
      * @private
      */
     public triggerTooltipRender(point: Point3D, isFirst: boolean, textCollection: string,
-                                 headerText: string): void {
+                                headerText: string): void {
         let tooltipTemplate: string;
         const argsData: Chart3DTooltipRenderEventArgs = {
             cancel: false, text: textCollection, headerText: headerText, template: tooltipTemplate,
@@ -480,11 +480,11 @@ export class Tooltip3D extends BaseTooltip {
         let tooltipElement: ClientRect;
         if (upperElement) {
             if (upperElement.length === 1) {
-                tooltipElement = upperElement[0].getBoundingClientRect()
+                tooltipElement = upperElement[0].getBoundingClientRect();
             }
             else {
                 for (let i: number = 0; i < upperElement.length; i++) {
-                    const element = upperElement[i as number];
+                    const element: Element = upperElement[i as number];
                     if (element.id.indexOf('-' + point.point.index + '-back-front') !== -1 || element.id.indexOf('-' + point.point.index + '-front-back') !== -1) {
                         tooltipElement = element.getBoundingClientRect();
                         break;
@@ -517,12 +517,11 @@ export class Tooltip3D extends BaseTooltip {
     /**
      * Gets the template text based on the provided data.
      *
-     * @param {any} data - The data object for which the template text is generated.
+     * @param {Point3D} data - The data object for which the template text is generated.
      * @returns {Chart3DPoint | Chart3DPoint[]} - The template text.
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private getTemplateText(data: any): Chart3DPoint | Chart3DPoint[] {
+    private getTemplateText(data: Point3D): Chart3DPoint | Chart3DPoint[] {
         if (this.template) {
             const point: Chart3DPoint = extend({}, data.point) as Chart3DPoint;
             point.x = this.formatPointValue(data.point, data.series.xAxis, 'x', true, false);
@@ -567,9 +566,9 @@ export class Tooltip3D extends BaseTooltip {
     private parseTemplate(point: Chart3DPoint, series: Chart3DSeries, format: string, xAxis: Chart3DAxis, yAxis: Chart3DAxis): string {
         let val: RegExp;
         let textValue: string;
+        const regExp: RegExpConstructor = RegExp;
         for (const dataValue of Object.keys(point)) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            val = new RegExp('${point' + '.' + dataValue + '}', 'gm');
+            val = new regExp('${point' + '.' + dataValue + '}', 'gm');
             format = format.replace(
                 val.source, this.formatPointValue(
                     point, val.source === '${point.x}' ? xAxis : yAxis,
@@ -582,8 +581,7 @@ export class Tooltip3D extends BaseTooltip {
         }
 
         for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            val = new RegExp('${series' + '.' + dataValue + '}', 'gm');
+            val = new regExp('${series' + '.' + dataValue + '}', 'gm');
             textValue = series[dataValue as string];
             format = format.replace(val.source, textValue);
         }

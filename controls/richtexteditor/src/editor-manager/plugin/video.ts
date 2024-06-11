@@ -12,6 +12,7 @@ import { InsertHtml } from './inserthtml';
  */
 export class VideoCommand {
     private parent: EditorManager;
+    private vidElement: HTMLElement;
     /**
      * Constructor for creating the Video plugin
      *
@@ -113,39 +114,59 @@ export class VideoCommand {
             break;
         }
     }
+    private wrapVideo( e: IHtmlItem ): HTMLElement {
+        let wrapElement: HTMLElement;
+        let sourceElement: HTMLElement;
+        if (e.item.isEmbedUrl) {
+            wrapElement = createElement('span', { className: classes.CLASS_EMBED_VIDEO_WRAP, attrs: { contentEditable: 'false' }});
+            const clickElement: HTMLElement = createElement('span', { className: classes.CLASS_VIDEO_CLICK_ELEM });
+            const temp: HTMLElement = createElement('template');
+            temp.innerHTML = e.item.fileName;
+            clickElement.appendChild((temp as HTMLTemplateElement).content);
+            this.vidElement = sourceElement = clickElement.firstElementChild as HTMLElement;
+            this.setStyle((sourceElement as HTMLSourceElement), e, this.vidElement);
+            wrapElement.appendChild(clickElement);
+        }
+        else {
+            wrapElement = createElement('span', { className: classes.CLASS_VIDEO_WRAP, attrs: { contentEditable: 'false', title: ((!isNOU(e.item.title)) ? e.item.title : (!isNOU(e.item.fileName) ? e.item.fileName : '')) }});            this.vidElement = createElement('video', { className: classes.CLASS_VIDEO + ' ' + classes.CLASS_VIDEO_INLINE, attrs: { controls: '' }});
+            sourceElement = createElement('source');
+            this.setStyle((sourceElement as HTMLSourceElement), e, this.vidElement);
+            this.vidElement.appendChild(sourceElement);
+            wrapElement.appendChild(this.vidElement);
+        }
+        return wrapElement;
+    }
 
     private createVideo(e: IHtmlItem): void {
         let isReplaced: boolean = false;
         let wrapElement: HTMLElement;
-        let vidElement: HTMLElement;
-        let sourceElement: HTMLElement;
         if (e.value === 'VideoReplace' && !isNOU(e.item.selectParent) && ((e.item.selectParent[0] as HTMLElement).tagName === 'VIDEO')) {
-            const videoEle: HTMLSourceElement = (e.item.selectParent[0] as HTMLElement).querySelector('source') as HTMLSourceElement;
-            this.setStyle(videoEle, e, videoEle);
-            isReplaced = true;
-        } else if (e.value === 'VideoReplace' && !isNOU(e.item.selectParent) &&
+            if (e.item.isEmbedUrl) {
+                wrapElement = this.wrapVideo(e);
+                const oldEle : HTMLElement = e.item.selection.range.startContainer as HTMLElement;
+                oldEle.parentNode.replaceChild(wrapElement, oldEle);
+            } else {
+                const videoEle: HTMLSourceElement = (e.item.selectParent[0] as HTMLElement).querySelector('source') as HTMLSourceElement;
+                this.setStyle(videoEle, e, videoEle);
+                isReplaced = true;
+            }
+        } else if (e.value === 'VideoReplace' && !isNOU(e.item.selectParent) && isNOU((e.item.selectParent[0] as HTMLElement).querySelector('iframe')) &&
         (e.item.selectParent[0] as HTMLElement).classList &&
         (e.item.selectParent[0] as HTMLElement).classList.contains(classes.CLASS_VIDEO_CLICK_ELEM)) {
             (e.item.selectParent[0] as HTMLElement).innerHTML = e.item.fileName;
             this.setStyle(((e.item.selectParent[0] as HTMLElement).firstElementChild as HTMLIFrameElement), e,
                           ((e.item.selectParent[0] as HTMLElement).firstElementChild as HTMLIFrameElement));
-        } else {
+        } else if (e.value === 'VideoReplace' && !isNOU(e.item.selectParent) && !isNOU((e.item.selectParent[0] as HTMLElement).querySelector('iframe')) &&
+        !e.item.isEmbedUrl) {
+            wrapElement = this.wrapVideo(e);
+            const oldEle : HTMLElement = e.item.selection.range.startContainer as HTMLElement;
+            oldEle.parentNode.replaceChild(wrapElement, oldEle);
+        }
+        else {
             if (!e.item.isEmbedUrl) {
-                wrapElement = createElement('span', { className: classes.CLASS_VIDEO_WRAP, attrs: { contentEditable: 'false', title: ((!isNOU(e.item.title)) ? e.item.title : (!isNOU(e.item.fileName) ? e.item.fileName : '')) }});
-                vidElement = createElement('video', { className: classes.CLASS_VIDEO + ' ' + classes.CLASS_VIDEO_INLINE, attrs: { controls: '' }});
-                sourceElement = createElement('source');
-                this.setStyle((sourceElement as HTMLSourceElement), e, vidElement);
-                vidElement.appendChild(sourceElement);
-                wrapElement.appendChild(vidElement);
+                wrapElement = this.wrapVideo(e);
             } else {
-                wrapElement = createElement('span', { className: classes.CLASS_EMBED_VIDEO_WRAP, attrs: { contentEditable: 'false' }});
-                const clickElement: HTMLElement = createElement('span', { className: classes.CLASS_VIDEO_CLICK_ELEM });
-                const temp: HTMLElement = createElement('template');
-                temp.innerHTML = e.item.fileName;
-                clickElement.appendChild((temp as HTMLTemplateElement).content);
-                vidElement = sourceElement = clickElement.firstElementChild as HTMLElement;
-                this.setStyle((sourceElement as HTMLSourceElement), e, vidElement);
-                wrapElement.appendChild(clickElement);
+                wrapElement = this.wrapVideo(e);
             }
             if (!isNOU(e.item.selection)) {
                 e.item.selection.restore();
@@ -158,8 +179,20 @@ export class VideoCommand {
         }
         if (e.callBack && (isNOU(e.selector) || !isNOU(e.selector) && e.selector !== 'pasteCleanupModule')) {
             const selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
-            const videoElm: Element = (e.value === 'VideoReplace' || isReplaced) ? !e.item.isEmbedUrl ? (e.item.selectParent[0] as Element) : (e.item.selectParent[0] as Element).querySelector('iframe')
-                : (Browser.isIE ? (selectedNode as Element) : !e.item.isEmbedUrl ? (selectedNode as Element).lastElementChild : (selectedNode as Element).querySelector('iframe'));
+            let videoElm: Element;
+            if (e.value === 'VideoReplace' || isReplaced) {
+                if (!e.item.isEmbedUrl) {
+                    videoElm = e.item.selectParent[0] as Element;
+                } else if (e.item.isEmbedUrl){
+                    if (!isNOU(wrapElement)) {
+                        videoElm = wrapElement.querySelector('iframe');
+                    }
+                } else {
+                    videoElm = (e.item.selectParent[0] as Element).querySelector('iframe');
+                }
+            } else {
+                videoElm = !e.item.isEmbedUrl ? (selectedNode as Element).lastElementChild : (selectedNode as Element).querySelector('iframe');
+            }
             videoElm.addEventListener(videoElm.tagName !== 'IFRAME' ? 'loadeddata' : 'load', () => {
                 if (e.value !== 'VideoReplace' || !isReplaced) {
                     if (e.item.isEmbedUrl && videoElm) {
@@ -178,8 +211,8 @@ export class VideoCommand {
                 (videoElm as HTMLVideoElement).load();
             }
             if (Browser.userAgent.indexOf('Firefox') !== -1) {
-                vidElement.addEventListener('play', () => { this.editAreaVideoClick(e); });
-                vidElement.addEventListener('pause', () => { this.editAreaVideoClick(e); });
+                this.vidElement.addEventListener('play', () => { this.editAreaVideoClick(e); });
+                this.vidElement.addEventListener('pause', () => { this.editAreaVideoClick(e); });
             }
         }
     }
@@ -192,7 +225,7 @@ export class VideoCommand {
     }
     private setStyle(sourceElement: HTMLSourceElement | HTMLElement | HTMLIFrameElement,
                      e: IHtmlItem, videoEle: HTMLSourceElement | HTMLElement | HTMLIFrameElement): void {
-        if (e.item.url !== '' && !isNOU(e.item.url)) {
+        if (e.item.url !== '' && !isNOU(e.item.url) && isNOU(sourceElement) ? false : sourceElement.nodeName.toLowerCase() !== 'iframe') {
             sourceElement.setAttribute('src', e.item.url);
         }
         if (!e.item.isEmbedUrl) {

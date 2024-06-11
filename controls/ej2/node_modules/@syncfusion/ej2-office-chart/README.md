@@ -1,0 +1,1 @@
+A common package of Essential JS 2 Office chart convertion, methods and class definitions.

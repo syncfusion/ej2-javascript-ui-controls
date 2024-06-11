@@ -6,6 +6,7 @@ const DEFT_MAT_WIDTH: number = 30;
 const DEFT_MAT3_WIDTH: number = 30;
 const DEFT_FAB_WIDTH: number = 30;
 const DEFT_FLUENT_WIDTH: number = 30;
+const DEFT_FLUENT2_WIDTH: number = 30;
 const DEFT_BOOT_WIDTH: number = 30;
 const DEFT_BOOT4_WIDTH: number = 36;
 const DEFT_BOOT5_WIDTH: number = 36;
@@ -15,6 +16,7 @@ const CLS_MATERIALSPIN: string = 'e-spin-material';
 const CLS_MATERIAL3SPIN: string = 'e-spin-material3';
 const CLS_FABRICSPIN: string = 'e-spin-fabric';
 const CLS_FLUENTSPIN: string = 'e-spin-fluent';
+const CLS_FLUENT2SPIN: string = 'e-spin-fluent2';
 const CLS_TAILWINDSPIN: string = 'e-spin-tailwind';
 const CLS_BOOTSPIN: string = 'e-spin-bootstrap';
 const CLS_BOOT4SPIN: string = 'e-spin-bootstrap4';
@@ -34,33 +36,33 @@ export type createElementParams = (
     prop?: { id?: string; className?: string; innerHTML?: string; styles?: string; attrs?: { [key: string]: string } }
 ) => HTMLElement;
 
-// eslint-disable-next-line
 /**
-  * Defines the type of spinner.
-  */
-export type SpinnerType = 'Material' | 'Material3' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 'Bootstrap4' | 'Tailwind' | 'Bootstrap5' | 'Fluent';
+ * Defines the type of spinner.
+ */
+export type SpinnerType = 'Material' | 'Material3' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 'Bootstrap4' | 'Tailwind' | 'Bootstrap5' | 'Fluent' | 'Fluent2';
 
-// eslint-disable-next-line
 /**
-  * Function to change the Spinners in a page globally from application end.
-  * ```
-  * E.g : blazorSpinner({ action: "Create", options: {target: targetElement}, type: "" });
-  * ```
-  *
-  * @param {string} action - specifies the string
-  * @param {CreateArgs} options - specifies the args
-  * @param {string} target - specifies the target
-  * @param {string} type - specifes the type
-  * @returns {void}
-  * @private
-  */
+ * Function to change the Spinners in a page globally from application end.
+ * ```
+ * E.g : blazorSpinner({ action: "Create", options: {target: targetElement}, type: "" });
+ * ```
+ *
+ * @param {string} action - specifies the string
+ * @param {CreateArgs} options - specifies the args
+ * @param {string} target - specifies the target
+ * @param {string} type - specifes the type
+ * @returns {void}
+ * @private
+ */
 export function Spinner(action: string, options: CreateArgs, target: string, type: string): void {
     switch (action) {
     case 'Create':
         /* eslint-disable */
-        const element: HTMLElement = <HTMLElement>document.querySelector(options.target as string) as HTMLElement;
-        let args: SpinnerArgs = { type: <SpinnerType>type, target: element, cssClass: options.cssClass,
-            label: options.label, width: options.width };
+            const element: HTMLElement = <HTMLElement>document.querySelector(options.target as string) as HTMLElement;
+            let args: SpinnerArgs = {
+                type: <SpinnerType>type, target: element, cssClass: options.cssClass,
+                label: options.label, width: options.width
+            };
             /* eslint-enable */
         createSpinner(args);
         break;
@@ -70,11 +72,11 @@ export function Spinner(action: string, options: CreateArgs, target: string, typ
     case 'Hide':
         hideSpinner(document.querySelector(target));
         break;
-    case 'Set':
-        // eslint-disable-next-line
+    case 'Set': {
         const setArgs: SetArgs = { cssClass: options.cssClass, type: <SpinnerType>type };
         setSpinner(setArgs);
         break;
+    }
     }
 }
 
@@ -98,7 +100,7 @@ export function createSpinner ( args: SpinnerArgs, internalCreateElement ?: crea
     // eslint-disable-next-line
     let container: { wrap: HTMLElement; inner_wrap: HTMLElement } = create_spinner_container(args.target, makeElement);
     if (!isNullOrUndefined(args.cssClass)) {
-        var classNames = args.cssClass.split(' ').filter((className) => className.trim() !== '');
+        const classNames: string[] = args.cssClass.split(' ').filter((className: string) => className.trim() !== '');
         container.wrap.classList.add(...classNames);
     }
     if (!isNullOrUndefined(args.template) || !isNullOrUndefined(spinTemplate)) {
@@ -198,8 +200,7 @@ function startMatAnimate(container: HTMLElement, uniqueID: string, radius: numbe
     const globalObject: {[key: string]: GlobalVariables } = {};
     const timeOutVar: number = 0; globalTimeOut[`${uniqueID}`].timeOut = 0;
     globalObject[`${uniqueID}`] = globalVariables(uniqueID, radius, 0, 0);
-    // eslint-disable-next-line
-    let spinnerInfo: SpinnerInfo  = { uniqueID: uniqueID, container: container, globalInfo: globalObject, timeOutVar: timeOutVar };
+    const spinnerInfo: SpinnerInfo  = { uniqueID: uniqueID, container: container, globalInfo: globalObject, timeOutVar: timeOutVar };
     animateMaterial(spinnerInfo);
 }
 
@@ -224,11 +225,25 @@ function createFabricSpinner(container: HTMLElement, radius: number, makeElement
  * @param {createElementParams} makeElement - specifies the element
  * @returns {void}
  */
-function createFluentSinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
+function createFluentSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
     globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Fluent', radius: radius };
     create_fabric_element(container, uniqueID, CLS_FLUENTSPIN, makeElement);
     fb_calculate_attributes(radius, container, CLS_FLUENTSPIN);
+}
+
+/**
+ *
+ * @param {HTMLElement} container - specifies the element
+ * @param {number} radius - specifies the radius
+ * @param {createElementParams} makeElement - specifies the element
+ * @returns {void}
+ */
+function createFluent2Spinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
+    const uniqueID: string = random_generator();
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Fluent2', radius: radius };
+    create_fabric_element(container, uniqueID, CLS_FLUENT2SPIN, makeElement);
+    fb_calculate_attributes(radius, container, CLS_FLUENT2SPIN);
 }
 
 /**
@@ -294,7 +309,10 @@ function setTheme(theme: string, container: HTMLElement, radius: number, makeEle
         createFabricSpinner(innerContainer, radius, makeElement);
         break;
     case 'Fluent':
-        createFluentSinner(innerContainer, radius, makeElement);
+        createFluentSpinner(innerContainer, radius, makeElement);
+        break;
+    case 'Fluent2':
+        createFluent2Spinner(innerContainer, radius, makeElement);
         break;
     case 'Bootstrap':
         createBootstrapSpinner(innerContainer, radius, makeElement );
@@ -386,8 +404,8 @@ function generateSeries(begin: number, stop: number): number[] {
     const series: number[] = [];
     const start: number = begin;
     const end: number = stop;
-    // eslint-disable-next-line
-    let increment: boolean = false, count: number = 1;
+    let increment: boolean = false;
+    let count: number = 1;
     formSeries(start);
     /**
      *
@@ -498,6 +516,9 @@ function calculateRadius(width: string | number, theme: string): number {
         break;
     case 'Fluent':
         defaultSize = DEFT_FLUENT_WIDTH;
+        break;
+    case 'Fluent2':
+        defaultSize = DEFT_FLUENT2_WIDTH;
         break;
     case 'Bootstrap4':
         defaultSize = DEFT_BOOT4_WIDTH;
@@ -652,10 +673,12 @@ function createCircle(start: number, end: number, easing: Function, duration: nu
     function updatePath (value: number, container: HTMLElement): void {
         if (!isNullOrUndefined(container.querySelector('svg.e-spin-material')) || !isNullOrUndefined(container.querySelector('svg.e-spin-material3'))) {
             let svg: SVGSVGElement;
-            if (!isNullOrUndefined(container.querySelector('svg.e-spin-material')) && !isNullOrUndefined(container.querySelector('svg.e-spin-material').querySelector('path.e-path-circle'))) {
+            if (!isNullOrUndefined(container.querySelector('svg.e-spin-material')) &&
+                !isNullOrUndefined(container.querySelector('svg.e-spin-material').querySelector('path.e-path-circle'))) {
                 svg = container.querySelector('svg.e-spin-material') as SVGSVGElement;
             }
-            else if (!isNullOrUndefined(container.querySelector('svg.e-spin-material3')) && !isNullOrUndefined(container.querySelector('svg.e-spin-material3').querySelector('path.e-path-circle'))) {
+            else if (!isNullOrUndefined(container.querySelector('svg.e-spin-material3')) &&
+                !isNullOrUndefined(container.querySelector('svg.e-spin-material3').querySelector('path.e-path-circle'))) {
                 svg = container.querySelector('svg.e-spin-material3') as SVGSVGElement;
             }
             if (!isNullOrUndefined(svg)){
@@ -685,7 +708,7 @@ function mat_calculate_attributes (radius: number , container: HTMLElement, type
     svg.style.width = svg.style.height = diameter + 'px';
     svg.style.transformOrigin = transformOrigin + ' ' + transformOrigin + ' ' + transformOrigin;
     path.setAttribute('d', drawArc(diameter, strokeSize));
-    if (type === 'Material' || type === 'Material3') {
+    if (type === 'Material' || type === 'Material3' || type === 'Fluent2') {
         path.setAttribute('stroke-width', strokeSize + '');
         path.setAttribute('stroke-dasharray', ((diameter - strokeSize) * Math.PI * 0.75) + '');
         path.setAttribute('stroke-dashoffset', getDashOffset(diameter, strokeSize, 1, 75) + '');
@@ -757,8 +780,8 @@ function fb_calculate_attributes(radius: number, innerConainer: HTMLElement, trg
     const centerX: number = radius;
     const centerY: number = radius;
     const diameter: number = radius * 2;
-    // eslint-disable-next-line
-    const startArc: number = 315, endArc: number = 45;
+    const startArc: number = 315;
+    const endArc: number = 45;
     const svg: SVGSVGElement = innerConainer.querySelector('.' + trgClass) as SVGSVGElement;
     const circle: SVGPathElement = svg.querySelector('.e-path-circle') as SVGPathElement;
     const path: SVGPathElement = svg.querySelector('.e-path-arc') as SVGPathElement;
@@ -845,46 +868,52 @@ function showHideSpinner(container: HTMLElement, isHide: boolean): void {
             const spinWrapCollection: NodeListOf<HTMLElement> = container.querySelectorAll('.' + CLS_SPINWRAP) as NodeListOf<HTMLElement>;
             if (Browser.isIE) {
                 for (let i: number = 0; i < spinWrapCollection.length; i++) {
-                    // eslint-disable-next-line
-                    if (spinWrapCollection[i].parentElement && spinWrapCollection[i].parentElement === container) {
-                        // eslint-disable-next-line
-                        spinnerWrap = spinWrapCollection[i];
+                    if (spinWrapCollection[i as number].parentElement && spinWrapCollection[i as number].parentElement === container) {
+                        spinnerWrap = spinWrapCollection[i as number];
                         break;
                     }
                 }
             }
             else {
-                spinnerWrap = Array.from(spinWrapCollection).find((wrap) => wrap.parentElement === container) || null;
+                spinnerWrap = Array.from(spinWrapCollection).find((wrap: HTMLElement) => wrap.parentElement === container) || null;
             }
         }
     }
     if (container && spinnerWrap) {
         const inner: HTMLElement = spinnerWrap.querySelector('.' + CLS_SPININWRAP) as HTMLElement;
-        let spinCheck: boolean;
-        // eslint-disable-next-line
-        spinCheck = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
+        const spinCheck: boolean = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) &&
+            !spinnerWrap.classList.contains(CLS_HIDESPIN) :
             !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_SHOWSPIN);
         if (spinCheck) {
             const svgEle: SVGSVGElement = spinnerWrap.querySelector('svg') as SVGSVGElement;
             if (isNullOrUndefined(svgEle)) {
                 return;
             }
-            const id: string  = svgEle.getAttribute('id');
+            const id: string = svgEle.getAttribute('id');
             globalTimeOut[`${id}`].isAnimate = !isHide;
             switch (globalTimeOut[`${id}`].type) {
             case 'Material':
             case 'Material3':
-                // eslint-disable-next-line
-                isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
+                if (isHide) {
+                    clearTimeout(globalTimeOut[id as string].timeOut);
+                } else {
+                    startMatAnimate(inner, id, globalTimeOut[id as string].radius);
+                }
                 break;
             case 'Bootstrap':
-                // eslint-disable-next-line
-                isHide ? clearTimeout(globalTimeOut[id].timeOut) : animateBootstrap(inner);
+                if (isHide) {
+                    clearTimeout(globalTimeOut[id as string].timeOut);
+                } else {
+                    animateBootstrap(inner);
+                }
                 break;
             }
         }
-        // eslint-disable-next-line
-        isHide ? classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]) : classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
+        if (isHide) {
+            classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]);
+        } else {
+            classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
+        }
         container = null;
     }
 }
@@ -900,18 +929,17 @@ export function hideSpinner(container: HTMLElement): void  {
     container = null;
 }
 
-// eslint-disable-next-line
 /**
-  * Function to change the Spinners in a page globally from application end.
-  * ```
-  * E.g : setSpinner({ cssClass: 'custom-css'; type: 'Material' });
-  * ```
-  *
-  * @param {SetSpinnerArgs} args - specifies the args
-  * @param {createElementParams} internalCreateElement - specifies the element params
-  * @returns {void}
-  * @private
-  */
+ * Function to change the Spinners in a page globally from application end.
+ * ```
+ * E.g : setSpinner({ cssClass: 'custom-css'; type: 'Material' });
+ * ```
+ *
+ * @param {SetSpinnerArgs} args - specifies the args
+ * @param {createElementParams} internalCreateElement - specifies the element params
+ * @returns {void}
+ * @private
+ */
 export function setSpinner(args: SetSpinnerArgs, internalCreateElement?: createElementParams): void  {
     const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
     if (args.template !== undefined) {
@@ -965,7 +993,7 @@ function replaceTheme( container: HTMLElement, theme: string, cssClass: string, 
         container.classList.add(cssClass);
     }
     const svgElement: SVGSVGElement = container.querySelector('svg');
-    if(!isNullOrUndefined(svgElement)){
+    if (!isNullOrUndefined(svgElement)){
         const radius : number = theme === 'Bootstrap' ? parseFloat(svgElement.style.height) : parseFloat(svgElement.style.height) / 2;
         const classNames: string  = svgElement.getAttribute('class');
         const svgClassList: string[] = classNames.split(/\s/);

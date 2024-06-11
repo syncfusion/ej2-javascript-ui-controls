@@ -219,8 +219,8 @@ $pv-thumbnail-image-background-clip: content-box !default;
 $pv-thumbnail-hover-border-radius: 2px !default;
 $pv-thumbnail-hover-padding: 2px !default;
 $pv-thumbnail-hover-cursor: pointer !default;
-$pv-thumbnail-focus-border-radius: 2px !default;
 $pv-organize-page-select-border-radius: 2px !default;
+$pv-thumbnail-focus-border-radius: 2px !default;
 $pv-thumbnail-focus-cursor: pointer !default;
 $pv-thumbnail-focus-padding: 0 !default;
 $pv-thumbnail-selection-border-radius: 0 !default;
@@ -545,5 +545,10 @@ $pv-organize-anchor-node-border-width: 2px !default;
 $pv-organize-anchor-node-border: $pv-organize-anchor-node-border-width solid $border-light !default;
 $pv-organize-image-border: 1px solid $border-light !default;
 $pv-default-tile-icon-size: 25px !default;
+$pv-organize-tile-draggedEle-bg-color: $content-bg-color-alt1 !default;
+$pv-organize-anchor-node-dashed-border: $pv-organize-anchor-node-border-width dashed $border-light !default;
+$pv-organize-page-hovered-dashed-border-color: $primary !default;
+$pv-organize-page-virtualEle-notification-color: $primary !default;
+$pv-organize-page-drag-not-allowed-color: $border-light !default;
 
 //end color definition

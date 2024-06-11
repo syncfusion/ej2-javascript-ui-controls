@@ -47,10 +47,6 @@ export class SpellChecker {
      */
     public uniqueKey: string = '';
     private removeUnderlineInternal: boolean = false;
-    /**
-     * @private
-     */
-    public isChangeAll: boolean = false;
     private spellCheckSuggestion: string[];
     /**
      * @default 1000
@@ -62,6 +58,11 @@ export class SpellChecker {
     public errorSuggestions: Dictionary<string, string[]>;
 
     private performOptimizedCheck: boolean = true;
+
+    /**
+     * @private
+     */
+    public isChangeAll: boolean = false;
 
     private textSearchResults: TextSearchResults;
 

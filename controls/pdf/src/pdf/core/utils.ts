@@ -256,29 +256,44 @@ export function _stringToPdfString(value: string): string {
  *
  * @private
  * @param {string} value string value.
- * @param {boolean} isDirect Whether to return object or number[]. Default is false.
- * @returns {Uint8Array | number[]} Byte array
+ * @param {boolean} isDirect Whether to return a number[] or Uint8Array.
+ * @param {boolean} isPassword Whether the string is a password.
+ * @param {number[]} destination Destination array.
+ * @returns {number[] | Uint8Array} Byte array
  */
-export function _stringToBytes(value: string, isDirect: boolean = false): Uint8Array | number[] {
-    const bytes: number[] = [];
-    for (let i: number = 0; i < value.length; ++i) {
-        bytes.push(value.charCodeAt(i) & 0xff);
+export function _stringToBytes(value: string, isDirect: boolean = false,
+                               isPassword: boolean = false, destination?: number[]): number[] | Uint8Array {
+    let bytes: number[] = [];
+    if (destination) {
+        bytes = destination;
+    }
+    if (isPassword) {
+        for (let i: number = 0; i < value.length; i++) {
+            bytes.push(value.charCodeAt(i));
+        }
+    } else {
+        for (let i: number = 0; i < value.length; i++) {
+            let charCode: number = value.charCodeAt(i);
+            if (charCode < 0x80) {
+                bytes.push(charCode);
+            } else if (charCode < 0x800) {
+                bytes.push((charCode >> 6) | 0xC0);
+                bytes.push((charCode & 0x3F) | 0x80);
+            } else if (charCode < 0xD800 || charCode >= 0xE000) {
+                bytes.push((charCode >> 12) | 0xE0);
+                bytes.push(((charCode >> 6) & 0x3F) | 0x80);
+                bytes.push((charCode & 0x3F) | 0x80);
+            } else {
+                i++;
+                charCode = 0x10000 + (((charCode & 0x3FF) << 10) | (value.charCodeAt(i) & 0x3FF));
+                bytes.push((charCode >> 18) | 0xF0);
+                bytes.push(((charCode >> 12) & 0x3F) | 0x80);
+                bytes.push(((charCode >> 6) & 0x3F) | 0x80);
+                bytes.push((charCode & 0x3F) | 0x80);
+            }
+        }
     }
     return isDirect ? bytes : new Uint8Array(bytes);
-}
-/**
- * Convert string value to byte array
- *
- * @private
- * @param {string} value string value.
- * @param {number[]} destination byte array.
- * @returns {number[]} Byte array
- */
-export function _convertStringToBytes(value: string, destination: number[]): number[] {
-    for (let i: number = 0; i < value.length; ++i) {
-        destination.push(value.charCodeAt(i) & 0xff);
-    }
-    return destination;
 }
 /**
  * Check equal or not.
@@ -338,21 +353,48 @@ export function _areNotEqual(value: number[], current: number[]): boolean {
  *
  * @private
  * @param {Uint8Array} bytes Input data.
+ * @param {boolean} isJson Whether is json or xfdf.
  * @returns {string} String value processed from input bytes.
  */
-export function _bytesToString(bytes: Uint8Array): string {
+export function _bytesToString(bytes: Uint8Array, isJson: boolean = false): string {
     const length: number = bytes.length;
     const max: number = 8192;
-    if (length < max) {
-        return String.fromCharCode.apply(null, bytes);
-    }
     const stringBuffer: string[] = [];
+    if (length < max) {
+        return (isJson ? _decodeUnicodeBytes(bytes) : String.fromCharCode.apply(null, bytes));
+    }
     for (let i: number = 0; i < length; i += max) {
         const chunkEnd: number = Math.min(i + max, length);
         const chunk: Uint8Array = bytes.subarray(i, chunkEnd);
-        stringBuffer.push(String.fromCharCode.apply(null, chunk));
+        stringBuffer.push(isJson ? _decodeUnicodeBytes(chunk) : String.fromCharCode.apply(null, chunk));
     }
     return stringBuffer.join('');
+}
+/**
+ * Decode unicode string.
+ *
+ * @private
+ * @param {Uint8Array} bytes Input data.
+ * @returns {string} String value processed from input bytes.
+ */
+export function _decodeUnicodeBytes(bytes: Uint8Array): string {
+    let result: string = '';
+    let i: number = 0;
+    while (i < bytes.length) {
+        const byte: number = bytes[i++];
+        if (byte < 0x80) {
+            result += String.fromCharCode(byte);
+        } else if (byte < 0xE0) {
+            result += String.fromCharCode(((byte & 0x1F) << 6) | (bytes[i++] & 0x3F));
+        } else if (byte < 0xF0) {
+            result += String.fromCharCode(((byte & 0x0F) << 12) | ((bytes[i++] & 0x3F) << 6) | (bytes[i++] & 0x3F));
+        } else {
+            const codePoint: number = ((byte & 0x07) << 18) | ((bytes[i++] & 0x3F) << 12) |
+                ((bytes[i++] & 0x3F) << 6) | (bytes[i++] & 0x3F) - 0x10000;
+            result += String.fromCharCode((codePoint >> 10) + 0xD800, (codePoint & 0x03FF) + 0xDC00);
+        }
+    }
+    return result;
 }
 /**
  * Convert string to unicode array.
@@ -3928,4 +3970,21 @@ export function _getSize(input: number): number {
         size = 8;
     }
     return size;
+}
+/**
+ * Convert the string to big endian bytes.
+ *
+ * @param {string} input string.
+ * @returns {number[]} bytes.
+ */
+export function _stringToBigEndianBytes(input: string): number[] {
+    const bytes: number[] = [];
+    for (let i: number = 0; i < input.length; i++) {
+        const charCode: number = input.charCodeAt(Number.parseInt(i.toString(), 10));
+        if (charCode <= 0xFFFF) {
+            bytes.push((charCode >> 8) & 0xFF);
+            bytes.push(charCode & 0xFF);
+        }
+    }
+    return bytes;
 }

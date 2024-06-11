@@ -4,7 +4,8 @@ import { MarginModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { PointModel } from '../primitives/point-model';
 import { FixedUserHandleAlignment } from '../enum/enum';
-
+import { DiagramTooltipModel } from '../objects/tooltip-model';
+import { DiagramTooltip } from '../objects/tooltip';
 
 /**
  * Specifies the behavior of fixedUserHandles
@@ -109,6 +110,14 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
      */
     @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
     public padding: MarginModel;
+
+    /**
+     * Used to show tooltip for fixed user handle on mouse over.
+     *
+     * @default {}
+     */
+    @Complex<DiagramTooltipModel>({}, DiagramTooltip)
+    public tooltip: DiagramTooltipModel;
 }
 /**
  * Defines the node Fixed User Handle

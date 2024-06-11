@@ -1,7 +1,7 @@
-import { IAxisSet, IGridValues, IValueSortSettings, IGroupSettings } from '../../base/engine';
+import { IAxisSet, IGridValues, IValueSortSettings, IGroupSettings, IDataSet } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings, IMatrix2D } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
-import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs, getScrollBarWidth } from '@syncfusion/ej2-grids';
+import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs, getScrollBarWidth, ContextMenuItem, ContextMenuItemModel, SelectionSettingsModel, Cell, IGrid } from '@syncfusion/ej2-grids';
 import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu, ResizeArgs, Freeze } from '@syncfusion/ej2-grids';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
@@ -10,9 +10,9 @@ import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandl
 import { addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { BeforeOpenCloseMenuEventArgs, MenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { GridSettingsModel } from '../model/gridsettings-model';
-import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs, ExportCompleteEventArgs } from '../../common/base/interface';
+import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs, ExportCompleteEventArgs, ExcelCell } from '../../common/base/interface';
 import { AggregateMenuOpenEventArgs, BeforeExportEventArgs, PivotColumn, ExcelRow } from '../../common/base/interface';
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
@@ -22,6 +22,8 @@ import { SelectedCellsInfo } from '../../common/popups/grouping';
 import { AggregateTypes } from '../../common/base/enum';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 import { FieldOptionsModel } from '../../model/datasourcesettings-model';
+import { ExportType } from '@syncfusion/ej2-charts';
+import { PdfImage, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Module to render PivotGrid control
@@ -47,6 +49,8 @@ export class Render {
     /** @hidden */
     public pivotColumns: ColumnModel[] = [];
     /** @hidden */
+    public lastColumnName: string;
+    /** @hidden */
     public indentCollection: { [key: number]: number } = {};
     private formatList: { [key: string]: string };
     private colPos: number = 0;
@@ -66,8 +70,7 @@ export class Render {
     private hierarchyCount: number = 0;
     private actualText: string = '';
     private drilledLevelInfo: { [key: string]: boolean } = {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private timeOutObj: any;
+    private timeOutObj: ReturnType<typeof setTimeout>;
     /** Constructor for render module
      *
      * @param {PivotView} parent - Instance of pivot table.
@@ -93,7 +96,6 @@ export class Render {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         this.gridSettings = this.parent.gridSettings;
         this.formatList = this.getFormatList();
-        this.parent.gridHeaderCellInfo = [];
         this.parent.gridCellCollection = {};
         this.injectGridModules(this.parent);
         this.rowStartPos = this.getRowStartPos();
@@ -111,18 +113,14 @@ export class Render {
             this.parent.grid.setProperties({
                 columns: this.frameStackedHeaders(), dataSource: ((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true :
                     (this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0 &&
-                    this.parent.dataSourceSettings.values.length > 0)) && !this.engine.isEmptyData ? this.engine.valueContent :
-                    this.frameDataSource('value')
+                    this.parent.dataSourceSettings.values.length > 0)) && !this.engine.isEmptyData ?
+                    this.frameGridDataSource(this.engine.valueContent) : this.frameDataSource('value')
             }, true);
             this.parent.grid.notify('datasource-modified', {});
             if (this.parent.isScrolling) {
                 this.parent.resizeInfo = {};
             }
             this.parent.grid.refreshColumns();
-            if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
-                this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
-                this.parent.groupingBarModule.setGridRowWidth();
-            }
             const e: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_CLASS) as HTMLElement;
             e.querySelector('colGroup').innerHTML = this.parent.grid.getHeaderContent().querySelector('colgroup').innerHTML;
             this.parent.grid.width = this.calculateGridWidth();
@@ -188,8 +186,8 @@ export class Render {
                 setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: ((mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform).split(',')[0] + ',' + 0 + 'px)'
                 });
-                const freezedCellValue: number  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    = (mHdr.querySelector('.' + cls.TABLE) as any).style.transform.split('(')[1].split(',')[0].split('px')[0];
+                const freezedCellValue: number = parseInt((mHdr.querySelector('.' + cls.TABLE) as HTMLElement)
+                    .style.transform.split('(')[1].split(',')[0].split('px')[0], 10);
                 if (this.parent.enableRtl) {
                     (this.parent.element.querySelector('.' + cls.FREEZED_CELL) as HTMLElement).style.right
                         = Number(freezedCellValue) + 'px';
@@ -226,11 +224,9 @@ export class Render {
             clipMode: this.gridSettings.clipMode,
             allowReordering: (this.parent.showGroupingBar ? false : this.gridSettings.allowReordering),
             allowSelection: this.gridSettings.allowSelection,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            contextMenuItems: this.gridSettings.contextMenuItems as any,
+            contextMenuItems: this.gridSettings.contextMenuItems as ContextMenuItem[] | ContextMenuItemModel[],
             selectedRowIndex: this.gridSettings.selectedRowIndex,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            selectionSettings: this.gridSettings.selectionSettings as any,
+            selectionSettings: this.gridSettings.selectionSettings as SelectionSettingsModel,
             textWrapSettings: this.gridSettings.textWrapSettings,
             printMode: this.gridSettings.printMode,
             rowHeight: this.gridSettings.rowHeight,
@@ -279,10 +275,9 @@ export class Render {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private beforeExcelExport(args: any): void {
+    private beforeExcelExport(args: { gridObject: IGrid }): void {
         if (!isNullOrUndefined(args.gridObject.columns) && !isNullOrUndefined(this.parent.pivotColumns)) {
-            args.gridObject.columns[args.gridObject.columns.length - 1].width =
+            (args.gridObject.columns[args.gridObject.columns.length - 1] as Column).width =
                 this.parent.pivotColumns[this.parent.pivotColumns.length - 1].width;
         }
         this.parent.trigger(events.beforeExcelExport, args);
@@ -343,10 +338,8 @@ export class Render {
     }
 
     private pdfExportComplete(args: PdfExportCompleteArgs): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as any).width !== 'auto') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.parent.lastColumn as any).width = 'auto';
+        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as ColumnModel).width !== 'auto') {
+            (this.parent.lastColumn as ColumnModel).width = 'auto';
             this.parent.lastColumn = undefined;
         }
         const exportCompleteEventArgs: ExportCompleteEventArgs = {
@@ -357,10 +350,8 @@ export class Render {
     }
 
     private excelExportComplete(args: ExcelExportCompleteArgs): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as any).width !== 'auto') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.parent.lastColumn as any).width = 'auto';
+        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as ColumnModel).width !== 'auto') {
+            (this.parent.lastColumn as ColumnModel).width = 'auto';
             this.parent.lastColumn = undefined;
         }
         const exportCompleteEventArgs: ExportCompleteEventArgs = {
@@ -370,34 +361,7 @@ export class Render {
         this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private dataBound(args: DataBoundEventArgs): void {
-        if (this.parent.cellTemplate) {
-            for (const cell of this.parent.gridHeaderCellInfo) {
-                if (this.parent.cellTemplate) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const element: any = this.parent.getCellTemplate()(
-                        cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, cell.targetCell);
-                    if (element && element !== '' && element.length > 0) {
-                        if (this.parent.enableHtmlSanitizer) {
-                            if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                append(SanitizeHtmlHelper.sanitize(element) as any, cell.targetCell);
-                            } else {
-                                this.parent.appendHtml(cell.targetCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
-                            }
-                        } else {
-                            if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
-                                append(element, cell.targetCell);
-                            } else {
-                                this.parent.appendHtml(cell.targetCell, element[0].outerHTML);
-                            }
-                        }
-                    }
-                }
-            }
-            this.parent.gridHeaderCellInfo = [];
-        }
+    private dataBound(): void {
         // if ((this.parent.dataSourceSettings.valueAxis === 'row' ||
         //     !(this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.valueAxis === 'column' && this.parent.engineModule && !this.parent.engineModule.isLastHeaderHasMeasures)) &&
         //     this.parent.element.querySelector('.e-firstcell') && !(this.parent.dataSourceSettings.values.length === 1 && this.parent.dataSourceSettings.columns.length > 0)) {
@@ -412,17 +376,14 @@ export class Render {
         }
         this.parent.isScrolling = false;
         this.setFocusOnLastCell();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!isNullOrUndefined((this.parent as any).renderReactTemplates)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.parent as any).renderReactTemplates();
+        if (!isNullOrUndefined(this.parent['renderReactTemplates'])) {
+            this.parent['renderReactTemplates']();
         }
         if (this.parent.isInitial) {
             this.parent.isInitial = false;
             this.parent.refreshData();
             if (this.parent.enableVirtualization) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.parent as any).onContentReady();
+                this.parent.onContentReady();
             }
         }
         this.parent.notify(events.contentReady, {});
@@ -847,8 +808,7 @@ export class Render {
         let sumLock: boolean = false;
         let fieldName: string = '';
         for (let pos: number = keysLength - 1; pos >= 0; pos--) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cell: IAxisSet = this.engine.headerContent[headerPosKeys[pos as number] as any][columnIndex as number];
+            const cell: IAxisSet = this.engine.headerContent[Number(headerPosKeys[pos as number])][columnIndex as number];
             if (cell) {
                 sumLock = sumLock && fieldName !== '' ? fieldName === cell.valueSort.axis : false;
                 fieldName = cell.valueSort.axis ? cell.valueSort.axis.toString() : '';
@@ -922,11 +882,9 @@ export class Render {
         this.parent.grid.allowTextWrap = this.gridSettings.allowTextWrap;
         this.parent.grid.allowReordering = (this.parent.showGroupingBar ? false : this.gridSettings.allowReordering);
         this.parent.grid.allowSelection = this.gridSettings.allowSelection;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.parent.grid.contextMenuItems = this.gridSettings.contextMenuItems as any;
+        this.parent.grid.contextMenuItems = this.gridSettings.contextMenuItems as ContextMenuItem[] | ContextMenuItemModel[];
         this.parent.grid.selectedRowIndex = this.gridSettings.selectedRowIndex;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.parent.grid.selectionSettings = this.gridSettings.selectionSettings as any;
+        this.parent.grid.selectionSettings = this.gridSettings.selectionSettings as SelectionSettingsModel;
         this.parent.grid.textWrapSettings = this.gridSettings.textWrapSettings;
         this.parent.grid.printMode = this.gridSettings.printMode;
         this.parent.grid.rowHeight = this.gridSettings.rowHeight;
@@ -953,10 +911,10 @@ export class Render {
             const pivotColumn: PivotColumn = this.parent.pivotColumns[colPos as number];
             for (let keyPos: number = 0; keyPos < keys.length; keyPos++) {
                 const key: string = keys[keyPos as number];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (!isNullOrUndefined((this.parent.pivotColumns[colPos as number] as any)[key as string])) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (pivotColumn as any)[key as string] = (this.parent.lastGridSettings as any)[key as string];
+                if (!isNullOrUndefined((this.parent.pivotColumns[colPos as number])[key as keyof PivotColumn])) {
+                    (pivotColumn as ReturnType<typeof Object>)[key as string] = (this.parent.lastGridSettings as {
+                        [key: string]: Object
+                    })[key as string];
                 }
             }
         }
@@ -994,8 +952,8 @@ export class Render {
     }
 
     private onResizeStop(args: ResizeArgs): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const column: string = args.column.field === '0.formattedText' ? '0.formattedText' : (args.column.customAttributes as any).cell.valueSort.levelName;
+        const column: string = args.column.field === '0.formattedText' ? '0.formattedText' :
+            (args.column.customAttributes.cell as IAxisSet).valueSort.levelName as string;
         this.parent.resizeInfo[column as string] = Number(args.column.width.toString().split('px')[0]);
         if (this.parent.enableVirtualization && args.column.field === '0.formattedText') {
             if (this.parent.dataSourceSettings.values.length > 1
@@ -1042,8 +1000,8 @@ export class Render {
             (this.parent.element.querySelector('.e-group-rows') as HTMLElement).style.height = firstRowHeight + 'px';
         }
         if (args.cancel) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const column: string = args.column.field === '0.formattedText' ? '0.formattedText' : (args.column.customAttributes as any).cell.valueSort.levelName;
+            const column: string = args.column.field === '0.formattedText' ? '0.formattedText' :
+                (args.column.customAttributes.cell as IAxisSet).valueSort.levelName as string;
             this.parent.resizeInfo[column as string] = Number(args.column.width.toString().split('px')[0]);
             if (this.parent.enableVirtualization) {
                 this.parent.layoutRefresh();
@@ -1064,9 +1022,10 @@ export class Render {
 
     private onSelect(): void {
         const pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues, currentCell: null };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
-        for (const element of selectedElements) {
+        const selectedElements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.'
+            + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
+        for (let i: number = 0; i < selectedElements.length; i++) {
+            const element: HTMLElement = selectedElements[i as number];
             const colIndex: number = Number(element.getAttribute('data-colindex'));
             const rowIndex: number = Number(element.getAttribute('index'));
             const cell: IAxisSet = (this.engine.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
@@ -1109,6 +1068,7 @@ export class Render {
             const isRowFieldsAvail: boolean = cell.valueSort && cell.valueSort.levelName === (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row' &&
                 this.parent.localeObj.getConstant('grandTotal') + (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText));
             tCell.setAttribute('index', cell.rowIndex ? cell.rowIndex.toString() : '0');
+            const pivotValue: IAxisSet = this.parent.pivotValues[cell.rowIndex] && this.parent.pivotValues[cell.rowIndex][Number(tCell.getAttribute('data-colindex'))] ? this.parent.pivotValues[cell.rowIndex][Number(tCell.getAttribute('data-colindex'))] as IAxisSet : null;
             if (tCell.getAttribute('data-colindex') === '0') {
                 if (this.parent.dataType === 'pivot') {
                     const isValueCell: boolean = cell.type && cell.type === 'value';
@@ -1239,8 +1199,8 @@ export class Render {
                 } else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(cell.colIndex)) {
                     tCell.classList.add('e-colstot');
                 }
-                if (cell.cssClass) {
-                    tCell.classList.add(cell.cssClass);
+                if (pivotValue && pivotValue.cssClass) {
+                    tCell.classList.add(pivotValue.cssClass);
                 }
                 tCell.appendChild(createElement('span', {
                     className: cls.CELLVALUE,
@@ -1253,31 +1213,36 @@ export class Render {
                 }
             }
             if (this.parent.cellTemplate) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const element: any = this.parent.getCellTemplate()(
-                    { targetCell: tCell, cellInfo: cell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
-                if (element && element !== '' && element.length > 0) {
-                    if (this.parent.enableHtmlSanitizer) {
-                        if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            append(SanitizeHtmlHelper.sanitize(element) as any, tCell);
-                        } else {
-                            this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
-                        }
-                    } else {
-                        if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
-                            append(element, tCell);
-                        } else {
-                            this.parent.appendHtml(tCell, element[0].outerHTML);
-                        }
-                    }
-                }
+                this.appendTemplate(tCell, pivotValue);
             }
             this.unWireEvents(tCell);
             this.wireEvents(tCell);
         }
         args.pivotview = this.parent;
         this.parent.trigger(events.queryCellInfo, args);
+    }
+
+    private appendTemplate(tCell: HTMLElement, pivotValue: IAxisSet): void {
+        const element: NodeListOf<HTMLElement> | string = this.parent.getCellTemplate()(
+            { targetCell: tCell, cellInfo: pivotValue }, this.parent, 'cellTemplate', this.parent.element.id +
+        '_cellTemplate', null, null, tCell);
+        if (element && element !== '' && element.length > 0) {
+            if (this.parent.enableHtmlSanitizer) {
+                if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
+                    const container: HTMLElement = createElement('div');
+                    container.innerHTML = SanitizeHtmlHelper.sanitize(element as string);
+                    append([container.firstChild as Element], tCell);
+                } else {
+                    this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize((element[0] as Element).outerHTML));
+                }
+            } else {
+                if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
+                    append(element as NodeListOf<HTMLElement>, tCell);
+                } else {
+                    this.parent.appendHtml(tCell, (element[0] as Element).outerHTML);
+                }
+            }
+        }
     }
 
     private onOlapRowCellBoundEvent(tCell: HTMLElement, cell: IAxisSet): HTMLElement {
@@ -1517,7 +1482,7 @@ export class Render {
                 }
                 tCell = this.appendValueSortIcon(cell, tCell, cell.rowIndex, cell.colIndex, args.cell.column);
                 if (this.parent.cellTemplate) {
-                    this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
+                    this.appendTemplate(tCell, this.parent.pivotValues[cell.rowIndex][cell.colIndex] as IAxisSet);
                 }
                 const len: number = this.parent.dataSourceSettings.values.length;
                 for (let vCnt: number = 0; vCnt < len; vCnt++) {
@@ -1658,14 +1623,12 @@ export class Render {
 
     /** @hidden */
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public frameEmptyData(): any[] {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dataContent: any = [{
+    public frameEmptyData(): IGridValues {
+        const dataContent: { [key: number]: Object } = [{
             0: { formattedText: this.parent.localeObj.getConstant('grandTotal') },
             1: { formattedText: this.parent.localeObj.getConstant('emptyData') }
         }];
-        return dataContent;
+        return dataContent as IGridValues;
     }
 
     /** @hidden */
@@ -1675,20 +1638,19 @@ export class Render {
             this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 250) ? 250 : this.parent.resizedValue;
         }
         this.resColWidth = !isNullOrUndefined(this.parent.resizedValue) ? this.parent.resizedValue : this.resColWidth;
-        const offsetWidth: number = this.parent.grid ? this.parent.grid.element.offsetWidth ? this.parent.grid.element.offsetWidth :
-            this.parent.grid.element.getBoundingClientRect().width : this.parent.element.offsetWidth ?
+        const offsetWidth: number = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.element.offsetWidth ?
             this.parent.element.offsetWidth : this.parent.element.getBoundingClientRect().width;
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * offsetWidth) : offsetWidth) :
             Number(this.parent.width);
-        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth);
         colCount = colCount - 1;
         this.isOverflows = !((colCount * this.gridSettings.columnWidth) < parWidth);
         if (!this.isOverflows) {
-            const parentHeight: number = this.parent.getHeightAsNumber();
+            const gridHeight: number | string = this.calculateGridHeight();
+            const parentHeight: number = gridHeight === 'auto' ? this.parent.getHeightAsNumber() : gridHeight as number;
             const headersLength: number = (this.engine && this.engine.headerContent) ? Object.keys(this.engine.headerContent).length : 1;
-            const height: number = parentHeight > this.parent.minHeight ? parentHeight :
-                (this.parent.minHeight - (this.gridSettings.rowHeight * headersLength));
+            const height: number = parentHeight - (this.gridSettings.rowHeight * headersLength);
             if (this.engine && this.engine.valueContent && ((this.gridSettings.rowHeight * this.engine.valueContent.length) > height)) {
                 parWidth = parWidth - getScrollBarWidth();
             }
@@ -1709,7 +1671,7 @@ export class Render {
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
         colCount = colCount - 1;
-        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth);
         this.isOverflows = !((colCount * this.gridSettings.columnWidth) < parWidth);
         const colWidth: number =
             (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
@@ -1746,50 +1708,52 @@ export class Render {
         );
         let gridHeight: number | string = this.parent.height;
         let parHeight: number = this.parent.getHeightAsNumber();
-        if (isNaN(parHeight)) {
-            parHeight = parHeight > this.parent.minHeight ? parHeight : this.parent.minHeight;
-        } else {
-            parHeight = (contentElement.offsetWidth < (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth) ?
-                parHeight - getScrollBarWidth() : parHeight;
-        }
-        if ((this.parent.showToolbar && this.parent.currentView !== 'Chart') || (!this.parent.showToolbar && this.parent.displayOption.view !== 'Chart')) {
-            if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + cls.GRID_HEADER)) {
-                const rowColHeight: number = (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight;
-                const gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) ?
-                    (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
-                const toolBarHeight: number = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
-                const pagerHeight: number = this.parent.element.querySelector('.' + cls.GRID_PAGER) ? (this.parent.element.querySelector('.' + cls.GRID_PAGER) as HTMLElement).offsetHeight : 0;
-                gridHeight = parHeight - (gBarHeight + toolBarHeight + pagerHeight) - 1;
-                gridHeight = gridHeight < 40 ? 40 : gridHeight;
-                if (elementCreated) {
-                    const tableHeight: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetHeight;
-                    const contentHeight: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetHeight;
-                    const tableWidth: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth;
-                    const contentWidth: number = contentElement.offsetWidth;
-                    const horizontalOverflow: boolean = contentWidth <= tableWidth;
-                    // if (horizontalOverflow && ((contentWidth + 2) < tableWidth) && !this.parent.enableVirtualization) {
-                    //     contentElement.style.overflowX = 'scroll';
-                    // } else {
-                    //     contentElement.style.overflowX = 'hidden';
-                    //     horizontalOverflow = false;
-                    // }
-                    //let verticalOverflow: boolean = contentHeight < tableHeight;
-                    const commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
-                    if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
-                        !commonOverflow) {
-                        this.parent.grid.height = 'auto';
-                    } else {
-                        this.parent.grid.height = gridHeight;
-                        this.parent.grid.dataBind();
-                    }
-                    // this.parent.grid.widthService.refreshFrozenScrollbar();
-                } else {
-                    if (gridHeight > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
-                        gridHeight = 'auto';
-                    }
-                }
+        if (contentElement) {
+            if (isNaN(parHeight)) {
+                parHeight = parHeight > this.parent.minHeight ? parHeight : this.parent.minHeight;
             } else {
-                gridHeight = this.gridSettings.height;
+                parHeight = (contentElement.offsetWidth < (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth) ?
+                    parHeight - getScrollBarWidth() : parHeight;
+            }
+            if ((this.parent.showToolbar && this.parent.currentView !== 'Chart') || (!this.parent.showToolbar && this.parent.displayOption.view !== 'Chart')) {
+                if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + cls.GRID_HEADER)) {
+                    const rowColHeight: number = (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight;
+                    const gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) ?
+                        (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
+                    const toolBarHeight: number = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
+                    const pagerHeight: number = this.parent.element.querySelector('.' + cls.GRID_PAGER) ? (this.parent.element.querySelector('.' + cls.GRID_PAGER) as HTMLElement).offsetHeight : 0;
+                    gridHeight = parHeight - (gBarHeight + toolBarHeight + pagerHeight) - 1;
+                    gridHeight = gridHeight < 40 ? 40 : gridHeight;
+                    if (elementCreated) {
+                        const tableHeight: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetHeight;
+                        const contentHeight: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetHeight;
+                        const tableWidth: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth;
+                        const contentWidth: number = contentElement.offsetWidth;
+                        const horizontalOverflow: boolean = contentWidth <= tableWidth;
+                        // if (horizontalOverflow && ((contentWidth + 2) < tableWidth) && !this.parent.enableVirtualization) {
+                        //     contentElement.style.overflowX = 'scroll';
+                        // } else {
+                        //     contentElement.style.overflowX = 'hidden';
+                        //     horizontalOverflow = false;
+                        // }
+                        //let verticalOverflow: boolean = contentHeight < tableHeight;
+                        const commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
+                        if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
+                            !commonOverflow) {
+                            this.parent.grid.height = 'auto';
+                        } else {
+                            this.parent.grid.height = gridHeight;
+                            this.parent.grid.dataBind();
+                        }
+                        // this.parent.grid.widthService.refreshFrozenScrollbar();
+                    } else {
+                        if (gridHeight > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
+                            gridHeight = 'auto';
+                        }
+                    }
+                } else {
+                    gridHeight = this.gridSettings.height;
+                }
             }
         }
         return gridHeight as number < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
@@ -1820,8 +1784,8 @@ export class Render {
             const headerSplit: Object[] = [];
             const splitPos: Object[] = [];
             const colWidth: number = this.calculateColWidth(this.engine.pivotValues && this.engine.pivotValues[0] ?
-                this.engine.pivotValues[0].length : 0); // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const measureFlag: boolean = this.parent.dataType === 'olap' && !isNullOrUndefined((this.engine as OlapEngine).colMeasurePos) && ((this.engine as OlapEngine) as any).colDepth - 1 === this.parent.olapEngineModule.colMeasurePos;
+                this.engine.pivotValues[0].length : 0);
+            const measureFlag: boolean = this.parent.dataType === 'olap' && !isNullOrUndefined((this.engine as OlapEngine).colMeasurePos) && (this.engine as OlapEngine).colDepth - 1 === this.parent.olapEngineModule.colMeasurePos;
             do {
                 const columnModel: ColumnModel[] = [];
                 let actualCnt: number = 0;
@@ -1847,11 +1811,10 @@ export class Render {
                             columnModel[actualCnt as number] = {
                                 field: (cCnt + '.formattedText'),
                                 headerText: formattedText,
-                                customAttributes: { 'cell': colField[cCnt as number] },
+                                customAttributes: { 'cell': this.cloneDataWithoutIndex(colField[cCnt as number] as Record<string, unknown>) },
                                 width: autoFitApplied ? (gridColumns[actualCnt as number] as ColumnModel).width : colField[cCnt as number]
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any, max-len
-                                    ? colField[cCnt as number].valueSort ? this.setSavedWidth((colField[cCnt as number].valueSort as any).levelName, colWidth) : this.resColWidth
-                                    : this.resColWidth,
+                                    ? colField[cCnt as number].valueSort ? this.setSavedWidth((colField[cCnt as number]
+                                        .valueSort as IDataSet).levelName as string, colWidth) : this.resColWidth : this.resColWidth,
                                 minWidth: autoFitApplied && actualCnt === colCount
                                     ? (gridColumns[gridColumns.length - 1] as ColumnModel).minWidth : 30,
                                 format: cCnt === 0 ? '' : (isNullOrUndefined(singleValueFormat) ? this.formatList[colField[cCnt as number].actualText] : singleValueFormat),
@@ -1861,6 +1824,9 @@ export class Render {
                                 textAlign: this.parent.enableRtl ? 'Left' : 'Right',
                                 headerTextAlign: this.parent.enableRtl ? 'Right' : 'Left'
                             };
+                            if (cCnt === colCount) {
+                                this.lastColumnName = columnModel[actualCnt as number].field;
+                            }
                         } else if (headerSplit[cCnt as number]) {
                             // colSpan = (colField[cCnt as number] && colField[cCnt as number].type === 'grand sum' &&
                             //     colField[cCnt as number].memberType === 2) ? 1 : colSpan;
@@ -1876,14 +1842,13 @@ export class Render {
                                 } else {
                                     columnModel[actualCnt as number] = {
                                         headerText: formattedText,
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        field: colField[cCnt as number] ? (colField[cCnt as number].valueSort as any).levelName : '',
-                                        customAttributes: { 'cell': colField[cCnt as number] },
+                                        field: colField[cCnt as number] ? (colField[cCnt as number].valueSort as IDataSet)
+                                            .levelName as string : '',
+                                        customAttributes: { 'cell': this.cloneDataWithoutIndex(colField[cCnt as number] as Record<string, unknown>) },
                                         width: (autoFitApplied && actualCnt === 0 && !refreshColumn && !this.parent.isEmptyGrid
                                             && pivotColumns[0].autoFit) ? (gridColumns[0] as ColumnModel).width : colField[cCnt as number] ?
-                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                this.setSavedWidth((colField[cCnt as number].valueSort as any).levelName, colWidth)
-                                                : this.resColWidth,
+                                                this.setSavedWidth((colField[cCnt as number].valueSort as IDataSet)
+                                                    .levelName as string, colWidth) : this.resColWidth,
                                         minWidth: 30,
                                         allowReordering: (this.parent.showGroupingBar ? false : this.parent.gridSettings.allowReordering),
                                         allowResizing: this.parent.gridSettings.allowResizing,
@@ -1930,23 +1895,9 @@ export class Render {
         autoFitApplied = this.parent.pivotColumns.length > 0 && this.parent.pivotColumns[this.parent.pivotColumns.length - 1].autoFit;
         if (this.pivotColumns.length > 1 && !autoFitApplied) {
             const lastColumn: ColumnModel = this.pivotColumns[this.pivotColumns.length - 1];
-            lastColumn.minWidth = lastColumn.width;
-            lastColumn.width = 'auto';
-            if (lastColumn.columns && lastColumn.columns.length > 0) {
-                this.configLastColumnWidth((lastColumn.columns as ColumnModel[])[lastColumn.columns.length - 1]);
-            }
+            lastColumn.width = Number(lastColumn.width) - 2;
         }
         return this.pivotColumns;
-    }
-
-    /** @hidden */
-
-    public configLastColumnWidth(column: ColumnModel): void {
-        column.minWidth = column.width;
-        column.width = 'auto';
-        if (column.columns && column.columns.length > 0) {
-            this.configLastColumnWidth((column.columns as ColumnModel[])[column.columns.length - 1]);
-        }
     }
 
     /** @hidden */
@@ -1966,7 +1917,7 @@ export class Render {
         const columns: ColumnModel[] = [];
         const colWidth: number = this.calculateColWidth(2);
         columns.push({ field: '0.formattedText', headerText: '', minWidth: 30, width: this.resColWidth });
-        columns.push({ field: '1.formattedText', headerText: this.parent.localeObj.getConstant('grandTotal'), minWidth: 30, width: colWidth });
+        columns.push({ field: '1.formattedText', headerText: this.parent.localeObj.getConstant('grandTotal'), minWidth: 30, width: colWidth - 2 });
         return columns;
     }
 
@@ -2007,11 +1958,12 @@ export class Render {
     }
 
     private getValidHeader(args: ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs | ExcelQueryCellInfoEventArgs
-    | PdfQueryCellInfoEventArgs, axis: string): any {  // eslint-disable-line @typescript-eslint/no-explicit-any
+    | PdfQueryCellInfoEventArgs, axis: string): Date | string | number | boolean | PdfTextWebLink | PdfImage {
         const values: FieldOptionsModel[] = this.parent.dataSourceSettings.values;
+        let cellValue: string | number | boolean | Date | PdfTextWebLink | PdfImage;
         if (axis === 'row') {
             const cellInfo: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs =
-            args as ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs;
+                args as ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs;
             if (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) {
                 if (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row' && (this.parent.localeObj.getConstant('grandTotal') +
                     this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + cellInfo.value)
@@ -2023,41 +1975,47 @@ export class Render {
                         + ' ' + this.parent.localeObj.getConstant('of') + ' ' + (!isNullOrUndefined(values[values.length - 1].caption) ? values[values.length - 1].caption : values[values.length - 1].name);
                 }
             }
-            return cellInfo.value;
+            cellValue = cellInfo.value;
         } else if (axis === 'column') {
             const cellInfo: ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs =
-            args as ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs;
+                args as ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs;
             if (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) {
-                if (!isNullOrUndefined(((args as any).gridCell as any).column.customAttributes) && this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column' && // eslint-disable-line @typescript-eslint/no-explicit-any
-                    (this.parent.localeObj.getConstant('grandTotal') + this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + (cellInfo.gridCell as any).column.customAttributes.cell.formattedText) // eslint-disable-line @typescript-eslint/no-explicit-any
-                    === (cellInfo.gridCell as any).column.customAttributes.cell.valueSort.levelName) {// eslint-disable-line @typescript-eslint/no-explicit-any
-                    return this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[(cellInfo
-                        .gridCell as any).column.customAttributes.cell.actualText].aggregateType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + (cellInfo.gridCell as any).column.customAttributes.cell.formattedText; // eslint-disable-line @typescript-eslint/no-explicit-any
+                if (!isNullOrUndefined(((args as ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs)
+                    .gridCell as Cell<Column>).column.customAttributes) && this.parent.dataSourceSettings.columns.length === 0 &&
+                    this.parent.dataSourceSettings.valueAxis === 'column' && (this.parent.localeObj.getConstant('grandTotal') +
+                        this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + ((cellInfo.gridCell as Cell<Column>).column
+                    .customAttributes.cell as IAxisSet).formattedText) === ((cellInfo.gridCell as Cell<Column>).column
+                    .customAttributes.cell as IAxisSet).valueSort.levelName) {
+                    return this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule
+                        .fieldList[((cellInfo.gridCell as Cell<Column>).column.customAttributes.cell as IAxisSet).actualText]
+                        .aggregateType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + ((cellInfo.gridCell as Cell<Column>)
+                        .column.customAttributes.cell as IAxisSet).formattedText;
                 }
             }
-            return ((cellInfo as any).cell).value; // eslint-disable-line @typescript-eslint/no-explicit-any
+            cellValue = (cellInfo.cell as IAxisSet).value;
         }
+        return cellValue;
     }
 
     private excelColumnEvent(args: ExcelHeaderQueryCellInfoEventArgs): void {
         if (this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column') {
-            ((args as any).cell).value = this.getValidHeader(args, 'column'); // eslint-disable-line @typescript-eslint/no-explicit-any
+            (args.cell as { [key: string]: Object }).value = this.getValidHeader(args, 'column');
         }
-        if (args.gridCell !== undefined && (args.gridCell as any).column.width === 'auto') { // eslint-disable-line @typescript-eslint/no-explicit-any
-            this.parent.lastColumn = (args.gridCell as any).column; // eslint-disable-line @typescript-eslint/no-explicit-any
-            (args.gridCell as any).column.width = (args.gridCell as any).column.minWidth; // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (args.gridCell !== undefined && (args.gridCell as Cell<Column>).column.width === 'auto') {
+            this.parent.lastColumn = (args.gridCell as Cell<Column>).column;
+            (args.gridCell as Cell<Column>).column.width = (args.gridCell as Cell<Column>).column.minWidth;
         }
-        args = this.exportHeaderEvent(args);
+        args = this.exportHeaderEvent(args, 'XLSX') as ExcelHeaderQueryCellInfoEventArgs;
         this.parent.trigger(events.excelHeaderQueryCellInfo, args);
     }
 
     private pdfColumnEvent(args: PdfHeaderQueryCellInfoEventArgs): void {
         if (this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column') {
-            ((args as any).cell).value = this.getValidHeader(args, 'column'); // eslint-disable-line @typescript-eslint/no-explicit-any
+            (args.cell as { [key: string]: Object }).value = this.getValidHeader(args, 'column');
         }
-        if (args.gridCell !== undefined && (args.gridCell as any).column.width === 'auto') { // eslint-disable-line @typescript-eslint/no-explicit-any
-            this.parent.lastColumn = (args.gridCell as any).column; // eslint-disable-line @typescript-eslint/no-explicit-any
-            (args.gridCell as any).column.width = (args.gridCell as any).column.minWidth; // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (args.gridCell !== undefined && (args.gridCell as Cell<Column>).column.width === 'auto') {
+            this.parent.lastColumn = (args.gridCell as Cell<Column>).column;
+            (args.gridCell as Cell<Column>).column.width = (args.gridCell as Cell<Column>).column.minWidth;
         }
         this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
     }
@@ -2082,8 +2040,8 @@ export class Render {
             this.lastSpan = isValueCell ? this.lastSpan : level;
         } else {
             this.colPos++;
-            const pivotValue: IAxisSet =
-            (<any>args.data)[args.column.customAttributes.cell ? (args.column.customAttributes.cell as IAxisSet).colIndex : this.colPos]; // eslint-disable-line @typescript-eslint/no-explicit-any
+            const pivotValue: IAxisSet = ((args.data) as { [key: string]: Object })[args.column.customAttributes.cell ?
+                (args.column.customAttributes.cell as IAxisSet).colIndex : this.colPos];
             if (isNullOrUndefined(pivotValue.value) || isNullOrUndefined(pivotValue.formattedText) || pivotValue.formattedText === '') {
                 args.value = this.parent.exportType === 'Excel' ? null : '';
             } else {
@@ -2095,15 +2053,16 @@ export class Render {
                 }
             }
         }
-        args = this.exportContentEvent(args);
+        args = this.exportContentEvent(args) as ExcelQueryCellInfoEventArgs;
         if (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row') {
-            args.value = args.column.field === '0.formattedText' ? this.getValidHeader(args, 'row') : args.value;
+            args.value = args.column.field === '0.formattedText' ? this.getValidHeader(args, 'row') as string | number | boolean | Date
+                : args.value;
         }
         this.parent.trigger(events.excelQueryCellInfo, args);
     }
 
     private pdfRowEvent(args: PdfQueryCellInfoEventArgs): void {
-        args = this.exportContentEvent(args);
+        args = this.exportContentEvent(args) as PdfQueryCellInfoEventArgs;
         if (args.column.field === '0.formattedText') {
             let level: number = 0;
             const cell: IAxisSet = (args.data as IAxisSet[])[0];
@@ -2127,13 +2086,12 @@ export class Render {
         this.parent.trigger(events.pdfQueryCellInfo, args);
     }
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    private excelDataBound(args: any): void {
+    private excelDataBound(args: { excelRows: ExcelRow[], type: 'excel' }): void {
         const excelRows: ExcelRow[] = args.excelRows;
         const rowStartPos: number = Object.keys(this.engine.headerContent).length;
         for (let i: number = 0; i < rowStartPos; i++) {
-            const cells: any = excelRows[i as number].cells;
-            const tmpCell: any = [];
+            const cells: ExcelCell[] = excelRows[i as number].cells;
+            const tmpCell: ExcelCell[] = [];
             for (let j: number = 0; j < cells.length; j++) {
                 if (cells[j as number].rowSpan !== -1) {
                     tmpCell.push(cells[j as number]);
@@ -2143,37 +2101,73 @@ export class Render {
         }
     }
 
-    private exportHeaderEvent(args: ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs): any {
+    private exportHeaderEvent(args: ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs, exportType: ExportType)
+        : ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs {
         let rowSpan: number = 1;
-        if (((args as any).gridCell as any).column.customAttributes) {
-            const cell: IAxisSet = ((args as any).gridCell as any).column.customAttributes.cell;
-            // if (this.actualText !== cell.actualText && cell.colSpan > 1 && cell.level > -1) {
-            //     ((args as any).gridCell as any).colSpan = (args.cell as any).colSpan = cell.colSpan > -1 ? cell.colSpan : 1;
-            // }
+        if ((args.gridCell as Cell<Column>).column.customAttributes) {
+            const cell: IAxisSet = (args.gridCell as Cell<Column>).column.customAttributes.cell;
             rowSpan = cell.rowSpan > 0 ? cell.rowSpan : 1;
-            if ((args as any).name === 'excelHeaderQueryCellInfo') {
+            if (exportType === 'XLSX') {
                 if (cell.rowSpan > 0) {
                     rowSpan = cell.rowSpan;
                 } else if (!isNullOrUndefined(cell.type) && cell.level !== 0) {
                     rowSpan = 1;
-                    (args.cell as any).rowSpan = 1;
+                    (args.cell as IAxisSet).rowSpan = 1;
                 }
             }
             this.actualText = cell.actualText as string;
         } else {
             rowSpan = Object.keys(this.engine.headerContent).length;
         }
-        if ((args.cell as any).rowSpan !== rowSpan && rowSpan > 0) {
-            (args.cell as any).rowSpan = rowSpan;
+        if ((args.cell as IAxisSet).rowSpan !== rowSpan && rowSpan > 0) {
+            (args.cell as IAxisSet).rowSpan = rowSpan;
         }
         return args;
     }
-    /* eslint-enable @typescript-eslint/no-explicit-any */
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private exportContentEvent(args: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs): any {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const cell: IAxisSet = (<any>args).data[Number(args.column.field.split('.formattedText')[0])];
+    /**
+     *
+     * @param {IGridValues} actualData - It contains the data source.
+     * @returns {IGridValues} - It frames the data source without index and indexObject properties.
+     * @hidden */
+    public frameGridDataSource(actualData: IGridValues): IGridValues {
+        const framedDataSource: IGridValues = [];
+        for (let i: number = 0; i < actualData.length; i++) {
+            let keyPos: number = 0;
+            framedDataSource[i as number] = {} as IAxisSet[];
+            const keys: string[] = Object.keys(actualData[i as number]);
+            for (let j: number = 0; actualData[i as number] != null && j < keys.length; j++) {
+                while (keyPos < keys.length) {
+                    framedDataSource[i as number][Number(keys[keyPos as number])] =
+                        this.cloneDataWithoutIndex(actualData[i as number][Number(keys[keyPos as number])] as Record<string, unknown>);
+                    keyPos++;
+                }
+            }
+        }
+        return framedDataSource;
+    }
+
+    /** @hidden */
+
+    public cloneDataWithoutIndex(data: Record<string, unknown>): IAxisSet {
+        if (!isNullOrUndefined(data)) {
+            const keys: string[] = Object.keys(data);
+            let keyPos: number = 0;
+            const clonedData: Record<string, unknown> = {};
+            while (keyPos < keys.length) {
+                if (keys[keyPos as number] !== 'indexObject' && keys[keyPos as number] !== 'index') {
+                    clonedData[keys[keyPos as number]] = data[keys[keyPos as number]];
+                }
+                keyPos++;
+            }
+            return clonedData;
+        }
+        return data;
+    }
+    private exportContentEvent(args: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs):
+    ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs {
+        const cell: IAxisSet = ((args as ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs).data as IAxisSet[])[
+            Number(args.column.field.split('.formattedText')[0])];
         args.value = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) ?
             this.parent.localeObj.getConstant('grandTotal') : cell.formattedText) : args.value;
         return args;

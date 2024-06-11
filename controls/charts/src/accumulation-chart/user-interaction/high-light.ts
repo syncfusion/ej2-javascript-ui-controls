@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart highlight source file
  */
@@ -10,7 +7,6 @@ import { AccumulationChart } from '../accumulation';
 import { AccumulationSeries } from '../model/acc-base';
 import { AccumulationSelection } from './selection';
 
-// tslint:disable:no-string-literal
 /**
  * `AccumulationHighlight` module handles the selection for chart.
  *
@@ -22,8 +18,8 @@ export class AccumulationHighlight extends AccumulationSelection {
      * Constructor for selection module.
      *
      * @private.
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
      */
-
     constructor(accumulation: AccumulationChart) {
         super(accumulation);
         this.accumulation = accumulation;
@@ -32,6 +28,8 @@ export class AccumulationHighlight extends AccumulationSelection {
     }
     /**
      * Binding events for selection module.
+     *
+     * @returns {void}
      */
     private wireEvents(): void {
         if (this.accumulation.isDestroyed) { return; }
@@ -39,13 +37,18 @@ export class AccumulationHighlight extends AccumulationSelection {
     }
     /**
      * UnBinding events for selection module.
+     *
+     * @returns {void}
      */
     private unWireEvents(): void {
         if (this.accumulation.isDestroyed) { return; }
         this.accumulation.off(Browser.touchMoveEvent, this.mouseMove);
     }
     /**
-     * To find private variable values
+     * To find private variable values.
+     *
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @returns {void}
      */
     private declarePrivateVariables(accumulation: AccumulationChart): void {
         this.styleId = accumulation.element.id + '_ej2_chart_highlight';
@@ -56,7 +59,8 @@ export class AccumulationHighlight extends AccumulationSelection {
     /**
      * Method to select the point and series.
      *
-     * @return {void}
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @returns {void}
      */
     public invokeHighlight(accumulation: AccumulationChart): void {
         this.declarePrivateVariables(accumulation);
@@ -69,6 +73,7 @@ export class AccumulationHighlight extends AccumulationSelection {
      * Get module name.
      *
      * @private
+     * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {
         return 'AccumulationHighlight';
@@ -76,7 +81,7 @@ export class AccumulationHighlight extends AccumulationSelection {
     /**
      * To destroy the highlight.
      *
-     * @return {void}
+     * @returns {void}
      * @private
      */
     public destroy(): void {

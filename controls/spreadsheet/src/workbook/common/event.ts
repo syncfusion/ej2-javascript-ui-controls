@@ -170,6 +170,8 @@ export const unprotectsheetHandler: string = 'unprotectsheetHandler';
 /** @hidden */
 export const workBookeditAlert: string = 'editAlert';
 /** @hidden */
+export const workbookReadonlyAlert: string = 'readonlyAlert';
+/** @hidden */
 export const setLockCells: string = 'setLockCells';
 /** @hidden */
 export const applyLockCells: string = 'applyLockCells';

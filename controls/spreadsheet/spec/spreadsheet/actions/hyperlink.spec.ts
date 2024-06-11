@@ -108,7 +108,7 @@ describe('Hyperlink ->', () => {
                 expect(args.target).toBe('_blank');
             };
             expect(sheet.rows[0].cells[0].style.color).toBe('#00e');
-            helper.openAndClickCMenuItem(0, 0, [10]);
+            helper.openAndClickCMenuItem(0, 0, [12]);
             expect(sheet.rows[0].cells[0].style.color).toBe('#551a8b');
             spreadsheet.beforeHyperlinkClick = undefined;
             done();
@@ -123,7 +123,7 @@ describe('Hyperlink ->', () => {
         });
 
         it('Edit hyperlink', (done: Function) => {
-            helper.openAndClickCMenuItem(0, 0, [9]);
+            helper.openAndClickCMenuItem(0, 0, [11]);
             setTimeout(() => {
                 helper.getElements('.e-edithyperlink-dlg .e-webpage input')[1].value = 'www.amazon.com';
                 helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
@@ -135,7 +135,7 @@ describe('Hyperlink ->', () => {
         });
 
         it('Remove hyperlink', (done: Function) => {
-            helper.openAndClickCMenuItem(0, 0, [11]);
+            helper.openAndClickCMenuItem(0, 0, [13]);
             expect(sheet.rows[0].cells[0].hyperlink).toBeUndefined();
             expect(helper.invoke('getCell', [0, 0]).children[0]).toBeUndefined();
             done();
@@ -173,7 +173,7 @@ describe('Hyperlink ->', () => {
         });
 
         it('Remove hyperlink from empty cell', (done: Function) => {
-            helper.openAndClickCMenuItem(0, 10, [11]);
+            helper.openAndClickCMenuItem(0, 10, [13]);
             expect(sheet.rows[0].cells[10].hyperlink).toBeUndefined();
             expect(helper.invoke('getCell', [0, 10]).children[0]).toBeUndefined();
             done();
@@ -248,11 +248,11 @@ describe('Hyperlink ->', () => {
             helper.invoke('selectRange', ['C1']);
             helper.invoke('addHyperlink', [{ address: 'A10' }, 'C1']);
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-            helper.openAndClickCMenuItem(0, 2, [10]);
+            helper.openAndClickCMenuItem(0, 2, [12]);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('A10:A10');
                 done();
-            });
+            }, 20);
         });
 
         it('Add hyperlink to range with empty cells ->', (done: Function) => {
@@ -315,7 +315,7 @@ describe('Hyperlink ->', () => {
                 helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
                 helper.invoke('unprotectSheet', ['Sheet1']);
                 done();
-            }, 100);
+            });
         });
 
         it('Apply Invalid Hyperlink->', (done: Function) => {
@@ -369,7 +369,7 @@ describe('Hyperlink ->', () => {
                 helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 helper.invoke('selectRange', ['C1']);
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.openAndClickCMenuItem(0, 2, [11]);
+                helper.openAndClickCMenuItem(0, 2, [13]);
                 expect(helper.getInstance().sheets[0].rows[0].cells[2].hyperlink).toBeUndefined();
                 expect(helper.invoke('getCell', [0, 2]).children[0]).toBeUndefined();
                 let td: HTMLElement = helper.invoke('getCell', [0, 2]);
@@ -399,22 +399,21 @@ describe('Hyperlink ->', () => {
             helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
             setTimeout(() => {
                 helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog .e-link-dialog.e-tab', true);
                 helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
+                helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = 'A10:A10';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                let tag: HTMLElement = helper.invoke('getCell', [0, 1]).children[0];
+                expect(tag.classList).toContain('e-hyperlink');
+                expect(tag.classList).toContain('e-hyperlink-style');
+                expect(tag.tagName).toBe('A');
+                expect(tag.getAttribute('ref')).toBe('Sheet1!A10:A10');
+                tag.click();
                 setTimeout(() => {
-                    helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = 'A10:A10';
-                    helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
-                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
-                    let tag: HTMLElement = helper.invoke('getCell', [0, 1]).children[0];
-                    expect(tag.classList).toContain('e-hyperlink');
-                    expect(tag.classList).toContain('e-hyperlink-style');
-                    expect(tag.tagName).toBe('A');
-                    expect(tag.getAttribute('ref')).toBe('Sheet1!A10:A10');
-                    tag.click();
-                    setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A10:A10');
-                        done();
-                    });
-                }, 900);
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A10:A10');
+                    done();
+                });
             });
         });
 
@@ -424,25 +423,24 @@ describe('Hyperlink ->', () => {
             helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
             setTimeout(() => {
                 helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog .e-link-dialog.e-tab', true);
                 helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
+                helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = 'A/:A/';
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                let tag: HTMLElement = helper.invoke('getCell', [0, 4]).children[0];
+                expect(tag.classList).toContain('e-hyperlink');
+                expect(tag.classList).toContain('e-hyperlink-style');
+                expect(tag.tagName).toBe('A');
+                expect(tag.getAttribute('ref')).toBe('Sheet1!A/:A/');
+                tag.click();
                 setTimeout(() => {
-                    helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = 'A/:A/';
-                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
-                    let tag: HTMLElement = helper.invoke('getCell', [0, 4]).children[0];
-                    expect(tag.classList).toContain('e-hyperlink');
-                    expect(tag.classList).toContain('e-hyperlink-style');
-                    expect(tag.tagName).toBe('A');
-                    expect(tag.getAttribute('ref')).toBe('Sheet1!A/:A/');
-                    tag.click();
-                    setTimeout(() => {
-                        var dialog = helper.getElement('.e-dlg-modal.e-dialog');
-                        expect(!!dialog).toBeTruthy();
-                        expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
-                        helper.setAnimationToNone('.e-dlg-modal.e-dialog');
-                        helper.click('.e-dlg-modal .e-footer-content button:nth-child(1)');
-                        done();
-                    });
-                }, 900);
+                    var dialog = helper.getElement('.e-dlg-modal.e-dialog');
+                    expect(!!dialog).toBeTruthy();
+                    expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                    helper.setAnimationToNone('.e-dlg-modal.e-dialog');
+                    helper.click('.e-dlg-modal .e-footer-content button:nth-child(1)');
+                    done();
+                });
             });
         });
 
@@ -452,25 +450,24 @@ describe('Hyperlink ->', () => {
             helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
             setTimeout(() => {
                 helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog .e-link-dialog.e-tab', true);
                 helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
+                helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = '1:1';
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                let tag: HTMLElement = helper.invoke('getCell', [0, 5]).children[0];
+                expect(tag.classList).toContain('e-hyperlink');
+                expect(tag.classList).toContain('e-hyperlink-style');
+                expect(tag.tagName).toBe('A');
+                expect(tag.getAttribute('ref')).toBe('Sheet1!1:1');
+                tag.click();
                 setTimeout(() => {
-                    helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = '1:1';
-                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
-                    let tag: HTMLElement = helper.invoke('getCell', [0, 5]).children[0];
-                    expect(tag.classList).toContain('e-hyperlink');
-                    expect(tag.classList).toContain('e-hyperlink-style');
-                    expect(tag.tagName).toBe('A');
-                    expect(tag.getAttribute('ref')).toBe('Sheet1!1:1');
-                    tag.click();
-                    setTimeout(() => {
-                        var dialog = helper.getElement('.e-dlg-modal.e-dialog');
-                        expect(!!dialog).toBeTruthy();
-                        expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
-                        helper.setAnimationToNone('.e-dlg-modal.e-dialog');
-                        helper.click('.e-dlg-modal .e-footer-content button:nth-child(1)');
-                        done();
-                    });
-                }, 900);
+                    var dialog = helper.getElement('.e-dlg-modal.e-dialog');
+                    expect(!!dialog).toBeTruthy();
+                    expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                    helper.setAnimationToNone('.e-dlg-modal.e-dialog');
+                    helper.click('.e-dlg-modal .e-footer-content button:nth-child(1)');
+                    done();
+                });
             });
         });
 
@@ -487,7 +484,7 @@ describe('Hyperlink ->', () => {
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.click('#' + helper.id + '_contextmenu li:nth-child(11)');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(13)');
                 expect(helper.invoke('getCell', [0, 1]).children.length).toBe(1);
                 done();
             });
@@ -511,27 +508,26 @@ describe('Hyperlink ->', () => {
 
         it('Apply Hyperlink and Checking Insert Button in Hyperlink Dialog Box - II ->', (done: Function) => {
             helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+            helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog .e-link-dialog.e-tab', true);
             helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
+            helper.getElements('.e-hyperlink-dlg .e-document .e-input')[1].value = ' ';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
+            const btn: HTMLButtonElement = helper.getElement('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+            expect(btn.disabled).toBeTruthy();
+            helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = 'K30';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
+            expect(btn.disabled).toBeFalsy();
+            helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+            let td: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
+            expect(td.classList).toContain('e-hyperlink');
+            expect(td.classList).toContain('e-hyperlink-style');
+            expect(td.tagName).toBe('A');
+            expect(td.getAttribute('ref')).toBe('Sheet1!K30');
+            td.click();
             setTimeout(() => {
-                helper.getElements('.e-hyperlink-dlg .e-document .e-input')[1].value = ' ';
-                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
-                const btn: HTMLButtonElement = helper.getElement('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
-                expect(btn.disabled).toBeTruthy();
-                helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = 'K30';
-                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
-                expect(btn.disabled).toBeFalsy();
-                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
-                let td: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
-                expect(td.classList).toContain('e-hyperlink');
-                expect(td.classList).toContain('e-hyperlink-style');
-                expect(td.tagName).toBe('A');
-                expect(td.getAttribute('ref')).toBe('Sheet1!K30');
-                td.click();
-                setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].selectedRange).toBe('K30:K30');
-                    done();
-                });
-            }, 900);
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('K30:K30');
+                done();
+            }, 50);
         });
 
         it('Opening Edit Hyperlink Dialog for Document Input->', (done: Function) => {
@@ -544,7 +540,7 @@ describe('Hyperlink ->', () => {
                 helper.click('.e-edithyperlink-dlg .e-footer-content button:nth-child(1)');
                 helper.invoke('selectRange', ['E2']);
                 done();
-            }, 900);
+            });
         });
 
         it('Cancel Openining hyperlink Dialog', (done: Function) => {
@@ -600,8 +596,48 @@ describe('Hyperlink ->', () => {
             helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
             setTimeout(() => {
                 helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog .e-link-dialog.e-tab', true);
                 helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
+                let editorElem = helper.getElementFromSpreadsheet().querySelectorAll('.e-hyperlink-dlg .e-treeview .e-icon-expandable')[0];
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                editorElem.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                editorElem.dispatchEvent(e);
+                e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                editorElem.dispatchEvent(e);
                 setTimeout(() => {
+                    let editorElem = helper.getElementFromSpreadsheet().querySelectorAll('.e-hyperlink-dlg .e-treeview .e-fullrow')[4];
+                    let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                    editorElem.dispatchEvent(e);
+                    e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                    editorElem.dispatchEvent(e);
+                    e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                    editorElem.dispatchEvent(e);
+                    setTimeout(() => {
+                        helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                        let tag: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
+                        expect(tag.classList).toContain('e-hyperlink');
+                        expect(tag.classList).toContain('e-hyperlink-style');
+                        expect(tag.tagName).toBe('A');
+                        tag.click();
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A5');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Apply hyperlink with for defined names in another sheet->', (done: Function) => {
+            helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1].click();
+            setTimeout(() => {
+                helper.invoke('selectRange', ['A1']);
+                helper.switchRibbonTab(2);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog .e-link-dialog.e-tab', true);
+                    helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
                     let editorElem = helper.getElementFromSpreadsheet().querySelectorAll('.e-hyperlink-dlg .e-treeview .e-icon-expandable')[0];
                     let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
                     editorElem.dispatchEvent(e);
@@ -624,54 +660,12 @@ describe('Hyperlink ->', () => {
                             expect(tag.classList).toContain('e-hyperlink-style');
                             expect(tag.tagName).toBe('A');
                             tag.click();
-                            setTimeout(() => {  
+                            setTimeout(() => {
                                 expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A5');
                                 done();
                             });
-                        },400);
-                    }, 400);
-                }, 900);
-            });
-        });
-        it('Apply hyperlink with for defined names in another sheet->', (done: Function) => {
-            helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1].click();
-            setTimeout(() => {
-                helper.invoke('selectRange', ['A1']);
-                helper.switchRibbonTab(2);
-                helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
-                setTimeout(() => {
-                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
-                    helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
-                    setTimeout(() => {
-                        let editorElem = helper.getElementFromSpreadsheet().querySelectorAll('.e-hyperlink-dlg .e-treeview .e-icon-expandable')[0];
-                        let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
-                        editorElem.dispatchEvent(e);
-                        e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
-                        editorElem.dispatchEvent(e);
-                        e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
-                        editorElem.dispatchEvent(e);
-                        setTimeout(() => {
-                            let editorElem = helper.getElementFromSpreadsheet().querySelectorAll('.e-hyperlink-dlg .e-treeview .e-fullrow')[4];
-                            let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
-                            editorElem.dispatchEvent(e);
-                            e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
-                            editorElem.dispatchEvent(e);
-                            e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
-                            editorElem.dispatchEvent(e);
-                            setTimeout(() => {
-                                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
-                                let tag: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
-                                expect(tag.classList).toContain('e-hyperlink');
-                                expect(tag.classList).toContain('e-hyperlink-style');
-                                expect(tag.tagName).toBe('A');
-                                tag.click();
-                                setTimeout(() => {  
-                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A5');
-                                    done();
-                                });
-                            },400);
-                        }, 400);
-                    }, 900);
+                        });
+                    });
                 });
             });
         });
@@ -732,7 +726,7 @@ describe('Hyperlink ->', () => {
                 const btn: HTMLButtonElement = helper.getElement('.e-edithyperlink-dlg .e-footer-content button:nth-child(1)');
                 expect(btn.disabled).toBeFalsy();
                 done();
-            }, 100);
+            });
         });
         it('Clicking other than active sheet in hyperlink dialog box->', (done: Function) => {
             helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
@@ -781,7 +775,7 @@ describe('Hyperlink ->', () => {
                     helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                     setTimeout(() => {
                         helper.setAnimationToNone('#spreadsheet_contextmenu');
-                        helper.openAndClickCMenuItem(0, 0, [11]);
+                        helper.openAndClickCMenuItem(0, 0, [13]);
                         expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink).toBeUndefined();
                         expect(helper.invoke('getCell', [0, 0]).children[0]).toBeUndefined();
                         done();
@@ -812,7 +806,7 @@ describe('Hyperlink ->', () => {
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
                 setTimeout(() => {
-                    helper.click('#' + helper.id + '_contextmenu li:nth-child(9)');
+                    helper.click('#' + helper.id + '_contextmenu li:nth-child(11)');
                     setTimeout(() => {
                         helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                         helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');

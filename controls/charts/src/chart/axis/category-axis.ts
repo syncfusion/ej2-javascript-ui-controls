@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Axis } from '../axis/axis';
 import { getActualDesiredIntervalsCount, triggerLabelRender } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
@@ -9,6 +7,7 @@ import { Chart } from '../chart';
 import { extend, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
 import { NiceInterval } from '../axis/axis-helper';
+import { Series } from '../series/chart-series';
 
 
 /**
@@ -21,6 +20,7 @@ export class Category extends NiceInterval {
      * Constructor for the category module.
      *
      * @private
+     * @param {Chart} chart - Specifies the chart.
      */
     constructor(chart: Chart) {
         super(chart);
@@ -66,10 +66,13 @@ export class Category extends NiceInterval {
      * Padding for the axis.
      *
      * @private
+     * @param {Axis} axis - The axis for which padding is applied.
+     * @param {Size} size - The size for padding.
+     * @returns {void}
      */
     public applyRangePadding(axis: Axis, size: Size): void {
         let isColumn: boolean;
-        axis.series.forEach((element) => {
+        axis.series.forEach((element: Series) => {
             if (!isColumn) { isColumn = element.type.indexOf('Column') > -1 && !(axis.zoomFactor < 1 || axis.zoomPosition > 0) && isNullOrUndefined(axis.minimum) && isNullOrUndefined(axis.maximum); }
         });
         const ticks: number = ((axis.labelPlacement === 'BetweenTicks' || isColumn) && !this.chart.stockChart && this.chart.chartAreaType !== 'PolarRadar') ? 0.5 : 0;

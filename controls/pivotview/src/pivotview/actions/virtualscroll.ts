@@ -88,11 +88,10 @@ export class VirtualScroll {
                 EventHandler.add(mCont, 'touchstart pointerdown', this.setPageXY(), this);
                 EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont), this);
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            this.parent.grid.on('check-scroll-reset', (args: any) => {
+            this.parent.grid.on('check-scroll-reset', (args: { [key: string]: Object }) => {
                 args.cancel = true;
             });
-            this.parent.grid.on('prevent-frozen-scroll-refresh', function (args: any) { /* eslint-disable-line */
+            this.parent.grid.on('prevent-frozen-scroll-refresh', (args: { [key: string]: Object }) => {
                 args.cancel = true;
             });
             this.parent.grid.isPreventScrollEvent = true;
@@ -202,8 +201,7 @@ export class VirtualScroll {
                 this.parent.scrollPosObject.vertical = section;
                 this.parent.pageSettings.currentRowPage = engine.pageSettings.currentRowPage = section > 1 ? section : 1;
                 let rowStartPos: number = 0;
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
+                this.parent.trigger(events.enginePopulating, args, () => {
                     if (this.parent.dataType === 'pivot') {
                         if (this.parent.dataSourceSettings.mode === 'Server') {
                             this.parent.getEngine('onScroll', null, null, null, null, null, null);
@@ -248,8 +246,7 @@ export class VirtualScroll {
                 pivot.scrollPosObject.horizontal = section;
                 this.parent.pageSettings.currentColumnPage = engine.pageSettings.currentColumnPage = section > 1 ? section : 1;
                 let colStartPos: number = 0;
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
+                this.parent.trigger(events.enginePopulating, args, () => {
                     if (pivot.dataType === 'pivot') {
                         if (this.parent.dataSourceSettings.mode === 'Server') {
                             this.parent.getEngine('onScroll', null, null, null, null, null, null);
@@ -327,8 +324,7 @@ export class VirtualScroll {
      * @hidden
      */
     public onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement): Function {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let timeOutObj: any;
+        let timeOutObj: ReturnType<typeof setTimeout>;
         const ele: HTMLElement = this.parent.isAdaptive ? mCont : closest(mCont, '.' + cls.GRID_CONTENT).querySelector('.' + cls.VIRTUALTABLE_DIV);
         let eleScrollLeft: number = Math.abs(ele.scrollLeft);
         let left: number = eleScrollLeft * this.parent.horizontalScrollScale;
@@ -465,8 +461,7 @@ export class VirtualScroll {
     }
 
     private onVerticalScroll(mCont: HTMLElement, fCont: HTMLElement): Function {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let timeOutObj: any;
+        let timeOutObj: ReturnType<typeof setTimeout>;
         const virtualTableElement: HTMLElement = mCont.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) ?
             mCont.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) : mCont;
         return (e: Event | KeyboardEventArgs) => {

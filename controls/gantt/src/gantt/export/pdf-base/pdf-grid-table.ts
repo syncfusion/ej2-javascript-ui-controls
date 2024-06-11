@@ -8,7 +8,6 @@ import {
 } from '@syncfusion/ej2-pdf-export';
 import { SizeF, PdfBrush, PdfPen, PdfFontStyle, PdfFont, PdfGraphics, PdfBitmap, PdfImage, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfStringLayouter, PdfStringLayoutResult } from '@syncfusion/ej2-pdf-export';
-import { pointToPixel, pixelToPoint } from '../../base/utils';
 
 /**@hidden*/
 
@@ -143,9 +142,7 @@ export class PdfTreeGridCell {
             if (!this.finishedDrawingCell) {
                 currentValue = !(isNullOrUndefined(this.remainingString) || this.remainingString === '') ? this.remainingString : (this.value as string);
             }
-            /* eslint-disable */
             let font: PdfFont = null;
-
             if (this.row.isParentRow) {
                 font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, PdfFontStyle.Bold);
             } else {
@@ -214,7 +211,7 @@ export class PdfTreeGridCell {
                 }
             }
         }
-       //bounds = this.adjustContentLayoutArea(bounds);
+        //bounds = this.adjustContentLayoutArea(bounds);
         this.drawCellBackground(graphics, bounds);
         const textPen: PdfPen = null;
         const textBrush: PdfBrush = new PdfSolidBrush(this.style.fontColor);
@@ -246,7 +243,7 @@ export class PdfTreeGridCell {
         }
         innerLayoutArea = this.adjustContentLayoutArea(innerLayoutArea);
         if (this.image && this.value) {
-            let imageBounds: any;
+            let imageBounds: RectangleF;
             if (this.image.width <= innerLayoutArea.width) {
                 imageBounds = new RectangleF(innerLayoutArea.x, innerLayoutArea.y, this.image.width, this.image.height);
             }
@@ -257,7 +254,8 @@ export class PdfTreeGridCell {
             let temp: string = null;
             // font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
             let customisedFont: PdfFont;
-            let newFont = new PdfStandardFont(this.fontStyle.fontFamily, this.fontStyle.fontSize, this.fontStyle.fontStyle);
+            const newFont: PdfStandardFont = new PdfStandardFont(
+                this.fontStyle.fontFamily, this.fontStyle.fontSize, this.fontStyle.fontStyle);
             if (this.fontStyle.fontSize || this.fontStyle.fontFamily) {
                 customisedFont = newFont;
             }
@@ -294,7 +292,7 @@ export class PdfTreeGridCell {
             result = graphics.stringLayoutResult;
         }
         else if (this.value instanceof PdfImage || this.value instanceof PdfBitmap) {
-            let imageBounds: any;
+            let imageBounds: RectangleF;
             if (this.value.width <= innerLayoutArea.width) {
                 imageBounds = new RectangleF(innerLayoutArea.x, innerLayoutArea.y, this.value.width, innerLayoutArea.height);
             }
@@ -306,7 +304,7 @@ export class PdfTreeGridCell {
         else if (this.value instanceof PdfTextWebLink) {
             this.value.draw(graphics.currentPage, innerLayoutArea);
         }
-        if (this.style.borders != null) {
+        if (this.style.borders !== null) {
             this.drawCellBorder(graphics, bounds);
         }
         return result;
@@ -322,12 +320,12 @@ export class PdfTreeGridCell {
      */
     public drawCellBackground(graphics: PdfGraphics, bounds: RectangleF): void {
         const backgroundBrush: PdfBrush = new PdfSolidBrush(this.style.backgroundColor);
-        if (backgroundBrush != null) {
+        if (backgroundBrush !== null) {
             graphics.save();
             graphics.drawRectangle(backgroundBrush, bounds.x, bounds.y, bounds.width, bounds.height);
             graphics.restore();
         }
-        // if (this.style.backgroundImage != null) {
+        // if (this.style.backgroundImage !== null) {
         //     let image: PdfImage = this.getBackgroundImage();
         //     graphics.drawImage(this.style.backgroundImage, bounds.x, bounds.y, bounds.width, bounds.height);
         // }
@@ -821,7 +819,7 @@ export class PdfTreeGridColumn {
      * @private
      */
     public get format(): PdfStringFormat {
-        if (this.stringFormat == null) {
+        if (isNullOrUndefined(this.stringFormat)) {
             this.stringFormat = new PdfStringFormat(); //GetDefaultFormat();
         }
         return this.stringFormat;

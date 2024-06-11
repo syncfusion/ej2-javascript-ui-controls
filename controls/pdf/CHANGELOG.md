@@ -2,37 +2,7 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
-
-### PDF Parser
-
-#### Bug Fixes
-
-- Resolved the form field preservation issues in a large PDF documents.
-
-## 25.1.39 (2024-04-09)
-
-### PDF Parser
-
-#### Bug Fixes
-
-- Resolved an exception encountered while parsing the removed page destination from the document link annotation.
-- Resolved an exception encountered while filling the text box field.
-- Resolved an exception encountered while exporting the rubber stamp annotation appearance template.
-- The options parsing issue in the list box field have been resolved.
-
-## 25.1.38 (2024-04-02)
-
-### PDF Parser
-
-#### Bug Fixes
-
-- Resolved an exception encountered while removing all pages from PDF document.
-- The issues related to the preservation of square measurement annotation have been resolved.
-- Resolved the document corruption issues in the encrypted PDF document.
-- Resolved the PNG image preservation issue while export rubber stamp annotation appearance template.
-
-## 25.1.35 (2024-03-15)
+## 26.1.35 (2024-06-11)
 
 ### PDF Parser
 

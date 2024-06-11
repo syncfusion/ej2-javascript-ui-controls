@@ -21,12 +21,12 @@ import * as CLS from './classes';
 import { read, filter, createFolder } from '../common/operations';
 import { FileManagerModel } from './file-manager-model';
 import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs, ReadArgs, FileSelectionEventArgs } from './interface';
-import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';
+import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs, FolderCreateEventArgs, DeleteEventArgs, RenameEventArgs, MoveEventArgs, SearchEventArgs } from './interface';
 import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';
 import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';
 import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs, BeforeDownloadEventArgs, BeforeImageLoadEventArgs } from './interface';
 import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog, getCssClass } from '../common/utility';
-import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem } from '../common/utility';
+import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem, closePopup } from '../common/utility';
 import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';
 import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';
 import { ContextMenuSettings } from '../models/contextMenu-settings';
@@ -73,7 +73,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /* Internal variables */
     private keyboardModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
-    // eslint-disable-next-line
     public filterData: Object = null;
     public originalPath: string;
     public filterPath: string;
@@ -82,17 +81,13 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public pathNames: string[];
     public pathId: string[];
     public expandedId: string;
-    // eslint-disable-next-line
     public itemData: Object[];
-    // eslint-disable-next-line
     public visitedData: Object;
     public visitedItem: Element;
     public toolbarSelection: boolean;
     // Specifies the parent path of the CWD(this.path).
     public targetPath: string;
-    // eslint-disable-next-line
     public feParent: Object[];
-    // eslint-disable-next-line
     public feFiles: Object[];
     public activeElements: Element[];
     public activeModule: string;
@@ -103,18 +98,18 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public extDialogObj: Dialog;
     public selectedNodes: string[] = [];
     public duplicateItems: string[] = [];
-    // eslint-disable-next-line
     public duplicateRecords: Object[] = [];
     public previousPath: string[] = [];
     public nextPath: string[] = [];
     public fileAction: string;
     public pasteNodes: string[];
+    // Specifies response data of the file or folder.
+    public responseData: { [key: string]: Object; };
+    public existingFileCount: number = 0;
     public isLayoutChange: boolean = false;
     public replaceItems: string[];
-    // eslint-disable-next-line
     public createdItem: { [key: string]: Object; };
     public layoutSelectedItems: string[] = [];
-    // eslint-disable-next-line
     public renamedItem: { [key: string]: Object; };
     public renamedId: string = null;
     public uploadItem: string[] = [];
@@ -125,9 +120,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public isMobile: boolean;
     public isBigger: boolean;
     public isFile: boolean = false;
-    // eslint-disable-next-line
     public actionRecords: Object[];
-    // eslint-disable-next-line
     public activeRecords: Object[];
     public isCut: boolean = false;
     public isSearchCut: boolean = false;
@@ -151,31 +144,27 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     private isOpened: boolean = false;
     public isRetryOpened: boolean = false;
     public isPathDrag: boolean = false;
-    // eslint-disable-next-line
     public searchedItems: { [key: string]: Object; }[] = [];
     public searchWord: string;
     public retryFiles: FileInfo[] = [];
     public isApplySame: boolean = false;
     public uploadEventArgs: BeforeSendEventArgs;
-    // eslint-disable-next-line
     public dragData: { [key: string]: Object; }[] = [];
     public dragNodes: string[] = [];
     public dragPath: string = '';
     public dropPath: string = '';
     public isDragDrop: boolean = false;
     public virtualDragElement: HTMLElement;
-    // eslint-disable-next-line
     public dropData: Object;
     public treeExpandTimer: number = null;
     public dragCursorPosition: PositionModel = { left: 44, top: 18 };
     public isDropEnd: boolean = false;
     public dragCount: number = 0;
-    // eslint-disable-next-line
     public droppedObjects: Object[] = [];
     public destinationPath: string;
     public uploadingCount: number = 0;
     public uploadedCount: number = 0;
-    //Specifies whether the operating system is MAC or not 
+    //Specifies whether the operating system is MAC or not
     public isMac : boolean = false;
     public oldView: string;
     public oldPath: string;
@@ -192,6 +181,16 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Complex<AjaxSettingsModel>({}, AjaxSettings)
     public ajaxSettings: AjaxSettingsModel;
+
+    /**
+     * Specifies the array of data to populate folders/files in the File Manager.
+     * The mandatory fields to be included in the JSON data are defined in fileData interface.
+     * This interface can be extended to add additional fields as required.
+     *
+     * @default []
+     */
+    @Property([])
+    public fileSystemData: { [key: string]: Object }[];
 
     /**
      * Enables or disables drag-and-drop of files.
@@ -408,7 +407,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * The sort comparer function has the same functionality like
      * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
      * This can be used to customize the default sorting functionalities with required comparison values.
-     * 
+     *
      * @default null
      * @aspType string
      */
@@ -426,18 +425,18 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Complex<ToolbarSettingsModel>({}, ToolbarSettings)
     public toolbarSettings: ToolbarSettingsModel;
-    
-    /** 
-     * An array of items that are used to configure File Manager toolbar items. 
-     * 
-     * @remarks 
+
+    /**
+     * An array of items that are used to configure File Manager toolbar items.
+     *
+     * @remarks
      * Use this property if you want to include custom toolbar items along with existing toolbar items. If both `toolbarSettings` and `toolbarItems` are defined, then items will be rendered based on toolbarItems.
-     * 
-     * @default [] 
-     * 
-     */ 
-    @Collection<ToolbarItemModel>([], ToolbarItem) 
-    public toolbarItems: ToolbarItemModel[]; 
+     *
+     * @default []
+     *
+     */
+    @Collection<ToolbarItemModel>([], ToolbarItem)
+    public toolbarItems: ToolbarItemModel[];
 
     /**
      * Specifies the upload settings for the file manager.
@@ -465,7 +464,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the file/folder is rendered.
      *
-     * @event
+     * @event fileLoad
      */
     @Event()
     public fileLoad: EmitType<FileLoadEventArgs>;
@@ -473,7 +472,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the file/folder is opened.
      *
-     * @event
+     * @event fileOpen
      */
     @Event()
     public fileOpen: EmitType<FileOpenEventArgs>;
@@ -481,7 +480,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before sending the download request to the server.
      *
-     * @event
+     * @event beforeDownload
      */
     @Event()
     public beforeDownload: EmitType<BeforeDownloadEventArgs>;
@@ -489,7 +488,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before sending the getImage request to the server.
      *
-     * @event
+     * @event beforeImageLoad
      */
     @Event()
     public beforeImageLoad: EmitType<BeforeImageLoadEventArgs>;
@@ -497,7 +496,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the dialog is closed.
      *
-     * @event
+     * @event beforePopupClose
      */
     @Event()
     public beforePopupClose: EmitType<BeforePopupOpenCloseEventArgs>;
@@ -505,7 +504,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the dialog is opened.
      *
-     * @event
+     * @event beforePopupOpen
      */
     @Event()
     public beforePopupOpen: EmitType<BeforePopupOpenCloseEventArgs>;
@@ -513,7 +512,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before sending the AJAX request to the server.
      *
-     * @event
+     * @event beforeSend
      */
     @Event()
     public beforeSend: EmitType<BeforeSendEventArgs>;
@@ -521,27 +520,88 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file manager component is created.
      *
-     * @event
+     * @event created
      */
-    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
-    /* eslint-enable */
+    /**
+     * This event is triggered before a folder is created. It allows for the restriction of folder creation based on the application's use case.
+     *
+     * @event beforeFolderCreate
+     */
+    @Event()
+    public beforeFolderCreate: EmitType<FolderCreateEventArgs>;
+    /**
+     * This event is triggered when a folder is successfully created. It provides an opportunity to retrieve details about the newly created folder.
+     *
+     * @event folderCreate
+     */
+    @Event()
+    public folderCreate: EmitType<FolderCreateEventArgs>;
 
     /**
      * Triggers when the file manager component is destroyed.
      *
-     * @event
+     * @event destroyed
      */
-    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
-    /* eslint-enable */
+    /**
+     * This event is triggered before the deletion of a file or folder occurs. It can be utilized to prevent the deletion of specific files or folders. Any actions, such as displaying a spinner for deletion, can be implemented here.
+     *
+     * @event beforeDelete
+     */
+    @Event()
+    public beforeDelete: EmitType<DeleteEventArgs>;
+    /**
+     * This event is triggered after the file or folder is deleted successfully. The deleted file or folder details can be retrieved here. Additionally, custom elements' visibility can be managed here based on the application's use case.
+     *
+     * @event delete
+     */
+    @Event()
+    public delete: EmitType<DeleteEventArgs>;
+    /**
+     * This event is triggered when a file or folder is about to be renamed. It allows for the restriction of the rename action for specific folders or files by utilizing the cancel option.
+     *
+     * @event beforeRename
+     */
+    @Event()
+    public beforeRename: EmitType<RenameEventArgs>;
+    /**
+     * This event is triggered when a file or folder is successfully renamed. It provides an opportunity to fetch details about the renamed file.
+     *
+     * @event rename
+     */
+    @Event()
+    public rename: EmitType<RenameEventArgs>;
+    /**
+     * This event is triggered when a file or folder begins to move from its current path through a copy/cut and paste action.
+     *
+     * @event beforeMove
+     */
+    @Event()
+    public beforeMove: EmitType<MoveEventArgs>;
+    /**
+     * This event is triggered when a file or folder is pasted into the destination path.
+     *
+     * @event move
+     */
+    @Event()
+    public move: EmitType<MoveEventArgs>;
+
+    /**
+     * This event is triggered when a search action occurs in the search bar of the File Manager component. It triggers each character entered in the input during the search process.
+     *
+     * @event search
+     */
+    @Event()
+    public search: EmitType<SearchEventArgs>;
+
 
     /**
      * Triggers when the file/folder dragging is started.
      *
-     * @event
+     * @event fileDragStart
      */
     @Event()
     public fileDragStart: EmitType<FileDragEventArgs>;
@@ -549,7 +609,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers while dragging the file/folder.
      *
-     * @event
+     * @event fileDragging
      */
     @Event()
     public fileDragging: EmitType<FileDragEventArgs>;
@@ -557,7 +617,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file/folder is about to be dropped at the target.
      *
-     * @event
+     * @event fileDragStop
      */
     @Event()
     public fileDragStop: EmitType<FileDragEventArgs>;
@@ -565,7 +625,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file/folder is dropped.
      *
-     * @event
+     * @event fileDropped
      */
     @Event()
     public fileDropped: EmitType<FileDragEventArgs>;
@@ -573,7 +633,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the file/folder is selected.
      *
-     * @event
+     * @event fileSelection
      */
     @Event()
     public fileSelection: EmitType<FileSelectionEventArgs>;
@@ -581,7 +641,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file/folder is selected/unselected.
      *
-     * @event
+     * @event fileSelect
      */
     @Event()
     public fileSelect: EmitType<FileSelectEventArgs>;
@@ -589,7 +649,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the context menu item is clicked.
      *
-     * @event
+     * @event menuClick
      */
     @Event()
     public menuClick: EmitType<MenuClickEventArgs>;
@@ -597,7 +657,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the context menu is opened.
      *
-     * @event
+     * @event menuOpen
      */
     @Event()
     public menuOpen: EmitType<MenuOpenEventArgs>;
@@ -605,7 +665,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the AJAX request is failed.
      *
-     * @event
+     * @event failure
      */
     @Event()
     public failure: EmitType<FailureEventArgs>;
@@ -613,7 +673,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the dialog is closed.
      *
-     * @event
+     * @event popupClose
      */
     @Event()
     public popupClose: EmitType<PopupOpenCloseEventArgs>;
@@ -621,14 +681,15 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the dialog is opened.
      *
-     * @event
+     * @event popupOpen
      */
     @Event()
     public popupOpen: EmitType<PopupOpenCloseEventArgs>;
 
     /**
      * Triggers when the AJAX request is success.
-     * @event
+     *
+     * @event success
      */
     @Event()
     public success: EmitType<SuccessEventArgs>;
@@ -636,7 +697,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the toolbar item is clicked.
      *
-     * @event
+     * @event toolbarClick
      */
     @Event()
     public toolbarClick: EmitType<ToolbarClickEventArgs>;
@@ -644,7 +705,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before creating the toolbar.
      *
-     * @event
+     * @event toolbarCreate
      */
     @Event()
     public toolbarCreate: EmitType<ToolbarCreateEventArgs>;
@@ -652,7 +713,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before rendering each file item in upload dialog box.
      *
-     * @event
+     * @event uploadListCreate
      */
     @Event()
     public uploadListCreate: EmitType<UploadListCreateArgs>;
@@ -736,7 +797,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             modules.push({
                 member: 'toolbar',
                 args: [this],
-                name:'Toolbar'
+                name: 'Toolbar'
             });
         }
         if (this.navigationPaneSettings.visible) {
@@ -782,7 +843,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             this.allowMultiSelection ? this.selectedItems : this.selectedItems.slice(this.selectedItems.length - 1);
         this.setProperties({ selectedItems: slItems }, true);
         this.fileView = this.view;
-        this.isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0; 
+        this.isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
         this.setRtl(this.enableRtl);
         this.addEventListeners();
         read(this, (this.path !== this.originalPath) ? events.initialEnd : events.finalizeEnd, this.path);
@@ -1066,7 +1127,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         const data: string = JSON.stringify(getValue(this.pathId[this.pathId.length - 1], this.feParent));
         args.customFormData = [{ 'path': this.path }, { 'action': action }, { 'data': data }, {'filename': args.fileData.name}];
         const uploadUrl: string = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
-        // eslint-disable-next-line
         const ajaxSettings: Object = {
             url: uploadUrl,
             type: 'POST',
@@ -1082,7 +1142,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.trigger('beforeSend', this.uploadEventArgs, (uploadEventArgs: BeforeSendEventArgs) => {
             args.customFormData = JSON.parse(getValue('data', uploadEventArgs.ajaxSettings));
             args.cancel = uploadEventArgs.cancel;
-            // eslint-disable-next-line
             const eventArgs: Object = {
                 cancel: false,
                 httpRequest: args.currentRequest
@@ -1120,7 +1179,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (args.filesData.length === 0) { return; }
         this.uploadingCount = args.filesData.length;
         this.uploadedCount = 0;
-        // eslint-disable-next-line
         const details: Object = getPathObject(this);
         if (!hasUploadAccess(details)) {
             args.cancel = true;
@@ -1130,7 +1188,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.uploadDialogObj.show();
     }
 
-    // eslint-disable-next-line
     private onFileUploadSuccess(args: { [key: string]: Object; }): void {
         this.uploadedCount = this.uploadedCount + (<number>args.count) ;
         if (this.uploadSettings.autoClose && (this.uploadingCount === this.uploadedCount)) {
@@ -1139,7 +1196,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /* istanbul ignore next */
-    // eslint-disable-next-line
     private onUploadSuccess(files: Object): void {
         const args: SuccessEventArgs = { action: 'Upload', result: files };
         this.trigger('success', args);
@@ -1151,9 +1207,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         }
     }
     /* istanbul ignore next */
-    // eslint-disable-next-line
     private onUploadFailure(files: Object): void {
-        // eslint-disable-next-line
         const response: object = getValue('response', files);
         const statusText: string = getValue('statusText', response);
         if (statusText !== '') { setValue('statusText', statusText, files); }
@@ -1235,7 +1289,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             break;
         case 'ctrlU':
             e.preventDefault();
-            if (this.toolbarSettings.items.indexOf('Upload') != -1){    
+            if (this.toolbarSettings.items.indexOf('Upload') !== -1){
                 uploadEle = <HTMLElement>select('#' + this.element.id + CLS.UPLOAD_ID, this.element);
                 uploadEle.click();
             }
@@ -1277,7 +1331,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * @private
      */
     /* istanbul ignore next */
-    // eslint:disable-next-line
     public onPropertyChanged(newProp: FileManagerModel, oldProp: FileManagerModel): void {
         let height: string | number;
         for (const prop of Object.keys(newProp)) {
@@ -1406,6 +1459,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     this.viewerObj.target = newProp.popupTarget;
                 }
                 break;
+            case 'fileSystemData':
+                this.fileSystemData = newProp.fileSystemData;
+                this.refresh();
+                break;
             }
         }
     }
@@ -1492,7 +1549,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     public createFolder(name?: string): void {
         this.notify(events.methodCall, { action: 'createFolder' });
-        // eslint-disable-next-line
         const details: Object[] = [getPathObject(this)];
         this.itemData = details;
         if (name) {
@@ -1617,7 +1673,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      *
      * @returns {void}
      */
-    // eslint-disable-next-line
     public filterFiles(filterData?: Object): void {
         this.filterData = filterData ? filterData : null;
         this.setProperties({ selectedItems: [] }, true);
@@ -1634,7 +1689,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      *
      * @returns {Object[]} - returns selected files.
      */
-    // eslint-disable-next-line
     public getSelectedFiles(): Object[] {
         this.notify(events.updateSelectionData, {});
         return this.itemData;
@@ -1713,10 +1767,18 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public uploadFiles(): void {
-        // eslint-disable-next-line
         const details: Object[] = [getPathObject(this)];
         this.itemData = details;
         uploadItem(this);
+    }
+
+    /**
+     * Specifies the method which must be invoked to programmatically close the dialog popup in the file manager.
+     *
+     * @returns {void}
+     */
+    public closeDialog(): void {
+        closePopup(this);
     }
 
     /**

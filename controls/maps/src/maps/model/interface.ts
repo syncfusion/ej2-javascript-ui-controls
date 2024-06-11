@@ -871,12 +871,24 @@ export interface IThemeStyle {
     zoomSelectionColor?: string;
     /** Specifies the color for the shapes in the maps. */
     shapeFill?: string;
+    /** Specifies the color of the border of the shapes in the maps. */
+    shapeBorderColor?: string;
     /** Specifies the color by using rectangle zoom fill color in maps. */
     rectangleZoomFillColor?: string;
     /** Specifies the color by using rectangle zoom fill color in maps. */
     rectangleZoomFillOpacity?: number;
     /** Specifies the color by using rectangle zoom fill color in maps. */
     rectangleZoomBorderColor?: string;
+    /** Specifies the color of the legend border in maps. */
+    legendBorderColor?: string;
+    /** Specifies the width of the legend border in maps. */
+    legendBorderWidth?: number;
+    /** Specifies the border color of the zoom toolbar buttons in maps. */
+    zoomBorderColor?: string;
+    /** Specifies the border color of the tooltip in maps. */
+    tooltipBorderColor?: string;
+    /** Specifies the radius of the zoom buttons in maps. */
+    zoomButtonRadius: number;
 }
 
 /**

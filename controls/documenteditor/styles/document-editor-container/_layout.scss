@@ -73,7 +73,6 @@
 
   /* stylelint-enable */
   @if $skin-name == 'FluentUI' {
-    //Font color icons is smaller when comparing with other icons.
     .e-de-ctnr-group-btn .e-btn .e-btn-icon.e-icons.e-de-ctnr-fontcolor,
     .e-de-ctnr-group-btn .e-btn .e-btn-icon.e-icons.e-de-ctnr-change-case {
       font-size: 18px;

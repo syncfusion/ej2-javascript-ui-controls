@@ -1,6 +1,6 @@
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { WCharacterFormat } from '../index';
-import { defaultFont, Dictionary } from '../../index'
+import { defaultFont, Dictionary } from '../../index';
 import { TextElementBox, ListTextElementBox, ParagraphWidget } from './page';
 import { DocumentHelper } from './viewer';
 import { HelperMethods, LtrRtlTextInfo, RtlInfo } from '../editor/editor-helper';
@@ -41,9 +41,19 @@ export class TextHelper {
     private paragraphMarkInfo: TextHeightInfo = {};
 
 
-    private static wordSplitCharacters: string[] = [ String.fromCharCode(32), String.fromCharCode(33), String.fromCharCode(34), String.fromCharCode(35), String.fromCharCode(36), String.fromCharCode(37), String.fromCharCode(38), String.fromCharCode(39), String.fromCharCode(40), String.fromCharCode(41), String.fromCharCode(42), String.fromCharCode(43), String.fromCharCode(44), String.fromCharCode(45), String.fromCharCode(46), String.fromCharCode(47), String.fromCharCode(58), String.fromCharCode(59), String.fromCharCode(60), String.fromCharCode(61), String.fromCharCode(62), String.fromCharCode(63), String.fromCharCode(64), String.fromCharCode(91), String.fromCharCode(92), String.fromCharCode(93), String.fromCharCode(94), String.fromCharCode(95), String.fromCharCode(96), String.fromCharCode(123), String.fromCharCode(124), String.fromCharCode(125), String.fromCharCode(126), String.fromCharCode(1548), String.fromCharCode(1563), String.fromCharCode(8211), String.fromCharCode(8212), String.fromCharCode(8216), String.fromCharCode(8217), String.fromCharCode(8221), String.fromCharCode(12288), String.fromCharCode(8207) ];
+    private static wordSplitCharacters: string[] = [String.fromCharCode(32), String.fromCharCode(33), String.fromCharCode(34),
+        String.fromCharCode(35), String.fromCharCode(36), String.fromCharCode(37), String.fromCharCode(38), String.fromCharCode(39),
+        String.fromCharCode(40), String.fromCharCode(41), String.fromCharCode(42), String.fromCharCode(43), String.fromCharCode(44),
+        String.fromCharCode(45), String.fromCharCode(46), String.fromCharCode(47), String.fromCharCode(58), String.fromCharCode(59),
+        String.fromCharCode(60), String.fromCharCode(61), String.fromCharCode(62), String.fromCharCode(63), String.fromCharCode(64),
+        String.fromCharCode(91), String.fromCharCode(92), String.fromCharCode(93), String.fromCharCode(94), String.fromCharCode(95),
+        String.fromCharCode(96), String.fromCharCode(123), String.fromCharCode(124), String.fromCharCode(125), String.fromCharCode(126),
+        String.fromCharCode(1548), String.fromCharCode(1563), String.fromCharCode(8211), String.fromCharCode(8212),
+        String.fromCharCode(8216), String.fromCharCode(8217), String.fromCharCode(8221), String.fromCharCode(12288),
+        String.fromCharCode(8207)];
 
-    private static numberNonReversingCharacters: string[] = [String.fromCharCode(44), String.fromCharCode(46), String.fromCharCode(47), String.fromCharCode(58), String.fromCharCode(1548) ];
+    private static numberNonReversingCharacters: string[] = [String.fromCharCode(44), String.fromCharCode(46), String.fromCharCode(47),
+        String.fromCharCode(58), String.fromCharCode(1548)];
 
     private get paragraphMark(): string {
         return '¶';
@@ -107,7 +117,7 @@ export class TextHelper {
         return textTrimEndWidth;
     }
     public getHeight(characterFormat: WCharacterFormat, scriptType?: FontScriptType): TextSizeInfo {
-        let fontToRender: string = this.getFontNameToRender(scriptType, characterFormat);
+        const fontToRender: string = this.getFontNameToRender(scriptType, characterFormat);
         // Get character format property as  below predefined structure to make it easy to check and retrieve
         // Predefined static structure `[FontName];[FontSize];bold;italic` to maintain as key in the collection
         const key: string = this.getFormatText(characterFormat, fontToRender);
@@ -120,11 +130,11 @@ export class TextHelper {
     }
     public getFormatText(characterFormat: WCharacterFormat, fontToRender?: string): string {
         let formatText: string = '';
-        if(!isNullOrUndefined(fontToRender)){
+        if (!isNullOrUndefined(fontToRender)){
             formatText = fontToRender.toLocaleLowerCase();
         }else{
             formatText = characterFormat.fontFamily.toLocaleLowerCase();
-        }        
+        }
         formatText += ';' + characterFormat.fontSize;
         if (characterFormat.bold) {
             formatText += ';' + 'bold';
@@ -151,15 +161,15 @@ export class TextHelper {
         fontSize = fontSize === 0 ? 0.5 : fontSize / (characterFormat.baselineAlignment === 'Normal' ? 1 : 1.5);
         this.context.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + fontFamily + '"';
         (this.context as any).letterSpacing = characterFormat.characterSpacing + 'pt';
-        let scaleFactor: number = (characterFormat.scaling/100);
+        const scaleFactor: number = (characterFormat.scaling / 100);
         if (characterFormat.allCaps) {
             text = text.toUpperCase();
         }
-         //ES-853789:For combine character we need  to add the base character to get the width of the text.
-         if( text == "\u0336")
-         {
-           text += "A";
-         }
+        //ES-853789:For combine character we need  to add the base character to get the width of the text.
+        if ( text === '\u0336')
+        {
+            text += 'A';
+        }
         return Math.abs(this.context.measureText(text).width * scaleFactor);
     }
 

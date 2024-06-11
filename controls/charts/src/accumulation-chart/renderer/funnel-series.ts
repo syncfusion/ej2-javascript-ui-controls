@@ -1,5 +1,3 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * Defines the behavior of a funnel series
  */
@@ -18,7 +16,10 @@ export class FunnelSeries extends TriangularBase {
      * Defines the path of a funnel segment
      *
      * @private
-     * @returns {string} Get segment data.
+     * @param {AccPoints} point - The point data.
+     * @param {AccumulationSeries} series - The series for which the segment is rendered.
+     * @param {AccumulationChart} chart - The accumulation chart control.
+     * @returns {string} - Get segment data.
      */
     private getSegmentData(point: AccPoints, series: AccumulationSeries, chart: AccumulationChart): string {
         let lineWidth: number;
@@ -96,10 +97,16 @@ export class FunnelSeries extends TriangularBase {
     }
 
     /**
-     * Renders a funnel segment
+     * Renders a funnel segment.
      *
      * @private
-     * @returns {void} Render point.
+     * @param {AccPoints} point - The point data.
+     * @param {AccumulationSeries} series - The series for which the segment is rendered.
+     * @param {AccumulationChart} chart - The accumulation chart control.
+     * @param {PathOption} options - The rendering options for the segment.
+     * @param {Element} seriesGroup - The group element to contain the funnel segments.
+     * @param {boolean} redraw - Specifies whether to redraw the segment.
+     * @returns {void}
      */
     public renderPoint(
         point: AccPoints, series: AccumulationSeries, chart: AccumulationChart, options: PathOption,
@@ -126,7 +133,7 @@ export class FunnelSeries extends TriangularBase {
     /**
      * To get the module name of the funnel series.
      *
-     * @returns {string} Get module name.
+     * @returns {string} - Get module name.
      */
     protected getModuleName(): string {
         return 'FunnelSeries';
@@ -141,7 +148,7 @@ export class FunnelSeries extends TriangularBase {
 
     public destroy(): void {
         /**
-         * Destroys the funnel series
+         * Destroys the funnel series.
          */
     }
 

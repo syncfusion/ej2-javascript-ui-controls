@@ -458,12 +458,12 @@ export class Video {
         if (isNullOrUndefined(vidEleStyle)) {
             return;
         }
-        /* eslint-disable */
-        let width: string | number = vidEleStyle.width !== '' ? vidEleStyle.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(vidEleStyle.width) :
+        const regExp: RegExpConstructor = RegExp;
+        let width: string | number = vidEleStyle.width !== '' ? vidEleStyle.width.match(new regExp('^\\d+(\\.\\d*)?%$', 'g')) ? parseFloat(vidEleStyle.width) :
             parseInt(vidEleStyle.width, 10) : vid.style.width !== '' ? vid.style.width : vid.width;
         let height: string | number = vidEleStyle.height !== '' ? parseInt(vidEleStyle.height, 10) : vid.style.height !== '' ? vid.style.height : vid.height;
-        width = width.toString().match(/\b\d+(\.\d*)?(%|$)\b/g) ? parseFloat(width.toString()) : parseInt(width.toString(), 10);
-        height = height.toString().match(/\b\d+(\.\d*)?(%|$)\b/g) ? parseFloat(height.toString()) : parseInt(height.toString(), 10);
+        width = width.toString().match(new regExp('\\b\\d+(\\.\\d*)?(%|$)\\b', 'g')) ? parseFloat(width.toString()) : parseInt(width.toString(), 10);
+        height = height.toString().match(new regExp('\\b\\d+(\\.\\d*)?(%|$)\\b', 'g')) ? parseFloat(height.toString()) : parseInt(height.toString(), 10);
         /* eslint-enable */
         if (width > height) {
             vid.style.minWidth = this.parent.insertVideoSettings.minWidth === 0 ? '200px' : formatUnit(this.parent.insertVideoSettings.minWidth);
@@ -493,7 +493,7 @@ export class Video {
         } else if (height > width) {
             if (this.parent.insertVideoSettings.resizeByPercent) {
                 this.updateVidEleWidth(vid, width, height, expectedX, expectedY);
-            } else if (vid.style.width !== '' || vidEleStyle.width !== '') {
+            } else if (vidEleStyle.width !== '' || vid.style.width !== '') {
                 vid.style.width = expectedX + 'px';
                 vid.style.height = (height / width * expectedX) + 'px';
             } else {
@@ -510,7 +510,8 @@ export class Video {
             }
         }
     }
-    private updateVidEleWidth(vid: HTMLVideoElement | HTMLIFrameElement, width: number, height: number, expectedX: number, expectedY: number): void {
+    private updateVidEleWidth(vid: HTMLVideoElement | HTMLIFrameElement, width: number,
+                              height: number, expectedX: number, expectedY: number): void {
         if (parseInt('' + vid.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
             const original: number = vid.offsetWidth + this.mouseX;
             const finalWidthByPerc: number = (original / vid.offsetWidth) * (parseFloat(vid.style.width).toString() === 'NaN' ? (vid.offsetWidth / (parseFloat(getComputedStyle(this.parent.element).width)) * 100) : parseFloat(vid.style.width));
@@ -959,7 +960,8 @@ export class Video {
         }
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Break';
-        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent,
+                                      { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private inline(e: IImageNotifyArgs): void {
@@ -968,13 +970,15 @@ export class Video {
         }
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Inline';
-        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent,
+                                      { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private alignVideo(e: IImageNotifyArgs, type: string): void {
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : type;
-        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent,
+                                      { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private editAreaClickHandler(e: IImageNotifyArgs): void {
@@ -1091,7 +1095,7 @@ export class Video {
             return;
         }
         const videoDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-video-dialog', id: this.rteID + '_video' });
-        this.parent.element.appendChild(videoDialog);
+        this.parent.rootContainer.appendChild(videoDialog);
         const videoInsert: string = this.i10n.getConstant('dialogInsert');
         const videolinkCancel: string = this.i10n.getConstant('dialogCancel');
         const videoHeader: string = this.i10n.getConstant('videoHeader');
@@ -1179,7 +1183,6 @@ export class Video {
         }
     }
 
-    // eslint-disable-next-line
     private urlPopup(e: IImageNotifyArgs): HTMLElement {
         const videoUrl: HTMLElement = this.parent.createElement('div', { className: 'e-video-url-wrap' });
         const urlContent: HTMLElement = this.parent.createElement('div', { id: 'urlcontent' });
@@ -1216,12 +1219,12 @@ export class Video {
         });
         if (e.selectNode && (e.selectNode[0] as HTMLElement) && ((e.selectNode[0] as HTMLElement).nodeName === 'VIDEO' || this.isEmbedVidElem(e.selectNode[0] as HTMLElement))) {
             if ((e.selectNode[0] as HTMLElement).nodeName === 'VIDEO') {
-                const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+                const regex: RegExp = new RegExp(/([^\S]|^)(((https?:\/\/)|(www\.))(\S+))/gi);
                 const sourceElement: HTMLSourceElement = (e.selectNode[0] as HTMLElement).querySelector('source');
                 (this.inputUrl as HTMLInputElement).value = sourceElement && sourceElement.src && sourceElement.src.match(regex) ? sourceElement.src : '';
             } else {
                 (this.embedInputUrl as HTMLInputElement).value = (e.selectNode[0] as HTMLElement).nodeName === 'IFRAME' ? (e.selectNode[0] as HTMLElement).outerHTML
-                 : (e.selectNode[0] as HTMLElement).querySelector('iframe').outerHTML;
+                    : (e.selectNode[0] as HTMLElement).querySelector('iframe').outerHTML;
             }
         }
         const isWebUrl: boolean = (this.inputUrl as HTMLInputElement).value ? true : false;
@@ -1310,7 +1313,6 @@ export class Video {
             selected: (e: SelectedEventArgs) => {
                 proxy.isVideoUploaded = true;
                 selectArgs = e;
-                // eslint-disable-next-line
                 filesData = e.filesData;
                 this.parent.trigger(events.fileSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {

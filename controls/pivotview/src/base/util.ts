@@ -1,4 +1,4 @@
-import { IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IMembers, PivotEngine } from './engine';
+import { IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IMembers, PivotEngine, IDataSet, INumberIndex } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
 import { ICalculatedFieldSettings, IAuthenticationInfo, IGridValues, IAxisSet } from './engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -19,10 +19,9 @@ import { PivotChart } from '../pivotchart/base/pivotchart';
  */
 
 export class PivotUtil {
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-    public static getType(value: any): string {
-        let val: string;    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dateValue: any = new Date(value);
+    public static getType(value: string | number | Date): string {
+        let val: string;
+        const dateValue: Date = new Date(value as string | number);
         if (typeof value === 'boolean') {
             val = 'boolean';
         } else if (!isNaN(Number(value))) {
@@ -44,10 +43,10 @@ export class PivotUtil {
     public static getClonedData(data: { [key: string]: Object }[]): { [key: string]: Object }[] {
         const clonedData: { [key: string]: Object }[] = [];
         if (data) {
-            for (const item of data as { [key: string]: Object }[]) {   /* eslint-enable @typescript-eslint/ban-types */
+            for (const item of data as { [key: string]: Object }[]) {
                 const fields: string[] = Object.keys(item);
-                let keyPos: number = 0;     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const framedSet: any = {};
+                let keyPos: number = 0;
+                const framedSet: { [key: string]: Object } = {};
                 while (keyPos < fields.length) {
                     framedSet[fields[keyPos as number]] = item[fields[keyPos as number]];
                     keyPos++;
@@ -63,20 +62,23 @@ export class PivotUtil {
         return clonedData;
     }
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    private static getDefinedObj(data: { [key: string]: any }): { [key: string]: any } {
+    private static getDefinedObj(
+        data: { [key: string]: string } | IDataOptions | IFieldOptions | IOlapField | IFilter | ISort | ICustomGroups
+        | IGroupSettings | IConditionalFormatSettings
+    ): { [key: string]: string } {
         let keyPos: number = 0;
-        let framedSet: any = {}; /* eslint-enable @typescript-eslint/no-explicit-any */
+        let framedSet: { [key: string]: string } = {};
         if (!(data === null || data === undefined)) {
             const fields: string[] = Object.keys(data);
             while (keyPos < fields.length) {
-                if (!(data[fields[keyPos as number]] === null || data[fields[keyPos as number]] === undefined)) {
-                    framedSet[fields[keyPos as number]] = data[fields[keyPos as number]];
+                if (!((data as { [key: string]: string })[fields[keyPos as number]] === null
+                    || (data as { [key: string]: string })[fields[keyPos as number]] === undefined)) {
+                    framedSet[fields[keyPos as number]] = (data as { [key: string]: string })[fields[keyPos as number]];
                 }
                 keyPos++;
             }
         } else {
-            framedSet = data;
+            framedSet = data as { [key: string]: string };
         }
         return framedSet;
     }
@@ -92,16 +94,15 @@ export class PivotUtil {
         return -1;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-    public static setPivotProperties(control: any, properties: any): void {
+    public static setPivotProperties(control: PivotView | PivotFieldList, properties: { [key: string]: Object }): void {
         control.allowServerDataBinding = false;
-        if (control.pivotGridModule) {
-            control.pivotGridModule.allowServerDataBinding = false;
+        if ((control as PivotFieldList).pivotGridModule) {
+            (control as PivotFieldList).pivotGridModule.allowServerDataBinding = false;
         }
         control.setProperties(properties, true);
         control.allowServerDataBinding = true;
-        if (control.pivotGridModule) {
-            control.pivotGridModule.allowServerDataBinding = true;
+        if ((control as PivotFieldList).pivotGridModule) {
+            (control as PivotFieldList).pivotGridModule.allowServerDataBinding = true;
         }
     }
 
@@ -146,7 +147,7 @@ export class PivotUtil {
             groupSettings: this.cloneGroupSettings(dataSourceSettings.groupSettings),
             showAggregationOnValueField: dataSourceSettings.showAggregationOnValueField,
             authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication)
-        } as { [key: string]: any });   /* eslint-disable-line @typescript-eslint/no-explicit-any */
+        } as IDataOptions);
         return clonesDataSource;
     }
 
@@ -234,7 +235,7 @@ export class PivotUtil {
     public static cloneFormatMembers(collection: IMembers): IMembers {
         if (collection) {
             const keys: string[] = Object.keys(collection);
-            const clonedFormatMembers: any = {}; /* eslint-disable-line @typescript-eslint/no-explicit-any */
+            const clonedFormatMembers: { [key: string]: Object } = {};
             for (let i: number = 0, keysLength: number = keys.length; i < keysLength; i++) {
                 const cloneFormatMembersObj: IMembers = collection[keys[i as number]] as IMembers;
                 clonedFormatMembers[keys[i as number]] = {
@@ -316,7 +317,7 @@ export class PivotUtil {
                     groupSettings: dataSourceSettings.groupSettings,
                     showAggregationOnValueField: dataSourceSettings.showAggregationOnValueField,
                     authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication)
-                } as { [key: string]: any })    /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as IDataOptions)
             });
         }
     }
@@ -345,7 +346,7 @@ export class PivotUtil {
                     allowDragAndDrop: set.allowDragAndDrop,
                     expandAll: set.expandAll,
                     groupName: set.groupName
-                } as { [key: string]: any }));  /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as IFieldOptions));
             }
             return clonedCollection;
         } else {
@@ -386,7 +387,7 @@ export class PivotUtil {
                     memberType: set.memberType,
                     fieldType: set.fieldType,
                     parentHierarchy: set.parentHierarchy
-                } as { [key: string]: any }));  /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as IOlapField));
             }
             return clonedCollection;
         } else {
@@ -411,7 +412,7 @@ export class PivotUtil {
                     showNumberFilter: set.showNumberFilter,
                     value1: set.value1,
                     value2: set.value2
-                } as { [key: string]: any }));  /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as IFilter));
             }
             return clonedCollection;
         } else {
@@ -427,7 +428,7 @@ export class PivotUtil {
                     name: set.name,
                     order: set.order,
                     membersOrder: set.membersOrder ? [...set.membersOrder] : set.membersOrder
-                } as { [key: string]: any }));  /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as ISort));
             }
             return clonedCollection;
         } else {
@@ -467,15 +468,24 @@ export class PivotUtil {
         const isDateField: boolean = this.isDateField(fieldName as string, engine);
         if (isDateField || engine.groupingFields[fieldName as string]) {
             const fieldMembers: IMembers = {};
-            const keys: any = Object.keys(members); // eslint-disable-line @typescript-eslint/no-explicit-any
+            const keys: string[] = Object.keys(members);
             const dateMember: IAxisSet[] = engine.fieldList[fieldName as string].dateMember;
             for (let i: number = 0, j: number = keys.length; i < j; i++) {
-                const values: any = members[keys[i as number] as string]; // eslint-disable-line @typescript-eslint/no-explicit-any
+                const values: {
+                    ordinal?: number;
+                    index?: number[];
+                    name?: string;
+                    isDrilled?: boolean;
+                    isNodeExpand?: boolean;
+                    parent?: string;
+                    caption?: string;
+                    isSelected?: boolean;
+                } = members[keys[i as number]];
                 if (isDateField) {
                     fieldMembers[values.caption as string] = values;
                 } else {
                     const commonValue: string | number = dateMember[values.ordinal - 1].actualText;
-                    fieldMembers[commonValue as string] = values;
+                    fieldMembers[commonValue as string | number] = values;
                 }
             }
             return fieldMembers;
@@ -538,7 +548,7 @@ export class PivotUtil {
                     name: set.name,
                     delimiter: set.delimiter,
                     items: set.items ? [...set.items] : set.items
-                } as { [key: string]: any })); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as IDrillOptions));
             }
             return clonedCollection;
         } else {
@@ -563,7 +573,7 @@ export class PivotUtil {
                     skeleton: set.skeleton,
                     type: set.type,
                     useGrouping: set.useGrouping
-                } as { [key: string]: any })); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as IFormatSettings));
             }
             return clonedCollection;
         } else {
@@ -607,7 +617,7 @@ export class PivotUtil {
                     formatString: set.formatString,
                     formula: set.formula,
                     hierarchyUniqueName: set.hierarchyUniqueName
-                } as { [key: string]: any })); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as ICalculatedFieldSettings));
             }
             return clonedCollection;
         } else {
@@ -632,7 +642,7 @@ export class PivotUtil {
                     } : set.style,
                     value1: set.value1,
                     value2: set.value2
-                } as { [key: string]: any })); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as IConditionalFormatSettings));
             }
             return clonedCollection;
         } else {
@@ -653,7 +663,7 @@ export class PivotUtil {
                     groupInterval: set.groupInterval,
                     rangeInterval: set.rangeInterval,
                     type: set.type
-                } as { [key: string]: any })); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as IGroupSettings));
 
             }
             return clonedCollection;
@@ -669,7 +679,7 @@ export class PivotUtil {
                 clonedCollection.push(this.getDefinedObj({
                     groupName: set.groupName,
                     items: set.items ? [...set.items] : set.items
-                } as { [key: string]: any }));  /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                } as ICustomGroups));
             }
             return clonedCollection;
         } else {
@@ -685,8 +695,9 @@ export class PivotUtil {
         return undefined;
     }
 
-    // eslint-disable-next-line max-len
-    public static getFieldByName(fieldName: string, fields: IFieldOptions[] | ISort[] | IFormatSettings[] | IDrillOptions[] | IGroupSettings[] | ICalculatedFieldSettings[]): IFieldOptions | ISort | IFormatSettings | IDrillOptions | IGroupSettings | ICalculatedFieldSettings {
+    public static getFieldByName(fieldName: string, fields: IFieldOptions[] | ISort[] | IFormatSettings[] | IDrillOptions[] |
+    IGroupSettings[] | ICalculatedFieldSettings[]): IFieldOptions | ISort | IFormatSettings | IDrillOptions | IGroupSettings |
+        ICalculatedFieldSettings {
         return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
     }
 
@@ -728,8 +739,9 @@ export class PivotUtil {
         return { fieldName: fieldName, fieldItem: fieldItem, axis: 'fieldlist', position: -1 };
     }
 
-    // eslint-disable-next-line max-len
-    public static isButtonIconRefesh(prop: string, oldProp: PivotViewModel | PivotFieldListModel, newProp: PivotViewModel | PivotFieldListModel): boolean {
+    public static isButtonIconRefesh(
+        prop: string, oldProp: PivotViewModel | PivotFieldListModel, newProp: PivotViewModel | PivotFieldListModel
+    ): boolean {
         let isButtonRefresh: boolean = false;
         try {
             if (prop === 'dataSourceSettings' && oldProp.dataSourceSettings && newProp.dataSourceSettings) {
@@ -737,23 +749,27 @@ export class PivotUtil {
                 const oldAxesProp: string[] = Object.keys(oldProp.dataSourceSettings);
                 const newAxesProp: string[] = Object.keys(newProp.dataSourceSettings);
                 if (oldAxesProp && newAxesProp && newAxesProp.length > 0 && oldAxesProp.length === newAxesProp.length) {
-                    const axes: string[] = ['rows', 'columns', 'values', 'filters']; /* eslint-disable @typescript-eslint/no-explicit-any */
+                    const axes: string[] = ['rows', 'columns', 'values', 'filters'];
                     for (let i: number = 0; i < newAxesProp.length; i++) {
                         const oldAxis: string[] = (newAxesProp[i as number] in oldProp.dataSourceSettings &&
-                            !isNullOrUndefined((oldProp.dataSourceSettings as any)[newAxesProp[i as number]])) ?
-                            Object.keys((oldProp.dataSourceSettings as any)[newAxesProp[i as number]]) : [];
+                            !isNullOrUndefined((oldProp.dataSourceSettings as { [key: string]: Object })[newAxesProp[i as number]])) ?
+                            Object.keys((oldProp.dataSourceSettings as { [key: string]: Object })[newAxesProp[i as number]]) : [];
                         const newAxis: string[] = (newAxesProp[i as number] in newProp.dataSourceSettings &&
-                            !isNullOrUndefined((newProp.dataSourceSettings as any)[newAxesProp[i as number]])) ?
-                            Object.keys((newProp.dataSourceSettings as any)[newAxesProp[i as number]]) : [];
+                            !isNullOrUndefined((newProp.dataSourceSettings as { [key: string]: Object })[newAxesProp[i as number]])) ?
+                            Object.keys((newProp.dataSourceSettings as { [key: string]: Object })[newAxesProp[i as number]]) : [];
                         if (axes.indexOf(newAxesProp[i as number]) !== -1 && axes.indexOf(oldAxesProp[i as number]) !== -1 &&
                             oldAxis && newAxis && newAxis.length > 0 && oldAxis.length === newAxis.length) {
                             const options: string[] = ['showFilterIcon', 'showSortIcon', 'showRemoveIcon', 'showValueTypeIcon', 'showEditIcon', 'allowDragAndDrop', 'expandAll'];
                             for (let j: number = 0; j < newAxis.length; j++) {
                                 const oldAxisProp: string[] =
-                                    Object.keys((oldProp.dataSourceSettings as any)[newAxesProp[i as number]][newAxis[j as number]]);
+                                    Object.keys(((oldProp.dataSourceSettings as { [key: string]: Object })[newAxesProp[i as number]] as {
+                                        [key: string]: Object
+                                    })[newAxis[j as number]]);
                                 const newAxisProp: string[] =
-                                    Object.keys((newProp.dataSourceSettings as any)[newAxesProp[i as number]][newAxis[j as number]]);
-                                for (let k: number = 0; k < newAxisProp.length; k++) {  /* eslint-enable @typescript-eslint/no-explicit-any */
+                                    Object.keys(((newProp.dataSourceSettings as { [key: string]: Object })[newAxesProp[i as number]] as {
+                                        [key: string]: Object
+                                    })[newAxis[j as number]]);
+                                for (let k: number = 0; k < newAxisProp.length; k++) {
                                     if (options.indexOf(newAxisProp[k as number]) !== -1 &&
                                         options.indexOf(oldAxisProp[k as number]) !== -1) {
                                         propValidation[i as number] = 'update';
@@ -773,7 +789,6 @@ export class PivotUtil {
                             break;
                         }
                     }
-                    /* eslint-enable @typescript-eslint/no-explicit-any */
                 }
                 let a: number = 0; let b: number = 0; let c: number = 0;
                 for (const validation of propValidation) {
@@ -795,37 +810,36 @@ export class PivotUtil {
         return isButtonRefresh;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-    public static formatPivotValues(pivotValues: any): any { // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const values: any = [];
+    public static formatPivotValues(pivotValues: { [key: string]: Object }[][]): IAxisSet[][] {
+        const values: IAxisSet[][] = [];
         for (let i: number = 0; i < pivotValues.length; i++) {
             if (pivotValues[i as number]) {
                 values[i as number] = [];
                 for (let j: number = 0; j < pivotValues[i as number].length; j++) {
                     if (pivotValues[i as number][j as number]) {
                         values[i as number][j as number] = {
-                            axis: pivotValues[i as number][j as number].Axis,
-                            actualText: pivotValues[i as number][j as number].ActualText,
-                            indexObject: pivotValues[i as number][j as number].IndexObject,
-                            index: pivotValues[i as number][j as number].Index,
-                            rowHeaders: pivotValues[i as number][j as number].RowHeaders,
-                            columnHeaders: pivotValues[i as number][j as number].ColumnHeaders,
-                            formattedText: pivotValues[i as number][j as number].FormattedText,
-                            actualValue: pivotValues[i as number][j as number].ActualValue,
-                            rowIndex: pivotValues[i as number][j as number].RowIndex,
-                            colIndex: pivotValues[i as number][j as number].ColIndex,
-                            colSpan: pivotValues[i as number][j as number].ColSpan,
-                            level: pivotValues[i as number][j as number].Level,
-                            rowSpan: pivotValues[i as number][j as number].RowSpan,
-                            isSum: pivotValues[i as number][j as number].IsSum,
-                            isGrandSum: pivotValues[i as number][j as number].IsGrandSum,
-                            valueSort: pivotValues[i as number][j as number].ValueSort,
-                            ordinal: pivotValues[i as number][j as number].Ordinal,
-                            hasChild: pivotValues[i as number][j as number].HasChild,
-                            isDrilled: pivotValues[i as number][j as number].IsDrilled,
-                            value: pivotValues[i as number][j as number].Value,
-                            type: pivotValues[i as number][j as number].Type,
-                            members: pivotValues[i as number][j as number].Members
+                            axis: pivotValues[i as number][j as number].Axis as string,
+                            actualText: pivotValues[i as number][j as number].ActualText as string,
+                            indexObject: pivotValues[i as number][j as number].IndexObject as INumberIndex,
+                            index: pivotValues[i as number][j as number].Index as number[],
+                            rowHeaders: pivotValues[i as number][j as number].RowHeaders as string,
+                            columnHeaders: pivotValues[i as number][j as number].ColumnHeaders as string,
+                            formattedText: pivotValues[i as number][j as number].FormattedText as string,
+                            actualValue: pivotValues[i as number][j as number].ActualValue as number,
+                            rowIndex: pivotValues[i as number][j as number].RowIndex as number,
+                            colIndex: pivotValues[i as number][j as number].ColIndex as number,
+                            colSpan: pivotValues[i as number][j as number].ColSpan as number,
+                            level: pivotValues[i as number][j as number].Level as number,
+                            rowSpan: pivotValues[i as number][j as number].RowSpan as number,
+                            isSum: pivotValues[i as number][j as number].IsSum as boolean,
+                            isGrandSum: pivotValues[i as number][j as number].IsGrandSum as boolean,
+                            valueSort: pivotValues[i as number][j as number].ValueSort as IDataSet,
+                            ordinal: pivotValues[i as number][j as number].Ordinal as number,
+                            hasChild: pivotValues[i as number][j as number].HasChild as boolean,
+                            isDrilled: pivotValues[i as number][j as number].IsDrilled as boolean,
+                            value: pivotValues[i as number][j as number].Value as number,
+                            type: pivotValues[i as number][j as number].Type as SummaryTypes,
+                            members: pivotValues[i as number][j as number].Members as IAxisSet[]
                         };
                     }
                 }
@@ -833,10 +847,10 @@ export class PivotUtil {
         }
         return values;
     }
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
-    public static formatFieldList(fieldList: any): any {
+
+    public static formatFieldList(fieldList: { [key: string]: { [key: string]: Object } }): { [key: string]: Object } {
         const keys: string[] = Object.keys(fieldList);
-        const fList: any = {}; /* eslint-disable-line @typescript-eslint/no-explicit-any */
+        const fList: { [key: string]: Object } = {};
         for (let i: number = 0; i < keys.length; i++) {
             if (fieldList[keys[i as number]]) {
                 fList[keys[i as number]] = {
@@ -904,84 +918,87 @@ export class PivotUtil {
     }
 
     public static getLocalizedObject(control: PivotView | PivotFieldList): Object {
-        const locale: Object = new Object();    /* eslint-enable @typescript-eslint/ban-types */
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        (locale as any)['Null'] = control.localeObj.getConstant('null');
-        (locale as any)['Years'] = control.localeObj.getConstant('Years');
-        (locale as any)['Quarters'] = control.localeObj.getConstant('Quarters');
-        (locale as any)['Months'] = control.localeObj.getConstant('Months');
-        (locale as any)['Days'] = control.localeObj.getConstant('Days');
-        (locale as any)['Hours'] = control.localeObj.getConstant('Hours');
-        (locale as any)['Minutes'] = control.localeObj.getConstant('Minutes');
-        (locale as any)['Seconds'] = control.localeObj.getConstant('Seconds');
-        (locale as any)['QuarterYear'] = control.localeObj.getConstant('QuarterYear');
-        (locale as any)['Of'] = control.localeObj.getConstant('of');
-        (locale as any)['Qtr'] = control.localeObj.getConstant('qtr');
-        (locale as any)['Undefined'] = control.localeObj.getConstant('undefined');
-        (locale as any)['GroupOutOfRange'] = control.localeObj.getConstant('groupOutOfRange');
-        (locale as any)['Group'] = control.localeObj.getConstant('group');
-        return locale;  /* eslint-enable @typescript-eslint/no-explicit-any */
+        const locale: { [key: string]: Object } = {};
+        locale['Null'] = control.localeObj.getConstant('null');
+        locale['Years'] = control.localeObj.getConstant('Years');
+        locale['Quarters'] = control.localeObj.getConstant('Quarters');
+        locale['Months'] = control.localeObj.getConstant('Months');
+        locale['Days'] = control.localeObj.getConstant('Days');
+        locale['Hours'] = control.localeObj.getConstant('Hours');
+        locale['Minutes'] = control.localeObj.getConstant('Minutes');
+        locale['Seconds'] = control.localeObj.getConstant('Seconds');
+        locale['QuarterYear'] = control.localeObj.getConstant('QuarterYear');
+        locale['Of'] = control.localeObj.getConstant('of');
+        locale['Qtr'] = control.localeObj.getConstant('qtr');
+        locale['Undefined'] = control.localeObj.getConstant('undefined');
+        locale['GroupOutOfRange'] = control.localeObj.getConstant('groupOutOfRange');
+        locale['Group'] = control.localeObj.getConstant('group');
+        return locale;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-    public static updateReport(control: PivotView | PivotFieldList, report: any): void {
+
+    public static updateReport(control: PivotView | PivotFieldList, report: {
+        Rows: { [key: string]: Object}[],
+        Columns: { [key: string]: Object}[],
+        FormatSettings: { [key: string]: Object}[]
+    }): void {
         control.setProperties({ dataSourceSettings: { rows: [] } }, true);
         control.setProperties({ dataSourceSettings: { columns: [] } }, true);
         control.setProperties({ dataSourceSettings: { formatSettings: [] } }, true);
         for (let i: number = 0; i < report.Rows.length; i++) {
             control.dataSourceSettings.rows.push({
-                name: report.Rows[i as number].Name,
-                caption: report.Rows[i as number].Caption,
-                showNoDataItems: report.Rows[i as number].ShowNoDataItems,
-                baseField: report.Rows[i as number].BaseField,
-                baseItem: report.Rows[i as number].BaseItem,
-                showFilterIcon: report.Rows[i as number].ShowFilterIcon,
-                showSortIcon: report.Rows[i as number].ShowSortIcon,
-                showEditIcon: report.Rows[i as number].ShowEditIcon,
-                showRemoveIcon: report.Rows[i as number].ShowRemoveIcon,
-                showSubTotals: report.Rows[i as number].ShowValueTypeIcon,
-                allowDragAndDrop: report.Rows[i as number].AllowDragAndDrop,
-                axis: report.Rows[i as number].Axis,
-                dataType: report.Rows[i as number].DataType,
-                isCalculatedField: report.Rows[i as number].IsCalculatedField,
-                showValueTypeIcon: report.Rows[i as number].ShowValueTypeIcon,
-                type: report.Rows[i as number].Type,
-                expandAll: report.Rows[i as number].expandAll
+                name: report.Rows[i as number].Name as string,
+                caption: report.Rows[i as number].Caption as string,
+                showNoDataItems: report.Rows[i as number].ShowNoDataItems as boolean,
+                baseField: report.Rows[i as number].BaseField as string,
+                baseItem: report.Rows[i as number].BaseItem as string,
+                showFilterIcon: report.Rows[i as number].ShowFilterIcon as boolean,
+                showSortIcon: report.Rows[i as number].ShowSortIcon as boolean,
+                showEditIcon: report.Rows[i as number].ShowEditIcon as boolean,
+                showRemoveIcon: report.Rows[i as number].ShowRemoveIcon as boolean,
+                showSubTotals: report.Rows[i as number].ShowValueTypeIcon as boolean,
+                allowDragAndDrop: report.Rows[i as number].AllowDragAndDrop as boolean,
+                axis: report.Rows[i as number].Axis as string,
+                dataType: report.Rows[i as number].DataType as string,
+                isCalculatedField: report.Rows[i as number].IsCalculatedField as boolean,
+                showValueTypeIcon: report.Rows[i as number].ShowValueTypeIcon as boolean,
+                type: report.Rows[i as number].Type as SummaryTypes,
+                expandAll: report.Rows[i as number].expandAll as boolean
             });
         }
         for (let i: number = 0; i < report.Columns.length; i++) {
             control.dataSourceSettings.columns.push({
-                name: report.Columns[i as number].Name,
-                caption: report.Columns[i as number].Caption,
-                showNoDataItems: report.Columns[i as number].ShowNoDataItems,
-                baseField: report.Columns[i as number].BaseField,
-                baseItem: report.Columns[i as number].BaseItem,
-                showFilterIcon: report.Columns[i as number].ShowFilterIcon,
-                showSortIcon: report.Columns[i as number].ShowSortIcon,
-                showEditIcon: report.Columns[i as number].ShowEditIcon,
-                showRemoveIcon: report.Columns[i as number].ShowRemoveIcon,
-                showSubTotals: report.Columns[i as number].ShowValueTypeIcon,
-                allowDragAndDrop: report.Columns[i as number].AllowDragAndDrop,
-                axis: report.Columns[i as number].Axis,
-                dataType: report.Columns[i as number].DataType,
-                isCalculatedField: report.Columns[i as number].IsCalculatedField,
-                showValueTypeIcon: report.Columns[i as number].ShowValueTypeIcon,
-                type: report.Columns[i as number].Type,
-                expandAll: report.Columns[i as number].expandAll
+                name: report.Columns[i as number].Name as string,
+                caption: report.Columns[i as number].Caption as string,
+                showNoDataItems: report.Columns[i as number].ShowNoDataItems as boolean,
+                baseField: report.Columns[i as number].BaseField as string,
+                baseItem: report.Columns[i as number].BaseItem as string,
+                showFilterIcon: report.Columns[i as number].ShowFilterIcon as boolean,
+                showSortIcon: report.Columns[i as number].ShowSortIcon as boolean,
+                showEditIcon: report.Columns[i as number].ShowEditIcon as boolean,
+                showRemoveIcon: report.Columns[i as number].ShowRemoveIcon as boolean,
+                showSubTotals: report.Columns[i as number].ShowValueTypeIcon as boolean,
+                allowDragAndDrop: report.Columns[i as number].AllowDragAndDrop as boolean,
+                axis: report.Columns[i as number].Axis as string,
+                dataType: report.Columns[i as number].DataType as string,
+                isCalculatedField: report.Columns[i as number].IsCalculatedField as boolean,
+                showValueTypeIcon: report.Columns[i as number].ShowValueTypeIcon as boolean,
+                type: report.Columns[i as number].Type as SummaryTypes,
+                expandAll: report.Columns[i as number].expandAll as boolean
             });
         }
         for (let i: number = 0; i < report.FormatSettings.length; i++) {
             control.dataSourceSettings.formatSettings.push({
-                name: report.FormatSettings[i as number].Name,
-                format: report.FormatSettings[i as number].Format,
-                type: report.FormatSettings[i as number].Type,
-                currency: report.FormatSettings[i as number].Currency,
-                maximumFractionDigits: report.FormatSettings[i as number].MaximumFractionDigits,
-                maximumSignificantDigits: report.FormatSettings[i as number].MaximumSignificantDigits,
-                minimumFractionDigits: report.FormatSettings[i as number].MinimumFractionDigits,
-                minimumIntegerDigits: report.FormatSettings[i as number].MinimumIntegerDigits,
-                minimumSignificantDigits: report.FormatSettings[i as number].MinimumSignificantDigits,
-                skeleton: report.FormatSettings[i as number].Skeleton,
-                useGrouping: report.FormatSettings[i as number].UseGrouping
+                name: report.FormatSettings[i as number].Name as string,
+                format: report.FormatSettings[i as number].Format as string,
+                type: report.FormatSettings[i as number].Type as string,
+                currency: report.FormatSettings[i as number].Currency as string,
+                maximumFractionDigits: report.FormatSettings[i as number].MaximumFractionDigits as number,
+                maximumSignificantDigits: report.FormatSettings[i as number].MaximumSignificantDigits as number,
+                minimumFractionDigits: report.FormatSettings[i as number].MinimumFractionDigits as number,
+                minimumIntegerDigits: report.FormatSettings[i as number].MinimumIntegerDigits as number,
+                minimumSignificantDigits: report.FormatSettings[i as number].MinimumSignificantDigits as number,
+                skeleton: report.FormatSettings[i as number].Skeleton as string,
+                useGrouping: report.FormatSettings[i as number].UseGrouping as boolean
             });
         }
     }
@@ -1117,7 +1134,7 @@ export class PivotUtil {
             pivot.olapEngineModule.renderEngine(
                 pivot.dataSourceSettings as IDataOptions, customProperties ? customProperties :
                     (pivot as PivotFieldList).frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList),
-                pivot.onHeadersSort ? (pivot as any).getHeaderSortInfo.bind(pivot) : undefined // eslint-disable-line @typescript-eslint/no-explicit-any
+                pivot.onHeadersSort ? (pivot as PivotView).getHeaderSortInfo.bind(pivot) : undefined
             );
             pivot.setProperties({ dataSourceSettings: { valueIndex: pivot.olapEngineModule.measureIndex } }, true);
         } catch (exception) {
@@ -1133,16 +1150,15 @@ export class PivotUtil {
 
     /**
      *
-     * @param {any} header - It contains the value of header
+     * @param {IDataSet | IAxisSet} header - It contains the value of header
      * @returns {IAxisSet} - It frame Header With Keys
      * @hidden */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-    public static frameHeaderWithKeys(header: any): IAxisSet {
+    public static frameHeaderWithKeys(header: IDataSet | IAxisSet): IAxisSet | IDataSet {
         const keys: string[] = Object.keys(header);
-        let keyPos: number = 0; // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const framedHeader: any = {};
+        let keyPos: number = 0;
+        const framedHeader: IDataSet = {};
         while (keyPos < keys.length) {
-            framedHeader[keys[keyPos as number]] = header[keys[keyPos as number]];
+            framedHeader[keys[keyPos as number]] = (header as IDataSet)[keys[keyPos as number]];
             keyPos++;
         }
         return framedHeader;
@@ -1221,8 +1237,7 @@ export class PivotUtil {
      * @returns {IAxisSet[]} - It returns the sorted collection in the provided sort order.
      * @hidden */
     public static getSortedValue(aggreColl: { 'header': IAxisSet; 'value'?: number }[], sortOrder: string): IAxisSet[] {
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        aggreColl.sort((a: any, b: any) => {
+        aggreColl.sort((a: { value?: number, header: { type: string } }, b: { value?: number, header: { type: string } }) => {
             return sortOrder === 'Descending' ? (
                 (b['value'] || b['header']['type'] === 'grand sum' ? b['value'] : 0) -
                 (a['value'] || a['header']['type'] === 'grand sum' ? a['value'] : 0)

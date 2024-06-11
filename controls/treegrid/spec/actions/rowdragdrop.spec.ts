@@ -4,11 +4,13 @@ import { sampleData, projectData2, unorederedData, projectData } from '../base/d
 import { getObject } from '@syncfusion/ej2-grids';
 import { EmitType } from '@syncfusion/ej2-base';
 import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
-import { ITreeData } from '../../src';
+import { ITreeData, TreeGridColumn } from '../../src';
+import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
+import { Toolbar } from '../../src/treegrid/actions/toolbar';
 /**
  * TreeGrid Row Drag And Drop spec 
  */
-TreeGrid.Inject(RowDD);
+TreeGrid.Inject(RowDD, VirtualScroll, Toolbar);
 describe('Treegrid Row Reorder', () => {
     let TreeGridObj: TreeGrid;
     beforeAll((done: Function) => {
@@ -1013,5 +1015,118 @@ describe('EJ2-71626- Last row border is not added while drag and drop a row to t
   });
   afterAll(() => {
     destroy(gridObj);
+  });
+});
+
+describe('Treegrid Row Reorder with immutablemode', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        allowRowDragAndDrop: false,
+        enableImmutableMode: true,
+        height: 400,
+        toolbar: ['Indent', 'Outdent'],
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+
+  it('Row Reorder Testing for child to indent', () => {
+    TreeGridObj.selectRow(3);
+    TreeGridObj.indent();
+    expect(TreeGridObj.getCurrentViewRecords()[3]['level'] === 2).toBe(true);
+  });
+
+  it('Perform outdent with first row', () => {
+    TreeGridObj.selectRow(0);
+    TreeGridObj.outdent();
+    expect(TreeGridObj.getCurrentViewRecords()[0]['level'] === 0).toBe(true);
+  });
+  
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
+describe('Treegrid Row Reorder with immutablemode', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        allowRowDragAndDrop: false,
+        enableImmutableMode: true,
+        height: 400,
+        toolbar: ['Indent', 'Outdent'],
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  it('Row Reorder Testing for child to outdent with selection', () => {
+    TreeGridObj.selectRow(6);
+    TreeGridObj.outdent();
+    expect(TreeGridObj.getCurrentViewRecords()[6]['level'] === 0).toBe(true);
+  });
+
+  it('Row Reorder Testing for child to outdent without selection', () => {
+    TreeGridObj.outdent();
+    expect(TreeGridObj.selectedRowIndex === -1).toBe(true);
+  });
+
+  it('Row Reorder Testing for child to indent for first row ', () => {
+    TreeGridObj.selectRow(0);
+    TreeGridObj.indent();
+    expect(TreeGridObj.getCurrentViewRecords()[0]['level'] === 0).toBe(true);
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
+describe('Treegrid indent and outdent action in virtualization', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        enableVirtualization: true,
+        height: 450,
+        allowRowDragAndDrop: false,
+        toolbar: ['Indent', 'Outdent'],
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  it('Row Reorder Testing for child to outdent with selection', () => {
+    TreeGridObj.selectRow(2);
+    TreeGridObj.indent();
+    TreeGridObj.selectRow(3);
+    TreeGridObj.indent();
+    expect(TreeGridObj.getCurrentViewRecords()[2]['level'] === 2).toBe(true);
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
   });
 });

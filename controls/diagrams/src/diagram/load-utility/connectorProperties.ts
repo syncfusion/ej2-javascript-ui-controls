@@ -1,15 +1,15 @@
-import { NumericOptions } from "@syncfusion/ej2-base/src/intl/parser-base";
-import { Canvas } from "../core/containers/canvas";
-import { Diagram } from "../diagram";
-import { ConnectorConstraints, Shapes } from "../enum/enum";
-import { Segment } from "../interaction/scroller";
-import { AnnotationModel } from "../objects/annotation-model";
-import { BezierSegment, Connector, ConnectorShape } from "../objects/connector";
-import { BezierSegmentModel, ConnectorModel, ConnectorSegmentModel } from "../objects/connector-model";
-import { Shape } from "../objects/node";
-import { Point } from "../primitives/point";
-import { SegmentInfo } from "../rendering/canvas-interface";
-import { LabelProperties } from "./labelProperties";
+import { NumericOptions } from '@syncfusion/ej2-base/src/intl/parser-base';
+import { Canvas } from '../core/containers/canvas';
+import { Diagram } from '../diagram';
+import { ConnectorConstraints, Shapes } from '../enum/enum';
+import { Segment } from '../interaction/scroller';
+import { AnnotationModel } from '../objects/annotation-model';
+import { BezierSegment, Connector, ConnectorShape } from '../objects/connector';
+import { BezierSegmentModel, ConnectorModel, ConnectorSegmentModel } from '../objects/connector-model';
+import { Shape } from '../objects/node';
+import { Point } from '../primitives/point';
+import { SegmentInfo } from '../rendering/canvas-interface';
+import { LabelProperties } from './labelProperties';
 
 
 export class ConnectorProperties {
@@ -20,14 +20,12 @@ export class ConnectorProperties {
         this.labelProperties = labelProperties;
     }
 
-  
-
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Convert and render the connector collection from EJ1 to EJ2
     public renderConnectorsCollection(convertedData: Object, data: Diagram): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (convertedData as any).connectors = [];
-        let connectors: ConnectorModel[] = [];
+        const connectors: ConnectorModel[] = [];
         for (let i: number = 0; i < data.connectors.length; i++) {
             const connector: ConnectorModel = data.connectors[parseInt(i.toString(), 10)];
             const newConnector: ConnectorModel = this.convertToConnector(connector);
@@ -77,7 +75,7 @@ export class ConnectorProperties {
             newConnector.hitPadding = (connector as EJ1Connector).lineHitPadding;
         }
         if (connector.margin) {
-             // eslint-disable-next-line max-len
+            // eslint-disable-next-line max-len
             newConnector.margin = { left: connector.margin.left, right: connector.margin.right, top: connector.margin.top, bottom: connector.margin.bottom };
         }
         if (connector.segments) {
@@ -101,7 +99,7 @@ export class ConnectorProperties {
                     strokeColor: (connector.sourceDecorator as any).lineColor,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     strokeWidth: (connector.sourceDecorator as any).lineWidth
-                },
+                }
             };
         }
         if (connector.targetDecorator) {
@@ -118,7 +116,7 @@ export class ConnectorProperties {
                     strokeColor: (connector.targetDecorator as any).lineColor,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     strokeWidth: (connector.targetDecorator as any).lineWidth
-                },
+                }
             };
         }
         if (connector.sourceID) {
@@ -163,7 +161,7 @@ export class ConnectorProperties {
             if (shape.type === 'bpmn') {
                 connectorShape = {
                     type: 'Bpmn',
-                    flow: (shape.flow).charAt(0).toUpperCase() + (shape.flow).slice(1),
+                    flow: (shape.flow).charAt(0).toUpperCase() + (shape.flow).slice(1)
                 };
                 if (shape.flow === 'sequence') {
                     connectorShape.sequence = (shape.sequence).charAt(0).toUpperCase() + (shape.sequence).slice(1);
@@ -190,13 +188,13 @@ export class ConnectorProperties {
                             lowerBounds: shape.multiplicity.target.lowerBounds
                         }
                     }
-                }
+                };
             }
             if (shape.type === 'umlactivity') {
                 connectorShape = {
                     type: 'UmlActivity',
                     flow: (shape.flow).charAt(0).toUpperCase() + (shape.flow).slice(1)
-                }
+                };
             }
         }
         return connectorShape;
@@ -223,22 +221,24 @@ export class ConnectorProperties {
         if (segments.length > 0) {
             for (let i: number = 0; i < segments.length; i++) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let segment: any = {};
-                let segmentProp = segments[parseInt(i.toString(), 10)];
-                 // eslint-disable-next-line max-len
+                const segment: any = {};
+                const segmentProp: any = segments[parseInt(i.toString(), 10)];
+                // eslint-disable-next-line max-len
                 segment.direction = segmentProp.direction ? segmentProp.direction.charAt(0).toUpperCase() + segmentProp.direction.slice(1) : segmentProp._direction ? segmentProp._direction.charAt(0).toUpperCase() + segmentProp._direction.slice(1) : null;
                 segment.length = segmentProp.length;
                 segment.point = segmentProp.point ? { x: segmentProp.point.x, y: segmentProp.point.y } : null;
                 segment.point1 = segmentProp.point1 ? { x: segmentProp.point1.x, y: segmentProp.point1.y } : null;
                 segment.point2 = segmentProp.point2 ? { x: segmentProp.point2.x, y: segmentProp.point2.y } : null;
-                 // eslint-disable-next-line max-len
+                // eslint-disable-next-line max-len
                 segment.vector1 = segmentProp.vector1 ? { angle: segmentProp.vector1.angle, distance: segmentProp.vector1.distance } : null;
-                 // eslint-disable-next-line max-len
+                // eslint-disable-next-line max-len
                 segment.vector2 = segmentProp.vector2 ? { angle: segmentProp.vector2.angle, distance: segmentProp.vector2.distance } : null;
-                if (segmentProp.points)
+                if (segmentProp.points) {
                     segment.points = this.getSegmentPoints(segmentProp.points);
-                if (segmentProp.type)
+                }
+                if (segmentProp.type) {
                     segment.type = (segmentProp.type).charAt(0).toUpperCase() + (segmentProp.type).slice(1);
+                }
                 connectorSegments.push(segment);
             }
         }
@@ -249,11 +249,11 @@ export class ConnectorProperties {
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Render the connector Segment points from EJ1 to EJ2
     public getSegmentPoints(points: Point[]): Point[] {
-        let pointsCollection: Point[] = [];
+        const pointsCollection: Point[] = [];
         if (points.length > 0) {
             for (let i: number = 0; i < points.length; i++) {
-                let newPoint: any = {};
-                let point: Point = points[parseInt(i.toString(), 10)];
+                const newPoint: any = {};
+                const point: Point = points[parseInt(i.toString(), 10)];
                 newPoint.x = point.x;
                 newPoint.y = point.y;
                 pointsCollection.push(newPoint);
@@ -312,10 +312,10 @@ export class ConnectorProperties {
     }
 
     /**
-*To destroy the ruler
-*
-* @returns {void} To destroy the ruler
-*/
+     * To destroy the ruler
+     *
+     * @returns {void} To destroy the ruler
+     */
 
     public destroy(): void {
         /**
@@ -323,8 +323,10 @@ export class ConnectorProperties {
          */
     }
     /**
- * Get module name.
- */
+     * Get module name.
+     *
+     * @returns {string} Returns the module name
+     */
     protected getModuleName(): string {
         /**
          * Returns the module name

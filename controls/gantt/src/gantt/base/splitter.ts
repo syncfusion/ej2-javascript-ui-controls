@@ -1,8 +1,8 @@
-import { createElement, isNullOrUndefined,addClass } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import * as cls from '../base/css-constants';
 import { Splitter as SplitterLayout, ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
-import { SplitterSettingsModel } from '../models/models';
+import { ColumnModel, SplitterSettingsModel } from '../models/models';
 import { ISplitterResizedEventArgs } from '../base/interface';
 import { Deferred } from '@syncfusion/ej2-data';
 /**
@@ -69,7 +69,7 @@ export class Splitter {
             },
             resizing: (args: ResizingEventArgs) => {
                 this.parent.trigger('splitterResizing', args);
-                if(this.parent.timelineModule.isZoomToFit){
+                if (this.parent.timelineModule.isZoomToFit) {
                     this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
                 }
             },
@@ -78,7 +78,7 @@ export class Splitter {
                 const leftPane: HTMLElement = args.pane[0];
                 this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
                 this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);
-                this.splitterObject.paneSettings[1].size = (this.parent.ganttWidth - parseInt(this.splitterPreviousPositionGrid) - 4) + 'px';
+                this.splitterObject.paneSettings[1].size = (this.parent.ganttWidth - parseInt(this.splitterPreviousPositionGrid, 10) - 4) + 'px';
                 const callBackPromise: Deferred = new Deferred();
                 this.parent.trigger('splitterResized', args, (splitterResizedArgs: ISplitterResizedEventArgs) => {
                     if (splitterResizedArgs.cancel === true) {
@@ -97,16 +97,15 @@ export class Splitter {
         });
         this.parent.element.appendChild(this.parent.splitterElement);
         this.splitterObject.appendTo(this.parent.splitterElement);
-        const splitterLeftPane = this.splitterObject.element.querySelector('.e-split-bar');
+        const splitterLeftPane: HTMLElement = this.splitterObject.element.querySelector('.e-split-bar');
         if (splitterLeftPane) {
-            const numericValue = parseFloat(splitterPosition.replace('%', ''));
-            const ariaValueNow = Math.min(100, Math.max(0, numericValue));
+            const numericValue: number = parseFloat(splitterPosition.replace('%', ''));
+            const ariaValueNow: number = Math.min(100, Math.max(0, numericValue));
             splitterLeftPane.setAttribute('aria-valuenow', ariaValueNow.toString());
         }
     }
     /**
      * @param {SplitterSettingsModel} splitter .
-     
      * @returns {string} .
      * @private
      */
@@ -123,8 +122,8 @@ export class Splitter {
                 return this.getSpliterPositionInPercentage(splitter.position);
             } else if (!isNullOrUndefined(splitter.columnIndex) && splitter.columnIndex >= 0) {
                 if ((splitter.columnIndex * 150) < this.parent.ganttWidth || !this.parent.element.classList.contains('e-device')) {
-                   return this.getSpliterPositionInPercentage(
-                    this.getTotalColumnWidthByIndex(splitter.columnIndex).toString() + 'px');
+                    return this.getSpliterPositionInPercentage(
+                        this.getTotalColumnWidthByIndex(splitter.columnIndex).toString() + 'px');
                 } else {
                     return this.getSpliterPositionInPercentage((splitter.columnIndex * 130) + 'px');
                 }
@@ -149,7 +148,7 @@ export class Splitter {
                     '25%');
             } else {
                 if (this.parent.enableRtl) {
-                    let newPosition: number = 100 - parseFloat(position);
+                    const newPosition: number = 100 - parseFloat(position);
                     value = newPosition + '%';
                 } else {
                     value = position.indexOf('%') === -1 ?
@@ -166,19 +165,19 @@ export class Splitter {
     private getTotalColumnWidthByIndex(index: number): number {
         let width: number = 0;
         const ganttWidth: number = this.parent.ganttWidth;
-        let originalArray: any[] = this.parent.ganttColumns;
-        let newArray: any[] = originalArray.filter(obj => obj.visible === undefined || obj.visible === true);
-        let deepCopiedArray: any[] = newArray.map(obj => Object.assign({}, obj));
-        const tr: any = deepCopiedArray;
+        const originalArray: ColumnModel[] = this.parent.ganttColumns;
+        const newArray: ColumnModel[] = originalArray.filter((obj: ColumnModel) => obj.visible === undefined || obj.visible === true);
+        const deepCopiedArray: ColumnModel[] = newArray.map((obj: ColumnModel) => Object.assign({}, obj));
+        const tr: ColumnModel[] = deepCopiedArray;
         index = tr.length > index ? index : tr.length;
         if (this.parent.enableRtl) {
             for (let column: number = 0; column < index; column++) {
-                width += parseInt(tr[column as number].width);
+                width += parseInt(tr[column as number].width as string, 10);
             }
             width = ganttWidth - width;
         } else {
             for (let column: number = 0; column < index; column++) {
-                width += parseInt(tr[column as number].width);
+                width += parseInt(tr[column as number].width as string, 10);
             }
         }
         return width;

@@ -79,38 +79,35 @@ import { IReactDiagram } from '../rendering/canvas-interface';
 
 const getShapeType: Function = (obj: Shape): Object => {
     if (obj) {
-        if (isBlazor()) {
-            return DiagramShape;
-        } else {
-            switch (obj.type) {
-                case 'Basic':
-                    return BasicShape;
-                case 'Flow':
-                    return FlowShape;
-                case 'Path':
-                    return Path;
-                case 'Image':
-                    return Image;
-                case 'Text':
-                    return Text;
-                case 'Bpmn':
-                    return BpmnShape;
-                case 'Native':
-                    return Native;
-                case 'HTML':
-                    return Html;
-                case 'UmlActivity':
-                    return UmlActivityShape;
-                case 'UmlClassifier':
-                    return UmlClassifierShape;
-                case 'SwimLane':
-                    return SwimLane;
-                default:
-                    return BasicShape;
-            }
+        //Removed isBlazor code 
+        switch (obj.type) {
+        case 'Basic':
+            return BasicShape;
+        case 'Flow':
+            return FlowShape;
+        case 'Path':
+            return Path;
+        case 'Image':
+            return Image;
+        case 'Text':
+            return Text;
+        case 'Bpmn':
+            return BpmnShape;
+        case 'Native':
+            return Native;
+        case 'HTML':
+            return Html;
+        case 'UmlActivity':
+            return UmlActivityShape;
+        case 'UmlClassifier':
+            return UmlClassifierShape;
+        case 'SwimLane':
+            return SwimLane;
+        default:
+            return BasicShape;
         }
     }
-    return (isBlazor()) ? DiagramShape : BasicShape;
+    return  BasicShape;
 };
 
 /**
@@ -1534,7 +1531,7 @@ export class UmlClassAttribute extends MethodArguments {
      *
      * @default new ShapeStyle()
      * @aspType object
-    */
+     */
     @Complex<ShapeStyleModel>({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
     public separatorStyle: ShapeStyleModel;
 
@@ -1638,7 +1635,7 @@ export class UmlInterface extends UmlClass {
      *
      * @default new ShapeStyle()
      * @aspType object
-    */
+     */
     @Complex<ShapeStyleModel>({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
     public separatorStyle: ShapeStyleModel;
 
@@ -1682,14 +1679,14 @@ export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
     public isSeparator: boolean;
 
     /**
-      * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
-      *
-      * @default new ShapeStyle()
-      * @aspType object
-    */
+     * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
+     *
+     * @default new ShapeStyle()
+     * @aspType object
+     */
     @Complex<ShapeStyleModel>({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
     public separatorStyle: ShapeStyleModel;
- 
+
     /**
      * Sets the shape style of the node
      *
@@ -2600,109 +2597,109 @@ export class Node extends NodeBase implements IElement {
         this.shape[`${oldProperties}`] = {};
 
         switch (this.shape.type) {
-            case 'Path':
-                if ((!isBlazor() && ((this as unknown as ConnectorModel).type === 'Freehand'))) {
-                    const path: PathElement = new PathElement();
-                    path.data = getFreeHandPath((this.shape as BasicShape).points) as string;
-                    content = path;
-                } else {
-                    const pathContent: PathElement = new PathElement();
-                    pathContent.data = (this.shape as Path).data;
-                    content = pathContent;
-                }
-                break;
-            case 'Image':
-                const imageContent: ImageElement = new ImageElement();
-                imageContent.source = (this.shape as Image).source;
-                imageContent.imageAlign = (this.shape as Image).align;
-                imageContent.imageScale = (this.shape as Image).scale; content = imageContent; break;
-            case 'Text':
-                const textContent: TextElement = new TextElement();
-                textContent.content = (isBlazor() ? (this.shape as DiagramShape).textContent : (this.shape as Text).content);
-                content = textContent; textStyle = this.style as TextStyle;
-                content.style = textStyle; break;
-            case 'Basic':
-                if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Rectangle')) {
-                    const basicshape: DiagramElement = new DiagramElement();
-                    content = basicshape;
-                    content.cornerRadius = (this.shape as BasicShape).cornerRadius;
-                } else if ((!isBlazor() && (this.shape as BasicShape).shape === 'Polygon') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Polygon')) {
-                    const path: PathElement = new PathElement();
-                    path.data = getPolygonPath((this.shape as BasicShape).points) as string; content = path;
-                }
-                else {
-                    const basicshape: PathElement = new PathElement();
-                    const basicshapedata: string = getBasicShape((isBlazor()) ? (this.shape as DiagramShape).basicShape : (this.shape as BasicShape).shape);
-                    basicshape.data = basicshapedata; content = basicshape;
-                } break;
-            case 'Flow':
-                const flowshape: PathElement = new PathElement();
-                const flowshapedata: string = getFlowShape((isBlazor() ? (this.shape as DiagramShape).flowShape : (this.shape as FlowShape).shape));
-                flowshape.data = flowshapedata; content = flowshape;
-                break;
-            case 'UmlActivity':
-                const umlactivityshape: PathElement = new PathElement();
-                content = getUMLActivityShapes(umlactivityshape, content, this);
-                break;
-            case 'Bpmn':
-                if (diagram.bpmnModule) {
-                    content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
-                    this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
-                    const subProcess: BpmnSubProcessModel = (this.shape as BpmnShape).activity.subProcess;
-                    if (subProcess.processes && subProcess.processes.length) {
-                        const children: string[] = (this.shape as BpmnShape).activity.subProcess.processes;
-                        for (const i of children) {
-                            if (diagram.nameTable[`${i}`] && (!diagram.nameTable[`${i}`].processId || diagram.nameTable[`${i}`].processId === this.id)) {
-                                diagram.nameTable[`${i}`].processId = this.id;
-                                if (subProcess.collapsed) {
-                                    diagram.updateElementVisibility(
-                                        diagram.nameTable[`${i}`].wrapper, diagram.nameTable[`${i}`], !subProcess.collapsed);
-                                }
-                                (content as Container).children.push(diagram.nameTable[`${i}`].wrapper);
+        case 'Path':
+            if ((!isBlazor() && ((this as unknown as ConnectorModel).type === 'Freehand'))) {
+                const path: PathElement = new PathElement();
+                path.data = getFreeHandPath((this.shape as BasicShape).points) as string;
+                content = path;
+            } else {
+                const pathContent: PathElement = new PathElement();
+                pathContent.data = (this.shape as Path).data;
+                content = pathContent;
+            }
+            break;
+        case 'Image':
+            const imageContent: ImageElement = new ImageElement();
+            imageContent.source = (this.shape as Image).source;
+            imageContent.imageAlign = (this.shape as Image).align;
+            imageContent.imageScale = (this.shape as Image).scale; content = imageContent; break;
+        case 'Text':
+            const textContent: TextElement = new TextElement();
+            textContent.content = (this.shape as Text).content;
+            content = textContent; textStyle = this.style as TextStyle;
+            content.style = textStyle; break;
+        case 'Basic':
+            if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle')) {
+                const basicshape: DiagramElement = new DiagramElement();
+                content = basicshape;
+                content.cornerRadius = (this.shape as BasicShape).cornerRadius;
+            } else if ((!isBlazor() && (this.shape as BasicShape).shape === 'Polygon')) {
+                const path: PathElement = new PathElement();
+                path.data = getPolygonPath((this.shape as BasicShape).points) as string; content = path;
+            }
+            else {
+                const basicshape: PathElement = new PathElement();
+                const basicshapedata: string = getBasicShape((this.shape as BasicShape).shape);
+                basicshape.data = basicshapedata; content = basicshape;
+            } break;
+        case 'Flow':
+            const flowshape: PathElement = new PathElement();
+            const flowshapedata: string = getFlowShape((this.shape as FlowShape).shape);
+            flowshape.data = flowshapedata; content = flowshape;
+            break;
+        case 'UmlActivity':
+            const umlactivityshape: PathElement = new PathElement();
+            content = getUMLActivityShapes(umlactivityshape, content, this);
+            break;
+        case 'Bpmn':
+            if (diagram.bpmnModule) {
+                content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
+                this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
+                const subProcess: BpmnSubProcessModel = (this.shape as BpmnShape).activity.subProcess;
+                if (subProcess.processes && subProcess.processes.length) {
+                    const children: string[] = (this.shape as BpmnShape).activity.subProcess.processes;
+                    for (const i of children) {
+                        if (diagram.nameTable[`${i}`] && (!diagram.nameTable[`${i}`].processId || diagram.nameTable[`${i}`].processId === this.id)) {
+                            diagram.nameTable[`${i}`].processId = this.id;
+                            if (subProcess.collapsed) {
+                                diagram.updateElementVisibility(
+                                    diagram.nameTable[`${i}`].wrapper, diagram.nameTable[`${i}`], !subProcess.collapsed);
                             }
+                            (content as Container).children.push(diagram.nameTable[`${i}`].wrapper);
                         }
                     }
-                }else{
-                    console.warn("[WARNING] :: Module \"BpmnDiagrams\" is not available in Diagram component! You either misspelled the module name or forgot to load it.");
                 }
-                break;
-            case 'Native':
-                const nativeContent: DiagramNativeElement = new DiagramNativeElement(this.id, diagram.element.id);
-                nativeContent.content = (this.shape as Native).content;
-                nativeContent.scale = (this.shape as Native).scale;
-                content = nativeContent;
-                break;
-            case 'HTML':
-                const htmlContent: DiagramHtmlElement = new DiagramHtmlElement(this.id, diagram.element.id, undefined, diagram.nodeTemplate);
-                if ((this.shape as Html).content && (typeof ((this.shape as Html).content) === 'string' || !diagram.isReact)) {
-                    htmlContent.content = (this.shape as Html).content;
-                } else if (diagram.nodeTemplate) {
-                    htmlContent.isTemplate = true;
-                    htmlContent.template = htmlContent.content = getContent(htmlContent, true, this) as HTMLElement;
-                }
-                //Task 834121: Content-Security-Policy support for diagram.
-                if ((this.shape as Html).content && typeof ((this.shape as Html).content) === 'function' && diagram.isReact) {
-                    htmlContent.isTemplate = true;
-                    (htmlContent as any).templateFn = baseTemplateCompiler((this.shape as Html).content as Function);
-                    htmlContent.template = htmlContent.content = getContent(htmlContent, true, this) as HTMLElement;
-                }
-                content = htmlContent;
-                break;
-            case 'UmlClassifier':
-                //   let umlClassifierShape: StackPanel = new StackPanel();
-                content = getULMClassifierShapes(content, this, diagram);
-                break;
-            case 'SwimLane':
-                this.annotations = [];
-                this.ports = [];
-                (content as GridPanel).cellStyle.fill = 'none';
-                (content as GridPanel).cellStyle.strokeColor = 'none';
-                this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };
-                content.id = this.id;
-                this.container.orientation = (this.shape as SwimLaneModel).orientation;
-                this.constraints |= NodeConstraints.HideThumbs;
-                initSwimLane(content as GridPanel, diagram, this);
-                break;
+            } else {
+                console.warn('[WARNING] :: Module "BpmnDiagrams" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
+            }
+            break;
+        case 'Native':
+            const nativeContent: DiagramNativeElement = new DiagramNativeElement(this.id, diagram.element.id);
+            nativeContent.content = (this.shape as Native).content;
+            nativeContent.scale = (this.shape as Native).scale;
+            content = nativeContent;
+            break;
+        case 'HTML':
+            const htmlContent: DiagramHtmlElement = new DiagramHtmlElement(this.id, diagram.element.id, undefined, diagram.nodeTemplate);
+            if ((this.shape as Html).content && (typeof ((this.shape as Html).content) === 'string' || !diagram.isReact)) {
+                htmlContent.content = (this.shape as Html).content;
+            } else if (diagram.nodeTemplate) {
+                htmlContent.isTemplate = true;
+                htmlContent.template = htmlContent.content = getContent(htmlContent, true, this) as HTMLElement;
+            }
+            //Task 834121: Content-Security-Policy support for diagram.
+            if ((this.shape as Html).content && typeof ((this.shape as Html).content) === 'function' && diagram.isReact) {
+                htmlContent.isTemplate = true;
+                (htmlContent as any).templateFn = baseTemplateCompiler((this.shape as Html).content as Function);
+                htmlContent.template = htmlContent.content = getContent(htmlContent, true, this) as HTMLElement;
+            }
+            content = htmlContent;
+            break;
+        case 'UmlClassifier':
+            //   let umlClassifierShape: StackPanel = new StackPanel();
+            content = getULMClassifierShapes(content, this, diagram);
+            break;
+        case 'SwimLane':
+            this.annotations = [];
+            this.ports = [];
+            (content as GridPanel).cellStyle.fill = 'none';
+            (content as GridPanel).cellStyle.strokeColor = 'none';
+            this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };
+            content.id = this.id;
+            this.container.orientation = (this.shape as SwimLaneModel).orientation;
+            this.constraints |= NodeConstraints.HideThumbs;
+            initSwimLane(content as GridPanel, diagram, this);
+            break;
         }
         content.id = this.id + '_content'; content.relativeMode = 'Object';
         // (EJ2-56444) - Added the below code to check whether node shape type is basic and shape is rectangle.
@@ -2731,13 +2728,11 @@ export class Node extends NodeBase implements IElement {
         if (this.maxWidth !== undefined) {
             content.maxWidth = this.maxWidth;
         }
-        if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle' && !(this.shape as BasicShape).cornerRadius) ||
-            ((isBlazor()) && ((this.shape as DiagramShape).basicShape === 'Rectangle'
-                && this.shape.type === 'Basic' && !(this.shape as DiagramShape).cornerRadius))) {
+        if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle' && !(this.shape as BasicShape).cornerRadius)) {
             content.isRectElement = true;
         }
         content.verticalAlignment = 'Stretch';
-        if ((this.shape instanceof Text) || (isBlazor() && this.shape.type === 'Text')) {
+        if ((this.shape instanceof Text)) {
             content.margin = (this.shape as Text).margin;
         }
         if (canShadow(this as NodeModel)) {
@@ -2745,10 +2740,9 @@ export class Node extends NodeBase implements IElement {
                 content.shadow = this.shadow;
             }
         }
-        if ((this.shape.type !== 'Bpmn' || ((!isBlazor() && (this.shape as BpmnShape).shape === 'Message') || (isBlazor() && (this.shape as DiagramShape).bpmnShape === 'Message')) ||
-            ((!isBlazor() && (this.shape as BpmnShape).shape === 'DataSource') || (isBlazor() && (this.shape as DiagramShape).bpmnShape === 'DataSource'))) && (
-                (this.shape.type !== 'UmlActivity' || ((!isBlazor() && (this.shape as UmlActivityShape).shape !== 'FinalNode') ||
-                    (isBlazor() && (this.shape as DiagramShape).umlActivityShape !== 'FinalNode'))))) {
+        if ((this.shape.type !== 'Bpmn' || ((!isBlazor() && (this.shape as BpmnShape).shape === 'Message')) ||
+            ((!isBlazor() && (this.shape as BpmnShape).shape === 'DataSource'))) && (
+            (this.shape.type !== 'UmlActivity' || ((!isBlazor() && (this.shape as UmlActivityShape).shape !== 'FinalNode'))))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
                 this.oldGradientValue = (this.style.gradient) ? cloneObject(this.style.gradient) : null;
@@ -2771,16 +2765,16 @@ export class Node extends NodeBase implements IElement {
             canvas = this.children ? new Container() : new Canvas();
         } else {
             switch (this.container.type) {
-                case 'Canvas':
-                    canvas = new Canvas();
-                    break;
-                case 'Stack':
-                    canvas = new StackPanel();
-                    break;
-                case 'Grid':
-                    canvas = new GridPanel();
-                    (canvas as GridPanel).setDefinitions(this.rows, this.columns);
-                    break;
+            case 'Canvas':
+                canvas = new Canvas();
+                break;
+            case 'Stack':
+                canvas = new StackPanel();
+                break;
+            case 'Grid':
+                canvas = new GridPanel();
+                (canvas as GridPanel).setDefinitions(this.rows, this.columns);
+                break;
             }
         }
 
@@ -2953,14 +2947,15 @@ export class Node extends NodeBase implements IElement {
         let portContent: PathElement = new PathElement();
         portContent.height = ports.height;
         portContent.width = ports.width;
+        portContent.connectionDirection = ports.connectionDirection;
         const pathdata: string = (ports.shape === 'Custom') ? ports.pathData : getPortShape(ports.shape);
         portContent.id = this.id + '_' + (ports.id);
         portContent.margin = ports.margin as Margin;
         portContent.data = pathdata;
         //EJ2-826617 - For BPMN node port flip is to be defined.
         //EJ2-830012 - Complex-hierarchical tree breaks due to Node undefined
-        if(Node){
-            if(Node.shape.type==='Bpmn'){
+        if (Node) {
+            if (Node.shape.type === 'Bpmn') {
                 portContent.flip = this.flip;
             }
         }
@@ -2994,21 +2989,19 @@ export class Node extends NodeBase implements IElement {
         annotation.id = annotation.id || value + 'annotation' || randomId();
         const label: ShapeAnnotation = annotation as ShapeAnnotation;
         let annotationcontent: TextElement | DiagramHtmlElement;
-        if (isBlazor() && annotation.annotationType === 'Template') {
-            annotation.template = annotation.template ? annotation.template : '';
-        }
+        //Removed isBlazor code
         if (diagramId && (annotation.template || annotation.annotationType === 'Template'
             || (annotationTemplate && annotation.content === ''))) {
             annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id, (annotationTemplate as string));
-             // Task 834121: Content-Security-Policy support for diagram
-             const diagramElement: Object = document.getElementById(diagramId);
-             const instance: string = 'ej2_instances';
-             const diagram: Object = diagramElement[`${instance}`][0];
-             if(annotation.template && typeof annotation.template === 'function' && (diagram as IReactDiagram).isReact){
-                 (annotationcontent as any).templateFn = baseTemplateCompiler(annotation.template);
-                 annotationcontent.isTemplate = true;
-             }
-             annotationcontent = getTemplateContent(annotationcontent, annotation, annotationTemplate,diagram);
+            // Task 834121: Content-Security-Policy support for diagram
+            const diagramElement: Object = document.getElementById(diagramId);
+            const instance: string = 'ej2_instances';
+            const diagram: Object = diagramElement[`${instance}`][0];
+            if (annotation.template && typeof annotation.template === 'function' && (diagram as IReactDiagram).isReact) {
+                (annotationcontent as any).templateFn = baseTemplateCompiler(annotation.template);
+                annotationcontent.isTemplate = true;
+            }
+            annotationcontent = getTemplateContent(annotationcontent, annotation, annotationTemplate, diagram);
         } else {
             annotationcontent = new TextElement();
             (annotationcontent as TextElement).canMeasure = !virtualize;
@@ -3037,6 +3030,7 @@ export class Node extends NodeBase implements IElement {
         //Bug 855273: Annotation visible property is not working while changing node visibility at runtime
         (annotationcontent as TextElement).annotationVisibility = annotationcontent.visible ? 'Visible' : 'Collapsed';
         annotationcontent.rotateAngle = annotation.rotateAngle;
+        (annotationcontent as TextElement).rotationReference = annotation.rotationReference;
         annotationcontent.id = this.id + '_' + annotation.id;
         if (this.width !== undefined && !annotation.template) {
             if (annotation.width === undefined || (annotation.width > this.width &&
@@ -3099,9 +3093,9 @@ export class Node extends NodeBase implements IElement {
         iconContent.visible = iconContainer.visible;
         iconContent.visible = iconContainer.visible;
         iconContent.style = {
-            fill: 'black', 
+            fill: 'black',
             strokeColor: options.iconColor,
-            strokeWidth: options.borderWidth,
+            strokeWidth: options.borderWidth
         };
         iconContent.setOffsetWithRespectToBounds(0.5, 0.5, 'Fraction');
         iconContent.relativeMode = 'Object';
@@ -3264,7 +3258,7 @@ export class Phase extends ChildProperty<Shape> {
      *
      * @default ''
      */
-    @Complex<ShapeStyleModel>({ fill: '#FFFFFF',strokeColor: '#CCCCCC' }, ShapeStyle)
+    @Complex<ShapeStyleModel>({ fill: '#FFFFFF', strokeColor: '#CCCCCC' }, ShapeStyle)
     public style: ShapeStyleModel;
 
     /**
@@ -3670,8 +3664,8 @@ export class Selector extends ChildProperty<Selector> implements IElement {
         return container;
     }
 
-    /** 
-     * Specifies whether the selection state of the diagram element should be toggled based on a mouse click at runtime. 
+    /**
+     * Specifies whether the selection state of the diagram element should be toggled based on a mouse click at runtime.
      * The default value is false.
      *
      * @default false

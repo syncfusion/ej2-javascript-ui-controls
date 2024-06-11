@@ -1,5 +1,3 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { IntervalType } from '../../common/utils/enum';
 import { firstToLowerCase, RectOption} from '../../common/utils/helper';
 import { Axis } from '../../chart/axis/axis';
@@ -47,10 +45,12 @@ export class RangeSeries extends NiceInterval {
         this.labels = [];
         this.indexLabels = {};
     }
+
     /**
-     * To render light weight and data manager process
+     * To render light weight and data manager process.
      *
-     * @param {RangeNavigator} control RangeNavigator instance
+     * @param {RangeNavigator} control - RangeNavigator instance.
+     * @returns {void}
      */
     public renderChart(control: RangeNavigator): void {
         let dataSource: Object;
@@ -79,7 +79,14 @@ export class RangeSeries extends NiceInterval {
         dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e, control, series));
     }
     /**
-     * data manager process calculated here
+     * data manager process calculated here.
+     *
+     * @param {Object} e - The data manager result object.
+     * @param {Object} e.result - The result of the data manager process.
+     * @param {number} e.count - The count of items in the result.
+     * @param {RangeNavigator} control - The RangeNavigator control.
+     * @param {RangeNavigatorSeries} series - Optional parameter representing the series data.
+     * @returns {void}
      */
     private dataManagerSuccess(e: { result: Object, count: number }, control: RangeNavigator, series?: RangeNavigatorSeries): void {
         const viewData: Object = e.count ? e.result : [];
@@ -94,7 +101,13 @@ export class RangeSeries extends NiceInterval {
         }
     }
     /**
-     * Process JSON data from data source
+     * Process JSON data from data source.
+     *
+     * @param {Object[]} viewData - The data array to be processed.
+     * @param {RangeNavigator} control - The RangeNavigator control.
+     * @param {number} len - The length of the data array.
+     * @param {RangeNavigatorSeries} series - The series data for the RangeNavigator control.
+     * @returns {void}
      */
     private processJsonData(viewData: Object[], control: RangeNavigator, len: number, series: RangeNavigatorSeries): void {
         let i: number = 0;
@@ -134,6 +147,8 @@ export class RangeSeries extends NiceInterval {
      * Process x axis for range navigator.
      *
      * @private
+     * @param {RangeNavigator} control - The RangeNavigator control.
+     * @returns {void}
      */
     public processXAxis(control: RangeNavigator): void {
         const axis: AxisModel = {
@@ -170,10 +185,11 @@ export class RangeSeries extends NiceInterval {
         }
     }
     /**
-     * Process yAxis for range navigator
+     * Process yAxis for range navigator.
      *
-     * @param {RangeNavigator} control RangeNavigator instance
+     * @param {RangeNavigator} control - RangeNavigator instance.
      * @private
+     * @returns {void}
      */
     public processYAxis(control: RangeNavigator): void {
         const axis: AxisModel = {
@@ -198,10 +214,11 @@ export class RangeSeries extends NiceInterval {
     }
 
     /**
-     * Process Light weight control
+     * Process Light weight control.
      *
-     * @param {RangeNavigator} control RangeNavigator instance
+     * @param {RangeNavigator} control - RangeNavigator instance.
      * @private
+     * @returns {void}
      */
     public renderSeries(control: RangeNavigator): void {
         this.chartGroup = control.renderer.createGroup({ id: control.element.id + '_chart' });
@@ -232,7 +249,7 @@ export class RangeSeries extends NiceInterval {
                     );
                 }
                 this.chartGroup.appendChild(series.seriesElement);
-                if (((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && control.animateSeries) {
+                if (((series.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && control.animateSeries) {
                     if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
                         control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
                     } else {
@@ -245,6 +262,9 @@ export class RangeSeries extends NiceInterval {
 
     /**
      * Append series elements in element.
+     *
+     * @param {RangeNavigator} control - The RangeNavigator control.
+     * @returns {void}
      */
     public appendSeriesElements(control: RangeNavigator): void {
         control.svgObject.appendChild(this.chartGroup);
@@ -279,6 +299,8 @@ export class RangeSeries extends NiceInterval {
      * Calculate grouping bounds for x axis.
      *
      * @private
+     * @param {RangeNavigator} control - The RangeNavigator control.
+     * @returns {void}
      */
     public calculateGroupingBounds(control: RangeNavigator): void {
         const padding: number = control.margin.bottom;

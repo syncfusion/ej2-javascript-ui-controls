@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Functions related to dom operations.
  */
@@ -209,7 +210,6 @@ function executeScript(ele: Element): void {
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function detach(element: Element | Node | HTMLElement): any {
     const parentNode: Node = element.parentNode;
     if (parentNode) {
@@ -238,7 +238,6 @@ export function remove(element: Element | Node | HTMLElement): void {
  * @returns {Element} ?
  * @private
  */
-// eslint-disable-next-line
 export function attributes(element: Element | Node | any, attributes: { [key: string]: string }): Element {
     const keys: string[] = Object.keys(attributes);
     const ele: Element = <Element>element;
@@ -265,7 +264,6 @@ export function attributes(element: Element | Node | any, attributes: { [key: st
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function select(selector: string, context: Document | Element = document, needsVDOM?: boolean): any {
     selector = querySelectId(selector);
     return context.querySelector(selector);
@@ -280,7 +278,6 @@ export function select(selector: string, context: Document | Element = document,
  * @returns {HTMLElement[]} ?
  * @private
  */
-// eslint-disable-next-line
 export function selectAll(selector: string, context: Document | Element = document, needsVDOM?: boolean): HTMLElement[] {
     selector = querySelectId(selector);
     const nodeList: NodeList = context.querySelectorAll(selector);
@@ -401,8 +398,7 @@ export function getAttributeOrDefault(element: HTMLElement, property: string, va
 export function setStyleAttribute(element: HTMLElement, attrs: { [key: string]: Object }): void {
     if (attrs !== undefined) {
         Object.keys(attrs).forEach((key: string) => {
-            // eslint-disable-next-line
-            (<any>element).style[key] = attrs[key];
+            (<any>element).style[`${key}`] = attrs[`${key}`];
         });
     }
 }
@@ -430,8 +426,7 @@ export function classList(element: Element, addClasses: string[], removeClasses:
  * @private
  */
 export function matches(element: Element, selector: string): boolean {
-    // eslint-disable-next-line
-    let matches: Function = element.matches || (element as any).msMatchesSelector || element.webkitMatchesSelector;
+    const matches: Function = element.matches || (element as any).msMatchesSelector || element.webkitMatchesSelector;
     if (matches) {
         return matches.call(element, selector);
     } else {
@@ -459,11 +454,10 @@ export function includeInnerHTML(ele: HTMLElement, innerHTML: string): void {
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function containsClass(ele: HTMLElement, className: string): any {
     if (isObject(ele)) {
-        // eslint-disable-next-line
-        return new RegExp('\\b' + className + '\\b', 'i').test((ele as any).attributes.className);
+        const regExp: RegExpConstructor = RegExp;
+        return new regExp('\\b' + className + '\\b', 'i').test((ele as any).attributes.className);
     } else {
         return ele.classList.contains(className);
     }
@@ -476,7 +470,6 @@ export function containsClass(ele: HTMLElement, className: string): any {
  * @returns {any} ?
  * @private
  */
-// eslint-disable-next-line
 export function cloneNode(element: Object, deep?: boolean): any {
     if (isObject(element)) {
         if (deep) {

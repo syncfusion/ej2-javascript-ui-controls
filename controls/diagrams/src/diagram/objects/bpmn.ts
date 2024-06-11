@@ -17,7 +17,7 @@ import { PointPortModel } from './../objects/port-model';
 import { Connector } from './../objects/connector';
 import { BpmnAnnotation } from './../objects/node';
 import { BpmnFlowModel, ConnectorModel } from './../objects/connector-model';
-import { Transform, DiagramAction, TextAnnotationDirection } from '../enum/enum';
+import { Transform, DiagramAction, TextAnnotationDirection, BpmnFlows } from '../enum/enum';
 import { PointModel } from '../primitives/point-model';
 import { findAngle, getIntersectionPoints, getPortDirection } from '../utility/connector';
 import { Point } from '../primitives/point';
@@ -47,8 +47,8 @@ export class BpmnDiagrams {
     //Code conversion for Bpmn Shapes
     //Start Region
 
-       /**   @private  */
-       public bpmnTextAnnotationConnector:any  = [];
+    /**   @private  */
+    public bpmnTextAnnotationConnector: any = [];
 
     /**   @private  */
     public getSize(node: NodeModel, content: DiagramElement): Size {
@@ -82,8 +82,8 @@ export class BpmnDiagrams {
     }
     /** @private */
     public initBPMNContent(content: DiagramElement, node: Node, diagram: Diagram): DiagramElement {
-        const shape: BpmnShape | DiagramShape = (isBlazor() ? node.shape as DiagramShape : node.shape as BpmnShape);
-        const bpmnShape: BpmnShapes = (isBlazor() ? (node.shape as DiagramShape).bpmnShape : (node.shape as BpmnShape).shape);
+        const shape: BpmnShape = node.shape as BpmnShape;
+        const bpmnShape: BpmnShapes = (node.shape as BpmnShape).shape;
         if (bpmnShape === 'Event') {
             content = this.getBPMNEventShape(node, shape.event);
         }
@@ -99,25 +99,25 @@ export class BpmnDiagrams {
         //848061-BPMN Group shape to be function Like Subprocess Node
         if (bpmnShape === 'Group') {
             //854195 - bpmn group serialization issue
-            content = this.getBPMNGroup(node,diagram);
+            content = this.getBPMNGroup(node, diagram);
             content.style.strokeDashArray = '2 2 6 2';
-            content.cornerRadius = 10;;
+            content.cornerRadius = 10;
         }
         if (bpmnShape === 'Activity') {
             content = this.getBPMNActivityShape(node);
         }
         //Task 866412: Should revamp BPMN text annotation node.
         if (bpmnShape === 'TextAnnotation') {
-            if((node as any).parentObj instanceof Diagram || (node as any).parentObj instanceof Lane){
-               content =  this.getBpmnTextAnnotationShape(node,(node.shape as BpmnShape),diagram)
-            }else{
-                content = this.getBpmnTextAnnotationSymbol(node,(node.shape as BpmnShape), diagram);
+            if ((node as any).parentObj instanceof Diagram || (node as any).parentObj instanceof Lane) {
+                content = this.getBpmnTextAnnotationShape(node, (node.shape as BpmnShape), diagram);
+            } else {
+                content = this.getBpmnTextAnnotationSymbol(node, (node.shape as BpmnShape), diagram);
             }
         }
         return content;
     }
-    private getBpmnTextAnnotationShape(textAnnotation:NodeModel,bpmnTextAnnotation:BpmnShape,diagram:Diagram){
-        textAnnotation.id = textAnnotation.id || randomId();
+    private getBpmnTextAnnotationShape(textAnnotation: NodeModel, bpmnTextAnnotation: BpmnShape, diagram: Diagram): Canvas {
+        textAnnotation.id = textAnnotation.id;
         const annotationsContainer: Canvas = new Canvas();
         annotationsContainer.measureChildren = false;
 
@@ -125,8 +125,8 @@ export class BpmnDiagrams {
         annotationsContainer.offsetY = textAnnotation.offsetY;
         annotationsContainer.float = true;
         annotationsContainer.id = `${textAnnotation.id}_textannotation`;
-        annotationsContainer.style.strokeColor = "transparent";
-        annotationsContainer.style.fill = "transparent";
+        annotationsContainer.style.strokeColor = 'transparent';
+        annotationsContainer.style.fill = 'transparent';
         annotationsContainer.relativeMode = 'Object';
         annotationsContainer.rotateAngle = 0;
 
@@ -146,31 +146,28 @@ export class BpmnDiagrams {
         const oldIsProtectedOnChange: boolean = (diagram as any).isProtectedOnChange;
         (diagram as any).isProtectedOnChange = false;
 
-        this.setAnnotationPath(bounds, annotationsContainer, textAnnotation, bpmnTextAnnotation, bpmnTextAnnotation.textAnnotation.textAnnotationDirection,diagram);
-
+        this.setAnnotationPath(bounds, annotationsContainer, textAnnotation, bpmnTextAnnotation,
+                               bpmnTextAnnotation.textAnnotation.textAnnotationDirection, diagram);
         (diagram as any).isProtectedOnChange = oldIsProtectedOnChange;
 
         return annotationsContainer;
 
     }
     //Task 866412: Should revamp BPMN text annotation node. To render text annotation in symbol palette.
-    private getBpmnTextAnnotationSymbol( annotation:NodeModel, bpmnTextAnnotation: BpmnShape, diagram: Diagram){
-        let data: string = "M33.33,15 L0,43 M39.33,0 L33.33,0 L33.33,30 L39.33,30 M60,0";
-        if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Top')
-        {
-            data = "M15,33.33 L43,0 M0,39.33 L0,33.33 L30,33.33 L30,39.33 M0,60";
+    private getBpmnTextAnnotationSymbol(annotation: NodeModel, bpmnTextAnnotation: BpmnShape, diagram: Diagram): PathElement {
+        let data: string = 'M33.33,15 L0,43 M39.33,0 L33.33,0 L33.33,30 L39.33,30 M60,0';
+        if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Top') {
+            data = 'M15,33.33 L43,0 M0,39.33 L0,33.33 L30,33.33 L30,39.33 M0,60';
         }
-        else if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Right')
-        {
-            data = "M6,15 L39.33,43 M0,0 L6,0 L6,30 L0,30 M-20,0";
+        else if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Right') {
+            data = 'M6,15 L39.33,43 M0,0 L6,0 L6,30 L0,30 M-20,0';
         }
-        else if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Bottom')
-        {
-            data = "M15,6 L43,39.33 M0,0 L0,6 L30,6 L30,0 M0,-20";
+        else if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Bottom') {
+            data = 'M15,6 L43,39.33 M0,0 L0,6 L30,6 L30,0 M0,-20';
         }
-        let  path : PathElement= new PathElement()
-         path.data = data;
-         path.style.fill = 'transparent';
+        const path: PathElement = new PathElement();
+        path.data = data;
+        path.style.fill = 'transparent';
         return path;
     }
     /** @private */
@@ -181,11 +178,9 @@ export class BpmnDiagrams {
         if ((node.constraints & NodeConstraints.Shadow) !== 0) {
             bpmnShape.shadow = node.shadow;
         }
-        const bpmnShapeData: string = getBpmnShapePathData((isBlazor() ? (node.shape as DiagramShape).bpmnShape :
-            (node.shape as BpmnShape).shape));
+        const bpmnShapeData: string = getBpmnShapePathData((node.shape as BpmnShape).shape);
         bpmnShape.data = bpmnShapeData;
-        bpmnShape.id = node.id + '_' + (isBlazor() ? (node.shape as DiagramShape).bpmnShape :
-            (node.shape as BpmnShape).shape);
+        bpmnShape.id = node.id + '_' + (node.shape as BpmnShape).shape;
         if (node.width !== undefined && node.height !== undefined) {
             bpmnShape.width = node.width;
             bpmnShape.height = node.height;
@@ -200,10 +195,10 @@ export class BpmnDiagrams {
         if (!group.children) {
             group.children = [];
         }
-        const groupShapeObj = ((node.shape as any).group);
+        const groupShapeObj: NodeModel = ((node.shape as any).group);
         if ((node.shape as any).group) {
             for (let i: number = 0; i < groupShapeObj.children.length; i++) {
-                let child: Node | Connector = diagram.nameTable[groupShapeObj.children[parseInt(i.toString(), 10)]];
+                const child: Node | Connector = diagram.nameTable[groupShapeObj.children[parseInt(i.toString(), 10)]];
                 group.children.push(child.wrapper);
             }
         }
@@ -395,8 +390,7 @@ export class BpmnDiagrams {
             'C149.7764,62.3279000000001,156.2414,55.8629000000001,164.1884,55.8629000000001C172.1354,55.8629000000001,178.6024,' +
             '62.3279000000001,178.6024,70.2769000000001C178.6024,78.2259000000001,172.1354,84.6909000000001,164.1884,84.6909000000001';
         const shapeEvent: BpmnEventModel = (node.shape as BpmnShape).event;
-        if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Event') ||
-            (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'Event')) {
+        if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Event')) {
             event = shapeEvent.event;
             trigger = shapeEvent.trigger;
         }
@@ -412,8 +406,7 @@ export class BpmnDiagrams {
             width = size.width; height = size.height;
         }
         const shapeActivity: BpmnActivityModel = (node.shape as BpmnShape).activity;
-        if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Activity') ||
-            (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'Activity')) {
+        if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Activity')) {
             const subProcess: Object = shapeActivity.subProcess;
             event = subEvent.event;
             trigger = subEvent.trigger;
@@ -468,7 +461,7 @@ export class BpmnDiagrams {
             break;
         case 'ThrowingIntermediate':
         case 'End':
-            innerEvtNode.style.fill = event !== 'End' ? node.style.fill : node.style.fill !== 'white' ? node.style.fill: 'black' ;
+            innerEvtNode.style.fill = event !== 'End' ? node.style.fill : node.style.fill !== 'white' ? node.style.fill : 'black';
             innerEvtNode.style.gradient = null;
             triggerNode.style.fill = 'black';
             triggerNode.style.strokeColor = 'white';
@@ -631,7 +624,7 @@ export class BpmnDiagrams {
         innerRect.margin = { left: 3, right: 0, top: 3, bottom: 0 };
         innerRect.id = node.id + '_0_Subprocess_innnerRect';
         innerRect.cornerRadius = 10; innerRect.width = shapeWidth - 6;
-        //EJ2-824711 - Fill color is not applied properly for BPMN transaction subProcess. 
+        //EJ2-824711 - Fill color is not applied properly for BPMN transaction subProcess.
         innerRect.style.fill = 'transparent';
         innerRect.height = shapeHeight - 6; container.children.push(innerRect);
 
@@ -704,8 +697,7 @@ export class BpmnDiagrams {
     /** @private */
     public dropBPMNchild(target: Node, source: Node, diagram: Diagram): void {
         if (source && source.shape.type === 'Bpmn' && target.shape.type === 'Bpmn'
-            && ((!isBlazor() && (source.shape as BpmnShape).shape !== 'TextAnnotation') ||
-                (isBlazor() && (source.shape as DiagramShape).bpmnShape !== 'TextAnnotation'))) {
+            && (!isBlazor() && (source.shape as BpmnShape).shape !== 'TextAnnotation')) {
             const subProcess: BpmnSubProcessModel = (diagram.nameTable[target.id].shape as BpmnShape).activity.subProcess;
             if (diagram.currentSymbol && target.shape.type === 'Bpmn' && !subProcess.collapsed) {
                 source.processId = target.id;
@@ -715,8 +707,8 @@ export class BpmnDiagrams {
             if (subProcess.processes && subProcess.processes.indexOf(source.id) === -1 && !subProcess.collapsed) {
                 subProcess.processes.push(source.id);
                 // To arrange the process based on zIndex, which cause issue in save and load.
-                if(subProcess.processes.length > 1){
-                    this.sortProcessOrder(subProcess.processes,diagram);
+                if (subProcess.processes.length > 1) {
+                    this.sortProcessOrder(subProcess.processes, diagram);
                 }
                 const redoElement: NodeModel = cloneObject(source);
                 const sources: Container = diagram.nameTable[source.id].wrapper;
@@ -740,7 +732,8 @@ export class BpmnDiagrams {
                 let edges: string[] = [];
                 edges = edges.concat((source as Node).outEdges, (source as Node).inEdges);
                 for (let i: number = edges.length - 1; i >= 0; i--) {
-                    if (diagram.bpmnModule.bpmnTextAnnotationConnector.indexOf(diagram.nameTable[edges[parseInt(i.toString(), 10)]]) === -1) {
+                    if (diagram.bpmnModule.bpmnTextAnnotationConnector.indexOf(diagram.nameTable[edges[parseInt(i.toString(), 10)]])
+                        === -1) {
                         diagram.remove(diagram.nameTable[edges[parseInt(i.toString(), 10)]]);
                     }
                 }
@@ -760,9 +753,9 @@ export class BpmnDiagrams {
             }
         }
     }
-    private sortProcessOrder(processes: string[],diagram: Diagram){
+    private sortProcessOrder(processes: string[], diagram: Diagram): void {
         // Sort the process array based on node zIndex
-        processes.sort((a:string, b:string) => diagram.nameTable[`${a}`].zIndex - diagram.nameTable[`${b}`].zIndex);
+        processes.sort((a: string, b: string) => diagram.nameTable[`${a}`].zIndex - diagram.nameTable[`${b}`].zIndex);
     }
     private updateIndex(diagram: Diagram, source: Node): void {
         //let processNode: Node;
@@ -782,7 +775,8 @@ export class BpmnDiagrams {
 
                     this.updateSubprocessNodeIndex(diagram.nameTable[`${processes}`], diagram, target);
                 } else {
-                    const node: Node = diagram.nameTable[(source.shape as BpmnShapeModel).activity.subProcess.processes[parseInt(i.toString(), 10)]];
+                    const node: Node
+                        = diagram.nameTable[(source.shape as BpmnShapeModel).activity.subProcess.processes[parseInt(i.toString(), 10)]];
                     this.updateIndex(diagram, node);
                 }
             }
@@ -822,10 +816,9 @@ export class BpmnDiagrams {
         if (element) {
             diagram.removeDependentConnector(currentObj);
             const processes: string[] = (element.shape as BpmnShape).activity.subProcess.processes;
-            this.removeChildFromBPMN(element.wrapper, currentObj.id,diagram,true);
+            this.removeChildFromBPMN(element.wrapper, currentObj.id, diagram, true);
             const processIndex: number = processes.indexOf(currentObj.id);
             processes.splice(processIndex, 1);
-
         }
     }
     /** @private */
@@ -833,10 +826,10 @@ export class BpmnDiagrams {
         for (const i of wrapper.children) {
             if (i.id === name) {
                 wrapper.children.splice(wrapper.children.indexOf(i), 1);
-                if(!(i as any).isDroppedProcess && !isDelete){
+                if (!(i as any).isDroppedProcess && !isDelete) {
                     // To remove the child node from subprocess to diagram in DOM.
                     this.removeGElement(i.id, diagram);
-                  }
+                }
             } else if ((i as Container).children) {
                 this.removeChildFromBPMN((i as Container), name, diagram, isDelete);
             }
@@ -844,29 +837,29 @@ export class BpmnDiagrams {
     }
     //Bug 858761: Default Tooltip of sub-process node is not positioned properly after drag and drop the child of subprocess in diagram.
     // To remove the child node from subprocess to diagram in DOM.
-    private removeGElement(id: string, diagram: Diagram){
-        let element = document.getElementById(id+'_groupElement');
-        let diagramLayer = document.getElementById(diagram.element.id + '_diagramLayer');
-        let parent = element.parentElement;
+    private removeGElement(id: string, diagram: Diagram): void {
+        const element: HTMLElement = document.getElementById(id + '_groupElement');
+        const diagramLayer: HTMLElement = document.getElementById(diagram.element.id + '_diagramLayer');
+        const parent: HTMLElement = element.parentElement;
         parent.removeChild(element);
         diagramLayer.appendChild(element);
-        let node = diagram.nameTable[`${id}`];
-        const beforeIndex = node.zIndex+1;
-        let getNode = this.getNode(beforeIndex,diagram);
-        if(getNode.length > 0){
-            let neighborElement = document.getElementById(getNode[0].id+'_groupElement');
-            let index = Array.from(diagramLayer.children).findIndex(child => child === neighborElement);
-            const domIndex = index !== -1 ? index : 1;
-            diagramLayer.children[parseInt(domIndex.toString(), 10)].insertAdjacentElement('beforebegin',element);
+        const node: NodeModel = diagram.nameTable[`${id}`];
+        const beforeIndex: number = node.zIndex + 1;
+        const getNode: NodeModel[] = this.getNode(beforeIndex, diagram);
+        if (getNode.length > 0) {
+            const neighborElement: HTMLElement = document.getElementById(getNode[0].id + '_groupElement');
+            const index: number = Array.from(diagramLayer.children).findIndex((child: Element) => child === neighborElement);
+            const domIndex: number = index !== -1 ? index : 1;
+            diagramLayer.children[parseInt(domIndex.toString(), 10)].insertAdjacentElement('beforebegin', element);
         }
-    };
-    private getNode(index: number, diagram: Diagram):any {
-        let getNode = diagram.nodes.filter((x: any) => x.zIndex === index);
+    }
+    private getNode(index: number, diagram: Diagram): NodeModel[] {
+        const getNode: NodeModel[] = diagram.nodes.filter((x: any) => x.zIndex === index);
         if (getNode.length === 0 && index > 0) {
             return this.getNode(index - 1, diagram);
         }
         return getNode;
-    };
+    }
     /** @private */
     public removeProcess(id: string, diagram: Diagram): void {
         const node: Node = diagram.nameTable[`${id}`];
@@ -875,7 +868,7 @@ export class BpmnDiagrams {
             if (parent && parent.shape.type === 'Bpmn') {
                 const processes: string[] = (parent.shape as BpmnShape).activity.subProcess.processes;
                 diagram.removeDependentConnector(node as Node);
-                this.removeChildFromBPMN(parent.wrapper, id,diagram,true);
+                this.removeChildFromBPMN(parent.wrapper, id, diagram, true);
                 const processIndex: number = processes.indexOf(id);
                 processes.splice(processIndex, 1);
                 node.processId = '';
@@ -1041,7 +1034,7 @@ export class BpmnDiagrams {
     /** @private */
     public getTextAnnotationWrapper(node: NodeModel, id: string): TextElement {
         if (node && node.shape.type === 'Bpmn') {
-            const shape: BpmnShapes = (isBlazor() ? (node.shape as DiagramShape).bpmnShape : (node.shape as BpmnShape).shape);
+            const shape: BpmnShapes = (node.shape as BpmnShape).shape;
             if (shape === 'TextAnnotation') {
                 return node.wrapper.children[1] as TextElement;
             }
@@ -1050,115 +1043,116 @@ export class BpmnDiagrams {
     }
 
     /**
-     * 
-     *@private
+     *
+     * @private
      * To modify the text annotation path while dragging the node and set port offset based on dragging.
      */
-    public setAnnotationPath(sourceBounds: Rect, wrapper: Canvas, node: NodeModel,  bpmnShape: BpmnShape,  direction: TextAnnotationDirection,diagram:Diagram){
-           const pathElement:PathElement = new PathElement();
-            pathElement.id = wrapper.id + "_path";
-            pathElement.width = node.width;
-            pathElement.height = node.height;
-            pathElement.style.fill = "transparent";
-            pathElement.style.strokeColor = ((node.style.strokeColor == "transparent") ? "black" : node.style.strokeColor);
-            pathElement.style.opacity = node.style.opacity;
-            pathElement.relativeMode = "Object";
-            pathElement.horizontalAlignment = "Stretch";
-            pathElement.verticalAlignment = "Stretch";
-            const pointPort: PointPortModel = (node.ports.length > 0) ? node.ports[0] : new PointPort(node, 'ports', '', true);
-            diagram.protectPropertyChange(true);
-            node.ports = [pointPort];
-            diagram.protectPropertyChange(false);
-            switch (direction)
+    public setAnnotationPath(sourceBounds: Rect, wrapper: Canvas, node: NodeModel, bpmnShape: BpmnShape,
+                             direction: TextAnnotationDirection, diagram: Diagram): void {
+        const pathElement: PathElement = new PathElement();
+        pathElement.id = wrapper.id + '_path';
+        pathElement.width = node.width;
+        pathElement.height = node.height;
+        pathElement.style.fill = 'transparent';
+        pathElement.style.strokeColor = ((node.style.strokeColor === 'transparent') ? 'black' : node.style.strokeColor);
+        pathElement.style.opacity = node.style.opacity;
+        pathElement.relativeMode = 'Object';
+        pathElement.horizontalAlignment = 'Stretch';
+        pathElement.verticalAlignment = 'Stretch';
+        const pointPort: PointPortModel = (node.ports.length > 0) ? node.ports[0] : new PointPort(node, 'ports', '', true);
+        diagram.protectPropertyChange(true);
+        node.ports = [pointPort];
+        diagram.protectPropertyChange(false);
+        switch (direction) {
+        case 'Left':
+            pathElement.data = 'M10,20 L0,20 L0,0 L10,0';
+            pathElement.width = 10;
+            pathElement.horizontalAlignment = 'Left';
+            pointPort.offset = { x: 0.0, y: 0.5 };
+            break;
+        case 'Right':
+            pathElement.data = 'M0,0 L10,0 L10,20 L0,20';
+            pathElement.width = 10;
+            pathElement.horizontalAlignment = 'Right';
+            pointPort.offset =
             {
-            case 'Left':
-                pathElement.data = "M10,20 L0,20 L0,0 L10,0";
-                pathElement.width = 10;
-                pathElement.horizontalAlignment = 'Left';
-                pointPort.offset = {x : 0.0, y : 0.5};
-                break;
-            case 'Right':
-                pathElement.data = "M0,0 L10,0 L10,20 L0,20";
-                pathElement.width = 10;
-                pathElement.horizontalAlignment = "Right";
-                pointPort.offset =
-                {
-                    x : 1.0,
-                    y : 0.5
-                };
-                break;
-            case 'Top':
-                pathElement.data = "M20,10 L20,0 L0,0 L0,10";
-                pathElement.height = 10.0;
-                pathElement.verticalAlignment = 'Top';
-                pointPort.offset =
-                {
-                    x : 0.5,
-                    y : 0.0
-                };
-                break;
-            case 'Bottom':
-                pathElement.data = "M0,0 L0,10 L20,10 L20,0";
-                pathElement.height = 10;
-                pathElement.verticalAlignment ='Bottom';
-                pointPort.offset =
-                {
-                    x : 0.5,
-                    y : 1.0
-                };
-                break;
-            default:
-                //To check the text annotation has parent and update the path element.
-                if (bpmnShape.textAnnotation.textAnnotationTarget !== '') {
-                    if (diagram.nameTable[bpmnShape.textAnnotation.textAnnotationTarget]) {
-                        let node2: Node = diagram.nameTable[bpmnShape.textAnnotation.textAnnotationTarget];
-                        (node2 as any).hasTextAnnotation = true;
-                        const wrapper2: DiagramElement = node2.wrapper;
-                    
-                        if (wrapper2 !== null) {
+                x: 1.0,
+                y: 0.5
+            };
+            break;
+        case 'Top':
+            pathElement.data = 'M20,10 L20,0 L0,0 L0,10';
+            pathElement.height = 10.0;
+            pathElement.verticalAlignment = 'Top';
+            pointPort.offset =
+            {
+                x: 0.5,
+                y: 0.0
+            };
+            break;
+        case 'Bottom':
+            pathElement.data = 'M0,0 L0,10 L20,10 L20,0';
+            pathElement.height = 10;
+            pathElement.verticalAlignment = 'Bottom';
+            pointPort.offset =
+            {
+                x: 0.5,
+                y: 1.0
+            };
+            break;
+        default:
+            //To check the text annotation has parent and update the path element.
+            if (bpmnShape.textAnnotation.textAnnotationTarget !== '') {
+                if (diagram.nameTable[bpmnShape.textAnnotation.textAnnotationTarget]) {
+                    const node2: Node = diagram.nameTable[bpmnShape.textAnnotation.textAnnotationTarget];
+                    (node2 as any).hasTextAnnotation = true;
+                    const wrapper2: DiagramElement = node2.wrapper;
+
+                    if (wrapper2 !== null) {
                         const doubleValue: number = node2.width;
                         const doubleValue2: number = node2.height;
                         let targetBounds: Rect = new Rect(0.0, 0.0, 0.0, 0.0);
-                    
+
                         if (doubleValue !== 0.0 && doubleValue2 !== 0.0) {
-                            targetBounds = new Rect(node2.offsetX - doubleValue / 2, node2.offsetY - doubleValue2 / 2, doubleValue, doubleValue2);
+                            targetBounds = new Rect(node2.offsetX - doubleValue / 2, node2.offsetY - doubleValue2 / 2,
+                                                    doubleValue, doubleValue2);
                         }
-                    
+
                         this.setAnnotationPosition(targetBounds, node, sourceBounds, pathElement);
-                        }
                     }
-                  } else if (bpmnShape.textAnnotation.textAnnotationTarget === '') {
-                    pathElement.data = 'M10,20 L0,20 L0,0 L10,0';
-                    pathElement.width = 10.0;
-                    pathElement.horizontalAlignment = 'Left';
-                    pointPort.offset = {
-                      x: 0.0,
-                      y: 0.5
-                    };
-                  }
-                  
-                break;
+                }
+            } else if (bpmnShape.textAnnotation.textAnnotationTarget === '') {
+                pathElement.data = 'M10,20 L0,20 L0,0 L10,0';
+                pathElement.width = 10.0;
+                pathElement.horizontalAlignment = 'Left';
+                pointPort.offset = {
+                    x: 0.0,
+                    y: 0.5
+                };
             }
-            wrapper.children = [];
-            wrapper.children.push(pathElement);
+
+            break;
+        }
+        wrapper.children = [];
+        wrapper.children.push(pathElement);
     }
     //Task 866412: Should revamp BPMN text annotation node. To modifty the port offset and annotation path based on node bounds while dragging.
-    private setAnnotationPosition(targetBounds: Rect, annotation: NodeModel, annotationBounds: Rect, annotationPath: PathElement){
-        const pointPort: PointPortModel  = ((annotation.ports.length > 0) ? annotation.ports[0] : new PointPort(annotation, 'ports', '', true));
-        const position = {x:annotationBounds.x,y:annotationBounds.y};
-        const rotateAngle = this.getAnnotationPathAngle(position, targetBounds);
+    private setAnnotationPosition(targetBounds: Rect, annotation: NodeModel, annotationBounds: Rect, annotationPath: PathElement): void {
+        const pointPort: PointPortModel  = annotation.ports[0];
+        const position: PointModel = { x: annotationBounds.x, y: annotationBounds.y };
+        const rotateAngle: number = this.getAnnotationPathAngle(position, targetBounds);
         if (rotateAngle === 90) {
-            annotationPath.data = "M20,10 L20,0 L0,0 L0,10";
+            annotationPath.data = 'M20,10 L20,0 L0,0 L0,10';
             annotationPath.height = 10.0;
             annotationPath.verticalAlignment = 'Top';
             pointPort.offset =
-                {
-                    x: 0.5,
-                    y: 0.0
-                };
+            {
+                x: 0.5,
+                y: 0.0
+            };
         }
         else if (rotateAngle === 180) {
-            annotationPath.data = "M0,0 L10,0 L10,20 L0,20";
+            annotationPath.data = 'M0,0 L10,0 L10,20 L0,20';
             annotationPath.width = 10.0;
             annotationPath.horizontalAlignment = 'Right';
             pointPort.offset =
@@ -1168,7 +1162,7 @@ export class BpmnDiagrams {
                 };
         }
         else if (rotateAngle === 0) {
-            annotationPath.data = "M10,20 L0,20 L0,0 L10,0";
+            annotationPath.data = 'M10,20 L0,20 L0,0 L10,0';
             annotationPath.width = 10.0;
             annotationPath.horizontalAlignment = 'Left';
             pointPort.offset =
@@ -1178,7 +1172,7 @@ export class BpmnDiagrams {
                 };
         }
         else  {
-            annotationPath.data = "M0,0 L0,10 L20,10 L20,0";
+            annotationPath.data = 'M0,0 L0,10 L20,10 L20,0';
             annotationPath.height = 10.0;
             annotationPath.verticalAlignment = 'Bottom';
             pointPort.offset =
@@ -1266,15 +1260,15 @@ export class BpmnDiagrams {
         const actualShape: BpmnShapes = (actualObject.shape as BpmnShapeModel).shape ||
         ((actualObject.shape as DiagramShape).bpmnShape);
         const sizeChanged: boolean = changedProp.width !== undefined || changedProp.height !== undefined;
-        if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Gateway') || newShape.shape === 'Gateway') &&
+        if ((newShape.shape === 'Gateway') &&
             newShape.gateway) {
             this.removeBPMNElementFromDOM(actualObject, diagram);
             actualObject.wrapper.children[0] = this.getBPMNGatewayShape(actualObject);
-        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'DataObject') || newShape.shape === 'DataObject') &&
+        } else if ((newShape.shape === 'DataObject') &&
             newShape.dataObject) {
             this.removeBPMNElementFromDOM(actualObject, diagram);
             actualObject.wrapper.children[0] = this.getBPMNDataObjectShape(actualObject);
-        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Activity') || newShape.shape === 'Activity') &&
+        } else if ((newShape.shape === 'Activity') &&
             newShape.activity) {
             this.removeBPMNElementFromDOM(actualObject, diagram);
             actualObject.wrapper.children[0] = this.getBPMNActivityShape(actualObject);
@@ -1282,14 +1276,14 @@ export class BpmnDiagrams {
         /**
          * EJ2-EJ2-60644 - Bpmn event fill color does not applied while changing event in runtime.
          */
-        else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Event' ||
+        else if (((
         (actualObject.shape as DiagramShapeModel).bpmnShape === 'Event' || (actualObject.shape as BpmnShape).shape === 'Event') || newShape.shape === 'Event') &&
             newShape.event) {
             this.removeBPMNElementFromDOM(actualObject, diagram);
             const shapeEvent: Object = newShape.event;
             actualObject.wrapper.children[0] = this.getBPMNEventShape(actualObject, shapeEvent);
-        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Message') || newShape.shape === 'Message') ||
-            ((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'DataSource') || newShape.shape === 'DataSource')) {
+        } else if ((newShape.shape === 'Message') ||
+            (newShape.shape === 'DataSource')) {
             this.removeBPMNElementFromDOM(actualObject, diagram);
             actualObject.wrapper.children[0] = this.getBPMNShapes(actualObject);
             //}
@@ -1309,23 +1303,20 @@ export class BpmnDiagrams {
         if (changedProp.style) {
             updateStyle(
                 changedProp.style,
-                elementWrapper instanceof Container ? ((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity' ||
-                    (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Activity'))) ?
+                elementWrapper instanceof Container ? ((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity')) ?
                     (elementWrapper.children[0] as Container).children[0] :
                     elementWrapper.children[0] : elementWrapper);
 
             if (changedProp.style && changedProp.style.strokeColor) {
                 //EJ2-844052-BPMN nodes styles are not updated properly at runtime
-                if ((elementWrapper as Container) && (elementWrapper as Container).children != undefined && (elementWrapper as Container).children.length >0) {
-                    if (((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity') ||
-                        (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Activity')) &&
+                if ((elementWrapper as Container) && (elementWrapper as Container).children !== undefined
+                    && (elementWrapper as Container).children.length > 0) {
+                    if (((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity')) &&
                         (actualObject.shape as BpmnShape).activity.activity === 'SubProcess') {
                         const child: DiagramElement = (elementWrapper as Container).children[0];
                         this.updateBPMNStyle(child, changedProp.style.strokeColor);
-                    } else if (((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Gateway')
-                        || (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Gateway')) ||
-                        ((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Event')
-                            || (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Event'))) {
+                    } else if (((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Gateway')) ||
+                        ((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Event'))) {
                         this.updateBPMNStyle(elementWrapper, changedProp.style.strokeColor);
                     }
                 }
@@ -1334,8 +1325,8 @@ export class BpmnDiagrams {
     }
 
     /**
-    * EJ2-60574 -BPMN shape do not get changed at runtime properly
-    */
+     * EJ2-60574 -BPMN shape do not get changed at runtime properly
+     */
     private removeBPMNElementFromDOM(actualObject: Node, diagram: Diagram): void {
         for (const elementId of diagram.views) {
             removeElement(actualObject.id + '_groupElement', elementId);
@@ -1357,7 +1348,7 @@ export class BpmnDiagrams {
         if (bpmnShape) {
             updateStyle(node.style, elementWrapper.children[0]);
             const pathData: string = getBpmnGatewayShapePathData(bpmnShape.gateway.type);
-            const dataobjTypeNode = this.updateGatewaySubType(elementWrapper, node, pathData);
+            const dataobjTypeNode: PathElement = this.updateGatewaySubType(elementWrapper, node, pathData);
             removeElement(elementWrapper.children[1].id);
             elementWrapper.children.splice(1, 1);
             elementWrapper.children.push(dataobjTypeNode);
@@ -1375,12 +1366,12 @@ export class BpmnDiagrams {
      * @param pathData
      * @returns
      */
-    updateGatewaySubType(elementWrapper: Canvas, node: Node, pathData: string)
-    {
+    updateGatewaySubType(elementWrapper: Canvas, node: Node, pathData: string): PathElement {
         const dataobjTypeNode: PathElement = new PathElement();
         dataobjTypeNode.id = node.id + '_1_gatewayType';
         dataobjTypeNode.width = elementWrapper.children[1].width; dataobjTypeNode.height = elementWrapper.children[1].height;
-        dataobjTypeNode.margin.left = elementWrapper.children[1].margin.left; dataobjTypeNode.margin.top = elementWrapper.children[1].margin.top;
+        dataobjTypeNode.margin.left = elementWrapper.children[1].margin.left;
+        dataobjTypeNode.margin.top = elementWrapper.children[1].margin.top;
         dataobjTypeNode.data = pathData;
         dataobjTypeNode.offsetX = elementWrapper.children[1].offsetX;
         dataobjTypeNode.offsetY = elementWrapper.children[1].offsetY;
@@ -1614,9 +1605,9 @@ export class BpmnDiagrams {
             taskTypeNode.style.fill = 'transparent';
             taskTypeNode.style.opacity = node.style.opacity;
             /**
-            * Used to update the Bpmn activity task type at runtime
-            * EJ2-60586
-            */
+             * Used to update the Bpmn activity task type at runtime
+             * EJ2-60586
+             */
             if (task.type === 'Receive' || task.type === 'Send')
             {
                 taskTypeNode.width = 18;
@@ -1747,7 +1738,8 @@ export class BpmnDiagrams {
         for (const key of Object.keys(subProcess.events)) {
             const eventIndex: number = Number(key);
             const eventWrapper: Canvas = nodeContent.children[eventIndex + start] as Canvas;
-            const actualEvent: BpmnSubEventModel = (node.shape as BpmnShape).activity.subProcess.events[parseInt(eventIndex.toString(), 10)];
+            const actualEvent: BpmnSubEventModel
+                = (node.shape as BpmnShape).activity.subProcess.events[parseInt(eventIndex.toString(), 10)];
             this.updateBPMNSubEvent(
                 node, subProcess.events[parseInt(eventIndex.toString(), 10)], actualEvent, eventWrapper, newObject, oldObject, diagram);
         }
@@ -1931,8 +1923,7 @@ export class BpmnDiagrams {
                 currentNode.visible = visible;
                 diagram.updateElementVisibility(currentNode.wrapper, currentNode, visible);
                 if (visible) {
-                    if ((!isBlazor() && (currentNode.shape as BpmnShape).shape === 'Event') ||
-                        (isBlazor() && (currentNode.shape as DiagramShape).bpmnShape === 'Event')) {
+                    if ((!isBlazor() && (currentNode.shape as BpmnShape).shape === 'Event')) {
                         this.setEventVisibility(currentNode, (currentNode.wrapper.children[0] as Container).children);
                     }
                     if (((currentNode.shape as BpmnShape).activity as BpmnShapeModel).activity === 'SubProcess') {
@@ -1948,30 +1939,28 @@ export class BpmnDiagrams {
             }
         }
         if (visible) {
-            if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Event') ||
-                (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'Event')) {
+            if (!isBlazor() && (node.shape as BpmnShape).shape === 'Event') {
                 this.setEventVisibility(node, (node.wrapper.children[0] as Container).children);
             }
             if (((node.shape as BpmnShape).activity as BpmnShapeModel).activity === 'SubProcess') {
                 this.setSubProcessVisibility(node);
             }
             if (((node.shape as BpmnShape).activity as BpmnShapeModel).activity === 'Task' &&
-                ((!isBlazor() && (node.shape as BpmnShape).shape === 'Activity') ||
-                    (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'Activity'))
+                (!isBlazor() && (node.shape as BpmnShape).shape === 'Activity')
                 && (node.shape as BpmnShape).activity.subProcess.loop === 'None') {
                 ((node.wrapper.children[0] as Container).children[0] as Container).children[3].visible = false;
             }
             //(EJ2-843861) - BPMN node subtype visibles whiles changing the node visibility
-            if((node.shape as BpmnShape).shape === "DataObject"){
-                if((node.shape as BpmnShape).dataObject.collection === false && (node.shape as BpmnShape).dataObject.type === 'None'){
-                    for(let i = (node.wrapper.children[0] as Container).children.length-1; i >0; i--){
+            if ((node.shape as BpmnShape).shape === 'DataObject') {
+                if ((node.shape as BpmnShape).dataObject.collection === false && (node.shape as BpmnShape).dataObject.type === 'None') {
+                    for (let i: number = (node.wrapper.children[0] as Container).children.length - 1; i > 0; i--) {
                         (node.wrapper.children[0] as Container).children[parseInt(i.toString(), 10)].visible = false;
                     }
                 }
-                else if((node.shape as BpmnShape).dataObject.collection === true && (node.shape as BpmnShape).dataObject.type === 'None'){
+                else if ((node.shape as BpmnShape).dataObject.collection === true && (node.shape as BpmnShape).dataObject.type === 'None') {
                     (node.wrapper.children[0] as Container).children[1].visible = false;
                 }
-                else if((node.shape as BpmnShape).dataObject.collection === false && ((node.shape as BpmnShape).dataObject.type === 'Input' || (node.shape as BpmnShape).dataObject.type === 'Output')){
+                else if ((node.shape as BpmnShape).dataObject.collection === false && ((node.shape as BpmnShape).dataObject.type === 'Input' || (node.shape as BpmnShape).dataObject.type === 'Output')) {
                     (node.wrapper.children[0] as Container).children[2].visible = false;
                 }
             }
@@ -2018,7 +2007,7 @@ export class BpmnDiagrams {
     public updateBPMNConnector(actualObject: Connector, oldObject: Connector, connection: Connector, diagram: Diagram): Connector {
         const flowType: BpmnFlowModel = connection.shape as BpmnFlowModel;
         //EJ2-66905 - Changing BPMN flow connectors at runtime is not working properly.
-        const flow = (actualObject.shape as BpmnFlowModel).flow;
+        const flow: BpmnFlows = (actualObject.shape as BpmnFlowModel).flow;
         if ((flowType.flow === 'Sequence' || flowType.sequence) && flow === 'Sequence') {
             actualObject = this.getSequence(actualObject, oldObject, connection, diagram);
         }
@@ -2060,7 +2049,7 @@ export class BpmnDiagrams {
                 length = length + actualObject.distance(anglePoints[parseInt(j.toString(), 10)], anglePoints[j + 1]);
                 pathseqData = actualObject.findPath(anglePoints[parseInt(j.toString(), 10)], anglePoints[j + 1]);
             }
-            var content = new PathElement();
+            const content: PathElement = new PathElement();
 
             content.data = pathseqData[0];
             content.id = actualObject.id + '_' + (connection.shape as BpmnFlowModel).sequence || (actualObject.shape as BpmnFlowModel).sequence;
@@ -2072,7 +2061,7 @@ export class BpmnDiagrams {
         }
         if (((connection.shape as BpmnFlowModel).sequence) === 'Conditional' || (actualObject.shape as BpmnFlowModel).sequence === 'Conditional') {
             actualObject.sourceDecorator.shape = 'Diamond'; actualObject.sourceDecorator.width = 20;
-            actualObject.sourceDecorator.height = 10;actualObject.sourceDecorator.style.fill = 'white';
+            actualObject.sourceDecorator.height = 10; actualObject.sourceDecorator.style.fill = 'white';
             actualObject.targetDecorator.style.fill = 'black';
             actualObject.style.strokeDashArray = 'None'; actualObject.targetDecorator.shape = 'Arrow';
             diagram.connectorPropertyChange(actualObject, oldObject, ({
@@ -2124,9 +2113,9 @@ export class BpmnDiagrams {
         const segmentOffset: number = 0.5; let angle: number; let pt: PointModel;
         actualObject.sourceDecorator.shape = 'Circle'; actualObject.sourceDecorator.width = 10; actualObject.targetDecorator.shape = 'Arrow';
         actualObject.sourceDecorator.height = 10; actualObject.sourceDecorator.style.fill = 'White'; actualObject.targetDecorator.style.fill = 'White';
-        diagram.connectorPropertyChange(actualObject,oldObject, ({sourceDecorator: {shape: 'Circle', style: {fill: 'White'}, width: 10, height: 10}, targetDecorator: {shape: 'Arrow', style: {fill: 'white'}}} as Connector));
+        diagram.connectorPropertyChange(actualObject, oldObject, ({ sourceDecorator: { shape: 'Circle', style: { fill: 'White' }, width: 10, height: 10 }, targetDecorator: { shape: 'Arrow', style: { fill: 'white' } } } as Connector));
         const anglePoints: PointModel[] = actualObject.intermediatePoints as PointModel[];
-        let length = 0;
+        let length: number = 0;
         for (let j: number = 0; j < anglePoints.length - 1; j++) {
             /* eslint-disable */
             length = length + actualObject.distance(anglePoints[j], anglePoints[j + 1]);
@@ -2137,7 +2126,7 @@ export class BpmnDiagrams {
                 pt = Point.transform(anglePoints[parseInt(j.toString(), 10)], angle, offLength);
             }
         }
-        var content = new PathElement();
+        const content: PathElement = new PathElement();
         actualObject.wrapper.children[0].style.strokeDashArray = ' 4 4';
         actualObject.style.strokeDashArray = '4 4';
         content.id = actualObject.id + '_' + (connection.shape as BpmnFlowModel).message || (actualObject.shape as BpmnFlowModel).message;
@@ -2162,7 +2151,7 @@ export class BpmnDiagrams {
     }
 
     // To remove old wrapper element from dom.
-    private removeDomElement(actualObject: Connector, diagram: Diagram, content: PathElement){
+    private removeDomElement(actualObject: Connector, diagram: Diagram, content: PathElement): void {
         for (const elementId of diagram.views) {
             removeElement(actualObject.id + '_groupElement', elementId);
             removeElement(actualObject.id + '_content_groupElement', elementId);

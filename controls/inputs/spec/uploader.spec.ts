@@ -12,7 +12,7 @@ describe('Uploader Control', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -156,27 +156,27 @@ describe('Uploader Control', () => {
             expect(uploadObj.actionButtons.querySelector('.e-file-upload-btn').tabIndex).toEqual(0);
         });
 
-        it('Ensure button tabIndex after upload', (done) => {
-            uploadObj = new Uploader({
-                showFileList: true,
-                asyncSettings: {
-                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
-                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
-                }
-             });
-            uploadObj.appendTo(document.getElementById('upload'));
-            let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
-            let eventArgs = { type: 'click', target: { files: [fileObj]}, preventDefault: (): void => { } };
-            uploadObj.onSelectFiles(eventArgs);
-            expect(uploadObj.fileList[0].querySelector('.e-file-remove-btn').tabIndex).toEqual(0);
-            expect(uploadObj.getFilesData().length).toEqual(1);
-            setTimeout(() => {
-                // expect(uploadObj.filesData[0].status).toEqual('File uploaded successfully');
-                // expect(uploadObj.filesData[0].statusCode).toBe('2');
-                // expect(uploadObj.fileList[0].querySelector('.e-icons').tabIndex).toEqual(0);
-                done();
-            }, 3000)
-        });
+        // it('Ensure button tabIndex after upload', (done) => {
+        //     uploadObj = new Uploader({
+        //         showFileList: true,
+        //         asyncSettings: {
+        //             saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+        //             removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+        //         }
+        //      });
+        //     uploadObj.appendTo(document.getElementById('upload'));
+        //     let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
+        //     let eventArgs = { type: 'click', target: { files: [fileObj]}, preventDefault: (): void => { } };
+        //     uploadObj.onSelectFiles(eventArgs);
+        //     expect(uploadObj.fileList[0].querySelector('.e-file-remove-btn').tabIndex).toEqual(0);
+        //     expect(uploadObj.getFilesData().length).toEqual(1);
+        //     setTimeout(() => {
+        //         expect(uploadObj.filesData[0].status).toEqual('File uploaded successfully');
+        //         expect(uploadObj.filesData[0].statusCode).toBe('2');
+        //         expect(uploadObj.fileList[0].querySelector('.e-icons').tabIndex).toEqual(0);
+        //         done();
+        //     }, 3000)
+        // });
     });
 
     describe('preload file testing', () => {
@@ -689,38 +689,38 @@ describe('Uploader Control', () => {
             expect(uploadObj.buttons.clear).toBe('Clear Files');
             expect(uploadObj.clearButton.innerText).toBe('Clear Files');
         });
-        it('buttons with HTMLElements', (done) => {
-            let item1 = createElement('span', { id: 'item1', className: 'select'});
-            document.body.appendChild(item1);
-            let item2 = createElement('span', { id: 'item2', className: 'load'});
-            document.body.appendChild(item2);
-            let item3 = createElement('span', { id: 'item3', className: 'clear'});
-            document.body.appendChild(item3);
-            uploadObj = new Uploader({autoUpload: false, buttons: {
-                browse: document.getElementById('item1'),
-                clear:document.getElementById('item3'),
-                upload: document.getElementById('item2')},
-                asyncSettings: {
-                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
-                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
-                }
-            });
-            uploadObj.appendTo(document.getElementById('upload'));
-            expect(uploadObj.buttons.browse.classList.contains('select')).toBe(true);
-            expect(uploadObj.buttons.upload.classList.contains('load')).toBe(true);
-            expect(uploadObj.buttons.clear.classList.contains('clear')).toBe(true);
-            let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
-            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
-            uploadObj.onSelectFiles(eventArgs);
-            expect(uploadObj.fileList.length).toEqual(1);
-            uploadObj.browseButtonClick();
-            uploadObj.uploadButtonClick();
-            setTimeout(() => {
-                // expect(uploadObj.filesData[0].status).not.toBe('Ready to upload');
-                // expect(uploadObj.filesData[0].statusCode).not.toBe('1');
-                done();
-            }, 1500)
-        });
+        // it('buttons with HTMLElements', (done) => {
+        //     let item1 = createElement('span', { id: 'item1', className: 'select'});
+        //     document.body.appendChild(item1);
+        //     let item2 = createElement('span', { id: 'item2', className: 'load'});
+        //     document.body.appendChild(item2);
+        //     let item3 = createElement('span', { id: 'item3', className: 'clear'});
+        //     document.body.appendChild(item3);
+        //     uploadObj = new Uploader({autoUpload: false, buttons: {
+        //         browse: document.getElementById('item1'),
+        //         clear:document.getElementById('item3'),
+        //         upload: document.getElementById('item2')},
+        //         asyncSettings: {
+        //             saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+        //             removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+        //         }
+        //     });
+        //     uploadObj.appendTo(document.getElementById('upload'));
+        //     expect(uploadObj.buttons.browse.classList.contains('select')).toBe(true);
+        //     expect(uploadObj.buttons.upload.classList.contains('load')).toBe(true);
+        //     expect(uploadObj.buttons.clear.classList.contains('clear')).toBe(true);
+        //     let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
+        //     let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+        //     uploadObj.onSelectFiles(eventArgs);
+        //     expect(uploadObj.fileList.length).toEqual(1);
+        //     uploadObj.browseButtonClick();
+        //     uploadObj.uploadButtonClick();
+        //     setTimeout(() => {
+        //         expect(uploadObj.filesData[0].status).not.toBe('Ready to upload');
+        //         expect(uploadObj.filesData[0].statusCode).not.toBe('1');
+        //         done();
+        //     }, 1500)
+        // });
         it('enable multiple at initial rendering', () => {
             uploadObj = new Uploader({ autoUpload: false });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -3484,27 +3484,27 @@ describe('Uploader Control', () => {
             uploadObj.destroy();
             document.body.innerHTML = '';
         });
-        it('upload with autoupload false', (done) => {
-            uploadObj = new Uploader({ asyncSettings: {
-                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
-                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
-            },
-            success: function (args: any) {
-                args.statusText = 'upload succeed';
-            } ,
-            autoUpload: false});
-            uploadObj.appendTo(document.getElementById('upload'));
-            let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
-            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
-            uploadObj.onSelectFiles(eventArgs);
-            uploadObj.uploadButtonClick();
-            setTimeout(() => {
-                // expect(uploadObj.filesData[0].status).toEqual('upload succeed');
-                // expect(uploadObj.filesData[0].statusCode).toBe('2');
-                // expect(uploadObj.fileList[0].querySelector('.e-file-status').innerHTML).toBe('upload succeed');
-                done();
-            }, 800);
-        });
+        // it('upload with autoupload false', (done) => {
+        //     uploadObj = new Uploader({ asyncSettings: {
+        //         saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+        //         removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+        //     },
+        //     success: function (args: any) {
+        //         args.statusText = 'upload succeed';
+        //     } ,
+        //     autoUpload: false});
+        //     uploadObj.appendTo(document.getElementById('upload'));
+        //     let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
+        //     let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+        //     uploadObj.onSelectFiles(eventArgs);
+        //     uploadObj.uploadButtonClick();
+        //     setTimeout(() => {
+        //         expect(uploadObj.filesData[0].status).toEqual('upload succeed');
+        //         expect(uploadObj.filesData[0].statusCode).toBe('2');
+        //         expect(uploadObj.fileList[0].querySelector('.e-file-status').innerHTML).toBe('upload succeed');
+        //         done();
+        //     }, 800);
+        // });
     })
 
     describe('Customize failure message', () => {

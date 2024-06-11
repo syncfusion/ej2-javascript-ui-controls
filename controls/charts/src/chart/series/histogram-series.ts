@@ -1,9 +1,4 @@
-/* eslint-disable jsdoc/require-returns-type */
-/* eslint-disable radix */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-import { sum, ChartLocation, getPoint, templateAnimate } from '../../common/utils/helper';
+import { sum, ChartLocation, getPoint, templateAnimate, appendChildElement } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Series } from './chart-series';
 import { ColumnSeries } from './column-series';
@@ -16,10 +11,10 @@ export class HistogramSeries extends ColumnSeries {
     /**
      * Render Histogram series.
      *
+     * @param {Series} series - The series to render.
      * @returns {void}
      * @private
      */
-
     public render(series: Series): void {
         super.render(series);
         if (series.showNormalDistribution) {
@@ -30,6 +25,8 @@ export class HistogramSeries extends ColumnSeries {
     /**
      * To calculate bin interval for Histogram series.
      *
+     * @param {number[]} yValues - The y values of the series.
+     * @param {Series} series - The series for which the bin interval is calculated.
      * @returns {void}
      * @private
      */
@@ -45,10 +42,11 @@ export class HistogramSeries extends ColumnSeries {
             Math.round((3.5 * series.histogramValues.sDValue) / Math.pow(yValues.length, 1 / 3)) || 1;
     }
     /**
-     * Add data points for Histogram series.
+     * Processes the internal data for the series.
      *
-     * @returns {object[]} data
-     * @private
+     * @param {Object[]} data - The internal data to be processed.
+     * @param {Series} series - The series for which the internal data is processed.
+     * @returns {Object[]} - The processed internal data.
      */
     public processInternalData(data: Object[], series: Series): Object[] {
         const updatedData: Object[] = [];
@@ -80,11 +78,11 @@ export class HistogramSeries extends ColumnSeries {
         }
         return updatedData;
     }
-    // eslint-disable-next-line jsdoc/require-returns-check
     /**
-     * Calculates bin values.
+     * Calculates the bin values for the series.
      *
-     * @returns null
+     * @param {Series} series - The series for which the bin values are calculated.
+     * @returns {void}
      * @private
      */
     public calculateBinValues(series: Series): void {
@@ -93,8 +91,8 @@ export class HistogramSeries extends ColumnSeries {
         const mean: number = series.histogramValues.mean;
         const sDValue: number = series.histogramValues.sDValue;
         const pointsCount: number = 500;
-        const min: number = series.xAxis.minimum ? parseInt(series.xAxis.minimum.toString()) : series.xMin;
-        const max: number = series.xAxis.maximum ? parseInt(series.xAxis.maximum.toString()) : series.xMax;
+        const min: number = series.xAxis.minimum ? parseInt(series.xAxis.minimum.toString(), 10) : series.xMin;
+        const max: number = series.xAxis.maximum ? parseInt(series.xAxis.maximum.toString(), 10) : series.xMax;
         const points: number = series.points.length;
         let xValue: number;
         let yValue: number;
@@ -112,6 +110,7 @@ export class HistogramSeries extends ColumnSeries {
     /**
      * Render Normal Distribution for Histogram series.
      *
+     * @param {Series} series - The series for which the normal distribution is rendered.
      * @returns {void}
      * @private
      */
@@ -149,7 +148,7 @@ export class HistogramSeries extends ColumnSeries {
             ),
             new Int32Array([series.clipRect.x, series.clipRect.y])
         );
-        (<HTMLElement>distributionLine).style.visibility = (!series.chart.enableCanvas) ? ((((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') &&
+        (<HTMLElement>distributionLine).style.visibility = (!series.chart.enableCanvas) ? ((((series.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') &&
                                                             series.chart.animateSeries) ? 'hidden' : 'visible') : null;
         if (!series.chart.enableCanvas) {
             series.seriesElement.appendChild(distributionLine);
@@ -170,13 +169,37 @@ export class HistogramSeries extends ColumnSeries {
             );
         }
     }
+
+    /**
+     * Updates the direction of rendering for the specified series.
+     *
+     * @param {Series} series - The series to be rendered.
+     * @returns {void}
+     */
+    public updateDirection(series: Series): void {
+        this.render(series);
+        if (series.marker.visible) {
+            appendChildElement(series.chart.enableCanvas, series.chart.seriesElements, series.symbolElement, true);
+        }
+        if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+            series.chart.dataLabelCollections = [];
+            series.chart.dataLabelModule.render(series, series.chart, series.marker.dataLabel);
+            if (series.textElement) {
+                appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.shapeElement, true);
+                appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.textElement, true);
+            }
+        }
+    }
+
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'HistogramSeries';
         /**
-         * return the module name
+         * return the module name.
          */
     }
 
@@ -186,10 +209,9 @@ export class HistogramSeries extends ColumnSeries {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroy method performed here
+         * Destroy method performed here.
          */
     }
 }

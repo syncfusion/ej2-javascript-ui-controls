@@ -1,15 +1,15 @@
-import { Gradient } from "../core/appearance";
-import { Canvas } from "../core/containers/canvas";
-import { Container } from "../core/containers/container";
-import { Diagram } from "../diagram";
-import { GradientType, HorizontalAlignment, NodeConstraints, VerticalAlignment } from "../enum/enum";
-import { AnnotationModel } from "../objects/annotation-model";
-import { IconShapeModel } from "../objects/icon-model";
-import { BasicShape, BpmnActivity, BpmnSubProcess, Shape, SwimLane } from "../objects/node";
-import { NodeModel, SwimLaneModel } from "../objects/node-model";
-import { getTemplateContent } from "../utility/dom-util";
-import { labels, LabelProperties } from "./labelProperties";
-import { PortProperties } from "./portProperties";
+import { Gradient } from '../core/appearance';
+import { Canvas } from '../core/containers/canvas';
+import { Container } from '../core/containers/container';
+import { Diagram } from '../diagram';
+import { GradientType, HorizontalAlignment, NodeConstraints, VerticalAlignment } from '../enum/enum';
+import { AnnotationModel } from '../objects/annotation-model';
+import { IconShapeModel } from '../objects/icon-model';
+import { BasicShape, BpmnActivity, BpmnSubProcess, FlowShape, Shape, SwimLane } from '../objects/node';
+import { LaneModel, NodeModel, PhaseModel, SwimLaneModel } from '../objects/node-model';
+import { getTemplateContent } from '../utility/dom-util';
+import { labels, LabelProperties } from './labelProperties';
+import { PortProperties } from './portProperties';
 
 export class NodeProperties {
 
@@ -20,7 +20,7 @@ export class NodeProperties {
 
     constructor(labelProperties: LabelProperties, portProperties : PortProperties) {
         this.labelProperties = labelProperties;
-        this.portProperties = portProperties
+        this.portProperties = portProperties;
 
     }
 
@@ -162,7 +162,7 @@ export class NodeProperties {
             newNode.tooltip = {
                 // content: this.getTemplateContent(node.tooltip.templateId),
                 relativeMode: node.tooltip.relativeMode
-            }
+            };
         }
         if (node.expandIcon) {
             newNode.expandIcon = {
@@ -181,9 +181,9 @@ export class NodeProperties {
                 borderColor: node.expandIcon.borderColor, borderWidth: node.expandIcon.borderWidth,
                 cornerRadius: node.expandIcon.cornerRadius,
                 //fill: (node.expandIcon as any).fillColor,
-                pathData: node.expandIcon.pathData,
+                pathData: node.expandIcon.pathData
                 // content: getTemplateContent(node.expandIcon.templateId)
-            }
+            };
         }
         if (node.collapseIcon) {
             newNode.collapseIcon = {
@@ -202,9 +202,9 @@ export class NodeProperties {
                 borderColor: node.collapseIcon.borderColor, borderWidth: node.collapseIcon.borderWidth,
                 cornerRadius: node.collapseIcon.cornerRadius,
                 // fill: (node.collapseIcon as any).fillColor,
-                pathData: node.collapseIcon.pathData,
+                pathData: node.collapseIcon.pathData
                 //  content: getTemplateContent(node.collapseIcon.templateId)
-            }
+            };
         }
         if (node.ports) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,7 +232,7 @@ export class NodeProperties {
         if (node.children && node.children.length > 0) {
             const newChild : NodeModel[] = [];
             for (let i: number = 0; i < node.children.length; i++) {
-                let child = this.convertToNode(node.children[parseInt(i.toString(), 10)] as NodeModel);
+                const child: NodeModel = this.convertToNode(node.children[parseInt(i.toString(), 10)] as NodeModel);
                 if (child.children) {
                     this.getChildren(newNode, child as EJ1Node);
                 }
@@ -247,50 +247,52 @@ export class NodeProperties {
     //Sets the shapes for all the node from conversion
     public setShape(newNode: any, node: any): any {
         switch (node.type) {
-            case 'basic':
-                const basicShape = (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1);
-                if (node.shape === 'path') {
-                    newNode.shape = { type: 'Path', data: node.pathData };
-                }
-                else {
-                    newNode.shape = {
-                        type: 'Basic', shape: basicShape, cornerRadius: node.cornerRadius, points: node.points
-                    };
-                }
-                break;
-            case 'flow':
-                const flowShape = (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1);
+        case 'basic': {
+            const basicShape: BasicShape = (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1);
+            if (node.shape === 'path') {
+                newNode.shape = { type: 'Path', data: node.pathData };
+            }
+            else {
                 newNode.shape = {
-                    type: 'Flow', shape: flowShape
+                    type: 'Basic', shape: basicShape, cornerRadius: node.cornerRadius, points: node.points
                 };
-                break;
-            case 'umlactivity':
-                newNode.shape = {
-                    type: 'UmlActivity', shape: (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1)
-                };
-                break;
-            case 'image':
-                newNode.shape = {
-                    type: 'Image', source: node.source, align: this.getImageContentAlignment(node.contentAlignment),
-                    scale: (node.scale).charAt(0).toUpperCase() + (node.scale).slice(1)
-                };
-                break;
-            case 'html':
-                newNode.shape = { type: 'HTML' };
-                break;
-            case 'native':
-                newNode.shape = { type: 'Native' };
-                break;
-            case 'text':
-                newNode.shape = { type: 'Text', content: node.textBlock.text };
-                break;
-            case 'bpmn':
-                newNode.shape = this.renderBpmnShape(newNode, node);
-                break;
-            case 'group':
-                if (node.isSwimlane) {
-                    newNode.shape = this.renderSwimlaneShape(newNode, node);
-                }
+            }
+            break;
+        }
+        case 'flow': {
+            const flowShape: FlowShape = (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1);
+            newNode.shape = {
+                type: 'Flow', shape: flowShape
+            };
+            break;
+        }
+        case 'umlactivity':
+            newNode.shape = {
+                type: 'UmlActivity', shape: (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1)
+            };
+            break;
+        case 'image':
+            newNode.shape = {
+                type: 'Image', source: node.source, align: this.getImageContentAlignment(node.contentAlignment),
+                scale: (node.scale).charAt(0).toUpperCase() + (node.scale).slice(1)
+            };
+            break;
+        case 'html':
+            newNode.shape = { type: 'HTML' };
+            break;
+        case 'native':
+            newNode.shape = { type: 'Native' };
+            break;
+        case 'text':
+            newNode.shape = { type: 'Text', content: node.textBlock.text };
+            break;
+        case 'bpmn':
+            newNode.shape = this.renderBpmnShape(newNode, node);
+            break;
+        case 'group':
+            if (node.isSwimlane) {
+                newNode.shape = this.renderSwimlaneShape(newNode, node);
+            }
         }
         return newNode;
     }
@@ -298,26 +300,26 @@ export class NodeProperties {
     public getImageContentAlignment(option: string): string {
         if (option) {
             switch (option) {
-                case 'xminymin':
-                    return 'XMinYMin';
-                case 'xminymid':
-                    return 'XMinYMid';
-                case 'xminymax':
-                    return 'XMinYMax';
-                case 'xmidymin':
-                    return 'XMidYMin';
-                case 'xmidymid':
-                    return 'XMidYMid';
-                case 'xmidymax':
-                    return 'XMidYMax';
-                case 'xmaxymin':
-                    return 'XMaxYMin';
-                case 'xmaxymid':
-                    return 'XMaxYMid';
-                case 'xmaxymax':
-                    return 'XMaxYMax';
-                case 'none':
-                    return 'None';
+            case 'xminymin':
+                return 'XMinYMin';
+            case 'xminymid':
+                return 'XMinYMid';
+            case 'xminymax':
+                return 'XMinYMax';
+            case 'xmidymin':
+                return 'XMidYMin';
+            case 'xmidymid':
+                return 'XMidYMid';
+            case 'xmidymax':
+                return 'XMidYMax';
+            case 'xmaxymin':
+                return 'XMaxYMin';
+            case 'xmaxymid':
+                return 'XMaxYMid';
+            case 'xmaxymax':
+                return 'XMaxYMax';
+            case 'none':
+                return 'None';
             }
         }
         return 'None';
@@ -397,14 +399,14 @@ export class NodeProperties {
                     type: 'Linear',
                     x1: gradient.x1, x2: gradient.x2, y1: gradient.y1, y2: gradient.y2,
                     stops: this.getGradientStops(gradient.stops)
-                }
+                };
             }
             else if (gradient.type === 'radial') {
                 newGradient = {
                     type: 'Radial',
                     cx: gradient.cx, cy: gradient.cy, fx: gradient.fx, fy: gradient.fy,
                     stops: this.getGradientStops(gradient.stops)
-                }
+                };
             }
         }
         return newGradient;
@@ -415,7 +417,7 @@ export class NodeProperties {
         for (let i: number = 0; i < gradientStops.length; i++) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const newStop: any = {};
-            const stop = gradientStops[parseInt(i.toString(), 10)];
+            const stop: any = gradientStops[parseInt(i.toString(), 10)];
             newStop.color = stop.color;
             newStop.offset = stop.offset;
             stopsCollection.push(newStop);
@@ -452,7 +454,7 @@ export class NodeProperties {
                 activity: {
                     activity: (node.activity).charAt(0).toUpperCase() + (node.activity).slice(1)
                 }
-            }
+            };
             if (node.activity === 'task') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (newNode.shape as any).activity.task = {
@@ -460,7 +462,7 @@ export class NodeProperties {
                     loop: (node.task.loop).charAt(0).toUpperCase() + (node.task.loop).slice(1),
                     compensation: node.task.compensation,
                     call: node.task.call
-                }
+                };
             }
             if (node.activity === 'subprocess') {
                 if (node.subProcess.type === 'event') {
@@ -476,7 +478,7 @@ export class NodeProperties {
                             event: (node.event).charAt(0).toUpperCase() + (node.event).slice(1),
                             trigger: (node.trigger).charAt(0).toUpperCase() + (node.trigger).slice(1)
                         }
-                    }
+                    };
                 }
                 else if (node.subProcess.type === 'transaction') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -489,19 +491,19 @@ export class NodeProperties {
                         type: (node.subProcess.type).charAt(0).toUpperCase() + (node.subprocess.type).slice(1),
                         events: this.renderEventsCollection(node.subProcess.events),
                         processes: this.renderProcessesCollection(node)
-                    }
+                    };
                 }
             }
         }
         else if (node.shape === 'dataobject') {
             newNode.shape = {
                 type: 'Bpmn',
-                shape: (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1),
+                shape: (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1)
                 // data: {
                 //     type: this.getKeyByValue(node.data.type),
                 //     collection: true
                 // }
-            }
+            };
             if (node.annotation) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (newNode.shape as any).annotation = {
@@ -510,14 +512,14 @@ export class NodeProperties {
                     width: node.annotation.width,
                     height: node.annotation.height,
                     length: node.annotation.length
-                }
+                };
             }
         }
         else {
             newNode.shape = {
                 type: 'Bpmn',
-                shape: (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1),
-            }
+                shape: (node.shape).charAt(0).toUpperCase() + (node.shape).slice(1)
+            };
         }
         return newNode.shape;
     }
@@ -529,26 +531,29 @@ export class NodeProperties {
             type: 'SwimLane', orientation: (node.orientation).charAt(0).toUpperCase() + (node.orientation).slice(1),
             header: {
                 annotation: { content: node.header.text },
-                height: 50, style: { fontSize: node.header.fontSize, color: node.header.fontColor, fill: node.header.fillColor },
-            },
-
+                height: 50, style: { fontSize: node.header.fontSize, color: node.header.fontColor, fill: node.header.fillColor }
+            }
         };
-        const lanes = [];
-        const phases = [];
+        const lanes: LaneModel[] = [];
+        const phases: PhaseModel[] = [];
         for (let i: number = 0; i < node.lanes.length; i++) {
             lanes[parseInt(i.toString(), 10)] = {
                 header: {
                     annotation: {
-                        content: node.lanes[parseInt(i.toString(), 10)].header.text, width: node.lanes[parseInt(i.toString(), 10)].header.width,
-                        style: { fontSize: node.lanes[parseInt(i.toString(), 10)].header.fontSize, color: node.lanes[parseInt(i.toString(), 10)].header.fontColor }
-                    },
+                        content: node.lanes[parseInt(i.toString(), 10)].header.text,
+                        width: node.lanes[parseInt(i.toString(), 10)].header.width,
+                        style: {
+                            fontSize: node.lanes[parseInt(i.toString(), 10)].header.fontSize,
+                            color: node.lanes[parseInt(i.toString(), 10)].header.fontColor
+                        }
+                    }
                 },
                 style: { fill: node.lanes[parseInt(i.toString(), 10)].fillColor },
                 children: []
-            }
-        for (let j = 0; j < node.lanes[parseInt(i.toString(), 10)].children.length; j++) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let childNode: any = this.convertToNode(node.lanes[parseInt(i.toString(), 10)].children[parseInt(j.toString(), 10)]);
+            };
+            for (let j: number = 0; j < node.lanes[parseInt(i.toString(), 10)].children.length; j++) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const childNode: any = this.convertToNode(node.lanes[parseInt(i.toString(), 10)].children[parseInt(j.toString(), 10)]);
                 if (childNode.wrapper == null) {
                     childNode.wrapper = {
                         actualSize: { width: childNode.width, height: childNode.height },
@@ -565,12 +570,12 @@ export class NodeProperties {
                         content: node.phases[parseInt(i.toString(), 10)].label.text,
                         // eslint-disable-next-line max-len
                         style: { fill: node.phases[parseInt(i.toString(), 10)].label.fillColor, fontSize: node.phases[parseInt(i.toString(), 10)].label.fontSize, color: node.phases[parseInt(i.toString(), 10)].label.fontColor }
-                    },
+                    }
                 },
                 offset: node.phases[parseInt(i.toString(), 10)].offset,
-                 // eslint-disable-next-line max-len
+                // eslint-disable-next-line max-len
                 style: { fill: node.phases[parseInt(i.toString(), 10)].fillColor, strokeColor: node.phases[parseInt(i.toString(), 10)].lineColor, strokeDashArray: node.phases[parseInt(i.toString(), 10)].lineDashArray }
-            }
+            };
         }
         newNode.shape.lanes = lanes;
         newNode.shape.phases = phases;
@@ -581,12 +586,12 @@ export class NodeProperties {
     //Rendered the event collections for the node properties
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public renderEventsCollection(subProcessEvents: any): any {
-        let eventsCollection = [];
+        const eventsCollection: any = [];
         if (subProcessEvents.length > 0) {
             for (let i: number = 0; i < subProcessEvents.length; i++) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let newEvent: any;
-                let eventObject = subProcessEvents[parseInt(i.toString(), 10)];
+                const newEvent: any = {};
+                const eventObject: any = subProcessEvents[parseInt(i.toString(), 10)];
                 newEvent.event = (eventObject.event).charAt(0).toUpperCase() + (eventObject.event).slice(1);
                 newEvent.trigger = (eventObject.trigger).charAt(0).toUpperCase() + (eventObject.trigger).slice(1);
                 newEvent.offset = { x: eventObject.offset.x, y: eventObject.offset.y };
@@ -601,8 +606,8 @@ export class NodeProperties {
         const processesCollection: any[] = [];
         if (node.subProcess && node.subProcess.processes.length > 0) {
             for (let i: number = 0; i < node.subProcess.processes.length; i++) {
-                const processObject = node.subProcess.processes[parseInt(i.toString(), 10)];
-                const data = this.convertToNode(processObject);
+                const processObject: any = node.subProcess.processes[parseInt(i.toString(), 10)];
+                const data: NodeModel = this.convertToNode(processObject);
                 processesCollection.push(data);
             }
         }
@@ -610,10 +615,10 @@ export class NodeProperties {
     }
 
     /**
-*To destroy the ruler
-*
-* @returns {void} To destroy the ruler
-*/
+     * To destroy the ruler
+     *
+     * @returns {void} To destroy the ruler
+     */
 
     public destroy(): void {
         /**
@@ -622,8 +627,9 @@ export class NodeProperties {
     }
 
     /**
- * Get module name.
- */
+     * Get module name.
+     * @returns {string} Returns the module name
+     */
     protected getModuleName(): string {
         /**
          * Returns the module name
@@ -667,8 +673,8 @@ export interface EJ1Node extends NodeModel {
 
 export type EJ1HorizontalAlignment =
     /**
-   * Stretch - Stretches the diagram element throughout its immediate parent
-   */
+     * Stretch - Stretches the diagram element throughout its immediate parent
+     */
     'Stretch' |
     /**
      * Left - Aligns the diagram element at the left of its immediate parent
@@ -688,13 +694,13 @@ export type EJ1HorizontalAlignment =
     'Auto';
 
 /**
-* Defines how the diagram elements have to be aligned with respect to its immediate parent
-* * Stretch - Stretches the diagram element throughout its immediate parent
-* * Top - Aligns the diagram element at the top of its immediate parent
-* * Bottom - Aligns the diagram element at the bottom of its immediate parent
-* * Center - Aligns the diagram element at the center of its immediate parent
-* * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-*/
+ * Defines how the diagram elements have to be aligned with respect to its immediate parent
+ * * Stretch - Stretches the diagram element throughout its immediate parent
+ * * Top - Aligns the diagram element at the top of its immediate parent
+ * * Bottom - Aligns the diagram element at the bottom of its immediate parent
+ * * Center - Aligns the diagram element at the center of its immediate parent
+ * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
+ */
 export type EJ1VerticalAlignment =
     /**
      * Stretch - Stretches the diagram element throughout its immediate parent

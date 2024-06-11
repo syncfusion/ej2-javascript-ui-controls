@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs, getChartsIndexes, refreshChartCellModel } from '../common/index';
+import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs, getChartsIndexes, refreshChartCellModel, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { autoFit, virtualContentLoaded, completeAction, focus } from '../common/index';
 import { hiddenMerge, updateTableWidth, updateTranslate } from '../common/index';
 import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet, ColumnModel, RowModel, getColumn, getRow, ChartModel } from '../../workbook/index';
@@ -28,6 +28,10 @@ export class ShowHide {
     private hideShow(args: HideShowEventArgs): void {
         const sheetIndex: number = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        if (isReadOnlyCells(this.parent, getRangeIndexes(this.parent.getActiveSheet().selectedRange))) {
+            this.parent.notify(readonlyAlert, null);
+            return;
+        }
         if (args.startIndex > args.endIndex) {
             const temp: number = args.startIndex;
             args.startIndex = args.endIndex; args.endIndex = temp;
@@ -297,7 +301,7 @@ export class ShowHide {
                     }
                 }
             }
-            let prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
+            const prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
             for (let i: number = args.startIndex, len: number = args.endIndex; i <= len; i++) {
                 if (!isHiddenRow(sheet, i)) {
                     if (args.startIndex === args.endIndex) {
@@ -373,7 +377,7 @@ export class ShowHide {
                     }
                 }
             }
-            let currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
+            const currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
             this.refreshChartCellModel(prevChartIndexes, currentChartIndexes);
             if (idx === undefined) {
                 return;
@@ -476,9 +480,9 @@ export class ShowHide {
         let scrollable: boolean;
         for (let i: number = args.startIndex; i <= args.endIndex; i++) {
             if (args.hide ? isHiddenCol(sheet, i) : !isHiddenCol(sheet, i)) { continue; }
-            let prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
+            const prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
             setColumn(sheet, i, { hidden: args.hide });
-            let currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
+            const currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
             this.refreshChart(i, 'columns');
             this.refreshChartCellModel(prevChartIndexes, currentChartIndexes);
             if (this.parent.scrollSettings.enableVirtualization && !args.freezePane && (i < viewportLeftIdx ||
@@ -770,9 +774,9 @@ export class ShowHide {
                     }
                 }
                 cellModel = getCell(startIdx, idx, sheet) || {};
-                if ((cellModel.colSpan !== undefined && (cellModel.rowSpan === undefined || cellModel.colSpan > 1)) || (cellModel.rowSpan < 0
-                    && startIdx - 1 > -1 && isHiddenRow(sheet, startIdx - 1) && Math.abs(cellModel.rowSpan) ===
-                    this.parent.hiddenCount(startIdx + cellModel.rowSpan, startIdx, 'rows', sheet))) {
+                if ((cellModel.colSpan !== undefined && (cellModel.rowSpan === undefined || cellModel.colSpan > 1)) ||
+                    (cellModel.rowSpan < 0 && startIdx - 1 > -1 && isHiddenRow(sheet, startIdx - 1) &&
+                        Math.abs(cellModel.rowSpan) === this.parent.hiddenCount(startIdx + cellModel.rowSpan, startIdx, 'rows', sheet))) {
                     const mergeArgs: MergeArgs = {
                         range: [startIdx, idx, startIdx, idx], isAction: false, merge: true,
                         type: 'All', skipChecking: true
@@ -799,9 +803,9 @@ export class ShowHide {
         this.parent.notify(refreshChart, { rIdx: index, showHide: showHide });
     }
     private refreshChartCellModel(prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[],
-        currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[]): void {
+                                  currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[]): void {
         this.parent.notify(refreshChartCellModel, { prevChartIndexes, currentChartIndexes });
-    } 
+    }
     private addEventListener(): void {
         this.parent.on(hideShow, this.hideShow, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);

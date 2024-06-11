@@ -12,36 +12,28 @@ $grid-font-family: $font-family !default;
 $grid-maskedcell-virtual-background-color: rgba(0, 0, 0, .1) !default;
 $grid-frozen-shadow-background-color: rgba(0, 0, 0, .12) !default;
 $grid-frozen-row-shadow-background-color: rgba(0, 0, 0, .12) !default;
-
 $grid-header-font-size: 14px !default;
 $grid-bigger-header-font-size: $grid-header-font-size !default;
 $grid-header-icon-color: $header-icon-color !default;
 $grid-sorted-header-color: $header-font-color !default;
-
 $grid-popup-bg-color: $content-bg-color !default;
-
 $grid-sortnumber-bg-color: #bbbdc0 !default;
 $grid-sortnumber-color: $content-font-color !default;
 $grid-table-background-color: $content-bg-color !default;
-
 $grid-row-selection-color: $active-font-color !default;
 $grid-cell-selection-color: $active-font-color !default;
 $grid-drag-selection-color: $content-border-color !default;
-
 $grid-drag-clone-color: $header-font-color !default;
-
 $group-droparea-hover-color: $active-font-color !default;
-
 $group-header-hover-color: $header-font-color !default;
 $group-row-bg-stcolor: #ececec !default;
-$grid-group-broder-color:  $content-border-color !default;
+$grid-group-broder-color: $content-border-color !default;
 $grid-group-hover-broder-color: $content-border-color !default;
 $grid-group-text-line-height: 24px !default;
 $filter-text-color: $content-font-color !default;
 $grid-wrap-line-height: 10px !default;
 $grid-wrap-margin-bottom: 2px !default;
 $grid-wrap-margin-top: 0 !default;
-
 $grid-header-bottom-padding: 0 !default;
 $grid-header-top-padding: 0 !default;
 $grid-headerconent-font-opacity: 1 !default;
@@ -105,7 +97,7 @@ $grid-rtl-bigger-rightalign-sortnumber-margin: 8px 0 0 4px !default;
 $grid-rtl-group-text-marign-right: 0 !default;
 $grid-rtl-group-text-margin-right: 0 !default;
 $grid-rtl-textwrap-srotnumber-margin: 3px 5px 0 2px !default;
-$grid-rtl-headercell-both-border-width:  0 1px 0 0 !default;
+$grid-rtl-headercell-both-border-width: 0 1px 0 0 !default;
 $grid-rtl-textwrap-srotnumber-rightalign-margin: 3px 5px 0 2px !default;
 $grid-rtl-stackedheadercell-border-size: 0 1px 1px 0 !default;
 $grid-rtl-stackedhader-firstcell-left-border-size: 0 !default;
@@ -164,7 +156,6 @@ $grid-checkbox-wrapper-line-height: 20px !default;
 $grid-checkbox-wrapper-top: 0 !default;
 $grid-rtl-headercelldiv-fltricon-padding: 0 1.6em 0 10px !default;
 $grid-sortnumber-filtericon-rightalign-margin: 8px 2px 0 5px !default;
-
 $grid-rows-bg-color: $content-bg-color !default;
 $grid-resize-border-width: 1px !default;
 $grid-filterbarcell-input-padding: 0 26px 0 10px !default;
@@ -241,7 +232,7 @@ $grid-filterbarcell-border-width: 2px 0 0 !default;
 $grid-filterbarcell-first-last-child-padding-left: 2px !default;
 $grid-filterbarcell-padding: 1px 2px !default;
 $grid-filterbar-input-border-width: 0 !default;
-$grid-border-radius: 4px !default;
+$grid-border-radius: 0 !default;
 $grid-bottom-border-size: $border-size !default;
 $group-droparea-bg-color: $grey-f5 !default;
 $group-header-bg-color: $grey-white !default;
@@ -257,7 +248,7 @@ $grid-sortnumber-rightalign-margin: $grid-fltr-sortnumber-rightalign-margin !def
 $grid-sortnumer-line-height: 15px !default;
 $grid-bigger-sortnumer-line-height: $grid-sortnumer-line-height !default;
 $grid-sortdiv-right-align-margin: -29px 5px !default;
-$grid-sortdiv-margin:  -29px 0 !default;
+$grid-sortdiv-margin: -29px 0 !default;
 $grid-sortdiv-padding: 15px 0 !default;
 $grid-ungroup-button-line-height: 23px !default;
 $grid-ungroup-button-font-size: 10px !default;
@@ -457,7 +448,6 @@ $grid-grouped-headercell-hover-padding: $grid-grouped-headercell-padding !defaul
 $grid-drag-clone-font-weight: $grid-header-font-weight !default;
 $grid-content-batch-font-color: $grid-content-font-color !default;
 $grid-bigger-group-headercell-hover-padding: $grid-bigger-group-headercell-padding !default;
-
 $grid-header-wrap-rightalign-sortfilter-div-margin: -30px -5px !default;
 $grid-header-wrap-filtericon-sortfilter-div-margin: -30px 14px -29px 14px !default;
 $grid-bigger-wrap-sortdiv-margin: -31px 8px !default;
@@ -465,7 +455,6 @@ $grid-bigger-wrap-rightalign-sortdiv-margin: -30px -5px !default;
 $grid-bigger-wrap-rightalign-fltricon-sortdiv-margin: -26px -20px 0 0 !default;
 $grid-bigger-wrap-fltricon-sortdiv-margin: -30px 28px -31px 0 !default;
 $grid-header-wrap-filtericon-rightalign-sortfilter-div-margin: -30px 14px !default;
-
 $grid-drag-font-size: 12px !default;
 $grid-drag-icon-font-weight: bold !default;
 $grid-drag-move-icon: 10px !default;
@@ -524,8 +513,6 @@ $grid-rtl-column-menu-margin: -20px -18px -18px 1px !default;
 $grid-rtl-textwrap-column-menu-margin: -15px -13px -23px -3px !default;
 $grid-filter-checkbox-width: 0 !default;
 $grid-filter-checkbox-white-space: nowrap !default;
-
-// group animator
 $grid-group-animator-bigger-cell-margin: 15px 0 15px 0 !default;
 $grid-group-animator-bigger-drop-height: 72px !default;
 $grid-animator-bigger-area-margin: 22px !default;
@@ -550,7 +537,6 @@ $grid-animator-first-group: 13px 0 13px 13px !default;
 $grid-animator-rtl-first-group: 13px 13px 13px 0 !default;
 $grid-animator-margin-top-rtl: 22px !default;
 $grid-filterbar-dropdown: 29px !default;
-
 $grid-responsive-close-icon-margin: 6px 8px 8px 8px !default;
 $grid-responsive-custom-header-margin: 18px 8px 18px 8px !default;
 $grid-responsive-custom-header-btn-color: $grid-filtered-color !default;
@@ -585,7 +571,6 @@ $grid-responsive-tbar-btn-bgr-padding: 1px 7px !default;
 $grid-responsive-btn-top: 0 !default;
 $grid-responsive-apply-btn-top: 3px !default;
 $grid-responsive-column-menu-icon-margin-top: 0 !default;
-
 $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -5px !default;
 $grid-rtl-sort-num-left-align-margin: 8px -6px 0 0 !default;
@@ -595,6 +580,8 @@ $grid-reorderarrow-margin-top: -6.5px !default;
 $grid-reorderdownarrow-margin-top: 4px !default;
 $grid-reorder-arrow-top-margin: .5px !default;
 $grid-reorder-downarrow-top-margin: -1.5px !default;
+$grid-biggerreorder-arrow-top-margin: -2px !default;
+$grid-biggerreorder-downarrow-top-margin: -1px !default;
 $grid-reorder-virtualarrow-top-margin: -.5px !default;
 $grid-reorder-virtualdownarrow-top-margin: -1.5px !default;
 $grid-sortnumber-font-size: 9px !default;
@@ -602,8 +589,6 @@ $grid-header-text-transform: none !default;
 $grid-bigger-toolbar-icon-size: 18px !default;
 $grid-reorderarrow-margin-left: -2.5px !default;
 $grid-column-chooser-cancel-icon-size: 11px !default;
-
-// bootstrap5 support
 $grid-outter-border: $grid-header-border-color !default;
 $grid-btn-disabled-bgcolor: rgba($grey-white, .65) !default;
 $grid-sort-number-size: 15px !default;

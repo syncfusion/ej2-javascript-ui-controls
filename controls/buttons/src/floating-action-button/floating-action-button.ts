@@ -1,14 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 ///<reference path='../button/button-model.d.ts'/>
-import { getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property, EventHandler } from '@syncfusion/ej2-base';
+import { getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
 import { select } from '@syncfusion/ej2-base';
 import { Button } from '../button/button';
 import { FabModel } from './floating-action-button-model';
 
 const FABHIDDEN: string = 'e-fab-hidden';
 const FIXEDFAB: string = 'e-fab-fixed';
-const FABVERTDIST: string = '--fabVertDist';
-const FABHORZDIST: string = '--fabHorzDist';
 const FABTOP: string = 'e-fab-top';
 const FABBOTTOM: string = 'e-fab-bottom';
 const FABRIGHT: string = 'e-fab-right';
@@ -85,8 +83,6 @@ export class Fab extends Button implements INotifyPropertyChanged {
      * * BottomCenter: Places the FAB on the bottom-center position of the target.
      * * BottomRight: Positions the FAB at the target's bottom right corner.
      *
-     *  To refresh the position of FAB on target resize, use refreshPosition method.
-     *  The position will be refreshed automatically when browser resized.
      * {% codeBlock src='fab/position/index.md' %}{% endcodeBlock %}
      *
      * @isenumeration true
@@ -179,7 +175,6 @@ export class Fab extends Button implements INotifyPropertyChanged {
         this.checkTarget();
         this.setPosition();
         this.setVisibility();
-        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler, this);
     }
     private checkTarget(): void {
         this.isFixed = true;
@@ -196,53 +191,34 @@ export class Fab extends Button implements INotifyPropertyChanged {
         this.element.classList[this.visible ? 'remove' : 'add'](FABHIDDEN);
     }
     private setPosition(): void {
-        this.setVerticalPosition();
-        this.setHorizontalPosition();
-    }
-    private setVerticalPosition(): void {
-        //Check for middle position and middle class and vertical distance atttribute.
+        // Check for the bottom position; if true, add the bottom class; otherwise, add the top class.
+        this.element.classList.add((['BottomLeft', 'BottomCenter', 'BottomRight'].indexOf(this.position) !== -1) ? FABBOTTOM : FABTOP);
+        const isRight: boolean = ['TopRight', 'MiddleRight', 'BottomRight'].indexOf(this.position) !== -1;
+        // Reverse the left and right direction for RTL mode.
+        this.element.classList.add((!(this.enableRtl || isRight) || (this.enableRtl && isRight)) ? FABLEFT : FABRIGHT);
         if (['MiddleLeft', 'MiddleRight', 'MiddleCenter'].indexOf(this.position) !== -1) {
-            const yoffset: number = ((this.isFixed ? window.innerHeight : this.targetEle.clientHeight) - this.element.offsetHeight) / 2;
-            this.element.style.setProperty(FABVERTDIST, yoffset + 'px');
             this.element.classList.add(FABMIDDLE);
         }
-        //Check for bottom position and bottom class else add top class.
-        this.element.classList.add((['BottomLeft', 'BottomCenter', 'BottomRight'].indexOf(this.position) !== -1) ? FABBOTTOM : FABTOP);
-    }
-
-    private setHorizontalPosition(): void {
-        //Check for center position and center class and horizontal distance atttribute.
         if (['TopCenter', 'BottomCenter', 'MiddleCenter'].indexOf(this.position) !== -1) {
-            const xoffset: number = ((this.isFixed ? window.innerWidth : this.targetEle.clientWidth) - this.element.offsetWidth) / 2;
-            this.element.style.setProperty(FABHORZDIST, xoffset + 'px');
             this.element.classList.add(FABCENTER);
         }
-        const isRight: boolean = ['TopRight', 'MiddleRight', 'BottomRight'].indexOf(this.position) !== -1;
-        this.element.classList.add((!(this.enableRtl || isRight) || (this.enableRtl && isRight)) ? FABLEFT : FABRIGHT);
     }
 
     private clearPosition(): void {
-        this.element.style.removeProperty(FABVERTDIST);
         this.element.classList.remove(FABTOP, FABBOTTOM, FABMIDDLE);
-        this.clearHorizontalPosition();
-    }
-
-    private clearHorizontalPosition(): void {
-        this.element.style.removeProperty(FABHORZDIST);
         this.element.classList.remove(FABRIGHT, FABLEFT, FABCENTER);
     }
 
+    /* eslint-disable */
     /**
      * Refreshes the FAB position. You can call this method to re-position FAB when target is resized.
      *
      * @returns {void}
+     * @deprecated
      */
     public refreshPosition(): void {
-        this.resizeHandler();
     }
-    private resizeHandler(): void {
-        this.setPosition();
-    }
+    /* eslint-enable */
 
     /**
      * Destroys the FAB instance.
@@ -255,7 +231,6 @@ export class Fab extends Button implements INotifyPropertyChanged {
         // To remove 'e-btn' class
         this.element.classList.remove('e-' + super.getModuleName(), FIXEDFAB);
         this.clearPosition();
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler);
     }
 
     /**
@@ -271,15 +246,12 @@ export class Fab extends Button implements INotifyPropertyChanged {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'enableRtl':
-                this.clearHorizontalPosition();
-                this.setHorizontalPosition();
-                break;
-            case 'visible':
-                this.setVisibility();
-                break;
             case 'position':
                 this.clearPosition();
                 this.setPosition();
+                break;
+            case 'visible':
+                this.setVisibility();
                 break;
             case 'target':
                 this.checkTarget();

@@ -7,6 +7,9 @@ import { Ruler, TickAlignment } from '../../src/ruler/index';
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
 import { IArrangeTickOptions } from '../../src/ruler/objects/interface/interfaces';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { NodeModel } from '../../src/diagram/objects/node-model';
+import { ConnectorModel } from '../../src/diagram/objects/connector-model';
+import { DiagramTools } from '../../src/diagram/enum/enum';
 
 
 let mouseEvents: MouseEvents = new MouseEvents();
@@ -310,5 +313,251 @@ describe('Ruler', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+
+    describe('Code coverage Ruler update at runtime', () => {
+        let diagram: Diagram;
+        let ruler: Ruler;
+        let ele: HTMLElement;
+        let connectors2:ConnectorModel[];
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_rulerRuntime' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: "node1",
+                    height: 100,
+                    width: 100,
+                    offsetX: 100,
+                    offsetY: 100,
+                },
+                {
+                    id: "node2",
+                    height: 100,
+                    width: 100,
+                    offsetX: 300,
+                    offsetY: 100,
+                },
+                {
+                    id: "node3",
+                    height: 100,
+                    width: 100,
+                    offsetX: 500,
+                    offsetY: 100,
+                }
+            ];
+            connectors2 = [
+                {
+                    id: "connector11",
+                    sourcePoint: { x: 100, y: 100 },
+                    targetPoint: { x: 200, y: 200 },
+                },
+                {
+                    id: "connector21",
+                    sourcePoint: { x: 200, y: 200 },
+                    targetPoint: { x: 300, y: 300 },
+                }
+            ]
+            diagram = new Diagram({
+                width: '1000px', height: '500px', nodes: nodes,
+                rulerSettings:{showRulers:true,verticalRuler:{markerColor:'red',thickness:50,segmentWidth:200},horizontalRuler:{markerColor:'red',thickness:50,segmentWidth:200}},
+            });
+            diagram.appendTo('#diagram_rulerRuntime');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Updating ruler at runtime', (done: Function) => {
+            diagram.rulerSettings.verticalRuler.markerColor = 'yellow';
+            diagram.rulerSettings.horizontalRuler.thickness = 20;
+            diagram.rulerSettings.verticalRuler.thickness = 20;
+            diagram.dataBind();
+            expect(diagram.rulerSettings.verticalRuler.markerColor === 'yellow').toBe(true);
+            done();
+        });
+        it('Updating connectors collection at runtime', (done: Function) => {
+            diagram.connectors = connectors2;
+            expect(diagram.connectors.length > 0).toBe(true);
+            done();
+        });
+        it('Nudge connector at runtime', (done: Function) => {
+            let connector = diagram.connectors[0];
+            let prePoint = connector.sourcePoint.y;
+            diagram.select([connector]);
+            diagram.nudge('Down');
+            let curPoint = connector.sourcePoint.y;
+            expect(prePoint < curPoint).toBe(true);
+            done();
+        });
+        it('Applying padding to node at runtime', (done: Function) => {
+            let node = diagram.nodes[0];
+            let prePadding = node.padding.left;
+            node.padding = {left:10,right:0,top:0,bottom:0};
+            diagram.dataBind();
+            let curPadding = node.padding.left;
+            expect(prePadding !== curPadding).toBe(true);
+            let topPadding = node.padding.top;
+            node.padding = {left:10,right:0,top:10,bottom:0};
+            let curTopPadding = node.padding.top;
+            diagram.dataBind();
+            expect(topPadding !== curTopPadding).toBe(true);
+            done();
+        });
+        it('Add text node at runtime', (done: Function) => {
+            let textNode:NodeModel = {id:'text',width:300,height:200,offsetX:300,offsetY:200,shape:{type:'Text',content:''}};
+            diagram.add(textNode);
+            let node = diagram.nameTable['text'];
+            diagram.startTextEdit(node);
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas,10,10);
+            expect(diagram.selectedItems.nodes.length === 0).toBe(true);
+            done();
+        });
+        it('Apply font style at runtime for connector annotation', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let textNode2:NodeModel = {id:'text2',width:100,height:50,offsetX:300,offsetY:400,shape:{type:'Text',content:'textNode2'}};
+            diagram.add(textNode2);
+            let node = diagram.nameTable['text2'];
+            diagram.select([node]);
+            mouseEvents.keyDownEvent(diagramCanvas, 'B', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'I', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+            expect(node.style.bold).toBe(true);
+            done();
+        });
+    });
+
+    describe('Code coverage update at runtime', () => {
+        let diagram: Diagram;
+        let ruler: Ruler;
+        let ele: HTMLElement;
+        let connectors2:ConnectorModel[];
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_UpdateRuntime' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: "node1",
+                    height: 100,
+                    width: 100,
+                    offsetX: 100,
+                    offsetY: 100,
+                },
+                {
+                    id: "node2",
+                    height: 100,
+                    width: 100,
+                    offsetX: 300,
+                    offsetY: 100,
+                },
+                {
+                    id: "node3",
+                    height: 100,
+                    width: 100,
+                    offsetX: 500,
+                    offsetY: 100,
+                }
+            ];
+            connectors2 = [
+                {
+                    id: "connector11",
+                    sourcePoint: { x: 100, y: 100 },
+                    targetPoint: { x: 200, y: 200 },
+                },
+                {
+                    id: "connector21",
+                    sourcePoint: { x: 200, y: 200 },
+                    targetPoint: { x: 300, y: 300 },
+                }
+            ]
+            diagram = new Diagram({
+                width: '1000px', height: '500px', nodes: nodes,
+                collectionChange: function (args) {
+                    if(args.state === 'Changing' && args.type === 'Addition'){
+                        args.cancel = true;
+                    }
+                },
+                drawingObject: {type:'Orthogonal'},
+                rulerSettings:{dynamicGrid:true,showRulers:true,verticalRuler:{markerColor:'red',thickness:50,segmentWidth:200},horizontalRuler:{markerColor:'red',thickness:50,segmentWidth:200}},
+            });
+            diagram.appendTo('#diagram_UpdateRuntime');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Update ruler at runtime', (done: Function) => {
+             diagram.rulerSettings.verticalRuler.thickness = 100;
+             diagram.rulerSettings.horizontalRuler.thickness = 100;
+             diagram.rulerSettings.verticalRuler.markerColor = 'yellow';
+             diagram.rulerSettings.dynamicGrid = false;
+             diagram.dataBind();
+             expect(diagram.rulerSettings.verticalRuler.markerColor === 'yellow').toBe(true);
+             done();
+         });
+        it('Draw and connect nodes', (done: Function) => {
+           diagram.tool = DiagramTools.DrawOnce;
+           diagram.dataBind();
+           let node1 = diagram.nodes[0];
+           let node2 = diagram.nodes[1];
+           let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas, node1.offsetX, node1.offsetY, false, false);
+            mouseEvents.mouseDownEvent(diagramCanvas, node1.offsetX, node1.offsetY, false, false);
+            mouseEvents.mouseMoveEvent(diagramCanvas, node1.offsetX + 20, node1.offsetY, false, false);
+            mouseEvents.mouseMoveEvent(diagramCanvas, node2.offsetX, node2.offsetY, false, false);
+            mouseEvents.mouseUpEvent(diagramCanvas, node2.offsetX, node2.offsetY, false, false);
+            expect(diagram.connectors.length === 0).toBe(true);
+            done();
+        });
+       
+    });
+
+    describe('Code coverage Canvas mode', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_canvas' });
+            document.body.appendChild(ele);
+            let nodes:NodeModel[] = [
+                {
+                    id: 'node1', width: 50, height: 50,offsetX:100,offsetY:100,
+                    annotations:[{content:'node1'}]
+                }, {
+                    id: 'node2', width: 50, height: 50, offsetX:300,offsetY:100
+                },
+            ];
+            let connectors:ConnectorModel[] = [{
+                id: 'connector1', sourceID: 'node1', targetID: 'node2',type:'Bezier'
+            }];
+            diagram = new Diagram({
+                width: '1000px', height: '500px', nodes: nodes,
+                connectors:connectors,
+                mode:'Canvas'
+             });
+            diagram.appendTo('#diagram_canvas');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('end edit for node', (done: Function) => {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            diagram.zoomTo({type:'ZoomOut', zoomFactor:0.2});
+            let node = diagram.nameTable['node1'];
+            mouseEvents.clickEvent(diagramCanvas,10,10);
+            diagram.startTextEdit(node);
+            mouseEvents.keyDownEvent(diagramCanvas,'Escape');
+             expect(node.annotations[0].content === 'node1').toBe(true);
+             done();
+         });
+        
+       
     });
 });

@@ -76,7 +76,7 @@ export class Revision {
         this.owner.editorModule.initHistory(isFromAccept ? 'Accept Change' : 'Reject Change');
         let fieldBegin: FieldElementBox = selection.getHyperlinkField();
         if (isFromAccept && this.revisionType === 'Deletion' && !isNullOrUndefined(fieldBegin) 
-            && this.range.indexOf(fieldBegin) !== -1 && this.range.indexOf(fieldBegin.fieldEnd) !== -1) {
+            && this.range.indexOf(fieldBegin) !== -1 && this.range.indexOf(fieldBegin.fieldEnd) !== -1 && this.range.indexOf(fieldBegin.fieldSeparator) === this.range.indexOf(fieldBegin.fieldEnd) - 1) {
             this.owner.editorHistoryModule.currentBaseHistoryInfo.isHyperlinkField = true;
         }
         this.owner.editorHistoryModule.currentBaseHistoryInfo.markerData.push(this.owner.editorModule.getMarkerData(undefined, undefined, this));

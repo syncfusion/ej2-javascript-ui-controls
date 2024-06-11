@@ -27,6 +27,6 @@ export * from './user-interaction/selection';
 export * from './user-interaction/high-light';
 export * from './print-export/export';
 export * from './model/chart3d-Interface';
-export * from './model/chart3d-Interface-model'
+export * from './model/chart3d-Interface-model';
 export * from './model/theme';
 

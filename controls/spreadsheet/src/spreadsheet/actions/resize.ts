@@ -248,7 +248,7 @@ export class Resize {
 
     private updateTarget(e: MouseEvent, trgt: HTMLElement): void {
         if (closest(trgt, '.e-header-row')) {
-            let offsetX: number = this.parent.enableRtl ? (trgt.offsetWidth - e.offsetX) : e.offsetX;
+            const offsetX: number = this.parent.enableRtl ? (trgt.offsetWidth - e.offsetX) : e.offsetX;
             if ((trgt.offsetWidth < 10 && offsetX < Math.ceil((trgt.offsetWidth - 2) / 2)) || (offsetX < 5 &&
                 trgt.offsetWidth >= 10) && trgt.classList.contains('e-colresize')) {
                 const sheet: SheetModel = this.parent.getActiveSheet();
@@ -406,7 +406,7 @@ export class Resize {
         document.body.appendChild(wrapper);
         const offset: ClientRect = table.getBoundingClientRect();
         document.body.removeChild(wrapper);
-        let fitSize: number = Math.ceil(isCol ? offset.width : offset.height);
+        const fitSize: number = Math.ceil(isCol ? offset.width : offset.height);
         let autofitValue: number = (isCol ? this.getFloatingElementWidth(fitSize + (wrapCell ? 1 : 0), idx) : fitSize) || oldValue;
         let threshold: number;
         if (isCol) {
@@ -468,7 +468,8 @@ export class Resize {
             const colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
             const rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
             if (colResizeHandler) {
-                const trgtWidth: number = isRtl ? (Math.round(this.trgtEle.getBoundingClientRect().right) - (e.clientX)) : ((e.clientX) - Math.round(this.trgtEle.getBoundingClientRect().left));
+                const trgtWidth: number = isRtl ? (Math.round(this.trgtEle.getBoundingClientRect().right) - (e.clientX)) :
+                    ((e.clientX) - Math.round(this.trgtEle.getBoundingClientRect().left));
                 if (HeaderTolltip) {
                     HeaderTolltip.firstChild.textContent = trgtWidth > 0 ? ('Width:(' + trgtWidth.toString() + ' pixels)') : ('Width: 0.00');
                 }
@@ -697,7 +698,8 @@ export class Resize {
             } else {
                 curWidth = getColumnWidth(this.parent.getActiveSheet(), idx);
             }
-            this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (this.parent.enableRtl ? (this.event.clientX - e.clientX) : (e.clientX - this.event.clientX)) + curWidth, curWidth);
+            this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (this.parent.enableRtl ?
+                (this.event.clientX - e.clientX) : (e.clientX - this.event.clientX)) + curWidth, curWidth);
         }
         if (cell && cell.format && cell.format.includes('*')) {
             this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cell.value, format: cell.format, cell: cell,
@@ -756,6 +758,7 @@ export class Resize {
         this.unwireEvents();
         this.removeEventListener();
         if (this.trgtEle) { this.trgtEle.remove(); } this.trgtEle = null;
+        this.event = null;
         this.parent = null;
     }
     /**

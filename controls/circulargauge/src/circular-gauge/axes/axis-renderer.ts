@@ -452,7 +452,7 @@ export class AxisRenderer {
         const isAngleCross360: boolean = (startAngle > endAngle);
         if (axis.rangeGap != null && axis.rangeGap > 0 && range.start !== range.end
             || (!isNullOrUndefined(range.linearGradient) && !range.isLinearCircularGradient
-                && (colorIndex === range.linearGradient.colorStop.length - 1))) {
+                && (colorIndex === (!isNullOrUndefined(range.linearGradient.colorStop) && range.linearGradient.colorStop.length - 1)))) {
             startAngle = (rangeIndex === 0 && !axis.startAndEndRangeGap) ? startAngle :
                 colorIndex === 0 && range.isLinearCircularGradient ? axis.direction === 'AntiClockWise' ?
                     startAngle - (axis.rangeGap / Math.PI) :

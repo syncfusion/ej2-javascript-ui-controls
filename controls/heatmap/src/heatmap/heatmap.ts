@@ -6,7 +6,7 @@ import { Component, Property, NotifyPropertyChanges, Internationalization, Compl
 import { ModuleDeclaration, EmitType, remove, Event, EventHandler, Touch } from '@syncfusion/ej2-base';
 // eslint-disable-next-line
 import { INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';
-import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
+import { SvgRenderer, CanvasRenderer, Tooltip as tool } from '@syncfusion/ej2-svg-base';
 import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility, removeMeasureElement } from './utils/helper';
 import { DrawSvgCanvas, TextOption, titlePositionX, getTitle, showTooltip, getElement, SelectedCellDetails } from './utils/helper';
 import { removeElement, CanvasTooltip, getTooltipText } from './utils/helper';
@@ -142,14 +142,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
 
     @Property(null)
-    public dataSource: Object ;
+    public dataSource: Object;
 
     /**
      * Sets and gets the options to customize the data mapping for the data in the heatmap.
      * {% codeBlock src='heatmap/dataSourceSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<DataModel>({}, Data)
-    public dataSourceSettings : DataModel;
+    public dataSourceSettings: DataModel;
 
     /**
      * Specifies the background color of the entire heatmap.
@@ -211,7 +211,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Sets and gets the options for customizing the legend of the heatmap.
      * {% codeBlock src='heatmap/legendSettings/index.md' %}{% endcodeBlock %}
      */
-    @Complex<LegendSettingsModel>({ position: 'Right'}, LegendSettings)
+    @Complex<LegendSettingsModel>({ position: 'Right' }, LegendSettings)
     public legendSettings: LegendSettingsModel;
 
     /**
@@ -346,13 +346,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public selectedCellCount: number = 0;
     /** @private */
-    public currentRect : CurrentRect;
+    public currentRect: CurrentRect;
     /** @private */
     public dataSourceMinValue: number;
     /** @private */
-    public dataMin: number [];
+    public dataMin: number[];
     /** @private */
-    public dataMax: number [];
+    public dataMax: number[];
     /** @private */
     public dataSourceMaxValue: number;
     /** @private */
@@ -520,36 +520,44 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.updateBubbleHelperProperty();
         this.trigger('load', { heatmap: this });
         if (this.theme === 'TailwindDark' || this.theme === 'Tailwind') {
-            const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '12px', fontFamily : 'Inter', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'Inter' }};
-            this.setProperties({ titleSettings : { textStyle : { size : '14px', fontFamily : 'Inter' }}}, true);
-            this.setProperties({ legendSettings : textSettings }, true);
-            this.setProperties({ xAxis : textSettings }, true);
-            this.setProperties({ yAxis : textSettings }, true);
-            this.setProperties({ cellSettings : { textStyle : { fontFamily : 'Inter' }}}, true);
+            const textSettings: LegendSettingsModel = { title: { textStyle: { size: '12px', fontFamily: 'Inter', fontWeight: '500' } }, textStyle: { size: '12px', fontFamily: 'Inter' } };
+            this.setProperties({ titleSettings: { textStyle: { size: '14px', fontFamily: 'Inter' } } }, true);
+            this.setProperties({ legendSettings: textSettings }, true);
+            this.setProperties({ xAxis: textSettings }, true);
+            this.setProperties({ yAxis: textSettings }, true);
+            this.setProperties({ cellSettings: { textStyle: { fontFamily: 'Inter' } } }, true);
         }
         if (this.theme === 'Material3' || this.theme === 'Material3Dark') {
-            const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '14px', fontFamily : 'Roboto', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'Roboto' , fontWeight : '400' }};
-            this.setProperties({ titleSettings : { textStyle : { size : '16px', fontFamily : 'Roboto' }}}, true);
-            this.setProperties({ legendSettings : textSettings }, true);
-            this.setProperties({ xAxis : textSettings }, true);
-            this.setProperties({ yAxis : textSettings }, true);
-            this.setProperties({ cellSettings : { textStyle : { fontFamily : 'Roboto', fontWeight : '400' }}}, true);
+            const textSettings: LegendSettingsModel = { title: { textStyle: { size: '14px', fontFamily: 'Roboto', fontWeight: '500' } }, textStyle: { size: '12px', fontFamily: 'Roboto', fontWeight: '400' } };
+            this.setProperties({ titleSettings: { textStyle: { size: '16px', fontFamily: 'Roboto' } } }, true);
+            this.setProperties({ legendSettings: textSettings }, true);
+            this.setProperties({ xAxis: textSettings }, true);
+            this.setProperties({ yAxis: textSettings }, true);
+            this.setProperties({ cellSettings: { textStyle: { fontFamily: 'Roboto', fontWeight: '400' } } }, true);
         }
         if (this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') {
-            const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '12px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }};
-            this.setProperties({ titleSettings : { textStyle : { size : '16px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}}, true);
-            this.setProperties({ legendSettings : textSettings }, true);
-            this.setProperties({ xAxis : textSettings }, true);
-            this.setProperties({ yAxis : textSettings }, true);
-            this.setProperties({ cellSettings : { textStyle : { fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}}, true);
+            const textSettings: LegendSettingsModel = { title: { textStyle: { size: '12px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight: '500' } }, textStyle: { size: '12px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } };
+            this.setProperties({ titleSettings: { textStyle: { size: '16px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } } }, true);
+            this.setProperties({ legendSettings: textSettings }, true);
+            this.setProperties({ xAxis: textSettings }, true);
+            this.setProperties({ yAxis: textSettings }, true);
+            this.setProperties({ cellSettings: { textStyle: { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } } }, true);
         }
         if (this.theme === 'Fluent' || this.theme === 'FluentDark') {
-            const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '12px', fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }};
-            this.setProperties({ titleSettings : { textStyle : { size : '16px', fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' }}}, true);
-            this.setProperties({ legendSettings : textSettings }, true);
-            this.setProperties({ xAxis : textSettings }, true);
-            this.setProperties({ yAxis : textSettings }, true);
-            this.setProperties({ cellSettings : { textStyle : { fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' }}}, true);
+            const textSettings: LegendSettingsModel = { title: { textStyle: { size: '12px', fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif', fontWeight: '500' } }, textStyle: { size: '12px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } };
+            this.setProperties({ titleSettings: { textStyle: { size: '16px', fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' } } }, true);
+            this.setProperties({ legendSettings: textSettings }, true);
+            this.setProperties({ xAxis: textSettings }, true);
+            this.setProperties({ yAxis: textSettings }, true);
+            this.setProperties({ cellSettings: { textStyle: { fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' } } }, true);
+        }
+        if (this.theme === 'Fluent2' || this.theme === 'Fluent2Dark' || this.theme === 'Fluent2HighContrast') {
+            const textSettings: LegendSettingsModel = { title: { textStyle: { size: '12px', fontFamily: 'Segoe UI', fontWeight: '400' } }, textStyle: { size: '12px', fontFamily: 'Segoe UI', fontWeight: '400' } };
+            this.setProperties({ titleSettings: { textStyle: { size: '14px', fontFamily: 'Segoe UI', fontWeight: '600' } } }, true);
+            this.setProperties({ legendSettings: textSettings }, true);
+            this.setProperties({ xAxis: textSettings }, true);
+            this.setProperties({ yAxis: textSettings }, true);
+            this.setProperties({ cellSettings: { textStyle: { size: '10px', fontWeight: '400', fontFamily: 'Segoe UI' } } }, true);
         }
         this.initAxis();
         this.processInitData();
@@ -660,6 +668,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Get component name
+     *
      * @private
      */
 
@@ -723,7 +732,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 break;
             case 'legendSettings':
                 this.updateBubbleHelperProperty();
-                if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !==
+                if (this.legendModule && this.legendVisibilityByCellType && (((newProp.legendSettings.visible !==
                         (oldProp.legendSettings !== undefined && oldProp.legendSettings.visible)) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
                     this.legendOnLoad = true;
@@ -787,7 +796,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private paletteCellSelectionUpdation(): void {
         this.updateBubbleHelperProperty();
-        if (this.legendVisibilityByCellType) {
+        if (this.legendModule && this.legendVisibilityByCellType) {
             this.legendOnLoad = true;
             this.legendModule.updateLegendRangeCollections();
         }
@@ -880,19 +889,22 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.showTooltip) {
             modules.push({
                 member: 'Tooltip',
-                args: [this]
+                args: [this],
+                name: 'Tooltip'
             });
         }
-        if (this.legendSettings) {
+        if (this.legendSettings.visible) {
             modules.push({
                 member: 'Legend',
-                args: [this]
+                args: [this],
+                name: 'Legend'
             });
         }
-        if (this.dataSource) {
+        if (!isNullOrUndefined(this.dataSourceSettings) && ((this.dataSourceSettings.adaptorType === 'Table' && this.dataSourceSettings.isJsonData) || this.dataSourceSettings.adaptorType === 'Cell')) {
             modules.push({
                 member: 'Adaptor',
-                args: [this]
+                args: [this],
+                name: 'Adaptor'
             });
         }
         return modules;
@@ -911,10 +923,56 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.unWireEvents();
         this.touchInstance.destroy();
         this.touchInstance = null;
+        for (let i: number = 0; i < this.axisCollections.length; i++) {
+            this.axisCollections[i as number].destroy();
+        }
+        this.axisCollections = null;
+        if (!isNullOrUndefined(this.heatMapSeries)) {
+            this.heatMapSeries.destroy();
+        }
+        this.heatMapSeries = null;
+        if (!isNullOrUndefined(this.heatMapAxis)) {
+            this.heatMapAxis.destroy();
+        }
+        this.heatMapAxis = null;
         super.destroy();
         removeMeasureElement();
+        if (!isNullOrUndefined(this.twoDimensional)) {
+            this.twoDimensional.destroy();
+        }
+        this.twoDimensional = null;
         this.element.innerHTML = '';
+        this.availableSize = null;
+        this.elementSize = null;
+        this.initialClipRect = null;
         this.element.classList.remove('e-heatmap');
+        this.drawSvgCanvas = null;
+        this.cellColor = null;
+        this.colorCollection = null;
+        this.legendColorCollection = null;
+        this.clonedDataSource = null;
+        this.completeAdaptDataSource = null;
+        this.currentRect = null;
+        this.dataMax = null;
+        this.dataMin = null;
+        this.previousRect = null;
+        this.selectedCellsRect = null;
+        this.canvasSelectedCells = null;
+        this.titleRect = null;
+        this.tooltipCollection = null;
+        this.border = null;
+        this.intl = null;
+        this.titleCollection = null;
+        this.themeStyle = null;
+        this.renderer = null;
+        this.canvasRenderer = null;
+        this.secondaryCanvasRenderer = null;
+        this.svgObject = null;
+        this.resizeEvent = null;
+        this.toggleValue = [];
+        this.previousSelectedCellsRect = [];
+        this.selectedMultiCellCollection = [];
+        this.tempMultiCellCollection = [];
     }
 
     /**
@@ -1040,30 +1098,33 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         const lastRectDetails: CurrentRect[] = [];
         let isRect: boolean;
         const borderBoundary: number = 5;
-        firstRectDetails.push(this.heatMapSeries.rectPositionCollection[0][0]);
-        lastRectDetails.push(this.heatMapSeries.rectPositionCollection[this.yLength - 1][this.xLength - 1]);
-
-        if (this.cellSettings.border.width > borderBoundary && (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
-            x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
-           y <= (lastRectDetails[0].y + lastRectDetails[0].height)) && this.cellSettings.tileType === 'Rect') {
-            const currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(x, y);
-            const rectHeight: number =  lastRectDetails[0].height;
-            const rectWidth: number =  lastRectDetails[0].width;
-            const cellBorder: number = this.cellSettings.border.width / 2;
-            if ((x >= (currentRect.x + cellBorder) && ( y >= (currentRect.y + cellBorder)) &&
-            (x <= (currentRect.x + (rectWidth - cellBorder)) &&
-            (y <= (currentRect.y + (rectHeight - cellBorder)))))) {
-                isRect = true;
-                this.isRectBoundary = true;
-            } else {
-                isRect = false;
-                this.isRectBoundary = false;
-            }
-        } else {
-            isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
+        if (this.heatMapSeries.rectPositionCollection.length > 0) {
+            firstRectDetails.push(this.heatMapSeries.rectPositionCollection[0][0]);
+            lastRectDetails.push(this.heatMapSeries.rectPositionCollection[this.yLength - 1][this.xLength - 1]);
+        }
+        if (firstRectDetails.length > 0 && lastRectDetails.length > 0) {
+            if (this.cellSettings.border.width > borderBoundary && (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
                 x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
-                y <= (lastRectDetails[0].y + lastRectDetails[0].height));
-            this.isRectBoundary = isRect;
+                y <= (lastRectDetails[0].y + lastRectDetails[0].height)) && this.cellSettings.tileType === 'Rect') {
+                const currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(x, y);
+                const rectHeight: number = lastRectDetails[0].height;
+                const rectWidth: number = lastRectDetails[0].width;
+                const cellBorder: number = this.cellSettings.border.width / 2;
+                if ((x >= (currentRect.x + cellBorder) && (y >= (currentRect.y + cellBorder)) &&
+                    (x <= (currentRect.x + (rectWidth - cellBorder)) &&
+                        (y <= (currentRect.y + (rectHeight - cellBorder)))))) {
+                    isRect = true;
+                    this.isRectBoundary = true;
+                } else {
+                    isRect = false;
+                    this.isRectBoundary = false;
+                }
+            } else {
+                isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
+                    x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
+                    y <= (lastRectDetails[0].y + lastRectDetails[0].height));
+                this.isRectBoundary = isRect;
+            }
         }
 
         return isRect;
@@ -1162,14 +1223,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
          * Support for touch tapHold and tap for HeatMap
          */
 
-        // eslint-disable-next-line
         this.touchInstance = new Touch(this.element, {
             tapHold: (e: TapEventArgs) => {
                 const targetId: string = (<Element>e.originalEvent.target).id;
                 if ((targetId.indexOf(this.element.id + '_HeatMapRect_') !== -1 || targetId.indexOf(this.element.id + '_HeatMapRectLabels_') !== -1) && this.allowSelection) {
                     heatmap.isCellTapHold = true;
                     const selectedCellCollection: SelectedCellDetails[] = [];
-                    for (let i: number = 0; i < this.multiCellCollection.length; i++){
+                    for (let i: number = 0; i < this.multiCellCollection.length; i++) {
                         selectedCellCollection.push(this.multiCellCollection[i as number]);
                     }
                     if (!e.originalEvent.ctrlKey || !this.enableMultiSelect) {
@@ -1184,14 +1244,15 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     };
                     heatmap.trigger('cellSelected', argData);
                     if (!argData.cancel) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         if ((e as any).ctrlKey === false || !this.enableMultiSelect) {
                             this.removeSelectedCellsBorder(false);
                         }
                         heatmap.currentRect.allowCollection = false;
                     } else {
                         this.multiCellCollection = selectedCellCollection;
-                        if (this.multiCellCollection.length > 0 || (e as any).ctrlKey === false || !this.enableMultiSelect)
-                        {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        if (this.multiCellCollection.length > 0 || (e as any).ctrlKey === false || !this.enableMultiSelect) {
                             this.removeSelectedCellsBorder(true);
                         }
                     }
@@ -1200,6 +1261,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     heatmap.tooltipOnMouseMove(null, heatmap.currentRect, heatmap.isCellTapHold);
                 }
             },
+            // eslint-disable-next-line @typescript-eslint/tslint/config
             tap: (e) => {
                 const targetId: string = (<Element>e.originalEvent.target).id;
                 if ((targetId.indexOf(this.element.id + '_HeatMapRect_') !== -1 || targetId.indexOf(this.element.id + '_HeatMapRectLabels_') !== -1 || targetId.indexOf(this.element.id + '_CellSelection_Container_') !== -1)) {
@@ -1264,7 +1326,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         // eslint-disable-next-line
         const isIE11Pointer: Boolean = Browser.isPointer;
         const start: string = Browser.touchStartEvent;
-        // eslint-disable-next-line
         const stop: string = Browser.touchEndEvent;
         const move: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
@@ -1360,8 +1421,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             const oldCanvas: HTMLElement = document.getElementById(this.element.id + '_canvas');
             const newCanvas: HTMLElement = document.getElementById(this.element.id + '_secondary_canvas');
             const initialRect: Rect = this.initialClipRect;
-            const rectHeight : number = initialRect.y + initialRect.height;
-            const rectWidth : number = initialRect.x + initialRect.width;
+            const rectHeight: number = initialRect.y + initialRect.height;
+            const rectWidth: number = initialRect.x + initialRect.width;
             for (let i: number = 0; i < this.multiCellCollection.length; i++) {
                 this.multiCellCollection[i as number].width = rect[i as number].width = wSize;
                 this.multiCellCollection[i as number].height = rect[i as number].height = hSize;
@@ -1487,8 +1548,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     private heatMapMouseDoubleClick(e: PointerEvent): void {
         this.triggerClickEvent(e, true);
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
+     * @param {PointerEvent} e - Specifies the event.
+     * @returns {boolean} Returns the boolean that that the heatmap is clicked or not
      * @private
      */
     public heatMapMouseClick(e: PointerEvent): boolean {
@@ -1520,7 +1582,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                             pageX >= legendTextRange[i as number].x
                             && pageX <= legendTextRange[i as number].width + legendTextRange[i as number].x) &&
                             (pageY >= legendTextRange[i as number].y
-                             && pageY <= legendTextRange[i as number].y + legendTextRange[i as number].height)))) {
+                                && pageY <= legendTextRange[i as number].y + legendTextRange[i as number].height)))) {
                         this.legendModule.legendRangeSelection(i);
                         loop = false;
                     }
@@ -1608,13 +1670,15 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 // eslint-disable-next-line
                 elementRect = this.element.getBoundingClientRect();
                 const tooltipRect: boolean = (this.paletteSettings.type === 'Fixed' && this.legendSettings.enableSmartLegend &&
-                this.legendSettings.labelDisplayType === 'None') ? false : true;
-                tooltipText = getTooltipText(this.tooltipCollection, pageX, pageY) ||
-                (this.legendModule && tooltipRect  && (getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY)
-                || getTooltipText(this.legendModule.legendTitleTooltip, pageX, pageY)));
+                    this.legendSettings.labelDisplayType === 'None') ? false : true;
+                tooltipText = getTooltipText(this.tooltipCollection, pageX, pageY) || (this.legendModule && tooltipRect &&
+                    (!isNullOrUndefined(this.legendModule.legendLabelTooltip) &&
+                    getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY)
+                        || !isNullOrUndefined(this.legendModule.legendTitleTooltip) &&
+                        getTooltipText(this.legendModule.legendTitleTooltip, pageX, pageY)));
                 if (tooltipText) {
                     showTooltip(
-                        tooltipText,  pageX, pageY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip',
+                        tooltipText, pageX, pageY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip',
                         getElement(this.element.id + '_Secondary_Element'), this.isTouch, this
                     );
                 } else {
@@ -1661,11 +1725,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         this.tooltipTimer = null;
                     }
                     this.tooltipModule.renderTooltip(currentRect);
+                    const tooltipObject: tool = this.tooltipModule.tooltipObject;
                     if (this.isTouch) {
                         this.tooltipTimer = setTimeout(
                             () => {
-                                if (!isNullOrUndefined(this.tooltipModule.tooltipObject)) {
-                                    this.tooltipModule.tooltipObject.fadeOut();
+                                if (!isNullOrUndefined(tooltipObject) &&
+                                    !isNullOrUndefined(document.getElementById(tooltipObject.element.id))
+                                    && !isNullOrUndefined(document.getElementById(tooltipObject.element.id).firstChild)) {
+                                    tooltipObject.fadeOut();
                                 }
                                 this.tooltipModule.isFadeout = true;
                                 window.clearTimeout(this.tooltipTimer);
@@ -1730,7 +1797,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (((rect.width > 0) && this.enableMultiSelect && e.ctrlKey === false)) {
             this.removeSelectedCellsBorder(false);
             const tooltipElement: HTMLElement = document.getElementById(this.element.id + 'Celltooltipcontainer_svg');
-            if (tooltipElement){
+            if (tooltipElement) {
                 this.tooltipModule.tooltipObject = null;
                 tooltipElement.setAttribute('opacity', '0');
             }
@@ -2020,7 +2087,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         pageX >= legendTextRange[i as number].x
                         && pageX <= legendTextRange[i as number].width + legendTextRange[i as number].x) &&
                         (pageY >= legendTextRange[i as number].y
-                        && pageY <= legendTextRange[i as number].y + legendTextRange[i as number].height)))) {
+                            && pageY <= legendTextRange[i as number].y + legendTextRange[i as number].height)))) {
                     if (this.enableCanvasRendering) {
                         (document.getElementById(this.element.id + '_canvas') as HTMLElement).style.cursor = 'Pointer';
                     } else {
@@ -2089,11 +2156,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                                                 Math.abs(pageY - this.initialCellY), Math.abs(pageY - this.initialCellY));
                         }
                         if (!(rect.width > 0 && !this.enableMultiSelect)) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const selectedCellCollection: SelectedCellDetails[] = [];
-                            for (let i: number = 0; i < this.multiCellCollection.length; i++){
+                            for (let i: number = 0; i < this.multiCellCollection.length; i++) {
                                 selectedCellCollection.push(this.multiCellCollection[i as number]);
                             }
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             if ((e as any).ctrlKey === false || !this.enableMultiSelect) {
                                 this.multiCellCollection = [];
                             }
@@ -2106,14 +2173,15 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                             };
                             this.trigger('cellSelected', argData);
                             if (!argData.cancel) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 if ((e as any).ctrlKey === false || !this.enableMultiSelect) {
                                     this.removeSelectedCellsBorder(false);
                                 }
                                 this.currentRect.allowCollection = false;
                             } else {
                                 this.multiCellCollection = selectedCellCollection;
-                                if (this.multiCellCollection.length > 0 || (e as any).ctrlKey === false || !this.enableMultiSelect)
-                                {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                if (this.multiCellCollection.length > 0 || (e as any).ctrlKey === false || !this.enableMultiSelect) {
                                     this.removeSelectedCellsBorder(true);
                                 }
                             }
@@ -2184,7 +2252,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Method to Check for deselection of cell.
      */
 
-    private checkSelectedCells() : void {
+    private checkSelectedCells(): void {
         if (!this.enableCanvasRendering) {
             for (let i: number = 0; i < this.multiCellCollection.length; i++) {
                 for (let j: number = 0; j < this.selectedMultiCellCollection.length; j++) {
@@ -2208,7 +2276,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
             }
-            if (this.rectSelected && this.paletteSettings.type === 'Gradient') {
+            if (this.legendModule && this.rectSelected && this.paletteSettings.type === 'Gradient') {
                 this.legendModule.removeGradientPointer();
             }
         }
@@ -2217,7 +2285,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Method to remove opacity for text of selected cell for HeatMap
      */
 
-    private removeOpacity(containersRect: Element, containerText: Element) : void {
+    private removeOpacity(containersRect: Element, containerText: Element): void {
         for (let i: number = 0; i < containersRect.childNodes.length; i++) {
             (containersRect.childNodes[i as number] as HTMLElement).setAttribute('opacity', '0.3');
             if (this.cellSettings.showLabel && containerText.childNodes[i as number] as HTMLElement) {
@@ -2229,7 +2297,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Method to set opacity for selected cell for HeatMap
      */
 
-    private setCellOpacity() : void {
+    private setCellOpacity(): void {
         if (!this.enableCanvasRendering) {
             if (this.multiCellCollection.length !== 0) {
                 this.tempMultiCellCollection.push(this.multiCellCollection);
@@ -2239,7 +2307,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 for (let i: number = 0; i < this.multiCellCollection.length; i++) {
                     const collectionClasss: Element = this.multiCellCollection[i as number].cellElement;
                     const index: number = parseInt(collectionClasss.id.replace(this.element.id + '_HeatMapRect_', ''), 10);
-                    (containersRect.childNodes[index as number]as HTMLElement).setAttribute('opacity', '1');
+                    (containersRect.childNodes[index as number] as HTMLElement).setAttribute('opacity', '1');
                     if (this.cellSettings.showLabel) {
                         const getText: HTMLElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
                         if (getText) {

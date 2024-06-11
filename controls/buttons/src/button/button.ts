@@ -201,7 +201,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     private setIconCss(): void {
         if (this.iconCss) {
             const span: HTMLElement = this.createElement('span', { className: 'e-btn-icon ' + this.iconCss });
-            if (!this.element.textContent!.trim()) {
+            if (!this.element.textContent.trim()) {
                 this.element.classList.add(cssClassName.ICONBTN);
             } else {
                 span.classList.add('e-icon-' + this.iconPosition.toLowerCase());
@@ -329,7 +329,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                 if (span) {
                     if (newProp.iconCss) {
                         span.className = 'e-btn-icon ' + newProp.iconCss;
-                        if (this.element.textContent!.trim()) {
+                        if (this.element.textContent.trim()) {
                             if (this.iconPosition === 'Left') {
                                 span.classList.add('e-icon-left');
                             } else {

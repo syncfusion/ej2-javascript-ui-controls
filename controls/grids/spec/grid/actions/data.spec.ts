@@ -52,7 +52,7 @@ describe('Data module', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
             }
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(elem);
@@ -85,7 +85,7 @@ describe('Data module', () => {
     describe('Remote data without columns testing', () => {
         let gridObj: Grid;
         let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let resquest: JasmineAjaxRequest;
+        let request: JasmineAjaxRequest;
         let dataManager: DataManager;
         let query: Query = new Query().take(5);
         beforeAll((done: Function) => {
@@ -106,7 +106,7 @@ describe('Data module', () => {
                     query: query, allowPaging: true,
                 });
             gridObj.appendTo('#Grid');
-            this.request = window.fetch['calls'].mostRecent();
+            request = window.fetch['calls'].mostRecent();
         });
 
         it('TR generated testing', () => {
@@ -203,6 +203,7 @@ describe('Data module', () => {
     describe('datamanager offline - success testing', () => {
         let gridObj: Grid;
         let dataManager: DataManager;
+        let request: JasmineAjaxRequest;
         let elem: HTMLElement = createElement('div', { id: 'Grid' });
         let actionComplete: (e?: Object) => void;
         beforeAll((done: Function) => {
@@ -217,7 +218,7 @@ describe('Data module', () => {
                 offline: true
                 }
             );
-            this.request = window.fetch['calls'].mostRecent();
+            request = window.fetch['calls'].mostRecent();
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(elem);
             gridObj = new Grid(

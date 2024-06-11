@@ -4,7 +4,7 @@ import { isNullOrUndefined, L10n, classList, Browser } from '@syncfusion/ej2-bas
 import { DocumentEditor } from '../document-editor';
 import { Selection, ContextElementInfo } from './index';
 import { TextPosition } from './selection/selection-helper';
-import { FieldElementBox, ElementBox, TextFormField, CheckBoxFormField, DropDownFormField } from './viewer/page';
+import { FieldElementBox, ElementBox, TextFormField, CheckBoxFormField, DropDownFormField, ContentControl} from './viewer/page';
 import { SpellChecker } from './spell-check/spell-checker';
 import { HelperMethods, Point } from './editor/editor-helper';
 import { CheckBox } from '@syncfusion/ej2-buttons';
@@ -51,6 +51,8 @@ const CONTEXTMENU_NO_SUGGESTION: string = '_contextmenu_no_suggestion';
 const CONTEXTMENU_ACCEPT_CHANGES: string = '_contextmenu_accept_changes';
 const CONTEXTMENU_REJECT_CHANGES: string = '_contextmenu_reject_changes';
 const CONTEXTMENU_NOTE_OPTIONS: string = '_contextmenu_note_options';
+const CONTEXTMENU_REMOVE_CONTENT_CONTROL: string = '_remove_content_control';
+const CONTEXTMENU_CONTENT_CONTROL_PROPERTIES: string = '_content_control_properties';
 /**
  * Context Menu class
  */
@@ -103,10 +105,12 @@ export class ContextMenu {
      * @private
      */
     public constructor(documentHelper: DocumentHelper) {
-        this.documentHelper = documentHelper;
-        this.locale = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
-        this.locale.setLocale(this.documentHelper.owner.locale);
-        this.initContextMenu(this.locale, this.documentHelper.owner.enableRtl);
+        if (!isNullOrUndefined(documentHelper)) {
+            this.documentHelper = documentHelper;
+            this.locale = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+            this.locale.setLocale(this.documentHelper.owner.locale);
+            this.initContextMenu(this.locale, this.documentHelper.owner.enableRtl);
+        }
     }
     private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;
@@ -165,6 +169,19 @@ export class ContextMenu {
                 text: localValue.getConstant('Paste'),
                 iconCss: 'e-icons e-de-paste',
                 id: id + CONTEXTMENU_PASTE
+            },
+            {
+                separator: true
+            },
+            {
+                text: localValue.getConstant('Remove Content Control'),
+                iconCss: 'e-icons',
+                id: id + CONTEXTMENU_REMOVE_CONTENT_CONTROL
+            },
+            {
+                text: localValue.getConstant('Content Control Properties'),
+                iconCss: 'e-icons e-de-formproperties',
+                id: id + CONTEXTMENU_CONTENT_CONTROL_PROPERTIES
             },
             {
                 separator: true
@@ -494,6 +511,16 @@ export class ContextMenu {
                     this.documentHelper.owner.fontDialogModule.showFontDialog();
                 }
                 break;
+            case id + CONTEXTMENU_REMOVE_CONTENT_CONTROL:
+                if(!isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked){
+                    this.documentHelper.owner.editor.removeContentControl();
+                }
+                break;
+            case id + CONTEXTMENU_CONTENT_CONTROL_PROPERTIES:
+                if(!isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked && this.documentHelper.owner.contentControlPropertiesDialogModule){
+                    this.documentHelper.owner.contentControlPropertiesDialogModule.show();
+                }
+                break;
             case id + CONTEXTMENU_OPEN_HYPERLINK:
                 this.documentHelper.selection.navigateHyperlink();
                 break;
@@ -803,6 +830,8 @@ export class ContextMenu {
         let autoFitTable: HTMLElement = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
         let addComment: HTMLElement = document.getElementById(id + CONTEXTMENU_ADD_COMMENT);
         let editNoteoptions: HTMLElement = document.getElementById(id + CONTEXTMENU_NOTE_OPTIONS);
+        let removeContentControl: HTMLElement = document.getElementById(id + CONTEXTMENU_REMOVE_CONTENT_CONTROL);
+        let contentControlProperties: HTMLElement = document.getElementById(id + CONTEXTMENU_CONTENT_CONTROL_PROPERTIES);
         if (!this.documentHelper.owner.enableLockAndEdit) {
             lock.style.display = 'none';
             unlock.style.display = 'none';
@@ -846,6 +875,8 @@ export class ContextMenu {
         autoFitTable.style.display = 'none';
         font.style.display = 'none';
         paragraph.style.display = 'none';
+        removeContentControl.style.display = 'none';
+        contentControlProperties.style.display = 'none';
         // (paragraph.nextSibling as HTMLElement).style.display = 'none';
         insertTable.style.display = 'none';
         deleteTable.style.display = 'none';
@@ -855,6 +886,22 @@ export class ContextMenu {
         let isCrossRefField: boolean = false;
         acceptChange.style.display = 'none';
         rejectChange.style.display = 'none';
+        let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+        let contentControlImage: ElementBox = this.documentHelper.owner.getImageContentControl();
+        if ((!isNullOrUndefined(contentControl) && contentControl instanceof ContentControl && !contentControl.contentControlProperties.lockContentControl && !this.documentHelper.owner.isReadOnlyMode) || (contentControlImage instanceof ContentControl && !contentControlImage.contentControlProperties.lockContentControl && contentControlImage.contentControlProperties.type == 'Picture' && !this.documentHelper.owner.isReadOnlyMode)) {
+            removeContentControl.style.display = 'block';
+        }
+        else {
+            removeContentControl.style.display = 'none';
+        }
+        if ((!this.documentHelper.owner.isReadOnlyMode && !isNullOrUndefined(contentControl) && contentControl instanceof ContentControl) || (contentControlImage instanceof ContentControl && contentControlImage.contentControlProperties.type == 'Picture' && !this.documentHelper.owner.isReadOnlyMode)) {
+            contentControlProperties.style.display = 'block';
+            (contentControlProperties.nextSibling as HTMLElement).style.display = 'block';
+        }
+        else {
+            contentControlProperties.style.display = 'none';
+            (contentControlProperties.nextSibling as HTMLElement).style.display = 'none';
+        }
         if (field instanceof FieldElementBox && selection.isReferenceField(field)) {
             isCrossRefField = true;
         }
@@ -874,7 +921,6 @@ export class ContextMenu {
         if (this.documentHelper.isCommentOnlyMode) {
             addComment.style.display = 'block';
         }
-        (addComment.previousSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         (addComment.nextSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         if (owner.isReadOnlyMode) {
             if (!isNullOrUndefined(field) && field instanceof FieldElementBox) {

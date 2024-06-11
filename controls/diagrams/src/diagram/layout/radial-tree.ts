@@ -180,8 +180,11 @@ export class RadialTree {
             newlevel.actualCircumference = 0;
             newlevel.height = 0;
             for (let k: number = 0; k < stages.length; k++) {
-                if (stages[parseInt(k.toString(), 10)].height > newlevel.height) { newlevel.height = stages[parseInt(k.toString(), 10)].height; }
-                newlevel.actualCircumference += Math.max(stages[parseInt(k.toString(), 10)].width, stages[parseInt(k.toString(), 10)].height);
+                if (stages[parseInt(k.toString(), 10)].height > newlevel.height) {
+                    newlevel.height = stages[parseInt(k.toString(), 10)].height;
+                }
+                newlevel.actualCircumference += Math.max(stages[parseInt(k.toString(), 10)].width,
+                                                         stages[parseInt(k.toString(), 10)].height);
                 if (k !== stages.length - 1) { newlevel.actualCircumference += layout.horizontalSpacing; }
             }
             newlevel.circumference = newlevel.max - newlevel.min;
@@ -196,7 +199,8 @@ export class RadialTree {
                 }
             }
             for (let j: number = 0; j < stages.length; j++) {
-                stages[parseInt(j.toString(), 10)].ratio = Math.abs(stages[parseInt(j.toString(), 10)].x + stages[parseInt(j.toString(), 10)].width / 2 - min) / full;
+                stages[parseInt(j.toString(), 10)].ratio = Math.abs(stages[parseInt(j.toString(), 10)].x
+                    + stages[parseInt(j.toString(), 10)].width / 2 - min) / full;
                 newlevel.nodes.push(stages[parseInt(j.toString(), 10)] as INode);
             }
             layout.levels.push(newlevel as LevelBoundary);
@@ -210,8 +214,10 @@ export class RadialTree {
         for (let i: number = 1; i < layout.levels.length; i++) {
             for (let j: number = 0; j < layout.levels[parseInt(i.toString(), 10)].nodes.length; j++) {
                 const nodeInfo: ILayoutInfo = layout.levels[parseInt(i.toString(), 10)].nodes[parseInt(j.toString(), 10)];
-                nodeInfo.x = Math.cos(nodeInfo.ratio * 360 * Math.PI / 180) * (layout.levels[parseInt(i.toString(), 10)].radius + layout.verticalSpacing * i);
-                nodeInfo.y = Math.sin(nodeInfo.ratio * 360 * Math.PI / 180) * (layout.levels[parseInt(i.toString(), 10)].radius + layout.verticalSpacing * i);
+                nodeInfo.x = Math.cos(nodeInfo.ratio * 360 * Math.PI / 180)
+                    * (layout.levels[parseInt(i.toString(), 10)].radius + layout.verticalSpacing * i);
+                nodeInfo.y = Math.sin(nodeInfo.ratio * 360 * Math.PI / 180)
+                    * (layout.levels[parseInt(i.toString(), 10)].radius + layout.verticalSpacing * i);
                 layout.anchorX = Math.min(layout.anchorX, nodeInfo.x);
                 layout.anchorY = Math.min(layout.anchorY, nodeInfo.y);
             }

@@ -52,8 +52,7 @@ export class ICalendarImport {
             } else {
                 newlineOffset = 1;
             }
-            // eslint-disable-next-line security/detect-object-injection
-            const firstChar: string = iCalString[lastPosition];
+            const firstChar: string = iCalString.charAt(lastPosition);
             if (firstChar === ' ' || firstChar === '\n' || firstChar === '\t') {
                 iString += iCalString.slice(lastPosition + 1, position - newlineOffset);
             } else {

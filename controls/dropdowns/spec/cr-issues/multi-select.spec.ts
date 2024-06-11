@@ -1,7 +1,7 @@
 import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '@syncfusion/ej2-base';
 import { MultiSelect, ISelectAllEventArgs } from '../../src/multi-select/index';
 import { FilteringEventArgs } from '../../src/drop-down-base';
-import { DataManager, Query, ODataV4Adaptor, ODataAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { CheckBoxSelection } from '../../src/multi-select/checkbox-selection';
 import { extend } from '@syncfusion/ej2-base';
 MultiSelect.Inject(CheckBoxSelection);
@@ -36,7 +36,9 @@ describe('MultiSelect', () => {
         MockAjaxReturn => {
         jasmine.Ajax.install();
         let dataManager = d.dm || new DataManager({
-            url: '/api/Employees',
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
         });
         let prom: Promise<Object> = dataManager.executeQuery(query);
         let request: JasmineAjaxRequest;

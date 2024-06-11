@@ -10,7 +10,7 @@ const RIPPLE_CHECK: string = 'e-ripple-check';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-switch-wrapper';
 const ACTIVE: string = 'e-switch-active';
-const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'aria-label', 'id', 'role'];
+const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'aria-label', 'id', 'role', 'tabindex'];
 
 /**
  * The Switch is a graphical user interface element that allows you to toggle between checked and unchecked states.
@@ -134,7 +134,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         super(options, <string | HTMLInputElement>element);
     }
     private changeState(state?: boolean): void {
-        let ariaState: string;
         let rippleSpan: Element | null = null;
         const wrapper: Element = this.getWrapper() as Element;
         const bar: Element = wrapper.querySelector('.e-switch-inner') as Element;
@@ -144,7 +143,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
         if (state) {
             addClass([bar, handle], ACTIVE);
-            ariaState = 'true';
             this.element.checked = true;
             this.checked = true;
             if (rippleSpan) {
@@ -152,7 +150,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
             }
         } else {
             removeClass([bar, handle], ACTIVE);
-            ariaState = 'false';
             this.element.checked = false;
             this.checked = false;
             if (rippleSpan) {
@@ -169,7 +166,8 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         this.trigger('change', changeEventArgs);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isAngular && evt) {
-            evt.stopPropagation();evt.preventDefault();
+            evt.stopPropagation();
+            evt.preventDefault();
         }
     }
     /**
@@ -330,7 +328,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                 break;
             case 'htmlAttributes':
                 this.updateHtmlAttribute();
-                break;    
+                break;
             }
         }
     }
@@ -361,7 +359,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         this.renderComplete();
         this.updateHtmlAttribute();
     }
-    
+
     private rippleHandler(e: MouseEvent): void {
         const rippleSpan: Element = (this.getWrapper() as Element).getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
@@ -415,7 +413,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                         wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                     } else if (key === 'style') {
                         wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
-                    } else if(key === 'disabled') {
+                    } else if (key === 'disabled') {
                         if (this.htmlAttributes[`${key}`] === 'true') {
                             this.setDisabled();
                         }

@@ -9,6 +9,7 @@ import { Toolbar } from '../tool-bar/tool-bar';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { HeaderFooterWidget } from '../../document-editor/implementation/viewer';
+import { HeaderFooterType } from '../../document-editor/base';
 /**
  * @private
  */
@@ -122,7 +123,7 @@ export class HeaderFooterProperties {
         const linkToPreviousDiv: HTMLElement = this.createDivTemplate(elementId + '_linkToPreviousDiv', optionsDiv);
         const linkToPrevious: HTMLInputElement = createElement('input', { id: 'linkToPrevious', className: 'e-de-sub-prop-label' }) as HTMLInputElement;
         linkToPreviousDiv.appendChild(linkToPrevious);
-        this.linkToPrevious = new CheckBox({ label: localObj.getConstant('Link to Previous'), change: this.changeLinkToPreviousOptions.bind(this) ,cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl, checked: true });
+        this.linkToPrevious = new CheckBox({ label: localObj.getConstant('Link to Previous'), change: this.changeLinkToPreviousOptions.bind(this) , cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl, checked: true });
         this.linkToPrevious.appendTo(linkToPrevious);
         linkToPreviousDiv.children[0].setAttribute('title', localObj.getConstant('Link to the previous Title'));
         // let autoFieldLabelDiv: HTMLElement = this.createDivTemplate(element + '_autoFieldLabelDiv', div, 'padding-top:10px;padding-left: 10px;');
@@ -165,7 +166,7 @@ export class HeaderFooterProperties {
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
         headerTopDiv.appendChild(headerTopLabel);
         const headerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_headerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
-        headerFromTop.setAttribute('aria-label',localObj.getConstant('Header from Top'));
+        headerFromTop.setAttribute('aria-label', localObj.getConstant('Header from Top'));
         headerTopDiv.appendChild(headerFromTop);
         this.headerFromTop = new NumericTextBox({
             value: 36, cssClass: 'e-de-prop-header-numeric',
@@ -235,25 +236,26 @@ export class HeaderFooterProperties {
     }
     private changeLinkToPreviousOptions(): void {
         if (!this.documentEditor.isReadOnly) {
-            let headerFooterType: any = ((this.documentEditor.selectionModule.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
-            let value: boolean = this.linkToPrevious.checked;
+            const headerFooterType: HeaderFooterType = (
+                (this.documentEditor.selectionModule.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
+            const value: boolean = this.linkToPrevious.checked;
             switch (headerFooterType) {
-                case 'OddHeader':
+            case 'OddHeader':
                 this.documentEditor.selectionModule.sectionFormat.oddPageHeader.linkToPrevious = value;
                 break;
-                case 'OddFooter':
+            case 'OddFooter':
                 this.documentEditor.selectionModule.sectionFormat.oddPageFooter.linkToPrevious = value;
                 break;
-                case 'EvenHeader':
+            case 'EvenHeader':
                 this.documentEditor.selectionModule.sectionFormat.evenPageHeader.linkToPrevious = value;
                 break;
-                case 'EvenFooter':
+            case 'EvenFooter':
                 this.documentEditor.selectionModule.sectionFormat.evenPageFooter.linkToPrevious = value;
                 break;
-                case 'FirstPageHeader':
+            case 'FirstPageHeader':
                 this.documentEditor.selectionModule.sectionFormat.firstPageHeader.linkToPrevious = value;
                 break;
-                case 'FirstPageFooter':
+            case 'FirstPageFooter':
                 this.documentEditor.selectionModule.sectionFormat.firstPageFooter.linkToPrevious = value;
                 break;
 
@@ -314,28 +316,29 @@ export class HeaderFooterProperties {
         } else {
             this.oddOrEven.checked = false;
         }
-        if (this.documentEditor.selectionModule.start.paragraph.bodyWidget.sectionIndex == 0) {
+        if (this.documentEditor.selectionModule.start.paragraph.bodyWidget.sectionIndex === 0) {
             this.linkToPrevious.disabled = true;
         } else {
             this.linkToPrevious.disabled = false;
-            let headerFooterType: any = ((this.documentEditor.selectionModule.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
+            const headerFooterType: HeaderFooterType = (
+                (this.documentEditor.selectionModule.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
             switch (headerFooterType) {
-                case 'OddHeader':
+            case 'OddHeader':
                 this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.oddPageHeader.linkToPrevious;
                 break;
-                case 'OddFooter':
+            case 'OddFooter':
                 this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.oddPageFooter.linkToPrevious;
                 break;
-                case 'EvenHeader':
+            case 'EvenHeader':
                 this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.evenPageHeader.linkToPrevious;
                 break;
-                case 'EvenFooter':
+            case 'EvenFooter':
                 this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.evenPageFooter.linkToPrevious;
                 break;
-                case 'FirstPageHeader':
+            case 'FirstPageHeader':
                 this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.firstPageHeader.linkToPrevious;
                 break;
-                case 'FirstPageFooter':
+            case 'FirstPageFooter':
                 this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.firstPageFooter.linkToPrevious;
                 break;
             }

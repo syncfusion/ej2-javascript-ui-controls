@@ -9,7 +9,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
  * Defines the items of Ribbon.
  */
 export class RibbonComboBox {
-    private parent: Ribbon
+    private parent: Ribbon;
 
     constructor(parent: Ribbon) {
         this.parent = parent;
@@ -57,12 +57,12 @@ export class RibbonComboBox {
             enabled: !item.disabled,
             fields: comboBoxSettings.fields,
             filterType: comboBoxSettings.filterType,
-            footerTemplate: comboBoxSettings.footerTemplate as any,
-            groupTemplate: comboBoxSettings.groupTemplate as any,
-            headerTemplate: comboBoxSettings.headerTemplate as any,
+            footerTemplate: comboBoxSettings.footerTemplate as string | Function,
+            groupTemplate: comboBoxSettings.groupTemplate as string | Function,
+            headerTemplate: comboBoxSettings.headerTemplate as string | Function,
             index: comboBoxSettings.index,
-            itemTemplate: comboBoxSettings.itemTemplate as any,
-            noRecordsTemplate: comboBoxSettings.noRecordsTemplate as any,
+            itemTemplate: comboBoxSettings.itemTemplate as string | Function,
+            noRecordsTemplate: comboBoxSettings.noRecordsTemplate as string | Function,
             placeholder: comboBoxSettings.placeholder,
             popupHeight: comboBoxSettings.popupHeight,
             popupWidth: comboBoxSettings.popupWidth,

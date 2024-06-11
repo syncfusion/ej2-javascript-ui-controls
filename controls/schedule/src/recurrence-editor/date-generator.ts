@@ -139,6 +139,7 @@ export function generate(startDate: Date, rule: string, excludeDate: string, sta
         return data;
     }
     maxOccurrence = maximumCount;
+    startDayOfWeek = startDayOfWeek || 0;
     setFirstDayOfWeek(DAYINDEX[parseInt(startDayOfWeek.toString(), 10)]);
     if (ruleObject.until) {
         const end: Date = resetTime(ruleObject.until);

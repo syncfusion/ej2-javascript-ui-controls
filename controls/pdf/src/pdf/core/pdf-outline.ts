@@ -23,10 +23,10 @@ export class PdfBookmarkBase {
     _color: number[];
     _isExpanded: boolean = false;
     _namedDestination: PdfNamedDestination;
-    _namedDestinations: _PdfNamedDestinationCollection;
     _title: string;
     _textStyle: PdfTextStyle;
     _isLoadedBookmark: boolean = false;
+    _reference: _PdfReference;
     /**
      * Initializes a new instance of the `PdfBookmarkBase` class.
      *
@@ -60,6 +60,55 @@ export class PdfBookmarkBase {
             this._reproduceTree();
         }
         return this._bookMarkList.length;
+    }
+    /**
+     * Gets the boolean flag indicating whether the bookmark is expanded or not.
+     *
+     * @returns {boolean} whether the bookmark is expanded or not.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Gets bookmark at the specified index
+     * let bookmark: PdfBookmark = bookmarks.at(0) as PdfBookmark;
+     * // Gets the boolean flag indicating whether the bookmark is expanded or not
+     * let isExpanded: boolean = bookmark.isExpanded;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get isExpanded(): boolean {
+        if (this._dictionary.has('Count')) {
+            return (this._dictionary.get('Count') >= 0);
+        } else {
+            return this._isExpanded;
+        }
+    }
+    /**
+     * Sets the boolean flag indicating whether the bookmark is expanded or not.
+     *
+     * @param {boolean} value whether the bookmark is expanded or not.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Gets bookmark at the specified index
+     * let bookmark: PdfBookmark = bookmarks.at(0) as PdfBookmark;
+     * // Sets the boolean flag indicating whether the bookmark is expanded or not
+     * bookmark.isExpanded = true;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set isExpanded(value: boolean) {
+        this._isExpanded = value;
+        if (this.count > 0) {
+            this._dictionary.update('Count', value ? this._bookMarkList.length : (-this._bookMarkList.length));
+        }
     }
     /**
      * Gets the `PdfBookmark` at the specified index.
@@ -110,22 +159,302 @@ export class PdfBookmarkBase {
     contains(outline: PdfBookmark): boolean {
         return this._bookMarkList.indexOf(outline) !== -1;
     }
-    _reproduceTree(): void {
-        let bookmark: PdfBookmark = this._getFirstBookmark(this);
-        let isBookmark: boolean = (bookmark) ? true : false;
-        while (isBookmark && bookmark._dictionary) {
+    /**
+     * Creates and adds a new outline to the PDF document.
+     *
+     * @param {string} title The title of the outline.
+     * @returns {PdfBookmark} PDF bookmark.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page of the PDF
+     * let page: PdfPage = document.getPage(0);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Add a new outline to the PDF document
+     * let bookmark: PdfBookmark = bookmarks.add('Introduction');
+     * // Sets destination to the bookmark
+     * bookmark.destination = new PdfDestination(page, [10, 10]);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    add(title: string): PdfBookmark
+    /**
+     * Insert a new outline to the PDF document at specified index.
+     *
+     * @param {string} title The title of the outline.
+     * @param {index} index The index to insert.
+     * @returns {PdfBookmark} PDF bookmark.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page of the PDF
+     * let page: PdfPage = document.getPage(0);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Add a new outline to the PDF document
+     * let bookmark: PdfBookmark = bookmarks.add('Introduction');
+     * // Sets destination to the bookmark
+     * bookmark.destination = new PdfDestination(page, [10, 10]);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    add(title: string, index: number): PdfBookmark
+    add(title: string, index?: number): PdfBookmark {
+        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        dictionary.update('Parent', this._reference);
+        const reference: _PdfReference = this._crossReference._getNextReference();
+        this._crossReference._cacheMap.set(reference, dictionary);
+        const bookmark: PdfBookmark = new PdfBookmark(dictionary, this._crossReference);
+        bookmark._reference = reference;
+        bookmark.title = title;
+        if (typeof index === 'undefined') {
+            if (this.count === 0) {
+                this._dictionary.update('First', reference);
+                this._dictionary.update('Last', reference);
+            } else {
+                const last: PdfBookmark = this.at(this.count - 1);
+                this._dictionary.update('Last', reference);
+                if (last && last._reference) {
+                    dictionary.update('Prev', last._reference);
+                    last._dictionary.update('Next', reference);
+                }
+            }
             this._bookMarkList.push(bookmark);
-            bookmark = bookmark._next;
-            isBookmark = (bookmark) ? true : false;
+        } else {
+            if (index < 0 || index > this.count) {
+                throw new Error('Index out of range');
+            }
+            if (this.count === 0) {
+                this._dictionary.update('First', reference);
+                this._dictionary.update('Last', reference);
+                this._bookMarkList.push(bookmark);
+            } else if (index === this.count) {
+                const last: PdfBookmark = this.at(this.count - 1);
+                this._dictionary.update('Last', reference);
+                if (last && last._reference) {
+                    dictionary.update('Prev', last._reference);
+                    last._dictionary.update('Next', reference);
+                }
+                this._bookMarkList.push(bookmark);
+            } else if (index === 0) {
+                const first: PdfBookmark = this.at(0);
+                this._dictionary.update('First', reference);
+                if (first && first._reference) {
+                    dictionary.update('Next', first._reference);
+                    first._dictionary.update('Prev', reference);
+                }
+                this._updateBookmarkList(index, bookmark);
+            } else {
+                const next: PdfBookmark = this.at(index);
+                const prev: PdfBookmark = this.at(index - 1);
+                if (prev && prev._reference && next && next._reference) {
+                    dictionary.update('Prev', prev._reference);
+                    prev._dictionary.update('Next', reference);
+                    next._dictionary.update('Prev', reference);
+                    dictionary.update('Next', next._reference);
+                }
+                this._updateBookmarkList(index, bookmark);
+            }
+        }
+        this._updateCount();
+        return bookmark;
+    }
+    /**
+     * Remove specified bookmark from the document.
+     *
+     * @param {string} title The title of the outline.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page of the PDF
+     * let page: PdfPage = document.getPage(0);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Remove specified bookmark from the document.
+     * bookmarks.remove('Introduction');
+     * // Sets destination to the bookmark
+     * bookmark.destination = new PdfDestination(page, [10, 10]);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    remove(title: string): void
+    /**
+     * Remove the bookmark from the document at the specified index.
+     *
+     * @param {number} index The index.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page of the PDF
+     * let page: PdfPage = document.getPage(0);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Remove the bookmark from the document at the index 1.
+     * bookmarks.remove(1);
+     * // Sets destination to the bookmark
+     * bookmark.destination = new PdfDestination(page, [10, 10]);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    remove(index: number): void
+    remove(value: string | number): void {
+        if (typeof value === 'string') {
+            for (let i: number = this._bookMarkList.length - 1; i >= 0; i--) {
+                const bookmark: PdfBookmark = this.at(i);
+                if (bookmark.title === value) {
+                    this.remove(i);
+                } else if (bookmark.count > 0) {
+                    bookmark.remove(value);
+                }
+            }
+        } else {
+            if (value >= 0 && value < this.count) {
+                if (this.count === 1) {
+                    this._removeFirst(this._dictionary);
+                    this._removeLast(this._dictionary);
+                    this._removeCount(this._dictionary);
+                    this._bookMarkList = [];
+                } else {
+                    if (value === 0) {
+                        const next: PdfBookmark = this.at(value + 1);
+                        if (next && next._reference) {
+                            this._removePrevious(next._dictionary);
+                            this._dictionary.update('First', next._reference);
+                        }
+                    } else if (value === this.count - 1) {
+                        const prev: PdfBookmark = this.at(value - 1);
+                        if (prev && prev._reference) {
+                            this._removeNext(prev._dictionary);
+                            this._dictionary.update('Last', prev._reference);
+                        }
+                    } else {
+                        const prev: PdfBookmark = this.at(value - 1);
+                        const next: PdfBookmark = this.at(value + 1);
+                        if (prev && prev._reference && next && next._reference) {
+                            prev._dictionary.update('Next', next._reference);
+                            next._dictionary.update('Prev', prev._reference);
+                        }
+                    }
+                    this._updateBookmarkList(value);
+                    this._updateCount();
+                }
+            }
         }
     }
-    _getFirstBookmark(bookmarkBase: PdfBookmarkBase): PdfBookmark {
+    /**
+     * Removes all the bookmark from the collection.
+     *
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Remove all the bookmark from the collection.
+     * bookmarks.clear();
+     * // Get count after removal of all outlines.
+     * let count: number = bookmarks.count;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    clear(): void {
+        this._removeFirst(this._dictionary);
+        this._removeLast(this._dictionary);
+        this._removeCount(this._dictionary);
+        this._bookMarkList = [];
+    }
+    _removeFirst(dictionary: _PdfDictionary): void {
+        if (dictionary.has('First')) {
+            delete dictionary._map.First;
+            dictionary._updated = true;
+        }
+    }
+    _removeLast(dictionary: _PdfDictionary): void {
+        if (dictionary.has('Last')) {
+            delete dictionary._map.Last;
+            dictionary._updated = true;
+        }
+    }
+    _removeNext(dictionary: _PdfDictionary): void {
+        if (dictionary.has('Next')) {
+            delete dictionary._map.Next;
+            dictionary._updated = true;
+        }
+    }
+    _removePrevious(dictionary: _PdfDictionary): void {
+        if (dictionary.has('Prev')) {
+            delete dictionary._map.Prev;
+            dictionary._updated = true;
+        }
+    }
+    _removeCount(dictionary: _PdfDictionary): void {
+        if (dictionary.has('Count')) {
+            delete dictionary._map.Count;
+            dictionary._updated = true;
+        }
+    }
+    _updateBookmarkList(index: number, bookmark?: PdfBookmark): void {
+        const updatedList: PdfBookmark[] = [];
+        if (typeof bookmark === 'undefined') {
+            for (let i: number = 0; i < this.count; i++) {
+                const entry: PdfBookmark = this._bookMarkList[Number.parseInt(i.toString(), 10)];
+                if (i !== index) {
+                    updatedList.push(entry);
+                } else {
+                    const reference: _PdfReference = entry._reference;
+                    if (reference && this._crossReference._cacheMap.has(reference)) {
+                        this._crossReference._cacheMap.get(reference)._updated = false;
+                    }
+                }
+            }
+        } else {
+            for (let i: number = 0; i < this.count; i++) {
+                if (i === index) {
+                    updatedList.push(bookmark);
+                }
+                updatedList.push(this._bookMarkList[Number.parseInt(i.toString(), 10)]);
+            }
+        }
+        this._bookMarkList = updatedList;
+    }
+    _updateCount(): void {
+        if (this.isExpanded || !this._dictionary.has('Count')) {
+            this._dictionary.update('Count', this._bookMarkList.length);
+        } else {
+            this._dictionary.update('Count', -this._bookMarkList.length);
+        }
+    }
+    _reproduceTree(): void {
+        let firstBookmark: PdfBookmark = this._getBookmark(this);
+        let isBookmark: boolean = (firstBookmark) ? true : false;
+        while (isBookmark && firstBookmark._dictionary) {
+            this._bookMarkList.push(firstBookmark);
+            firstBookmark = firstBookmark._next;
+            isBookmark = (firstBookmark) ? true : false;
+        }
+    }
+    _getBookmark(bookmarkBase: PdfBookmarkBase, isFirst: boolean = true): PdfBookmark {
         const bookmarkBaseDictionary: _PdfDictionary = bookmarkBase._dictionary;
         let bookMark: PdfBookmark;
-        if (bookmarkBaseDictionary && bookmarkBaseDictionary.has('First')) {
-            const bookMarkDictionary: _PdfDictionary = bookmarkBaseDictionary.get('First');
-            if (bookMarkDictionary) {
-                bookMark = new PdfBookmark(bookMarkDictionary, this._crossReference);
+        if (bookmarkBaseDictionary && bookmarkBaseDictionary.has(isFirst ? 'First' : 'Last')) {
+            const reference: _PdfReference = bookmarkBaseDictionary._get(isFirst ? 'First' : 'Last');
+            if (reference) {
+                const bookMarkDictionary: _PdfDictionary = this._crossReference._fetch(reference);
+                if (bookMarkDictionary) {
+                    bookMark = new PdfBookmark(bookMarkDictionary, this._crossReference);
+                    bookMark._reference = reference;
+                }
             }
         }
         return bookMark;
@@ -166,7 +495,7 @@ export class PdfBookmark extends PdfBookmarkBase {
         this._isLoadedBookmark = true;
     }
     /**
-     * Gets the destination (Read only).
+     * Gets the destination.
      *
      * @returns {PdfDestination} Page destination.
      *
@@ -184,15 +513,43 @@ export class PdfBookmark extends PdfBookmarkBase {
      * ```
      */
     get destination(): PdfDestination {
-        let value: PdfDestination;
-        const namedDestination: PdfNamedDestination = this._obtainNamedDestination();
-        if (namedDestination === null || typeof namedDestination === 'undefined') {
-            value = _obtainDestination(this._dictionary, 'Dest');
+        if (!this._destination) {
+            const namedDestination: PdfNamedDestination = this._obtainNamedDestination();
+            if (namedDestination === null || typeof namedDestination === 'undefined') {
+                this._destination = _obtainDestination(this._dictionary, 'Dest');
+            }
         }
-        return value;
+        return this._destination;
     }
     /**
-     * Gets the named destination (Read only).
+     * Sets the destination.
+     *
+     * @param {PdfDestination} value destination.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Gets the bookmark at the specified index
+     * let bookmark: PdfBookmark = bookmarks.at(0) as PdfBookmark;
+     * // Set the destination
+     * bookmark.destination = new PdfDestination(page, [100, 200]);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set destination(value: PdfDestination) {
+        if (value) {
+            value._parent = this;
+            this._destination = value;
+            this._destination._initializePrimitive();
+        }
+    }
+    /**
+     * Gets the named destination.
      *
      * @returns {PdfNamedDestination} Named destination.
      *
@@ -216,7 +573,36 @@ export class PdfBookmark extends PdfBookmarkBase {
         return this._namedDestination;
     }
     /**
-     * Gets the bookmark title (Read only).
+     * Sets the named destination.
+     *
+     * @param {PdfNamedDestination} value Named destination.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Gets bookmark at the specified index
+     * let bookmark: PdfBookmark = bookmarks.at(0) as PdfBookmark;
+     * // Gets the named destination
+     * let namedDestination: PdfNamedDestination = bookmark.namedDestination;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set namedDestination(value: PdfNamedDestination) {
+        if (this._namedDestination !== value) {
+            this._namedDestination = value;
+            const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+            dictionary.update('D', value.title);
+            dictionary.update('S', _PdfName.get('GoTo'));
+            const reference: _PdfReference = this._crossReference._getNextReference();
+            this._crossReference._cacheMap.set(reference, dictionary);
+            this._dictionary.update('A', reference);
+        }
+    }
+    /**
+     * Gets the bookmark title.
      *
      * @returns {string} Bookmark title.
      *
@@ -235,12 +621,38 @@ export class PdfBookmark extends PdfBookmarkBase {
      */
     get title(): string {
         if (this._title === null || typeof this._title === 'undefined') {
-            this._title = this._obtainTitle();
+            if (this._dictionary.has('Title')) {
+                this._title = this._dictionary.get('Title');
+            } else {
+                this._title = '';
+            }
         }
         return this._title;
     }
     /**
-     * Gets the bookmark color (Read only).
+     * Sets the bookmark title.
+     *
+     * @param {string} value Bookmark title.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Gets bookmark at the specified index
+     * let bookmark: PdfBookmark = bookmarks.at(0) as PdfBookmark;
+     * // Sets the bookmark title
+     * bookmark.title = 'Syncfusion';
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set title(value: string) {
+        this._title = value;
+        this._dictionary.update('Title', value);
+    }
+    /**
+     * Gets the bookmark color.
      *
      * @returns {number[]} Bookmark color.
      *
@@ -266,7 +678,31 @@ export class PdfBookmark extends PdfBookmarkBase {
         return (this._color) ? this._color : [0, 0, 0];
     }
     /**
-     * Gets the textStyle (Read only).
+     * Sets the bookmark color.
+     *
+     * @param {number[]} value Bookmark color.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Gets bookmark at the specified index
+     * let bookmark: PdfBookmark = bookmarks.at(0) as PdfBookmark;
+     * // Sets the bookmark color
+     * bookmark.color = [255, 0, 0];
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set color(value: number[]) {
+        this._color = value;
+        this._dictionary.update('C', [Number.parseFloat((value[0] / 255).toFixed(7)),
+            Number.parseFloat((value[1] / 255).toFixed(7)),
+            Number.parseFloat((value[2] / 255).toFixed(7))]);
+    }
+    /**
+     * Gets the text style.
      *
      * @returns {PdfTextStyle} Text style.
      *
@@ -290,9 +726,9 @@ export class PdfBookmark extends PdfBookmarkBase {
         return this._textStyle;
     }
     /**
-     * Gets the boolean flag indicating whether the bookmark is expanded or not (Read only).
+     * Sets the text style.
      *
-     * @returns {boolean} whether the bookmark is expanded or not.
+     * @param {PdfTextStyle} value Text style.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -301,30 +737,38 @@ export class PdfBookmark extends PdfBookmarkBase {
      * let bookmarks: PdfBookmarkBase = document.bookmarks;
      * // Gets bookmark at the specified index
      * let bookmark: PdfBookmark = bookmarks.at(0) as PdfBookmark;
-     * // Gets the boolean flag indicating whether the bookmark is expanded or not
-     * let isExpanded: boolean = bookmark.isExpanded;
+     * // Sets the textStyle
+     * bookmark.textStyle = PdfTextStyle.italic;
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get isExpanded(): boolean {
-        if (this._dictionary.has('Count')) {
-            const value: number = this._dictionary.get('Count');
-            if (value >= 0) {
-                return true;
-            }
-        }
-        return this._isExpanded;
+    set textStyle(value: PdfTextStyle) {
+        this._textStyle = value;
+        this._updateTextStyle(value);
     }
     get _next(): PdfBookmark {
         let nextBookmark: PdfBookmark;
         if (this._dictionary.has('Next')) {
-            const dictionary: _PdfDictionary = this._dictionary.get('Next');
-            if (dictionary) {
-                nextBookmark = new PdfBookmark(dictionary, this._crossReference);
+            const reference: _PdfReference = this._dictionary._get('Next');
+            if (reference) {
+                const dictionary: _PdfDictionary = this._crossReference._fetch(reference);
+                if (dictionary) {
+                    nextBookmark = new PdfBookmark(dictionary, this._crossReference);
+                    nextBookmark._reference = reference;
+                }
             }
         }
         return nextBookmark;
+    }
+    _updateTextStyle(value: PdfTextStyle): void {
+        if (value === PdfTextStyle.regular) {
+            if (this._dictionary.has('F')) {
+                delete this._dictionary._map.F;
+            }
+        } else {
+            this._dictionary.update('F', value);
+        }
     }
     _obtainTextStyle(): PdfTextStyle{
         let style: PdfTextStyle = PdfTextStyle.regular;
@@ -337,13 +781,6 @@ export class PdfBookmark extends PdfBookmarkBase {
             style |= flagValue as PdfTextStyle;
         }
         return style;
-    }
-    _obtainTitle(): string {
-        let value: string = '';
-        if (this._dictionary.has('Title')) {
-            value = this._dictionary.get('Title');
-        }
-        return value;
     }
     _obtainNamedDestination(): PdfNamedDestination {
         const document: PdfDocument = this._crossReference._document;
@@ -408,14 +845,39 @@ export class PdfNamedDestination {
     /**
      * Initializes a new instance of the `PdfNamedDestination` class.
      *
+     * @param {string} title The title.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the bookmarks
+     * let bookmarks: PdfBookmarkBase = document.bookmarks;
+     * // Gets the bookmark at the specified index
+     * let bookmark: PdfBookmark = bookmarks.at(0) as PdfBookmark;
+     * // Sets the named destination
+     * bookmark.namedDestination = new PdfNamedDestination('Chapter 1');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(title: string)
+    /**
+     * Initializes a new instance of the `PdfNamedDestination` class.
+     *
      * @private
      * @param {_PdfDictionary} dictionary Destination dictionary.
      * @param {_PdfCrossReference} crossReference Cross reference.
      *
      */
-    constructor(dictionary: _PdfDictionary, crossReference: _PdfCrossReference) {
-        this._dictionary = dictionary;
-        this._crossReference = crossReference;
+    constructor(dictionary: _PdfDictionary, crossReference: _PdfCrossReference)
+    constructor(element: string | _PdfDictionary, crossReference?: _PdfCrossReference) {
+        if (typeof element === 'string') {
+            this._initialize();
+            this.title = element;
+        } else {
+            this._dictionary = element;
+            this._crossReference = crossReference;
+        }
     }
     /**
      * Gets the destination.
@@ -520,6 +982,10 @@ export class PdfNamedDestination {
             this._dictionary.update('Title', value);
             this._dictionary._updated = true;
         }
+    }
+    _initialize(): void {
+        this._dictionary = new _PdfDictionary();
+        this._dictionary.update('S', _PdfName.get('GoTo'));
     }
 }
 export class _PdfNamedDestinationCollection {

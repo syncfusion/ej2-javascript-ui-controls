@@ -14,12 +14,7 @@ export class PdfGanttTheme {
         this.setTheme(this.ganttStyle, this.theme);
     }
     public get style(): IGanttStyle {
-        if (this.ganttStyle) {
-            return this.ganttStyle;
-        } else {
-            this.setTheme(this.ganttStyle, 'Material');
-            return this.ganttStyle;
-        }
+        return this.ganttStyle;
     }
     private setTheme(ganttStyle: IGanttStyle, theme: PdfTheme): void {
         this.initStyles(ganttStyle);
@@ -72,7 +67,7 @@ export class PdfGanttTheme {
             ganttStyle.label.fontColor = new PdfColor(0, 0, 0);
             ganttStyle.taskbar.splitLineBackground = new PdfColor(51, 51, 51);
             ganttStyle.taskbar.unscheduledTaskBarColor = new PdfColor(49, 122, 185);
-            ganttStyle.taskbar.manualParentBackground = new PdfColor(119,119,119);
+            ganttStyle.taskbar.manualParentBackground = new PdfColor(119, 119, 119);
             ganttStyle.taskbar.manualParentProgress = new PdfColor(85, 85, 85);
             ganttStyle.taskbar.manualChildBackground = new PdfColor(117, 56, 201);
             ganttStyle.taskbar.manualChildProgress = new PdfColor(87, 42, 150);
@@ -102,7 +97,7 @@ export class PdfGanttTheme {
             ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
             ganttStyle.label.fontColor = new PdfColor(33, 37, 41);
             ganttStyle.taskbar.splitLineBackground = new PdfColor(0, 0, 0);
-            ganttStyle.taskbar.unscheduledTaskBarColor =new PdfColor(0, 123, 255);
+            ganttStyle.taskbar.unscheduledTaskBarColor = new PdfColor(0, 123, 255);
             ganttStyle.taskbar.manualParentBackground = new PdfColor(108, 117, 125);
             ganttStyle.taskbar.manualParentProgress = new PdfColor(73, 80, 87);
             ganttStyle.taskbar.manualChildBackground = new PdfColor(133, 83, 241);
@@ -135,7 +130,7 @@ export class PdfGanttTheme {
             ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
             ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
             ganttStyle.taskbar.splitLineBackground = new PdfColor(0, 0, 0);
-            ganttStyle.taskbar.unscheduledTaskBarColor =new PdfColor(0, 120, 214);
+            ganttStyle.taskbar.unscheduledTaskBarColor = new PdfColor(0, 120, 214);
             ganttStyle.taskbar.manualParentBackground = new PdfColor(118, 118, 118);
             ganttStyle.taskbar.manualParentProgress = new PdfColor(80, 80, 80);
             ganttStyle.taskbar.manualChildBackground = new PdfColor(154, 56, 186);
@@ -166,7 +161,7 @@ export class PdfGanttTheme {
             ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
             ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
             ganttStyle.taskbar.splitLineBackground = new PdfColor(0, 0, 0);
-            ganttStyle.taskbar.unscheduledTaskBarColor =new PdfColor( 63, 81, 181);
+            ganttStyle.taskbar.unscheduledTaskBarColor = new PdfColor(63, 81, 181);
             ganttStyle.taskbar.manualParentBackground = new PdfColor(97, 97, 97);
             ganttStyle.taskbar.manualParentProgress = new PdfColor(97, 97, 97);
             ganttStyle.taskbar.manualChildBackground = new PdfColor(0, 135, 134);

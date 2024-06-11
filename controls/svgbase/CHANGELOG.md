@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 26.1.35 (2024-06-11)
+
+### Svg Base
+
+- `#I587499` - The tooltip template div is now render properly without cut off in display flex.
+
 ## 25.1.37 (2024-03-26)
 
 ### Svg Base

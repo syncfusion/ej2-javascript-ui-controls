@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createCheckBox } from './../src/common/common';
 import { CheckBox } from './../src/check-box/check-box';
-import { createElement, EventHandler, attributes } from '@syncfusion/ej2-base';
+import { createElement, EventHandler, attributes, enableRipple } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
 /**
@@ -36,7 +36,7 @@ describe('CheckBox', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -558,5 +558,125 @@ describe('CheckBox', () => {
         const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    describe('Null or undefined value testing', () => {
+        afterEach(() => {
+            checkbox.destroy();
+        });
+
+        it('CheckBox with Label', () => {
+            checkbox = new CheckBox({ label: null }, '#checkbox');
+            expect(checkbox.label).toEqual(null);
+            checkbox = new CheckBox({ label: undefined }, '#checkbox');
+            expect(checkbox.label).toEqual('');
+        });
+
+        it('CheckBox with checked state', () => {
+            checkbox = new CheckBox({ checked: null }, '#checkbox');
+            expect(checkbox.checked).toEqual(null);
+            checkbox = new CheckBox({ checked: undefined }, '#checkbox');
+            expect(checkbox.checked).toEqual(false);
+        });
+
+        it('CheckBox with disabled state', () => {
+            checkbox = new CheckBox({ disabled: null }, '#checkbox');
+            expect(checkbox.disabled).toEqual(null);
+            checkbox = new CheckBox({ disabled: undefined }, '#checkbox');
+            expect(checkbox.disabled).toEqual(false);
+        });
+
+        it('CheckBox with RTL', () => {
+            checkbox = new CheckBox({ enableRtl: null }, '#checkbox');
+            expect(checkbox.enableRtl).toEqual(false);
+            checkbox = new CheckBox({ enableRtl: undefined }, '#checkbox');
+            expect(checkbox.enableRtl).toEqual(false);
+        });
+
+        it('CheckBox with label position', () => {
+            checkbox = new CheckBox({ labelPosition: null }, '#checkbox');
+            expect(checkbox.labelPosition).toEqual(null);
+            checkbox = new CheckBox({ labelPosition: undefined }, '#checkbox');
+            expect(checkbox.labelPosition).toEqual('After');
+        });
+
+        it('CheckBox with indeterminate state', () => {
+            checkbox = new CheckBox({ indeterminate: null }, '#checkbox');
+            expect(checkbox.indeterminate).toEqual(null);
+            checkbox = new CheckBox({ indeterminate: undefined }, '#checkbox');
+            expect(checkbox.indeterminate).toEqual(false);
+        });
+
+        it('CheckBox with name', () => {
+            checkbox = new CheckBox({ name: null }, '#checkbox');
+            expect(checkbox.name).toEqual(null);
+            checkbox = new CheckBox({ name: undefined }, '#checkbox');
+            expect(checkbox.name).toEqual('');
+        });
+
+        it('CheckBox with value', () => {
+            checkbox = new CheckBox({ value: null }, '#checkbox');
+            expect(checkbox.value).toEqual(null);
+            checkbox = new CheckBox({ value: undefined }, '#checkbox');
+            expect(checkbox.value).toEqual('');
+        });
+
+        it('CheckBox with cssClass', () => {
+            checkbox = new CheckBox({ cssClass: null }, '#checkbox');
+            expect(checkbox.cssClass).toEqual(null);
+            checkbox = new CheckBox({ cssClass: undefined }, '#checkbox');
+            expect(checkbox.cssClass).toEqual('');
+        });
+
+        it('CheckBox with locale', () => {
+            checkbox = new CheckBox({ locale: null }, '#checkbox');
+            expect(checkbox.locale).toEqual('en-US');
+            checkbox = new CheckBox({ locale: undefined }, '#checkbox');
+            expect(checkbox.locale).toEqual('en-US');
+        });
+
+        it('CheckBox with persistence', () => {
+            checkbox = new CheckBox({ enablePersistence: null }, '#checkbox');
+            expect(checkbox.enablePersistence).toEqual(null);
+            checkbox = new CheckBox({ enablePersistence: undefined }, '#checkbox');
+            expect(checkbox.enablePersistence).toEqual(false);
+        });
+
+        it('CheckBox with Enable Html Sanitizer', () => {
+            checkbox = new CheckBox({ enableHtmlSanitizer: null }, '#checkbox');
+            expect(checkbox.enableHtmlSanitizer).toEqual(null);
+            checkbox = new CheckBox({ enablePersistence: undefined }, '#checkbox');
+            expect(checkbox.enableHtmlSanitizer).toEqual(true);
+        });
+
+        it('CheckBox with indeterminate', () => {
+            checkbox = new CheckBox({ indeterminate: null }, '#checkbox');
+            expect(checkbox.indeterminate).toEqual(null);
+            checkbox = new CheckBox({ indeterminate: undefined }, '#checkbox');
+            expect(checkbox.indeterminate).toEqual(false);
+        });
+    });
+
+    describe('Coverage Improvement', function () {
+        it('Mouse Event', () => {
+            enableRipple(true);
+            const event: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                type: 'mousedown'
+            };
+            checkbox = new CheckBox({ label: 'checkbox' }, '#checkbox');
+            checkbox.labelMouseLeaveHandler(event);
+            checkbox.labelMouseUpHandler(event);
+            enableRipple(false);
+        })
+
+        it('RadioButton with checked state', () => {
+            enableRipple(true);
+            checkbox = new CheckBox({ checked: true }, '#checkbox');
+            expect(checkbox.checked).toEqual(true);
+            checkbox.element.click();
+            expect(checkbox.checked).toEqual(false);
+            enableRipple(false);
+        });
     });
 });

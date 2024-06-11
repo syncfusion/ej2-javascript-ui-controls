@@ -1,78 +1,107 @@
+@mixin speeddial-popup-styles($padding, $li-margin, $li-text-margin, $speeddial-li-text-height, $li-icon-height, $li-icon-width, $li-icon-font-size, $ul-padding, $sd-li-margin) {
+  .e-speeddial-ul {
+    padding: $padding;
+  }
+
+  &.e-speeddial-linear .e-speeddial-li {
+    margin: $li-margin;
+  }
+
+  .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
+    margin: $li-text-margin;
+  }
+
+  .e-speeddial-li-text {
+    height: $speeddial-li-text-height;
+    line-height: $speeddial-li-text-height;
+  }
+
+  .e-speeddial-li-icon {
+    height: $li-icon-height;
+    width: $li-icon-width;
+    font-size: $li-icon-font-size;
+  }
+
+  &.e-speeddial-horz-right,
+  &.e-speeddial-horz-left {
+    .e-speeddial-ul {
+      padding: $ul-padding;
+    }
+
+    .e-speeddial-li {
+      margin: $sd-li-margin;
+    }
+  }
+}
+
+@mixin speeddial-top-bottom-position($direction) {
+  #{$direction}: $sd-offset;
+  
+  &.e-speeddial-radial {
+    .e-speeddial-li {
+      #{$direction}: 0;
+    }
+  
+    &.e-speeddial-middle .e-speeddial-li {
+      #{$direction}: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
+    }
+  }
+  
+  &.e-speeddial-middle,
+  &.e-speeddial-linear {
+    #{$direction}: var(--speeddialVertDist);
+  }
+}
+
+@mixin speeddial-left-right-position($direction) {
+  #{$direction}: var(--speeddialRadialHorzDist);
+
+  &.e-speeddial-radial {
+    .e-speeddial-li {
+      #{$direction}: 0;
+    }
+
+    &.e-speeddial-center .e-speeddial-li {
+      #{$direction}: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
+    }
+  }
+
+  &.e-speeddial-radial.e-speeddial-center,
+  &.e-speeddial-center {
+    #{$direction}: var(--speeddialRadialHorzDist);
+  }
+
+  &.e-speeddial-linear {
+    #{$direction}: var(--speeddialHorzDist);
+  }
+}
+
+@mixin speeddial-styles($sd-height, $sd-width, $sd-position) {
+  height: $sd-height;
+  width: $sd-width;
+  position: $sd-position;
+}
+
 @include export-module('speed-dial-layout') {
   .e-speeddial-popup {
     position: absolute;
     z-index: 100000;
-    
-    &:not(.e-speeddial-hover-open) {
-      pointer-events: none;
-    }
+    pointer-events: none;
 
     &.e-speeddial-top {
-      top: $sd-offset;
-
-      &.e-speeddial-radial .e-speeddial-li {
-        top: 0;
-      }
-
-      &.e-speeddial-radial.e-speeddial-middle .e-speeddial-li {
-        top: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
-      }
-
-      &.e-speeddial-middle,
-      &.e-speeddial-linear {
-        top: var(--speeddialVertDist);
-      }
+      @include speeddial-top-bottom-position(top);
     }
 
     &.e-speeddial-bottom {
-      bottom: $sd-offset;
-
-      &.e-speeddial-radial .e-speeddial-li {
-        bottom: 0;
-      }
-
-      &.e-speeddial-radial.e-speeddial-middle .e-speeddial-li {
-        bottom: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
-      }
-
-      &.e-speeddial-middle,
-      &.e-speeddial-linear {
-        bottom: var(--speeddialVertDist);
-      }
+      @include speeddial-top-bottom-position(bottom);
     }
 
     &.e-speeddial-left {
-      left: $sd-offset;
-
-      &.e-speeddial-radial .e-speeddial-li {
-        left: 0;
-      }
-
-      &.e-speeddial-radial.e-speeddial-center .e-speeddial-li {
-        left: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
-      }
-
-      &.e-speeddial-center,
-      &.e-speeddial-linear {
-        left: var(--speeddialHorzDist);
-      }
+      @include speeddial-left-right-position(left);
     }
 
     &.e-speeddial-right {
-      right: $sd-offset;
-
-      &.e-speeddial-radial .e-speeddial-li {
-        right: 0;
-      }
-
-      &.e-speeddial-radial.e-speeddial-center .e-speeddial-li {
-        right: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
-      }
-
-      &.e-speeddial-center,
-      &.e-speeddial-linear {
-        right: var(--speeddialHorzDist);
-      }
+      @include speeddial-left-right-position(right);
     }
 
     &.e-speeddial-template {
@@ -109,11 +138,16 @@
 
     .e-speeddial-li-text {
       border-radius: 2px;
-      border: 1px solid;
       padding: $sd-li-text-padding;
       white-space: nowrap;
       height: $sd-li-text-height;
       line-height: $sd-li-text-height;
+      @if ($skin-name == 'fluent2') {
+        border: none;
+      }
+      @else {
+        border: 1px solid;
+      }
     }
 
     .e-speeddial-li-icon {
@@ -131,7 +165,9 @@
       position: fixed;
     }
 
-    &.e-speeddial-vert-right .e-speeddial-li {
+    &.e-speeddial-vert-right .e-speeddial-li,
+    &.e-speeddial-horz-right .e-speeddial-ul,
+    &.e-speeddial-horz-left .e-speeddial-ul.e-speeddial-horz-top {
       flex-direction: row-reverse;
     }
 
@@ -139,20 +175,9 @@
       flex-direction: column-reverse;
     }
 
-    &.e-speeddial-horz-right .e-speeddial-ul {
-      flex-direction: row-reverse;
-
-      &.e-speeddial-horz-top {
-        flex-direction: row;
-      }
-    }
-
+    &.e-speeddial-horz-right .e-speeddial-ul.e-speeddial-horz-top,
     &.e-speeddial-horz-left .e-speeddial-ul {
       flex-direction: row;
-
-      &.e-speeddial-horz-top {
-        flex-direction: row-reverse;
-      }
     }
 
     &.e-speeddial-horz-right,
@@ -179,7 +204,7 @@
         scrollbar-width: none;
 
         &::-webkit-scrollbar {
-
+          
           /* Hide scrollbar for Chrome, Safari and Opera */
           display: none;
         }
@@ -223,11 +248,9 @@
       }
 
       .e-speeddial-ul {
+        @include speeddial-styles(inherit, inherit, relative);
         border-radius: inherit;
-        height: inherit;
-        width: inherit;
         padding: 0;
-        position: relative;
       }
 
       .e-speeddial-li {
@@ -239,7 +262,6 @@
     &.e-speeddial-radial,
     &.e-speeddial-horz-right,
     &.e-speeddial-horz-left {
-
       .e-speeddial-li-text {
         position: absolute;
         visibility: hidden;
@@ -249,129 +271,29 @@
 
   .e-small.e-speeddial-popup,
   .e-small .e-speeddial-popup {
-    .e-speeddial-ul {
-      padding: $sd-small-vert-ul-padding;
-    }
-
-    &.e-speeddial-linear .e-speeddial-li {
-      margin: $sd-small-vert-li-margin;
-    }
-
-    .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
-      margin: $sd-small-li-text-margin;
-    }
-
-    .e-speeddial-li-text {
-      height: $sd-small-li-text-height;
-      line-height: $sd-small-li-text-height;
-    }
-
-    .e-speeddial-li-icon {
-      height: $sd-small-li-icon-height;
-      width: $sd-small-li-icon-width;
-      font-size: $sd-small-li-icon-font-size;
-    }
-
-    &.e-speeddial-horz-right,
-    &.e-speeddial-horz-left {
-      .e-speeddial-ul {
-        padding: $sd-small-horz-ul-padding;
-      }
-
-      .e-speeddial-li {
-        margin: $sd-small-horz-li-margin;
-      }
-    }
+    @include speeddial-popup-styles($sd-small-vert-ul-padding, $sd-small-vert-li-margin, $sd-small-li-text-margin, $sd-small-li-text-height, $sd-small-li-icon-height, $sd-small-li-icon-width, $sd-small-li-icon-font-size, $sd-small-horz-ul-padding, $sd-small-horz-li-margin);
   }
 
   .e-bigger.e-speeddial-popup,
   .e-bigger .e-speeddial-popup {
-    .e-speeddial-ul {
-      padding: $sd-bigger-vert-ul-padding;
-    }
-
-    &.e-speeddial-linear .e-speeddial-li {
-      margin: $sd-bigger-vert-li-margin;
-    }
-
-    .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
-      margin: $sd-bigger-li-text-margin;
-    }
-
-    .e-speeddial-li-text {
-      height: $sd-bigger-li-text-height;
-      line-height: $sd-bigger-li-text-height;
-    }
-
-    .e-speeddial-li-icon {
-      height: $sd-bigger-li-icon-height;
-      width: $sd-bigger-li-icon-width;
-      font-size: $sd-bigger-li-icon-font-size;
-    }
-
-    &.e-speeddial-horz-right,
-    &.e-speeddial-horz-left {
-      .e-speeddial-ul {
-        padding: $sd-bigger-horz-ul-padding;
-      }
-
-      .e-speeddial-li {
-        margin: $sd-bigger-horz-li-margin;
-      }
-    }
+    @include speeddial-popup-styles($sd-bigger-vert-ul-padding, $sd-bigger-vert-li-margin, $sd-bigger-li-text-margin, $sd-bigger-li-text-height, $sd-bigger-li-icon-height, $sd-bigger-li-icon-width, $sd-bigger-li-icon-font-size, $sd-bigger-horz-ul-padding, $sd-bigger-horz-li-margin);
   }
 
   .e-bigger.e-small.e-speeddial-popup,
   .e-bigger.e-small .e-speeddial-popup,
   .e-bigger .e-small.e-speeddial-popup,
   .e-small .e-bigger.e-speeddial-popup {
-    .e-speeddial-ul {
-      padding: $sd-bigger-small-vert-ul-padding;
-    }
-
-    &.e-speeddial-linear .e-speeddial-li {
-      margin: $sd-bigger-small-vert-li-margin;
-    }
-
-    .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
-      margin: $sd-bigger-li-text-margin;
-    }
-
-    .e-speeddial-li-text {
-      height: $sd-bigger-small-li-text-height;
-      line-height: $sd-bigger-small-li-text-height;
-    }
-
-    .e-speeddial-li-icon {
-      height: $sd-bigger-small-li-icon-height;
-      width: $sd-bigger-small-li-icon-width;
-      font-size: $sd-bigger-small-li-icon-font-size;
-    }
-
-    &.e-speeddial-horz-right,
-    &.e-speeddial-horz-left {
-      .e-speeddial-ul {
-        padding: $sd-bigger-small-horz-ul-padding;
-      }
-
-      .e-speeddial-li {
-        margin: $sd-bigger-small-horz-li-margin;
-      }
-    }
+    @include speeddial-popup-styles($sd-bigger-small-vert-ul-padding, $sd-bigger-small-vert-li-margin, $sd-bigger-li-text-margin, $sd-bigger-small-li-text-height, $sd-bigger-small-li-icon-height, $sd-bigger-small-li-icon-width, $sd-bigger-small-li-icon-font-size, $sd-bigger-small-horz-ul-padding, $sd-bigger-small-horz-li-margin);
   }
 
   .e-speeddial-overlay {
-    height: 100%;
+    @include speeddial-styles(100%, 100%, absolute);
     left: 0;
-    position: absolute;
     top: 0;
-    width: 100%;
     z-index: 99998;
 
     &.e-speeddial-fixed {
-      height: 100vh;
-      position: fixed;
-      width: 100vw;
+      @include speeddial-styles(100vh, 100vw, fixed);
     }
   }
 

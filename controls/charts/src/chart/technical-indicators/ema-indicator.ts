@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { firstToLowerCase } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
@@ -11,9 +8,11 @@ import { TechnicalAnalysis } from './indicator-base';
  */
 export class EmaIndicator extends TechnicalAnalysis {
     /**
-     * Defines the predictions based on EMA approach
+     * Defines the predictions based on EMA approach.
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         const field: string = firstToLowerCase(indicator.field);
@@ -61,24 +60,25 @@ export class EmaIndicator extends TechnicalAnalysis {
     }
 
     /**
-     * To destroy the EMA Indicator
+     * To destroy the EMA Indicator.
      *
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys the EMA Indicator
+         * Destroys the EMA Indicator.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'EmaIndicator';
     }

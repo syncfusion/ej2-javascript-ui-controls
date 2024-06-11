@@ -24,7 +24,7 @@ describe('Pivot Field List Rendering', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -442,7 +442,7 @@ describe('Pivot Field List Rendering', () => {
                 done();
             }, 1000);
         });
-        it('drag/drop pivot button from axis field to same axis field', () => {
+        it('drag/drop pivot button from axis field to same axis field', (done: Function) => {
             let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
             let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
             let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
@@ -461,11 +461,15 @@ describe('Pivot Field List Rendering', () => {
             mouseUp.type = 'mouseup';
             mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
-            expect(pivotButton.length).toEqual(2);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
+                expect(pivotButton.length).toEqual(2);
+                done();
+            }, 1000);
         });
-        it('drag/drop pivot button from axis field to same button', () => {
+        it('drag/drop pivot button from axis field to same button', (done: Function) => {
             let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
             let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
             let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
@@ -484,9 +488,13 @@ describe('Pivot Field List Rendering', () => {
             mouseUp.type = 'mouseup';
             mouseUp.srcElement = mouseUp.target = mouseUp.toElement = dragElement;
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
-            expect(pivotButton.length).toEqual(2);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
+                expect(pivotButton.length).toEqual(2);
+                done();
+            }, 1000);
         });
         it('drag/drop pivot button from axis field to button position', (done: Function) => {
             let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
@@ -789,24 +797,28 @@ describe('Pivot Field List Rendering', () => {
                 done();
             }, 1000);
         });
-        it('expect sort state icon after drag row axis field to value axis field', () => {
-            let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
-            let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
-            let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-            EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, valueAxiscontent, 15, 70);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = util.setMouseCordinates(mousemove, 15, 75);
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, valueAxiscontent);
-            mouseUp.type = 'mouseup';
-            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = valueAxiscontent;
-            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+        it('expect sort state icon after drag row axis field to value axis field', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
+                let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+                let mousedown: any =
+                    util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                let mousemove: any =
+                    util.getEventObject('MouseEvents', 'mousemove', dragElement, valueAxiscontent, 15, 70);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove = util.setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, valueAxiscontent);
+                mouseUp.type = 'mouseup';
+                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = valueAxiscontent;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                done();
+            }, 1000);
         });
         it('expect sort state icon after drag row axis field to value axis field', () => {
             let sortElement: string = pivotGridObj.element.querySelectorAll('td')[2].innerText;
@@ -906,7 +918,7 @@ describe('PivotView spec', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -932,10 +944,10 @@ describe('PivotView spec', () => {
                 document.body.appendChild(elem);
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
-                        catalog: 'Adventure Works DW 2008R2',
+                        catalog: 'Adventure Works DW 2008 SE',
                         cube: 'Adventure Works',
                         providerType: 'SSAS',
-                        url: 'https://demos.telerik.com/olap/msmdpump.dll',
+                        url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
                         localeIdentifier: 1033,
                         drilledMembers: [
                             {
@@ -1016,7 +1028,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$39,856.79');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$72,200.48');
                     done();
                 }, 2000);
             });
@@ -1025,7 +1037,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$55,129.94');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$52,871.87');
                     done();
                 }, 2000);
             });
@@ -1041,7 +1053,7 @@ describe('PivotView spec', () => {
                 let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[1] as HTMLElement;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('64');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('105');
                     done();
                 }, 2000);
             });
@@ -1049,7 +1061,7 @@ describe('PivotView spec', () => {
                 let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[6] as HTMLElement;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$98,667.35');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$141,028.21');
                     done();
                 }, 2000);
             });
@@ -1057,7 +1069,7 @@ describe('PivotView spec', () => {
                 let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[3] as HTMLElement;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('49');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('79');
                     done();
                 }, 2000);
             });

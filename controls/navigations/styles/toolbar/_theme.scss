@@ -1,6 +1,4 @@
 @include export-module('toolbar-theme') {
-
-  /*! toolbar theme */
   /* stylelint-disable property-no-vendor-prefix */
   .e-toolbar {
     -webkit-tap-highlight-color: $tbar-tab-highlight-color;
@@ -47,7 +45,13 @@
           border-color: $tbar-btn-focus-border-color;
           border-style: $tbar-border-nav-type;
           border-width: $tbar-btn-hover-border-size;
-          box-shadow: $tbar-ext-btn-focus-box-shadow;
+
+          @if ($skin-name == 'fluent2') {
+            box-shadow: none;
+          }
+          @else {
+            box-shadow: $tbar-ext-btn-focus-box-shadow;
+          }
 
           .e-icons {
             color: $tbar-btn-icons-focus-color;
@@ -58,6 +62,21 @@
             
             @if $skin-name == 'bootstrap5' {
               color: $tbar-btn-icons-focus-color;
+            }
+          }
+        }
+
+        @if ($skin-name == 'fluent2') {
+          &:focus-visible {
+            background: $tbar-default-bg;
+            box-shadow: $tbar-ext-btn-focus-box-shadow;
+
+            .e-icons {
+              color: $tbar-default-icon-color;
+            }
+
+            .e-tbar-btn-text {
+              color: $tbar-default-font;
             }
           }
         }
@@ -274,10 +293,31 @@
 
           &:focus {
             background: $tbar-popup-btn-focus-bg;
-            box-shadow: $tbar-popup-btn-focus-box-shadow;
             border-color: $tbar-btn-focus-border-color;
             border-style: $tbar-border-nav-type;
             border-width: $tbar-popup-btn-hover-border-size;
+
+            @if ($skin-name == 'fluent2') {
+              box-shadow: none;
+            }
+            @else {
+              box-shadow: $tbar-popup-btn-focus-box-shadow;
+            }
+          }
+
+          @if ($skin-name == 'fluent2') {
+            &:focus-visible {
+              background: $tbar-popup-btn-focus-bg;
+              box-shadow: $tbar-popup-btn-focus-box-shadow;
+
+              .e-icons {
+                color: $tbar-default-icon-color;
+              }
+
+              .e-tbar-btn-text {
+                color: $tbar-default-font;
+              }
+            }
           }
         }
 
@@ -308,7 +348,28 @@
               border-color: $tbar-btn-focus-border-color;
               border-style: $tbar-border-nav-type;
               border-width: $tbar-btn-hover-border-size;
-              box-shadow: $tbar-ext-btn-focus-box-shadow;
+
+              @if ($skin-name == 'fluent2') {
+                box-shadow: none;
+              }
+              @else {
+                box-shadow: $tbar-ext-btn-focus-box-shadow;
+              }
+            }
+
+            @if ($skin-name == 'fluent2') {
+              &:focus-visible {
+                background: $tbar-default-bg;
+                box-shadow: $tbar-ext-btn-focus-box-shadow;
+
+                .e-icons {
+                  color: $tbar-default-icon-color;
+                }
+
+                .e-tbar-btn-text {
+                  color: $tbar-default-font;
+                }
+              }
             }
   
             &:hover {

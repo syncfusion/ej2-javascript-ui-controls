@@ -86,19 +86,18 @@ export class Pager {
                 } else {
                     this.parent.element.append(pagerElement);
                 }
-            } // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const _this: this = this; // eslint-disable-next-line @typescript-eslint/tslint/config
-            const tempFunc: Function = function() {
+            }
+            const _this: Pager = this as Pager;
+            const tempFunc: Function = function (): string {
                 return _this.createPagerContainer();
             };
             this.pager = new GridPager({
                 enableRtl: this.parent.enableRtl,
-                locale: this.parent.locale, // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                template: pagerOptions.template === '' || pagerOptions.template ? pagerOptions.template : initializeCSPTemplate(tempFunc) as any,
+                locale: this.parent.locale,
+                template: pagerOptions.template === '' || pagerOptions.template ? pagerOptions.template : initializeCSPTemplate(tempFunc),
                 cssClass: this.parent.cssClass
             });
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            this.pager.isVue = (this.parent as any).isVue;
+            this.pager.isVue = (<{ isVue?: boolean }>this.parent).isVue;
             this.pager.appendTo('#' + this.parent.element.id + 'pivot-pager');
             if (isNullOrUndefined(pagerOptions.template)) {
                 if (pagerOptions.showRowPager) {
@@ -336,7 +335,10 @@ export class Pager {
         pagerString.innerText = axis === 'row' ? this.parent.localeObj.getConstant('rowPage') : this.parent.localeObj.getConstant('columnPage');
         const pagerTextBoxDiv: HTMLElement = createElement('input', {
             id: this.parent.element.id + '_' + axis + '_textbox',
-            className: axis === 'row' ? cls.PIVOT_ROW_DROPDOWN : cls.PIVOT_COLUMN_DROPDOWN
+            className: axis === 'row' ? cls.PIVOT_ROW_DROPDOWN : cls.PIVOT_COLUMN_DROPDOWN,
+            attrs: {
+                'placeholder': '1'
+            }
         });
         const mainOfStringDiv: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_' + axis + '_of_string_mainDiv',

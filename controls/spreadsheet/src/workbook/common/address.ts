@@ -10,18 +10,20 @@ import { Workbook, SheetModel, getSheetIndex, getSheetNameFromAddress } from '..
 export function getRangeIndexes(range: string): number[] {
     let cellindexes: number[];
     const indexes: number[] = [];
-    range = range.indexOf('!') > -1 ? range.split('!')[1] : range;
-    range = range.indexOf(':') === -1 ? range + ':' + range : range;
-    const containsAlphabetsAndDigits: RegExp = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d)/g);
-    if (!containsAlphabetsAndDigits.test(range)) {
-        const refArr: string[] = range.split(':');
-        range = isNullOrUndefined(range.match(/[0-9]/)) ? (refArr[0] + '1:' + refArr[1] + '1') : ('A' + refArr[0] + ':A' + refArr[1]);
+    if (range) {
+        range = range.indexOf('!') > -1 ? range.split('!')[1] : range;
+        range = range.indexOf(':') === -1 ? range + ':' + range : range;
+        const containsAlphabetsAndDigits: RegExp = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d)/g);
+        if (!containsAlphabetsAndDigits.test(range)) {
+            const refArr: string[] = range.split(':');
+            range = isNullOrUndefined(range.match(/[0-9]/)) ? (refArr[0] + '1:' + refArr[1] + '1') : ('A' + refArr[0] + ':A' + refArr[1]);
+        }
+        range.split(':').forEach((address: string) => {
+            cellindexes = getCellIndexes(address);
+            indexes.push(cellindexes[0]);
+            indexes.push(cellindexes[1]);
+        });
     }
-    range.split(':').forEach((address: string) => {
-        cellindexes = getCellIndexes(address);
-        indexes.push(cellindexes[0]);
-        indexes.push(cellindexes[1]);
-    });
     return indexes;
 }
 

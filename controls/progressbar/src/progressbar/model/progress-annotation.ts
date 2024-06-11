@@ -1,5 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
 import { ProgressBar } from '../progressbar';
 import { createElement } from '@syncfusion/ej2-base';
 import { ProgressAnnotationSettingsModel } from './progress-base-model';
@@ -31,6 +29,7 @@ export class ProgressAnnotation extends AnnotationBase {
      * Method to render the annotation for ProgressBar
      *
      * @param {Element} element Annotation element.
+     * @returns {void}
      * @private
      */
     public renderAnnotations(element: Element): void {
@@ -52,6 +51,8 @@ export class ProgressAnnotation extends AnnotationBase {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'ProgressAnnotation';

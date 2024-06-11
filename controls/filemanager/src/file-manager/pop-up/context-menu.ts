@@ -27,7 +27,6 @@ export class ContextMenu {
     private currentElement: HTMLElement = null;
     private disabledItems: string[] = [];
     private targetNodeElement: HTMLElement;
-    // eslint-disable-next-line
     public menuItemData: object;
     /**
      * Constructor for the ContextMenu module
@@ -79,12 +78,13 @@ export class ContextMenu {
 
     public onBeforeClose(): void {
         this.menuTarget = null;
-        if (!this.isMenuItemClicked && this.parent.pathId.length > 1 && this.parent.activeModule == 'navigationpane') {
+        if (!this.isMenuItemClicked && this.parent.pathId.length > 1 && this.parent.activeModule === 'navigationpane') {
             this.parent.pathId.pop();
-            const parentKey = [];
-            const itemKeys = Object.keys(this.parent.feParent);
+            const parentKey: string[] = [];
+            const itemKeys:  string[] = Object.keys(this.parent.feParent);
             for (const item of itemKeys) {
-                var itemData = getValue(item, this.parent.feParent);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const itemData: any = getValue(item, this.parent.feParent);
                 if (this.parent.pathNames.indexOf(itemData.name) !== -1) {
                     parentKey.push(itemData._fm_id);
                 }
@@ -99,7 +99,6 @@ export class ContextMenu {
     public onBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         let selected: boolean = false;
         let uid: string;
-        // eslint-disable-next-line
         let data: { [key: string]: Object };
         let treeFolder: boolean = false;
         let target: Element = args.event.target as Element;
@@ -111,7 +110,7 @@ export class ContextMenu {
         }
         this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr.e-row') as HTMLElement : target as HTMLElement;
         if (this.parent.enableVirtualization && (target.classList.contains('e-virtual-bottom') || target.classList.contains('e-virtualtable'))) {
-            target = target.parentElement.closest("div");
+            target = target.parentElement.closest('div');
         }
         const view: string = this.getTargetView(target);
         this.updateActiveModule();
@@ -120,29 +119,24 @@ export class ContextMenu {
             (closest(target, '#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID)) ||
             (closest(target, '#' + this.parent.element.id + CLS.TOOLBAR_ID))) {
             args.cancel = true;
-            // eslint:disable-next-line
         } else if (!(this.parent.view === 'LargeIcons') && this.targetElement &&
             this.targetElement.classList.contains('e-emptyrow')) {
             this.setLayoutItem(target);
             /* istanbul ignore next */
         } else if (closest(target, '.' + CLS.EMPTY)) {
             this.setLayoutItem(target);
-            // eslint:disable-next-line
         } else if (!target.classList.contains(CLS.MENU_ITEM) &&
          !target.classList.contains(CLS.MENU_ICON) && !target.classList.contains(CLS.SUBMENU_ICON)) {
             /* istanbul ignore next */
-            // eslint:disable-next-line
             if (this.parent.view === 'LargeIcons' && !isNOU(closest(target, 'li')) && !closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
                 const eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
                 if (!closest(target, 'li').classList.contains('e-active')) {
                     this.parent.largeiconsviewModule.doSelection(target, eveArgs);
                 }
-                // eslint-disable-next-line
                 data = this.parent.visitedData as { [key: string]: Object };
                 selected = true;
             } else if (!isNOU(closest(target, 'tr.e-row'))) {
                 uid = this.targetElement.getAttribute('data-uid');
-                // eslint-disable-next-line
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data as { [key: string]: Object };
                 if (isNOU(this.targetElement.getAttribute('aria-selected'))) {
                     /* istanbul ignore next */
@@ -168,7 +162,6 @@ export class ContextMenu {
                     this.disabledItems.push('Delete', 'Rename', 'Cut', 'Copy');
                 }
                 /* istanbul ignore next */
-                // eslint:disable-next-line
             } else if (view === 'TreeView' || view === 'GridView' || view === 'LargeIcon') {
                 this.setLayoutItem(target);
                 /* istanbul ignore next */
@@ -278,11 +271,17 @@ export class ContextMenu {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.folder.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
         if (isTree) {
-        const selectedTreeNode: Element = select('[data-uid="'+this.parent.navigationpaneModule.treeObj.selectedNodes[0]+'"]', this.parent.navigationpaneModule.treeObj.element);
-        if (this.parent.pathNames[this.parent.pathNames.length-1] === selectedTreeNode.querySelector('.e-list-text').innerHTML && this.parent.activeModule === 'navigationpane') {
-            this.disabledItems.push('Open');
-        }
-        } else if (this.parent.activeModule !=='navigationpane') {
+            const selectedTreeNode: Element = select('[data-uid="' + this.parent.navigationpaneModule.treeObj.selectedNodes[0] + '"]', this.parent.navigationpaneModule.treeObj.element);
+            if (this.parent.pathNames[this.parent.pathNames.length - 1] === selectedTreeNode.querySelector('.e-list-text').innerHTML && this.parent.activeModule === 'navigationpane') {
+                this.disabledItems.push('Open');
+            }
+            if (this.parent.selectedItems.length === 0) {
+                const renameIndex: number = this.disabledItems.indexOf('Rename');
+                if (renameIndex !== -1) {
+                    this.disabledItems.splice(renameIndex, 1);
+                }
+            }
+        } else if (this.parent.activeModule !== 'navigationpane') {
             if (this.parent.selectedItems.length === 1) {
                 const renameIndex: number = this.disabledItems.indexOf('Rename');
                 if (renameIndex !== -1) {
@@ -321,7 +320,7 @@ export class ContextMenu {
             this.disabledItems.push('SelectAll');
         }
         else {
-            this.disabledItems = this.disabledItems.filter(item => item !== 'SelectAll');
+            this.disabledItems = this.disabledItems.filter((item: string) => item !== 'SelectAll');
 
         }
         if (this.parent.selectedNodes.length === 0) {
@@ -342,12 +341,10 @@ export class ContextMenu {
         }
     }
 
-    // eslint-disable-next-line
     private getMenuItemData(): object {
         if (this.menuType === 'layout') {
             return getPathObject(this.parent);
         } else {
-            // eslint-disable-next-line
             const args: { [key: string]: Object; } = { target: this.menuTarget };
             this.parent.notify(events.menuItemData, args);
             return this.parent.itemData[0];
@@ -358,7 +355,6 @@ export class ContextMenu {
     private onSelect(args: MenuEventArgs): void {
         if (isNOU(args.item) || !args.item.id) { return; }
         const itemText: string = args.item.id.substr((this.parent.element.id + '_cm_').length);
-        // eslint-disable-next-line
         let details: Object[];
         if (itemText === 'refresh' || itemText === 'newfolder' || itemText === 'upload') {
             details = [getPathObject(this.parent)];
@@ -381,7 +377,6 @@ export class ContextMenu {
             let sItems: string[];
             if (!menuClickArgs.cancel) {
                 this.isMenuItemClicked = true;
-                // eslint:disable-next-line
                 switch (itemText) {
                 case 'cut':
                     cutFiles(this.parent);
@@ -464,19 +459,10 @@ export class ContextMenu {
                 case 'upload':
                     uploadItem(this.parent);
                     break;
-                /* istanbul ignore next */
                 case 'name':
-                /* istanbul ignore next */
-                // eslint-disable-next-line no-fallthrough
                 case 'size':
-                /* istanbul ignore next */
-                // eslint-disable-next-line no-fallthrough
                 case 'date':
-                /* istanbul ignore next */
-                // eslint-disable-next-line no-fallthrough
                 case 'ascending':
-                /* istanbul ignore next */
-                // eslint-disable-next-line no-fallthrough
                 case 'descending':
                 /* istanbul ignore next */
                     sortbyClickHandler(this.parent, args);
@@ -487,12 +473,10 @@ export class ContextMenu {
                     sortbyClickHandler(this.parent, args);
                     break;
                 /* istanbul ignore next */
-                // eslint:disable-next-line
                 case 'largeiconsview':
                     updateLayout(this.parent, 'LargeIcons');
                     break;
                     /* istanbul ignore next */
-                    // eslint:disable-next-line
                 case 'detailsview':
                     updateLayout(this.parent, 'Details');
                     break;

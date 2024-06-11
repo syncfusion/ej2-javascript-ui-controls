@@ -49,7 +49,13 @@ export type MapsTheme =
     /** Renders a map with material3 theme. */
     'Material3' |
     /** Renders a map with material3dark theme. */
-    'Material3Dark';
+    'Material3Dark' |
+    /** Renders a map with fluent2 theme. */
+    'Fluent2' |
+    /** Renders a map with fluent2 dark theme. */
+    'Fluent2Dark' |
+    /** Renders a map with fluent2 high contrast theme. */
+    'Fluent2HighContrast';
 
 /**
  * Defines the position of the legend.
@@ -114,31 +120,6 @@ export type LegendMode =
     'Default' |
     /** Set the legend as interactive, which is rectangular in shape with an indicator showcasing legend items. */
     'Interactive';
-
-/**
- * Defines the type of the layer to be rendered in the maps.
- */
-export type ShapeLayerType =
-    /**
-     * Defines that the geometry shapes will be rendered as map layer.
-     */
-    'Geometry' |
-    /**
-     * Defines that the OpenStreetMap will be rendered as map layer.
-     */
-    'OSM' |
-    /**
-     * Defines that the Bing maps will be rendered as map layer.
-     */
-    'Bing' |
-    /**
-     * Defines that the Google static map will be rendered as map layer.
-     */
-    'GoogleStaticMap' |
-    /**
-     * Defines that Google map will be rendered as map layer.
-     */
-    'Google';
 /**
  * Defines the type of the layer in maps.
  */
@@ -201,35 +182,6 @@ export type ProjectionType =
     'AitOff' |
     /** Specifies the maps to be rendered in Equirectangular projection type. */
     'Equirectangular';
-/**
- * Defines the type of Bing map to be rendered in the maps.
- */
-export type BingMapType =
-    /** Defines the maps to render Bing map layer with aerial type. */
-    'Aerial' |
-    /** Defines the maps to render Bing map layer with aerial type with label over the regions. */
-    'AerialWithLabel' |
-    /** Defines the maps to render Bing map layer with road maps. */
-    'Road' |
-    /** Defines the maps to render a dark version of the road maps. */
-    'CanvasDark' |
-    /** Defines the maps to render a lighter version of the road maps. */
-    'CanvasLight' |
-    /** Defines the maps to render a grayscale version of the road maps. */
-    'CanvasGray';
-
-/**
- * Defines the type of the Google static map to be rendered in the maps.
- */
-export type StaticMapType =
-    /** Specifies the maps to render Google static map layer with road map. */
-    'RoadMap' |
-    /** Specifies the maps to render Google static map layer with terrain type. */
-    'Terrain' |
-    /** Specifies the maps to render Google static map layer with satellite type. */
-    'Satellite' |
-    /** Specifies the maps to render the Google static map with hybrid type. */
-    'Hybrid';
 
 /**
  * Defines the zooming tool bar orientation.

@@ -102,12 +102,9 @@ export interface NotifyArgs {
 }
 /** @hidden */
 export interface ReadArgs {
-    // eslint-disable-next-line
     cwd?: { [key: string]: Object; };
-    // eslint-disable-next-line
     files?: { [key: string]: Object; }[];
     error?: ErrorArgs;
-    // eslint-disable-next-line
     details?: Object;
     id?: string;
 }
@@ -117,11 +114,8 @@ export interface MouseArgs {
 }
 /** @hidden */
 export interface UploadArgs {
-    // eslint-disable-next-line
     files?: { [key: string]: Object; }[];
-    // eslint-disable-next-line
     error?: Object[];
-    // eslint-disable-next-line
     details?: Object;
 }
 /** @hidden */
@@ -141,18 +135,13 @@ export interface DialogOptions {
     header?: string;
     content?: string;
     buttons?: ButtonPropsModel[];
-    // eslint-disable-next-line
     open?: EmitType<Object>;
-    // eslint-disable-next-line
     close?: EmitType<Object>;
 }
 /** @hidden */
 export interface SearchArgs {
-    // eslint-disable-next-line
     files?: { [key: string]: Object; }[];
-    // eslint-disable-next-line
     error?: Object[];
-    // eslint-disable-next-line
     details?: Object;
 }
 /**
@@ -167,16 +156,98 @@ export interface FileDetails {
     size: number;
     icon: string;
     multipleFiles: boolean;
-    // eslint-disable-next-line
     permission: Object;
+}
+/**
+ * Interfaces for permission.
+ */
+export interface Permission {
+    /**
+     * Specifies the access permission to read a file or folder.
+     */
+    read?: boolean;
+    /**
+     * Specifies the access permission to write a file or folder.
+     */
+    write?: boolean;
+    /**
+     * Specifies the access permission to download a file or folder.
+     */
+    download: boolean;
+    /**
+     * Specifies the access permission to write the content of folder.
+     */
+    writeContents?: boolean;
+    /**
+     * Specifies the access permission to upload a file or folder.
+     */
+    upload?: boolean;
+    /**
+     * Specifies the access permission message.
+     */
+    message?: string;
+    /**
+     * Specifies the access permission to copy a file or folder.
+     */
+    copy?: boolean;
+}
+/**
+ * Interfaces for fileSystemData.
+ */
+export interface FileData {
+    /**
+     * Specifies the modified data for current item.
+     */
+    dateModified?: Date;
+    /**
+     * Specifies the created data for current item.
+     */
+    dateCreated?: Date;
+    /**
+     * Specifies the filter path representing the traversal path of current item.
+     */
+    filterPath?: string;
+    /**
+     * Specifies whether the current folder has child.
+     */
+    hasChild?: boolean;
+    /**
+     * Specifies the current item id.
+     */
+    id?: number | string;
+    /**
+     * Specifies whether the item is a file or folder.
+     */
+    isFile?: boolean;
+    /**
+     * Specifies the item name.
+     */
+    name?: string;
+    /**
+     * Specifies the parent id for the item.
+     */
+    parentId?: number | string;
+    /**
+     * Specifies the item size.
+     */
+    size?: number;
+    /**
+     * Specifies the item type like ‘.png’, ‘.jpg’, etc.
+     */
+    type?: string;
+    /**
+     * Specifies the url of the image that must be loaded within File Manager.
+     */
+    imageUrl?: string;
+    /**
+     * Specifies the access control permission.
+     */
+    permission?: object;
 }
 /** @hidden */
 export interface DownloadArgs {
-    // eslint-disable-next-line
     files?: { [key: string]: Object; }[];
-    // eslint-disable-next-line
     error?: Object[];
-    // eslint-disable-next-line
     details?: Object;
 }
 
@@ -187,7 +258,6 @@ export interface FileDragEventArgs {
     /**
      * Return the current items as an array of JSON object.
      */
-    // eslint-disable-next-line
     fileDetails?: Object[];
     /**
      * Specifies the actual event.
@@ -217,7 +287,6 @@ export interface BeforeSendEventArgs {
     /**
      * Return the AJAX details, which are send to server.
      */
-    // eslint-disable-next-line
     ajaxSettings?: Object;
     /**
      * If you want to cancel this event then, set cancel to true. Otherwise, false.
@@ -231,16 +300,14 @@ export interface BeforeDownloadEventArgs {
     /**
      * Specifies the data to be sent to server.
      */
-    // eslint-disable-next-line
     data?: Object;
     /**
      * If you want to cancel this event then, set cancel to true. Otherwise, false.
      */
     cancel?: boolean;
     /**
-    * Return the AJAX details, which are send to server.
-    */
-    // eslint-disable-next-line
+     * Return the AJAX details, which are send to server.
+     */
     ajaxSettings?: Object;
     /**
      * Specifies whether the download is performed through the form submit method or using an HTTP client instance.
@@ -254,12 +321,128 @@ export interface BeforeImageLoadEventArgs {
     /**
      * Return the current rendering image item as an array of JSON object.
      */
-    // eslint-disable-next-line
     fileDetails?: Object[];
     /**
      * Specifies the URL along with custom attributes to be sent to server.
      */
     imageUrl?: string;
+}
+/**
+ * Interface for folder create event arguments.
+ */
+export interface FolderCreateEventArgs {
+    /**
+     * Defines whether to cancel the creation of new folder.
+     */
+    cancel?: boolean;
+    /**
+     * Defines the newly created folder name.
+     */
+    folderName?: string;
+    /**
+     * Returns the parent folder data where the new folder is created.
+     */
+    parentFolder?: { [key: string]: Object }[];
+    /**
+     * Specifies the current folder path.
+     */
+    path?: string;
+}
+/**
+ * Interface for deleting event arguments.
+ */
+export interface DeleteEventArgs {
+    /**
+     * Defines whether to cancel the delete action of file or folder.
+     */
+    cancel?: boolean;
+    /**
+     * Returns the data of the deleted item.
+     */
+    itemData?: { [key: string]: Object }[];
+    /**
+     * Specifies the current folder path.
+     */
+    path?: string;
+}
+/**
+ * Interface for Rename event arguments.
+ */
+export interface RenameEventArgs {
+    /**
+     * Defines whether to cancel the rename operation.
+     */
+    cancel?: boolean;
+    /**
+     * Return the new name to be set for the item.
+     */
+    newName?: string;
+    /**
+     * Returns the data of the renamed item.
+     */
+    itemData?: { [key: string]: Object }[];
+    /**
+     * Specifies the current folder path.
+     */
+    path?: string;
+}
+/**
+ * Interface for Move event arguments.
+ */
+export interface MoveEventArgs {
+    /**
+     * Defines whether to cancel the moving of folder from current path.
+     */
+    cancel?: boolean;
+    /**
+     * Defines whether the current action is `copy`.
+     */
+    isCopy?: boolean;
+    /**
+     * Returns the data of the moved item.
+     */
+    itemData?: { [key: string]: Object }[];
+    /**
+     * Specifies the current folder path.
+     */
+    path?: string;
+    /**
+     * Returns the data of the target folder to which the file or folder is to be pasted.
+     */
+    targetData?: { [key: string]: Object };
+    /**
+     * Specifies the target folder path to which the item is pasted.
+     */
+    targetPath?: string;
+}
+/**
+ * Interface for Search event arguments.
+ */
+export interface SearchEventArgs {
+    /**
+     * Return the search results which matches the entered search character.
+     */
+    searchResults?: { [key: string]: Object }[];
+    /**
+     * Specifies whether the default search action must be cancel.
+     */
+    cancel?: boolean;
+    /**
+     * Specifies the current folder path where the search action takes place.
+     */
+    path?: string;
+    /**
+     * Specifies the search text which is entered in the input element.
+     */
+    searchText?: string;
+    /**
+     * Specifies the searching of file or folder is case sensitive or not.
+     */
+    caseSensitive?: boolean;
+    /**
+     * Specifies whether the user has permission to view hidden items.
+     */
+    showHiddenItems?: boolean;
 }
 /**
  * Interface for Success event arguments.
@@ -272,7 +455,6 @@ export interface SuccessEventArgs {
     /**
      * Return the AJAX details which are send to server.
      */
-    // eslint-disable-next-line
     result?: Object;
 }
 /**
@@ -286,7 +468,6 @@ export interface FailureEventArgs {
     /**
      * Return the AJAX details, which are send to server.
      */
-    // eslint-disable-next-line
     error?: Object;
 }
 /**
@@ -300,7 +481,6 @@ export interface FileLoadEventArgs {
     /**
      * Return the current rendering item as JSON object.
      */
-    // eslint-disable-next-line
     fileDetails?: Object;
     /**
      * Return the name of the rendering module in File Manager.
@@ -318,7 +498,6 @@ export interface FileOpenEventArgs {
     /**
      * Return the currently selected item as JSON object.
      */
-    // eslint-disable-next-line
     fileDetails?: Object;
     /**
      * Returns the name of the target module in file manager.
@@ -370,7 +549,6 @@ export interface FileSelectEventArgs {
     /**
      * Return the currently selected item as JSON object.
      */
-    // eslint-disable-next-line
     fileDetails?: Object;
     /**
      * Defines whether event is triggered by interaction or not.
@@ -392,7 +570,6 @@ export interface FileSelectionEventArgs {
     /**
      * Return the currently selected item as JSON object.
      */
-    // eslint-disable-next-line
     fileDetails?: Object;
     /**
      * Defines whether event is triggered by interaction or not.
@@ -423,7 +600,6 @@ export interface ToolbarClickEventArgs {
     /**
      * Return the currently selected folder/file items as an array of JSON object.
      */
-    // eslint-disable-next-line
     fileDetails: Object[];
     /**
      * Return the currently clicked toolbar item as JSON object.
@@ -445,7 +621,6 @@ export interface MenuClickEventArgs {
     /**
      * Return the currently selected folder/file items as an array of JSON object.
      */
-    // eslint-disable-next-line
     fileDetails?: Object[];
     /**
      * Return the currently clicked context menu item as JSON object.
@@ -467,7 +642,6 @@ export interface MenuOpenEventArgs {
     /**
      * Returns the target folder/file item as an array of JSON object.
      */
-    // eslint-disable-next-line
     fileDetails?: Object[];
     /**
      * Returns the current context menu items as JSON object.
@@ -571,16 +745,13 @@ export interface IFileManager extends Component<HTMLElement> {
     filterPath: string;
     filterId: string;
     expandedId: string;
-    // eslint-disable-next-line
     itemData: Object[];
-    // eslint-disable-next-line
     visitedData: Object;
     visitedItem: Element;
-    // eslint-disable-next-line
     feParent: Object[];
-    // eslint-disable-next-line
     feFiles: Object[];
     ajaxSettings: AjaxSettingsModel;
+    fileSystemData: { [key: string]: Object }[],
     toolbarSettings: ToolbarSettingsModel;
     toolbarItems: ToolbarItemModel[];
     detailsViewSettings: DetailsViewSettingsModel;
@@ -605,13 +776,10 @@ export interface IFileManager extends Component<HTMLElement> {
     virtualizationModule: Virtualization;
     toolbarSelection: boolean;
     duplicateItems: string[];
-    // eslint-disable-next-line
     duplicateRecords: Object[];
     fileAction: string;
     replaceItems: string[];
-    // eslint-disable-next-line
     createdItem: { [key: string]: Object; };
-    // eslint-disable-next-line
     renamedItem: { [key: string]: Object; };
     renamedId: string;
     uploadItem: string[];
@@ -630,13 +798,12 @@ export interface IFileManager extends Component<HTMLElement> {
     sortOrder: SortOrder;
     sortBy: string;
     sortComparer: SortComparer | string;
-    // eslint-disable-next-line
     actionRecords: Object[];
-    // eslint-disable-next-line
     activeRecords: Object[];
     pasteNodes: string[];
+    responseData: { [key: string]: Object; };
+    existingFileCount: number;
     isCut: boolean;
-    // eslint-disable-next-line
     filterData: Object;
     isFiltered: boolean;
     isSortByClicked: boolean;
@@ -664,19 +831,16 @@ export interface IFileManager extends Component<HTMLElement> {
     localeObj: L10n;
     uploadObj: Uploader;
     cssClass: string;
-    // eslint-disable-next-line
     searchedItems: Object[];
     searchWord: string;
     retryFiles: FileInfo[];
     retryArgs: RetryArgs[];
     isApplySame: boolean;
     isRetryOpened: boolean;
-    // eslint-disable-next-line
     dragData: { [key: string]: Object; }[];
     dragNodes: string[];
     dragPath: string;
     dropPath: string;
-    // eslint-disable-next-line
     dropData: Object;
     virtualDragElement: HTMLElement;
     isDragDrop: boolean;
@@ -686,7 +850,6 @@ export interface IFileManager extends Component<HTMLElement> {
     dragCursorPosition: PositionModel;
     isDropEnd: boolean;
     dragCount: number;
-    // eslint-disable-next-line
     droppedObjects: Object[];
     uploadEventArgs: BeforeSendEventArgs;
     destinationPath: string;
@@ -700,10 +863,8 @@ export interface IFileManager extends Component<HTMLElement> {
 /** @hidden */
 export interface ITreeView extends Component<HTMLElement> {
     treeObj: TreeView;
-    // eslint-disable-next-line
     removeNode: Function;
     removeNodes: string[];
-    // eslint-disable-next-line
     duplicateFiles: Function;
     rootID: string;
     activeNode: Element;
@@ -715,7 +876,6 @@ export interface IContextMenu extends Component<HTMLElement> {
     disableItem(items: string[]): void;
     getItemIndex(item: string): number;
     contextMenu: ContextMenu;
-    // eslint-disable-next-line
     contextMenuBeforeOpen: Function;
     items: MenuItemModel[];
 }

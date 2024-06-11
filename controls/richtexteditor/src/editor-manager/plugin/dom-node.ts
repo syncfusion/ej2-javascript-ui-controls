@@ -3,6 +3,7 @@ import { append, detach, createElement, isNullOrUndefined as isNOU, closest } fr
 import { NodeSelection } from './../../selection/index';
 import { selfClosingTags } from '../../common/config';
 import { getLastTextNode } from '../../common/util';
+import { TableSelection } from './table-selection';
 
 export const markerClassName: { [key: string]: string } = {
     startSelection: 'e-editor-select-start',
@@ -18,6 +19,7 @@ export class DOMNode {
     private parent: Element;
     private currentDocument: Document;
     private nodeSelection: NodeSelection;
+    private tableSelection: TableSelection;
     /**
      * Constructor for creating the DOMNode plugin
      *
@@ -30,6 +32,7 @@ export class DOMNode {
         this.parent = parent;
         this.nodeSelection = new NodeSelection();
         this.currentDocument = currentDocument;
+        this.tableSelection = new TableSelection(parent as HTMLElement, currentDocument);
     }
 
     /**
@@ -339,7 +342,7 @@ export class DOMNode {
     public unWrap(element: Element): Element[] {
         const parent: Element = element.parentNode as Element;
         let unWrapNode: Element[] = [];
-        while (element.firstChild && (element.previousSibling !== this.parent.querySelector('.e-mention-chip') || element.textContent !== ' ')) {
+        while (element.firstChild && (element.textContent !== ' ')) {
             unWrapNode.push(element.firstChild as Element);
             parent.insertBefore(element.firstChild, element);
         }
@@ -468,12 +471,11 @@ export class DOMNode {
      * saveMarker method
      *
      * @param {NodeSelection} save - specifies the node selection,
-     * @param {string} action - specifies the action  value.
      * @returns {NodeSelection} - returns the value
      * @hidden
      * @deprecated
      */
-    public saveMarker(save: NodeSelection, action?: string): NodeSelection {
+    public saveMarker(save: NodeSelection): NodeSelection {
         let start: Element = this.parent.querySelector('.' + markerClassName.startSelection);
         let end: Element = this.parent.querySelector('.' + markerClassName.endSelection);
         let startTextNode: Element;
@@ -521,8 +523,8 @@ export class DOMNode {
             range.endOffset === 1 && range.endContainer.nodeName === '#text' && range.endContainer.textContent.length === 0;
         let start: Element = <Element>((isTableStart ? getLastTextNode(startChildNodes[range.startOffset + 1]) :
             startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) : range.startOffset]) || range.startContainer);
-        let end: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (isImgOnlySelected ? range.endOffset : (range.endOffset - 1)) : range.endOffset]
-            || range.endContainer);
+        let end: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (isImgOnlySelected ? range.endOffset :
+            (range.endOffset - 1)) : range.endOffset] || range.endContainer);
         if ((start.nodeType === Node.ELEMENT_NODE && end.nodeType === Node.ELEMENT_NODE) && (start.contains(end) || end.contains(start))) {
             const existNode: Element = start.contains(end) ? start : end;
             const isElement: boolean = existNode.nodeType !== Node.TEXT_NODE;
@@ -600,7 +602,7 @@ export class DOMNode {
                 markerStart.parentElement.appendChild(start);
             }
         } else {
-            let tagName: string = !isNOU(start.parentElement)? start.parentElement.tagName.toLocaleLowerCase(): '';
+            const tagName: string = !isNOU(start.parentElement) ? start.parentElement.tagName.toLocaleLowerCase() : '';
             if (start.tagName === 'IMG' && tagName !== 'p' && tagName !== 'div') {
                 const parNode: HTMLParagraphElement = document.createElement('p');
                 start.parentElement.insertBefore(parNode, start);
@@ -898,6 +900,10 @@ export class DOMNode {
                 }
             }
         }
+        const tableBlockNodes: HTMLElement[] = this.tableSelection.getBlockNodes();
+        if (tableBlockNodes.length > 0) {
+            return tableBlockNodes;
+        }
         return collectionNodes;
     }
 
@@ -1011,7 +1017,7 @@ export class DOMNode {
                     collectionNodes.push(child);
                 }
                 // Use case when the BR is next sibling but the BR is not the part of selection.
-                if ((i === nodes.length - 1) && wrapperElement.nextElementSibling && 
+                if ((i === nodes.length - 1) && wrapperElement.nextElementSibling &&
                     wrapperElement.querySelectorAll('br').length === 0 &&
                     wrapperElement.nextElementSibling.nodeName === 'BR') {
                     wrapperElement.appendChild(wrapperElement.nextElementSibling);

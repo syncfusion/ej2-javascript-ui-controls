@@ -608,4 +608,42 @@ describe('SVG Tooltip', () => {
        tooltip.controlName = 'Chart';
        tooltip.refresh();
     });
+    it('tooltip checking for tooltip text fill in Fluent 2 theme', () => {
+        tooltip.loaded = (arsgs: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');        
+            expect(svgObject).not.toBe(null);
+            let text: Element = document.getElementById('tooltipcontainer_text');
+            expect(text.getAttribute('fill')).toBe("#242424");
+	    tooltip.controlName = '';
+        };
+       tooltip.tooltipRender = null;
+       tooltip.template = null;
+       tooltip.location = {x : 250, y: 250};    
+       tooltip.inverted = false;
+       tooltip.enableAnimation= false;
+       tooltip.shared = false;
+       tooltip.animationComplete = null;
+       tooltip.theme = 'Fluent2';
+       tooltip.controlName = 'Chart';
+       tooltip.refresh();
+    });
+    it('tooltip checking for tooltip text fill in Fluent 2 dark theme', () => {
+        tooltip.loaded = (arsgs: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');        
+            expect(svgObject).not.toBe(null);
+            let text: Element = document.getElementById('tooltipcontainer_text');
+            expect(text.getAttribute('fill')).toBe("#FFFFFF");
+	    tooltip.controlName = '';
+        };
+       tooltip.tooltipRender = null;
+       tooltip.template = null;
+       tooltip.location = {x : 250, y: 250};    
+       tooltip.inverted = false;
+       tooltip.enableAnimation= false;
+       tooltip.shared = false;
+       tooltip.animationComplete = null;
+       tooltip.theme = 'Fluent2Dark';
+       tooltip.controlName = 'Chart';
+       tooltip.refresh();
+    });
 });

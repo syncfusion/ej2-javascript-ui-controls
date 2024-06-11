@@ -33,12 +33,8 @@ $de-ruler-indent-hover: $content-bg-color-alt4 !default;
 $de-ruler-indent-active: $primary !default;
 $de-custom-treeview-text-size: 13px !default;
 $de-custom-treeview-text-size-bg: 14px !default;
-
-// Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 115px) !default;
 $de-tool-ctnr-editor-height-big: calc(100% - 126px) !default;
-
-// Subtract statusbar height
 $de-ctnr-editor-height: calc(100% - 42px) !default;
 $de-ctnr-editor-height-big: calc(100% - 46px) !default;
 $de-ctrnr-tblr-item-padding: 0 !default;
@@ -125,8 +121,6 @@ $de-page-number-margin-top: 3px;
 $de-page-number-margin-top-big: 4px;
 $de-hlt-clr-height: 20px;
 $de-hlt-clr-height-bigger: 24px;
-
-// Color variable
 $de-pageweb-toggle-outline: $white 0 solid !default;
 $de-title-bar-bg-clr: $primary !default;
 $de-title-bar-font-clr: $primary-text-color !default;
@@ -154,8 +148,6 @@ $de-toggle-border-color: darken($secondary-bg-color, 12.5%) !default;
 $de-toggle-hover-color: darken($secondary-bg-color, 7.5%) !default;
 $de-toggle-border-hover-color: darken($secondary-bg-color, 10%) !default;
 $de-toggle-disabled-color: lighten($secondary-bg-color, 65%);
-
-//Blazor
 $e-de-bzr-button-border-color: $white !default;
 $e-de-bzr-button-active-font-color: $white !default;
 $de-white-color: $white !default;

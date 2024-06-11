@@ -1,4 +1,3 @@
-//layout
 $listview-icon-margin-right: 10px !default;
 $listview-icon-back-margin: 0 !default;
 $listview-icon-back-margin-right: 14px !default;
@@ -51,8 +50,6 @@ $listview-checkbox-right-margin: -2px 0 0 8px !default;
 $listview-checkbox-left-margin: 0 8px 0 0 !default;
 $listview-rtl-checkbox-left-margin: -2px 0 0 8px !default;
 $listview-rtl-checkbox-right-margin: -2px 8px 0 0 !default;
-
-//ListView In-built template variables
 $listview-template-padding: 10px 16px !default;
 $listview-template-avatar-padding-right: 16px !default;
 $listview-template-avatar-padding-left: 68px !default;
@@ -91,8 +88,6 @@ $listview-touch-template-badge-height: 20px !default;
 $listview-touch-template-badge-width: 34px !default;
 $listview-touch-template-badge-line-height: 18px !default;
 $listview-touch-template-badge-font-size: $text-xs !default;
-
-//color
 $listview-font-family: $font-family !default;
 $listview-text-color: rgba($content-text-color) !default;
 $listview-text-disabled: $content-text-color-disabled !default;
@@ -127,8 +122,6 @@ $listview-icon-pressed: rgba($icon-color-pressed) !default;
 $checkmark-bgcolor: rgba($primary) !default;
 $checkmark-border-color: rgba($primary) !default;
 $checkmark-color: rgba($primary-text-color) !default;
-
-//ListView In-built template variables
 $listview-template-multiline-header-color: rgba($content-text-color) !default;
 $listview-template-multiline-content-color: rgba($content-text-color-alt1) !default;
 $listview-template-focused-multiline-content-color: rgba($content-text-color-selected) !default;

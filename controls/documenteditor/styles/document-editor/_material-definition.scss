@@ -2,7 +2,6 @@ $de-padding-half: 6px;
 $de-padding-half-bigger: 8px;
 $de-padding-full: 12px;
 $de-padding-full-bigger: 16px;
-
 $de-cmt-author-nme-padding-left: 8px;
 $de-cmt-author-nme-padding-left-big: $de-cmt-author-nme-padding-left;
 $de-cmt-textbox-top-margin: 12px;
@@ -38,7 +37,6 @@ $de-border-dlg-clr-padding-bottom: 6px;
 $de-td-table-border-left: 5px;
 $de-border-dlg-preview-padding-left: 66px;
 $de-tbl-dlg-align-padding-bottom: 4px;
-
 $de-background: $grey-white !default;
 $search-result-highlight-bg-color: transparent !default;
 $search-result-hightlight-bdr-clr-hvr: #bdbdbd !default;
@@ -541,9 +539,6 @@ $de-rp-nav-lbl: 0 28px;
 $de-rp-nav-btn-mrgn: 0 12px;
 $de-rp-btn-enforce-bx-shadow: 0 2px 2px 0 $de-rp-btn-nav-box-shadow, 0 2px 4px 0 $de-rp-btn-nav-box-shadow-next;
 $de-para-dlg-right-sub-container-top-margin: 0;
-
-//New Implemenatation
-
 $de-par-dlg-hdr-weight: 700 !default;
 $de-para-dlg-hdr-margin-bottom: 20px;
 $de-dlg-heading-opacity: 87%;
@@ -558,9 +553,5 @@ $de-de-rtl-btn-div-e-de-rtl-margin-right: 24px;
 $de-de-rtl-btn-div-e-de-rtl-margin-left: 12px;
 $de-para-dlg-spacing-div-mrgn-left: 40px;
 $de-svg-border-stroke: rgba($grey-light-font, .87) !default;
-
-// Table properties
 $de-row-height-bottom-margin: 8px;
-
-//Columns Dialog
 $de-column-presets-font-size: 60px !default;

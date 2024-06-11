@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Smithchart} from '../../smithchart';
 import { SmithchartMarginModel, SmithchartFontModel} from '../../smithchart/utils/utils-model';
 import { measureText } from '../../smithchart/utils/helper';
-import {getTemplateFunction, convertElementFromLabel, PathOption } from '../../smithchart/utils/helper';
+import { getTemplateFunction, convertElementFromLabel, PathOption } from '../../smithchart/utils/helper';
 import { SeriesMarkerModel, SeriesMarkerDataLabelModel} from '../../smithchart/series/series-model';
 import { SmithchartRect, SmithchartSize, Point, PointRegion, SmithchartLabelPosition } from  '../../smithchart/utils/utils';
 import { DataLabelTextOptions, LabelOption } from  '../../smithchart/utils/utils';

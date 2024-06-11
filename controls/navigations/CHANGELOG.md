@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.35 (2024-06-11)
+
+### TreeView
+
+#### Bug fixes
+
+- `#FB53017` - Resolved the issue where the drop action failed while dropping on a sibling element.
+- `#FB53024` - Resolved the issue where `position` value of nodeDragStop event returns improper value while change the `dropIndicator` value in `nodeDragging` event
+
 ## 25.2.6 (2024-05-28)
 
 ### TreeView
@@ -93,11 +102,11 @@
 
 ## 25.1.35 (2024-03-15)
 
-### ContextMenu
+### Menu
 
 #### Bug Fixes
 
-- `#I565323` - The issue with "Context menu closed while scroll within the sub menu of context menu.
+- `#F583262` - The issue with "script error thrown in Menu component when setting target and hamburger properties" has been resolved.
 
 ### Stepper
 

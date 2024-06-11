@@ -49,8 +49,8 @@ $calendar-disable-opacity: 1 !default;
 //popup styles
 $calendar-small-max-width: 212px !default;
 $calendar-small-min-width: 212px !default;
-$calendar-normal-max-width: 230px !default;
-$calendar-normal-min-width: 230px !default;
+$calendar-normal-max-width: 244px !default;
+$calendar-normal-min-width: 244px !default;
 $calendar-bigger-max-width: 312px !default;
 $calendar-bigger-min-width: 312px !default;
 $calendar-bigger-small-max-width: 276px !default;
@@ -163,6 +163,7 @@ $calendar-bigger-day-font-size: $text-sm !default;
 $calendar-link-font-weight-style: $font-weight-normal !default;
 $calendar-disable-font-weight-style: $font-weight-normal !default;
 $calendar-border-radius: 30px !default;
+$calendar-today-border-radius: 30px !default;
 
 //week header font size
 $calendar-bigger-week-header-font-size: $text-sm !default;
@@ -205,7 +206,7 @@ $calendar-other-month-date-hover-bg: $calendar-other-month-date !default;
 $calendar-light-font: $content-text-color-alt1 !default;
 $calendar-active-font-color: $primary-text-color !default;
 $calendar-active-hover-font-color: $primary !default;
-$calendar-active-today-font-color: $primary !default;
+$calendar-active-today-font-color: $primary-text-color !default;
 $calendar-active-today-hover-font-color: $primary !default;
 $calendar-active-bg-color: $primary-bg-color !default;
 $calendar-active-bg-box-shadow: inset 1px 0 $primary-bg-color, inset 0 1px $primary-bg-color, inset -1px 0 $primary-bg-color, inset 0 -1px $primary-bg-color !default;

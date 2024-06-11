@@ -1,6 +1,5 @@
 @include export-module('splitter-theme') {
   .e-splitter {
-
     &.e-splitter-horizontal,
     &.e-splitter-vertical {
       border: solid 1px $splitter-border-color;
@@ -20,7 +19,6 @@
     }
 
     .e-split-bar {
-
       &.e-split-bar-horizontal {
         background: $splitbar-border-color;
         border-left: $split-bar-border-left;
@@ -84,7 +82,6 @@
           }
         }
 
-        // left-arrow hover/active styles
         &.e-split-bar-hover,
         &.e-split-bar-active {
           .e-navigate-arrow.e-arrow-right::before {
@@ -144,7 +141,6 @@
         &.e-split-bar-hover,
         &.e-split-bar-active {
           .e-navigate-arrow.e-arrow-up {
-
             &::before {
               background-color: $navigation-icon-background-hover;
               opacity: 1;

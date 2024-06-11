@@ -28,11 +28,12 @@ export interface ImageFinetuneValue {
     defaultValue: number;
 }
 
-/** 
- * The Interface which contains the properties for zoom transition occur in the Image Editor. 
- * @remarks   
- * The `cancel` and `previousZoomFactor` properties were used for `zooming` event.   
- */ 
+/**
+ * The Interface which contains the properties for zoom transition occur in the Image Editor.
+ *
+ * @remarks
+ * The `cancel` and `previousZoomFactor` properties were used for `zooming` event.
+ */
 export interface ZoomEventArgs {
     /**
      * Returns the point in which the zooming action was performed.
@@ -104,11 +105,12 @@ export interface PanEventArgs {
     cancel: boolean;
 }
 
-/** 
- * The Interface which contains the properties for crop transition occurs in the Image Editor. 
- * @remarks 
- * The `cancel` and `preventScaling` properties were used for `cropping` event. 
- */  
+/**
+ * The Interface which contains the properties for crop transition occurs in the Image Editor.
+ *
+ * @remarks
+ * The `cancel` and `preventScaling` properties were used for `cropping` event.
+ */
 export interface CropEventArgs {
     /**
      * Returns the start point of the crop region.
@@ -139,11 +141,12 @@ export interface CropEventArgs {
     cancel?: boolean;
 }
 
-/** 
- * The Interface which contains the properties for rotate transition in the Image Editor. 
- * @remarks 
- * The `cancel` and `previousDegree` properties were used for `rotating` event. 
- */ 
+/**
+ * The Interface which contains the properties for rotate transition in the Image Editor.
+ *
+ * @remarks
+ * The `cancel` and `previousDegree` properties were used for `rotating` event.
+ */
 export interface RotateEventArgs {
     /**
      * Returns the current degree to be rotated.
@@ -161,11 +164,12 @@ export interface RotateEventArgs {
     cancel?: boolean;
 }
 
-/** 
- * The Interface which contains the properties for flip transition in the Image Editor. 
- * @remarks 
- * The `cancel` and `previousDirection` properties were used for `flipping` event. 
- */  
+/**
+ * The Interface which contains the properties for flip transition in the Image Editor.
+ *
+ * @remarks
+ * The `cancel` and `previousDirection` properties were used for `flipping` event.
+ */
 export interface FlipEventArgs {
     /**
      * Returns the direction(Horizontal and vertical) to be flipped.
@@ -181,11 +185,12 @@ export interface FlipEventArgs {
     previousDirection: string;
 }
 
-/** 
- * The Interface which contains the properties for shape change in Image Editor. 
- * @remarks 
- * The `cancel` and `previousShapeSettings` properties were used for `shapeChanging` event. 
- */ 
+/**
+ * The Interface which contains the properties for shape change in Image Editor.
+ *
+ * @remarks
+ * The `cancel` and `previousShapeSettings` properties were used for `shapeChanging` event.
+ */
 export interface ShapeChangeEventArgs {
     /**
      * Defines the cancel option to cancel the shape change action.
@@ -471,13 +476,18 @@ export interface ShapeSettings {
      * Returns the tail type of an arrow.
      */
     arrowTail?: ArrowheadType;
+    /**
+     * Returns the order of the annotation in which it is placed on the image.
+     */
+    index?: number;
 }
 
-/** 
- * The interface which contains the properties for filter option for the image. 
- * @remarks 
- * The `cancel` property is used for `imageFiltering` event. 
- */ 
+/**
+ * The interface which contains the properties for filter option for the image.
+ *
+ * @remarks
+ * The `cancel` property is used for `imageFiltering` event.
+ */
 export interface ImageFilterEventArgs {
     /**
      * Specifies the when applying filter to an image.
@@ -489,11 +499,12 @@ export interface ImageFilterEventArgs {
     cancel?: boolean;
 }
 
-/** 
- * The interface which contains the properties for fine tunes option for the image. 
- * @remarks 
- * The `cancel` property is used for `finetuneValueChanging` event. 
- */ 
+/**
+ * The interface which contains the properties for fine tunes option for the image.
+ *
+ * @remarks
+ * The `cancel` property is used for `finetuneValueChanging` event.
+ */
 export interface FinetuneEventArgs {
     /**
      * Specifies the type of fine tunes.
@@ -542,11 +553,12 @@ export interface ImageEditorClickEventArgs {
     point: Point;
 }
 
-/** 
- * The Interface which contains the properties for resize action in the Image Editor. 
- * @remarks 
- * The `cancel`, `previousWidth`, and `previousHeight` properties were used for `resizing` event. 
- */ 
+/**
+ * The Interface which contains the properties for resize action in the Image Editor.
+ *
+ * @remarks
+ * The `cancel`, `previousWidth`, and `previousHeight` properties were used for `resizing` event.
+ */
 export interface ResizeEventArgs {
     /**
      * Defines whether to cancel the resizing action of image editor.
@@ -605,10 +617,11 @@ export interface QuickAccessToolbarEventArgs {
     shape?: string;
 }
 
-/** 
- * The Interface which contains the properties for frame action in the Image Editor. 
- * @remarks 
- * The `cancel` and `previousFrameSetting` properties were used for `frameChange` event. 
+/**
+ * The Interface which contains the properties for frame action in the Image Editor.
+ *
+ * @remarks
+ * The `cancel` and `previousFrameSetting` properties were used for `frameChange` event.
  */
 export interface FrameChangeEventArgs {
     /**
@@ -620,7 +633,7 @@ export interface FrameChangeEventArgs {
      */
     previousFrameSetting : FrameSettings;
     /**
-     * Defines the current frame settings to be applied on the image. 
+     * Defines the current frame settings to be applied on the image.
      */
     currentFrameSetting : FrameSettings;
 }
@@ -630,97 +643,97 @@ export interface FrameChangeEventArgs {
  */
 export interface FrameSettings {
 
-    /** 
+    /**
      * Specifies the frame option such as None, Mat, Bevel, Line, Inset, and Hook.
-     * 
+     *
      * @type {FrameType}
-     * 
+     *
      */
     type: FrameType;
 
-    /** 
-     * Specifies the color of a frame. 
+    /**
+     * Specifies the color of a frame.
      * A string value specifying the color of the frame. The color can be provided in various formats, including named colors ("red", "blue") and hexadecimal notation.
-     * 
+     *
      * @type {string}
-     * 
+     *
      */
     color: string;
 
-    /** 
-     * Specifies the color of a frame. 
+    /**
+     * Specifies the color of a frame.
      * A string value specifying the gradient color of the frame. The color can be provided in various formats, including named colors ("red", "blue") and hexadecimal notation.
-     * 
+     *
      * @type {string}
-     * 
+     *
      */
     gradientColor: string;
 
-    /** 
-     * Specifies the size of a frame. 
+    /**
+     * Specifies the size of a frame.
      * A number value specifying the size of the frame as a percentage. The size value indicates how much of the image's dimensions the frame occupies.
-     * 
+     *
      * @type {number}
-     * 
+     *
      */
     size: number;
 
-    /** 
-     * Specifies the inset value of a frame. 
+    /**
+     * Specifies the inset value of a frame.
      * A number value specifying the inset of the frame as a percentage. The inset value determines how far the frame is drawn inside the image boundaries.
-     * 
-     * @remarks 
-     * The Inset value only be available for Line, Inset, and Hook frames.  
-     * 
+     *
+     * @remarks
+     * The Inset value only be available for Line, Inset, and Hook frames.
+     *
      * @type {number}
-     * 
+     *
      */
     inset: number;
 
-    /** 
-     * Specifies the offset value of a frame. 
+    /**
+     * Specifies the offset value of a frame.
      * A number value specifying the inset of the frame as a percentage. The inset value determines how far the frame is drawn inside the image boundaries.
-     * 
-     * @remarks 
-     * The Inset value only be available for Line, Inset, and Hook frames.  
-     * 
+     *
+     * @remarks
+     * The Inset value only be available for Line, Inset, and Hook frames.
+     *
      * @type {number}
-     * 
+     *
      */
     offset: number;
 
-    /** 
-     *  Specifies the radius value for line-type frame.  
+    /**
+     *  Specifies the radius value for line-type frame.
      *  A number value that specifies the border radius of the frame as a percentage. The border radius controls the curvature of the frame's corners or edges.
-     * 
-     * @remarks 
-     * The radius value only be available for Line and Bevel frames.  
-     * 
+     *
+     * @remarks
+     * The radius value only be available for Line and Bevel frames.
+     *
      * @type {number}
-     * 
+     *
      */
     borderRadius: number;
 
-    /** 
+    /**
      *  Specifies the type of line to be drawn for line-type frame.
      *  A FrameLineStyle enumeration value that specifies the type of line to be applied as a frame.
-     * 
-     * @remarks 
-     * The FrameLineStyle value only be available for Line frames.  
-     * 
+     *
+     * @remarks
+     * The FrameLineStyle value only be available for Line frames.
+     *
      * @type {FrameLineStyle}
-     * 
+     *
      */
     frameLineStyle: FrameLineStyle;
 
-    /** 
+    /**
      *  Specifies the number of lines to be drawn for line-type frame.
-     * 
-     * @remarks 
-     * The lineCount value only be available for Line frame.  
-     * 
+     *
+     * @remarks
+     * The lineCount value only be available for Line frame.
+     *
      * @type {number}
-     * 
+     *
      */
     lineCount: number;
 }
@@ -1384,6 +1397,10 @@ export interface SelectionPoint {
      */
     rotatedAngle: number;
     /**
+     * Gets order of shape.
+     */
+    order: number;
+    /**
      * Gets start and end x, y Point with radius.
      */
     imageRatio?: ActivePoint;
@@ -1502,6 +1519,7 @@ export interface SelectionPoint {
     /**
      * Gets the transform collection values.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rotateFlipColl?: any;
     /**
      * Gets the opacity value of image annotation.

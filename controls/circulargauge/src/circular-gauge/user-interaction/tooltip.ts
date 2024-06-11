@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Pointer, Range, Annotation } from '../axes/axis';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
+import { Tooltip, TooltipTheme } from '@syncfusion/ej2-svg-base';
 import { IVisiblePointer, ITooltipRenderEventArgs } from '../model/interface';
 import { stringToNumber, getAngleFromValue, getLocationFromAngle, getPointer, getLabelFormat, Size, GaugeLocation, Rect } from '../utils/helper-common';
 import { getMousePosition, getElementSize } from '../utils/helper-tooltip';
@@ -25,7 +25,6 @@ export class GaugeTooltip {
     private currentPointer: Pointer;
     private currentRange: Range;
     private currentAnnotation: Annotation;
-    private borderStyle: BorderModel;
     private svgTooltip: Tooltip;
     private tooltipId: string;
     private gaugeId: string;
@@ -45,7 +44,6 @@ export class GaugeTooltip {
         this.gauge = gauge;
         this.tooltipId = this.gauge.element.id + '_CircularGauge_Tooltip';
         this.tooltip = <TooltipSettings>gauge.tooltip;
-        this.borderStyle = this.tooltip.border;
         this.addEventListener();
     }
 
@@ -305,7 +303,7 @@ export class GaugeTooltip {
                         fontWeight: annotationTooltipArgs.tooltip.textStyle.fontWeight || this.gauge.themeStyle.fontWeight,
                         opacity: annotationTooltipArgs.tooltip.textStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity,
                         fontStyle:  annotationTooltipArgs.tooltip.textStyle.fontStyle,
-                        size:  annotationTooltipArgs.tooltip.textStyle.size || this.gauge.themeStyle.fontSize
+                        size:  annotationTooltipArgs.tooltip.textStyle.size || this.gauge.themeStyle.tooltipFontSize
                     };
                     this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, annotationTooltipArgs,
                                                             annotationTemplate, this.arrowInverted, this.tooltipRect,
@@ -367,7 +365,11 @@ export class GaugeTooltip {
      */
     private svgTooltipCreate(svgTooltip: Tooltip, tooltipArg: ITooltipRenderEventArgs, template: string | Function, arrowInverted: boolean,
                              tooltipRect: Rect, gauge: CircularGauge, fill: string, textStyle: FontModel, border: BorderModel ): Tooltip {
+        let borderObject: BorderModel = {
+            color: border.color || this.gauge.themeStyle.tooltipBorderColor || '', width: border.width, dashArray: border.dashArray
+        };
         svgTooltip = new Tooltip({
+            theme: gauge.theme as TooltipTheme,
             enable: true,
             data: { value: tooltipArg.content },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -381,7 +383,7 @@ export class GaugeTooltip {
             fill: fill || gauge.themeStyle.tooltipFillColor,
             textStyle: textStyle,
             availableSize: gauge.availableSize,
-            border: border,
+            border: borderObject,
             enableShadow: true
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -575,7 +577,6 @@ export class GaugeTooltip {
         this.currentPointer = null;
         this.currentRange = null;
         this.currentAnnotation = null;
-        this.borderStyle = null;
         if (!isNullOrUndefined(this.svgTooltip)) {
             this.svgTooltip.destroy();
         }

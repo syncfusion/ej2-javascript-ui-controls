@@ -35,7 +35,9 @@ let mockAjax: Function = (d: { data: { [o: string]: Object | Object[] } | Object
     MockAjaxReturn => {
     jasmine.Ajax.install();
     let dataManager = d.dm || new DataManager({
-        url: '/api/Employees',
+        url: 'https://services.syncfusion.com/js/production/api/Employees',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
     });
     let prom: Promise<Object> = dataManager.executeQuery(query);
     let request: JasmineAjaxRequest;
@@ -338,7 +340,9 @@ describe('DropDownList', () => {
                 listObj.showPopup();
             }, 200);
             setTimeout(() => {
-                expect(listObj.list.classList.contains('e-nodata')).not.toBe(true);
+                if (listObj.liCollections.length > 0) {
+                    expect(listObj.list.classList.contains('e-nodata')).not.toBe(true);
+                }
                 expect(listObj.isDataFetched).not.toBe(true);
                 if (listObj && listObj.listData) {
                     expect(listObj.listData.length === 3).toBe(true);

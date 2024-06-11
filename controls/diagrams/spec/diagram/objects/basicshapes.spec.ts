@@ -3,12 +3,73 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, BasicShapeModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-
+import { ConnectorModel } from '../../../src';
 /**
  * Node spec
  */
 describe('Diagram Control', () => {
+    describe('Add diagram nodes or connectors collection dynamically through API method',()=>{
+        let diagram: Diagram;
+        let ele: HTMLElement;
+    
+        beforeAll(():void=>{
+            ele = createElement('div', { id: 'addDiagramElements' }); 
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: "1200px", height: "500px",
+                 });
+             diagram.appendTo('#addDiagramElements');
+             let nodes: NodeModel[]=[
+                {
+                    id: 'node1',  offsetX: 100, offsetY: 100,
+                   
+                },
+                {
+                    id: 'node2',  offsetX: 300, offsetY: 100,
+                    
+                },
+                {
+                    id: 'node3', offsetX: 600, offsetY: 100,
+                },
+                {
+                    id: 'node4',  offsetX: 300, offsetY: 300,
+                },
+                {
+                    id: 'node44', offsetX: 600, offsetY: 300,
+                },
+             ];
+            let connectors: ConnectorModel[] = [
+                 {
+                    id: 'connector0',  sourceID: 'node1', targetID: 'node2',
+               
+                },
+                {
+                    id: 'connector1', sourceID: 'node2', targetID: 'node3',
+                   
+                },
+                {
+                    id: 'connector2',  sourceID: 'node3', targetID: 'node4',
+                  
+                },
+                {
+                    id: 'connector3', sourceID: 'node4', targetID: 'node44',
+                },
+             ];
+            diagram.addElements(nodes);
+            diagram.addElements(connectors);
+        });
 
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Pass a node or connector collection as a parameter in the method and verify nodes are added properly in the diagram',(done:Function)=>{
+            expect(diagram.nodes.length).toBe(5);
+            expect(diagram.connectors.length).toBe(4);
+            done();
+        });
+        
+    });
     describe('Basic Shapes Without Size', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

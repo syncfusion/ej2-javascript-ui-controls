@@ -211,7 +211,6 @@ export class SanitizeHtmlHelper {
     }
 
     private static removeXssAttrs(): void {
-        // eslint-disable-next-line
         this.removeAttrs.forEach((item: { [key: string]: string }, index: number) => {
             const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(item.selector);
             if (elements.length > 0) {

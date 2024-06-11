@@ -27,7 +27,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -182,7 +182,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
             expect(isRefresh).toBeTruthy();
         });
-        it('Check node', () => {
+        it('Check node I', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
@@ -197,7 +197,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 done();
             });
         });
-        it('Check node', (done: Function) => {
+        it('Check node II', (done: Function) => {
             setTimeout(() => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
@@ -215,7 +215,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 done();
             });
         });
-        it('Check node', (done: Function) => {
+        it('Check node III', (done: Function) => {
             setTimeout(() => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
@@ -233,7 +233,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 done();
             });
         });
-        it('Check node', (done: Function) => {
+        it('Check node IV', (done: Function) => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
@@ -380,9 +380,6 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 done();
             }, 1000);
         });
-
-
-
         it('Apply button', () => {
             pivotCommon.dataSourceUpdate.control = fieldListObj;
         });
@@ -1146,7 +1143,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });
     });
-
+    
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

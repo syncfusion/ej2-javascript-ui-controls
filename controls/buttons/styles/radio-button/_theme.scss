@@ -1,7 +1,4 @@
 @include export-module('radiobutton-theme') {
-
-  /*! radiobutton theme */
-
   .e-radio {
     +label {
       &::before {
@@ -132,6 +129,7 @@
         pointer-events: none;
 
         &::before {
+          background-color: $radio-btn-disabled-background-color;
           border-color: $radio-btn-disabled-border-color;
           cursor: default;
         }
@@ -163,12 +161,9 @@
             cursor: default;
           }
 
-          & .e-ripple-container {
+          & .e-ripple-container,
+          & .e-ripple-container::after {
             background-color: transparent;
-
-            &::after {
-              background-color: transparent;
-            }
           }
         }
       }

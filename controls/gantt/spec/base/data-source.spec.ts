@@ -29,6 +29,577 @@ export let dataSource1: Object[] = [
         parentID: 1
     }
 ];
+export let cr884998 = [
+    {
+        taskId: 8,
+        taskName: 'Adicionar 8',
+        startDate: '2024-04-05',
+        endDate: '2024-04-05T23:59:59.999Z',
+        duration: 1,
+        dependencies: '',
+        taskIndex: 0,
+        cost: 110,
+        index: 0,
+        wbs: '01',
+    },
+    {
+        taskId: 6,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parts: [
+            {
+                left: 0,
+                width: 165,
+                duration: 3,
+                endDate: '2024-04-10T20:00:00.000Z',
+                startDate: '2024-04-08T11:00:00.000Z',
+                segmentIndex: 0,
+                showProgress: true,
+                progressWidth: 0,
+                offsetDuration: 0,
+            },
+            {
+                left: 198,
+                width: 66,
+                duration: 2,
+                endDate: '2024-04-15T20:00:00.000Z',
+                startDate: '2024-04-12T11:00:00.000Z',
+                segmentIndex: 1,
+                showProgress: false,
+                progressWidth: -1,
+                offsetDuration: 1,
+            },
+        ],
+        taskIndex: 1,
+        cost: 0,
+        index: 1,
+        wbs: '02',
+    },
+    {
+        taskId: 7,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 6,
+        taskIndex: 2,
+        cost: 0,
+        index: 2,
+        wbs: '02.01',
+    },
+    {
+        taskId: 9,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 7,
+        taskIndex: 3,
+        cost: 12340,
+        index: 3,
+        wbs: '02.01.01',
+    },
+    {
+        taskId: 10,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 6,
+        taskIndex: 4,
+        cost: 0,
+        index: 4,
+        wbs: '02.02',
+    },
+    {
+        taskId: 11,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 10,
+        taskIndex: 5,
+        cost: 1000,
+        index: 5,
+        wbs: '02.02.01',
+    },
+    {
+        taskId: 13,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 10,
+        taskIndex: 6,
+        cost: 1000,
+        index: 6,
+        wbs: '02.02.02',
+    },
+    {
+        taskId: 12,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 10,
+        taskIndex: 7,
+        cost: 700,
+        index: 7,
+        wbs: '02.02.03',
+    },
+    {
+        taskId: 2,
+        taskName: 'Adicionar 2',
+        startDate: '2024-04-09',
+        endDate: '2024-04-09T23:59:59.999Z',
+        duration: 1,
+        dependencies: '',
+        taskIndex: 8,
+        cost: 105,
+        index: 8,
+        wbs: '03',
+    },
+    {
+        taskId: 4,
+        taskName: 'Adicionar 4',
+        startDate: '2024-04-05',
+        endDate: '2024-04-05T23:59:59.999Z',
+        duration: 1,
+        dependencies: '',
+        taskIndex: 9,
+        cost: 120,
+        index: 9,
+        wbs: '04',
+    },
+    {
+        taskId: 5,
+        taskName: 'Adicionar 5',
+        startDate: '2024-04-08',
+        endDate: '2024-04-08T23:59:59.999Z',
+        duration: 1,
+        dependencies: '4FS',
+        taskIndex: 10,
+        index: 10,
+        wbs: '05',
+    },
+];
+export let splitTasksDataRelease: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/04/2019'),
+        EndDate: new Date('03/10/2019'),
+        subtasks: [
+            {
+                TaskID: 2,
+                TaskName: 'Planning',
+                StartDate: new Date('02/04/2019'),
+                subtasks: [
+                    {
+                        TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '90'
+                    },
+                    {
+                        TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '75',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 4 },
+                            { StartDate: new Date('02/08/2019'), Duration: 2 }
+                          ]
+                    },
+                    {
+                        TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                        Duration: 0, Predecessor: '3FS,5FS'
+                    },
+                ]
+            },
+            {
+                TaskID: 7,
+                TaskName: 'Design',
+                StartDate: new Date('02/25/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8, TaskName: 'Software Specification', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                        Duration: 5, Progress: '60', Predecessor: '6FS', subtasks: [{
+                            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '60',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 2 },
+                                { StartDate: new Date('02/05/2019'), Duration: 5 },
+                                { StartDate: new Date('02/08/2019'), Duration: 3 }
+                              ]
+                        }]
+                    },
+                    {
+                        TaskID: 9, TaskName: 'Develop prototype', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                        Duration: 5, Progress: '100', Predecessor: '6FS',
+                        Segments: [
+                            { StartDate: new Date('02/25/2019'), Duration: 2 },
+                            { StartDate: new Date('02/28/2019'), Duration: 3 }
+                          ]
+                    },
+                    {
+                        TaskID: 10, TaskName: 'Get approval from customer', StartDate: new Date('02/25/2019'),
+                        EndDate: new Date('03/01/2019'), Duration: 4, Progress: '100', Predecessor: '9FS'
+                    },
+                    {
+                        TaskID: 11, TaskName: 'Design complete', StartDate: new Date('02/25/2019'), EndDate: new Date('02/25/2019'),
+                        Duration: 0, Predecessor: '10FS'
+                    }
+                ]
+            }
+        ]
+    }
+];
+export let splitTasksData3: object[] = [
+    {
+        id: 1,
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/04/2019'),
+        EndDate: new Date('03/10/2019'),
+        subtasks: [
+            {
+                id: 2,
+                TaskName: 'Planning',
+                StartDate: new Date('02/04/2019'),
+                subtasks: [
+                    {
+                        id: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '60',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 2 , customID: 33},
+                            { StartDate: new Date('02/05/2019'), Duration: 5 , customID: 44},
+                            { StartDate: new Date('02/08/2019'), Duration: 3 , customID: 55}
+                        ]
+                    },
+                ]
+            },
+        ]
+    }
+];
+let releaseTempData: any[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        parentID: 0
+    },
+    {
+        TaskID: 2,
+        TaskName: 'Defining the product and its usage',
+        StartDate: new Date('04/02/2019'),
+        Duration: 3,
+        Progress: 30,
+        parentID: 1
+    },
+    {
+        TaskID: 3,
+        TaskName: 'Defining target audience',
+        StartDate: new Date('04/02/2019'),
+        parentID: 1,
+        Duration: 3
+    },
+    {
+        TaskID: 4,
+        TaskName: 'Prepare product sketch and notes',
+        StartDate: new Date('04/05/2019'),
+        Duration: 2,
+        parentID: 1,
+        Progress: 30
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Concept approval',
+        StartDate: new Date('04/08/2019'),
+        parentID: 0,
+        Duration: 0
+    },
+    {
+        TaskID: 6,
+        TaskName: 'Market research',
+        StartDate: new Date('04/02/2019'),
+        parentID: 0,
+        EndDate: new Date('04/21/2019')
+    },
+    {
+        TaskID: 7,
+        TaskName: 'Demand analysis',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        parentID: 6
+    },
+    {
+        TaskID: 8,
+        TaskName: 'Customer strength',
+        StartDate: new Date('04/09/2019'),
+        Duration: 4,
+        parentID: 7,
+        Progress: 30
+    },
+    {
+        TaskID: 9,
+        TaskName: 'Market opportunity analysis',
+        StartDate: new Date('04/09/2019'),
+        Duration: 4,
+        parentID: 7
+    },
+    {
+        TaskID: 10,
+        TaskName: 'Competitor analysis',
+        StartDate: new Date('04/15/2019'),
+        Duration: 4,
+        parentID: 6,
+        Progress: 30
+    },
+    {
+        TaskID: 11,
+        TaskName: 'Product strength analsysis',
+        StartDate: new Date('04/15/2019'),
+        Duration: 4,
+        parentID: 6
+    },
+    {
+        TaskID: 12,
+        TaskName: 'Research complete',
+        StartDate: new Date('04/18/2019'),
+        Duration: 0,
+        parentID: 6
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product design and development',
+        StartDate: new Date('04/04/2019'),
+        parentID: 0,
+        EndDate: new Date('04/21/2019')
+    },
+    {
+        TaskID: 14,
+        TaskName: 'Functionality design',
+        StartDate: new Date('04/19/2019'),
+        Duration: 3,
+        parentID: 13,
+        Progress: 30
+    },
+    {
+        TaskID: 15,
+        TaskName: 'Quality design',
+        StartDate: new Date('04/19/2019'),
+        Duration: 3,
+        parentID: 13
+    },
+    {
+        TaskID: 16,
+        TaskName: 'Define reliability',
+        StartDate: new Date('04/24/2019'),
+        Duration: 2,
+        Progress: 30,
+        parentID: 13
+    },
+    {
+        TaskID: 17,
+        TaskName: 'Identifying raw materials',
+        StartDate: new Date('04/24/2019'),
+        Duration: 2,
+        parentID: 13
+    },
+    {
+        TaskID: 18,
+        TaskName: 'Define cost plan',
+        StartDate: new Date('04/04/2019'),
+        parentID: 13,
+        EndDate: new Date('04/21/2019')
+    },
+    {
+        TaskID: 19,
+        TaskName: 'Manufacturing cost',
+        StartDate: new Date('04/26/2019'),
+        Duration: 2,
+        Progress: 30,
+        parentID: 18
+    },
+    {
+        TaskID: 20,
+        TaskName: 'Selling cost',
+        StartDate: new Date('04/26/2019'),
+        Duration: 2,
+        parentID: 18
+    },
+    {
+        TaskID: 21,
+        TaskName: 'Development of the final design',
+        StartDate: new Date('04/30/2019'),
+        parentID: 13,
+        EndDate: new Date('04/21/2019')
+    },
+    {
+        TaskID: 22,
+        TaskName: 'Defining dimensions and package volume',
+        StartDate: new Date('04/30/2019'),
+        Duration: 2,
+        parentID: 21,
+        Progress: 30
+    },
+    {
+        TaskID: 23,
+        TaskName: 'Develop design to meet industry standards',
+        StartDate: new Date('05/02/2019'),
+        Duration: 2,
+        parentID: 21
+    },
+    {
+        TaskID: 24,
+        TaskName: 'Include all the details',
+        StartDate: new Date('05/06/2019'),
+        Duration: 3,
+        parentID: 21
+    },
+    {
+        TaskID: 25,
+        TaskName: 'CAD computer-aided design',
+        StartDate: new Date('05/09/2019'),
+        Duration: 3,
+        parentID: 13,
+        Progress: 30
+    },
+    {
+        TaskID: 26,
+        TaskName: 'CAM computer-aided manufacturing',
+        StartDate: new Date('09/14/2019'),
+        Duration: 3,
+        parentID: 13
+    },
+    {
+        TaskID: 27,
+        TaskName: 'Design complete',
+        StartDate: new Date('05/16/2019'),
+        Duration: 0,
+        parentID: 13
+    },
+    {
+        TaskID: 28,
+        TaskName: 'Prototype testing',
+        StartDate: new Date('05/17/2019'),
+        Duration: 4,
+        Progress: 30,
+        parentID: 0
+    },
+    {
+        TaskID: 29,
+        TaskName: 'Include feedback',
+        StartDate: new Date('05/17/2019'),
+        Duration: 4,
+        parentID: 0
+    },
+    {
+        TaskID: 30,
+        TaskName: 'Manufacturing',
+        StartDate: new Date('05/23/2019'),
+        Duration: 5,
+        Progress: 30,
+        parentID: 0
+    },
+    {
+        TaskID: 31,
+        TaskName: 'Assembling materials to finsihed goods',
+        StartDate: new Date('05/30/2019'),
+        Duration: 5,
+        parentID: 0
+    },
+    {
+        TaskID: 32,
+        TaskName: 'Feedback and testing',
+        StartDate: new Date('04/04/2019'),
+        parentID: 0,
+        EndDate: new Date('04/21/2019'),
+    },
+    {
+        TaskID: 33,
+        TaskName: 'Internal testing and feedback',
+        StartDate: new Date('06/06/2019'),
+        Duration: 3,
+        parentID: 32,
+        Progress: 45
+    },
+    {
+        TaskID: 34,
+        TaskName: 'Customer testing and feedback',
+        StartDate: new Date('06/11/2019'),
+        Duration: 3,
+        parentID: 32,
+        Progress: 50
+    },
+    {
+        TaskID: 35,
+        TaskName: 'Final product development',
+        StartDate: new Date('04/04/2019'),
+        parentID: 0,
+        EndDate: new Date('04/21/2019'),
+    },
+    {
+        TaskID: 36,
+        TaskName: 'Important improvements',
+        StartDate: new Date('06/14/2019'),
+        Duration: 4,
+        Progress: 30,
+        parentID: 35
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Address any unforeseen issues',
+        StartDate: new Date('06/14/2019'),
+        Duration: 4,
+        Progress: 30,
+        parentID: 35
+    },
+    {
+        TaskID: 38,
+        TaskName: 'Final product',
+        StartDate: new Date('04/04/2019'),
+        parentID: 0,
+        EndDate: new Date('04/21/2019'),
+    },
+    {
+        TaskID: 39,
+        TaskName: 'Branding product',
+        StartDate: new Date('06/20/2019'),
+        Duration: 4,
+        parentID: 38
+    },
+    {
+        TaskID: 40,
+        TaskName: 'Marketing and presales',
+        StartDate: new Date('06/26/2019'),
+        Duration: 4,
+        Progress: 30,
+        parentID: 38
+    }
+];
+
+export let releaseVirtualData: any[] = [];
+let releaseprojId: number = 1;
+for (let i: number = 0; i < 50; i++) {
+    let x: number = releaseVirtualData.length + 1;
+    let parent: any = {};
+    /* tslint:disable:no-string-literal */
+    parent['TaskID'] = x;
+    parent['TaskName'] = 'Project' + (releaseprojId++);
+    releaseVirtualData.push(parent);
+    for (let j: number = 0; j < releaseTempData.length; j++) {
+        let subtasks: any = {};
+        /* tslint:disable:no-string-literal */
+        subtasks['TaskID'] = releaseTempData[j].TaskID + x;
+        subtasks['TaskName'] = releaseTempData[j].TaskName;
+        subtasks['StartDate'] = releaseTempData[j].StartDate;
+        subtasks['Duration'] = releaseTempData[j].Duration;
+        subtasks['Progress'] = releaseTempData[j].Progress;
+        subtasks['parentID'] = releaseTempData[j].parentID + x;
+        subtasks["Predecessor"] = releaseTempData[j].TaskID + x -1;
+        releaseVirtualData.push(subtasks);
+    }
+}
 export let cR885322: Object[] = [
     {
         id: '62ed75125fb9p80015ae8ee7',
@@ -126,17 +697,290 @@ export let cR885322: Object[] = [
     },
 ];
 
-export let parentProgressData: object[] = [
+export let bug885565Holiday: object[] = [
     {
         TaskID: 1,
-        TaskName: 'Parent',
+        TaskName: 'Product Concept',
         StartDate: new Date('04/02/2019'),
         EndDate: new Date('04/21/2019'),
         subtasks: [
-            { TaskID: 2, TaskName: 'Child1', StartDate: new Date('04/02/2019'), Duration: 0.1, Progress: 100 },
-            { TaskID: 3, TaskName: 'Child2', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100},
-            { TaskID: 4, TaskName: 'Child3', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100 },
-        ]
+            {
+                TaskID: 2,
+                TaskName: 'Defining the product  and its usage',
+                BaselineStartDate: new Date('04/02/2019'),
+                BaselineEndDate: new Date('04/06/2019'),
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 30,
+            },
+            {
+                TaskID: 3,
+                TaskName: 'Defining target audience',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Indicators: [
+                    {
+                        date: '04/10/2019',
+                        iconClass:
+                            'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        name: 'Indicator title',
+                        tooltip: 'tooltip',
+                    },
+                ],
+            },
+            {
+                TaskID: 4,
+                TaskName: 'Prepare product sketch and notes',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 30,
+            },
+        ],
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Concept Approval',
+        StartDate: new Date('04/02/2024'),
+        Duration: 0,
+    },
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8,
+                        TaskName: 'Customer strength',
+                        BaselineStartDate: new Date('04/08/2019'),
+                        BaselineEndDate: new Date('04/12/2019'),
+                        StartDate: new Date('04/04/2019'),
+                        Duration: 4,
+                        Predecessor: '5',
+                        Progress: 30,
+                    },
+                    {
+                        TaskID: 9,
+                        TaskName: 'Market opportunity analysis',
+                        StartDate: new Date('04/04/2019'),
+                        Duration: 4,
+                    },
+                ],
+            },
+            {
+                TaskID: 10,
+                TaskName: 'Competitor Analysis',
+                StartDate: new Date('04/04/2019'),
+                Duration: 4,
+                Progress: 30,
+            },
+            {
+                TaskID: 11,
+                TaskName: 'Product strength analysis',
+                StartDate: new Date('04/04/2019'),
+                Duration: 4,
+                Predecessor: '9',
+            },
+            {
+                TaskID: 12,
+                TaskName: 'Research complete',
+                StartDate: new Date('04/04/2019'),
+                Duration: 0,
+                Predecessor: '10',
+            },
+        ],
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product Design and Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 14,
+                TaskName: 'Functionality design',
+                StartDate: new Date('04/04/2019'),
+                Duration: 7,
+                Progress: 30,
+            },
+            {
+                TaskID: 15,
+                TaskName: 'Quality design',
+                StartDate: new Date('04/04/2019'),
+                Duration: 5,
+            },
+            {
+                TaskID: 16,
+                TaskName: 'Define Reliability',
+                StartDate: new Date('04/04/2019'),
+                Duration: 5,
+                Progress: 30,
+            },
+            {
+                TaskID: 17,
+                TaskName: 'Identifying raw materials ',
+                StartDate: new Date('04/04/2019'),
+                Duration: 4,
+            },
+            {
+                TaskID: 18,
+                TaskName: 'Define cost plan',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 19,
+                        TaskName: 'Manufacturing cost',
+                        StartDate: new Date('04/04/2019'),
+                        Duration: 1,
+                        Progress: 30,
+                    },
+                    {
+                        TaskID: 20,
+                        TaskName: 'Selling cost',
+                        StartDate: new Date('04/04/2019'),
+                        Duration: 1,
+                    },
+                ],
+            },
+            {
+                TaskID: 21,
+                TaskName: 'Development of the final design',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 22,
+                        TaskName: 'Defining dimensions and package volume',
+                        StartDate: new Date('04/04/2019'),
+                        Duration: 2,
+                        Progress: 30,
+                    },
+                    {
+                        TaskID: 23,
+                        TaskName: 'Develop design to meet industry standards',
+                        StartDate: new Date('04/04/2019'),
+                        Duration: 3,
+                    },
+                    {
+                        TaskID: 24,
+                        TaskName: 'Include all the details',
+                        StartDate: new Date('04/04/2019'),
+                        Duration: 5,
+                    },
+                ],
+            },
+            {
+                TaskID: 25,
+                TaskName: 'CAD Computer-aided design',
+                StartDate: new Date('04/04/2019'),
+                Duration: 10,
+                Progress: 30,
+            },
+            {
+                TaskID: 26,
+                TaskName: 'CAM Computer-aided manufacturing',
+                StartDate: new Date('04/04/2019'),
+                Duration: 10,
+            },
+        ],
+    },
+    {
+        TaskID: 27,
+        TaskName: 'Prototype Testing',
+        StartDate: new Date('04/04/2019'),
+        Duration: 12,
+        Progress: 30,
+    },
+    {
+        TaskID: 28,
+        TaskName: 'Include feedback',
+        StartDate: new Date('04/04/2019'),
+        Duration: 5,
+    },
+    {
+        TaskID: 29,
+        TaskName: 'Manufacturing',
+        StartDate: new Date('04/04/2019'),
+        Duration: 9,
+        Progress: 30,
+    },
+    {
+        TaskID: 30,
+        TaskName: 'Assembling materials to finished goods',
+        StartDate: new Date('04/04/2019'),
+        Duration: 12,
+    },
+    {
+        TaskID: 31,
+        TaskName: 'Feedback and Testing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 32,
+                TaskName: 'Internal testing and feedback',
+                StartDate: new Date('04/04/2019'),
+                Duration: 5,
+                Progress: 30,
+            },
+            {
+                TaskID: 33,
+                TaskName: 'Customer testing and feedback',
+                StartDate: new Date('04/04/2019'),
+                Duration: 7,
+                Progress: 30,
+            },
+        ],
+    },
+    {
+        TaskID: 34,
+        TaskName: 'Product Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 35,
+                TaskName: 'Important improvements',
+                StartDate: new Date('04/04/2019'),
+                Duration: 2,
+                Progress: 30,
+            },
+            {
+                TaskID: 36,
+                TaskName: 'Address any unforeseen issues',
+                StartDate: new Date('04/04/2019'),
+                Duration: 2,
+                Progress: 30,
+            },
+        ],
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Final Product',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 38,
+                TaskName: 'Branding product',
+                StartDate: new Date('04/04/2019'),
+                Duration: 5,
+            },
+            {
+                TaskID: 39,
+                TaskName: 'zzz',
+                StartDate: new Date('04/04/2019'),
+                Duration: 10,
+                Progress: 30,
+            },
+        ],
     },
 ];
 export let pdfData: Object[] = [
@@ -173,6 +1017,246 @@ export let pdfData: Object[] = [
                 name: '<span style="color:red">String Template</span>',
             },
         ],
+    },
+];
+export let mileStoneData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2,
+                TaskName: 'Defining the product  and its usage',
+                BaselineStartDate: new Date('04/02/2019'),
+                BaselineEndDate: new Date('04/04/2019'),
+                StartDate: new Date('04/02/2024'),
+                Duration: 3,
+                Progress: 30,
+            },
+            {
+                TaskID: 3,
+                TaskName: 'Defining target audience',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Indicators: [
+                    {
+                        date: '04/10/2019',
+                        iconClass: 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        name: 'Indicator title',
+                        tooltip: 'tooltip',
+                    },
+                ],
+            },
+            {
+                TaskID: 4,
+                TaskName: 'Prepare product sketch and notes',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 30,
+            },
+        ],
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Concept Approval',
+        StartDate: new Date('04/02/2024'),
+        Duration: 0,
+    },
+    {
+        TaskID: 8,
+        TaskName: 'Customer strength',
+        BaselineStartDate: new Date('04/08/2019'),
+        BaselineEndDate: new Date('04/12/2019'),
+        StartDate: new Date('04/04/2019'),
+        Duration: 4,
+        Predecessor: '5',
+        Progress: 30,
+    },
+]
+
+export let newData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, 
+            Indicators: [
+                {
+                    'date': '04/10/2019',
+                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                    'name': 'Indicator title',
+                    'tooltip': 'tooltip'
+                }
+            ] 
+        },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5",Progress: 30 },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                ]
+            },
+            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8" ,Progress: 30},
+            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product Design and Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'), Duration: 7,Progress: 30 },
+            { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 16, TaskName: 'Define Reliability', StartDate: new Date('04/04/2019'), Duration: 5,Progress: 30 },
+            { TaskID: 17, TaskName: 'Identifying raw materials ', StartDate: new Date('04/04/2019'), Duration: 4 },
+            {
+                TaskID: 18,
+                TaskName: 'Define cost plan',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'), Duration: 1,Progress: 30 },
+                    { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 1 }
+                ]
+            },
+            {
+                TaskID: 21,
+                TaskName: 'Development of the final design',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 },
+                    { TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'), Duration: 3 },
+                    { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 5 }
+                ]
+            },
+            { TaskID: 25, TaskName: 'CAD Computer-aided design', StartDate: new Date('04/04/2019'), Duration: 10,Progress: 30 },
+            { TaskID: 26, TaskName: 'CAM Computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 10 }
+        ]
+    },
+    { TaskID: 27, TaskName: 'Prototype Testing', StartDate: new Date('04/04/2019'), Duration: 12,Progress: 30 },
+    { TaskID: 28, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 5 },
+    { TaskID: 29, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 9 ,Progress: 30},
+    { TaskID: 30, TaskName: 'Assembling materials to finished goods', StartDate: new Date('04/04/2019'), Duration: 12 },
+    {
+        TaskID: 31,
+        TaskName: 'Feedback and Testing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 32, TaskName: 'Internal testing and feedback', StartDate: new Date('04/04/2019'), Duration: 5,Progress: 30 },
+            { TaskID: 33, TaskName: 'Customer testing and feedback', StartDate: new Date('04/04/2019'), Duration: 7,Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 34,
+        TaskName: 'Product Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 35, TaskName: 'Important improvements', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 },
+            { TaskID: 36, TaskName: 'Address any unforeseen issues', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Final Product',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 38, TaskName: 'Branding product', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 39, TaskName: 'Marketing and pre-sales', StartDate: new Date('04/04/2019'), Duration: 10,Progress: 30 }
+        ]
+    }
+];
+
+export let taskMode: object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual' : true,
+        'Children': [
+             { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+             'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+             { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+             'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+             { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+             'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+        ]
+    },
+    {
+        'TaskID': 5,
+        'TaskName': 'Parent Task 2',
+        'StartDate': new Date('03/05/2017'),
+        'EndDate': new Date('03/09/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+             { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+             'EndDate': new Date('03/09/2017'), 'Progress': '40' },
+             { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+             'EndDate': new Date('03/09/2017'), 'Progress': '40', },
+             { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
+             'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true },
+             { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+             'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
+        ]
+    },
+    {
+        'TaskID': 10,
+        'TaskName': 'Parent Task 3',
+        'StartDate': new Date('03/13/2017'),
+        'EndDate': new Date('03/17/2017'),
+        'Progress': '40',
+        'Children': [
+             { 'TaskID': 11, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/13/2017'),
+             'EndDate': new Date('03/17/2017'), 'Progress': '40' },
+             { 'TaskID': 12, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/13/2017'),
+             'EndDate': new Date('03/17/2017'), 'Progress': '40', },
+             { 'TaskID': 13, 'TaskName': 'Child Task 3', 'StartDate': new Date('03/13/2017'),
+             'EndDate': new Date('03/17/2017'), 'Progress': '40', },
+             { 'TaskID': 14, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/12/2017'),
+             'EndDate': new Date('03/17/2017'), 'Progress': '40', 'isManual': true },
+             { 'TaskID': 15, 'TaskName': 'Child Task 5', 'StartDate': new Date('03/13/2017'),
+             'EndDate': new Date('03/17/2017'), 'Progress': '40' }
+        ]
+    }
+];
+
+export let parentProgressData: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Parent',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Child1', StartDate: new Date('04/02/2019'), Duration: 0.1, Progress: 100 },
+            { TaskID: 3, TaskName: 'Child2', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100},
+            { TaskID: 4, TaskName: 'Child3', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100 },
+        ]
     },
 ];
 export let customZoomingdata: Object[] = [
@@ -7355,32 +8439,6 @@ export let splitTasksData2: object[] = [
         ]
     }
 ];
-export let splitTasksData3: object[] = [
-    {
-        id: 1,
-        TaskName: 'Project Schedule',
-        StartDate: new Date('02/04/2019'),
-        EndDate: new Date('03/10/2019'),
-        subtasks: [
-            {
-                id: 2,
-                TaskName: 'Planning',
-                StartDate: new Date('02/04/2019'),
-                subtasks: [
-                    {
-                        id: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
-                        Duration: 10, Progress: '60',
-                        Segments: [
-                            { StartDate: new Date('02/04/2019'), Duration: 2 , customID: 33},
-                            { StartDate: new Date('02/05/2019'), Duration: 5 , customID: 44},
-                            { StartDate: new Date('02/08/2019'), Duration: 3 , customID: 55}
-                        ]
-                    },
-                ]
-            },
-        ]
-    }
-];
 export let stringTaskId: object[] = [
     {
         TaskID: "a1",
@@ -8874,162 +9932,6 @@ export let splitTasksData1 = [
                 Duration: 90,
             },
         ],
-    },
-];
-export let cr884998 = [
-    {
-        taskId: 8,
-        taskName: 'Adicionar 8',
-        startDate: '2024-04-05',
-        endDate: '2024-04-05T23:59:59.999Z',
-        duration: 1,
-        dependencies: '',
-        taskIndex: 0,
-        cost: 110,
-        index: 0,
-        wbs: '01',
-    },
-    {
-        taskId: 6,
-        taskName: 'Adicionar 6',
-        startDate: '2024-04-08',
-        endDate: '2024-04-12T23:59:59.999Z',
-        duration: 5,
-        parts: [
-            {
-                left: 0,
-                width: 165,
-                duration: 3,
-                endDate: '2024-04-10T20:00:00.000Z',
-                startDate: '2024-04-08T11:00:00.000Z',
-                segmentIndex: 0,
-                showProgress: true,
-                progressWidth: 0,
-                offsetDuration: 0,
-            },
-            {
-                left: 198,
-                width: 66,
-                duration: 2,
-                endDate: '2024-04-15T20:00:00.000Z',
-                startDate: '2024-04-12T11:00:00.000Z',
-                segmentIndex: 1,
-                showProgress: false,
-                progressWidth: -1,
-                offsetDuration: 1,
-            },
-        ],
-        taskIndex: 1,
-        cost: 0,
-        index: 1,
-        wbs: '02',
-    },
-    {
-        taskId: 7,
-        taskName: 'Adicionar 6',
-        startDate: '2024-04-08',
-        endDate: '2024-04-12T23:59:59.999Z',
-        duration: 5,
-        parentId: 6,
-        taskIndex: 2,
-        cost: 0,
-        index: 2,
-        wbs: '02.01',
-    },
-    {
-        taskId: 9,
-        taskName: 'Adicionar 6',
-        startDate: '2024-04-08',
-        endDate: '2024-04-12T23:59:59.999Z',
-        duration: 5,
-        parentId: 7,
-        taskIndex: 3,
-        cost: 12340,
-        index: 3,
-        wbs: '02.01.01',
-    },
-    {
-        taskId: 10,
-        taskName: 'Adicionar 6',
-        startDate: '2024-04-08',
-        endDate: '2024-04-12T23:59:59.999Z',
-        duration: 5,
-        parentId: 6,
-        taskIndex: 4,
-        cost: 0,
-        index: 4,
-        wbs: '02.02',
-    },
-    {
-        taskId: 11,
-        taskName: 'Adicionar 6',
-        startDate: '2024-04-08',
-        endDate: '2024-04-12T23:59:59.999Z',
-        duration: 5,
-        parentId: 10,
-        taskIndex: 5,
-        cost: 1000,
-        index: 5,
-        wbs: '02.02.01',
-    },
-    {
-        taskId: 13,
-        taskName: 'Adicionar 6',
-        startDate: '2024-04-08',
-        endDate: '2024-04-12T23:59:59.999Z',
-        duration: 5,
-        parentId: 10,
-        taskIndex: 6,
-        cost: 1000,
-        index: 6,
-        wbs: '02.02.02',
-    },
-    {
-        taskId: 12,
-        taskName: 'Adicionar 6',
-        startDate: '2024-04-08',
-        endDate: '2024-04-12T23:59:59.999Z',
-        duration: 5,
-        parentId: 10,
-        taskIndex: 7,
-        cost: 700,
-        index: 7,
-        wbs: '02.02.03',
-    },
-    {
-        taskId: 2,
-        taskName: 'Adicionar 2',
-        startDate: '2024-04-09',
-        endDate: '2024-04-09T23:59:59.999Z',
-        duration: 1,
-        dependencies: '',
-        taskIndex: 8,
-        cost: 105,
-        index: 8,
-        wbs: '03',
-    },
-    {
-        taskId: 4,
-        taskName: 'Adicionar 4',
-        startDate: '2024-04-05',
-        endDate: '2024-04-05T23:59:59.999Z',
-        duration: 1,
-        dependencies: '',
-        taskIndex: 9,
-        cost: 120,
-        index: 9,
-        wbs: '04',
-    },
-    {
-        taskId: 5,
-        taskName: 'Adicionar 5',
-        startDate: '2024-04-08',
-        endDate: '2024-04-08T23:59:59.999Z',
-        duration: 1,
-        dependencies: '4FS',
-        taskIndex: 10,
-        index: 10,
-        wbs: '05',
     },
 ];
 export let projectNewData13 = [{
@@ -11122,7 +12024,7 @@ export let coulmntemplate: object[] = [
             { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'),
               Duration: 3, Progress: 30, resources: [2],EmailId:'RoseFuller@gmail.com',resourcesImage:'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'},
           { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'),
-              Duration: 2, Predecessor: '2', Progress: 30, resources: [4] ,EmailId:'FullerKing@gmail.com',resourcesImage:'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'}]
+              Duration: 2, Predecessor: '2', Progress: 30, resources: [2,4] ,EmailId:'FullerKing@gmail.com',resourcesImage:['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']}]
         }
 ];
 
@@ -11207,6 +12109,496 @@ export let splitTasks :Object[] =   [
         ]
     }
 ];
+export let publicProperty : Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+  
+];
+export let dialogData1: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+            { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+            { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+        ]
+    }
+];
+export let headerFooter: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            {
+                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ]
+            },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+        ]
+    }];
+export let images: string = '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';
+export let predcessor1 : Object[] =  [
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                ]
+            },
+            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8", Progress: 30 },
+            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: [11,10] }
+        ]
+    },
+  
+];
+
+export  let baselineData1: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ]
+            },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                ]
+            },
+            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8", Progress: 30 },
+            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product Design and Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'), Duration: 7, Progress: 30 },
+            { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 16, TaskName: 'Define Reliability', StartDate: new Date('04/04/2019'), Duration: 5, Progress: 30 },
+            { TaskID: 17, TaskName: 'Identifying raw materials ', StartDate: new Date('04/04/2019'), Duration: 4 },
+            {
+                TaskID: 18,
+                TaskName: 'Define cost plan',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'), Duration: 1, Progress: 30 },
+                    { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 1 }
+                ]
+            },
+            {
+                TaskID: 21,
+                TaskName: 'Development of the final design',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30 },
+                    { TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'), Duration: 3 },
+                    { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 5 }
+                ]
+            },
+            { TaskID: 25, TaskName: 'CAD Computer-aided design', StartDate: new Date('04/04/2019'), Duration: 10, Progress: 30 },
+            { TaskID: 26, TaskName: 'CAM Computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 10 }
+        ]
+    },
+    { TaskID: 27, TaskName: 'Prototype Testing', StartDate: new Date('04/04/2019'), Duration: 12, Progress: 30 },
+    { TaskID: 28, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 5 },
+    { TaskID: 29, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 9, Progress: 30 },
+    { TaskID: 30, TaskName: 'Assembling materials to finished goods', StartDate: new Date('04/04/2019'), Duration: 12 },
+    {
+        TaskID: 31,
+        TaskName: 'Feedback and Testing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 32, TaskName: 'Internal testing and feedback', StartDate: new Date('04/04/2019'), Duration: 5, Progress: 30 },
+            { TaskID: 33, TaskName: 'Customer testing and feedback', StartDate: new Date('04/04/2019'), Duration: 7, Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 34,
+        TaskName: 'Product Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 35, TaskName: 'Important improvements', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30 },
+            { TaskID: 36, TaskName: 'Address any unforeseen issues', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Final Product',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 38, TaskName: 'Branding product', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 39, TaskName: 'Marketing and pre-sales', StartDate: new Date('04/04/2019'), Duration: 10, Progress: 30 }
+        ]
+    }
+];
+
+export let connectorLineData : Object[] =   [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "3FS,5FS", Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ]
+            },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,  },
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0 },
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/15/2019'),Predecessor: "9FS", Duration: 4, Progress: 30 },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4}
+                ]
+            },
+            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Progress: 30 },
+            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4},
+            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0 }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product Design and Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'), Duration: 7, Progress: 30, Predecessor: "15SS,19SS" },
+            { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 16, TaskName: 'Define Reliability', StartDate: new Date('04/04/2019'), Duration: 5, Progress: 30 },
+            { TaskID: 17, TaskName: 'Identifying raw materials ', StartDate: new Date('04/04/2019'), Duration: 4 },
+            {
+                TaskID: 18,
+                TaskName: 'Define cost plan',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'), Duration: 0, Progress: 30 },
+                    { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 1 }
+                ]
+            },
+            {
+                TaskID: 21,
+                TaskName: 'Development of the final design',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'), Duration: 2,Predecessor: "20SS", Progress: 30 },
+                    { TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'), Duration: 3 },
+                    { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 5 }
+                ]
+            },
+            { TaskID: 25, TaskName: 'CAD Computer-aided design', StartDate: new Date('04/04/2019'), Duration: 10, Progress: 30 },
+            { TaskID: 26, TaskName: 'CAM Computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 10 }
+        ]
+    },
+    { TaskID: 27, TaskName: 'Prototype Testing', StartDate: new Date('04/24/2019'), Duration: 12, Progress: 30 ,Predecessor: "20SS"},
+    { TaskID: 28, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 5 },
+    { TaskID: 29, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 9, Progress: 30 },
+    { TaskID: 30, TaskName: 'Assembling materials to finished goods', StartDate: new Date('04/04/2019'), Duration: 12 },
+    {
+        TaskID: 31,
+        TaskName: 'Feedback and Testing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 32, TaskName: 'Internal testing and feedback', StartDate: new Date('04/04/2019'),Predecessor: "20SF", Duration: 5, Progress: 30 },
+            { TaskID: 33, TaskName: 'Customer testing and feedback', StartDate: new Date('04/04/2019'), Duration: 7, Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 34,
+        TaskName: 'Product Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 35, TaskName: 'Important improvements', StartDate: new Date('04/04/2019'), Duration: 2,Predecessor: "37SF", Progress: 30 },
+            { TaskID: 36, TaskName: 'Address any unforeseen issues', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Final Product',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 38, TaskName: 'Branding product', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 39, TaskName: 'Marketing and pre-sales', StartDate: new Date('04/04/2019'), Duration: 10, Progress: 30 }
+        ]
+    }
+];
+
+export let rangeContainer: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+            },
+            {
+                TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 75 }], Progress: 30, work: 10,
+            },
+        ]
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 70 }], work: 30
+            },
+            {
+                TaskID: 7, TaskName: 'List materials', StartDate: new Date('03/29/2019'), Duration: 12,
+                resources: [{ resourceId: 6, resourceUnit: 40 }], Progress: 30, work: 40
+            },
+            {
+                TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/03/2019'),
+                Duration: 10, resources: [{ resourceId: 5, resourceUnit: 75 }], Progress: 30, work: 60,
+            },
+            {
+                TaskID: 9, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2019'),
+                Duration: 4, Progress: 30, resources: [4]
+            },
+            {
+                TaskID: 10, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2019'), Duration: 4,
+                Progress: 30, Predecessor: '9SS', resources: [3]
+            },
+            {
+                TaskID: 11, TaskName: 'Dig footer', StartDate: new Date('04/08/2019'),
+                Duration: 3, resources: [2]
+            },
+            {
+                TaskID: 12, TaskName: 'Electrical utilities', StartDate: new Date('04/03/2019'),
+                Duration: 4, Progress: 30, resources: [3]
+            }
+        ]
+    },
+    {
+        TaskID: 13, TaskName: 'Sign contract', StartDate: new Date('04/04/2019'), Duration: 2,
+        Progress: 30,
+    }
+];
+export let rangeContainerResource: object[] = [
+    { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team'},
+    { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' },
+    { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team' },
+    { resourceId: 4, resourceName: 'Fuller King', resourceGroup: 'Development Team' },
+    { resourceId: 5, resourceName: 'Davolio Fuller', resourceGroup: 'Approval Team' },
+    { resourceId: 6, resourceName: 'Van Jack', resourceGroup: 'Development Team' }
+];
+export let weekEndData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, 
+            Indicators: [
+                {
+                    'date': '04/10/2019',
+                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                    'name': 'Indicator title',
+                    'tooltip': 'tooltip'
+                }
+            ] 
+        },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5",Progress: 30 },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                ]
+            },
+            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8" ,Progress: 30},
+            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product Design and Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'), Duration: 7,Progress: 30 },
+            { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 16, TaskName: 'Define Reliability', StartDate: new Date('04/04/2019'), Duration: 5,Progress: 30 },
+            { TaskID: 17, TaskName: 'Identifying raw materials ', StartDate: new Date('04/04/2019'), Duration: 4 },
+            {
+                TaskID: 18,
+                TaskName: 'Define cost plan',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'), Duration: 1,Progress: 30 },
+                    { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 1 }
+                ]
+            },
+            {
+                TaskID: 21,
+                TaskName: 'Development of the final design',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 },
+                    { TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'), Duration: 3 },
+                    { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 5 }
+                ]
+            },
+            { TaskID: 25, TaskName: 'CAD Computer-aided design', StartDate: new Date('04/04/2019'), Duration: 10,Progress: 30 },
+            { TaskID: 26, TaskName: 'CAM Computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 10 }
+        ]
+    },
+    { TaskID: 27, TaskName: 'Prototype Testing', StartDate: new Date('04/04/2019'), Duration: 12,Progress: 30 },
+    { TaskID: 28, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 5 },
+    { TaskID: 29, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 9 ,Progress: 30},
+    { TaskID: 30, TaskName: 'Assembling materials to finished goods', StartDate: new Date('04/04/2019'), Duration: 12 },
+    {
+        TaskID: 31,
+        TaskName: 'Feedback and Testing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 32, TaskName: 'Internal testing and feedback', StartDate: new Date('04/04/2019'), Duration: 5,Progress: 30 },
+            { TaskID: 33, TaskName: 'Customer testing and feedback', StartDate: new Date('04/04/2019'), Duration: 7,Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 34,
+        TaskName: 'Product Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 35, TaskName: 'Important improvements', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 },
+            { TaskID: 36, TaskName: 'Address any unforeseen issues', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Final Product',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 38, TaskName: 'Branding product', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 39, TaskName: 'Marketing and pre-sales', StartDate: new Date('04/04/2019'), Duration: 10,Progress: 30 }
+        ]
+    }
+];
 export let resourceDataUndo: object[] = [
     {
         TaskID: 1,
@@ -11262,6 +12654,24 @@ export let cellEditData1: object[] = [
         Duration: 1,
     }
   ]
+export let criticalData2: Object[] = [
+    {
+        taskId: 1,
+        taskName: 'Test 1',
+        startDate: '2024-04-15',
+        endDate: '2024-04-19T23:59:59.999Z',
+        duration: 2,
+        dependencies: '',
+    },
+    {
+        taskId: 2,
+        taskName: 'Test 2',
+        startDate: '2024-04-24',
+        endDate: '2024-04-26T23:59:59.999Z',
+        duration: 2,
+        dependencies: '1FS-1 days',
+    }
+]
 export let CR885011: Object[] = [
     {
         taskId: 1,
@@ -11305,25 +12715,7 @@ export let CR885011: Object[] = [
         index: 2,
         wbs: '03',
     }
-]
-export let criticalData2: Object[] = [
-    {
-        taskId: 1,
-        taskName: 'Test 1',
-        startDate: '2024-04-15',
-        endDate: '2024-04-19T23:59:59.999Z',
-        duration: 2,
-        dependencies: '',
-    },
-    {
-        taskId: 2,
-        taskName: 'Test 2',
-        startDate: '2024-04-24',
-        endDate: '2024-04-26T23:59:59.999Z',
-        duration: 2,
-        dependencies: '1FS+1 days',
-    }
-]
+];
 export let CR886052: object[] = [
     {
         TaskID: 1,
@@ -11394,6 +12786,32 @@ export let CR886052: object[] = [
         ]
     }
 ]
+export let MT889303: Object[] = [
+    { TaskID: 1, TaskName: 'Defining the product'},
+    { TaskID: 2, TaskName: 'Defining the product  and its usage'}
+];
+export let MT887459 : Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ]
+            },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+        ]
+    }
+]
 export let resourceResourcesUndo: object[] = [
     { resourceId: 1, resourceName: 'Martin Tamer' },
     { resourceId: 2, resourceName: 'Rose Fuller' },
@@ -11408,3 +12826,20 @@ export let resourceResourcesUndo: object[] = [
     { resourceId: 11, resourceName: 'Bergs Anton' },
     { resourceId: 12, resourceName: 'Construction Supervisor' }
 ];
+export let milestoneTemplate: Object[]=  [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage',BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'),
+              Duration: 3, Progress: 30, resources: [2],EmailId:'RoseFuller@gmail.com',resourcesImage:'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'},
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'),
+              Duration: 3, resources: [3],EmailId:'MargaretBuchanan@gmail.com',resourcesImage: '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'},
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'),
+              Duration: 2, Predecessor: '2', Progress: 30, resources: [4] ,EmailId:'FullerKing@gmail.com',resourcesImage:'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'}]
+        },
+        {
+            TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4', resources: [1],EmailId:'MartinTamer@gmail.com',resourcesImage:'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'}]
+            

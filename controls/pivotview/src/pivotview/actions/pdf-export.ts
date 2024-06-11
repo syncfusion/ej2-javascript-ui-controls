@@ -11,7 +11,7 @@ import { IAxisSet, IPageSettings, IDataOptions, PivotEngine } from '../../base/e
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { OlapEngine } from '../../base/olap/engine';
 import { PivotExportUtil } from '../../base/export-util';
-import { PdfExportProperties, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { PdfExportProperties, PdfHeaderFooterContent, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { PivotUtil } from '../../base/util';
 import { PDFExportHelper } from './pdf-export-helper';
 
@@ -140,8 +140,10 @@ export class PDFExport {
             const fontStyle: PdfFontStyle = this.getFontStyle(this.gridStyle.header);
             const fontSize: number = !isNullOrUndefined(this.gridStyle.header.fontSize) ? this.gridStyle.header.fontSize : 10.5;
             let pdfColor: PdfColor = new PdfColor();
-            if (!isNullOrUndefined(this.gridStyle.header.fontColor)) { // eslint-disable-next-line max-len
-                const penBrushColor: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(this.gridStyle.header.fontColor);
+            if (!isNullOrUndefined(this.gridStyle.header.fontColor)) {
+                const penBrushColor: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(
+                    this.gridStyle.header.fontColor
+                );
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
             let font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
@@ -171,8 +173,10 @@ export class PDFExport {
             }
             row.style.setFont(font);
             let pdfColor: PdfColor = new PdfColor();
-            if (!isNullOrUndefined(this.gridStyle.record.fontColor)) { // eslint-disable-next-line max-len
-                const penBrushColor: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(this.gridStyle.record.fontColor);
+            if (!isNullOrUndefined(this.gridStyle.record.fontColor)) {
+                const penBrushColor: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(
+                    this.gridStyle.record.fontColor
+                );
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
             row.style.setTextBrush(new PdfSolidBrush(pdfColor));
@@ -190,13 +194,12 @@ export class PDFExport {
      * @param  {boolean} isMultipleExport - Define to enable multiple export.
      * @param  {Object} pdfDoc - Defined the PDF document if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @returns {Promise<any>}
+     * @returns {Promise<Object>}
      * @hidden
      */
 
     public exportToPDF(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        : Promise<any> {
+        : Promise<Object> {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         this.gridStyle = !isNullOrUndefined(this.exportProperties.pdfExportProperties) ?
             this.exportProperties.pdfExportProperties.theme : undefined;
@@ -205,7 +208,9 @@ export class PDFExport {
             eventParams.document = <PdfDocument>pdfDoc;
         }
         const headerStyle: ITheme = this.getStyle();
-        const fileName: string = this.exportProperties.fileName ? this.exportProperties.fileName : (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.fileName)) ? pdfExportProperties.fileName : 'default';
+        const fileName: string = !isNullOrUndefined(this.exportProperties) && !isNullOrUndefined(this.exportProperties.fileName) ?
+            this.exportProperties.fileName : (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.fileName)) ?
+                pdfExportProperties.fileName : 'default';
         const indent: number = this.parent.renderModule.maxIndent ? this.parent.renderModule.maxIndent : 5;
         const firstColumnWidth: number = 100 + (indent * 20);
         let size: number = Math.floor((540 - firstColumnWidth) / 90) + 1;
@@ -303,9 +308,8 @@ export class PDFExport {
                                         gridCell: args.pivotCell
                                     };
                                     this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    pdfGridRow.cells.getCell(localCnt).value = (args.gridCell as any).formattedText ? (args.gridCell as any)
-                                        .formattedText : cellValue;
+                                    pdfGridRow.cells.getCell(localCnt).value = (args.gridCell as IAxisSet).formattedText ?
+                                        (args.gridCell as IAxisSet).formattedText : cellValue;
                                 }
                                 else {
                                     args = {
@@ -420,7 +424,6 @@ export class PDFExport {
             resolve(eventParams.document);
         });
     }
-    /* eslint-enable  */
 
     private applyStyle(pdfGridRow: PdfGridRow, pivotCell: IAxisSet, localCnt: number): PdfGridRow {
         let color: { r: number, g: number, b: number } =
@@ -451,12 +454,12 @@ export class PDFExport {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private getFont(theme: any): PdfFont {
-        if (theme.style.font) {
-            return theme.style.font;
+    private getFont(theme: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs): PdfFont {
+        if ((theme.style as PdfHeaderFooterContent).font) {
+            return (theme.style as PdfHeaderFooterContent).font;
         }
-        const fontSize: number = (theme.cell.cellStyle.font && theme.cell.cellStyle.font.fontSize) ? theme.cell.cellStyle.font.fontSize :
+        const fontSize: number = ((theme.cell as PdfGridCell)['cellStyle'].font &&
+            (theme.cell as PdfGridCell)['cellStyle'].font.fontSize) ? (theme.cell as PdfGridCell)['cellStyle'].font.fontSize :
             (!isNullOrUndefined(theme.style.fontSize)) ? (theme.style.fontSize * 0.75) : 9.75;
 
         const fontFamily: number = (!isNullOrUndefined(theme.style.fontFamily)) ?

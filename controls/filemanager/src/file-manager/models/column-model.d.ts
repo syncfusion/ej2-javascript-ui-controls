@@ -90,7 +90,7 @@ export interface ColumnModel {
      * Defines the custom sort comparer function.
      * The sort comparer function has the same functionality like
      * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
-     * 
+     *
      * @default null
      * @aspType string
      */
@@ -124,7 +124,6 @@ export interface ColumnModel {
      *
      * @default null
      */
-    /* eslint-disable */
     customAttributes?: { [x: string]: Object };
 
     /**
@@ -143,7 +142,6 @@ export interface ColumnModel {
      *
      * @default null
      */
-    /* eslint-disable */
     customFormat?: { [x: string]: Object };
 
     /**

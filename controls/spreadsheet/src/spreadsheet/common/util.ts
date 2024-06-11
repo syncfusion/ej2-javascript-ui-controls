@@ -1,7 +1,7 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
 import { HideShowEventArgs, invalidData } from './../common/index';
-import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
+import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, isReadOnly, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, CFArgs, RowModel } from '../../workbook/index';
@@ -174,12 +174,13 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
  * @param {number} freezeScrollHeight - Specify the freeze scroll height
  * @param {number} freezeScrollWidth - Specify the freeze scroll width
  * @param {number} rowHdrWidth - Specify the row header width
+ * @param {boolean} isOverlay - Specify the overlay.
  * @returns {number} - To get the top left cell position in viewport.
  */
 export function getCellPosition(
     sheet: SheetModel, indexes: number[],
     frozenRow?: number, frozenColumn?: number, freezeScrollHeight?: number, freezeScrollWidth?: number,
-    rowHdrWidth?: number, isOverlay?: Boolean): { top: number, left: number } {
+    rowHdrWidth?: number, isOverlay?: boolean): { top: number, left: number } {
     let i: number; const offset: { left: IOffset, top: IOffset } = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } };
     let top: number = offset.top.size;
     let left: number = offset.left.size;
@@ -501,6 +502,7 @@ export function removeRangeEle(content: Element, checkEle: HTMLElement, cls: str
  * Position element with given range
  *
  * @hidden
+ * @param {Spreadsheet} parent - Specify the parent.
  * @param {HTMLElement} ele - Specify the element.
  * @param {number[]} range - specify the range.
  * @param {SheetModel} sheet - Specify the sheet.
@@ -584,7 +586,7 @@ export function locateElem(
             top = freezeFillOpt && freezeFillOpt.top ? freezeFillOpt.top : top;
             left = freezeFillOpt && freezeFillOpt.left ? freezeFillOpt.left : left;
             attrs = {
-                'top': top + otdiff + 'px',
+                'top': top + otdiff + 'px'
             };
             attrs[isRtl ? 'right' : 'left'] = left + oldiff + 'px';
             if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }], preventAnimation); }
@@ -701,7 +703,11 @@ export function isMouseUp(e: MouseEvent): boolean {
     return e && (e.type === 'mouseup' || e.type === 'pointerup');
 }
 
-/** @hidden */
+/**
+ * @param {number} keyCode - Specify  the keycode.
+ * @returns {boolean} - to get boolean value.
+ * @hidden
+ */
 export function isNavigationKey(keyCode: number): boolean {
     return (keyCode === keyCodes.UP) || (keyCode === keyCodes.DOWN) || (keyCode === keyCodes.LEFT)
         || (keyCode === keyCodes.RIGHT);
@@ -727,7 +733,7 @@ export function getClientY(e: MouseEvent & TouchEvent): number {
 
 /**
  * To get the `pageX` value from the mouse or touch event.
- * 
+ *
  * @param {MouseEvent | TouchEvent} e - Specifies the mouse or touch event.
  * @returns {number} - Return the `pageX` value.
  * @hidden
@@ -738,7 +744,7 @@ export function getPageX(e: TouchEvent & MouseEvent): number {
 
 /**
  * To get the `pageY` value from the mouse or touch event.
- * 
+ *
  * @param {MouseEvent | TouchEvent} e - Specifies the mouse or touch event.
  * @returns {number} - Return the `pageY` value.
  * @hidden
@@ -1212,7 +1218,8 @@ export function findMaxValue(
  * @param {boolean} isRedo - Specifyt the boolean value.
  * @param {CollaborativeEditArgs[]} undoCollections - Specify the undo collections.
  * @param {object} actionEventArgs - Specify the actionEventArgs.
- * @param {UndoRedoEventArgs} actionEventArgs.eventArgs - Specify the eventArgs.
+ * @param {ActionEventArgs} actionEventArgs.eventArgs - Specify the eventArgs.
+ * @param {boolean} isRecursive - Specify the recursive.
  * @returns {void} - To update the Action.
  */
 export function updateAction(
@@ -1260,7 +1267,9 @@ export function updateAction(
     }
     let cellSaveArgs: CellSaveEventArgs; let addrInfo: { sheetIndex: number, indices: number[] };
     let clearArgs: { options: object, isFromUpdateAction: boolean, cfClearActionArgs?:
-        { previousConditionalFormats: object, conditionalFormats: object } };
+    { previousConditionalFormats: object, conditionalFormats: object } };
+    const sheetIndex: number = getSheetIndexFromId(spreadsheet, eventArgs.index);
+    let cellIndexes: number[];
     switch (options.action) {
     case 'sorting':
         args = {
@@ -1268,10 +1277,7 @@ export function updateAction(
             sortOptions: (options.eventArgs as SortEventArgs).sortOptions,
             cancel: false
         };
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        promise = new Promise((resolve: Function, reject: Function) => {
-            resolve((() => { /** */ })());
-        });
+        promise = new Promise((resolve: Function) => { resolve((() => { /** */ })()); });
         sortArgs = { args: args, promise: promise };
         spreadsheet.notify(initiateSort, sortArgs);
         (sortArgs.promise as Promise<SortEventArgs>).then((args: SortEventArgs) => {
@@ -1287,6 +1293,16 @@ export function updateAction(
         spreadsheet.updateCell(cellValue, cellSaveArgs.address);
         if (isRedo === true) {
             spreadsheet.trigger('cellSave', cellSaveArgs);
+        }
+        break;
+    case 'addNote':
+        cellIndexes = getIndexesFromAddress(options.eventArgs.address);
+        if (isRedo) {
+            updateCell(
+                spreadsheet as Workbook, spreadsheet.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
+                    cell: { notes: options.eventArgs.notes }});
+            spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
+                getIndexesFromAddress(eventArgs.address), false, false, true, false, isImported(spreadsheet));
         }
         break;
     case 'cellDelete':
@@ -1347,20 +1363,21 @@ export function updateAction(
         }
         if (eventArgs.isCol) {
             if (eventArgs.hide === undefined) {
-                spreadsheet.setColWidth(isFromUpdateAction && !isUndefined(isRedo) ? eventArgs.oldWidth : eventArgs.width, eventArgs.index, eventArgs.sheetIndex);
+                spreadsheet.setColWidth(isFromUpdateAction && !isUndefined(isRedo) ? eventArgs.oldWidth :
+                    eventArgs.width, eventArgs.index, eventArgs.sheetIndex);
             } else {
                 spreadsheet.hideColumn(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
         } else {
             if (eventArgs.hide === undefined) {
-                spreadsheet.setRowHeight(isFromUpdateAction && !isUndefined(isRedo) ? eventArgs.oldHeight : eventArgs.height, eventArgs.index, eventArgs.sheetIndex);
+                spreadsheet.setRowHeight(isFromUpdateAction && !isUndefined(isRedo) ? eventArgs.oldHeight :
+                    eventArgs.height, eventArgs.index, eventArgs.sheetIndex);
             } else {
                 spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
         }
         break;
     case 'renameSheet':
-        const sheetIndex: number = getSheetIndexFromId(spreadsheet, eventArgs.index);
         spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[sheetIndex as number], 'name', eventArgs.value);
         spreadsheet.notify(sheetNameUpdate, {
             items: spreadsheet.element.querySelector('.e-sheet-tabs-items'),
@@ -1405,8 +1422,7 @@ export function updateAction(
         spreadsheet.notify(replaceAll, eventArgs);
         break;
     case 'filter':
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        promise = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
+        promise = new Promise((resolve: Function) => { resolve((() => { /** */ })()); });
         if (isRedo === false) {
             spreadsheet.notify(
                 initiateFilterUI, { predicates: eventArgs.previousPredicates, range: eventArgs.range, sIdx: eventArgs.sheetIndex, promise:
@@ -1436,8 +1452,9 @@ export function updateAction(
         } else {
             spreadsheet.notify(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.index, end: options.eventArgs.index +
-                    (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, checkCount: isRedo === undefined ? options.eventArgs.sheetCount : null, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true, insertType: options.eventArgs.insertType,
-                isFromUpdateAction: isFromUpdateAction });
+                    (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, checkCount: isRedo === undefined ?
+                    options.eventArgs.sheetCount : null, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true,
+                insertType: options.eventArgs.insertType, isFromUpdateAction: isFromUpdateAction });
         }
         break;
     case 'delete':
@@ -1577,7 +1594,8 @@ export function updateAction(
             spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.range, isUndoRedo: true });
         } else {
             const chartOptions: ChartModel[] = [{
-                type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings, isSeriesInRows: eventArgs.isSeriesInRows,
+                type: eventArgs.type, theme: eventArgs.theme,
+                markerSettings: eventArgs.markerSettings, isSeriesInRows: eventArgs.isSeriesInRows,
                 range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
                 left: eventArgs.left
             }];
@@ -1587,9 +1605,11 @@ export function updateAction(
         break;
     case 'deleteChart':
         if (isRedo === false) {
-            const chartOpts: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings, isSeriesInRows: eventArgs.isSeriesInRows,
-                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
-                left: eventArgs.left }];
+            const chartOpts: ChartModel[] = [{
+                type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings,
+                isSeriesInRows: eventArgs.isSeriesInRows, range: eventArgs.range, id: eventArgs.id,
+                height: eventArgs.height, width: eventArgs.width, top: eventArgs.top, left: eventArgs.left
+            }];
             spreadsheet.notify(
                 setChart, { chart: chartOpts, isUndoRedo: false, range: eventArgs.posRange });
         } else {
@@ -1613,11 +1633,17 @@ export function updateAction(
                 prevLeft: options.eventArgs.currentLeft, prevRowIdx: options.eventArgs.currentRowIdx,
                 prevTop: options.eventArgs.currentTop, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true
             }));
-            spreadsheet.notify(refreshChartSize, { height: options.eventArgs.prevHeight.toString(), width: options.eventArgs.prevWidth.toString(), overlayEle: chartElement });
+            spreadsheet.notify(refreshChartSize, {
+                height: options.eventArgs.prevHeight.toString(),
+                width: options.eventArgs.prevWidth.toString(), overlayEle: chartElement
+            });
         } else {
             options.eventArgs.isUndoRedo = true;
             spreadsheet.notify(refreshChartCellObj, options.eventArgs);
-            spreadsheet.notify(refreshChartSize, { height: options.eventArgs.currentHeight.toString(), width: options.eventArgs.currentWidth.toString(), overlayEle: chartElement });
+            spreadsheet.notify(refreshChartSize, {
+                height: options.eventArgs.currentHeight.toString(),
+                width: options.eventArgs.currentWidth.toString(), overlayEle: chartElement
+            });
         }
         break;
     case 'chartDesign':
@@ -1667,7 +1693,7 @@ export function updateAction(
         duplicateSheet(spreadsheet, eventArgs.sheetIndex, null, isFromUpdateAction);
         break;
     case 'protectSheet':
-        if(eventArgs.isProtected) {
+        if (eventArgs.isProtected) {
             spreadsheet.notify(protectsheetHandler, eventArgs);
         } else {
             spreadsheet.setSheetPropertyOnMute(getSheet(spreadsheet, eventArgs.sheetIndex), 'password', '');
@@ -1768,7 +1794,7 @@ export function getTextHeight(context: Workbook, style: CellStyleModel, lines: n
  * @param {CellStyleModel} style - cell style
  * @returns {number} - returns line height
  */
- export function getLineHeight(style: CellStyleModel): number {
+export function getLineHeight(style: CellStyleModel): number {
     let lineHeight: number = textLineHeight;
     if (style) {
         if (style.fontFamily === 'Arial Black' || style.fontFamily === 'Comic Sans MS') {
@@ -1785,6 +1811,7 @@ export function getTextHeight(context: Workbook, style: CellStyleModel, lines: n
  * @param {string} text - Specify the text
  * @param {CellStyleModel} style - specify the style.
  * @param {CellStyleModel} parentStyle - specify the parentStyle
+ * @param  {boolean} preventDpr - specify the preventDpr.
  * @returns {number} - get Text Width
  */
 export function getTextWidth(text: string, style: CellStyleModel, parentStyle: CellStyleModel, preventDpr?: boolean): number {
@@ -1837,14 +1864,14 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
         width += ((size + spaceWidth) / colwidth >= 1 ? 0 : spaceWidth);
     };
     textArr.forEach((txt: string) => {
-        lWidth= 0; cWidth = 0;
+        lWidth = 0; cWidth = 0;
         width = getTextWidth(txt, style, parentStyle);
         lines = (prevWidth + width) / colwidth;
         if (lines > 1) {
             splitTextArr = txt.split('-');
             if (splitTextArr.length > 1) {
                 splitTextArr.forEach((splitText: string) => {
-                    lWidth= 0; cWidth = 0;
+                    lWidth = 0; cWidth = 0;
                     if (!hypenWidth) { hypenWidth = getTextWidth('-', style, parentStyle); }
                     width = getTextWidth(splitText, style, parentStyle);
                     if (splitTextArr[splitTextArr.length - 1] !== splitText) {
@@ -2024,8 +2051,7 @@ export function focus(ele: HTMLElement): void {
                 const position: number = inputEle.value.length;
                 inputEle.setSelectionRange(position, position);
             }
-            /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-            (ele as any).focus({ preventScroll: true });
+            (ele as HTMLElement).focus({ preventScroll: true });
         }
     }
 }
@@ -2135,7 +2161,7 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
 
 /**
  * Check whether the sheets are imported.
- * 
+ *
  * @param {Spreadsheet} context - Specifies the spreadsheet instance.
  * @returns {boolean} - It returns true if the sheets are imported otherwise false.
  * @hidden
@@ -2143,7 +2169,12 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
 export function isImported(context: Spreadsheet): boolean {
     return context.allowOpen && context.openModule.preventFormatCheck;
 }
-/** @hidden */
+/**
+ * @param {Spreadsheet} parent - Specifies the spreadsheet instance.
+ * @param {number} top - Specifies the top.
+ * @returns {number} - It returns bottom offset.
+ * @hidden
+ */
 export function getBottomOffset(parent: Spreadsheet, top: number): { index: number, height: number } {
     let hgt: number = 0;
     const sheet: SheetModel = parent.getActiveSheet();
@@ -2157,7 +2188,12 @@ export function getBottomOffset(parent: Spreadsheet, top: number): { index: numb
     }
 }
 
-/** @hidden */
+/**
+ * @param {Spreadsheet} parent - Specifies the spreadsheet instance.
+ * @param {number} left - Specifies the left.
+ * @returns {number} -It returns right index using given left value.
+ * @hidden
+ */
 export function getRightIdx(parent: Spreadsheet, left: number): number {
     let width: number = 0;
     const sheet: SheetModel = parent.getActiveSheet();
@@ -2171,7 +2207,12 @@ export function getRightIdx(parent: Spreadsheet, left: number): number {
     }
 }
 
-/** @hidden */
+/**
+ * @param {Spreadsheet} spreadsheet - Specifies the spreadsheet instance.
+ * @param {number} minWidth - Specifies the minimum width.
+ * @returns {void}
+ * @hidden
+ */
 export function setColMinWidth(spreadsheet: Spreadsheet, minWidth: number): void {
     spreadsheet.renderModule.setSheetPanelSize(minWidth);
 }
@@ -2192,11 +2233,15 @@ export function addDPRValue(size: number): number {
 }
 
 /**
+ * @param {Spreadsheet} context - Specifies the spreadsheet instance.
+ * @param {string[]} keys - Specifies key array.
+ * @returns {string} - It returns sheet property of the given key and context.
  * @hidden
  */
 export function getSheetProperties(context: Spreadsheet, keys?: string[]): string {
     const skipProps: string[] = [];
     if (keys) {
+        /* eslint-disable */
         let propList: { colPropNames: string[], complexPropNames: string[], propNames: string[] } = Object.getPrototypeOf(
             new Cell(<any>context, 'cells', {}, true)).constructor.prototype.propList;
         const cellProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
@@ -2205,6 +2250,7 @@ export function getSheetProperties(context: Spreadsheet, keys?: string[]): strin
         propList = Object.getPrototypeOf(new Column(<any>context, 'columns', {}, true)).constructor.prototype.propList;
         const colProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
         propList = Object.getPrototypeOf(new Sheet(<any>context, 'sheets', {}, true)).constructor.prototype.propList;
+        /* eslint-enable */
         const sheetProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
         sheetProps.splice(sheetProps.indexOf('rows'), 1);
         sheetProps.splice(sheetProps.indexOf('columns'), 1);
@@ -2237,23 +2283,45 @@ export function getSheetProperties(context: Spreadsheet, keys?: string[]): strin
 
 /**
  * Returns the row indexes and column indexes of the charts in the active sheet
- * 
+ *
  * @param {Spreadsheet} context - Specifies the Spreadsheet instance.
  * @returns { {chart: ChartModel, chartRowIdx: number, chartColIdx: number}[] } - Returns the row indexes and column indexes of the charts in the active sheet
  * @hidden
  */
-
 export function getChartsIndexes(context?: Spreadsheet): { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] {
-    let chart: ChartModel; let chartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = [];
-    let sheetName: string = context.getActiveSheet().name;
+    let chart: ChartModel; const chartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = [];
+    const sheetName: string = context.getActiveSheet().name;
     for (let i: number = 0, len: number = context.chartColl.length; i < len; i++) {
         chart = context.chartColl[i as number];
         if (sheetName === getSheetNameFromAddress(chart.range)) {
-            let prevTop: { clientY: number, isImage?: boolean } = { clientY: chart.top, isImage: true };
-            let prevLeft: { clientX: number, isImage?: boolean } = { clientX: chart.left, isImage: true };
+            const prevTop: { clientY: number, isImage?: boolean } = { clientY: chart.top, isImage: true };
+            const prevLeft: { clientX: number, isImage?: boolean } = { clientX: chart.left, isImage: true };
             context.notify(getRowIdxFromClientY, prevTop); context.notify(getColIdxFromClientX, prevLeft);
             chartIndexes.push({ chart: chart, chartRowIdx: prevTop.clientY, chartColIdx: prevLeft.clientX });
         }
     }
     return chartIndexes;
+}
+
+/**
+ * Checks whether a specific range of cells is read-only or not.
+ *
+ * @param {Spreadsheet} parent - The spreadsheet instance.
+ * @param {number[]} rangeIndexes - The range indexes to check.
+ * @returns {boolean} - Returns true if any of the cells is read-only, otherwise false.
+ * @hidden
+ */
+export function isReadOnlyCells(parent: Spreadsheet, rangeIndexes?: number[]): boolean {
+    const sheet: SheetModel = parent.getActiveSheet(); let hasReadOnlyCell: boolean;
+    const address: number[] = !isNullOrUndefined(rangeIndexes) ? rangeIndexes : getSwapRange(getRangeIndexes(sheet.selectedRange));
+    for (let row: number = address[0]; row <= address[2]; row++) {
+        for (let col: number = address[1]; col <= address[3]; col++) {
+            const cell: CellModel = getCell(row, col, sheet);
+            if (isReadOnly(cell, getColumn(sheet, col), getRow(sheet, row))) {
+                hasReadOnlyCell = true;
+                break;
+            }
+        }
+    }
+    return hasReadOnlyCell;
 }

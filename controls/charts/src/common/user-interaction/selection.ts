@@ -8,7 +8,7 @@ import { Chart, Series, SelectionPattern, ChartSeriesType} from '../../chart';
 import { AccumulationChart, AccumulationSeries, AccumulationType} from '../../accumulation-chart';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart3D } from '../../chart3d';
-import { CircularChart3D } from '../../circularchart3d/circularchart3d';
+import { CircularChart3D } from '../../circularchart3d';
 
 /**
  * Selection Module handles the selection for chart.
@@ -38,6 +38,9 @@ export class BaseSelection {
         const selectionPattern: SelectionPattern = (<Chart>this.control).selectionPattern;
         const highlightPattern: SelectionPattern = (<Chart>this.control).highlightPattern;
         if ((this.styleId.indexOf('highlight') > 0 && (<Chart>this.control).highlightColor !== '') || isNullOrUndefined(style) || selectionPattern !== 'None' || highlightPattern !== 'None') {
+            if (document.getElementById(this.styleId)) {
+                document.getElementById(this.styleId).remove();
+            }
             style = document.createElement('style');
             style.setAttribute('id', this.styleId);
             for (const series of this.control.visibleSeries) {
@@ -47,14 +50,14 @@ export class BaseSelection {
                     (selectionPattern !== 'None' || highlightPattern !== 'None')) {
                     const patternName: SelectionPattern = this.styleId.indexOf('highlight') > 0 ? highlightPattern : selectionPattern;
                     if (((visibleSeries.type as AccumulationType === 'Pie' || visibleSeries.type as AccumulationType === 'Funnel' ||
-                    visibleSeries.type as AccumulationType === 'Pyramid') || this.control instanceof CircularChart3D) && this.control.highlightColor !== 'transparent') {
+                    visibleSeries.type as AccumulationType === 'Pyramid') || this.control.getModuleName() === 'circularchart3d') && this.control.highlightColor !== 'transparent') {
                         for (let i: number = 0; i < visibleSeries.points.length; i++) {
                             opacity = visibleSeries.opacity;
                             fill = this.pattern(this.control, (this.styleId.indexOf('highlight') > 0 && (this.control as AccumulationChart).highlightColor !== '') ? (this.control as AccumulationChart).highlightColor : (visibleSeries.points[i as number]).color, series.points[i as number].index, patternName, opacity);
                             pattern = '{ fill:' + fill + '}';
                             seriesclass = (series as Series | AccumulationSeries).selectionStyle || this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index + ',' + '.' +
                                 this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index + '> *';
-                            if ((this.control as AccumulationChart).highlightMode === 'None' && (this.control as AccumulationChart).legendSettings.enableHighlight) {
+                            if ((this.control as AccumulationChart).highlightMode === 'None' && (this.control as AccumulationChart).legendSettings.enableHighlight && !series.isRectSeries) {
                                 style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
                             }
                             pattern = (pattern.indexOf('None') > -1) ? '{fill:' + ((this.styleId.indexOf('highlight') > 0 && (this.control as AccumulationChart).highlightColor !== '') ? (this.control as AccumulationChart).highlightColor : (visibleSeries.points[i as number]).color) + '!important}' : pattern;
@@ -71,13 +74,13 @@ export class BaseSelection {
                 }
                 seriesclass = (series as Series | AccumulationSeries).selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
                     this.styleId + '_series_' + series.index + '> *';
-                if ((this.control as Chart).highlightMode === 'None' && (this.control as Chart).legendSettings.enableHighlight) {
+                if ((this.control as Chart).highlightMode === 'None' && (this.control as Chart).legendSettings.enableHighlight && !series.isRectSeries) {
                     style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (parseFloat(((series as Series | AccumulationSeries).width ? (series as Series | AccumulationSeries).width.toString() : '0')) + 1) + ';} ';
                 }
                 pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
                 style.innerText += (series as Series | AccumulationSeries).selectionStyle ? '' : '.' + seriesclass + pattern;
             }
-            let unSelectOpacity: number = (this.control).highlightColor !== 'transparent' ? (this.control.getModuleName() === 'circularchart3d' ? 0.2 : 0.3): opacity;
+            let unSelectOpacity: number = (this.control).highlightColor !== 'transparent' ? (this.control.getModuleName() === 'circularchart3d' ? 0.2 : 0.3) : opacity;
             if (isNullOrUndefined((this.control as Chart).selectionModule) && (this.control as Chart).selectionMode === 'None' && (this.control as Chart).highlightColor !== '') {
                 unSelectOpacity = 1;
             }
@@ -121,7 +124,7 @@ export class BaseSelection {
         const svg: Element = chart.svgObject;
         const pathOptions: { [x: string]: unknown }[] = [];
         const patternGroup: { id: string, patternUnits: string } = {
-            'id': chart.element.id + '_' + patternName + '_Selection' + '_' + index, 'patternUnits': 'userSpaceOnUse' };;
+            'id': chart.element.id + '_' + patternName + '_Selection' + '_' + index, 'patternUnits': 'userSpaceOnUse' };
         const heightStr: string = 'height';
         const widthStr: string = 'width';
         const width: number = 10;

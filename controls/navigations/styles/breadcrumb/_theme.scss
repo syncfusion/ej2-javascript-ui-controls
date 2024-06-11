@@ -1,6 +1,4 @@
 @include export-module('breadcrumb-theme') {
-
-  /*! breadcrumb theme */
   .e-breadcrumb {
     .e-breadcrumb-item {
       .e-breadcrumb-text {
@@ -151,6 +149,9 @@
     .e-disabled.e-breadcrumb-item .e-breadcrumb-text,
     &.e-disabled .e-breadcrumb-separator {
       color: $breadcrumb-disabled-item-color;
+      @if $breadcrumb-skin == 'fluent2' {
+        background-color: $content-bg-color-disabled;
+      }
 
       .e-breadcrumb-icon {
         color: $breadcrumb-disabled-item-color;
@@ -173,6 +174,34 @@
     .e-breadcrumb-item .e-breadcrumb-text:focus {
       background: $breadcrumb-popup-item-hover-bgcolor;
       color: $breadcrumb-popup-item-hover-color;
+    }
+
+    @if $breadcrumb-skin == 'fluent2' {
+      .e-breadcrumb-item .e-breadcrumb-text:active {
+        background: $flyout-bg-color-selected;
+        color: $flyout-text-color-selected;
+      }
+  
+      .e-breadcrumb-item.e-disabled .e-breadcrumb-text {
+        background: $flyout-bg-color-focus;
+        color: $flyout-text-color-disabled;
+      }
+  
+      .e-breadcrumb-item.e-disabled {
+        opacity: 1 !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+  }
+
+  @if $breadcrumb-skin == 'fluent2' {
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:focus .e-breadcrumb-icon,
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:active .e-breadcrumb-icon,
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:hover .e-breadcrumb-icon {
+      color: $toolbar-icon-color !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-breadcrumb .e-disabled.e-breadcrumb-item.e-icon-item .e-breadcrumb-text {
+      background-color: transparent !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 }

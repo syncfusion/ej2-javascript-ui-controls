@@ -54,7 +54,8 @@ export function processPathData(data: string): Object[] {
             case 'c':
                 for (j = 1; j < (ob as Object[]).length; j++) {
                     collection.push({
-                        command: char, x1: ob[parseInt(j.toString(), 10)], y1: ob[j + 1], x2: ob[j + 2], y2: ob[j + 3], x: ob[j + 4], y: ob[j + 5]
+                        command: char, x1: ob[parseInt(j.toString(), 10)], y1: ob[j + 1], x2: ob[j + 2],
+                        y2: ob[j + 3], x: ob[j + 4], y: ob[j + 5]
                     });
                     j = j + 5;
                 }
@@ -197,7 +198,7 @@ export function getPolygonPath(collection: PointModel[]): string {
  * @private
  */
 export function getFreeHandPath(collection: any): string {
-    var k: number;
+    let k: number;
     for (k = 0; k < collection.length; k++)
     {
         collection[parseInt(k.toString(), 10)].x = Math.round(collection[parseInt(k.toString(), 10)].x);

@@ -1,6 +1,13 @@
-@include export-module('schedule-theme') {
+@mixin schedule-select-cell-focus-styles {
+  @if ($theme-name == 'fluent2') {
+    &:focus {
+      background: $schedule-select-focus-bg-color;
+      box-shadow: $schedule-select-focus-box-shadow;
+    }
+  }
+}
 
-  /*! schedule component theme */
+@include export-module('schedule-theme') {
   .e-schedule {
     background: $schedule-header-bg-color;
     border: $border-size $border-type $schedule-content-border-color;
@@ -136,6 +143,7 @@
             background: $schedule-select-bg-color;
             color: $schedule-selected-cell-hover-font-color;
           }
+          @include schedule-select-cell-focus-styles;
         }
       }
 
@@ -147,6 +155,7 @@
           background: $schedule-select-bg-color;
           color: $schedule-selected-cell-hover-font-color;
         }
+        @include schedule-select-cell-focus-styles;
       }
 
       .e-clone-time-indicator,
@@ -242,6 +251,7 @@
         &:hover {
           background: $schedule-select-bg-color;
         }
+        @include schedule-select-cell-focus-styles;
       }
     }
 
@@ -340,6 +350,7 @@
         &:hover {
           background: $schedule-select-bg-color;
         }
+        @include schedule-select-cell-focus-styles;
       }
 
       .e-alternate-cells {
@@ -406,6 +417,7 @@
           &:hover {
             background: $schedule-select-bg-color;
           }
+          @include schedule-select-cell-focus-styles;
         }
     
         &.e-disable-dates {

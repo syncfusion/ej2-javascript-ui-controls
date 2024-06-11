@@ -8,7 +8,7 @@ import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined as isNOU, Browser, closest, detach } from '@syncfusion/ej2-base';
 import { DOMNode } from './dom-node';
-import { FormatPainterValue } from '../base/interface';
+import { FormatPainterValue, ITableSelection } from '../base/interface';
 
 export class SelectionCommands {
     public static enterAction: string = 'P'
@@ -19,6 +19,7 @@ export class SelectionCommands {
      * @param {string} format - specifies the string value
      * @param {Node} endNode - specifies the end node
      * @param {string} enterAction - specifies the enter key action
+     * @param {ITableSelection} tableCellSelection - specifies the table cell selection
      * @param {string} value - specifies the string value
      * @param {string} selector - specifies the string
      * @param {FormatPainterValue} painterValues specifies the element created and last child
@@ -27,7 +28,7 @@ export class SelectionCommands {
      * @deprecated
      */
     public static applyFormat(
-        docElement: Document, format: string, endNode: Node, enterAction: string,
+        docElement: Document, format: string, endNode: Node, enterAction: string, tableCellSelection?: ITableSelection,
         value?: string, selector?: string, painterValues?: FormatPainterValue): void {
         this.enterAction = enterAction;
         const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
@@ -41,8 +42,8 @@ export class SelectionCommands {
             const nodeCutter: NodeCutter = new NodeCutter();
             const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
-            let currentAnchorNode: HTMLElement = range.startContainer.parentElement;
-            if (range.collapsed && !isNOU(currentAnchorNode) && 
+            const currentAnchorNode: HTMLElement = range.startContainer.parentElement;
+            if (range.collapsed && !isNOU(currentAnchorNode) &&
             currentAnchorNode.tagName === 'A' &&
             (range.startOffset === currentAnchorNode.textContent.length || range.startOffset === 0)) {
                 const emptyTextNode: Node = document.createTextNode('');
@@ -55,7 +56,7 @@ export class SelectionCommands {
                         currentAnchorNode.parentNode.appendChild(emptyTextNode);
                     }
                 }
-                
+
                 // Set the range to the empty text node
                 const newRange: Range = docElement.createRange();
                 range.setStart(emptyTextNode, 0);
@@ -74,19 +75,28 @@ export class SelectionCommands {
                 while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
                 lastSelectionNode.nodeName !== 'BR' && lastSelectionNode.nodeName !== 'HR') {
                     lastSelectionNode = lastSelectionNode.lastChild as Element;
-                };
+                }
                 domSelection.setSelectionText(docElement, startNode, lastSelectionNode, 0, 0);
                 range = domSelection.getRange(docElement);
             }
             const save: NodeSelection = domSelection.save(range, docElement);
-            const nodes: Node[] = range.collapsed ? domSelection.getSelectionNodeCollection(range) :
-                domSelection.getSelectionNodeCollectionBr(range);
+            let nodes: Node[];
+            let isTableSelect: boolean = false;
+            if (endNode && tableCellSelection && endNode.nodeName !== '#text') {
+                nodes = tableCellSelection.getTextNodes();
+            }
+            if (nodes && nodes.length > 0) {
+                isTableSelect = true;
+            } else {
+                nodes = range.collapsed ? domSelection.getSelectionNodeCollection(range) :
+                    domSelection.getSelectionNodeCollectionBr(range);
+            }
             let isCollapsed: boolean = false;
             let isFormat: boolean = false;
             let isCursor: boolean = false;
             let preventRestore: boolean = false;
             const isFontStyle: boolean = (['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1);
-            if (range.collapsed) {
+            if (!isTableSelect && range.collapsed) {
                 const currentFormatNode: Node = isFormatted.getFormattedNode(range.startContainer, format, endNode);
                 const currentSelector: string = !isNOU(currentFormatNode) ?
                     ((currentFormatNode as HTMLElement).getAttribute('style') === null ? currentFormatNode.nodeName :
@@ -99,8 +109,7 @@ export class SelectionCommands {
                     !isNOU(currentFormatNode) && currentFormatNode as HTMLElement ===
                         ((range.startContainer.parentElement as HTMLElement).closest(currentSelector)) &&
                         (((range.startContainer.parentElement as HTMLElement).closest(currentSelector)).textContent.replace(
-                        // eslint-disable-next-line
-                        new RegExp(String.fromCharCode(8203), 'g'), '').trim().length !== 0))) {
+                            new RegExp('\u200B', 'g'), '').trim().length !== 0))) {
                     isCollapsed = true;
                     range = nodeCutter.GetCursorRange(docElement, range, range.startContainer);
                     nodes.push(range.startContainer);
@@ -120,7 +129,7 @@ export class SelectionCommands {
                     }
                 }
             }
-            isCursor = range.collapsed;
+            isCursor = isTableSelect ? false : range.collapsed;
             let isSubSup: boolean = false;
             for (let index: number = 0; index < nodes.length; index++) {
                 let formatNode: Node = isFormatted.getFormattedNode(nodes[index as number], format, endNode);
@@ -142,6 +151,7 @@ export class SelectionCommands {
                         index,
                         formatNode,
                         isCursor,
+                        isTableSelect,
                         isFormat,
                         isFontStyle,
                         range,
@@ -158,6 +168,7 @@ export class SelectionCommands {
                         index,
                         formatNode,
                         isCursor,
+                        isTableSelect,
                         isFormat,
                         isFontStyle,
                         range,
@@ -168,12 +179,14 @@ export class SelectionCommands {
                         domNode,
                         endNode);
                 }
-                domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
+                if (!isTableSelect) {
+                    domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
+                }
             }
             if (isIDevice()) {
                 setEditFrameFocus(endNode as Element, selector);
             }
-            if (!preventRestore) { save.restore(); }
+            if (!preventRestore && !isTableSelect) { save.restore(); }
             if (isSubSup) {
                 this.applyFormat(docElement, format, endNode, enterAction);
             }
@@ -194,13 +207,12 @@ export class SelectionCommands {
         const cursorFormat: Node = (cursorNodes.length > 0) ?
             (cursorNodes.length > 1 && range.startContainer === range.endContainer) ?
                 this.getCursorFormat(isFormatted, cursorNodes, format, endNode) :
-                isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
+                ((value === '' && format === 'fontsize' && isFormatted.getFormattedNode(cursorNodes[0], format, endNode) == null && cursorNodes[0].parentElement.nodeName === 'SPAN') ? cursorNodes[0].parentElement : isFormatted.getFormattedNode(cursorNodes[0], format, endNode)) : null;
         let cursorNode: Node = null;
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             if (cursorFormat.firstChild.textContent.charCodeAt(0) === 8203 && cursorFormat.firstChild.nodeType === 3) {
-                // eslint-disable-next-line
-                const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+                const regEx: RegExp = new RegExp('\u200B', 'g');
                 let emptySpaceNode: Node;
                 if (cursorFormat.firstChild === cursorNode) {
                     cursorNode.textContent = (cursorFormat.parentElement && (domNode.isBlockNode(cursorFormat.parentElement) &&
@@ -262,7 +274,7 @@ export class SelectionCommands {
             currentNode = (cursorNodes[index as number] as HTMLElement).lastElementChild ?
                 (cursorNodes[index as number] as HTMLElement).lastElementChild : cursorNodes[index as number];
         }
-        return isFormatted.getFormattedNode(currentNode, format, endNode);
+        return (format === 'fontsize' && isFormatted.getFormattedNode(currentNode, format, endNode) == null && currentNode.parentElement.nodeName === 'SPAN') ? currentNode.parentElement : isFormatted.getFormattedNode(currentNode, format, endNode);
     }
 
     private static removeFormat(
@@ -270,6 +282,7 @@ export class SelectionCommands {
         index: number,
         formatNode: Node,
         isCursor: boolean,
+        isTableCell: boolean,
         isFormat: boolean,
         isFontStyle: boolean,
         range: Range,
@@ -288,18 +301,20 @@ export class SelectionCommands {
             && range.endOffset === (range.startContainer as Text).length)) {
             const nodeIndex: number[] = [];
             let cloneNode: Node = nodes[index as number];
-            const clonedElement:Node = cloneNode;
+            const clonedElement: Node = cloneNode;
             do {
                 nodeIndex.push(domSelection.getIndex(cloneNode));
                 cloneNode = cloneNode.parentNode;
             } while (cloneNode && (cloneNode !== formatNode));
             if (nodes[index as number].nodeName !== 'BR') {
-                if(clonedElement.nodeName === '#text' && clonedElement.textContent.includes('\u200B')) {
+                if (clonedElement.nodeName === '#text' && clonedElement.textContent.includes('\u200B')) {
                     (clonedElement as Element).remove();
                 }
-                cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
-                    nodeCutter.SplitNode(range, formatNode as HTMLElement, true) as HTMLElement
-                    : nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;
+                if (!isTableCell) {
+                    cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
+                        nodeCutter.SplitNode(range, formatNode as HTMLElement, true) as HTMLElement
+                        : nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;
+                }
             }
             if (!isCursor) {
                 while (cloneNode && cloneNode.childNodes.length > 0 && ((nodeIndex.length - 1) >= 0)
@@ -366,12 +381,12 @@ export class SelectionCommands {
         const formatNodeStyles: string = (formatNode as HTMLElement).getAttribute('style');
         const formatNodeTagName: string = (formatNode as HTMLElement).tagName;
         let child: Node[];
-        if(formatNodeTagName === 'A' && format === 'underline') {
+        if (formatNodeTagName === 'A' && format === 'underline') {
             (formatNode as HTMLElement).style.textDecoration = 'none';
             child = [formatNode];
         }
-        else if(IsFormatted.inlineTags.indexOf(formatNodeTagName.toLowerCase()) !== -1 && isFontStyle && formatNodeTagName.toLocaleLowerCase() !== 'span') {
-            let fontNodeStyle = (formatNode as HTMLElement).style;
+        else if (IsFormatted.inlineTags.indexOf(formatNodeTagName.toLowerCase()) !== -1 && isFontStyle && formatNodeTagName.toLocaleLowerCase() !== 'span') {
+            const fontNodeStyle: CSSStyleDeclaration = (formatNode as HTMLElement).style;
             if (fontNodeStyle.color && format === 'fontcolor') {
                 if (formatNode.nodeName === 'A') {
                     fontNodeStyle.color = value;
@@ -385,8 +400,8 @@ export class SelectionCommands {
             } else if (fontNodeStyle.fontFamily && format === 'fontname') {
                 fontNodeStyle.fontFamily = '';
             }
-            if ((formatNode as HTMLElement).getAttribute("style") === ''){
-                (formatNode as HTMLElement).removeAttribute("style");
+            if ((formatNode as HTMLElement).getAttribute('style') === ''){
+                (formatNode as HTMLElement).removeAttribute('style');
             }
             child = [formatNode];
         }
@@ -394,19 +409,19 @@ export class SelectionCommands {
             child = InsertMethods.unwrap(formatNode);
             let liElement: HTMLElement = nodes[index as number].parentElement;
             if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
-                liElement = closest(liElement,'li') as HTMLElement;
+                liElement = closest(liElement, 'li') as HTMLElement;
             }
             if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                 liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
                 if (format === 'bold') {
                     liElement.style.fontWeight = 'normal';
-                } else if (format === "italic") {
+                } else if (format === 'italic') {
                     liElement.style.fontStyle = 'normal';
                 }
             }
             else if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
                 && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
-                SelectionCommands.conCatenateTextNode(liElement, format, '', 'normal');
+                SelectionCommands.conCatenateTextNode(liElement, format, '', 'normal', value);
             }
         }
         if (child[0] && !isFontStyle) {
@@ -449,23 +464,23 @@ export class SelectionCommands {
                 }
             }
         }
-        if (child.length > 0 && isFontStyle) {
+        if (child.length > 0 && isFontStyle && !((format === 'fontname' && value === '') || (format === 'fontsize' && value === ''))) {
             for (let num: number = 0; num < child.length; num++) {
                 if (child[num as number].nodeType !== 3 || (child[num as number].textContent &&
                      child[num as number].textContent.trim().length > 0)) {
                     child[num as number] = InsertMethods.Wrap(
                         child[num as number] as HTMLElement,
                         this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
-                        let liElement: HTMLElement = nodes[index as number].parentElement;
-                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
-                            liElement = closest(liElement,'li') as HTMLElement;
-                        }
-                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                    let liElement: HTMLElement = nodes[index as number].parentElement;
+                    if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
+                        liElement = closest(liElement, 'li') as HTMLElement;
+                    }
+                    if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                             liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
-                            if (format === 'fontname'){
-                                liElement.style.fontFamily = value;
-                            }
+                        if (format === 'fontname'){
+                            liElement.style.fontFamily = value;
                         }
+                    }
                     if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
                         && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
                         SelectionCommands.conCatenateTextNode(liElement, format, liElement.textContent, format, value);
@@ -502,8 +517,7 @@ export class SelectionCommands {
                 }
                 let num: number = index;
                 let liChildContent : string = '';
-                /* eslint-disable security/detect-object-injection */
-                while (num >= 0 && !isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' && (liElement as Node).contains(nodes[num]) &&
+                while (num >= 0 && !isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' && (liElement as Node).contains(nodes[num as number]) &&
                     liElement.textContent.replace('/\u200B/g', '').trim().includes(nodes[num as number].textContent.trim())) {
                     /* eslint-enable security/detect-object-injection */
                     liChildContent = ' ' + nodes[num as number].textContent.trim() + liChildContent;
@@ -563,6 +577,7 @@ export class SelectionCommands {
         index: number,
         formatNode: Node,
         isCursor: boolean,
+        isTableSelect: boolean,
         isFormat: boolean,
         isFontStyle: boolean,
         range: Range,
@@ -574,7 +589,7 @@ export class SelectionCommands {
         endNode: Node): Node {
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
-                if (nodes[index as number].nodeName !== 'BR') {
+                if (!isTableSelect && nodes[index as number].nodeName !== 'BR' ) {
                     nodes[index as number] = nodeCutter.GetSpliceNode(range, nodes[index as number] as HTMLElement);
                     nodes[index as number].textContent = nodeCutter.TrimLineBreak((nodes[index as number] as Text).textContent);
                 }
@@ -595,17 +610,17 @@ export class SelectionCommands {
                             if (!isNOU(parentElem) && parentElem.childNodes){
                                 for (let i: number = 0; i < parentElem.childNodes.length; i++) {
                                     if (this.concatenateTextExcludingList(nodes, index) === nodes[index as number].textContent){
-                                        let liElement;
+                                        let liElement: HTMLElement;
                                         if (parentElem.tagName === 'LI') {
                                             liElement = parentElem;
                                         } else if (parentElem.closest('li')) {
                                             liElement = parentElem.closest('li');
                                         }
                                         if (!isNOU(liElement)){
-                                          switch (format){
+                                            switch (format){
                                             case 'fontcolor':
-                                              liElement.style.color = value;
-                                              break;
+                                                liElement.style.color = value;
+                                                break;
                                             case 'fontname':
                                                 liElement.style.fontFamily = value;
                                                 break;
@@ -613,25 +628,24 @@ export class SelectionCommands {
                                                 liElement.style.fontSize = value;
                                                 break;
                                             default:
-                                                break; 
-                                           }
+                                                break;
+                                            }
                                         }
                                     }
-                                    // eslint-disable-next-line
-                                    const childElement: HTMLElement = parentElem.childNodes[i] as HTMLElement;
+                                    const childElement: HTMLElement = parentElem.childNodes[i as number] as HTMLElement;
                                     if (childElement.tagName === 'OL' || childElement.tagName === 'UL') {
                                         switch (format) {
-                                            case 'fontcolor':
-                                                childElement.style.color = 'initial';
-                                                break;
-                                            case 'fontname':
-                                                childElement.style.fontFamily = 'initial';
-                                                break;
-                                            case 'fontsize':
-                                                childElement.style.fontSize = 'initial';
-                                                break;
-                                            default:
-                                                break;
+                                        case 'fontcolor':
+                                            childElement.style.color = 'initial';
+                                            break;
+                                        case 'fontname':
+                                            childElement.style.fontFamily = 'initial';
+                                            break;
+                                        case 'fontsize':
+                                            childElement.style.fontSize = 'initial';
+                                            break;
+                                        default:
+                                            break;
                                         }
                                     }
                                 }
@@ -697,13 +711,13 @@ export class SelectionCommands {
                         nodes[index as number] = this.applyStyles(nodes, index, element);
                         let liElement: HTMLElement = nodes[index as number].parentElement;
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
-                            liElement = closest(liElement,'li') as HTMLElement;
+                            liElement = closest(liElement, 'li') as HTMLElement;
                         }
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                             liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
                             if (format === 'bold') {
                                 liElement.style.fontWeight = 'bold';
-                            } else if (format === "italic") {
+                            } else if (format === 'italic') {
                                 liElement.style.fontStyle = 'italic';
                             }
                         }
@@ -714,7 +728,9 @@ export class SelectionCommands {
                     }
                 }
             } else {
-                nodes[index as number] = nodeCutter.GetSpliceNode(range, nodes[index as number] as HTMLElement);
+                if (!isTableSelect) {
+                    nodes[index as number] = nodeCutter.GetSpliceNode(range, nodes[index as number] as HTMLElement);
+                }
             }
         } else {
             if (format !== 'uppercase' && format !== 'lowercase') {
@@ -951,72 +967,74 @@ export class SelectionCommands {
     }
     private static concatenateTextExcludingList(nodes: Node[], index: number): string {
         let result: string = '';
-        const parentNode: HTMLElement = nodes[index as number].parentElement;
-        for (let i: number = 0; i < parentNode.childNodes.length; i++) {
-            // eslint-disable-next-line
-            const childNode: HTMLElement = parentNode.childNodes[i] as HTMLElement;
-            if ((childNode.nodeType === 3) || (childNode.nodeType === 1 && (childNode.tagName !== 'OL' && childNode.tagName !== 'UL'))) {
-                result += childNode.textContent;
+        const parentNode: HTMLElement = nodes[index as number].nodeName === '#text' ? closest(nodes[index as number].parentElement, 'li') as HTMLElement : closest(nodes[index as number], 'li') as HTMLElement;
+        if (!isNOU(parentNode)) {
+            for (let i: number = 0; i < parentNode.childNodes.length; i++) {
+                const childNode: HTMLElement = parentNode.childNodes[i as number] as HTMLElement;
+                if ((childNode.nodeType === 3) || (childNode.nodeType === 1 && (childNode.tagName !== 'OL' && childNode.tagName !== 'UL'))) {
+                    result += childNode.textContent;
+                }
             }
         }
         return result;
     }
-    private static conCatenateTextNode(liElement: HTMLElement, format: string, value: string, formatStr: string, constVal?: string) {
+    private static conCatenateTextNode(liElement: HTMLElement, format: string, value: string, formatStr: string, constVal?: string): void {
         let result: string = '';
+        let colorStyle: string = '';
+        let fontSize: string = '';
+        let fontFamily: string = '';
         switch (format) {
-            case 'bold':
-                liElement.querySelectorAll('strong').forEach(function (e) {
-                    result = result + e.textContent;
-                });
-                if (result === value) {
-                    liElement.style.fontWeight = formatStr;
+        case 'bold':
+            liElement.querySelectorAll('strong').forEach(function (e: HTMLElement): void {
+                result = result + e.textContent;
+            });
+            if (result === value) {
+                liElement.style.fontWeight = formatStr;
+            }
+            break;
+        case 'italic':
+            liElement.querySelectorAll('em').forEach(function (e: HTMLElement): void {
+                result = result + e.textContent;
+            });
+            if (result === value) {
+                liElement.style.fontStyle = formatStr;
+            }
+            break;
+        case 'fontcolor':
+            liElement.querySelectorAll('span').forEach(function (span: HTMLElement): void {
+                colorStyle = span.style.color;
+                if (colorStyle === constVal) {
+                    result = result + span.textContent;
                 }
-                break;
-            case 'italic':
-                liElement.querySelectorAll('em').forEach(function (e) {
-                    result = result + e.textContent;
-                });
-                if (result === value) {
-                    liElement.style.fontStyle = formatStr;
+            });
+            if (result === value) {
+                liElement.style.color = colorStyle;
+                liElement.style.textDecoration = 'inherit';
+            }
+            break;
+        case 'fontsize':
+            liElement.querySelectorAll('span').forEach(function (span: HTMLElement): void {
+                fontSize = span.style.getPropertyValue('font-size');
+                if (fontSize === constVal) {
+                    result = result + span.textContent;
                 }
-                break;
-            case 'fontcolor':
-                let colorStyle = '';
-                liElement.querySelectorAll('span').forEach(function (span) {
-                    colorStyle = span.style.color;
-                    if (colorStyle === constVal) {
-                        result = result + span.textContent;
-                    }
-                });
-                if (result === value) {
-                    liElement.style.color = colorStyle;
-                    liElement.style.textDecoration = 'inherit';
+            });
+            if (result === value) {
+                liElement.style.fontSize = fontSize;
+            }
+            break;
+        case 'fontname':
+            liElement.querySelectorAll('span').forEach(function (span: HTMLElement): void {
+                fontFamily = span.style.getPropertyValue('font-family');
+                fontFamily = fontFamily.replace(/ /g, '');
+                if (fontFamily === constVal) {
+                    result = result + span.textContent;
                 }
-                break;
-            case 'fontsize':
-                let fontSize = '';
-                liElement.querySelectorAll('span').forEach(function (span) {
-                    fontSize = span.style.getPropertyValue('font-size');
-                    if (fontSize === constVal) {
-                        result = result + span.textContent;
-                    }
-                });
-                if (result === value) {
-                    liElement.style.fontSize = fontSize;
-                }
-                break;
-            case 'fontname':
-                let fontFamily = '';
-                liElement.querySelectorAll('span').forEach(function (span) {
-                    fontFamily = span.style.getPropertyValue('font-family');
-                    if (fontFamily === constVal) {
-                        result = result + span.textContent;
-                    }
-                });
-                if (result === value) {
-                    liElement.style.fontFamily = fontFamily;
-                }
-                break;
+            });
+            if (result === value) {
+                liElement.style.fontFamily = fontFamily;
+            }
+            break;
         }
     }
 }

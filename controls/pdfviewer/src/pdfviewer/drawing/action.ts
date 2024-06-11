@@ -17,8 +17,8 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * @param {boolean} isOverlapped - Specified the overlapped element or not.
  * @returns {any} - Returns the active element.
  */
-// eslint-disable-next-line
-export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfViewerBase, pdfViewer: PdfViewer, isOverlapped?: boolean): any {
+export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfViewerBase, pdfViewer: PdfViewer,
+                                  isOverlapped?: boolean): any {
     if (pdfViewer && pdfBase.activeElements.activePageID > -1) {
         const objects: IElement[] = findObjectsUnderMouse(pdfBase, pdfViewer, event as MouseEvent);
         const object: IElement = findObjectUnderMouse(objects, event, pdfBase, pdfViewer);
@@ -55,7 +55,6 @@ export function findObjectsUnderMouse(
  * @returns {IElement} - Returns the annotaion element.
  */
 export function findObjectUnderMouse(
-    // eslint-disable-next-line
     objects: (PdfAnnotationBaseModel)[], event: any, pdfBase: PdfViewerBase, pdfViewer: PdfViewer
 ): IElement {
     let actualTarget: PdfAnnotationBaseModel = null;
@@ -74,33 +73,28 @@ export function findObjectUnderMouse(
                 offsetY = touchArg.changedTouches[0].clientY - pageCurrentRect.top;
             }
         }
-    // eslint-disable-next-line
+
     } else if (event && event.target &&  (event as any).path && event.target.parentElement && event.target.parentElement.classList.contains('foreign-object')) {
-        // eslint-disable-next-line
         const targetParentRect: ClientRect = (event as any).path[4].getBoundingClientRect();
         offsetX = (event as PointerEvent).clientX - targetParentRect.left;
         offsetY = (event as PointerEvent).clientY - targetParentRect.top;
     } else if (event.target && (event.target as HTMLElement).parentElement && (event.target as HTMLElement).parentElement.classList.contains('foreign-object')) {
-        // eslint-disable-next-line
         const targetParentRect: ClientRect = (event.target as any).offsetParent.offsetParent.offsetParent.getBoundingClientRect();
         offsetX = (event as PointerEvent).clientX - targetParentRect.left;
         offsetY = (event as PointerEvent).clientY - targetParentRect.top;
-        // eslint-disable-next-line
     }
     else if (event.target && (event.target as HTMLElement).parentElement && (event.target as HTMLElement).parentElement.parentElement && (event.target as HTMLElement).parentElement.parentElement.classList.contains('foreign-object')) {
         let targetParentRect: ClientRect;
-        if (event.target.offsetParent && event.target.offsetParent.offsetParent && event.target.offsetParent.offsetParent.offsetParent && event.target.offsetParent.offsetParent.offsetParent.offsetParent){
-            // eslint-disable-next-line
+        if (event.target.offsetParent && event.target.offsetParent.offsetParent &&
+             event.target.offsetParent.offsetParent.offsetParent && event.target.offsetParent.offsetParent.offsetParent.offsetParent){
             targetParentRect = event.target.offsetParent.offsetParent.offsetParent.offsetParent.getBoundingClientRect();
             offsetX = event.clientX - targetParentRect.left;
             offsetY = event.clientY - targetParentRect.top;
         }
         else if (event.target.parentElement.offsetParent && event.target.parentElement.offsetParent.offsetParent){
-            // eslint-disable-next-line
             targetParentRect = event.target.parentElement.offsetParent.offsetParent.getBoundingClientRect();
             offsetX = event.clientX - targetParentRect.left;
             offsetY = event.clientY - targetParentRect.top;
-            // eslint-disable-next-line
         }
     }
     else {
@@ -117,31 +111,31 @@ export function findObjectUnderMouse(
             if (objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Stamp' || objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Image') {
                 rotationValue = 25;
             }
-            // eslint-disable-next-line max-len
-            if ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < offsetX) && (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > offsetX) &&
-                // eslint-disable-next-line max-len
-                (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < offsetY) && (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
+            if ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < offsetX) &&
+             (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > offsetX) &&
+                (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < offsetY) &&
+                 (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
                 if (pdfBase.tool instanceof NodeDrawingTool || pdfBase.tool instanceof StampTool) {
                     actualTarget = objects[parseInt(i.toString(), 10)];
                 } else {
                     if (!boundsDiff) {
                         actualTarget = objects[parseInt(i.toString(), 10)];
-                        // eslint-disable-next-line max-len
-                        boundsDiff = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) + (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
-                        // eslint-disable-next-line max-len
-                        (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) + (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
+                        boundsDiff = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) +
+                         (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
+                        (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) +
+                         (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
                     } else {
-                        // eslint-disable-next-line max-len
-                        const objectBounds: number = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) + (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
-                        // eslint-disable-next-line max-len
-                        (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) + (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
+                        const objectBounds: number = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) +
+                         (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
+                        (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) +
+                         (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
                         if (boundsDiff > objectBounds) {
                             actualTarget = objects[parseInt(i.toString(), 10)];
                             boundsDiff = objectBounds;
                         } else if (boundsDiff === objectBounds) {
                             actualTarget = objects[parseInt(i.toString(), 10)];
                             boundsDiff = objectBounds;
-                        } else if ((objects[parseInt(i.toString(), 10)].shapeAnnotationType === "Image") || (objects[parseInt(i.toString(), 10)].shapeAnnotationType === "Stamp")) {
+                        } else if ((objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Image') || (objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Stamp')) {
                             actualTarget = objects[parseInt(i.toString(), 10)];
                         }
                     }
@@ -174,7 +168,6 @@ export function findObjectUnderMouse(
  * @param {any} currentobject - Specified the current annotaion object.
  * @returns {any} - Returns the leader points.
  */
-// eslint-disable-next-line
 export function CalculateLeaderPoints(selector: any, currentobject: any): any {
     const leaderCount: number = 0;
     const sourcePoint: PointModel = selector.sourcePoint;
@@ -210,19 +203,19 @@ export function CalculateLeaderPoints(selector: any, currentobject: any): any {
 export function findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DrawingElement {
     return findTargetShapeElement(obj.wrapper, position, padding);
 }
+
 /**
  * @private
  * @param {PdfAnnotationBaseModel} obj - Specified the annotation object model.
  * @param {string} key - Specified the annotation key value.
- * @param {Object[]} collection - Specified the annotation collection.
+ * @param {object[]} collection - Specified the annotation collection.
  * @returns {void}
  */
 export function insertObject(obj: PdfAnnotationBaseModel, key: string, collection: Object[]): void {
     if (collection.length === 0) {
         collection.push(obj);
     } else if (collection.length === 1) {
-        // eslint-disable-next-line
-        if ((collection[0] as any)[key] > (obj as any)[key]) {
+        if ((collection[0] as any)[`${key}`] > (obj as any)[`${key}`]) {
             collection.splice(0, 0, obj);
         } else {
             collection.push(obj);
@@ -232,24 +225,19 @@ export function insertObject(obj: PdfAnnotationBaseModel, key: string, collectio
         let high: number = collection.length - 1;
         let mid: number = Math.floor((low + high) / 2);
         while (mid !== low) {
-            // eslint-disable-next-line
-            if ((collection[mid] as any)[key] < (obj as any)[key]) {
+            if ((collection[parseInt(mid.toString(), 10)] as any)[`${key}`] < (obj as any)[`${key}`]) {
                 low = mid;
                 mid = Math.floor((low + high) / 2);
-                // eslint-disable-next-line
-            } else if ((collection[mid] as any)[key] > (obj as any)[key]) {
+            } else if ((collection[parseInt(mid.toString(), 10)] as any)[`${key}`] > (obj as any)[`${key}`]) {
                 high = mid;
                 mid = Math.floor((low + high) / 2);
             }
         }
-        // eslint-disable-next-line
-        if ((collection[high] as any)[key] < (obj as any)[key]) {
+        if ((collection[parseInt(high.toString(), 10)] as any)[`${key}`] < (obj as any)[`${key}`]) {
             collection.push(obj);
-            // eslint-disable-next-line
-        } else if ((collection[low] as any)[key] > (obj as any)[key]) {
+        } else if ((collection[parseInt(low.toString(), 10)] as any)[`${key}`] > (obj as any)[`${key}`]) {
             collection.splice(low, 0, obj);
-            // eslint-disable-next-line
-        } else if (((collection[low] as any)[key] < (obj as any)[key]) && (collection[high] as any)[key] > (obj as any)[key]) {
+        } else if (((collection[parseInt(low.toString(), 10)] as any)[`${key}`] < (obj as any)[`${key}`]) && (collection[parseInt(high.toString(), 10)] as any)[`${key}`] > (obj as any)[`${key}`]) {
             collection.splice(high, 0, obj);
         }
     }
@@ -266,13 +254,10 @@ export function findTargetShapeElement(container: Container, position: PointMode
     if (container && container.children) {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
             const shapeElement: DrawingElement = container.children[parseInt(i.toString(), 10)];
-            let touchPadding = padding;
-            // eslint-disable-next-line
+            const touchPadding: number = padding;
             if (!isNullOrUndefined((shapeElement as any).children) && (shapeElement as any).children.length > 0) {
-                // eslint-disable-next-line
                 for (let j: number = (shapeElement as any).children.length - 1; j >= 0; j--) {
-                    // eslint-disable-next-line
-                    let currentTarget: any = (shapeElement as any).children[j];
+                    const currentTarget: any = (shapeElement as any).children[parseInt(j.toString(), 10)];
                     if (currentTarget && currentTarget.bounds.containsPoint(position, touchPadding)) {
                         if (currentTarget instanceof Container) {
                             const targetElement: DrawingElement = this.findTargetElement(currentTarget, position);
@@ -301,13 +286,13 @@ export function findTargetShapeElement(container: Container, position: PointMode
         }
     }
     if (container && container.bounds.containsPoint(position, padding) && container.style.fill !== 'none') {
-        let element: Container = container;
-        let paddingValue: number = 10;
-        let rotateThumbDistance: number = 30;
-        let matrix: Matrix = identityMatrix();
+        const element: Container = container;
+        const paddingValue: number = 10;
+        const rotateThumbDistance: number = 30;
+        const matrix: Matrix = identityMatrix();
         rotateMatrix(matrix, element.parentTransform, element.offsetX, element.offsetY);
-        let x: number = element.offsetX - element.pivot.x * element.actualSize.width;
-        let y: number = element.offsetY - element.pivot.y * element.actualSize.height;
+        const x: number = element.offsetX - element.pivot.x * element.actualSize.width;
+        const y: number = element.offsetY - element.pivot.y * element.actualSize.height;
         let rotateThumb: PointModel = {
             x: x + ((element.pivot.x === 0.5 ? element.pivot.x * 2 : element.pivot.x) * element.actualSize.width / 2),
             y: y - rotateThumbDistance
@@ -324,9 +309,11 @@ export function findTargetShapeElement(container: Container, position: PointMode
  * @private
  * @param {PointModel} region - Specified the annotation region point model.
  * @param {PdfAnnotationBaseModel[]} objCollection - Specified the annotation object collections.
+ * @param {number} touchPadding - touchPadding
  * @returns {PdfAnnotationBaseModel[]} - Returns the annotation object collections.
  */
-export function findObjects(region: PointModel, objCollection: (PdfAnnotationBaseModel)[], touchPadding : number): (PdfAnnotationBaseModel)[] {
+export function findObjects(region: PointModel, objCollection: (PdfAnnotationBaseModel)[],
+                            touchPadding : number): (PdfAnnotationBaseModel)[] {
     const objects: (PdfAnnotationBaseModel)[] = [];
     for (const obj of objCollection) {
         if (findElementUnderMouse(obj as IElement, region, touchPadding)  || ((obj.shapeAnnotationType === 'Stamp') && findElementUnderMouse(obj as IElement, region, 40))) {
@@ -339,10 +326,9 @@ export function findObjects(region: PointModel, objCollection: (PdfAnnotationBas
 /**
  * @private
  * @param {MouseEvent} event - Specified the annotaion mouse event.
- * @param {PdfViewerBase} pdfBase - Specified the pdfBase element.
  * @returns {number} - Returns the active page Id.
  */
-export function findActivePage(event: MouseEvent, pdfBase: PdfViewerBase): number {
+export function findActivePage(event: MouseEvent): number {
     let activePageID: number = undefined;
     if (event.target && (event.target as PdfAnnotationBaseModel).wrapper) {
         return (event.target as PdfAnnotationBaseModel).pageIndex;
@@ -350,8 +336,7 @@ export function findActivePage(event: MouseEvent, pdfBase: PdfViewerBase): numbe
     if (event.target) {
         const elementIdColl: string[] = (event.target as HTMLElement).id.split('_');
         if (elementIdColl.length > 0) {
-            // eslint-disable-next-line radix
-            activePageID = parseInt(elementIdColl[elementIdColl.length - 1]);
+            activePageID = parseInt(elementIdColl[elementIdColl.length - 1], 10);
         }
     }
     return activePageID;
@@ -360,7 +345,6 @@ export function findActivePage(event: MouseEvent, pdfBase: PdfViewerBase): numbe
  * @hidden
  */
 export class ActiveElements {
-
     private activePage: number = undefined;
     /**
      * @private
@@ -376,10 +360,7 @@ export class ActiveElements {
      */
     public set activePageID(offset: number) {
         this.activePage = offset;
-        // eslint-disable-next-line
-        if (offset !== this.activePage) { }
     }
-
     constructor() {
         this.activePageID = undefined;
     }

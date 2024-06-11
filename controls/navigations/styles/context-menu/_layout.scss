@@ -1,7 +1,5 @@
 @import 'layout-mixin.scss';
 @include export-module('contextmenu-layout') {
-
-  /*! contextmenu layout */
   .e-contextmenu-wrapper,
   .e-contextmenu-container {
     @at-root {
@@ -30,6 +28,12 @@
           @include li-layout;
           @include li-size;
 
+          & .e-menu-icon {
+            @if $skin-name == 'fluent2' {
+              margin-bottom: 1px;
+            }
+          }
+
           & .e-caret {
             font-size: $cmenu-caret-font-size;
           }
@@ -41,6 +45,20 @@
           &.e-disabled {
             cursor: auto;
             pointer-events: none;
+          }
+
+          &.e-separator {
+            @if $skin-name == 'fluent2' {
+              padding: 0 !important;  /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible {
+            @if $skin-name == 'fluent2' {
+              border-radius: 4px;
+              background-color: $content-bg-color;
+              box-shadow: $shadow-focus-ring1;
+            }
           }
         }
 
@@ -85,7 +103,6 @@
     }
 
     &:not(.e-menu-container) {
-
       & .e-menu-vscroll.e-vscroll {
         box-shadow: $cmenu-parent-ul-box-shadow;
 
@@ -132,8 +149,17 @@
     & .e-menu-item  {
       @include bigger-li-size;
 
+      & .e-menu-icon {
+        @if $skin-name == 'fluent2' {
+          margin-bottom: 2px;
+        }
+      }
+
       & .e-caret {
         font-size: $cmenu-bigger-caret-font-size;
+        @if $skin-name == 'fluent2' {
+          padding: 0;
+        }
       }
     }
   }
@@ -147,9 +173,23 @@
     }
   }
 
-  .e-contextmenu-wrapper .e-menu-item {
+  .e-contextmenu-wrapper .e-menu-item,
+  .e-contextmenu-container .e-menu-item {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .e-small .e-contextmenu-wrapper ul .e-menu-item .e-caret,
+  .e-small .e-contextmenu-wrapper ul .e-menu-icon {
+    @if $skin-name == 'fluent2' {
+      font-size: 12px;
+    }
+  }
+
+  .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-menu-item.e-menu-caret-icon {
+    @if $skin-name == 'fluent2' {
+      padding: 9px 9px 9px 36px;
+    }
   }
 }

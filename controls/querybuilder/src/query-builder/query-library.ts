@@ -269,7 +269,7 @@ export class QueryLibrary {
         for (let i: number = 0, len: number = mongoList.length; i < len; i++) {
             const betweenOperatorArray: string[] | number[] = [];
             let inOperatorArray: string[] | number[] = [];
-            condition = Object.keys(mongoList[i as number])[0];
+            condition = Object.keys(mongoList[i as number] as Object)[0];
             value = mongoList[i as number][condition as string];
             if (condition === '$and') {
                 if (this.parent.enableNotCondition) {
@@ -282,9 +282,9 @@ export class QueryLibrary {
             }
             else if (condition === '$or') {
                 let notBetween: boolean;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any, max-len
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let innerObject: any = []; let keys: any = []; let firstKey: any = []; let secondKey: any = []; let innerKeys: any = [];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any, max-len
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let firstValue: any = []; let secondValue: any = []; let innerFirstValue: any = []; let innerSecondValue: any = [];
                 if (Array.isArray(value) && value.length === 2) {
                     keys = Object.keys(value);
@@ -349,11 +349,11 @@ export class QueryLibrary {
                                 condition = Object.keys(stringValue)[0];
                                 betweenValue = [Object.keys(stringValue[condition as string])[0]];
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                betweenOperatorArray.push(stringValue[condition as string][betweenValue as any]);
+                                (betweenOperatorArray as string[]).push(stringValue[condition as string][betweenValue as any]);
                                 type = 'number';
                             } else {
                                 operatorValue = 'between';
-                                betweenOperatorArray.push(stringValue);
+                                (betweenOperatorArray as string[]).push(stringValue);
                             }
                             if (typeof (stringValue) === 'number') {
                                 type = 'number';

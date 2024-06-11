@@ -1,4 +1,4 @@
-import { EventHandler, isNullOrUndefined, detach, formatUnit, getValue, addClass, select, closest } from '@syncfusion/ej2-base';
+import { EventHandler, isNullOrUndefined, detach, formatUnit } from '@syncfusion/ej2-base';
 import { FileManager } from '../base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { createElement, selectAll } from '@syncfusion/ej2-base';
@@ -47,6 +47,8 @@ export class Virtualization {
 
     /**
      * Sets up UI virtualization for the large icon view.
+     *
+     * @returns {void}
      */
     public setUIVirtualization(): void {
         // Get the current view data source
@@ -73,6 +75,8 @@ export class Virtualization {
     /**
      * Sets the height of the top and bottom elements that are used for virtualization.
      * These elements are used to give the appearance of an infinitely scrolling list.
+     *
+     * @returns {void}
      */
     public setUlElementHeight(): void {
         // Calculate the number of items in the last row
@@ -80,13 +84,14 @@ export class Virtualization {
             (this.largeIconInstance.allItems.length - this.itemCount) % this.rowItemCount : this.rowItemCount;
         // Create top and bottom elements
         this.topElement = this.filemanagerInstance.createElement('div');
-        this.topElement.classList.add("e-virtual-top");
-        this.largeIconInstance.element.firstElementChild.insertBefore(this.topElement, this.largeIconInstance.element.firstElementChild.firstChild);
+        this.topElement.classList.add('e-virtual-top');
+        this.largeIconInstance.element.firstElementChild.insertBefore(
+            this.topElement, this.largeIconInstance.element.firstElementChild.firstChild);
         this.bottomElement = this.filemanagerInstance.createElement('div');
-        this.bottomElement.classList.add("e-virtual-bottom");
+        this.bottomElement.classList.add('e-virtual-bottom');
         this.largeIconInstance.element.firstElementChild.insertBefore(this.bottomElement, null);
         // Get the margin value for list items
-        const marginValue: number = parseInt(window.getComputedStyle(this.largeIconInstance.itemList[0]).getPropertyValue('margin-top'), 10) + 
+        const marginValue: number = parseInt(window.getComputedStyle(this.largeIconInstance.itemList[0]).getPropertyValue('margin-top'), 10) +
             parseInt(window.getComputedStyle(this.largeIconInstance.itemList[0]).getPropertyValue('margin-bottom'), 10);
         // Calculate the height of a single list item
         this.listItemHeight = this.largeIconInstance.itemList[0].getBoundingClientRect().height + marginValue;
@@ -106,17 +111,22 @@ export class Virtualization {
 
     /**
      * Calculates the number of items to display in the list based on the available width and height.
-     * @param dataSourceLength The length of the data source.
-     * @returns The number of items to display.
+     *
+     * @param {number} dataSourceLength The length of the data source.
+     * @returns {number} The number of items to display.
      */
     private getItemCount(dataSourceLength: number): number {
         // Get the margin values for list items
         const widthMargin: number = parseInt(window.getComputedStyle(this.itemList[0]).getPropertyValue('margin-right'), 10) +
             parseInt(window.getComputedStyle(this.itemList[0]).getPropertyValue('margin-left'), 10);
         // Calculate the number of items that can fit in a single row
-        this.rowItemCount = Math.floor(parseFloat(formatUnit(this.largeIconInstance.element.firstElementChild.clientWidth)) / (this.itemList[0].offsetWidth + widthMargin));
+        this.rowItemCount =
+        Math.floor(parseFloat(formatUnit(this.largeIconInstance.element.firstElementChild.clientWidth)) /
+        (this.itemList[0].offsetWidth + widthMargin));
         // Calculate the number of items that can fit in the available height
-        let itemCount: number = this.rowItemCount * (Math.round(parseFloat(formatUnit(this.largeIconInstance.element.clientHeight)) / this.itemList[0].offsetHeight));
+        let itemCount: number =
+        this.rowItemCount *
+        (Math.round(parseFloat(formatUnit(this.largeIconInstance.element.clientHeight)) / this.itemList[0].offsetHeight));
         // If the calculated item count is greater than the data source length, set the item count to the data source length
         if (itemCount > dataSourceLength) {
             itemCount = dataSourceLength;
@@ -126,7 +136,9 @@ export class Virtualization {
 
     /**
      * Wires or un wires the scroll event for the list element.
-     * @param destroy - Set `true` to unwire the scroll event.
+     *
+     * @param {boolean} destroy - Set `true` to unwire the scroll event.
+     * @returns {void}
      */
     public wireScrollEvent(destroy: boolean): void {
         if (!destroy) {
@@ -141,6 +153,9 @@ export class Virtualization {
     /**
      * Handles the scroll event for the list element.
      * This method updates the top and bottom elements and the displayed items based on the scroll position.
+     *
+     * @returns {void}
+     * @private
      */
     private onVirtualUiScroll(): void {
         // Set the starting height to 0
@@ -176,15 +191,17 @@ export class Virtualization {
         this.scrollPosition = scroll;
         // Update the list of items and the items property of the largeIconInstance
         this.largeIconInstance.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, this.largeIconInstance.element));
-        this.itemCount = this.itemCount != this.largeIconInstance.itemList.length ? this.largeIconInstance.itemList.length : this.itemCount;
+        this.itemCount = this.itemCount !== this.largeIconInstance.itemList.length ? this.largeIconInstance.itemList.length : this.itemCount;
         this.largeIconInstance.items = this.largeIconInstance.allItems.slice(this.renderedCount -
             this.itemCount, this.renderedCount);
     }
 
     /**
      * Calculates the current scroll position of the list element.
-     * @param startingHeight The starting height from which to calculate the scroll position.
-     * @returns The current scroll position.
+     *
+     * @param {number} startingHeight The starting height from which to calculate the scroll position.
+     * @returns {number} The current scroll position.
+     * @private
      */
     private getscrollerHeight(startingHeight: number): number {
         // If the scroll position is less than or equal to the starting height, return 0.
@@ -195,8 +212,11 @@ export class Virtualization {
 
     /**
      * This method updates the displayed items and the selection based on the scroll direction.
-     * @param listDiff The number of rows to update.
-     * @param isScrollingDown If set to true, the scroll direction is downward.
+     *
+     * @param {number} listDiff The number of rows to update.
+     * @param {boolean} isScrollingDown If set to true, the scroll direction is downward.
+     * @returns {void}
+     * @private
      */
     private onNormalScroll(listDiff: number, isScrollingDown: boolean): void {
         // Update the displayed items
@@ -207,7 +227,10 @@ export class Virtualization {
 
     /**
      * Updates the items in the large icons view.
-     * @param isScrollingDown If set to true, the scroll direction is downward.
+     *
+     * @param {boolean} isScrollingDown - If set to true, the scroll direction is downward.
+     * @returns {void}
+     * @private
      */
     private updateUI(isScrollingDown: boolean): void {
         if (isScrollingDown) {
@@ -215,7 +238,9 @@ export class Virtualization {
             this.items = this.largeIconInstance.allItems.slice(this.renderedCount, this.renderedCount + this.rowItemCount);
             // If there are items to be displayed, create list elements for them and append them to the list
             if (this.items.length > 0) {
-                const listElements: HTMLElement = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.largeIconInstance.listObj);
+                const listElements: HTMLElement = ListBase.createListFromJson(
+                    createElement, <{ [key: string]: Object; }[]>this.items, this.largeIconInstance.listObj
+                );
                 this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, listElements));
                 this.itemList.forEach((liEle: HTMLElement) => {
                     this.largeIconInstance.element.firstElementChild.insertBefore(liEle, this.bottomElement);
@@ -253,12 +278,16 @@ export class Virtualization {
             this.items = this.largeIconInstance.allItems.slice(startItemIndex, lastItemIndex);
             if (this.items.length > 0) {
                 // Create a list of elements from the items array
-                const listElements: HTMLElement = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.largeIconInstance.listObj);
+                const listElements: HTMLElement = ListBase.createListFromJson(
+                    createElement, <{ [key: string]: Object; }[]>this.items, this.largeIconInstance.listObj
+                );
                 // Set the itemList array to the list items in the list elements
                 this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, listElements));
                 // Add the items to the beginning of the list
                 for (let len: number = this.itemList.length; len > 0; len--) {
-                    this.largeIconInstance.element.firstElementChild.insertBefore(this.itemList[len - 1], this.topElement.nextElementSibling);
+                    this.largeIconInstance.element.firstElementChild.insertBefore(
+                        this.itemList[len - 1], this.topElement.nextElementSibling
+                    );
                 }
                 // Remove the last row of items from the list
                 for (let i: number = 0; i < ((isAllRendered) ? this.lastRowCount : this.rowItemCount); i++) {
@@ -280,6 +309,8 @@ export class Virtualization {
 
     /**
      * Destroys the component.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         // If the file manager has already been destroyed, return immediately

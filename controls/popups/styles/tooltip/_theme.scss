@@ -1,6 +1,5 @@
 @include export-module('tooltip-theme') {
 
-  /*! Tooltip theme */
   .e-tooltip-wrap {
     border-radius: $tooltip-border-radius;
 
@@ -12,13 +11,12 @@
     &.e-popup {
       background-color: $tooltip-content-bg-color;
       border: $border-size $border-type $tooltip-content-border-color;
-      @if ($skin-name == 'FluentUI') {
+      @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
         box-shadow: $tooltip-drop-shadow;
         filter: $tooltip-drop-shadow-filter;
       }
     }
 
-    /*! tooltip arrow */
     .e-arrow-tip-outer {
       height: 0;
       left: 0;
@@ -82,7 +80,6 @@
       }
     }
 
-    /*! tooltip sticky mode close icon */
     .e-tooltip-close {
       background-color: $tooltip-icon-bg-normal;
       border-color: $tooltip-icon-border-color;
@@ -102,22 +99,21 @@
       @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
         border: $tooltip-close-icon-border;
       }
+
+      &:hover {
+        @if ($skin-name == 'tailwind') {
+          color: $tooltip-hover-icon-color;
+        }
+        @else {
+          background-color: $tooltip-icon-bg-hover;
+          color: $tooltip-hover-icon-color;
+        }
+        @if ($skin-name == 'bootstrap5') {
+          border-color: $tooltip-close-icon-border-hover;
+        }
+      }
     }
 
-    .e-tooltip-close:hover {
-      @if ($skin-name == 'tailwind') {
-        color: $tooltip-hover-icon-color;
-      }
-      @else {
-        background-color: $tooltip-icon-bg-hover;
-        color: $tooltip-hover-icon-color;
-      }
-      @if ($skin-name == 'bootstrap5') {
-        border-color: $tooltip-close-icon-border-hover;
-      }
-    }
-
-    /*! tooltip content area */
     .e-tip-content {
       border-radius: inherit;
       color: $tooltip-content-font-color;
@@ -129,7 +125,6 @@
     }
   }
 
-  /*! bigger style */
   .e-bigger .e-tooltip-wrap .e-tip-content,
   .e-tooltip-wrap.e-bigger .e-tip-content {
     font-size: $tooltip-mobile-font-size;

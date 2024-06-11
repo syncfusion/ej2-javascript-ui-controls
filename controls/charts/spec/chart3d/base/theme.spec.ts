@@ -251,6 +251,26 @@ describe('Chart control thems', () => {
             chartObj.loaded = loaded;
             chartObj.dataBind();
         });
+        it('Checking Fluent2 theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                const fill: string = document.getElementById('container-svg-0-region-series-0-point-1').getAttribute('fill');
+                expect(fill).toBe('#6200EE');
+                done();
+            };
+            chartObj.theme = 'Fluent2';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking Fluent2 Dark theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                const fill: string = document.getElementById('container-svg-0-region-series-0-point-1').getAttribute('fill');
+                expect(fill).toBe('#9BB449');
+                done();
+            };
+            chartObj.theme = 'Fluent2Dark';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
         it('checking legend click event', (done: Function) => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;

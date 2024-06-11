@@ -1,4 +1,3 @@
-//default
 $tab-skin: 'fabric' !default;
 $tab-big-vertical-scroll-nav-top-bottom: 23px !default;
 $tab-vscroll-big-padding: 24px 0 !default;
@@ -187,7 +186,6 @@ $tab-bg-big-active-item-wrap-margin-bottom: 0 !default;
 $tab-bg-nrml-active-item-wrap-margin-bottom: 0 !default;
 $tab-alt-big-active-item-padding: 0 !default;
 $tab-alt-nrml-active-item-padding: 0 !default;
-
 $tab-active-text-container-margin: 0 !default;
 $tab-big-text-container-margin-right: 22px !default;
 $tab-nrml-text-container-margin-right: 20px !default;
@@ -202,7 +200,6 @@ $tab-fill-nrml-active-it-text-container-height: $tab-nrml-fill-height - 2 !defau
 $tab-big-even-active-text-container-height:  $tab-big-height - 2 !default;
 $tab-nrml-even-active-text-container-height: 40px !default;
 $tab-even-active-text-container-margin: 0 0 2px !default;
-
 $tab-big-font-size: 15px !default;
 $tab-nrml-font-size: 14px !default;
 $tab-font-weight: 400 !default;
@@ -244,9 +241,7 @@ $tab-alt-active-hover-text-color: $theme-dark-font !default;
 $tab-alt-active-style-hover-icon-color: $tab-alt-active-hover-text-color !default;
 $tab-clone-item-bg-color: rgba($neutral-black, 0) !default;
 $tab-clone-text-color: $neutral-light-font !default;
-
 $tab-icon-container-width: 50px !default;
-
 $tab-nav-pop-press-border: 0 !default;
 $tab-big-nav-icon-container-size: 32px !default;
 $tab-nrml-nav-icon-container-size: 24px !default;
@@ -278,7 +273,6 @@ $tab-big-edge-pop-icon-line-height: 18px !default;
 $tab-nrml-edge-pop-icon-line-height: 14px !default;
 $tab-comb-icon-color: $neutral-light-font !default;
 $tab-comb-text-color: $neutral-light-font !default;
-
 $tab-close-icon-size: 10px !default;
 $tab-big-close-icon-size: 12px !default;
 $tab-nrml-close-icon-size: 10px !default;
@@ -322,7 +316,6 @@ $tab-alt-active-hover-close-icon-color: $neutral-light-fontalt !default;
 $tab-pop-bg-color: $neutral-white !default;
 $tab-pop-border: 1px solid rgba($neutral-light, 1) !default;
 $tab-pop-border-radius: 0 !default;
-
 $tab-big-nav-right-icon-padding: 0 10px !default;
 $tab-nrml-nav-right-icon-padding: 0 10px !default;
 $tab-mob-nav-right-icon-padding: 0 8px !default;
@@ -359,7 +352,6 @@ $tab-even-active-item-bottom-border-color: 0 !default;
 $tab-pop-up-icon-active-border: $tab-pop-icon-active-border !default;
 $tab-pop-border-box-shadow: none !default;
 $tab-bg-hover-nav-icon-color: $neutral-light-fontalt !default;
-
 $tab-pop-box-shadow: 0 1px 3px rgba($neutral-light, .25) !default;
 $tab-v-popup-box-shadow: $tab-pop-box-shadow !default;
 $tab-pop-icon-transition: none !default;
@@ -386,7 +378,6 @@ $tab-nav-focus-hover-border-color: $neutral-secondary-alt !default;
 $tab-nav-focus-active-border-color: $neutral-secondary-alt !default;
 $tab-alt-nav-border-color: $neutral-lighter-alt !default;
 $tab-pop-bg-color: $neutral-white !default;
-
 $tab-bgr-active-last-margin: 0 14px 0 0 !default;
 $tab-bgr-hscroll-items-nav-width: 50px !default;
 $tab-bgr-item-textwrap-height: $tab-big-height - 2 !default;
@@ -413,7 +404,6 @@ $tab-bgr-rtl-icon-right-margin: 0 !default;
 $tab-bgr-background-active-padding: $tab-alt-big-active-item-padding !default;
 $tab-bgr-fill-active-item-padding: 0 !default;
 $tab-bgr-item-text-margin-bottom: 0 !default;
-
 $tab-nrml-hscroll-items-nav-width: 40px !default;
 $tab-nrml-hscroll-items-bdr-radius: 0 !default;
 $tab-nrml-item-text-wrap-height: $tab-nrml-height - 2 !default;
@@ -471,7 +461,6 @@ $tab-nrml-bottom-wrap-before-top: 0 !default;
 $tab-nrml-background-vertical-indicator-display: none !default;
 $tab-nrml-background-active-padding: $tab-alt-nrml-active-item-padding !default;
 $tab-nrml-item-text-margin-bottom: 0 !default;
-
 $tab-header-font-weight: normal !default;
 $tab-header-before-border-color: unset !default;
 $tab-header-before-border-width: 0 !default;
@@ -498,7 +487,6 @@ $tab-item-left-icon-before-top: 0 !default;
 $tab-item-icon-before-top: 1px !default;
 $tab-item-icon-before-left: 0 !default;
 $tab-item-active-border-bottom: initial !default;
-
 $tab-pop-wrap-hover-border: 1px solid $tab-wrap-hover-border-color !default;
 $tab-pop-wrap-hover-border-radius: 0 !default;
 $tab-pop-wrap-hover-close-color: $tab-hover-text-color !default;
@@ -513,7 +501,6 @@ $tab-pop-nav-active-bg: inherit !default;
 $tab-pop-nav-active-border: 0 !default;
 $tab-pop-nav-active-border-radius: 0 4px 4px 0 !default;
 $tab-pop-active-icons-color: $theme-primary-font !default;
-
 $tab-scroll-nav-bg: inherit !default;
 $tab-scroll-nav-arrow-font: $tab-nav-icon-color !default;
 $tab-scroll-arrow-hover-border: $tab-item-active-wrap-border !default;
@@ -529,7 +516,6 @@ $tab-scroll-overlay-arrow-hover-bg: $tab-hover-nav-bg-color !default;
 $tab-scroll-overlay-arrow-hover-border-color: $tab-wrap-border-color !default;
 $tab-scroll-focused-nav-focus-icon-bg: $tab-nav-focus-bg-color !default;
 $tab-scroll-focused-nav-focus-icon-border: $tab-pop-up-icon-focus-border !default;
-
 $tab-bottom-border-color: unset !default;
 $tab-bottom-border-width: 0 !default;
 $tab-bottom-hidden-items-border-color: unset !default;
@@ -537,7 +523,6 @@ $tab-bottom-hidden-items-border-width: 0 !default;
 $tab-bottom-active-border-color: $tab-active-item-border-color unset unset !default;
 $tab-bottom-active-border-width: 0 !default;
 $tab-bottom-active-margin-top: 0 !default;
-
 $tab-vertical-scroll-hover-border-color: $tab-vscroll-nav-border-color transparent transparent !default;
 $tab-vertical-scroll-hover-active-bg: $tab-v-nav-focus-bg-color !default;
 $tab-vertical-focus-active-arrow-color: none !default;
@@ -545,7 +530,6 @@ $tab-vertical-pop-icon-hover-color: $tab-hover-nav-icon-color !default;
 $tab-vertical-pop-icon-active-color: $tab-nav-focus-icon-color !default;
 $tab-vertical-focused-nav-focus-border-color: $neutral-secondary-alt !default;
 $tab-vertical-before-border-width: 0 !default;
-
 $tab-fill-wrap-hover-icon-color: $tab-hover-text-color !default;
 $tab-fill-active-tabwrap-border-color: $tab-fill-active-wrap-border-color !default;
 $tab-fill-active-text-before-border: 0 !default;
@@ -558,7 +542,6 @@ $tab-fill-pop-wrap-hover-close-color: $tab-hover-text-color !default;
 $tab-fill-focused-active-tabwrap-focus-border-color: $tab-fill-focused-active-wrap-focus-border-color !default;
 $tab-fill-focused-active-wrap-focus-text-color: $tab-alt-active-style-hover-icon-color !default;
 $tab-fill-focused-active-wrap-focus-close-color: $tab-hover-text-color !default;
-
 $tab-background-indicator-bottom: 0 !default;
 $tab-background-wrap-border-color: $tab-alt-wrap-border-color !default;
 $tab-background-close-hover-color: $tab-alt-active-wrap-close-icon-color !default;
@@ -651,15 +634,10 @@ $tab-background-focused-active-wrap-icon-color: $tab-alt-active-hover-text-color
 $tab-background-accent-indicator-bg: $tab-border-color !default;
 $tab-background-active-text-font-weight: $tab-light-font-weight !default;
 $tab-background-text-color: $tab-alt-text-color !default;
-
 $tab-fill-background-disable-text-color: $tab-disable-text-color !default;
-
-//enddefault
-//dimensions
 @mixin tbar-alt-btn-animation-after {
   animation: none;
 }
-
 @mixin hscroll-alt-btn-animation-after {
   animation: none;
 }

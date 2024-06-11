@@ -1132,7 +1132,7 @@ describe('Clipboard ->', () => {
                         expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).toBeNull();
                         done();
                     });
-                }, 100);
+                });
             });
             it('EJ2-53620 - Cut and copy issue in spreadsheet->', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
@@ -1243,6 +1243,43 @@ describe('Clipboard ->', () => {
                 });
             });
         }); 
+        describe('EJ2-56522 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Data gets duplicated when performing cut and paste on an entire column in spreadsheet.', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.edit('A1','Casual Shoes');
+                helper.edit('A2','Sports Shoes');
+                helper.edit('A3','Formal Shoes');
+                helper.edit('A4','Sandals & Floaters');
+                helper.edit('A5','Flip- Flops & Slippers');
+                helper.invoke('selectRange', ['A1:A100']);
+                helper.invoke('cut').then((): void => {
+                    setTimeout((): void => {
+                        helper.invoke('selectRange', ['C1:C100']);
+                        helper.invoke('paste');
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].rows[0].cells[2].value).toBe('Casual Shoes');
+                            expect(spreadsheet.sheets[0].rows[1].cells[2].value).toBe('Sports Shoes');
+                            expect(spreadsheet.sheets[0].rows[2].cells[2].value).toBe('Formal Shoes');
+                            expect(spreadsheet.sheets[0].rows[3].cells[2].value).toBe('Sandals & Floaters');
+                            expect(spreadsheet.sheets[0].rows[4].cells[2].value).toBe('Flip- Flops & Slippers');
+                            expect(spreadsheet.sheets[0].rows[5]).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[6]).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[7]).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[8]).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[9]).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[15]).toBeUndefined();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
     describe('EJ2-58124 ->', () => {
         beforeAll((done: Function) => {

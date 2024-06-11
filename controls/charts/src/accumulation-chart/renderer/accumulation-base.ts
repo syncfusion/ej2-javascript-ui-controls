@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * Defines the common functionalities of accumulation series
  */
@@ -15,6 +12,7 @@ import { AccPoints, pointByIndex, AccumulationSeries } from '../model/acc-base';
 export class AccumulationBase {
 
     /** @private */
+
     constructor(accumulation: AccumulationChart) {
         this.accumulation = accumulation;
     }
@@ -22,9 +20,10 @@ export class AccumulationBase {
     private pieCenter: ChartLocation;
 
     /**
-     * Gets the center of the pie
+     * Gets the center of the pie.
      *
      * @private
+     * @returns {ChartLocation} - The center of the pie.
      */
     public get center(): ChartLocation {
         return this.pieCenter || (this.accumulation.visibleSeries[0].type === 'Pie' ?
@@ -32,9 +31,10 @@ export class AccumulationBase {
     }
 
     /**
-     * Sets the center of the pie
+     * Sets the center of the pie.
      *
      * @private
+     * @param {ChartLocation} value - The center point to set.
      */
     public set center(value: ChartLocation) {
         this.pieCenter = value;
@@ -42,9 +42,10 @@ export class AccumulationBase {
 
     private pieRadius: number;
     /**
-     * Gets the radius of the pie
+     * Gets the radius of the pie.
      *
      * @private
+     * @returns {number} - The radius of the pie.
      */
     public get radius(): number {
         return this.pieRadius !== undefined ? this.pieRadius :
@@ -52,9 +53,10 @@ export class AccumulationBase {
     }
 
     /**
-     * Sets the radius of the pie
+     * Sets the radius of the pie.
      *
      * @private
+     * @param {number} value - The radius value to set.
      */
     public set radius(value: number) {
         this.pieRadius = value;
@@ -62,9 +64,10 @@ export class AccumulationBase {
 
     private pieLabelRadius: number;
     /**
-     * Gets the label radius of the pie
+     * Gets the label radius of the pie.
      *
      * @private
+     * @returns {number} - The label radius of the pie.
      */
     public get labelRadius(): number {
         return this.pieLabelRadius !== undefined ? this.pieLabelRadius :
@@ -72,9 +75,10 @@ export class AccumulationBase {
     }
 
     /**
-     * Sets the label radius of the pie
+     * Sets the label radius of the pie.
      *
      * @private
+     * @param {number} value - The label radius value to set.
      */
     public set labelRadius(value: number) {
         this.pieLabelRadius = value;
@@ -84,18 +88,20 @@ export class AccumulationBase {
     protected accumulation: AccumulationChart;
 
     /**
-     * Checks whether the series is circular or not
+     * Checks whether the series is circular or not.
      *
      * @private
+     * @returns {boolean} - True if the series is circular, otherwise false.
      */
     protected isCircular(): boolean {
         return this.accumulation.type === 'Pie';
     }
 
     /**
-     * To check various radius pie
+     * To check various radius pie.
      *
      * @private
+     * @returns {boolean} - True if various radius is enabled, otherwise false.
      */
     protected isVariousRadius(): boolean {
         return this.accumulation.pieSeriesModule.isRadiusMapped;
@@ -103,9 +109,11 @@ export class AccumulationBase {
 
 
     /**
-     * To process the explode on accumulation chart loading
+     * To process the explode on accumulation chart loading.
      *
      * @private
+     * @param {Event} event - The event triggered during loading.
+     * @returns {void}
      */
     public processExplode(event: Event): void {
         if ((<HTMLElement>event.target).id.indexOf('_Series_') > -1 || (<HTMLElement>event.target).id.indexOf('_datalabel_') > -1) {
@@ -120,9 +128,10 @@ export class AccumulationBase {
     }
 
     /**
-     * To invoke the explode on accumulation chart loading
+     * To invoke the explode on accumulation chart loading.
      *
      * @private
+     * @returns {void}
      */
     public invokeExplode(): void {
         const series: AccumulationSeries = this.accumulation.visibleSeries[0];
@@ -142,9 +151,12 @@ export class AccumulationBase {
     }
 
     /**
-     * To deExplode all points in the series
+     * To deExplode all points in the series.
      *
      * @private
+     * @param {number} index - The index of the point to explode.
+     * @param {number} animationDuration - The duration of the animation.
+     * @returns {void}
      */
     public deExplodeAll(index: number, animationDuration: number): void {
         const pointId: string = this.accumulation.element.id + '_Series_0_Point_';
@@ -158,9 +170,13 @@ export class AccumulationBase {
     }
 
     /**
-     * To explode point by index
+     * To explode point by index.
      *
      * @private
+     * @param {number} index - The index of the point to explode.
+     * @param {AccumulationChart} chart - The accumulation chart control.
+     * @param {boolean} explode - Specifies whether to explode the point (default: false).
+     * @returns {void}
      */
     public explodePoints(index: number, chart: AccumulationChart, explode: boolean = false): void {
         const series: AccumulationSeries = chart.visibleSeries[0];
@@ -226,12 +242,13 @@ export class AccumulationBase {
         return true;
     }
     /**
-     * To Explode points
+     * To Explode points.
      *
-     * @param {number} index Index of a point.
-     * @param {AccPoints} point To get the point of explode.
-     * @param {number} duration Duration of the explode point.
-     * @param {boolean} explode Either true or false.
+     * @param {number} index - Index of a point.
+     * @param {AccPoints} point - To get the point of explode.
+     * @param {number} duration - Duration of the explode point.
+     * @param {boolean} explode - Either true or false.
+     * @returns {void}
      */
     private pointExplode(index: number, point: AccPoints, duration: number, explode?: boolean): void {
         let translate: ChartLocation;
@@ -255,7 +272,10 @@ export class AccumulationBase {
     }
 
     /**
-     * To check point is exploded by id
+     * To check point is exploded by id.
+     *
+     * @param {string} id - The id of the point to check.
+     * @returns {boolean} - True if the point is exploded, otherwise false.
      */
     private isExplode(id: string): boolean {
         const element: Element = getElement(id);
@@ -264,7 +284,12 @@ export class AccumulationBase {
     }
 
     /**
-     * To deExplode the point by index
+     * To deExplode the point by index.
+     *
+     * @param {number} index - The index of the point.
+     * @param {string} sliceId - The id of the slice.
+     * @param {number} animationDuration - The duration of the animation.
+     * @returns {void}
      */
     private deExplodeSlice(index: number, sliceId: string, animationDuration: number): void {
         const element: Element = getElement(sliceId + index);
@@ -273,10 +298,9 @@ export class AccumulationBase {
             this.accumulation.enableAnimation && element && transform &&
             transform !== 'translate(0, 0)' && transform !== 'translate(0)'
         ) {
-            // eslint-disable-next-line security/detect-unsafe-regex
-            const result: RegExpExecArray = /translate\((-?\d+\.?\d*),?\s*(-?\d+[.]?\d*)?\)/.exec(transform);
+            const result: string[] = transform.split('(')[1].split(')')[0].split(',');
             this.performAnimation(
-                index, sliceId, 0, 0, +result[1], +result[2] || 0, animationDuration, true
+                index, sliceId, 0, 0, +result[0], +result[1] || 0, animationDuration, true
             );
         } else {
             this.performAnimation(
@@ -286,7 +310,13 @@ export class AccumulationBase {
     }
 
     /**
-     * To translate the point elements by index and position
+     * To translate the point elements by index and position.
+     *
+     * @param {number} index - The index of the point.
+     * @param {string} sliceId - The id of the slice.
+     * @param {string} position - The position to translate the point to.
+     * @param {string} transform - The transformation to apply to the point.
+     * @returns {void}
      */
     private setTranslate(index: number, sliceId: string, position: string, transform?: string): void {
         this.setElementTransform(sliceId + index, position);
@@ -299,7 +329,11 @@ export class AccumulationBase {
     }
 
     /**
-     * To translate the point element by id and position
+     * To translate the point element by id and position.
+     *
+     * @param {string} id - The id of the point element.
+     * @param {string} position - The position to translate the point to.
+     * @returns {void}
      */
     private setElementTransform(id: string, position: string): void {
         const element: Element = getElement(id);
@@ -309,7 +343,14 @@ export class AccumulationBase {
     }
 
     /**
-     * To translate the point elements by index position
+     * To translate the point elements by index position.
+     *
+     * @param {number} index - The index of the point.
+     * @param {ChartLocation} translate - The translation values (x, y).
+     * @param {string} sliceId - The id of the slice.
+     * @param {ChartLocation} center - The center point of the accumulation chart.
+     * @param {number} animationDuration - The duration of the animation.
+     * @returns {void}
      */
     private explodeSlice(
         index: number, translate: ChartLocation, sliceId: string, center: ChartLocation,
@@ -319,15 +360,17 @@ export class AccumulationBase {
     }
 
     /**
-     * To Perform animation point explode
+     * To Perform animation point explode.
      *
-     * @param {number} index Index of the series.
-     * @param {string} sliceId ID of the series.
-     * @param {number} startX X value of start.
-     * @param {number} startY Y value of start.
-     * @param {number} endX X value of end.
-     * @param {number} endY Y value of end.
-     * @param {number} duration Duration of the animation.
+     * @param {number} index - Index of the series.
+     * @param {string} sliceId - ID of the series.
+     * @param {number} startX - X value of start.
+     * @param {number} startY - Y value of start.
+     * @param {number} endX - X value of end.
+     * @param {number} endY - Y value of end.
+     * @param {number} duration - Duration of the animation.
+     * @param {boolean} isReverse - Duration of the animation.
+     * @returns {void}
      */
     private performAnimation(
         index: number, sliceId: string, startX: number, startY: number, endX: number, endY: number,

@@ -470,12 +470,12 @@ export class MDLists {
     private getListRegex(): RegExp {
         let regex: string = '';
         const configKey: string[] = Object.keys(this.syntax);
+        const regExp: RegExpConstructor = RegExp;
         for (let j: number = 0; j < configKey.length; j++) {
             const syntax: string = this.selection.replaceSpecialChar(this.syntax[configKey[j as number]]);
             regex += regex === '' ? '^(' + syntax + ')|^(' + syntax.trim() + ')' :
                 '|^(' + syntax + ')|^(' + syntax.trim() + ')';
         }
-        // eslint-disable-next-line
-        return new RegExp(regex);
+        return new regExp(regex);
     }
 }

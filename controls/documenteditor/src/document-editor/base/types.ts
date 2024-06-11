@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /**
  * Specified the hyperlink type.
  */
@@ -1134,6 +1135,18 @@ export type DialogType =
      */
     'PageSetup' |
     /**
+     * Specifies ContentControlProperties dialog.
+     */
+    'ContentControlProperties' |
+    /**
+     * * Specifies Picture Content Control dialog.
+     */
+    'PictureContentControl' |
+    /**
+     * Specifies DatePicker Content Control Dialog
+     */
+    'DatepickerContentControl' |
+    /**
      * Specifies Columns dialog.
      */
     'Columns' |
@@ -1234,13 +1247,13 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
 'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase'|'ToggleCase'|'Lowercase'|'SentenceCase'|'CapitalizeEachWord'| 'PasteColumn'|
 'PasteRow' | 'PasteOverwrite' | 'PasteNested' | 'SkipCommentInline' | 'DeleteCommentInline' | 'ResolveComment'
-|"TopBorder"
+|'TopBorder'
 |'LeftBorder'
 |'RightBorder'
 |'BottomBorder'
 |'HorizontalBorder'
 |'VerticalBorder'|'ColumnBreak'
-| 'DragAndDropContent' | 'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment' | 'TableTitle' | 'TableDescription' | 'TabStop' | 'Grouping' | 'ModifyStyle';
+| 'DragAndDropContent' | 'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment' | 'TableTitle' | 'TableDescription' | 'TabStop' | 'Grouping' | 'ModifyStyle'|'InsertContentControl';
 /**
  * Enum for direction
  */
@@ -1404,6 +1417,10 @@ export type ToolbarItem =
      * PageSetup option in the toolbar item.
      */
     'PageSetup' |
+    /**
+     * Content Control option in the toolbar item
+     */
+    'ContentControl' |
     /**
      * Insert page number option in the toolbar item.
      */
@@ -1624,8 +1641,8 @@ export enum FontScriptType {
     //To-Do : Should add a enum field for other known scripts. Such as Tamil, Malayalam, Telugu, etc.
 }
 /**
-* @private
-*/
+ * @private
+ */
 export enum FontHintType {
     //0x00 - default
     Default = 0,
@@ -1640,7 +1657,6 @@ export enum FontHintType {
 export type ServerActionType = 'Import' | 'RestrictEditing' | 'SpellCheck' | 'SystemClipboard';
 /**
  * @private
- * Specifies the local ID's.
  */
 export enum LocaleId {
     /**
@@ -2625,8 +2641,8 @@ export enum LocaleId {
     ja_JP = 1041
 }
 /**
-* Specifies the type of the Section break.
-*/
+ * Specifies the type of the Section break.
+ */
 export enum SectionBreakType {
     /**
      * Section break with the new section beginning on the next even-numbered page.
@@ -2646,8 +2662,8 @@ export enum SectionBreakType {
     OddPage = 'OddPage'
 }
 /**
-* Specifies the clear type of the Text Wrapping break.
-*/
+ * Specifies the clear type of the Text Wrapping break.
+ */
 export type BreakClearType =
     /**
      * Specifies the text to start on next line ragrdless of any floating objects..
@@ -2656,11 +2672,11 @@ export type BreakClearType =
     /**
      * Specifies the text to start on next text region left to right.
      */
-    'Left' | 
+    'Left' |
     /**
      * Specifies the text to start on next text region right to left.
      */
-    'Right' | 
+    'Right' |
     /**
      * Specifies the text to start on next full line.
      */
@@ -2671,20 +2687,21 @@ export type BreakClearType =
 
 /**
  * For internal use only.
+ *
  * @private
  */
-export const CONTROL_CHARACTERS = {
+export const CONTROL_CHARACTERS: any = {
     'Tab': '\t',
     'Paragraph': '\n',
     'LineBreak': '\v',
     'PageBreak': '\f',
     'ColumnBreak': '\u000e',
     'Image': '\u0011',
-    "Table": `\u0012`,
-    "Row": `\u0013`,
-    "Cell": `\u0014`,
-    "Marker_Start": `\u0015`,
-    "Marker_End": `\u0016`,
-    "Field_Separator": `\u0017`,
-    "Section_Break": `\u0018`,
-}
+    'Table': '\u0012',
+    'Row': '\u0013',
+    'Cell': '\u0014',
+    'Marker_Start': '\u0015',
+    'Marker_End': '\u0016',
+    'Field_Separator': '\u0017',
+    'Section_Break': '\u0018'
+};

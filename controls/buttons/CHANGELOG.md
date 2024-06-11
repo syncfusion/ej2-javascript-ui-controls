@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
-
-### Speed Dial
-
-#### Bug Fixes
-
-- `#I591414` - Now the issue with unable to click the Speed Dial items when `opensOnHover` property is enabled has been resolved.
-
-## 25.2.6 (2024-05-28)
+## 26.1.35 (2024-06-11)
 
 ### Switch
 
@@ -18,28 +10,17 @@
 
 - `#593165` - The issue with "`tabindex HtmlAttributes` property is not properly set on the switch input element." has been resolved.
 
-## 25.2.4 (2024-05-14)
-
 ### Checkbox
 
 #### Bug Fixes
 
 - The issue with "Script error thrown in CheckBox `unWireEvents` method" has been resolved.
 
-## 25.1.39 (2024-04-09)
-
 ### Checkbox
 
 #### Bug Fixes
 
 - `#I574511` - The issue with "script error thrown while clicking the checkbox through JS." has been resolved.
-
-## 25.1.35 (2024-03-15)
-
-### Checkbox
-
-#### Bug Fixes
-
 - `#I535107` - Need to set `HtmlAttributes` Id in input element checkbox has been resolved.
 
 ### RadioButton

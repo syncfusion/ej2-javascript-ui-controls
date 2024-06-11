@@ -60,6 +60,15 @@ export function getRangePalette(theme: string): string[] {
         palette = ['#4EAAFF', '#FA4EAB', '#FFF500', '#17EA58', '#38FFE7',
             '#FF9E45', '#B3F32F', '#B93CE4', '#FC5664', '#9B55FF'];
         break;
+    case 'fluent2':
+        palette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F', 
+            '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
+        break;
+    case 'fluent2dark':
+    case 'fluent2highcontrast':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6', 
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
     }
     return palette;
 }
@@ -335,6 +344,81 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             tooltipTextOpacity: 1,
             fontWeight: '400',
             titleFontWeight: '500'
+        };
+        break;
+    case 'fluent2':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#242424',
+            tooltipFillColor: '#FFFFFF',
+            tooltipFontColor: '#242424',
+            tooltipFontSize: '12px',
+            labelColor: '#242424',
+            lineColor: '#EDEBE9',
+            majorTickColor: '#C8C6C4',
+            minorTickColor: '#C8C6C4',
+            pointerColor: '#A19F9D',
+            capColor: '#A19F9D',
+            needleColor: '#A19F9D',
+            needleTailColor: '#A19F9D',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            fontWeight: '400',
+            titleFontWeight: '600'
+        };
+        break;
+    case 'fluent2dark':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#FFFFFF',
+            tooltipFillColor: '#292929',
+            tooltipFontColor: '#FFFFFF',
+            tooltipFontSize: '12px',
+            labelColor: '#FFFFFF',
+            lineColor: '#292827',
+            majorTickColor: '#484644',
+            minorTickColor: '#484644',
+            pointerColor: '#8A8886',
+            capColor: '#8A8886',
+            needleColor: '#8A8886',
+            needleTailColor: '#8A8886',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            fontWeight: '400',
+            titleFontWeight: '600'
+        };
+        break;
+    case 'fluent2highcontrast':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#FFFFFF',
+            tooltipFillColor: '#000000',
+            tooltipFontColor: '#FFFFFF',
+            tooltipFontSize: '12px',
+            labelColor: '#FFFFFF',
+            lineColor: '#292827',
+            majorTickColor: '#484644',
+            minorTickColor: '#484644',
+            pointerColor: '#8A8886',
+            capColor: '#8A8886',
+            needleColor: '#8A8886',
+            needleTailColor: '#8A8886',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            fontWeight: '400',
+            titleFontWeight: '600',
+            tooltipBorderColor: '#FFF',
+            legendBorderColor: '#FFF',
+            legendBorderWidth: 1
         };
         break;
     default:

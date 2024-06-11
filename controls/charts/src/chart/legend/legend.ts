@@ -1,9 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable curly */
-/* eslint-disable max-len */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * Chart legend
  */
@@ -23,7 +17,7 @@ import { legendRender, legendClick, regSub, regSup} from '../../common/model/con
 import { Axis } from '../axis/axis';
 import { LegendTitlePosition } from '../../common/utils/enum';
 import { textWrap } from '../../common/utils/helper';
-import { markerShapes } from '../series/marker';
+import { TrendlineModel } from '../series/chart-series-model';
 /**
  * `Legend` module is used to render legend for the chart.
  */
@@ -35,6 +29,8 @@ export class Legend extends BaseLegend {
     }
     /**
      * Binding events for legend module.
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -44,6 +40,8 @@ export class Legend extends BaseLegend {
     }
     /**
      * UnBinding events for legend module.
+     *
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -52,7 +50,10 @@ export class Legend extends BaseLegend {
         this.chart.off(Browser.touchEndEvent, this.mouseEnd);
     }
     /**
-     * To handle mosue move for legend module
+     * To handle mosue move for legend module.
+     *
+     * @param {MouseEvent} e - The mouse event.
+     * @returns {void}
      */
     private mouseMove(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
@@ -75,7 +76,10 @@ export class Legend extends BaseLegend {
         }
     }
     /**
-     * To handle mosue end for legend module
+     * To handle mosue end for legend module.
+     *
+     * @param {MouseEvent} e - The mouse event.
+     * @returns {void}
      */
     private mouseEnd(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && this.chart.isTouch) {
@@ -83,10 +87,11 @@ export class Legend extends BaseLegend {
         }
     }
     /**
-     * Get the legend options.
+     * Retrieves the legend options based on the visible series collection and chart.
      *
+     * @param {Series[]} visibleSeriesCollection - The collection of visible series.
+     * @param {Chart} chart - The chart instance.
      * @returns {void}
-     * @private
      */
     public getLegendOptions(visibleSeriesCollection: Series[], chart: Chart): void {
         this.legendCollections = [];
@@ -170,7 +175,14 @@ export class Legend extends BaseLegend {
             this.legendCollections.reverse();
         }
     }
-    /** @private */
+    /**
+     * Calculates the legend bounds based on the available size and legend settings.
+     *
+     * @param {Size} availableSize - The available size for the legend.
+     * @param {Rect} legendBounds - The current bounds of the legend.
+     * @param {LegendSettingsModel} legend - The legend settings.
+     * @returns {void}
+     */
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
         this.calculateLegendTitle(legend, legendBounds);
         this.isTitle = legend.title ? true : false;
@@ -230,7 +242,8 @@ export class Legend extends BaseLegend {
             shapePadding = legendOption.text ? legend.shapePadding : 0;
             if (legendOption.render && legendOption.text) {
                 render = true;
-                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth : legendOption.textSize.width) + (!this.isVertical ? (i === 0) ? padding : this.itemPadding : padding);
+                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth :
+                    legendOption.textSize.width) + (!this.isVertical ? (i === 0) ? padding : this.itemPadding : padding);
                 rowWidth = rowWidth + legendWidth;
                 if (!legend.enablePages && !this.isVertical) {
                     titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
@@ -249,9 +262,12 @@ export class Legend extends BaseLegend {
                     //columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + titleSpace + verticalArrowSpace;
                 }
                 const len: number = (rowCount > 0 ? (rowCount - 1) : 0);
-                this.rowHeights[len as number] = Math.max((this.rowHeights[len as number] ? this.rowHeights[len as number] : 0), legendOption.textSize.height);
+                this.rowHeights[len as number] = Math.max((this.rowHeights[len as number] ?
+                    this.rowHeights[len as number] : 0), legendOption.textSize.height);
                 // this.maxItemHeight = Math.max(this.maxItemHeight, legendOption.textSize.height);
-                this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ? this.columnHeights[columnCount as number] : 0) + legendOption.textSize.height + (this.isVertical ? (i === 0) ? padding : this.itemPadding : padding);
+                this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ?
+                    this.columnHeights[columnCount as number] : 0) + legendOption.textSize.height +
+                    (this.isVertical ? (i === 0) ? padding : this.itemPadding : padding);
                 columnCount++;
             }
         }
@@ -259,10 +275,7 @@ export class Legend extends BaseLegend {
         columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleSpace);
         this.isPaging = legendBounds.height < columnHeight;
         if (this.isPaging && !legend.enablePages) {
-            if (this.isVertical) {
-                // eslint-disable-next-line no-self-assign
-                columnHeight = columnHeight;
-            } else {
+            if (!this.isVertical) {
                 columnHeight = (this.maxItemHeight + padding) + padding + (titlePosition === 'Top' ? titleSpace : 0);
             }
         }
@@ -276,8 +289,19 @@ export class Legend extends BaseLegend {
             this.setBounds(0, 0, legend, legendBounds);
         }
     }
-    /** @private */
-    public getLegendHeight(legendOption: LegendOptions, legend: LegendSettingsModel, legendBounds: Rect, rowWidth: number, legendHeight : number, padding : number): void  {
+    /**
+     * Calculates the height of the legend based on the legend options, settings, and available space.
+     *
+     * @param {LegendOptions} legendOption - The legend options.
+     * @param {LegendSettingsModel} legend - The legend settings.
+     * @param {Rect} legendBounds - The current bounds of the legend.
+     * @param {number} rowWidth - The width of the legend rows.
+     * @param {number} legendHeight - The current height of the legend.
+     * @param {number} padding - The padding around the legend items.
+     * @returns {void}
+     */
+    public getLegendHeight(legendOption: LegendOptions, legend: LegendSettingsModel, legendBounds: Rect,
+                           rowWidth: number, legendHeight : number, padding : number): void  {
         const legendWidth: number = legendOption.textSize.width;
         const textPadding: number = legend.shapePadding + (padding * 2) + legend.shapeWidth;
         switch (legend.textWrap) {
@@ -286,7 +310,9 @@ export class Legend extends BaseLegend {
             if (legendWidth > legend.maximumLabelWidth || legendWidth + rowWidth > legendBounds.width) {
                 legendOption.textCollection = textWrap(
                     legendOption.text,
-                    (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) : (legendBounds.width - textPadding)), legend.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.legendLabelFont
+                    (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) :
+                        (legendBounds.width - textPadding)), legend.textStyle, this.chart.enableRtl,
+                    null, null, this.chart.themeStyle.legendLabelFont
                 );
             } else {
                 legendOption.textCollection.push(legendOption.text);
@@ -295,31 +321,48 @@ export class Legend extends BaseLegend {
             break;
         }
     }
-    /** @private */
+    /**
+     * Calculates the rendering point for the legend item based on various parameters.
+     *
+     * @param {LegendOptions} legendOption - The legend options.
+     * @param {ChartLocation} start - The starting location for the legend.
+     * @param {number} textPadding - The padding around the legend text.
+     * @param {LegendOptions} previousLegend - The options of the previous legend item.
+     * @param {Rect} rect - The bounding rectangle for the legend.
+     * @param {number} count - The count of legend items.
+     * @param {number} firstLegend - The index of the first legend item.
+     * @returns {void}
+     */
     public getRenderPoint(
-        legendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
-        rect: Rect, count: number, firstLegend: number, rowCount ?: number): void {
+        legendOption: LegendOptions, start: ChartLocation, textPadding: number, previousLegend: LegendOptions,
+        rect: Rect, count: number, firstLegend: number): void {
         const padding: number = this.legend.padding;
-        const textWidth: number =  textPadding + (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : prevLegend.textSize.width);
-        const previousBound: number = prevLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
-        if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : legendOption.textSize.width) + textPadding - this.itemPadding, rect) || this.isVertical) {
+        const textWidth: number =  textPadding + (this.legend.maximumLabelWidth ?
+            this.legend.maximumLabelWidth : previousLegend.textSize.width);
+        const previousBound: number = previousLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
+        if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ?
+            this.legend.maximumLabelWidth : legendOption.textSize.width) + textPadding - this.itemPadding, rect) || this.isVertical) {
             legendOption.location.x = start.x;
-            if (count !== firstLegend)
+            if (count !== firstLegend) {
                 this.chartRowCount++;
-            legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
-                prevLegend.location.y + (this.isVertical ? prevLegend.textSize.height : this.rowHeights[(this.chartRowCount - 2)]) + (this.isVertical ? this.itemPadding : padding);
+            }
+            legendOption.location.y = (count === firstLegend) ? previousLegend.location.y :
+                previousLegend.location.y + (this.isVertical ? previousLegend.textSize.height :
+                    this.rowHeights[(this.chartRowCount - 2)]) + (this.isVertical ? this.itemPadding : padding);
         } else {
-            legendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
-            legendOption.location.y = prevLegend.location.y;
+            legendOption.location.x = (count === firstLegend) ? previousLegend.location.x : previousBound;
+            legendOption.location.y = previousLegend.location.y;
         }
         let availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
-            textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
+            textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + this.itemPadding +
+                (this.legend.shapeWidth / 2)) - this.legendBounds.x;
         if (!this.isVertical && this.isPaging && !this.legend.enablePages) {
             availwidth = this.legendBounds.width - legendOption.location.x - this.fivePixel;
         }
         availwidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availwidth) : availwidth;
         if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
-            legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
+            legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle,
+                                         this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
         }
 
     }
@@ -335,7 +378,13 @@ export class Legend extends BaseLegend {
             return (previousBound - textWidth) < (rect.x - (this.legend.shapeWidth / 2));
         }
     }
-    /** @private */
+    /**
+     * Handles the click event for a legend item.
+     *
+     * @param {number} index - The index of the clicked legend item.
+     * @param {Event | PointerEvent} event - The click event.
+     * @returns {void}
+     */
     public LegendClick(index: number, event: Event | PointerEvent): void {
         const chart: Chart = <Chart>this.chart;
         const seriesIndex: number = chart.legendSettings.mode === 'Series' ? index : 0;
@@ -357,7 +406,8 @@ export class Legend extends BaseLegend {
                 if (chart.legendSettings.toggleVisibility) {
                     series.chart[changeDetection as string] = true;
                     if (series.category === 'TrendLine') {
-                        if (!chart.series[series.sourceIndex].trendlines[series.index].visible && chart.series[series.sourceIndex].visible) {
+                        if (!chart.series[series.sourceIndex].trendlines[series.index].visible &&
+                            chart.series[series.sourceIndex].visible) {
                             chart.series[series.sourceIndex].trendlines[series.index].visible = true;
                         } else {
                             chart.series[series.sourceIndex].trendlines[series.index].visible = false;
@@ -368,6 +418,9 @@ export class Legend extends BaseLegend {
                     legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
                         (series.visible);
                     this.refreshLegendToggle(chart, series);
+                    if (chart.highlightModule && chart.legendSettings.enableHighlight) {
+                        chart.highlightModule.legendSelection(chart, index, event.target as Element, 'mousemove');
+                    }
                 } else if (chart.highlightModule) {
                     chart.highlightModule.legendSelection(chart, index, event.target as Element, event.type);
                 } else if (chart.selectionModule) {
@@ -424,6 +477,7 @@ export class Legend extends BaseLegend {
         }
         chart.animateSeries = false;
         chart.redraw = chart.enableAnimation;
+        series.isLegendClicked = true;
         chart.rotatedDataLabelCollections = [];
         removeElement(getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
         blazorTemplatesReset(chart);
@@ -447,6 +501,7 @@ export class Legend extends BaseLegend {
             chart.highlightModule.redrawSelection(chart, chart.highlightMode);
         }
         chart.redraw = false;
+        series.isLegendClicked = false;
     }
 
     private changeSeriesVisiblity(series: Series, visibility: boolean): void {
@@ -454,11 +509,11 @@ export class Legend extends BaseLegend {
         if (this.isSecondaryAxis(series.xAxis)) {
             series.xAxis.internalVisibility = series.xAxis.series.some((value: Series) => (value.visible));
         }
-        if (this.isSecondaryAxis(series.yAxis) || (series.category == 'Pareto' && series.type == 'Line')) {
+        if (this.isSecondaryAxis(series.yAxis) || (series.category === 'Pareto' && series.type === 'Line')) {
             series.yAxis.internalVisibility = series.yAxis.series.some((value: Series) => (value.visible));
         }
         if (series.trendlines.length && series.visible) {
-            series.trendlines.forEach((trendline) => {
+            series.trendlines.forEach((trendline: TrendlineModel) => {
                 trendline.visible = true;
             });
         }
@@ -484,13 +539,15 @@ export class Legend extends BaseLegend {
                     'spline' + (isArea ? isRange ? 'RangeArea' : 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(series);
             }
-
-            series.position = undefined;
+            if (series.visible) {
+                series.position = undefined;
+            }
         }
     }
     /**
-     * To show the tooltip for the trimmed text in legend.
+     * Handles the click event for showing tooltip on trimmed text in legend.
      *
+     * @param {Event | PointerEvent} event - The click event.
      * @returns {void}
      */
     public click(event: Event | PointerEvent): void {
@@ -522,7 +579,8 @@ export class Legend extends BaseLegend {
         }
 
         legendRegion = this.legendRegions.filter((region: ILegendRegions) => {
-            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage((this.chart as Chart).enableCanvas, null, 1, 2) : 0)),
+            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) *
+            this.translatePage((this.chart as Chart).enableCanvas, null, 1, 2) : 0)),
                                  region.rect));
         });
         if (legendRegion.length && (this.chart as Chart).enableCanvas) {
@@ -530,7 +588,12 @@ export class Legend extends BaseLegend {
         }
     }
     /**
-     * To check click position is within legend bounds
+     * Checks whether the provided coordinates are within the bounds.
+     *
+     * @param {number} pageX - The x-coordinate of the mouse pointer.
+     * @param {number} pageY - The y-coordinate of the mouse pointer.
+     * @returns {void}
+     * @protected
      */
     protected checkWithinBounds(pageX: number , pageY: number): void {
         const cRender: CanvasRenderer = this.chart.renderer as CanvasRenderer;
@@ -588,7 +651,9 @@ export class Legend extends BaseLegend {
     }
 
     /**
-     * Get module name
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'Legend';

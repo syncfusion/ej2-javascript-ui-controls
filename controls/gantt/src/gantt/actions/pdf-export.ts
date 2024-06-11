@@ -59,9 +59,11 @@ export class PdfExport {
      * @param {PdfExportProperties} pdfExportProperties .
      * @param {boolean} isMultipleExport .
      * @param {object} pdfDoc .
+     * @param {boolean} isBlob .
      * @returns {Promise<Object>} .
      */
-    public export(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
+    public export(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean,
+                  pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
         this.isBlob = isBlob;
         const args: Object = {
             requestType: 'beforePdfExport',
@@ -69,7 +71,7 @@ export class PdfExport {
             cancel: false
         };
         this.parent.trigger('beforePdfExport', args);
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
             this.parent.showMaskRow();
         } else {
             this.parent.showSpinner();
@@ -99,7 +101,7 @@ export class PdfExport {
                 this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.flatData, null, true);
             }
             else {
-                this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.updatedRecords, null, true)
+                this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.updatedRecords, null, true);
             }
             this.helper.beforeSinglePageExport['cloneCurrentViewData'] = extend([], this.parent.currentViewData, null, true);
             data = this.helper.beforeSinglePageExport['cloneFlatData'];
@@ -124,7 +126,7 @@ export class PdfExport {
         }
         this.processExport(data, pdfExportProperties, isMultipleExport).then(() => {
             this.parent.trigger('pdfExportComplete', this.isBlob ? { promise: this.blobPromise } : {});
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.hideMaskRow();
             } else {
                 this.parent.hideSpinner();
@@ -147,7 +149,8 @@ export class PdfExport {
             format.break = PdfLayoutBreakType.FitElement;
             const layouter: PdfTreeGridLayoutResult = this.gantt.drawGrid(this.pdfPage, 0, 0, format);
             this.gantt.drawChart(layouter);
-            if (this.helper.exportProps && this.helper.exportProps.fitToWidthSettings && this.helper.exportProps.fitToWidthSettings.isFitToWidth) {
+            if (this.helper.exportProps && this.helper.exportProps.fitToWidthSettings &&
+                this.helper.exportProps.fitToWidthSettings.isFitToWidth) {
                 this.parent.zoomingProjectStartDate = this.helper.beforeSinglePageExport['zoomingProjectStartDate'];
                 this.parent.zoomingProjectEndDate = this.helper.beforeSinglePageExport['zoomingProjectEndDate'];
                 this.parent.cloneProjectStartDate = this.helper.beforeSinglePageExport['cloneProjectStartDate'];
@@ -174,15 +177,15 @@ export class PdfExport {
             if (!isMultipleExport) {
                 if (!this.isBlob) {
                 // save the PDF
-                if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.fileName) {
-                    this.pdfDocument.save(pdfExportProperties.fileName);
-                } else {
-                    this.pdfDocument.save('Export.pdf');
+                    if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.fileName) {
+                        this.pdfDocument.save(pdfExportProperties.fileName);
+                    } else {
+                        this.pdfDocument.save('Export.pdf');
+                    }
                 }
-            }
-            else {
-                this.blobPromise = this.pdfDocument.save();
-            }
+                else {
+                    this.blobPromise = this.pdfDocument.save();
+                }
                 this.pdfDocument.destroy();
             }
             return this.pdfDocument;

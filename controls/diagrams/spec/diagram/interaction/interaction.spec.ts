@@ -19,7 +19,7 @@ import { SnapConstraints } from '../../../src/diagram/index';
 import { DiagramTools, DiagramConstraints, PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-import { ICollectionChangeEventArgs, IKeyEventArgs, IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement'
+import { ICollectionChangeEventArgs, IKeyEventArgs, IPropertyChangeEventArgs, IElementDrawEventArgs } from '../../../src/diagram/objects/interface/IElement'
 Diagram.Inject(BpmnDiagrams, DiagramContextMenu, UndoRedo);
 /**
  * Interaction Specification Document
@@ -271,7 +271,7 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 420, 300);
             let innerHtmlTextElement = document.getElementById('text_content_text');
             console.log(innerHtmlTextElement.innerHTML);
-            expect(innerHtmlTextElement.innerHTML === '<tspan x="13.6484375" y="53.6">Text Element</tspan>').toBe(true);
+            expect(innerHtmlTextElement.innerHTML === '<tspan x="14.9853515625" y="53.6">Text Element</tspan>').toBe(true);
             done();
         });
 
@@ -1751,6 +1751,17 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.width === 200).toBe(true);
             done();
         });
+        it('Draw polygon with mouseup', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.tool = DiagramTools.DrawOnce
+            diagram.drawingObject = { id: 'node2c2s', shape: { type: 'Basic', shape: 'Polygon' } };
+            mouseEvents.mouseDownEvent(diagramCanvas, 900, 120);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 900, 120);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 950, 120);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 1000, 120);
+            mouseEvents.mouseUpEvent(diagramCanvas, 1000, 120);
+            done();
+        });
         it('Draw Basic Shapes - Polygon and scrolling', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.tool = DiagramTools.DrawOnce;
@@ -1759,6 +1770,21 @@ describe('Diagram Control', () => {
             mouseEvents.mouseWheelEvent(diagramCanvas, 150, 850, false);
             mouseEvents.dblclickEvent(diagramCanvas, 500, 850);
             expect(diagram.scroller.horizontalOffset === 0).toBe(true);
+            done();
+        });
+        it('cancel draw tool at elementDraw event', (done: Function) => {
+            diagram.elementDraw = function elementDraw(args: IElementDrawEventArgs) {
+                if (args.state === 'Start') {
+                    args.cancel = true
+                }
+            }
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.tool = DiagramTools.DrawOnce
+            diagram.drawingObject = { id: 'node2c2s', shape: { type: 'Basic', shape: 'Polygon' } };
+            mouseEvents.mouseDownEvent(diagramCanvas, 900, 120);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 900, 120);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 950, 120);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 1000, 120);
             done();
         });
     });
@@ -3924,6 +3950,56 @@ describe('Dynamically change the styles of freehand connector', () => {
         diagram = new Diagram({
             width: 550, height: 550, 
            snapSettings: { constraints: SnapConstraints.ShowLines }
+        });
+
+        diagram.appendTo('#diagramString');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Dynamically change the styles of freehand connector', (done: Function) => {
+        diagram.tool = DiagramTools.DrawOnce;
+        let connector: ConnectorModel = {
+            id:'freehand1',type:'Freehand'
+        };
+        diagram.drawingObject = connector;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 170, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 230, 200);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 260, 50);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 250);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 100);
+        mouseEvents.mouseUpEvent(diagramCanvas, 400, 100);
+        diagram.connectors[0].style.strokeColor = "red";
+        diagram.connectors[0].style.opacity = 3;
+        diagram.connectors[0].style.strokeWidth = 5;
+        expect(diagram.connectors[0].style.strokeWidth == 5).toBe(true);
+        expect(diagram.connectors[0].style.strokeColor == "red").toBe(true);
+        expect(diagram.connectors[0].style.opacity == 3).toBe(true);
+        done();
+    });
+});
+describe('Resize tool cancel while interaction', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramString' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: 550, height: 550, 
+            nodes:[{
+                id:'freehand1', offsetX:100, offsetY:100, width: 100, height: 100,
+            }]
         });
 
         diagram.appendTo('#diagramString');

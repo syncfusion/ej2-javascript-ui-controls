@@ -325,8 +325,8 @@ export class MaskedDateTime {
                 }
                 if (month >= 1) {
                     newDateValue.setMonth(month - 1);
-                    if (month >= 10 || month == 1) {
-                        if ( this.isLeadingZero && month == 1) {
+                    if (month >= 10 || month === 1) {
+                        if ( this.isLeadingZero && month === 1) {
                             this.isNavigate = month.toString().length === 1;
                             this.isLeadingZero = false;
                         }
@@ -477,12 +477,11 @@ export class MaskedDateTime {
         case 'a':
         {
             this.periodCharacter += newVal[start - 1].toLowerCase();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const periodString: any = <string[]>(this.getCulturedValue('dayPeriods.format.wide'));
+            const periodString: string[] = <string[]>(this.getCulturedValue('dayPeriods.format.wide'));
             const periodkeys: string[] = Object.keys(periodString);
             for (let i: number = 0; this.periodCharacter.length > 0; i++) {
-                if ((periodString[periodkeys[0]].toLowerCase().indexOf(this.periodCharacter) === 0
-                 && newDateValue.getHours() >= 12) || (periodString[periodkeys[1]].toLowerCase().
+                if ((periodString[periodkeys[0] as unknown as number].toLowerCase().indexOf(this.periodCharacter) === 0
+                 && newDateValue.getHours() >= 12) || (periodString[periodkeys[1] as unknown as number].toLowerCase().
                     indexOf(this.periodCharacter) === 0 && newDateValue.getHours() < 12)) {
                     newDateValue.setHours((newDateValue.getHours() + 12) % 24);
                     this.maskDateValue = newDateValue;
@@ -499,8 +498,7 @@ export class MaskedDateTime {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private formatCheck(): any {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const proxy: this = this;
+        const proxy: this = null || this;
         function formatValueSpecifier(formattext: string): string {
             let result: string;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -539,7 +537,6 @@ export class MaskedDateTime {
                     proxy.isNavigate = true;
                     proxy.dayTypeCount = 0;
                 }
-
                 break;
             case 'E' :
             case 'EE':

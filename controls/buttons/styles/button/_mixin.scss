@@ -94,6 +94,9 @@
     border: 1px solid $btn-outline-border-color;
     color: $btn-outline-color;
   }
+  @else if $skin-name == 'fluent2' {
+    color: $secondary-outline-button-text-color-hover;
+  }
   @else {
     box-shadow: $btn-hover-focus-box-shadow;
   }
@@ -319,6 +322,11 @@
   @else if $skin-name == 'bootstrap5' {
     border-color: $btn-outline-disabled-border-color;
     color: $btn-outline-active-bgcolor;
+  }
+  @else if $skin-name == 'fluent2' {
+    background: $btn-outline-disabled-bgcolor;
+    border-color: $btn-outline-disabled-border-color;
+    color: $btn-outline-disabled-color;
   }
   @else {
     border-color: $btn-outline-primary-disabled-border-color;

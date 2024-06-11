@@ -288,8 +288,11 @@ export class SheetRender implements IRenderer {
                 if (frozenCol && indexes[1] < frozenCol) {
                     col = this.updateCol(sheet, indexes[1], selectAllColGrp);
                     const empty: Element = rowHdrColGrp.querySelector('.e-empty');
-                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                    empty ? rowHdrColGrp.insertBefore(col.cloneNode(true), empty) : rowHdrColGrp.appendChild(col.cloneNode(true));
+                    if (empty) {
+                        rowHdrColGrp.insertBefore(col.cloneNode(true), empty);
+                    } else {
+                        rowHdrColGrp.appendChild(col.cloneNode(true));
+                    }
                     this.cellRenderer.renderColHeader(indexes[1], selectAllHdrRow);
                 } else {
                     this.updateCol(sheet, indexes[1], colGrp);
@@ -297,7 +300,7 @@ export class SheetRender implements IRenderer {
                 }
             }
         });
-        if ((this.parent as { isReact?: boolean }).isReact) {
+        if (this.parent.isReact) {
             this.parent['renderReactTemplates']();
         }
         cTBody.parentElement.insertBefore(colGrp.cloneNode(true), cTBody);
@@ -347,13 +350,11 @@ export class SheetRender implements IRenderer {
                     }
                 }
                 if (triggerEvent) {
-                    /* eslint-disable */
-                    if ((this.parent as any).isReact) {
+                    if (this.parent.isReact) {
                         setTimeout(() => {
                             if (!this.parent) { return; }
                             this.triggerCreatedEvent();
                         });
-                        /* eslint-enable */
                     } else {
                         this.triggerCreatedEvent();
                     }
@@ -371,7 +372,7 @@ export class SheetRender implements IRenderer {
             if ((this.parent.createdHandler as { observers: object }).observers) {
                 (this.parent['created']  as { observers?: object }).observers =
                     (this.parent.createdHandler as { observers: object }).observers;
-                if ((this.parent as { isAngular?: boolean }).isAngular &&
+                if (this.parent.isAngular &&
                     (this.parent.createdHandler as { currentObservers: object }).currentObservers) {
                     (this.parent['created'] as { currentObservers?: object }).currentObservers =
                         (this.parent.createdHandler as { currentObservers: object }).currentObservers;
@@ -387,6 +388,12 @@ export class SheetRender implements IRenderer {
 
     /**
      * This method is used to check whether row height increased above the viewport after import
+     *
+     * @param {Object} args - Specify the args.
+     * @param {number} args.top - Specify the top value.
+     * @param {number} args.left - Specify the left value.
+     * @param {SheetModel} sheet - Specify the sheet.
+     * @returns {void} - This method is used to check whether row height increased above the viewport after import
      */
     private checkRowHeightChanged(args: { top?: number, left?: number }, sheet: SheetModel): void {
         const eventArgs: { top: number, left: number, sheet: SheetModel } = { top: args.top, left: args.left, sheet: sheet };
@@ -401,7 +408,7 @@ export class SheetRender implements IRenderer {
         if (args.left !== eventArgs.left) {
             if (this.parent.scrollModule && this.parent.scrollModule.offset.left.idx && (eventArgs.left - args.left) <
                 getColumnWidth(sheet, this.parent.scrollModule.offset.left.idx)) {
-                this.parent.scrollModule.offset.left.size = eventArgs.left
+                this.parent.scrollModule.offset.left.size = eventArgs.left;
             }
             args.left = eventArgs.left;
         }
@@ -711,7 +718,7 @@ export class SheetRender implements IRenderer {
             if (indexes[1] === firstCol || !row) {
                 if (indexes[1] === firstCol) {
                     hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
-                }  
+                }
                 if (frozenCol && indexes[1] < frozenCol) {
                     rFrag.appendChild(hRow); row = hRow;
                 } else {
@@ -820,28 +827,33 @@ export class SheetRender implements IRenderer {
     private checkColMerge(indexes: number[], range: number[], cell: Element, model: CellModel, firstcell?: Element): void {
         if (this.parent.scrollSettings.enableVirtualization && cell && (!isNullOrUndefined(model.rowSpan) ||
             !isNullOrUndefined(model.colSpan))) {
-            let frozenCol: number = this.parent.frozenColCount(this.parent.getActiveSheet());
+            const frozenCol: number = this.parent.frozenColCount(this.parent.getActiveSheet());
             if (indexes[1] === this.parent.viewport.leftIndex + frozenCol) {
                 if (model.colSpan < 0) {
-                    const e: CellRenderArgs = { td: cell as HTMLTableCellElement, colIdx: indexes[1], rowIdx: indexes[0], isFreezePane: true };
+                    const e: CellRenderArgs = {
+                        td: cell as HTMLTableCellElement,
+                        colIdx: indexes[1], rowIdx: indexes[0], isFreezePane: true
+                    };
                     this.parent.notify(checkMerge, e);
                     if (e.insideFreezePane) { return; }
                     if (this.parent.viewport.leftIndex + frozenCol >= range[3]) {
-                        const td: HTMLTableCellElement
-                            = this.parent.getCell(indexes[0], indexes[3] + 1, this.parent.getRow(indexes[0], null, indexes[3] + 1)) as HTMLTableCellElement;
+                        const td: HTMLTableCellElement =
+                            this.parent.getCell(indexes[0], indexes[3] + 1,
+                                                this.parent.getRow(indexes[0], null, indexes[3] + 1)) as HTMLTableCellElement;
                         if (td) {
                             this.cellRenderer.refresh(indexes[0], range[3] + 1, null, td);
                         }
                     }
                 }
                 if (firstcell) {
-                    this.refreshFirstCell(indexes[0], indexes[1] + (range[3] - range[1]) + 1, firstcell)
+                    this.refreshFirstCell(indexes[0], indexes[1] + (range[3] - range[1]) + 1, firstcell);
                 }
             }
             else if (model.colSpan > 1) {
                 if (indexes[1] + model.colSpan - 1 >= range[3] + 1 && indexes[1] < range[3] + 1) {
-                    const td: HTMLTableCellElement
-                        = this.parent.getCell(indexes[0], indexes[3]+1, this.parent.getRow(indexes[0], null, indexes[3]+1)) as HTMLTableCellElement;
+                    const td: HTMLTableCellElement =
+                        this.parent.getCell(indexes[0], indexes[3] + 1,
+                                            this.parent.getRow(indexes[0], null, indexes[3] + 1)) as HTMLTableCellElement;
                     if (td) {
                         this.cellRenderer.refresh(indexes[0], range[3] + 1, null, td);
                     }
@@ -938,7 +950,10 @@ export class SheetRender implements IRenderer {
      * @returns {HTMLElement} - Select all content element.
      */
     public getScrollElement(): HTMLElement {
-        const elem: Element = (this.contentPanel.parentElement || this.contentPanel.nextElementSibling);
+        let elem: Element;
+        if (this.contentPanel) {
+            elem = (this.contentPanel.parentElement || this.contentPanel.nextElementSibling);
+        }
         return elem && elem.querySelector('.e-scroller') as HTMLElement;
     }
 
@@ -1018,9 +1033,9 @@ export class SheetRender implements IRenderer {
      * @returns {void}
      */
     public destroy(): void {
-        if (this.headerPanel) { this.headerPanel.remove(); } this.headerPanel = null;
-        if (this.contentPanel) { this.contentPanel.remove(); } this.contentPanel = null;
-        if (this.col) { this.col.remove(); } this.col = null;
+        if (this.headerPanel) { removeAllChildren(this.headerPanel); this.headerPanel.remove(); } this.headerPanel = null;
+        if (this.contentPanel) { removeAllChildren(this.contentPanel); this.contentPanel.remove(); } this.contentPanel = null;
+        if (this.col) { removeAllChildren(this.col); this.col.remove(); } this.col = null;
         this.rowRenderer = null;
         this.cellRenderer = null;
         this.colGroupWidth = null;

@@ -61,7 +61,8 @@ export class EmojiPicker {
             spanElement = this.parent.element.ownerDocument.querySelector('.e-emoji');
         }
         this.divElement = spanElement.closest('div');
-        if (!(this.parent.inputElement.contains(this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument()).startContainer))) {
+        if (!(this.parent.inputElement.contains(this.parent.formatter.editorManager.nodeSelection.
+            getRange(this.parent.contentModule.getDocument()).startContainer))) {
             (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
         }
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
@@ -81,7 +82,7 @@ export class EmojiPicker {
         if (!isNOU(this.parent.getToolbar()) && !this.parent.inlineMode.enable){
             this.parent.getToolbar().parentElement.appendChild(this.popDiv);
         } else if (this.parent.inlineMode.enable) {
-            this.parent.element.appendChild(this.popDiv);
+            this.parent.rootContainer.appendChild(this.popDiv);
         }
         EventHandler.add(this.popDiv, 'keydown', this.onKeyDown, this);
         EventHandler.add(this.popDiv, 'keyup', this.searchFilter, this);
@@ -271,13 +272,11 @@ export class EmojiPicker {
             }
         }
         for (let i: number = 0; i < emojiSet.length; i++) {
-            // eslint-disable-next-line
-            firstSetWidth += Math.round(emojiSet[i].offsetHeight);
+            firstSetWidth += Math.round(emojiSet[i as number].offsetHeight);
             if (scrollTop >= firstSetWidth) {
                 for (let k: number = 0; k < toolbarName.length; k++) {
-                    /* eslint-disable */
-                    if (toolbarName[k].classList.contains('e-selected')) {
-                        removeClass([toolbarName[k]], 'e-selected');
+                    if (toolbarName[k as number].classList.contains('e-selected')) {
+                        removeClass([toolbarName[k as number]], 'e-selected');
                     }
                     /* eslint-enable */
                 }
@@ -305,9 +304,8 @@ export class EmojiPicker {
         const emojiButtons: NodeListOf<HTMLButtonElement> = this.parent.element.querySelectorAll('.e-rte-emojipicker-btn button');
         const toolbarName: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.e-rte-emojipicker-toolbar button');
         for (let i: number = 0; i < toolbarName.length; i++) {
-            /* eslint-disable */
-            if (toolbarName[i].classList.contains('e-selected')) {
-                removeClass([toolbarName[i]], 'e-selected');
+            if (toolbarName[i as number].classList.contains('e-selected')) {
+                removeClass([toolbarName[i as number]], 'e-selected');
             }
             /* eslint-enable */
         }
@@ -532,8 +530,7 @@ export class EmojiPicker {
         } else {
             for (let i: number = 0; i < emojiButtons.length; i++) {
                 let focusIndex: number = i;
-                // eslint-disable-next-line
-                const childNodes: HTMLElement = emojiButtons[i] as HTMLElement;
+                const childNodes: HTMLElement = emojiButtons[i as number] as HTMLElement;
                 if (childNodes.classList.contains('e-focus')) {
                     if (e.keyCode === 38) {
                         if (i >= 6) {
@@ -708,7 +705,8 @@ export class EmojiPicker {
 
     private onkeyPress(e: NotifyArgs): void {
         const originalEvent: KeyboardEventArgs = e.args as KeyboardEventArgs;
-        const selection: Selection = (this.parent.iframeSettings.enable) ? (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() : 
+        const selection: Selection = (this.parent.iframeSettings.enable) ?
+            (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() :
             this.parent.contentModule.getDocument().getSelection();
         if (selection.rangeCount <= 0) { return; }
         const range: Range = selection.getRangeAt(0);
@@ -727,7 +725,8 @@ export class EmojiPicker {
         }
         if (originalEvent.keyCode === 32 && isPrevColon && this.popupObj) {
             removeClass([this.divElement], 'e-active');
-            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument : this.parent.contentModule.getDocument();
+            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+                this.parent.contentModule.getDocument();
             if (this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
                 this.parent.notify(events.destroyTooltip, {args: event});
             }
@@ -742,7 +741,8 @@ export class EmojiPicker {
 
     private onkeyUp(e: NotifyArgs): void {
         const originalEvent: KeyboardEventArgs = e.args as KeyboardEventArgs;
-        const selection: Selection = (this.parent.iframeSettings.enable) ? (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() : 
+        const selection: Selection = (this.parent.iframeSettings.enable) ?
+            (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() :
             this.parent.contentModule.getDocument().getSelection();
         if (selection.rangeCount <= 0) { return; }
         const range: Range = selection.getRangeAt(0);
@@ -768,7 +768,8 @@ export class EmojiPicker {
 
     private getCoordinates(): { [key: string]: number } {
         let coordinates: { [key: string]: number };
-        const selection: Selection = (this.parent.iframeSettings.enable) ? (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() : window.getSelection();
+        const selection: Selection = (this.parent.iframeSettings.enable) ?
+            (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() : window.getSelection();
         const range: Range = selection.getRangeAt(0);
         let firstChild: HTMLElement;
         if (range.startContainer.nodeName === 'P' || range.startContainer.nodeName === 'DIV') {

@@ -227,19 +227,21 @@ export function convertGeoToPoint(latitude: number, longitude: number, factor: n
  */
 export function calculatePolygonPath(maps: Maps, factor: number, currentLayer: LayerSettings, markerData: Coordinate[] ): string {
     let path: string = '';
-    Array.prototype.forEach.call(markerData, (data: Coordinate, dataIndex: number) => {
-        const lat: number = data.latitude;
-        const lng: number = data.longitude;
-        const location: Point = (maps.isTileMap) ? convertTileLatLongToPoint(
-            new MapLocation(lng, lat), factor, maps.tileTranslatePoint, true
-        ) : convertGeoToPoint(lat, lng, factor, currentLayer, maps);
-        if (dataIndex === 0) {
-            path += 'M ' + location.x + ' ' + location.y;
-        } else {
-            path += ' L ' + location.x + ' ' + location.y;
-        }
-    });
-    path += ' z ';
+    if (!isNullOrUndefined(markerData) && markerData.length > 1) {
+        Array.prototype.forEach.call(markerData, (data: Coordinate, dataIndex: number) => {
+            const lat: number = data.latitude;
+            const lng: number = data.longitude;
+            const location: Point = (maps.isTileMap) ? convertTileLatLongToPoint(
+                new MapLocation(lng, lat), factor, maps.tileTranslatePoint, true
+            ) : convertGeoToPoint(lat, lng, factor, currentLayer, maps);
+            if (dataIndex === 0) {
+                path += 'M ' + location.x + ' ' + location.y;
+            } else {
+                path += ' L ' + location.x + ' ' + location.y;
+            }
+        });
+        path += ' z ';
+    }
     return path;
 }
 /**
@@ -1524,16 +1526,6 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
         markerElement.style.left = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x -  maps.mapAreaRect.x + 'px';
         markerElement.style.top = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y - maps.mapAreaRect.y + 'px';
         markerTemplate.appendChild(markerElement);
-        if (maps.layers[maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
-            const staticMapOffset: ClientRect = getElementByID(maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
-            const markerElementOffset: ClientRect = markerElement.getBoundingClientRect();
-            const staticMapOffsetWidth: number = 640;
-            if ((staticMapOffset['x'] > markerElementOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < markerElementOffset['x'] + markerElementOffset['width'])
-                && (staticMapOffset['y'] > markerElementOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < markerElementOffset['y'] + markerElementOffset['height'])
-            ) {
-                markerElement.style.display = 'none';
-            }
-        }
 
     }
     return markerTemplate;
@@ -1962,7 +1954,7 @@ export function getFieldData(dataSource: any[], fields: string[]): any[] {
 export function checkShapeDataFields(dataSource: any[], properties: any, dataPath: string, propertyPath: string | string[],
                                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                      layer: LayerSettingsModel): number {
-    if (!(isNullOrUndefined(properties))) {
+    if (!(isNullOrUndefined(properties)) && !isNullOrUndefined(dataSource)) {
         for (let i: number = 0; i < dataSource.length; i++) {
             const shapeDataPath: string = ((dataPath.indexOf('.') > -1) ? getValueFromObject(dataSource[i as number], dataPath) :
                 dataSource[i as number][dataPath as string]);
@@ -2568,8 +2560,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
  */
 export function fixInitialScaleForTile(map: Maps): void {
     map.tileZoomScale = map.tileZoomLevel = Math.floor(map.availableSize.height / 512) + 1;
-    const padding: number = map.layers[map.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
-        20 : 0;
+    const padding: number = 20;
     const totalSize: number = Math.pow(2, map.tileZoomLevel) * 256;
     map.tileTranslatePoint.x = (map.availableSize.width / 2) - (totalSize / 2);
     map.tileTranslatePoint.y = (map.availableSize.height / 2) - (totalSize / 2) + padding;

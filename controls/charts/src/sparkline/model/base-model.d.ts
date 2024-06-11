@@ -101,7 +101,7 @@ export interface SparklineTooltipSettingsModel {
 
     /**
      * To customize the tooltip template.
-     * 
+     *
      * @aspType string
      */
     template?: string | Function;

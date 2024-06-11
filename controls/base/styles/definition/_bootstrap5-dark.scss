@@ -1,12 +1,7 @@
 @import '../common/mixin.scss';
 
-// color system
-
-// black
-$black:    #000 !default;
-
-// White
-$white:    #fff !default;
+$black: #000 !default;
+$white: #fff !default;
 
 @function shade-color($color, $percentage) {
   @return mix($black, $color, $percentage);
@@ -16,10 +11,8 @@ $white:    #fff !default;
   @return mix($white, $color, $percentage);
 }
 
-// Transparent
 $transparent: transparent;
 
-// scss-docs-start gray-color-variables
 $gray-100: #f8f9fa !default;
 $gray-200: #e9ecef !default;
 $gray-300: #dee2e6 !default;
@@ -30,41 +23,39 @@ $gray-700: #495057 !default;
 $gray-800: #343a40 !default;
 $gray-900: #212529 !default;
 
-// scss-docs-start color-variables
-$blue:    #0d6efd !default;
-$indigo:  #6610f2 !default;
-$purple:  #6f42c1 !default;
-$pink:    #d63384 !default;
-$red:     #dc3545 !default;
-$orange:  #fd7e14 !default;
-$yellow:  #ffc107 !default;
-$green:   #198754 !default;
-$teal:    #20c997 !default;
-$cyan:    #0dcaf0 !default;
+$blue: #0d6efd !default;
+$indigo: #6610f2 !default;
+$purple: #6f42c1 !default;
+$pink: #d63384 !default;
+$red: #dc3545 !default;
+$orange: #fd7e14 !default;
+$yellow: #ffc107 !default;
+$green: #198754 !default;
+$teal: #20c997 !default;
+$cyan: #0dcaf0 !default;
 
-$primary:       $blue !default;
-$secondary:     $gray-600 !default;
-$success:       lighten($green, 10%) !default;
-$info:          $cyan !default;
-$warning:       $yellow !default;
-$danger:        lighten($red, 10%) !default;
-$success-light:       tint-color($success, 80%) !default;
-$info-light:          tint-color($info, 80%) !default;
-$warning-light:       tint-color($warning, 80%) !default;
-$danger-light:        tint-color($danger, 80%) !default;
+$primary: $blue !default;
+$secondary: $gray-600 !default;
+$success: lighten($green, 10%) !default;
+$info: $cyan !default;
+$warning: $yellow !default;
+$danger: lighten($red, 10%) !default;
+$success-light: tint-color($success, 80%) !default;
+$info-light: tint-color($info, 80%) !default;
+$warning-light: tint-color($warning, 80%) !default;
+$danger-light: tint-color($danger, 80%) !default;
 $primary-text-color: $white !default;
-$primary-light:       tint-color($primary, 50%) !default;
-$primary-lighter:     shade-color($primary, 80%) !default;
-$success-dark:       darken($success, 10%) !default;
-$info-dark:          darken($info, 25%) !default;
-$warning-dark:       darken($warning, 25%) !default;
-$danger-dark:        darken($danger, 10%) !default;
-$success-light-alt:       darken($green, 20%) !default;
-$info-light-alt:          darken($cyan, 25%) !default;
-$warning-light-alt:       darken($yellow, 20%) !default;
-$danger-light-alt:        darken($red, 25%) !default;
+$primary-light: tint-color($primary, 50%) !default;
+$primary-lighter: shade-color($primary, 80%) !default;
+$success-dark: darken($success, 10%) !default;
+$info-dark: darken($info, 25%) !default;
+$warning-dark: darken($warning, 25%) !default;
+$danger-dark: darken($danger, 10%) !default;
+$success-light-alt: darken($green, 20%) !default;
+$info-light-alt: darken($cyan, 25%) !default;
+$warning-light-alt: darken($yellow, 20%) !default;
+$danger-light-alt: darken($red, 25%) !default;
 
-// backgroundcolor
 $content-bg-color: $gray-900 !default;
 $content-bg-color-alt1: lighten($gray-900, 3%) !default;
 $content-bg-color-alt2: $gray-800 !default;
@@ -87,7 +78,6 @@ $table-bg-color-hover: lighten($content-bg-color, 7%) !default;
 $table-bg-color-pressed: $gray-700 !default;
 $table-bg-color-selected: lighten($content-bg-color, 12%) !default;
 
-//All theme commoon color
 $colorpicker-gradient-1: #f00 !default;
 $colorpicker-gradient-2: #ff0 !default;
 $ccolorpicker-gradient-3: #0f0 !default;
@@ -102,7 +92,6 @@ $spreadsheet-selection-4: #4caf51;
 $spreadsheet-selection-5: #fe9800;
 $spreadsheet-selection-6: #3f52b5;
 
-// text-color
 $content-text-color: $white !default;
 $content-text-color-alt1: $gray-200 !default;
 $content-text-color-alt2: $gray-400 !default;
@@ -122,13 +111,11 @@ $table-text-color-hover: $white !default;
 $table-text-color-pressed: $white !default;
 $table-text-color-selected: $white !default;
 
-// icon-color
 $icon-color: $gray-500 !default;
 $icon-color-hover: $gray-300 !default;
 $icon-color-pressed: $gray-100 !default;
 $icon-color-disabled: $gray-500 !default;
 
-// border-color
 $border-light: lighten($gray-800, 7%) !default;
 $border: $gray-600 !default;
 $border-dark: $gray-500 !default;
@@ -143,16 +130,14 @@ $border-error: lighten($red, 10%) !default;
 $border-success: lighten($green, 10%) !default;
 $spreadsheet-gridline: $gray-300 !default;
 
-// Tooltip
 $tooltip-bg-color: $gray-200 !default;
 $tooltip-border: $gray-200;
 $toooltip-text-color: $gray-900 !default;
 
-// shadow
 $shadow: 0 .8px 16px rgba($black, .15) !default;
 $shadow-sm: 0 2px 4px rgba($black, .075) !default;
 $shadow-md: 0 8px 12px rgba($black, .15) !default;
-$shadow-lg:  0 16px 48px rgba($black, .175) !default;
+$shadow-lg: 0 16px 48px rgba($black, .175) !default;
 $shadow-xl: 0 20px 25px -5px rgba($black, .1), 0 10px 10px -5px rgba($black, .04) !default;
 $shadow-2xl: 0 25px 50px -12px rgba($black, .25) !default;
 $shadow-inner: inset 0 1px 2px rgba($black, .075) !default;
@@ -166,10 +151,8 @@ $danger-shadow-focus: 0 0 0 4px rgba(tint-color($danger, 15%), .5) !default;
 $info-shadow-focus: 0 0 0 4px rgba(tint-color($info, 15%), .5) !default;
 $warning-shadow-focus: 0 0 0 4px rgba(tint-color($warning, 15%), .5) !default;
 
-// fontfamily
 $font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !default;
 
-// default font Size
 $text-xxs: 10px !default;
 $text-xs: 12px !default;
 $text-sm: 14px !default;
@@ -185,7 +168,6 @@ $text-7xl: 72px !default;
 $text-8xl: 96px !default;
 $text-9xl: 128px !default;
 
-// heading
 $h1-font-size: 40px !default;
 $h2-font-size: 32px !default;
 $h3-font-size: 28px !default;
@@ -193,9 +175,6 @@ $h4-font-size: $text-2xl !default;
 $h5-font-size: $text-xl !default;
 $h6-font-size: $text-base !default;
 
-// Display
-
-// Line height
 $leading-none: 1 !default;
 $leading-tight: 1.25 !default;
 $leading-snug: 1.375 !default;
@@ -203,15 +182,12 @@ $leading-normal: 1.5 !default;
 $leading-relaxed: 1.625 !default;
 $leading-loose: 2 !default;
 
-// font Weight
-$font-weight-lighter:         lighter !default;
-$font-weight-light:           300 !default;
-$font-weight-normal:          400 !default;
-$font-weight-medium:          500 !default;
-$font-weight-bold:            700 !default;
-$font-weight-bolder:          bolder !default;
-
-// Secondary-button
+$font-weight-lighter: lighter !default;
+$font-weight-light: 300 !default;
+$font-weight-normal: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-bold: 700 !default;
+$font-weight-bolder: bolder !default;
 
 $secondary-bg-color: $secondary !default;
 $secondary-border-color: $secondary-bg-color !default;
@@ -229,8 +205,6 @@ $secondary-bg-color-disabled: rgba($secondary-bg-color, .65) !default;
 $secondary-border-color-disabled: $secondary-bg-color-disabled !default;
 $secondary-text-color-disabled: rgba($secondary-text-color, .65) !default;
 
-// Primary-button
-
 $primary-bg-color: $primary !default;
 $primary-border-color: $primary !default;
 $primary-text: $primary-text-color !default;
@@ -246,8 +220,6 @@ $primary-text-focus: $primary-text !default;
 $primary-bg-color-disabled: rgba($primary-bg-color, .65) !default;
 $primary-border-color-disabled: $primary-bg-color-disabled !default;
 $primary-text-disabled: rgba($primary-text, .65) !default;
-
-// Success-button
 
 $success-bg-color: $green !default;
 $success-border-color: $green !default;
@@ -265,7 +237,6 @@ $success-bg-color-disabled: rgba($success-bg-color, .65) !default;
 $success-border-color-disabled: $success-bg-color-disabled !default;
 $success-text-disabled: rgba($success-text, .65) !default;
 
-// Warning-button
 $warning-bg-color: $yellow !default;
 $warning-border-color: $yellow !default;
 $warning-text: $black !default;
@@ -282,7 +253,6 @@ $warning-bg-color-disabled: rgba($warning-bg-color, .65) !default;
 $warning-border-color-disabled: $warning-bg-color-disabled !default;
 $warning-text-disabled: rgba($warning-text, .65) !default;
 
-// danger-button
 $danger-bg-color: $red !default;
 $danger-border-color: $red !default;
 $danger-text: $white !default;
@@ -299,7 +269,6 @@ $danger-bg-color-disabled: rgba($danger-bg-color, .65) !default;
 $danger-border-color-disabled: $danger-bg-color-disabled !default;
 $danger-text-disabled: rgba($danger-text, .65) !default;
 
-// Info-button
 $info-bg-color: $cyan !default;
 $info-border-color: $cyan !default;
 $info-text: $black !default;
@@ -316,7 +285,6 @@ $info-bg-color-disabled: rgba($info-bg-color, .65) !default;
 $info-border-color-disabled: $info-bg-color-disabled !default;
 $info-text-disabled: rgba($info-text, .65) !default;
 
-//Outline button
 $primary-outline: lighten($primary, 10%) !default;
 $secondary-outline: lighten($secondary, 10%) !default;
 $warning-outline: lighten($warning, 10%) !default;
@@ -324,7 +292,6 @@ $danger-outline: lighten($danger, 10%) !default;
 $success-outline: lighten($success, 10%) !default;
 $info-outline: lighten($info, 10%) !default;
 
-// Chart series
 $series-1: $gray-800;
 $series-2: $gray-700;
 $series-3: $gray-600;
@@ -340,13 +307,9 @@ $series-12: #ea6266;
 $skin-name: 'bootstrap5' !default;
 $theme-name: 'bootstrap5-dark' !default;
 
-//Diagram Palette color
 $diagram-palette-background: $gray-300 !default;
 $diagram-palette-hover-background: $gray-400 !default;
 
-//Message component
-
-//Message Default
 $msg-color: $white !default;
 $msg-bg-color: #3b4248 !default;
 $msg-border-color: lighten($gray-800, 7%) !default;
@@ -365,7 +328,6 @@ $msg-close-icon-color: $icon-color !default;
 $msg-close-icon-color-alt1: $icon-color !default;
 $msg-close-icon-color-alt2: $white !default;
 
-//Message Danger
 $msg-danger-color: lighten($red, 40%) !default;
 $msg-danger-bg-color: darken($red, 30%) !default;
 $msg-danger-border-color: darken($red, 30%) !default;
@@ -384,7 +346,6 @@ $msg-danger-close-icon-color: $icon-color !default;
 $msg-danger-close-icon-color-alt1: $icon-color !default;
 $msg-danger-close-icon-color-alt2: $gray-900 !default;
 
-//Message success
 $msg-success-color: #2ed889 !default;
 $msg-success-bg-color: darken($green, 20%) !default;
 $msg-success-border-color: darken($green, 18%) !default;
@@ -403,7 +364,6 @@ $msg-success-close-icon-color: $icon-color !default;
 $msg-success-close-icon-color-alt1: $icon-color !default;
 $msg-success-close-icon-color-alt2: $gray-900 !default;
 
-//Message warning
 $msg-warning-color: lighten($yellow, 35%) !default;
 $msg-warning-bg-color: darken($yellow, 25%) !default;
 $msg-warning-border-color: darken($yellow, 22%) !default;
@@ -422,7 +382,6 @@ $msg-warning-close-icon-color: $icon-color !default;
 $msg-warning-close-icon-color-alt1: $icon-color !default;
 $msg-warning-close-icon-color-alt2: $gray-900 !default;
 
-//Message Info
 $msg-info-color: lighten($cyan, 25%) !default;
 $msg-info-bg-color: darken($cyan, 30%) !default;
 $msg-info-border-color: darken($cyan, 27%) !default;
@@ -441,24 +400,19 @@ $msg-info-close-icon-color: $icon-color !default;
 $msg-info-close-icon-color-alt1: $icon-color !default;
 $msg-info-close-icon-color-alt2: $gray-900 !default;
 
-//App bar
-//Light
 $appbar-bg-color-alt1: $gray-800 !default;
 $appbar-color-alt1: $white !default;
 $appbar-border-color-alt1: $gray-800 !default;
 $appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
 
-//Dark
 $appbar-bg-color-alt2: $gray-300 !default;
 $appbar-color-alt2: $gray-900 !default;
 $appbar-border-color-alt2: $gray-300 !default;
 $appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
 
-//shadow
 $appbar-bottom-shadow: none !default;
 $appbar-top-shadow: none !default;
 
-//rating
 $rating-selected-color: $primary !default;
 $rating-unrated-color: $gray-500 !default;
 $rating-selected-disabled-color: $gray-600 !default;
@@ -467,7 +421,6 @@ $rating-selected-hover-color: $gray-500 !default;
 $rating-unrated-hover-color: $primary !default;
 $rating-pressed-color: lighten($primary, 15%) !default;
 
-//font-icons
 $font-icon-8: 8px !default;
 $font-icon-9: 9px !default;
 $font-icon-10: 10px !default;
@@ -492,3 +445,31 @@ $warning-font-color: $yellow !default;
 $success-font-color: lighten($green, 10%) !default;
 $information-font-color: $cyan !default;
 $accordion-text-active-color: tint-color($primary, 40%) !default;
+
+$badge-primary-bg-color-darken: darken($primary, 10%);
+$badge-secondary-bg-color-darken: darken($content-bg-color-alt1, 10%);
+$badge-success-bg-color-darken: darken($success-light, 10%);
+$badge-danger-bg-color-darken: darken($danger-light, 10%);
+$badge-warning-bg-color-darken: darken($warning-light, 10%);
+$badge-info-bg-color-darken: darken($info-light, 10%);
+$badge-light-bg-color-darken: darken($content-bg-color-alt2, 10%);
+$badge-dark-bg-color-darken: darken($content-text-color-alt2, 10%);
+$breadcrumb-item-hover-color: darken($primary-outline, 10%);
+$breadcrumb-item-active-color: darken($primary-outline, 15%);
+$breadcrumb-item-focus-border-color: darken($primary-outline, 10%);
+$calendar-yeardecade-selected-hover-bg: darken($primary-bg-color, 10%);
+$calendar-active-hover-bg-color: darken($primary-bg-color, 10%);
+$tab-alt-wrap-hover-color: darken($secondary, 15%);
+$treeview-item-active-hover-bg: darken($content-bg-color-selected, 5%);
+$de-style-btn-bg-color: darken($secondary-bg-color, 7.5%);
+$de-toggle-border-color: darken($secondary-bg-color, 12.5%);
+$de-toggle-hover-color: darken($secondary-bg-color, 7.5%);
+$de-toggle-border-hover-color: darken($secondary-bg-color, 10%);
+$de-toggle-disabled-color: lighten($secondary-bg-color, 65%);
+$connector-point-hover-color: darken($primary, 10%);
+$gantt-connected-task: lighten($primary, 20%);
+$gantt-active-parent-task: lighten($warning-text, 10%);
+$schedule-hover-bg-color: darken($content-bg-color-alt1, 2%);
+$timepicker-active-border-color: darken($gray-600, 10%);
+$hdr-selection-border-color: darken($border-light, 8%);
+$link-color: lighten($primary, 9%);

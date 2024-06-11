@@ -1,13 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable max-len */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart, ILegendRegions } from '../../chart';
 import { LegendSettingsModel } from './legend-model';
 import { Font, Border, Margin, ContainerPadding, Location } from '../model/base';
-import { Theme } from '../model/theme';
 import { MarginModel, FontModel, BorderModel, ContainerPaddingModel, LocationModel } from '../model/base-model';
 import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';
 import { RectOption, textElement, stringToNumber } from '../utils/helper';
@@ -27,7 +22,7 @@ import { Chart3D } from '../../chart3d';
 import { Legend3D } from '../../chart3d/legend/legend';
 import { Chart3DLegendSettingsModel } from '../../chart3d/legend/legend-model';
 import { CircularChartLegend3D } from '../../circularchart3d/legend/legend';
-import { CircularChart3D } from '../../circularchart3d/circularchart3d';
+import { CircularChart3D } from '../../circularchart3d';
 /**
  * Configures the legends in charts.
  */
@@ -143,7 +138,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * Options to customize the legend text.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -260,7 +255,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * Options to customize the legend title.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public titleStyle: FontModel;
 
     /**
@@ -463,7 +458,8 @@ export class BaseLegend {
         if (this.chart.getModuleName() === 'chart3d') {
             (this.library as Legend3D).get3DLegendBounds(availableSize, this.legendBounds, (legend as Chart3DLegendSettingsModel));
         } else {
-            (this.library as Legend | BulletChartLegend | AccumulationLegend | StockLegend).getLegendBounds(availableSize, this.legendBounds, legend);
+            (this.library as Legend | BulletChartLegend | AccumulationLegend |
+            StockLegend).getLegendBounds(availableSize, this.legendBounds, legend);
         }
         if (!this.isBulletChartControl) {
             this.legendBounds.width += (this.legend.containerPadding.left + this.legend.containerPadding.right);
@@ -695,8 +691,8 @@ export class BaseLegend {
      */
 
     public renderLegend(
-        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D, legend: LegendSettingsModel, legendBounds: Rect, redraw?: boolean
-    ): void {
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D, legend: LegendSettingsModel,
+        legendBounds: Rect, redraw?: boolean): void {
         let titleHeight: number = 0; let titlePlusArrowWidth: number = 0;
         let pagingLegendBounds: Rect = new Rect(0, 0, 0, 0);
         let requireLegendBounds: Rect = new Rect(0, 0, 0, 0);
@@ -716,7 +712,8 @@ export class BaseLegend {
             let pageCount: number = 1;
             let rowHeights: number = this.rowHeights[0] + padding;
             for (let i: number = 1; i < this.rowHeights.length; i++) {
-                if ((rowHeights + this.rowHeights[i as number] + padding) > (this.legendBounds.height - this.pageButtonSize - this.maxItemHeight / 2)) {
+                if ((rowHeights + this.rowHeights[i as number] + padding) >
+                (this.legendBounds.height - this.pageButtonSize - this.maxItemHeight / 2)) {
                     this.pageHeights[pageCount - 1] = rowHeights + titleHeight;
                     pageCount++;
                     rowHeights = 0;
@@ -752,8 +749,10 @@ export class BaseLegend {
             let count: number = 0;
             let previousLegend: LegendOptions = this.legendCollections[firstLegend as number];
             // starting shape center x,y position && to resolve lint error used new line for declaration
-            const startPadding: number = this.isBulletChartControl ? padding : titlePlusArrowWidth + padding + (legend.shapeWidth / 2) + legend.containerPadding.left;
-            const xLocation: number = (this.isBulletChartControl && !this.isRtlEnable) ? legendBounds.x + titlePlusArrowWidth + padding + (legend.shapeWidth / 2) :
+            const startPadding: number = this.isBulletChartControl ? padding : titlePlusArrowWidth + padding +
+            (legend.shapeWidth / 2) + legend.containerPadding.left;
+            const xLocation: number = (this.isBulletChartControl && !this.isRtlEnable) ? legendBounds.x + titlePlusArrowWidth +
+            padding + (legend.shapeWidth / 2) :
                 (!this.isRtlEnable) ? legendBounds.x + startPadding : legendBounds.x + ((this.chart.getModuleName() === 'accumulationchart' && this.isVertical) ? this.maxWidth : legendBounds.width) - startPadding;
             const start: ChartLocation = new ChartLocation(
                 xLocation,
@@ -764,7 +763,8 @@ export class BaseLegend {
             const textOptions: TextOption = new TextOption('', start.x, start.y, anchor);
             const textPadding: number = legend.shapePadding + this.itemPadding + legend.shapeWidth;
             //  initialization for totalPages legend click totalpage again calculate
-            this.totalPages = this.totalPages = (this.isAccChartControl || this.isChartControl || this.isBulletChartControl || this.isStockChartControl) ? this.totalPages : 0;
+            this.totalPages = this.totalPages = (this.isAccChartControl || this.isChartControl || this.isBulletChartControl ||
+                this.isStockChartControl) ? this.totalPages : 0;
             this.pageXCollections = [];
             this.legendCollections[firstLegend as number].location = start;
             let legendIndex: number;
@@ -787,7 +787,8 @@ export class BaseLegend {
                 legendOption = this.legendCollections[i as number];
                 legendIndex = !this.isReverse ? count : (this.legendCollections.length - 1) -  count;
                 if (this.chart.getModuleName() === 'accumulationchart') {
-                    legendOption.fill = (this.chart as Chart || this.chart as AccumulationChart || this.chart as StockChart || this.chart as Chart3D).visibleSeries[0].points[legendOption.pointIndex].color;
+                    legendOption.fill = (this.chart as Chart || this.chart as AccumulationChart || this.chart as StockChart ||
+                        this.chart as Chart3D).visibleSeries[0].points[legendOption.pointIndex].color;
                 }
                 if (this.chart.getModuleName() === 'stockChart'){
                     legendOption.type = (this.chart as StockChart).visibleSeries[count as number].type;
@@ -833,9 +834,19 @@ export class BaseLegend {
         appendChildElement((chart as Chart).enableCanvas, chart.svgObject, legendGroup, redraw);
     }
 
-    /** @private */
+    /**
+     * To get linear legend.
+     *
+     * @param {Rect} legendBounds - The bounds of the legend.
+     * @param {Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D} chart - The chart instance.
+     * @param {LegendSettingsModel} legend - The legend settings.
+     * @param {Element} legendTranslateGroup - The group element to translate the legend.
+     * @returns {void}
+     * @private
+     */
     private getLinearLegend(
-        legendBounds: Rect, chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D, legend: LegendSettingsModel, legendTranslateGroup: Element
+        legendBounds: Rect, chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D,
+        legend: LegendSettingsModel, legendTranslateGroup: Element
     ): void {
         const xmlns: string = 'http://www.w3.org/2000/svg';
         const previousLegend: LegendOptions = this.legendCollections[0];
@@ -963,16 +974,16 @@ export class BaseLegend {
         const fontcolor: string = previousLegend.visible ? legend.textStyle.color || chart.themeStyle.legendLabelFont.color : hiddenColor;
         const isCanvas: boolean = this.isStockChartControl ? false : (this.chart as Chart).enableCanvas;
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, legendTranslateGroup, false, false, false, false,
-            // tslint:disable-next-line:align
                     null, this.currentPageNumber && isCanvas ?
-                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) :
+                        null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
 
         textOptions = new TextOption('', endLabelX, endLabelY, anchor, endLabel);
         textOptions.id = this.legendID + this.generateId(previousLegend, '_text_', 2);
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, legendTranslateGroup, false, false, false, false,
-            // tslint:disable-next-line:align
                     null, this.currentPageNumber && isCanvas ?
-                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) :
+                        null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
         const gradientLegend: Element = chart.renderer.drawRectangle({
             width: linearBarWidth,
             height: linearBarHeight,
@@ -1014,9 +1025,11 @@ export class BaseLegend {
             this.isTop = legend.titlePosition === 'Top';
             const padding: number = legend.titleStyle.textOverflow === 'Trim' ? 2 * legend.padding : 0;
             if (this.isTop || this.isVertical) {
-                this.legendTitleCollections = getTitle(legend.title, legend.titleStyle, (legendBounds.width - padding), this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
+                this.legendTitleCollections = getTitle(legend.title, legend.titleStyle, (legendBounds.width - padding),
+                                                       this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
             } else {
-                this.legendTitleCollections[0] = textTrim(legend.maximumTitleWidth, legend.title, legend.titleStyle, this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
+                this.legendTitleCollections[0] = textTrim(legend.maximumTitleWidth, legend.title, legend.titleStyle,
+                                                          this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
             }
             const text: string = this.isTop ? legend.title : this.legendTitleCollections[0];
             this.legendTitleSize = measureText(text, legend.titleStyle, this.chart.themeStyle.legendTitleFont);
@@ -1035,7 +1048,8 @@ export class BaseLegend {
      */
 
     private renderLegendTitle(
-        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D, legend: LegendSettingsModel, legendBounds: Rect, legendGroup: Element
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D, legend: LegendSettingsModel,
+        legendBounds: Rect, legendGroup: Element
     ): void {
         const padding: number = legend.padding;
         const alignment: Alignment = legend.titleStyle.textAlignment;
@@ -1050,7 +1064,9 @@ export class BaseLegend {
         const y: number = legendBounds.y + (!this.isTop && !this.isVertical ? topPadding :
             (this.legendTitleSize.height / this.legendTitleCollections.length));
         const legendTitleTextOptions: TextOption = new TextOption(this.legendID + '_title', x, y, anchor, this.legendTitleCollections);
-        textElement(chart.renderer, legendTitleTextOptions, legend.titleStyle, legend.titleStyle.color || this.chart.themeStyle.legendTitleFont.color, legendGroup, null, null, null, null, null, null, null, null, null, null, this.chart.themeStyle.legendTitleFont);
+        textElement(chart.renderer, legendTitleTextOptions, legend.titleStyle, legend.titleStyle.color ||
+            this.chart.themeStyle.legendTitleFont.color, legendGroup, null, null, null, null, null, null,
+                    null, null, null, null, this.chart.themeStyle.legendTitleFont);
     }
     /**
      * To create legend rendering elements for chart and accumulation chart
@@ -1064,8 +1080,8 @@ export class BaseLegend {
      */
 
     private createLegendElements(
-        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D |CircularChart3D, legendBounds: Rect, legendGroup: Element, legend: LegendSettingsModel,
-        id: string, redraw?: boolean
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D |CircularChart3D, legendBounds: Rect,
+        legendGroup: Element, legend: LegendSettingsModel, id: string, redraw?: boolean
     ): Element {
         const padding: number = legend.padding;
         const options: RectOption = new RectOption(id + '_element', legend.background, legend.border, legend.opacity, legendBounds, 0, 0, '', this.legend.border.dashArray);
@@ -1178,7 +1194,8 @@ export class BaseLegend {
                 drawSymbol({ x: x, y: y }, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
                            '', symbolOption, this.accessbilityText, this.chart.renderer,
                            this.currentPageNumber ?
-                               new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null,
+                               new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1,
+                                                               this.currentPageNumber), 0, 0) : null,
                            this.isBulletChartControl, control);
 
             }
@@ -1215,7 +1232,8 @@ export class BaseLegend {
      */
 
     protected renderText(
-        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D, legendOption: LegendOptions, group: Element, textOptions: TextOption,
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D,
+        legendOption: LegendOptions, group: Element, textOptions: TextOption,
         i: number, legendIndex: number): void {
         const legend: LegendSettingsModel = chart.legendSettings;
         const hiddenColor: string = '#D3D3D3';
@@ -1234,14 +1252,14 @@ export class BaseLegend {
             textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         }
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
-        const element : Element =
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false,
-                    null, this.currentPageNumber &&  isCanvas ?
-                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
+                    null, this.currentPageNumber && isCanvas ?
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) :
+                        null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
         if (isCanvas) {
             const textSize: Size = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
             let region: ILegendRegions;
-            for (let j = 0; j < this.legendRegions.length; j++) {
+            for (let j: number = 0; j < this.legendRegions.length; j++) {
                 if (this.legendRegions[j as number].index === i) {
                     region = this.legendRegions[j as number];
                     break;
@@ -1275,9 +1293,9 @@ export class BaseLegend {
      * @param legendGroup
      */
 
-    // tslint:disable-next-line:max-func-body-length
     private renderPagingElements(
-        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D, bounds: Rect, textOption: TextOption, legendGroup: Element): void {
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D,
+        bounds: Rect, textOption: TextOption, legendGroup: Element): void {
         const paginggroup: Element = chart.renderer.createGroup({ id: this.legendID + '_navigation' });
         const isCanvas: boolean = this.isStockChartControl ? false : (chart as Chart).enableCanvas;
         const titleHeight: number = this.isBulletChartControl ? 0 : this.legendTitleSize.height;
@@ -1287,7 +1305,7 @@ export class BaseLegend {
         const pageUp: string = this.legendID + (!this.isRtlEnable ? '_pageup' : '_pagedown');
         const pageDown: string = this.legendID + (!this.isRtlEnable ? '_pagedown' : '_pageup');
         const symbolOption: PathOption = new PathOption(pageUp, 'transparent', 5, grayColor, 1, '', '');
-        const iconSize: number = this.pageButtonSize;
+        const iconSize: number = chart.availableSize.width < 110 || chart.availableSize.height < 190 ? 4 : this.pageButtonSize;
         // Page left arrow drawing calculation started here
         const rowCount: number = !legend.enablePages && this.isPaging && !this.isVertical && !this.isBulletChartControl ? 1 :
             (this.rowCount - 1);
@@ -1335,7 +1353,8 @@ export class BaseLegend {
                 (bounds.y + padding + iconSize + 0.5);
         }
         const size: Size = measureText(this.totalPages + '/' + this.totalPages, legend.textStyle, this.chart.themeStyle.legendLabelFont);
-        const translateX: number = (this.isRtlEnable) ?  legend.border.width + (iconSize / 2) : bounds.width - (2 * (iconSize + padding) + padding + size.width);
+        const translateX: number = (this.isRtlEnable) ?  legend.border.width + (iconSize / 2) :
+            bounds.width - (2 * (iconSize + padding) + padding + size.width);
         if (!isCanvas) {
             if (this.isVertical && !legend.enablePages && !this.isBulletChartControl) {
                 x = bounds.x + (bounds.width / 2);
@@ -1354,8 +1373,8 @@ export class BaseLegend {
                        new Rect(translateX, 0, 0, 0));
 
         }
-        this.pagingRegions.push(new Rect(!this.isRtlEnable ? x + bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5 : x,
-                                         y - iconSize * 0.5, iconSize, iconSize));
+        this.pagingRegions.push(new Rect(!this.isRtlEnable ? x + bounds.width -
+            (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5 : x, y - iconSize * 0.5, iconSize, iconSize));
         // Page numbering rendering calculation started here
         textOption.x = x + (iconSize / 2) + padding;
         textOption.y = y + (size.height / 4);
@@ -1366,6 +1385,7 @@ export class BaseLegend {
             textOption.text = !this.isRtlEnable ? this.currentPageNumber  + '/' + this.totalNoOfPages : this.totalNoOfPages + '/' +  this.currentPageNumber;
         }
         if (legend.enablePages || this.isBulletChartControl) {
+            legend.textStyle.size = (chart.availableSize.width < 110 || chart.availableSize.height < 190 && !this.isBulletChartControl) ? '8px' : legend.textStyle.size;
             pageTextElement = textElement(
                 chart.renderer, textOption, legend.textStyle, color, paginggroup,
                 false, false, false, false, null,
@@ -1397,8 +1417,8 @@ export class BaseLegend {
                        'RightArrow', this.chart.renderer,
                        new Rect(translateX, 0, 0, 0));
         }
-        this.pagingRegions.push(new Rect(!this.isRtlEnable ? x + (bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5) : x,
-                                         y - iconSize * 0.5, iconSize, iconSize));
+        this.pagingRegions.push(new Rect(!this.isRtlEnable ? x + (bounds.width -
+            (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5) : x, y - iconSize * 0.5, iconSize, iconSize));
         if (!isCanvas && (legend.enablePages || this.isBulletChartControl)) {
         //placing the navigation buttons and page numbering in legend right corner
             paginggroup.setAttribute('transform', 'translate(' + translateX + ', ' + 0 + ')');
@@ -1443,8 +1463,10 @@ export class BaseLegend {
      * @param legend
      */
 
-    protected translatePage(isCanvas: boolean, pagingText: Element, page: number, pageNumber: number, legend?: LegendSettingsModel): number {
-        let size: number = (this.isChartControl || this.isAccChartControl) ? (page ? this.getPageHeight(this.pageHeights, page) : 0) : ((this.clipPathHeight) * page);
+    protected translatePage(isCanvas: boolean, pagingText: Element, page: number, pageNumber: number,
+                            legend?: LegendSettingsModel): number {
+        let size: number = (this.isChartControl || this.isAccChartControl) ?
+            (page ? this.getPageHeight(this.pageHeights, page) : 0) : ((this.clipPathHeight) * page);
         if (!isCanvas && (this.isChartControl || this.isAccChartControl)) {
             this.clipRect.setAttribute('height', this.pageHeights[page as number].toString());
             if (this.isAccChartControl && this.isPaging && !legend.enablePages && this.isVertical) {
@@ -1491,10 +1513,20 @@ export class BaseLegend {
             this.translatePage(isCanvas, pageText, page, (page + 1), legend);
         }
         if (this.isPaging && !legend.enablePages && !this.isBulletChartControl) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            this.currentPage === this.totalPages ? this.hideArrow(forwardArrow) : this.showArrow(forwardArrow);
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            this.currentPage === 1 ? this.hideArrow(backwardArrow) : this.showArrow(backwardArrow);
+            if (this.currentPage === this.totalPages) {
+                this.hideArrow(forwardArrow);
+            }
+            else {
+                this.showArrow(forwardArrow);
+            }
+            if (this.currentPage === 1) {
+                this.hideArrow(backwardArrow);
+            }
+            else {
+                this.showArrow(backwardArrow);
+            }
+            // this.currentPage === this.totalPages ? this.hideArrow(forwardArrow) : this.showArrow(forwardArrow);
+            // this.currentPage === 1 ? this.hideArrow(backwardArrow) : this.showArrow(backwardArrow);
         }
     }
     /**

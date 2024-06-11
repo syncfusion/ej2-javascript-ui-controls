@@ -1,4 +1,3 @@
-/* eslint-disable valid-jsdoc */
 import { print as smithchartPrint, createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Smithchart } from '../../index';
 import { getElement } from '../utils/helper';
@@ -7,25 +6,25 @@ import { ISmithchartPrintEventArgs } from '../model/interface';
 import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-export';
 
 /**
- * Annotation Module handles the Annotation for Maps
+ * Annotation Module handles the Annotation for Maps.
  */
 export class ExportUtils {
     private control: Smithchart;
     private smithchartPrint: Window;
 
     /**
-     * Constructor for Maps
+     * Constructor for Maps.
      *
-     * @param {Smithchart} control smithchart instance
+     * @param {Smithchart} control - smithchart instance
      */
     constructor(control: Smithchart) {
         this.control = control;
     }
 
     /**
-     * To print the Maps
+     * To print the Maps.
      *
-     * @param {string} elements html element
+     * @param {string} elements - html element
      * @returns {void}
      */
     public print(elements?: string[] | string | Element): void {
@@ -44,11 +43,11 @@ export class ExportUtils {
     }
 
     /**
-     * To get the html string of the Maps
+     * To get the html string of the Maps.
      *
-     * @param {string} svgElements svg element
+     * @param {string} svgElements - svg element
      * @private
-     * @returns {Element} content of the html element
+     * @returns {Element} - content of the html element
      */
     public getHTMLContent(svgElements?: string[] | string | Element): Element {
         const div: Element = createElement('div');
@@ -70,9 +69,9 @@ export class ExportUtils {
     /**
      * To export the file as image/svg format.
      *
-     * @param {SmithchartExportType} exportType export type
-     * @param {string} fileName export file name
-     * @param {PdfPageOrientation} orientation orientation of the page
+     * @param {SmithchartExportType} exportType - export type
+     * @param {string} fileName - export file name
+     * @param {PdfPageOrientation} orientation - orientation of the page
      * @returns {void}
      */
     public export(exportType: SmithchartExportType, fileName: string, orientation?: PdfPageOrientation): void {
@@ -134,10 +133,11 @@ export class ExportUtils {
     /**
      * To trigger the download element.
      *
-     * @param {string} fileName export file name
-     * @param {SmithchartExportType} exportType export type
-     * @param {string} url file url
-     * @param {boolean} isDownload download
+     * @param {string} fileName - export file name
+     * @param {SmithchartExportType} exportType - export type
+     * @param {string} url - file url
+     * @param {boolean} isDownload - download
+     * @returns {void}
      */
     public triggerDownload(fileName: string, exportType: SmithchartExportType, url: string, isDownload: boolean): void {
         createElement('a', {

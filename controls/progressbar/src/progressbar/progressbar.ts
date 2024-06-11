@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';
 import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ProgressBarModel } from './progressbar-model';
@@ -358,8 +356,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      *
      * @event tooltipRender
      */
-     @Event()
-     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
+    @Event()
+    public tooltipRender: EmitType<ITooltipRenderEventArgs>;
     /**
      * The configuration for annotation in Progressbar.
      */
@@ -495,7 +493,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.controlRenderedTimeStamp = new Date().getTime();
     }
     /**
-     * calculate size of the progress bar
+     * calculate size of the progress bar.
+     *
+     * @returns {void}
      */
     private calculateProgressBarSize(): void {
         const containerWidth: number = this.element.clientWidth || this.element.offsetWidth;
@@ -515,15 +515,18 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Render Annotation in progress bar
+     * Render Annotation in progress bar.
+     *
+     * @returns {void}
      */
     private renderAnnotations(): void {
         this.renderAnnotation();
-        
     }
 
     /**
-     * Render SVG Element
+     * Render SVG Element.
+     *
+     * @returns {void}
      */
     private renderElements(): void {
         this.createSecondaryElement();
@@ -569,7 +572,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To set the left and top position for annotation for center aligned
+     * To set the left and top position for annotation for center aligned.
+     *
+     * @returns {void}
      */
     private setSecondaryElementPosition(): void {
         const element: HTMLElement = this.secElement;
@@ -715,7 +720,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Theming for progress bar
+     * Theming for progress bar.
+     *
+     * @returns {void}
      */
     private setTheme(): void {
         this.themeStyle = getProgressThemeColor(this.theme);
@@ -725,13 +732,19 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
             this.cornerRadius = this.cornerRadius === 'Auto' ?
                 ((this.type === 'Linear') ? 'Round4px' : 'Round') : this.cornerRadius;
             break;
+        case 'Fluent2':
+        case 'Fluent2Dark':
+            this.cornerRadius = this.cornerRadius === 'Auto' && this.type === 'Linear' ? 'Round' : this.cornerRadius;
+            break;
         default:
             this.cornerRadius = this.cornerRadius === 'Auto' ? 'Square' : this.cornerRadius;
         }
     }
 
     /**
-     * Annotation for progress bar
+     * Annotation for progress bar.
+     *
+     * @returns {void}
      */
     private renderAnnotation(): void {
         if (this.progressAnnotationModule && this.annotations.length > 0) {
@@ -818,7 +831,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.trigger(eventName, { target: element.id });
     }
     /**
-     * Method to un-bind events for progress bar
+     * Method to un-bind events for progress bar.
+     *
+     * @returns {void}
      */
     private unWireEvents(): void {
         const startEvent: string = Browser.touchStartEvent;
@@ -840,7 +855,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Method to bind events for bullet chart
+     * Method to bind events for bullet chart.
+     *
+     * @returns {void}
      */
     private wireEvents(): void {
         const startEvent: string = Browser.touchStartEvent;
@@ -964,17 +981,14 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To destroy the widget
+     * To destroy the widget.
      *
-     * @function destroy
      * @returns {void}
-     * @member of ProgressBar
      */
     public destroy(): void {
         this.unWireEvents();
         super.destroy();
         this.removeSvg();
-        // tslint:disable-next-line:no-any
         if ((this as any).isReact) { this.clearTemplate(); }
         this.svgObject = null;
         this.element.classList.remove('e-progressbar');

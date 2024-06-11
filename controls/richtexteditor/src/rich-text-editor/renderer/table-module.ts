@@ -1,5 +1,5 @@
 import { createElement, detach, closest, Browser, L10n, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, EventHandler, addClass, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, EventHandler, addClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IRenderer, IDropDownItemModel, OffsetPosition, ResizeArgs } from '../base/interface';
 import { IColorPickerEventArgs, ITableArgs, ITableNotifyArgs, IToolbarItemModel, NotifyArgs, ICssClassArgs } from '../base/interface';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -16,6 +16,7 @@ import * as classes from '../base/classes';
 import { dispatchEvent, parseHtml, hasClass } from '../base/util';
 import { EditorManager } from '../../editor-manager';
 import { DialogRenderer } from './dialog-renderer';
+import { removeClassWithAttr } from '../../common/util';
 /**
  * `Table` module is used to handle table actions.
  */
@@ -37,6 +38,7 @@ export class Table {
     private pageY: number = null;
     private curTable: HTMLTableElement;
     private activeCell: HTMLElement;
+    private keyDownEventInstance: KeyboardEventArgs;
     private colIndex: number;
     private columnEle: HTMLTableDataCellElement;
     private rowTextBox: NumericTextBox;
@@ -52,6 +54,7 @@ export class Table {
     private currentColumnResize: string = '';
     private previousTableElement: HTMLElement;
     private resizeEndTime: number = 0;
+    private isTableMoveActive: boolean = false;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -133,7 +136,7 @@ export class Table {
             if (isNullOrUndefined(e.oldCssClass)) {
                 addClass([this.popupObj.element], e.cssClass);
             } else {
-                removeClass([this.popupObj.element], e.oldCssClass);
+                removeClassWithAttr([this.popupObj.element], e.oldCssClass);
                 addClass([this.popupObj.element], e.cssClass);
             }
         }
@@ -217,7 +220,7 @@ export class Table {
 
     private keyUp (e: NotifyArgs): void {
         const target: HTMLElement = <HTMLElement>(e.args as KeyboardEventArgs).target;
-        if ((e.args as KeyboardEventArgs).key.toLocaleLowerCase() === 'escape' && target && target.classList && (this.popupObj && !closest(target, '[id=' + "'" + this.popupObj.element.id + "'" +']')) && this.popupObj) {
+        if ((e.args as KeyboardEventArgs).key.toLocaleLowerCase() === 'escape' && target && target.classList && (this.popupObj && !closest(target, '[id=' + '\'' + this.popupObj.element.id + '\'' + ']')) && this.popupObj) {
             let createTableToolbarBtn: HTMLElement = this.popupObj.relateTo as HTMLElement;
             if (createTableToolbarBtn.nodeName !== 'BUTTON') {
                 createTableToolbarBtn = createTableToolbarBtn.querySelector('span.e-create-table');
@@ -263,31 +266,405 @@ export class Table {
                 ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
             }
             if (ele && (ele.tagName === 'TD' || ele.tagName === 'TH')) {
-                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
+                const selectedEndCell: NodeListOf<HTMLElement> = this.contentModule.getEditPanel().querySelectorAll('.e-cell-select-end');
+                if ((isNOU(this.activeCell) || this.activeCell !== ele) && !isNOU(selectedEndCell) && selectedEndCell.length === 0) {
+                    this.activeCell = ele;
+                }
+                if (!isNOU(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
                     selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 }
-                switch ((event as KeyboardEventArgs).keyCode) {
-                case 9:
-                case 37:
-                case 39:
-                    proxy.tabSelection(event, selection, ele);
-                    break;
-                case 40:
-                case 38:
-                    proxy.tableArrowNavigation(event, selection, ele);
-                    break;
+                if (!(event as KeyboardEventArgs).shiftKey ||
+                    ((event as KeyboardEventArgs).shiftKey && (event as KeyboardEventArgs).keyCode === 9)) {
+                    switch ((event as KeyboardEventArgs).keyCode) {
+                    case 9:
+                    case 37:
+                    case 39:
+                        this.removeCellSelectClasses();
+                        proxy.tabSelection(event, selection, ele);
+                        break;
+                    case 40:
+                    case 38:
+                        this.removeCellSelectClasses();
+                        proxy.tableArrowNavigation(event, selection, ele);
+                        break;
+                    }
                 }
             }
+        }
+        if ((event as KeyboardEventArgs).shiftKey && ((event as KeyboardEventArgs).keyCode === 39 ||
+            (event as KeyboardEventArgs).keyCode === 37
+            || (event as KeyboardEventArgs).keyCode === 38 || (event as KeyboardEventArgs).keyCode === 40))
+        {
+            this.keyDownEventInstance = event;
+            EventHandler.add(this.parent.contentModule.getDocument(), 'selectionchange', this.tableCellsKeyboardSelection, this);
         }
         if (event.ctrlKey && event.key === 'a') {
             this.handleSelectAll();
         }
+        if ((event.code === 'Delete' && event.which === 46) || (event.code === 'Backspace' && event.which === 8)) {
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            if (range.startContainer.nodeType === Node.ELEMENT_NODE && range.startContainer.nodeName === 'DIV' && (range.startContainer as HTMLElement).classList.contains('e-table-fake-selection'))
+            {
+                this.deleteTable();
+                event.preventDefault();
+            } else {
+                const table: HTMLElement = (event.code === 'Delete' && event.which === 46) ? this.getAdjacentTableElement(range, true) : this.getAdjacentTableElement(range, false);
+                if (table)
+                {
+                    this.updateTableSelection(table);
+                    event.preventDefault();
+                }
+            }
+        } else {
+            const isShiftEnter: boolean = event.shiftKey && event.key === 'Enter';
+            const isActionKey: boolean = classes.ALLOWED_ACTIONKEYS.indexOf(event.key) !== -1;
+            if (isShiftEnter || isActionKey || (event.key && event.key.length === 1)) {
+                const table: HTMLElement = this.parent.contentModule.getEditPanel().querySelector('table.e-cell-select');
+                if (table) {
+                    if ((event as KeyboardEventArgs).keyCode === 39 || (event as KeyboardEventArgs).keyCode === 37) {
+                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), table, 0);
+                    } else {
+                        const firstTd: HTMLElement = table.querySelector('tr').cells[0];
+                        this.parent.formatter.editorManager.nodeSelection.setSelectionText(this.contentModule.getDocument(),
+                                                                                           firstTd, firstTd, 0, 0);
+                    }
+                }
+                this.removeTableSelection();
+            }
+        }
+    }
+    private tableCellsKeyboardSelection(e: Event): void {
+        EventHandler.remove(this.parent.contentModule.getDocument(), 'selectionchange', this.tableCellsKeyboardSelection);
+        const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+        const event: KeyboardEventArgs = this.keyDownEventInstance;
+        const isMultiSelect: boolean = !isNullOrUndefined(range) && !isNullOrUndefined(range.commonAncestorContainer) &&
+                                       range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+                                       && ((range.commonAncestorContainer as Element).tagName === 'TR'
+                                       || (range.commonAncestorContainer as Element).tagName === 'TBODY') && !isNullOrUndefined(this.activeCell);
+        const selectedEndCell: NodeListOf<HTMLElement> = this.contentModule.getEditPanel().querySelectorAll('.e-cell-select-end');
+        if (!isNullOrUndefined(selectedEndCell) && selectedEndCell.length > 0)
+        {
+            this.parent.formatter.editorManager.nodeSelection.Clear(this.parent.contentModule.getDocument());
+            this.parent.formatter.editorManager.nodeSelection.setSelectionText(this.parent.contentModule.getDocument(),
+                                                                               selectedEndCell[0], selectedEndCell[0], 0, 0);
+            this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
+                                                                             selectedEndCell[0], 0);
+        }
+        if (isMultiSelect || (!isNullOrUndefined(selectedEndCell) && selectedEndCell.length > 0)) {
+            const cells: HTMLElement[][] = this.getCorrespondingColumns();
+            const cell: HTMLElement = !isNullOrUndefined(selectedEndCell)
+                && selectedEndCell.length > 0 ? selectedEndCell[0] : this.activeCell;
+            const activeIndexes: number[] = this.getCorrespondingIndex(cell, cells);
+            const activeCellRowIndex: number = activeIndexes[0 as number];
+            const activeCellColIndex: number = activeIndexes[1 as number];
+            let target: HTMLElement;
+            if ((event as KeyboardEventArgs).keyCode === 39) {
+                if (activeCellColIndex < cells[0].length - 1) {
+                    target = cells[activeCellRowIndex as number][(activeCellColIndex + 1) as number];
+                } else if (activeCellRowIndex < cells.length - 1) {
+                    target = cells[(activeCellRowIndex + 1) as number][activeCellColIndex as number];
+                    if (selectedEndCell.length === 0 && activeCellRowIndex < cells.length - 1) {
+                        this.activeCell = cells[activeCellRowIndex as number][0 as number];
+                    }
+                } else {
+                    this.resetTableSelection();
+                }
+            } else if ((event as KeyboardEventArgs).keyCode === 37) {
+                if (0 < activeCellColIndex) {
+                    target = cells[activeCellRowIndex as number][(activeCellColIndex - 1) as number];
+                } else if (0 < activeCellRowIndex){
+                    target = cells[(activeCellRowIndex - 1) as number][activeCellColIndex as number];
+                    if (selectedEndCell.length === 0 && 0 < activeCellRowIndex) {
+                        this.activeCell = cells[activeCellRowIndex as number][(cells[activeCellRowIndex as number].length - 1) as number];
+                    }
+                } else {
+                    this.resetTableSelection();
+                }
+            } else if ((event as KeyboardEventArgs).keyCode === 38 ) {
+                if (0 < activeCellRowIndex) {
+                    target = cells[(activeCellRowIndex - 1) as number][activeCellColIndex as number];
+                } else {
+                    this.resetTableSelection();
+                }
+            } else if ((event as KeyboardEventArgs).keyCode === 40) {
+                if (activeCellRowIndex < cells.length - 1) {
+                    target = cells[(activeCellRowIndex + 1) as number][activeCellColIndex as number];
+                } else {
+                    this.resetTableSelection();
+                }
+            }
+            if (target) {
+                this.parent.formatter.editorManager.observer.notify('TABLE_MOVE', {
+                    event: { target: target },
+                    selectNode: [this.activeCell]
+                });
+            }
+        }
+        if (selectedEndCell.length > 0) {
+            event.preventDefault();
+            e.preventDefault();
+        }
+    }
+
+    private resetTableSelection(): void {
+        const selectedEndCell: NodeListOf<HTMLElement> = this.contentModule.getEditPanel().querySelectorAll('.e-cell-select-end');
+        if (!isNullOrUndefined(selectedEndCell) && selectedEndCell.length > 0) {
+            this.parent.formatter.editorManager.nodeSelection.setSelectionNode(this.parent.contentModule.getDocument(), this.curTable);
+        }
+        this.activeCell = null;
+        this.removeCellSelectClasses();
+        this.removeTableSelection();
+    }
+
+    private getCorrespondingColumns(): HTMLElement[][] {
+        const elementArray: HTMLElement[][] = [];
+        const colspan: number = 0;
+        const allRows: HTMLCollectionOf<HTMLTableRowElement> = this.curTable.rows;
+        for (let i: number = 0; i <= allRows.length - 1; i++) {
+            const ele: HTMLElement = allRows[i as number];
+            let index: number = 0;
+            for (let j: number = 0; j <= ele.children.length - 1; j++) {
+                const colEle: Element = ele.children[j as number];
+                for (let ele: HTMLElement = colEle as HTMLElement, colspan: number = parseInt(ele.getAttribute('colspan'), 10) || 1,
+                    rowSpan: number = parseInt(ele.getAttribute('rowspan'), 10) || 1, rowIndex: number = i; rowIndex < i + rowSpan; rowIndex++) {
+                    for (let colIndex: number = index; colIndex < index + colspan; colIndex++) {
+                        if (!elementArray[rowIndex as number]) {
+                            elementArray[rowIndex as number] = [];
+                        }
+                        if (elementArray[rowIndex as number][colIndex as number]) {
+                            index++;
+                        } else {
+                            elementArray[rowIndex as number][colIndex as number] = colEle as HTMLElement;
+                        }
+                    }
+                }
+                index += colspan;
+            }
+        }
+        return elementArray;
+    }
+
+    private getCorrespondingIndex(cell: HTMLElement, allCells: HTMLElement[][]): number[] {
+        for (let i: number = 0; i < allCells.length; i++) {
+            for (let j: number = 0; j < allCells[i as number].length; j++) {
+                if (allCells[i as number][j as number] === cell) {
+                    return [i as number, j as number];
+                }
+            }
+        }
+        return [];
+    }
+
+    private getAdjacentTableElement(range: Range, isdelKey: boolean): HTMLElement | null {
+        if (!range.collapsed || (!isdelKey && this.quickToolObj && this.quickToolObj.tableQTBar
+            && document.body.contains(this.quickToolObj.tableQTBar.element))) {
+            return null;
+        }
+        const nodeCollection: Node[] = this.getNodeCollection(range);
+        const startContainer: HTMLElement = (range.collapsed && this.parent.contentModule.getEditPanel() === range.startContainer
+            && nodeCollection && nodeCollection.length > 0 && nodeCollection[0] ?
+            nodeCollection[0] : range.startContainer) as HTMLElement;
+        let adjacentElement: HTMLElement = this.getSelectedTableEle(nodeCollection);
+        const isBrEle: HTMLElement = this.getBrElement(range, nodeCollection);
+
+        if (startContainer && startContainer.nodeType === Node.ELEMENT_NODE) {
+            if (startContainer.tagName === 'IMG' || startContainer.querySelector('img') || startContainer.tagName === 'AUDIO'
+                || startContainer.querySelector('audio') || startContainer.tagName === 'VIDEO' || startContainer.querySelector('video')
+                || startContainer.querySelector('.e-video-clickelem'))
+            {
+                const compareRange: Range = this.contentModule.getDocument().createRange();
+                compareRange.collapse(true);
+                compareRange.selectNodeContents(startContainer);
+                const nodeIndex: number = this.parent.formatter.editorManager.nodeSelection.getIndex(startContainer);
+                if ((isdelKey && compareRange.startOffset >= range.startOffset) ||
+                    (!isdelKey && (startContainer.tagName !== 'IMG' && compareRange.startOffset !== range.startOffset
+                     || startContainer.tagName === 'IMG' && nodeIndex !== range.startOffset))) {
+                    return null;
+                }
+            }
+        }
+
+        if (startContainer && startContainer.nodeType === Node.TEXT_NODE) {
+            if (isdelKey) {
+                if (range.endOffset !== range.endContainer.textContent.length) {
+                    if (range.endOffset !== range.endContainer.textContent.trim().length) {
+                        return null;
+                    }
+                }
+            } else if (range.startOffset !== 0) {
+                return null;
+            }
+        }
+
+        if (startContainer && startContainer.nodeType === Node.ELEMENT_NODE && startContainer.tagName === 'TABLE') {
+            adjacentElement = startContainer;
+        }
+        if (adjacentElement) {
+            const currentEleIndex: number = this.parent.formatter.editorManager.nodeSelection.getIndex(adjacentElement);
+            if (!((range.startOffset === currentEleIndex && isdelKey) || (range.startOffset !== currentEleIndex && !isdelKey))) {
+                adjacentElement = null;
+            }
+        }
+        if (!adjacentElement && startContainer) {
+            adjacentElement = this.getAdjacentElementFromDom(startContainer, isBrEle, isdelKey);
+        }
+        if (adjacentElement && adjacentElement.nodeType === Node.ELEMENT_NODE && adjacentElement.tagName === 'TABLE')
+        {
+            this.setSelection(adjacentElement, isBrEle);
+            return adjacentElement;
+        }
+        return null;
+    }
+
+    private getAdjacentElementFromDom(startContainer: HTMLElement, isBrEle: HTMLElement, isdelKey: boolean): HTMLElement {
+        let adjacentElement: HTMLElement;
+        let parentElement: HTMLElement = (isBrEle ? isBrEle : startContainer.parentNode) as HTMLElement;
+        let currentElement: HTMLElement = startContainer;
+        while (parentElement && !adjacentElement && parentElement.parentNode) {
+            const childNodes: ChildNode[] = Array.from(parentElement.childNodes);
+            const startContainerIndex: number = childNodes.indexOf(currentElement);
+            if (startContainerIndex !== -1 && ((isdelKey && startContainerIndex < childNodes.length - 1)
+                || (!isdelKey && startContainerIndex > 0))) {
+                adjacentElement = (childNodes[isdelKey ? startContainerIndex + 1 : startContainerIndex - 1]) as HTMLElement;
+            } else {
+                adjacentElement = (isdelKey ? parentElement.nextSibling : parentElement.previousSibling) as HTMLElement;
+                currentElement = parentElement;
+            }
+            if (!isBrEle && startContainer.nodeType === Node.TEXT_NODE && adjacentElement && adjacentElement.tagName && adjacentElement.tagName.toUpperCase() === 'BR') {
+                isBrEle = currentElement = parentElement = adjacentElement;
+                adjacentElement = null;
+            }
+            if (!isBrEle && adjacentElement && !(adjacentElement.nodeType === Node.ELEMENT_NODE && adjacentElement.tagName === 'TABLE') && !isNullOrUndefined(adjacentElement.textContent) && !adjacentElement.textContent.trim()) {
+                currentElement = parentElement = adjacentElement.parentNode as HTMLElement;
+                adjacentElement = null;
+            }
+            if (adjacentElement && adjacentElement.tagName && ['UL', 'OL', 'LI'].indexOf(adjacentElement.tagName.toUpperCase()) !== -1) {
+                adjacentElement = this.getAdjacentElementFromList(adjacentElement, isdelKey);
+                if (!adjacentElement) {
+                    return null;
+                }
+            }
+            if (parentElement && parentElement.tagName && parentElement.tagName.toUpperCase() === 'LI' && !isdelKey) {
+                adjacentElement = parentElement;
+            }
+            parentElement = parentElement.parentNode as HTMLElement;
+        }
+        return adjacentElement;
+    }
+
+    private getAdjacentElementFromList(adjacentElement: HTMLElement, isdelKey: boolean): HTMLElement {
+        while (adjacentElement) {
+            if (adjacentElement.tagName && ['UL', 'OL', 'LI'].indexOf(adjacentElement.tagName.toUpperCase()) === -1) {
+                if (!(adjacentElement.nodeType === Node.ELEMENT_NODE && adjacentElement.tagName === 'TABLE')) {
+                    adjacentElement = (isdelKey ? adjacentElement.firstChild : adjacentElement.lastChild) as HTMLElement;
+                }
+                break;
+            }
+            adjacentElement = (isdelKey ? adjacentElement.firstChild : adjacentElement.lastChild) as HTMLElement;
+        }
+        return adjacentElement;
+    }
+
+    private getNodeCollection(range: Range): Node[] {
+        let nodes: Node[] = [];
+        if (range.collapsed && this.parent.contentModule.getEditPanel() === range.startContainer
+            && range.startContainer.childNodes.length > 0) {
+            const index: number = Math.max(0, Math.min(range.startContainer.childNodes.length - 1, range.endOffset - 1));
+            nodes.push(range.startContainer.childNodes[index as number]);
+        } else {
+            nodes = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+        }
+        return nodes;
+    }
+
+    private getSelectedTableEle(nodeCollection: Node[]): HTMLElement | null {
+        if (nodeCollection && nodeCollection.length > 0) {
+            for (const element of Array.from(nodeCollection)) {
+                if (element && (element as HTMLElement).tagName === 'TABLE') {
+                    return element as HTMLElement;
+                }
+            }
+        }
+        return null;
+    }
+
+    private getBrElement(range: Range, nodeCollection: Node[]): HTMLElement | null {
+        if ((range.endContainer as HTMLElement).tagName === 'BR') {
+            return range.endContainer as HTMLElement;
+        }
+        if (nodeCollection.length === 1 && nodeCollection[0]
+            && (nodeCollection[0] as HTMLElement).tagName === 'BR') {
+            return nodeCollection[0] as HTMLElement;
+        }
+        return null;
+    }
+
+    private setSelection(nextElement: HTMLElement, isBrEle: HTMLElement): void {
+        if (!nextElement.classList.contains('e-cell-select')) {
+            this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
+            if (isBrEle) {
+                if (isBrEle.parentNode && isBrEle.parentNode.childNodes.length === 1 && isBrEle.parentNode.firstChild.nodeName === 'BR') {
+                    detach(isBrEle.parentNode);
+                } else {
+                    detach(isBrEle);
+                }
+            }
+            const fakeSelectionEle: HTMLElement = this.parent.createElement('div', { className: 'e-table-fake-selection'});
+            fakeSelectionEle.setAttribute('contenteditable', 'false');
+            this.contentModule.getEditPanel().appendChild(fakeSelectionEle);
+            this.parent.formatter.editorManager.nodeSelection.setSelectionNode(this.contentModule.getDocument(), fakeSelectionEle);
+        }
+    }
+
+    private removeAllFakeSelectionEles(): void {
+        const fakeSelectionEles: NodeListOf<HTMLElement> = this.parent.contentModule.getEditPanel().querySelectorAll('.e-table-fake-selection');
+        if (fakeSelectionEles && fakeSelectionEles.length > 0)
+        {
+            fakeSelectionEles.forEach((element: HTMLElement) => {
+                detach(element);
+            });
+        }
+    }
+
+    private deleteTable(): void {
+        const table: HTMLElement = this.parent.contentModule.getEditPanel().querySelector('table.e-cell-select');
+        this.removeResizeElement();
+        if (table)
+        {
+            const brElement: HTMLBRElement = document.createElement('br');
+            let containerEle: HTMLElement | null = brElement;
+            if (this.parent.enterKey === 'DIV') {
+                containerEle = document.createElement('div');
+                containerEle.appendChild(brElement);
+            }
+            else if (this.parent.enterKey === 'P') {
+                containerEle = document.createElement('p');
+                containerEle.appendChild(brElement);
+            }
+            table.parentNode.replaceChild(containerEle, table);
+            this.parent.formatter.editorManager.nodeSelection.setSelectionText(this.contentModule.getDocument(),
+                                                                               containerEle, containerEle, 0, 0);
+            this.removeTableSelection();
+        }
+    }
+
+    private removeTableSelection(): void {
+        const table: HTMLElement = this.parent.contentModule.getEditPanel().querySelector('table.e-cell-select');
+        if (table) {
+            removeClassWithAttr([table], classes.CLS_TABLE_SEL);
+        }
+        this.removeAllFakeSelectionEles();
+    }
+
+    private updateTableSelection(table: HTMLElement): void {
+        addClass([table], 'e-cell-select');
     }
 
     private handleSelectAll(): void {
         this.cancelResizeAction();
         const selectedCells: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.' + classes.CLS_TABLE_SEL);
-        removeClass(selectedCells, classes.CLS_TABLE_SEL);
+        removeClassWithAttr(selectedCells, classes.CLS_TABLE_SEL);
+        this.removeTableSelection();
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -300,8 +677,12 @@ export class Table {
                 const closestTd: HTMLElement = closest(ele, 'td') as HTMLElement;
                 ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
             }
-            if (this.previousTableElement !== ele && !isNullOrUndefined(this.previousTableElement)) {
-                this.previousTableElement.classList.remove(classes.CLS_TABLE_SEL);
+            if (this.previousTableElement !== ele && !isNullOrUndefined(this.previousTableElement)
+                && !((event as KeyboardEventArgs).shiftKey
+                    && ((event as KeyboardEventArgs).keyCode === 39 || (event as KeyboardEventArgs).keyCode === 37 ||
+                        (event as KeyboardEventArgs).keyCode === 38 || (event as KeyboardEventArgs).keyCode === 40))) {
+                removeClassWithAttr([this.previousTableElement], classes.CLS_TABLE_SEL);
+                this.removeTableSelection();
             }
         }
     }
@@ -344,7 +725,7 @@ export class Table {
         }
     }
     private verticalAlign(args: ITableNotifyArgs, e: ClickEventArgs): void {
-        const tdEle : Element = closest(args.selectParent[0], 'td') || closest(args.selectParent[0], 'th');
+        const tdEle : Element = closest(args.selectParent[0], 'th') || closest(args.selectParent[0], 'td');
         if (tdEle) {
             this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: (e.item as IDropDownItemModel).subCommand });
         }
@@ -355,14 +736,14 @@ export class Table {
         if (command === 'Dashed') {
             /* eslint-disable */
             (this.parent.element.classList.contains(classes.CLS_TB_DASH_BOR)) ?
-                this.parent.element.classList.remove(classes.CLS_TB_DASH_BOR) : this.parent.element.classList.add(classes.CLS_TB_DASH_BOR);
-            (table.classList.contains(classes.CLS_TB_DASH_BOR)) ? table.classList.remove(classes.CLS_TB_DASH_BOR) :
+                removeClassWithAttr([this.parent.element],classes.CLS_TB_DASH_BOR) : this.parent.element.classList.add(classes.CLS_TB_DASH_BOR);
+            (table.classList.contains(classes.CLS_TB_DASH_BOR)) ? removeClassWithAttr([this.parent.element],classes.CLS_TB_DASH_BOR) :
                 table.classList.add(classes.CLS_TB_DASH_BOR);
         }
         if (command === 'Alternate') {
             (this.parent.element.classList.contains(classes.CLS_TB_ALT_BOR)) ?
-                this.parent.element.classList.remove(classes.CLS_TB_ALT_BOR) : this.parent.element.classList.add(classes.CLS_TB_ALT_BOR);
-            (table.classList.contains(classes.CLS_TB_ALT_BOR)) ? table.classList.remove(classes.CLS_TB_ALT_BOR) :
+            removeClassWithAttr([this.parent.element], classes.CLS_TB_ALT_BOR) : this.parent.element.classList.add(classes.CLS_TB_ALT_BOR);
+            (table.classList.contains(classes.CLS_TB_ALT_BOR)) ? removeClassWithAttr([table],classes.CLS_TB_ALT_BOR) :
                 table.classList.add(classes.CLS_TB_ALT_BOR);
                 /* eslint-enable */
         }
@@ -370,13 +751,14 @@ export class Table {
             const classList: string[] = (args.args as ClickEventArgs).item.cssClass.split(' ');
             for (let i: number = 0; i < classList.length; i++) {
                 if (table.classList.contains(classList[i as number])) {
-                    table.classList.remove(classList[i as number]);
+                    removeClassWithAttr([table], (classList[i as number]));
                 } else {
                     table.classList.add(classList[i as number]);
                 }
             }
         }
         this.parent.formatter.saveData();
+        this.hideTableQuickToolbar();
         this.parent.formatter.editorManager.nodeSelection.restore();
     }
     private insideList(range: Range): boolean {
@@ -399,19 +781,19 @@ export class Table {
             return false;
         }
     }
-    private removeEmptyTextNodes(element: HTMLTableRowElement) {
+    private removeEmptyTextNodes(element: HTMLTableRowElement): void {
         const children: NodeListOf<ChildNode> = element.childNodes;
         for (let i: number = children.length - 1; i >= 0; i--) {
-            const node = children[i as number];
+            const node: ChildNode = children[i as number];
             if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() === '') {
                 element.removeChild(node);
             }
         }
     }
     private tabSelection(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
-        let allHeadBodyTRElements: NodeListOf<HTMLTableRowElement> = ele.closest('table').querySelectorAll('thead, tbody, tr');
+        const allHeadBodyTRElements: NodeListOf<HTMLTableRowElement> = ele.closest('table').querySelectorAll('thead, tbody, tr');
         for (let i: number = 0; i < allHeadBodyTRElements.length; i++) {
-            this.removeEmptyTextNodes(allHeadBodyTRElements[i as number])
+            this.removeEmptyTextNodes(allHeadBodyTRElements[i as number]);
         }
         this.previousTableElement = ele;
         const insideList: boolean = this.insideList(selection.range);
@@ -420,7 +802,8 @@ export class Table {
             return;
         }
         event.preventDefault();
-        ele.classList.remove(classes.CLS_TABLE_SEL);
+        removeClassWithAttr([ele], classes.CLS_TABLE_SEL);
+        this.removeTableSelection();
         if (!event.shiftKey && event.keyCode !== 37) {
             let nextElement: HTMLElement | Element | Node = (!isNullOrUndefined(ele.nextSibling)) ? ele.nextSibling :
                 (!isNullOrUndefined(closest(ele, 'tr').nextSibling) ? closest(ele, 'tr').nextSibling.childNodes[0] :
@@ -442,7 +825,8 @@ export class Table {
             if (ele === nextElement && event.keyCode !== 39 && nextElement) {
                 ele.classList.add(classes.CLS_TABLE_SEL);
                 this.addRow(selection, event, true);
-                ele.classList.remove(classes.CLS_TABLE_SEL);
+                removeClassWithAttr([ele], classes.CLS_TABLE_SEL);
+                this.removeTableSelection();
                 nextElement = nextElement.parentElement.nextSibling ? nextElement.parentElement.nextSibling.firstChild as HTMLElement :
                     nextElement.parentElement.firstChild;
                 // eslint-disable-next-line
@@ -482,7 +866,8 @@ export class Table {
             return;
         }
         event.preventDefault();
-        ele.classList.remove(classes.CLS_TABLE_SEL);
+        removeClassWithAttr([ele], classes.CLS_TABLE_SEL);
+        this.removeTableSelection();
         if (event.keyCode === 40) {
             ele = (!isNullOrUndefined(closest(ele, 'tr').nextElementSibling)) ?
                 (closest(ele, 'tr').nextElementSibling as Element).children[(ele as HTMLTableDataCellElement).cellIndex] as HTMLElement :
@@ -512,6 +897,7 @@ export class Table {
             (selectedCells[i as number] as HTMLElement).style.backgroundColor = args.item.value;
         }
         this.parent.formatter.saveData();
+        this.hideTableQuickToolbar();
     }
 
     private hideTableQuickToolbar(): void {
@@ -553,8 +939,8 @@ export class Table {
             const closestTable: Element = closest(target, 'table');
             const startNode: HTMLElement = this.parent.getRange().startContainer.parentElement;
             const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;
-            const isAnchorEle = this.getAnchorNode(target);
-            const currentTime = new Date().getTime();
+            const isAnchorEle: HTMLElement = this.getAnchorNode(target);
+            const currentTime: number = new Date().getTime();
             if (target && target.nodeName !== 'A' && isAnchorEle.nodeName !== 'A' && target.nodeName !== 'IMG' && target.nodeName !== 'VIDEO' && !target.classList.contains(classes.CLS_CLICKELEM) &&
                 target.nodeName !== 'AUDIO' && startNode === endNode && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
@@ -593,7 +979,7 @@ export class Table {
         Array.prototype.forEach.call(list, (item: HTMLElement): void => {
             const parentIndex: number = Array.prototype.slice.call(item.parentElement.parentElement.children).indexOf(item.parentElement);
             const cellIndex: number = Array.prototype.slice.call(item.parentElement.children).indexOf(item);
-            removeClass([item], 'e-active');
+            removeClassWithAttr([item], 'e-active');
             if (parentIndex <= row && cellIndex <= col) {
                 addClass([item], 'e-active');
             }
@@ -601,14 +987,20 @@ export class Table {
         this.tblHeader.innerHTML = (col + 1) + 'x' + (row + 1);
     }
 
-    // eslint-disable-next-line
-    private tableMouseUp(e?: MouseEvent): void {
-        EventHandler.remove(this.curTable, 'mousemove', this.tableMove);
+    private tableMouseUp(): void {
+        this.unwireTableSelectionEvents();
+        this.isTableMoveActive = false;
+    }
+
+    private tableMouseLeave(): void {
+        this.unwireTableSelectionEvents();
+        this.isTableMoveActive = false;
+        this.resetTableSelection();
     }
 
     // eslint-disable-next-line
     private tableCellLeave(e?: MouseEvent): void {
-        removeClass(this.dlgDiv.querySelectorAll('.e-rte-tablecell'), 'e-active');
+        removeClassWithAttr(this.dlgDiv.querySelectorAll('.e-rte-tablecell'), 'e-active');
         addClass([this.dlgDiv.querySelector('.e-rte-tablecell')], 'e-active');
         this.tblHeader.innerHTML = 1 + 'x' + 1;
     }
@@ -655,8 +1047,15 @@ export class Table {
         proxy.parent.formatter.process(
             proxy.parent, selectionObj.args, (selectionObj.args as ClickEventArgs).originalEvent, value);
         (proxy.contentModule.getEditPanel() as HTMLElement).focus();
-        window.scrollTo(x,y);
+        window.scrollTo(x, y);
         proxy.parent.on(events.mouseDown, proxy.cellSelect, proxy);
+        const selection: Selection = proxy.parent.formatter.editorManager.nodeSelection.get(proxy.contentModule.getDocument());
+        if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.anchorNode) &&
+            selection.anchorNode.nodeType === Node.ELEMENT_NODE && ((selection.anchorNode as HTMLElement).tagName === 'TD'
+            || (selection.anchorNode as HTMLElement).tagName === 'TH')) {
+            proxy.curTable = closest(selection.anchorNode, 'table') as HTMLTableElement;
+            proxy.activeCell = selection.anchorNode as HTMLElement;
+        }
     }
 
     private cellSelect(e: ITableNotifyArgs): void {
@@ -664,16 +1063,28 @@ export class Table {
         const tdNode: Element = closest(target, 'td,th') as HTMLTableCellElement;
         target = (target.nodeName !== 'TD' && tdNode && this.parent.contentModule.getEditPanel().contains(tdNode)) ?
             tdNode as HTMLTableCellElement : target;
+        if (!isNOU(this.activeCell) && (e.args as MouseEvent).shiftKey && !isNOU(target) && !isNOU(target.tagName)
+            && (target.tagName === 'TD' || target.tagName === 'TH') && this.activeCell !== target) {
+            this.parent.formatter.editorManager.observer.notify('TABLE_MOVE', { event: e.args, selectNode: [this.activeCell] });
+            (e.args as MouseEvent).preventDefault();
+            return;
+        }
         if (!(this.parent.quickToolbarSettings.showOnRightClick && (e.args as MouseEvent).which === 3 &&
             target.classList.contains(classes.CLS_TABLE_SEL))) {
-            removeClass(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_SEL);
+            if (this.isTableMoveActive) {
+                this.unwireTableSelectionEvents();
+                this.isTableMoveActive = false;
+            }
+            this.activeCell = null;
+            this.removeCellSelectClasses();
+            this.removeTableSelection();
         }
         if (target && (target.tagName === 'TD' || target.tagName === 'TH')) {
             addClass([target], classes.CLS_TABLE_SEL);
             this.activeCell = target;
             this.curTable = (this.curTable) ? this.curTable : closest(target, 'table') as HTMLTableElement;
-            EventHandler.add(this.curTable, 'mousemove', this.tableMove, this);
-            EventHandler.add(this.curTable, 'mouseup', this.tableMouseUp, this);
+            this.wireTableSelectionEvents();
+            this.isTableMoveActive = true;
             this.removeResizeElement();
             if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
                 detach(this.helper);
@@ -685,12 +1096,36 @@ export class Table {
         }
     }
 
+    private wireTableSelectionEvents() : void {
+        EventHandler.add(this.curTable, 'mousemove', this.tableMove, this);
+        EventHandler.add(this.curTable, 'mouseup', this.tableMouseUp, this);
+        EventHandler.add(this.curTable, 'mouseleave', this.tableMouseLeave, this);
+    }
+
+    private unwireTableSelectionEvents() : void {
+        EventHandler.remove(this.curTable, 'mousemove', this.tableMove);
+        EventHandler.remove(this.curTable, 'mouseup', this.tableMouseUp);
+        EventHandler.remove(this.curTable, 'mouseleave', this.tableMouseLeave);
+    }
+
+    private removeCellSelectClasses() : void {
+        removeClassWithAttr(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_SEL_END);
+        removeClassWithAttr(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_MULTI_CELL);
+        removeClassWithAttr(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_SEL);
+    }
+
     private tableMove(event: MouseEvent) : void {
         this.parent.formatter.editorManager.observer.notify('TABLE_MOVE', {event: event , selectNode : [this.activeCell]});
     }
 
     private resizeHelper(e: PointerEvent | TouchEvent): void {
         if (this.parent.readonly) {
+            return;
+        }
+        if (this.isTableMoveActive) {
+            return;
+        }
+        if (e && (e as PointerEvent).buttons && (e as PointerEvent).buttons > 0) {
             return;
         }
         const target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
@@ -736,10 +1171,10 @@ export class Table {
             colReEle.classList.add(classes.CLS_RTE_TABLE_RESIZE, classes.CLS_TB_COL_RES);
             if (columns.length === i) {
                 colReEle.style.cssText = 'height: ' + height + 'px; width: 4px; top: ' + pos.top +
-                'px; left:' + (pos.left + this.calcPos(columns[i - 1] as HTMLElement).left + (columns[i - 1] as HTMLElement).offsetWidth - 2) + 'px;';
+                'px; left:' + ((columns[i - 1].classList.contains('e-multi-cells-select') ? 0 : pos.left) + this.calcPos(columns[i - 1] as HTMLElement).left + (columns[i - 1] as HTMLElement).offsetWidth - 2) + 'px;';
             } else {
                 colReEle.style.cssText = 'height: ' + height + 'px; width: 4px; top: ' + pos.top +
-                'px; left:' + (pos.left + this.calcPos(columns[i as number] as HTMLElement).left - 2) + 'px;';
+                'px; left:' + ((columns[i as number].classList.contains('e-multi-cells-select') ? 0 : pos.left) + this.calcPos(columns[i as number] as HTMLElement).left - 2) + 'px;';
             }
             this.contentModule.getEditPanel().appendChild(colReEle);
         }
@@ -753,7 +1188,7 @@ export class Table {
             const rowPosLeft: number = !isNOU(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '' ?
                 0 : this.calcPos(rows[i as number] as HTMLElement).left;
             rowReEle.style.cssText = 'width: ' + width + 'px; height: 4px; top: ' +
-                (this.calcPos(rows[i as number] as HTMLElement).top + pos.top + (rows[i as number] as HTMLElement).offsetHeight - 2) +
+                (this.calcPos(rows[i as number] as HTMLElement).top + (rows[i as number].classList.contains('e-multi-cells-select') ? 0 : pos.top) + (rows[i as number] as HTMLElement).offsetHeight - 2) +
                 'px; left:' + (rowPosLeft + pos.left) + 'px;';
             this.contentModule.getEditPanel().appendChild(rowReEle);
         }
@@ -848,7 +1283,8 @@ export class Table {
             this.resetResizeHelper(this.curTable);
             e.preventDefault();
             this.parent.preventDefaultResize(e as PointerEvent);
-            removeClass(this.curTable.querySelectorAll('td,th'), classes.CLS_TABLE_SEL);
+            removeClassWithAttr(this.curTable.querySelectorAll('td,th'), classes.CLS_TABLE_SEL);
+            this.removeTableSelection();
             this.pageX = this.getPointX(e);
             this.pageY = this.getPointY(e);
             this.resizeBtnInit();
@@ -1067,7 +1503,7 @@ export class Table {
                         currentTableWidth =  this.getCurrentTableWidth(this.curTable.offsetWidth, this.parent.inputElement.offsetWidth);
                     }
                     const currentCol: HTMLTableDataCellElement = this.calMaxCol(this.curTable)[this.colIndex];
-                    let currentColResizableWidth: number = this.getCurrentColWidth(currentCol, tableWidth);
+                    const currentColResizableWidth: number = this.getCurrentColWidth(currentCol, tableWidth);
                     if (this.currentColumnResize === 'first') {
                         mouseX = mouseX - 0.75; //This was done for to make the gripper and the table first/last column will be close.
                         this.removeResizeElement();
@@ -1152,13 +1588,13 @@ export class Table {
                     this.parent.preventDefaultResize(e as PointerEvent);
                     const tableTrElementPixel: number[] = [];
                     const currentTableTrElement: NodeListOf<Element> = this.curTable.querySelectorAll('tr');
-                    for (let i:number = 0; i < currentTableTrElement.length; i++) {
+                    for (let i: number = 0; i < currentTableTrElement.length; i++) {
                         if (this.rowEle !== currentTableTrElement[i as number]) {
                             tableTrElementPixel[i as number] = (parseFloat(currentTableTrElement[i as number].clientHeight.toString()));
                         }
                     }
                     this.curTable.style.height = (parseFloat(this.curTable.clientHeight.toString()) + ((mouseY > 0) ? 0 : mouseY)) + 'px';
-                    for (let i:number = 0; i < currentTableTrElement.length; i++) {
+                    for (let i: number = 0; i < currentTableTrElement.length; i++) {
                         if (this.rowEle === currentTableTrElement[i as number]) {
                             (currentTableTrElement[i as number] as HTMLElement).style.height = (parseFloat(currentTableTrElement[i as number].clientHeight.toString()) + mouseY) + 'px';
                         }
@@ -1223,13 +1659,13 @@ export class Table {
     private findFirstLastColCells(table: HTMLTableElement, isFirst: boolean): HTMLTableDataCellElement[] {
         const resultColumns: HTMLTableDataCellElement[] = [];
         const rows: HTMLCollectionOf<HTMLTableRowElement> = (table as HTMLTableElement).rows;
-        const rowSpanCellIndexs: string [] = new Array();
+        const rowSpanCellIndexs: string [] = [];
         for (let i : number = 0; i < rows.length; i++) {
             const cellIndex: number = isFirst ? 0 : rows[i as number].cells.length - 1;
             const column: HTMLTableCellElement = rows[i as number].cells[cellIndex as number];
             for (let rowSpan: number = 1; rowSpan < column.rowSpan; rowSpan++)
             {
-                const key: string =`${i + rowSpan}-${cellIndex}`;
+                const key: string = `${i + rowSpan}-${cellIndex}`;
                 rowSpanCellIndexs.push(key);
             }
             const spannedCellKey: string = `${i}-${cellIndex}`;
@@ -1264,13 +1700,14 @@ export class Table {
         this.pageX = null;
         this.pageY = null;
         this.moveEle = null;
-        const currentTableTrElement: NodeListOf<Element> = this.curTable.querySelectorAll("tr");
+        const currentTableTrElement: NodeListOf<Element> = this.curTable.querySelectorAll('tr');
         const tableTrPercentage: number[] = [];
-        for (let i:number = 0; i < currentTableTrElement.length; i++) {
-            const percentage = (parseFloat(currentTableTrElement[i as number].clientHeight.toString()) / parseFloat(this.curTable.clientHeight.toString())) * 100;
+        for (let i: number = 0; i < currentTableTrElement.length; i++) {
+            const percentage: number = (parseFloat(currentTableTrElement[i as number].clientHeight.toString())
+                / parseFloat(this.curTable.clientHeight.toString())) * 100;
             tableTrPercentage[i as number] = percentage;
         }
-        for (let i:number = 0; i < currentTableTrElement.length; i++) {
+        for (let i: number = 0; i < currentTableTrElement.length; i++) {
             if ((currentTableTrElement[i as number] as HTMLElement).parentElement.nodeName === 'THEAD') {
                 (currentTableTrElement[i as number] as HTMLElement).parentElement.style.height = tableTrPercentage[i as number] + '%';
                 (currentTableTrElement[i as number] as HTMLElement).style.height = tableTrPercentage[i as number] + '%';
@@ -1434,6 +1871,9 @@ export class Table {
         if (this.parent.inlineMode.enable && this.editdlgObj) {
             this.editdlgObj.hide();
         }
+        if (!isNOU(this.parent) && !isNOU(this.parent.contentModule) && !isNOU(this.parent.contentModule.getEditPanel())) {
+            this.removeResizeElement();
+        }
     }
 
     private docClick(e: { [key: string]: object }): void {
@@ -1446,7 +1886,7 @@ export class Table {
                 this.popupObj.hide();
             }
             if (this.editdlgObj) {
-                this.parent.notify(events.documentClickClosedBy, { closedBy: "outside click" });
+                this.parent.notify(events.documentClickClosedBy, { closedBy: 'outside click' });
                 this.editdlgObj.hide();
             }
             this.parent.isBlur = true;
@@ -1459,7 +1899,11 @@ export class Table {
             !target.offsetParent.classList.contains('e-quick-dropdown') &&
             !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')
             && !closest(target, '.e-rte-elements')) {
-            removeClass(this.parent.inputElement.querySelectorAll('table td'), classes.CLS_TABLE_SEL);
+            const isToolbarClick: boolean = target && target.closest('.e-toolbar') ? true : false;
+            if (!isToolbarClick) {
+                this.removeCellSelectClasses();
+            }
+            this.removeTableSelection();
             if (!Browser.isIE) {
                 this.hideTableQuickToolbar();
             }
@@ -1477,10 +1921,9 @@ export class Table {
         for (let row: number = 0; row < 3; row++) {
             rowDiv = this.parent.createElement('div', { className: 'e-rte-table-row' + this.parent.getCssClass(true), attrs: { 'data-column': '' + row } });
             for (let col: number = 0; col < 10; col++) {
-                const display: string = (row > 2) ? 'none' : 'inline-block';
                 tableCell = this.parent.createElement('div', { className: 'e-rte-tablecell e-default' + this.parent.getCssClass(true), attrs: { 'data-cell': '' + col } });
                 rowDiv.appendChild(tableCell);
-                tableCell.style.display = display;
+                tableCell.style.display = 'inline-block';
                 if (col === 0 && row === 0) {
                     addClass([tableCell], 'e-active');
                 }
@@ -1597,7 +2040,7 @@ export class Table {
         }
         const tableDialog: HTMLElement = this.parent.createElement('div', {
             className: 'e-rte-edit-table' + this.parent.getCssClass(true), id: this.rteID + '_tabledialog' });
-        this.parent.element.appendChild(tableDialog);
+        this.parent.rootContainer.appendChild(tableDialog);
         const insert: string = this.l10n.getConstant('dialogInsert');
         const cancel: string = this.l10n.getConstant('dialogCancel');
         const header: string = this.l10n.getConstant('tabledialogHeader');
@@ -1678,10 +2121,10 @@ export class Table {
             }
         }
         table.cellSpacing = (dialogEle.querySelector('.e-cell-spacing') as HTMLInputElement).value;
-        if (!isNOU(table.cellSpacing) || table.cellSpacing !== '0')  {
+        if (!isNOU(table.cellSpacing) && table.cellSpacing !== '0') {
             addClass([table], classes.CLS_TABLE_BORDER);
         } else {
-            removeClass([table], classes.CLS_TABLE_BORDER);
+            removeClassWithAttr([table], classes.CLS_TABLE_BORDER);
         }
         this.parent.formatter.saveData();
         this.editdlgObj.hide({ returnValue: true } as Event);
@@ -1761,7 +2204,7 @@ export class Table {
         return 'table';
     }
 
-    private afterKeyDown(e: KeyboardEventArgs): void {
+    private afterKeyDown(): void {
         if (this.curTable) {
             setTimeout(() => {
                 this.updateResizeIconPosition();
@@ -1770,7 +2213,7 @@ export class Table {
     }
 
     private updateResizeIconPosition(): void {
-        const tableReBox: HTMLElement = this.parent.contentModule.getEditPanel().querySelector('.e-table-box')
+        const tableReBox: HTMLElement = this.parent.contentModule.getEditPanel().querySelector('.e-table-box');
         if (!isNOU(tableReBox)) {
             const tablePosition: OffsetPosition = this.calcPos(this.curTable);
             tableReBox.style.cssText = 'top: ' + (tablePosition.top + parseInt(getComputedStyle(this.curTable).height, 10) - 4) +

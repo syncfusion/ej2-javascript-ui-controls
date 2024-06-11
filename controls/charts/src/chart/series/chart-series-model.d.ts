@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue, animationMode } from '@syncfusion/ej2-base';import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartSeriesType, ChartShape, SeriesValueType, SplineType, StepPosition } from '../utils/enum';import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';import { ConnectorModel } from '../../common/model/base-model';import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector, DragSettings } from '../../common/model/base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Chart } from '../chart';import { Axis, Column, Row } from '../axis/axis';import { Data } from '../../common/model/data';import { Offset } from '../../common/model/base';import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';import { seriesRender } from '../../common/model/constants';import { Alignment, EmptyPointMode, LabelPosition, LegendShape, SeriesCategories, ShapeType } from '../../common/utils/enum';import { BoxPlotMode, Segment } from '../utils/enum';import { sort, getVisiblePoints, setRange } from '../../common/utils/helper';import { Browser } from '@syncfusion/ej2-base';import { StockSeries } from '../../stock-chart/index';
+import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue, animationMode } from '@syncfusion/ej2-base';import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement, getElement } from '../../common/utils/helper';import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue} from '../../common/utils/helper';import { Rect, SvgRenderer, CanvasRenderer, Size } from '@syncfusion/ej2-svg-base';import { ChartSeriesType, ChartShape, SeriesValueType, SplineType, StepPosition } from '../utils/enum';import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';import { ConnectorModel } from '../../common/model/base-model';import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector, DragSettings } from '../../common/model/base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Chart } from '../chart';import { Axis, Column, Row } from '../axis/axis';import { Data } from '../../common/model/data';import { Offset } from '../../common/model/base';import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';import { seriesRender } from '../../common/model/constants';import { Alignment, EmptyPointMode, LabelPosition, LegendShape, SeriesCategories, ShapeType } from '../../common/utils/enum';import { BoxPlotMode, Segment } from '../utils/enum';import { getVisiblePoints, setRange } from '../../common/utils/helper';import { Browser } from '@syncfusion/ej2-base';import { StockSeries } from '../../stock-chart/index';import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
 
 /**
  * Interface for a class DataLabelSettings
@@ -257,40 +257,40 @@ export interface MarkerSettingsModel {
 export interface ParetoOptionsModel {
 
     /**
-     * The fill color of the pareto line that accepts value in hex and rgba as a valid CSS color string. By default, it will take color based on theme. 
-     * 
+     * The fill color of the pareto line that accepts value in hex and rgba as a valid CSS color string. By default, it will take color based on theme.
+     *
      * @default null
-     */ 
-    
+     */
+
     fill?: string;
 
     /**
      * Defines the width of the pareto line series.
-     * 
+     *
      * @default 1
-     */ 
+     */
 
     width?: number;
 
     /**
-     * Defines the pattern of dashes and gaps to stroke. 
-     * 
-     * @default '0' 
-     */ 
+     * Defines the pattern of dashes and gaps to stroke.
+     *
+     * @default '0'
+     */
 
     dashArray?: string;
 
     /**
-     * Options for displaying and customizing markers for individual points in a pareto line. 
+     * Options for displaying and customizing markers for individual points in a pareto line.
      */
 
     marker?: MarkerSettingsModel;
 
     /**
-     * By default, the axis for the Pareto line will be displayed, but this can be disabled by using the 'showAxis' property. 
-     * 
-     * @default true 
-     */ 
+     * By default, the axis for the Pareto line will be displayed, but this can be disabled by using the 'showAxis' property.
+     *
+     * @default true
+     */
 
     showAxis?: boolean;
 
@@ -1025,8 +1025,8 @@ export interface SeriesModel extends SeriesBaseModel{
     marker?: MarkerSettingsModel;
 
     /**
-     * Options for customizing the pareto line series. 
-     */ 
+     * Options for customizing the pareto line series.
+     */
     paretoOptions?: ParetoOptionsModel;
 
     /**
@@ -1224,9 +1224,9 @@ export interface SeriesModel extends SeriesBaseModel{
     sumIndexes?: number[];
 
     /**
-     * Defines the position for the steps in the step line, step area, and step range area chart types. 
-     * * Left: Steps start from the left side of the 2nd point. 
-     * * Center: Steps start between the data points. 
+     * Defines the position for the steps in the step line, step area, and step range area chart types.
+     * * Left: Steps start from the left side of the 2nd point.
+     * * Center: Steps start between the data points.
      * * Right: Steps start from the right side of the 1st point. 
      *
      * @default 'Left'
@@ -1243,5 +1243,35 @@ export interface SeriesModel extends SeriesBaseModel{
      * To render the column series points with particular rounded corner.
      */
     cornerRadius?: CornerRadiusModel;
+
+    /**
+     * Adds a data point to the data source.
+     *
+     * @function addPoint
+     * @param {Object} dataPoint - The data point to be added.
+     * @param {number} duration - The duration for the animation.
+     * @returns {void}
+     */
+    addPoint?(dataPoint: Object, duration?: number) : void
+
+    /**
+     * Removes a data point from the series data source at the specified index.
+     *
+     * @function removePoint
+     * @param {number} index - The index of the data point to be removed.
+     * @param {number} duration - The duration for the animation.
+     * @returns {void}
+     */
+    removePoint?(index: number, duration?: number) : void
+
+    /**
+     * Sets the data source with the provided data.
+     *
+     * @function setData
+     * @param {Object[]} data - An array of objects representing the data points.
+     * @param {number} duration - The duration for the animation.
+     * @returns {void}
+     */
+    setData?(data: Object[], duration?: number) : void
 
 }

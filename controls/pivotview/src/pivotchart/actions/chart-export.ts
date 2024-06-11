@@ -46,13 +46,13 @@ export class ChartExport {
      * @param {boolean} isMultipleExport - Allows to export multiple tables and charts into a single PDF document.
      * @param {Object} pdfDoc - Allows the export of an external PDF document along with current PDF document.
      * @param {boolean} isBlob - Allows the PDF document to be saved as blob data.
-     * @returns {Promise<any>}
+     * @returns {Promise<Object>}
      * @hidden
      */
 
     public pdfChartExport(
         pdfExportProperties?: PdfExportProperties, pdfDoc?: Object, isMultipleExport?: boolean, isBlob?: boolean
-    ): Promise<any> {   // eslint-disable-line @typescript-eslint/no-explicit-any
+    ): Promise<Object> {
         const controls: (Chart | AccumulationChart)[] = [this.parent.chart];
         const chartInfo: IChartInfo = this.getChartInfo(controls);
         const width: number = chartInfo.width;
@@ -72,8 +72,7 @@ export class ChartExport {
         const image: HTMLImageElement = new Image();
         const ctx: CanvasRenderingContext2D = element.getContext('2d');
         image.src = url;
-        // eslint-disable-next-line @typescript-eslint/tslint/config
-        return new Promise((resolve) => {
+        return new Promise((resolve: Function) => {
             image.onload = (() => {
                 let pdfDocument: PdfDocument;
                 if (!isNullOrUndefined(pdfDoc)) {
@@ -136,7 +135,7 @@ export class ChartExport {
     private exportPdf(
         element: HTMLCanvasElement, pdfDocument: PdfDocument, isMultipleExport?: boolean, isBlob?: boolean, width?: number,
         height?: number, pdfExportProperties?: PdfExportProperties
-    ): Promise<any> {   // eslint-disable-line @typescript-eslint/no-explicit-any
+    ): Promise<Object> {
         const documentSection: PdfSection = pdfDocument.sections.add() as PdfSection;
         const documentWidth: number = pdfDocument.pageSettings.width;
         let documentHeight: number = pdfDocument.pageSettings.height;
@@ -200,8 +199,7 @@ export class ChartExport {
         };
         this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
         return new Promise(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            pdfDocument;
+            pdfDocument as PdfDocument;
         });
     }
 

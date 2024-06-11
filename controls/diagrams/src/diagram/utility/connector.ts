@@ -138,11 +138,21 @@ function terminateConnection(
     }
     if (sourcePort !== undefined) {
         const port: PointModel = { x: sourcePort.offsetX, y: sourcePort.offsetY };
-        source.direction = getPortDirection(port, sourceCorners, sourceNode.bounds, false);
+        if (sourcePort.connectionDirection === 'Left' || sourcePort.connectionDirection === 'Top' || sourcePort.connectionDirection === 'Bottom' || sourcePort.connectionDirection === 'Right') {
+            source.direction = sourcePort.connectionDirection;
+        }
+        else {
+            source.direction = getPortDirection(port, sourceCorners, sourceNode.bounds, false);
+        }
     }
     if (targetPort !== undefined) {
         const tarPortPt: PointModel = { x: targetPort.offsetX, y: targetPort.offsetY };
-        target.direction = getPortDirection(tarPortPt, targetCorners, targetNode.bounds, false);
+        if (targetPort.connectionDirection === 'Left' || targetPort.connectionDirection === 'Right' || targetPort.connectionDirection === 'Bottom' || targetPort.connectionDirection === 'Top') {
+            target.direction = targetPort.connectionDirection;
+        }
+        else {
+            target.direction = getPortDirection(tarPortPt, targetCorners, targetNode.bounds, false);
+        }
     }
 
     if (element.type === 'Bezier') {
@@ -563,17 +573,17 @@ function pointToPort(element: Connector, source: End, target: End): PointModel[]
             point = orthoConnection2Segment(source, target);
         }
     } else {
-        if ((!element.selectedSegmentIndex) && element.sourceWrapper !== undefined && element.targetWrapper !== undefined && element.targetPortWrapper !== undefined &&
-            ((source.direction === 'Left' || source.direction === 'Right') &&
-                (source.point.y >= source.corners.top && source.point.y <= source.corners.bottom)
+        if ((!element.selectedSegmentIndex) && element.sourceWrapper !== undefined && element.targetWrapper !== undefined
+            && element.targetPortWrapper !== undefined && ((source.direction === 'Left' || source.direction === 'Right')
+                && (source.point.y >= source.corners.top && source.point.y <= source.corners.bottom)
                 && (target.direction === 'Top' || target.direction === 'Bottom') &&
                 (target.corners.center.x === source.corners.center.x))) {
             source.direction = (target.direction === 'Top') ? 'Bottom' : 'Top';
             length = (target.direction === 'Top') ? (source.corners.bottom - source.point.y + 20) :
                 (source.point.y - source.corners.top + 20);
             point = orthoConnection3Segment(element, source, target, length);
-        } else if ((!element.selectedSegmentIndex) && element.sourceWrapper !== undefined && element.targetWrapper !== undefined && element.targetPortWrapper !== undefined &&
-            ((source.direction === 'Top' || source.direction === 'Bottom') &&
+        } else if ((!element.selectedSegmentIndex) && element.sourceWrapper !== undefined && element.targetWrapper !== undefined
+            && element.targetPortWrapper !== undefined && ((source.direction === 'Top' || source.direction === 'Bottom') &&
                 (source.point.x >= source.corners.left && source.point.x <= source.corners.right) &&
                 (target.direction === 'Left' || target.direction === 'Right') && (target.corners.center.y === source.corners.center.y))) {
             source.direction = (target.direction === 'Left') ? 'Right' : 'Left';
@@ -1366,9 +1376,8 @@ function findIntermeditatePoints(
                     } else {
                         // EJ2-65063 - If point length is greater then 2 means then empty the last segment points and set it as two points instead of four points
                         if (j === point.length - 1 && point.length > 2 && ele.segments.length > 2) {
-                            let point2: PointModel;
                             // EJ2-69304 - Change the point calculation to work for all port combination
-                            point2 = { x: point[parseInt(j.toString(), 10)].x, y: source.point.y };
+                            const point2: PointModel = { x: point[parseInt(j.toString(), 10)].x, y: source.point.y };
                             // EJ2 - 65063 - Empty the segment points
                             seg.points = [];
                             // EJ2-69304 - Calculate the point for segment and manually push the point in segment point calculation
@@ -1546,7 +1555,7 @@ function findOrthoSegments(ele: Connector, source: End, target: End, extra?: num
  */
 
 export function findMargin(element:Connector):number{
-    var margin;
+    let margin;
     if(element.connectorSpacing>=13){
         margin=13;
     }
@@ -2056,8 +2065,9 @@ function getRightToTopSegmentCount(element: Connector, source: End, target: End,
     } else if (srcPort !== undefined && Math.abs(source.corners.right - target.corners.left) <= 5 &&
         Math.abs(srcPort.offsetY - target.corners.top) <= 5) {
         pts = NoOfSegments.Two;
-    } else if (tarPort !== undefined && source.corners.right < target.corners.left && Math.abs(tarPort.offsetX - source.corners.topCenter.x) >= 25 &&
-        source.corners.middleRight.y + source.margin.right < tarPort.offsetY) {
+    } else if (tarPort !== undefined && source.corners.right < target.corners.left
+        && Math.abs(tarPort.offsetX - source.corners.topCenter.x) >= 25
+        && source.corners.middleRight.y + source.margin.right < tarPort.offsetY) {
         pts = NoOfSegments.Two;
     } else if (source.corners.right < target.corners.left) {
         pts = NoOfSegments.Four;
@@ -2125,6 +2135,7 @@ function getRightToBottomSegmentCount(element: Connector, source: End, target: E
  * getBottomToTopSegmentCount method \
  *
  * @returns { NoOfSegments } getBottomToTopSegmentCount method .\
+ * @param {Connector} element - provide the connector value.
  * @param {End} source - provide the source value.
  * @param {End} target - provide the target  value.
  * @private
@@ -2564,7 +2575,8 @@ export function orthoConnection2Segment(source: End, target: End): PointModel[] 
  * @param {boolean} isBezier - provide the isBezier boolean value.
  * @private
  */
-function orthoConnection3Segment(element: Connector, source: End, target: End, extra?: number, allow?: boolean, isBezier: boolean = false): PointModel[] {
+function orthoConnection3Segment(element: Connector, source: End, target: End, extra?: number,
+                                 allow?: boolean, isBezier: boolean = false): PointModel[] {
     if (!extra) {
         extra = 20;
     }
@@ -2780,7 +2792,8 @@ function orthoConnection5Segment(source: End, target: End, extra: number = 20, i
  * @param {boolean} isBezier - provide the target  value.
  * @private
  */
-function orthoConnection4Segment(source: End, target: End, prevDir: string, interPt: PointModel[], e: number = 20, isBezier: boolean = false): PointModel[] {
+function orthoConnection4Segment(source: End, target: End, prevDir: string, interPt: PointModel[],
+                                 e: number = 20, isBezier: boolean = false): PointModel[] {
     let segmentValue: PointModel;
     if (prevDir === undefined) {
         source.margin = { left: 2, right: 2, top: 2, bottom: 2 };

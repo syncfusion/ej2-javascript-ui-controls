@@ -314,13 +314,15 @@ export class Adaptor {
             this.reconstructData = [];
             for (let index: number = 0; index < tempDataCollection.length; index++) {
                 currentDataXIndex = this.getSplitDataValue(
-                    tempDataCollection[index as number], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
+                    tempDataCollection[index as number], adaptordata, xLabels, !isNullOrUndefined(adaptordata.xDataMapping) ?
+                        adaptordata.xDataMapping.split('.') : null, this.heatMap.xAxis.valueType);
                 if (currentDataXIndex !== -1) {
                     while (!this.reconstructData[currentDataXIndex as number]) {
                         this.reconstructData.push([]);
                     }
                     currentDataYIndex = this.getSplitDataValue(
-                        tempDataCollection[index as number], adaptordata, yLabels, adaptordata.yDataMapping.split('.'), this.heatMap.yAxis.valueType);
+                        tempDataCollection[index as number], adaptordata, yLabels, !isNullOrUndefined(adaptordata.yDataMapping) ?
+                            adaptordata.yDataMapping.split('.') : null, this.heatMap.yAxis.valueType);
                     if (currentDataYIndex !== -1) {
                         while (isNullOrUndefined(this.reconstructData[currentDataXIndex as number][currentDataYIndex as number])) {
                             this.reconstructData[currentDataXIndex as number].push('');
@@ -333,7 +335,8 @@ export class Adaptor {
                                     tempDataCollection[index as number], adaptordata, null, adaptordata.bubbleDataMapping.color.split('.'), '')];
                         } else {
                             this.reconstructData[currentDataXIndex as number][currentDataYIndex as number] = this.getSplitDataValue(
-                                tempDataCollection[index as number], adaptordata, null, adaptordata.valueMapping.split('.'), '');
+                                tempDataCollection[index as number], adaptordata, null, !isNullOrUndefined(adaptordata.valueMapping) ?
+                                    adaptordata.valueMapping.split('.') : null, '');
                         }
                     }
                 }
@@ -412,15 +415,16 @@ export class Adaptor {
         const dateParser: Function = this.heatMap.intl.getDateParser(option);
         const dateFormatter: Function = this.heatMap.intl.getDateFormat(option);
         this.tempSplitDataCollection = tempSplitDataCollection;
-        for (let splitIndex: number = 0; splitIndex < tempSplitData.length; splitIndex++) {
+        for (let splitIndex: number = 0; splitIndex < (!isNullOrUndefined(tempSplitData) ? tempSplitData.length : 0); splitIndex++) {
             value = !isNullOrUndefined(labels) ? (!(valueType === 'DateTime') ?
-                labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]) : 
-                (typeof this.tempSplitDataCollection[tempSplitData[splitIndex as number]] === 'string' ? 
-                labels.map(Number).indexOf(Date.parse(dateParser(dateFormatter(new Date(
-                    DataUtil.parse.parseJson({ val: this.tempSplitDataCollection[tempSplitData[splitIndex as number]] }).val
-                ))))) :
+                labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]) :
+                ((typeof this.tempSplitDataCollection[tempSplitData[splitIndex as number]] === 'string' ||
+                typeof this.tempSplitDataCollection[tempSplitData[splitIndex as number]] === 'object') ?
+                    labels.map(Number).indexOf(Date.parse(dateParser(dateFormatter(new Date(
+                        DataUtil.parse.parseJson({ val: this.tempSplitDataCollection[tempSplitData[splitIndex as number]] }).val
+                    ))))) :
                 // eslint-disable-next-line max-len
-                labels.map(Number).indexOf(+new Date(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]).setHours(0, 0, 0, 0)))) : null;
+                    labels.map(Number).indexOf(+new Date(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]).setHours(0, 0, 0, 0)))) : null;
             if (!isNullOrUndefined(this.tempSplitDataCollection)) {
                 this.tempSplitDataCollection = value !== -1 && !isNullOrUndefined(labels) ?
                     this.tempSplitDataCollection : this.tempSplitDataCollection[tempSplitData[splitIndex as number]];
@@ -453,7 +457,8 @@ export class Adaptor {
             this.reconstructData = [];
             for (let xindex: number = 0; xindex < tempDataCollection.length; xindex++) {
                 currentDataXIndex = this.getSplitDataValue(
-                    tempDataCollection[xindex as number], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
+                    tempDataCollection[xindex as number], adaptordata, xLabels, !isNullOrUndefined(adaptordata.xDataMapping) ?
+                        adaptordata.xDataMapping.split('.') : null, this.heatMap.xAxis.valueType);
                 if (currentDataXIndex !== -1) {
                     while (!this.reconstructData[currentDataXIndex as number]) {
                         this.reconstructData.push([]);
@@ -482,11 +487,14 @@ export class Adaptor {
      * @returns {void}
      * @private
      */
-
-    public destroy(): void {
-        /**
-         * No Lines
-         */
+    protected destroy(): void {
+        this.reconstructData = null;
+        this.reconstructedXAxis = null;
+        this.reconstructedYAxis = null;
+        this.adaptiveXMinMax = null;
+        this.adaptiveYMinMax = null;
+        this.tempSplitDataCollection = null;
+        this.heatMap = null;
     }
 
     /**

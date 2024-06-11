@@ -1,11 +1,5 @@
-/* eslint-disable jsdoc/check-param-names */
-/* eslint-disable @typescript-eslint/tslint/config */
-/* eslint-disable max-len */
-/* eslint-disable no-case-declarations */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
-import { DateFormatOptions, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { DateFormatOptions, createElement, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Axis, Row, Column, VisibleLabels } from '../axis/axis';
 import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation, withInBounds, rotateTextSize } from '../../common/utils/helper';
@@ -28,7 +22,8 @@ export class CartesianAxisLayoutPanel {
     private chart: Chart;
     private initialClipRect: Rect;
     private htmlObject: HTMLElement;
-    private element: Element;
+    /** @private */
+    public element: Element;
     private padding: number;
     /** @private */
     public leftSize: number;
@@ -40,7 +35,11 @@ export class CartesianAxisLayoutPanel {
     public bottomSize: number;
     /** @private */
     public seriesClipRect: Rect;
-    /** @private */
+    /**
+     * Constructor for creating the chart.
+     *
+     * @param {Chart} chartModule - Specifies the Chart model.
+     * @private */
     constructor(chartModule?: Chart) {
         this.chart = chartModule;
         this.padding = 5;
@@ -160,7 +159,7 @@ export class CartesianAxisLayoutPanel {
      */
 
     public measureDefinition(definition: Row | Column, chart: Chart, size: Size): void {
-        let ele: number; 
+        let ele: number;
         for (const axis of definition.axes) {
             ele = axis.scrollbarSettings.height;
             axis.scrollBarHeight = chart.scrollBarModule && chart.zoomModule && chart.zoomSettings.enableScrollbar &&
@@ -183,6 +182,7 @@ export class CartesianAxisLayoutPanel {
     /**
      * Measure the axis.
      *
+     * @param {Rect} rect - The rect for measuring the axis.
      * @returns {void}
      * @private
      */
@@ -368,7 +368,7 @@ export class CartesianAxisLayoutPanel {
     }
     private updateCrossAt(axis: Axis, crossAt: Object): number {
         switch (axis.valueType) {
-        case 'DateTime':
+        case 'DateTime': {
             const option: DateFormatOptions = {
                 skeleton: 'full',
                 type: 'dateTime'
@@ -377,7 +377,7 @@ export class CartesianAxisLayoutPanel {
             const dateFormatter: Function = this.chart.intl.getDateFormat(option);
             return Date.parse(dateParser(dateFormatter(new Date(
                 DataUtil.parse.parseJson({ val: crossAt }).val))));
-
+        }
         case 'Category':
             return parseFloat(<string>crossAt) ? parseFloat(<string>crossAt) : axis.labels.indexOf(<string>crossAt);
         case 'Logarithmic':
@@ -487,7 +487,6 @@ export class CartesianAxisLayoutPanel {
      * @returns {void}
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
     public renderAxes(): Element {
 
         const chart: Chart = this.chart;
@@ -520,85 +519,10 @@ export class CartesianAxisLayoutPanel {
             }
             if (!axisVisibility) { continue; }
             isInside = this.findAxisPosition(axis);
-            if (axis.orientation === 'Horizontal') {
+            this.drawAxis(axis, i, isInside, outsideElement, axisElement, axisLineElement);
+        }
+        this.drawPaneLines(chart, axisElement);
 
-                axis.updateCrossValue();
-
-                if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
-                    this.drawAxisLine(
-                        axis, i, axis.plotOffset, 0, 0, 0, axis.plotOffsetLeft, axis.plotOffsetRight, isInside ? outsideElement : this.element, axis.updatedRect
-                    );
-                }
-                if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0 || axis.minorTickLines.width > 0 || axis.minorGridLines.width > 0) {
-                    this.drawXAxisGridLine(
-                        axis, i, (isInside || axis.tickPosition === 'Inside') ? outsideElement : this.element, axis.updatedRect
-                    );
-                }
-                if (axis.visible && axis.internalVisibility) {
-                    this.drawXAxisLabels(
-                        axis, i, (isInside || axis.labelPosition === 'Inside') ? outsideElement : this.element,
-                        (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect)
-                    );
-                    this.drawXAxisBorder(
-                        axis, i, (isInside || axis.labelPosition === 'Inside') ? outsideElement : this.element,
-                        (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect)
-                    );
-                    this.drawXAxisTitle(
-                        axis, i, isInside ? outsideElement : this.element, (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect)
-                    );
-                }
-            } else {
-                axis.updateCrossValue();
-                if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
-                    this.drawAxisLine(axis, i, 0, axis.plotOffset, axis.plotOffsetBottom, axis.plotOffsetTop, 0, 0, isInside ? outsideElement : this.element, axis.updatedRect);
-                }
-                if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0 || axis.minorTickLines.width > 0 || axis.minorGridLines.width > 0) {
-                    this.drawYAxisGridLine(
-                        axis, i, (isInside || axis.tickPosition === 'Inside') ? outsideElement : this.element, axis.updatedRect
-                    );
-                }
-
-                if (axis.visible && axis.internalVisibility) {
-                    this.drawYAxisLabels(
-                        axis, i, (isInside || axis.labelPosition === 'Inside') ? outsideElement : this.element,
-                        (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect)
-                    );
-                    this.drawYAxisBorder(
-                        axis, i, (isInside || axis.labelPosition === 'Inside') ? outsideElement : this.element,
-                        (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect)
-                    );
-                    this.drawYAxisTitle(
-                        axis, i, isInside ? outsideElement : this.element, (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect)
-                    );
-                }
-            }
-            if (!this.chart.enableCanvas) {
-                axisElement.appendChild(this.element);
-                if (outsideElement && outsideElement.childNodes.length > 0) {
-                    axisLineElement.appendChild(outsideElement);
-                }
-            }
-            if (chart.scrollBarModule && ((chart.zoomSettings.enableScrollbar && axis.enableScrollbarOnZooming) ||
-                axis.scrollbarSettings.enable)) {
-                this.renderScrollbar(chart, axis);
-            }
-        }
-        this.element = chart.renderer.createGroup({ id: chart.element.id + 'DefinitionLine' });
-        for (let j: number = 0, len: number = chart.rows.length; j < len; j++) {
-            const row: Row = <Row>chart.rows[j as number];
-            if (row.border.color) {
-                this.drawBottomLine(row, j, true);
-            }
-        }
-        for (let j: number = 0, len: number = chart.columns.length; j < len; j++) {
-            const column: Column = <Column>chart.columns[j as number];
-            if (column.border.color) {
-                this.drawBottomLine(column, j, false);
-            }
-        }
-        if (!this.chart.enableCanvas) {
-            axisElement.appendChild(this.element);
-        }
         appendChildElement(chart.enableCanvas, chart.svgObject, axisElement, chart.redraw);
 
         return axisLineElement;
@@ -636,12 +560,96 @@ export class CartesianAxisLayoutPanel {
     }
 
     /**
+     * Draws pane lines for the specified chart.
+     *
+     * @param {Chart} chart -The chart for which pane lines are to be drawn.
+     * @param {Element} [axisElement] -Optional. The axis element to which the pane lines are associated.
+     * @returns {void}
+     * @private
+     */
+    public drawPaneLines(chart: Chart, axisElement?: Element): void {
+        this.element = chart.renderer.createGroup({ id: chart.element.id + 'DefinitionLine' });
+        for (let j: number = 0, len: number = chart.rows.length; j < len; j++) {
+            const row: Row = <Row>chart.rows[j as number];
+            if (row.border.color) {
+                this.drawBottomLine(row, j, true);
+            }
+        }
+        for (let j: number = 0, len: number = chart.columns.length; j < len; j++) {
+            const column: Column = <Column>chart.columns[j as number];
+            if (column.border.color) {
+                this.drawBottomLine(column, j, false);
+            }
+        }
+        axisElement = axisElement ? axisElement : getElement(chart.element.id + 'AxisInsideCollection');
+        if (!this.chart.enableCanvas) {
+            axisElement.appendChild(this.element);
+        }
+    }
+
+    /**
+     * Draws an axis for the specified axis configuration.
+     *
+     * @param {Axis} axis -The axis configuration to be drawn.
+     * @param {number} index -The index of the axis.
+     * @param {boolean} isInside -Indicates whether the axis is inside or outside the plot area.
+     * @param {Element} outsideElement -The element where the axis should be drawn if it's outside the plot area.
+     * @param {Element} axisElement -The element representing the axis.
+     * @param {Element} axisLineElement -The element representing the axis line.
+     * @returns {void}
+     */
+    public drawAxis(axis: Axis, index: number, isInside: boolean, outsideElement: Element,
+                    axisElement: Element, axisLineElement: Element): void {
+        axis.updateCrossValue();
+        let axisName: string = '';
+        if (axis.orientation === 'Horizontal') {
+            if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
+                this.drawAxisLine(
+                    axis, index, axis.plotOffset, 0, 0, 0, axis.plotOffsetLeft,
+                    axis.plotOffsetRight, isInside ? outsideElement : this.element, axis.updatedRect
+                );
+            }
+            axisName = 'X';
+        } else {
+            if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
+                this.drawAxisLine(axis, index, 0, axis.plotOffset, axis.plotOffsetBottom,
+                                  axis.plotOffsetTop, 0, 0, isInside ? outsideElement : this.element, axis.updatedRect);
+            }
+            axisName = 'Y';
+        }
+        if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0 || axis.minorTickLines.width > 0 ||
+            axis.minorGridLines.width > 0) {
+            this['draw' + axisName + 'AxisGridLine'](axis, index, (isInside || axis.tickPosition === 'Inside') ? outsideElement : this.element, axis.updatedRect);
+        }
+        if (axis.visible && axis.internalVisibility) {
+            this['draw' + axisName + 'AxisLabels'](axis, index, (isInside || axis.labelPosition === 'Inside') ? outsideElement : this.element,
+                                                   (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect));
+
+            this['draw' + axisName + 'AxisBorder'](axis, index, (isInside || axis.labelPosition === 'Inside') ? outsideElement : this.element,
+                                                   (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect));
+
+            this['draw' + axisName + 'AxisTitle'](axis, index, isInside ? outsideElement : this.element, (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect));
+        }
+        if (!this.chart.enableCanvas) {
+            axisElement.appendChild(this.element);
+            if (outsideElement && outsideElement.childNodes.length > 0) {
+                axisLineElement.appendChild(outsideElement);
+            }
+        }
+        if (this.chart.scrollBarModule && ((this.chart.zoomSettings.enableScrollbar && axis.enableScrollbarOnZooming) ||
+            axis.scrollbarSettings.enable)) {
+            this.renderScrollbar(this.chart, axis);
+        }
+    }
+
+    /**
      * To find the axis position
      *
      * @param {Axis} axis axis
      * @returns {boolean} axis position
+     * @private
      */
-    private findAxisPosition(axis: Axis): boolean {
+    public findAxisPosition(axis: Axis): boolean {
         return axis.crossAt !== null && axis.isInside(axis.crossInAxis.visibleRange);
     }
 
@@ -693,12 +701,17 @@ export class CartesianAxisLayoutPanel {
      * @param {number} index index
      * @param {number} plotX plotX
      * @param {number} plotY plotY
+     * @param {number} plotBottom plotBottom
+     * @param {number} plotTop plotTop
+     * @param {number} plotLeft plotLeft
+     * @param {number} plotRight plotRight
      * @param {Element} parent parent
      * @param {Rect} rect rect
      * @returns {void}
      */
     private drawAxisLine(
-        axis: Axis, index: number, plotX: number, plotY: number, plotBottom: number, plotTop: number, plotLeft: number, plotRight: number, parent: Element, rect: Rect
+        axis: Axis, index: number, plotX: number, plotY: number, plotBottom: number, plotTop: number, plotLeft: number,
+        plotRight: number, parent: Element, rect: Rect
     ): void {
         const chart: Chart = this.chart;
         let optionsLine: Object = {};
@@ -715,7 +728,7 @@ export class CartesianAxisLayoutPanel {
         };
 
         this.htmlObject = chart.renderer.drawPath(optionsLine) as HTMLElement;
-        appendChildElement(chart.enableCanvas, parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction);
+        appendChildElement(chart.enableCanvas, parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction, null, null, null, chart.duration);
     }
 
     /**
@@ -857,10 +870,11 @@ export class CartesianAxisLayoutPanel {
         if (isLabelInside) {
             labelPadding = !isLabelOnAxisLineLeft ? -padding : padding;
         } else {
-            labelPadding = !isLabelOnAxisLineLeft ? -padding + (chart.enableRtl ? -scrollBarHeight : scrollBarHeight) : padding + (chart.enableRtl ? -scrollBarHeight : scrollBarHeight);
+            labelPadding = !isLabelOnAxisLineLeft ? -padding + (chart.enableRtl ? -scrollBarHeight : scrollBarHeight) :
+                padding + (chart.enableRtl ? -scrollBarHeight : scrollBarHeight);
         }
         const sizeWidth: number[] = []; const breakLabelSizeWidth: number[] = [];
-        axis.visibleLabels.map(item => {
+        axis.visibleLabels.map((item: VisibleLabels) => {
             sizeWidth.push(item.size['width']);
             breakLabelSizeWidth.push(item.breakLabelSize['width']);
         });
@@ -898,16 +912,15 @@ export class CartesianAxisLayoutPanel {
                 pointY = pointY - maxLineWidth - pixel;
             } else if (axis.labelStyle.textAlignment === 'Near') {
                 pointY = pointY + maxLineWidth + pixel;
-            } else if (axis.labelStyle.textAlignment === 'Center') {
-                // eslint-disable-next-line no-self-assign
-                pointY = pointY;
             }
 
             // label X value adjustment (Start)
             if (isLabelInside) {
-                yAxisLabelX = labelPadding + ((angle === 0 ? elementSize.width : (isAxisBreakLabel ? breakLabelMaxWidth : LabelMaxWidth)) / 2);
+                yAxisLabelX = labelPadding + ((angle === 0 ? elementSize.width :
+                    (isAxisBreakLabel ? breakLabelMaxWidth : LabelMaxWidth)) / 2);
             } else {
-                yAxisLabelX = labelPadding - ((angle === 0 ? elementSize.width : (isAxisBreakLabel ? breakLabelMaxWidth : RotatedWidth)) / 2);
+                yAxisLabelX = labelPadding - ((angle === 0 ? elementSize.width :
+                    (isAxisBreakLabel ? breakLabelMaxWidth : RotatedWidth)) / 2);
             }
             pointX = isOpposed ? (rect.x - yAxisLabelX) : (rect.x + yAxisLabelX);
             if (isVerticalAngle) {
@@ -927,7 +940,7 @@ export class CartesianAxisLayoutPanel {
             case 'Shift':
                 if ((i === 0 || (isInverse && i === len - 1)) && options.y > rect.y + rect.height) {
                     options.y = pointY = rect.y + rect.height;
-                } else if (((i === len - 1) || (isInverse && i === 0)) && ((options.y < rect.y) || (options.y - elementSize.height / 2 < -1))) {
+                } else if (((i === len - 1) || (isInverse && i === 0)) && (options.y < rect.y || options.y - elementSize.height * 0.5 <= 0)) {
                     options.y = pointY = rect.y + elementSize.height * 0.5;
                 }
                 break;
@@ -947,7 +960,8 @@ export class CartesianAxisLayoutPanel {
             options.transform = 'rotate(' + angle + ',' + pointX + ',' + pointY + ')';
             textElement(
                 chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabelFont.color,
-                labelElement, false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisLabelFont
+                labelElement, false, chart.redraw, true, true, chart.duration, null, null, null,
+                chart.enableCanvas, null, chart.themeStyle.axisLabelFont, new ChartLocation(pointX, pointY)
             );
         }
         if (!this.chart.enableCanvas) {
@@ -1070,7 +1084,8 @@ export class CartesianAxisLayoutPanel {
             padding = isOpposed ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
 
             if ((labelRotation !== -90 && !isOpposed) || (labelRotation !== 90 && isOpposed)) {
-                padding += axis.isAxisOpposedPosition ? axis.titleSize.width / 2 + axis.labelPadding : -axis.titleSize.width / 2 - axis.labelPadding;
+                padding += axis.isAxisOpposedPosition ? axis.titleSize.width / 2 + axis.labelPadding :
+                    -axis.titleSize.width / 2 - axis.labelPadding;
                 isRotated = true;
             }
             const x: number = rect.x + padding;
@@ -1095,7 +1110,7 @@ export class CartesianAxisLayoutPanel {
             );
             const element: Element = textElement(
                 chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitleFont.color, parent, null, null,
-                null, null, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisTitleFont
+                null, null, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisTitleFont, new ChartLocation(x, y)
             );
             element.setAttribute('aria-hidden', 'true');
         }
@@ -1133,6 +1148,7 @@ export class CartesianAxisLayoutPanel {
             length += 1;
         }
         //Gridlines
+        const numericIDs: { [key: string]: { ids: number[], isPointRemoved: boolean } } = this.calculateGridLineId(parent, length);
         for (let i: number = 0; i < length; i++) {
             if (axis.valueType !== 'DateTimeCategory') {
                 tempInterval = axis.visibleLabels[i as number] ? axis.visibleLabels[i as number].value - ticksbwtLabel
@@ -1146,18 +1162,30 @@ export class CartesianAxisLayoutPanel {
 
             if (pointX >= rect.x && (rect.x + rect.width) >= pointX) {
                 if (inside(tempInterval, axis.visibleRange) || this.isBorder(axis, i, pointX)) {
+
+                    if (this.chart.redraw && this.chart.pointsAdded && axis.majorGridLines.width && !this.chart.pointsRemoved && this.chart.chartArea.border.width && !getElement(this.chart.element.id + '_MajorGridLine_' + index + '_' + i)) {
+                        const pointXValue: number = (valueToCoefficient(axis.visibleRange.max, axis) * rect.width) + rect.x;
+                        majorGrid = 'M ' + pointXValue + ' ' + (this.seriesClipRect.y + this.seriesClipRect.height) +
+                            ' L ' + pointXValue + ' ' + this.seriesClipRect.y;
+                        this.renderGridLine(
+                            axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i,
+                            this.element, chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray, (numericIDs['MajorGridLine'] && numericIDs['MajorGridLine'].ids ? numericIDs['MajorGridLine'].ids[i as number] : null), numericIDs['MajorGridLine'] ? numericIDs['MajorGridLine'].isPointRemoved : false
+                        );
+                        getElement(parent.id).appendChild(this.element.childNodes[this.element.childNodes.length - 1]);
+                    }
+
                     majorGrid = 'M ' + pointX + ' ' + (this.seriesClipRect.y + this.seriesClipRect.height) +
                         ' L ' + pointX + ' ' + this.seriesClipRect.y;
                     this.renderGridLine(
                         axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i,
-                        this.element, chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray
+                        this.element, chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray, (numericIDs['MajorGridLine'] && numericIDs['MajorGridLine'].ids ? numericIDs['MajorGridLine'].ids[i as number] : null), numericIDs['MajorGridLine'] ? numericIDs['MajorGridLine'].isPointRemoved : false
                     );
                 }
                 majorTick = 'M ' + (pointX) + ' ' + (rect.y + axisLineSize + (isTickInside ? scrollBarHeight : 0))
                     + ' L ' + (pointX) + ' ' + ticks;
                 this.renderGridLine(
                     axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i,
-                    parent, chartThemeStyle.majorTickLine
+                    parent, chartThemeStyle.majorTickLine, null, (numericIDs['MajorTickLine'] && numericIDs['MajorTickLine'].ids ? numericIDs['MajorTickLine'].ids[i as number] : null), numericIDs['MajorTickLine'] ? numericIDs['MajorTickLine'].isPointRemoved : false
                 );
                 if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)) {
                     if (i === 0 && isZoomSet(axis) && !isLogAxis && !isCategoryAxis) {
@@ -1166,11 +1194,13 @@ export class CartesianAxisLayoutPanel {
                     minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(
                         axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i,
-                        this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray
+                        this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray,
+                        (numericIDs['MinorGridLine'] && numericIDs['MinorGridLine'].ids ? numericIDs['MinorGridLine'].ids[i as number] : null), numericIDs['MinorGridLine'] ? numericIDs['MinorGridLine'].isPointRemoved : false
                     );
                     this.renderGridLine(
                         axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_',
-                        i, parent, chartThemeStyle.minorTickLine
+                        i, parent, chartThemeStyle.minorTickLine, null,
+                        (numericIDs['MinorTickLine'] && numericIDs['MinorTickLine'].ids ? numericIDs['MinorTickLine'].ids[i as number] : null), numericIDs['MinorTickLine'] ? numericIDs['MinorTickLine'].isPointRemoved : false
                     );
                     if (i === length - 1 && isZoomSet(axis) && isLogAxis && !isCategoryAxis) {
                         this.renderMinorGridOnZooming(
@@ -1181,6 +1211,41 @@ export class CartesianAxisLayoutPanel {
             }
         }
     }
+    private calculateGridLineId(parent: Element, length: number): { [key: string]: { ids: number[], isPointRemoved: boolean } } {
+        const numericIDs: { [key: string]: { ids: number[], isPointRemoved: boolean } } = {};
+        if (this.chart.pointsRemoved) {
+            const elementTypes: string[] = ['MajorGridLine', 'MajorTickLine', 'MinorGridLine', 'MinorTickLine'];
+            elementTypes.forEach((type: string) => {
+                const parentElement: Element = getElement(parent.id);
+                const elements: NodeListOf<Element> = parentElement.querySelectorAll('[id*="_' + type + '_"]');
+                const elementArray: Element[] = [];
+                for (let i: number = 0; i < elements.length; i++) {
+                    elementArray.push(elements[i as number] as Element);
+                }
+                let len: number = type === 'MajorGridLine' && this.chart.chartArea.border.width ? length - 2 : length;
+                len = type === 'MinorGridLine' || type === 'MinorTickLine' ? length - 1 : len;
+                if (elementArray.length > 0 && elementArray.length > len) {
+                    const elementsLength: number = elementArray.length;
+                    for (let k: number = 0; k < elementsLength - len; k++) {
+                        if (elementArray[k as number]) {
+                            parentElement.removeChild(elementArray[k as number]);
+                        }
+                        elementArray.shift();
+                    }
+                    const numericIds: number[] = elementArray.map((element: Element) => {
+                        const parts: string[] = element.id.split('_');
+                        return parseInt(parts[parts.length - 1], 10);
+                    });
+                    numericIDs[type as string] = {
+                        ids: numericIds,
+                        isPointRemoved: true
+                    };
+                }
+            });
+        }
+        return numericIDs;
+    }
+
     /**
      * To render missing minor grid lines while zooming
      *
@@ -1342,6 +1407,8 @@ export class CartesianAxisLayoutPanel {
         let rotatedLabelSize: Size = new Size(0, 0);
         padding += (angle === 90 || angle === 270 || angle === -90 || angle === -270) ? (islabelInside ? 5 : -5) : 0;
         const isLabelUnderAxisLine: boolean = ((!isOpposed && !islabelInside) || (isOpposed && islabelInside));
+        const axislabelElement: Element = getElement(chart.element.id + 'AxisLabels' + index);
+        const pointsRemoved: boolean = this.removeAxisLabelElements(axis, axislabelElement);
         const isEndAnchor: boolean = isLabelUnderAxisLine ?
             ((360 >= angle && angle >= 180) || (-1 >= angle && angle >= -180)) :
             ((1 <= angle && angle <= 180) || (-181 >= angle && angle >= -360));
@@ -1372,9 +1439,6 @@ export class CartesianAxisLayoutPanel {
                 pointX = pointX + width - pixel;
             } else if (axis.labelStyle.textAlignment === 'Near') {
                 pointX = pointX - width + pixel;
-            } else if (axis.labelStyle.textAlignment === 'Center') {
-                // eslint-disable-next-line no-self-assign
-                pointX = pointX;
             }
 
             // For line break label alignment like left, right & center in angle 0
@@ -1382,7 +1446,8 @@ export class CartesianAxisLayoutPanel {
                 pointX += axis.lineBreakAlignment === 'Left' ? -(width / 2) : (width / 2);
             }
             const paddingForBreakLabel: number = isAxisBreakLabel ?
-                (isHorizontalAngle ? (axis.opposedPosition || islabelInside ? 0 : elementSize.height) : (label.breakLabelSize.width / 2)) : 0;
+                (isHorizontalAngle ? (axis.opposedPosition || islabelInside ? 0 : elementSize.height) :
+                    (label.breakLabelSize.width / 2)) : 0;
             padding = isAxisBreakLabel ? (tickSpace + labelSpace + axis.lineStyle.width * 0.5) : padding;
 
             // label Y value adjustment (Start)
@@ -1411,9 +1476,12 @@ export class CartesianAxisLayoutPanel {
                 anchor = (chart.enableRtl) ? ((isEndAnchor) ? '' : 'end') : (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
+            options.id = pointsRemoved && axislabelElement &&
+            axislabelElement.children[i as number] ? axislabelElement.children[i as number].id : options.id;
             if (angle !== 0) {
-                rotatedLabelSize = rotateTextSize(label.labelStyle, label.originalText, angle, chart);
-                isLeft = ((angle < 0 && angle > -90) || (angle < -180 && angle > -270) || (angle > 90 && angle < 180) || (angle > 270 && angle < 360));
+                rotatedLabelSize = rotateTextSize(label.labelStyle, label.originalText, angle, chart, chart.themeStyle.axisLabelFont);
+                isLeft = ((angle < 0 && angle > -90) || (angle < -180 && angle > -270) ||
+                (angle > 90 && angle < 180) || (angle > 270 && angle < 360));
             }
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
@@ -1421,7 +1489,8 @@ export class CartesianAxisLayoutPanel {
                     break;
                 case 'Hide':
                     if (((i === 0 || (isInverse && i === len - 1)) && options.x < rect.x) ||
-                            ((i === len - 1 || (isInverse && i === 0)) && (options.x + (angle === 0 ? width : rotatedLabelSize.width) > rect.x + rect.width))) {
+                            ((i === len - 1 || (isInverse && i === 0)) &&
+                            (options.x + (angle === 0 ? width : rotatedLabelSize.width) > rect.x + rect.width))) {
                         continue;
                     }
                     break;
@@ -1445,7 +1514,8 @@ export class CartesianAxisLayoutPanel {
                         else if (isAxisBreakLabel && axis.lineBreakAlignment === 'Center' && axis.labelPlacement === 'OnTicks' && angle === 0) {
                             let maxWidth: number = 0;
                             for (let i: number = 0; i < label.text.length; i++) {
-                                const breakLabelWidth: number = measureText(label.text[i as number] as string, axis.labelStyle, chart.themeStyle.axisLabelFont).width;
+                                const breakLabelWidth: number = measureText(label.text[i as number] as string,
+                                                                            axis.labelStyle, chart.themeStyle.axisLabelFont).width;
                                 if (breakLabelWidth > maxWidth) {
                                     maxWidth = breakLabelWidth;
                                 }
@@ -1469,7 +1539,8 @@ export class CartesianAxisLayoutPanel {
                             options.x = pointX =  rect.x + rect.width - intervalLength + padding;
                         }
                         else{
-                            options.x = pointX = !isHorizontalAngle ? rect.x + rect.width - intervalLength / 2 : rect.x + rect.width - intervalLength;
+                            options.x = pointX = !isHorizontalAngle ? rect.x + rect.width - intervalLength / 2 :
+                                rect.x + rect.width - intervalLength;
                         }
                     }
                     break;
@@ -1550,36 +1621,59 @@ export class CartesianAxisLayoutPanel {
                 isRotatedLabelIntersect = false;
                 if (axis.labelIntersectAction !== 'None') {
                     for (let index: number = i; index > 0; index--) {
-                        if (newPoints[i as number] && newPoints[index - 1] && isRotatedRectIntersect(newPoints[i as number], newPoints[index - 1])) {
+                        if (newPoints[i as number] && newPoints[index - 1] &&
+                            isRotatedRectIntersect(newPoints[i as number], newPoints[index - 1])) {
                             isRotatedLabelIntersect = true; newPoints[i as number] = null;
                             break;
                         }
                     }
                 }
-                const rotateAngle: boolean = ((angle > 0 && angle < 90) || (angle > 180 && angle < 270) || (angle < -90 && angle > -180) || (angle < -270 && angle > -360));
+                const rotateAngle: boolean = ((angle > 0 && angle < 90) || (angle > 180 && angle < 270) ||
+                (angle < -90 && angle > -180) || (angle < -270 && angle > -360));
                 const textRect: Rect = new Rect(options.x, options.y - (elementSize.height / 2 + padding / 2), label.size.width, height);
                 const textRectCoordinates: ChartLocation[] = this.getRectanglePoints(textRect);
-                const rectPoints = [];
+                const rectPoints: rectPoints[] = [];
                 rectPoints.push(new ChartLocation(rotateAngle ? this.chart.availableSize.width : this.padding, axis.rect.y));
-                rectPoints.push(new ChartLocation(rotateAngle ? this.chart.availableSize.width : this.padding, axis.rect.y + axis.maxLabelSize.height));
+                rectPoints.push(new ChartLocation(rotateAngle ? this.chart.availableSize.width :
+                    this.padding, axis.rect.y + axis.maxLabelSize.height));
                 textPoints.push(getRotatedRectangleCoordinates(textRectCoordinates, rectCenterX, rectCenterY, angle));
                 const newRect: Rect = new Rect(0, axis.rect.y, this.chart.availableSize.width , axis.maxLabelSize.height * 2);
                 for (let k: number = 0; k < textPoints[i as number].length; k++) {
                     if (!axis.opposedPosition && !withInBounds(textPoints[i as number][k as number].x, textPoints[i as number][k as number].y, newRect) && typeof options.text === 'string') {
-                        const interSectPoint: ChartLocation = this.calculateIntersection(textPoints[i as number][0], textPoints[i as number][1], rectPoints[0], rectPoints[1]);
+                        const interSectPoint: ChartLocation = this.calculateIntersection(textPoints[i as number][0],
+                                                                                         textPoints[i as number][1],
+                                                                                         rectPoints[0], rectPoints[1]);
                         const rectPoint1: number = rotateAngle ? this.chart.availableSize.width - pointX : pointX;
                         const rectPoint2: number = interSectPoint.y - axis.rect.y;
                         const trimValue: number = Math.sqrt((rectPoint1 * rectPoint1) + (rectPoint2 * rectPoint2));
-                        options.text = textTrim(trimValue, label.text as string, label.labelStyle, chart.enableRtl, chart.themeStyle.axisLabelFont);
+                        options.text = textTrim(trimValue, label.text as string, label.labelStyle,
+                                                chart.enableRtl, chart.themeStyle.axisLabelFont);
                     }
                 }
             }
+            if (chart.pointsAdded && !chart.pointsRemoved && !getElement(options.id)) {
+                const optionsX: number = options.x; options.x = rect.width + (rect.width / (i ? i : 1));
+                const transform: string = options.transform;
+                options.transform = angle ? 'rotate(' + angle + ',' + options.x + ',' + parseFloat(options.transform.split(',')[2]) + ')' : '';
+                textElement(
+                    chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabelFont.color,
+                    labelElement, (axis.isAxisOpposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true,
+                    null, null, null, label.size, isRotatedLabelIntersect,
+                    chart.enableCanvas, null, chart.themeStyle.axisLabelFont
+                );
+                options.x = optionsX; options.transform = transform;
+            }
             // label Rotataion calculation (End)
-            textElement(
+            const element: Element = textElement(
                 chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabelFont.color,
                 labelElement, (axis.isAxisOpposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true,
-                null, null, null, label.size, isRotatedLabelIntersect, chart.enableCanvas, null, chart.themeStyle.axisLabelFont
+                null, chart.duration, null, label.size, isRotatedLabelIntersect,
+                chart.enableCanvas, null, chart.themeStyle.axisLabelFont,
+                new ChartLocation(parseFloat(options.transform.split(',')[1]), parseFloat(options.transform.split(',')[2]))
             );
+            if (pointsRemoved) {
+                element.id = chart.element.id + index + '_AxisLabel_' + i;
+            }
         }
         if (!this.chart.enableCanvas) {
             if (!chart.delayRedraw) {
@@ -1588,6 +1682,34 @@ export class CartesianAxisLayoutPanel {
                 this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
             }
         }
+    }
+
+    private removeAxisLabelElements(axis: Axis, axislabelElement: Element): boolean {
+        if (this.chart.pointsRemoved && axislabelElement && axislabelElement.childNodes.length) {
+            let pointsRemoved: boolean = false;
+            if (axis.valueType.indexOf('Category') > -1) {
+                const visibleLabelTexts: (string | string[])[] = [];
+                axis.visibleLabels.map((label: VisibleLabels) => {
+                    if (typeof label.text !== 'string') {
+                        visibleLabelTexts.push(label.text.join(''));
+                    } else { visibleLabelTexts.push(label.text); }
+                });
+                for (let i: number = axislabelElement.childNodes.length - 1; i >= 0; i--) {
+                    const childNode: ChildNode = axislabelElement.childNodes[i as number];
+                    if (visibleLabelTexts.indexOf(childNode.textContent.trim()) === -1) {
+                        axislabelElement.removeChild(childNode);
+                        pointsRemoved = true;
+                    }
+                }
+            } else if (axislabelElement.childNodes.length > axis.visibleLabels.length) {
+                for (let j: number = 0; j < axislabelElement.childNodes.length - axis.visibleLabels.length; j++) {
+                    axislabelElement.removeChild(axislabelElement.childNodes[j as number]);
+                    pointsRemoved = true;
+                }
+            }
+            return pointsRemoved;
+        }
+        return false;
     }
 
     public calculateIntersection(p1: ChartLocation, p2: ChartLocation, p3: ChartLocation, p4: ChartLocation): ChartLocation {
@@ -1685,7 +1807,8 @@ export class CartesianAxisLayoutPanel {
                 case 'WithoutTopBorder':
                     if (startX < axisRect.x && axis.labelPlacement !== 'OnTicks') {
                         labelBorder += ('M' + ' ' + axisRect.x + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
-                    } else if (Math.floor(endX) > axisRect.width + axisRect.x && !(axis.visibleLabels.length === 1) && !(i === axis.visibleLabels.length - 1)) {
+                    } else if (Math.floor(endX) > axisRect.width + axisRect.x && !(axis.visibleLabels.length === 1) &&
+                    !(i === axis.visibleLabels.length - 1)) {
                         labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
                                 'L' + ' ' + (axisRect.width + axisRect.x) + ' ' + endY + ' ');
                     } else {
@@ -1740,7 +1863,7 @@ export class CartesianAxisLayoutPanel {
             axis.border.color || this.chart.themeStyle.axisLine, 1, '', labelBorder
         )) as HTMLElement;
         (borderElement as HTMLElement).style.pointerEvents = 'none';
-        appendChildElement(this.chart.enableCanvas, parent, borderElement, this.chart.redraw, false, 'x', 'y', null, direction, true);
+        appendChildElement(this.chart.enableCanvas, parent, borderElement, this.chart.redraw, false, 'x', 'y', null, direction, true, null, null, this.chart.duration);
     }
 
     /**
@@ -1753,7 +1876,8 @@ export class CartesianAxisLayoutPanel {
      */
     private findAxisLabel(axis: Axis, label: string, width: number): string {
         return(axis.labelIntersectAction === 'Trim' ?
-            ((axis.angle % 360 === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle, this.chart.enableRtl, this.chart.themeStyle.axisLabelFont) : label) : label);
+            ((axis.angle % 360 === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle, this.chart.enableRtl,
+                                                                     this.chart.themeStyle.axisLabelFont) : label) : label);
     }
 
     /**
@@ -1800,7 +1924,8 @@ export class CartesianAxisLayoutPanel {
             );
             const element: Element = textElement(
                 chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitleFont.color, parent,
-                null, null, null, null, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisTitleFont
+                null, chart.redraw, chart.redraw, null, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisTitleFont,
+                new ChartLocation(x, y)
             );
             element.setAttribute('aria-hidden', 'true');
         }
@@ -1818,26 +1943,32 @@ export class CartesianAxisLayoutPanel {
      * @param {Element} parent parent
      * @param {string} themeColor themeColor
      * @param {string} dashArray dashArray
+     * @param {number} removeIndex removeIndex
+     * @param {boolean} isRemoved isRemoved
      * @returns {void}
      */
     private renderGridLine(
         axis: Axis, index: number, gridDirection: string,
         gridModel: MajorTickLinesModel | MinorTickLinesModel | MajorGridLinesModel | MinorGridLinesModel,
-        gridId: string, gridIndex: number, parent: Element, themeColor: string, dashArray: string = null
+        gridId: string, gridIndex: number, parent: Element, themeColor: string, dashArray: string = null,
+        removeIndex: number = null, isRemoved: boolean = false
     ): void {
         const chart: Chart = this.chart;
         let direction: string;
         let element: Element;
         if (gridModel.width > 0 && axis.visible && axis.internalVisibility && gridDirection) {
-            element = getElement(chart.element.id + gridId + index + '_' + gridIndex);
+            element = getElement(chart.element.id + gridId + index + '_' + (isRemoved ? removeIndex : gridIndex));
             direction = element ? element.getAttribute('d') : null;
             element = null;
             this.htmlObject = chart.renderer.drawPath(new PathOption(
-                chart.element.id + gridId + index + '_' + gridIndex, 'transparent', gridModel.width,
+                chart.element.id + gridId + index + '_' + (isRemoved ? removeIndex : gridIndex), 'transparent', gridModel.width,
                 gridModel.color || themeColor,
                 null, dashArray, gridDirection
             )) as HTMLElement;
-            appendChildElement(chart.enableCanvas, parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction, true);
+            appendChildElement(chart.enableCanvas, parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction, true, null, null, chart.duration);
+            if (isRemoved) {
+                this.htmlObject.id = chart.element.id + gridId + index + '_' + gridIndex;
+            }
         }
     }
 
@@ -1903,4 +2034,9 @@ export class CartesianAxisLayoutPanel {
     //     }
     // }
 
+}
+
+export interface rectPoints {
+    x: number;
+    y: number;
 }

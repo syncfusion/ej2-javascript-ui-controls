@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-import { IFontMapping } from '../../common/model/interface';
+import { Browser } from '@syncfusion/ej2-base';
 import { ChartTheme } from '../../common/utils/enum';
 import { IBulletStyle } from '../model/bullet-interface';
 
@@ -7,7 +6,6 @@ import { IBulletStyle } from '../model/bullet-interface';
  * @param {ChartTheme} theme Passed theme parameter.
  * @returns {IBulletStyle} It returns bullet style.
  */
-// tslint:disable-next-line:max-func-body-length
 export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
     const darkBackground: string = theme === 'MaterialDark' ? '#383838' : (theme === 'FabricDark' ? '#242424' : '#1b1b1b');
     let style: IBulletStyle = {
@@ -33,22 +31,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
         tabColor: theme === 'Material' ? '#ff4081' : theme === 'Fabric' ? '#0078D6' : '#317AB9',
         rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }],
         titleFont: {
-            color: 'rgba(0, 0, 0, 1)' , fontFamily:'Roboto'
+            color: 'rgba(0, 0, 0, 1)' , fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '500'
         },
         subTitleFont: {
-            color: 'rgba(0, 0, 0, 1)', fontFamily: 'Roboto'
+            color: 'rgba(0, 0, 0, 1)', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
         },
         legendLabelFont: {
-            color: 'rgba(97, 97, 97, 1)', fontFamily: 'Roboto'
+            color: 'rgba(97, 97, 97, 1)', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '400'
         },
         axisLabelFont: {
-            color: 'rgba(97, 97, 97, 1)', fontFamily: 'Roboto'
+            color: 'rgba(97, 97, 97, 1)', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
         },
         dataLabelFont: {
-            color: 'rgba(97, 97, 97, 1)', fontFamily: 'Roboto'
+            color: 'rgba(97, 97, 97, 1)', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
         },
         tooltipLabelFont: {
-            color: 'rgba(249, 250, 251, 1)', fontFamily: 'Roboto'
+            color: 'rgba(249, 250, 251, 1)', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
         }
     };
     switch (theme) {
@@ -76,22 +74,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#0078D6',
             rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }],
             titleFont: {
-                color: '#333333', fontFamily: 'Segoe UI'
+                color: '#333333', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#333333', fontFamily: 'Segoe UI'
+                color: '#333333', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#666666', fontFamily: 'Segoe UI'
+                color: '#666666', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#666666', fontFamily: 'Segoe UI'
+                color: '#666666', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#666666', fontFamily: 'Segoe UI'
+                color: '#666666', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#333333', fontFamily: 'Segoe UI'
+                color: '#333333', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -119,22 +117,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#317AB9',
             rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }],
             titleFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#666666', fontFamily: 'Helvetica'
+                color: '#666666', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#676767', fontFamily: 'Helvetica'
+                color: '#676767', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#676767', fontFamily: 'Helvetica'
+                color: '#676767', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica'
+                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -162,22 +160,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#FFD939',
             rangeStrokes: [{ color: '#757575' }, { color: '#BDBDBD' }, { color: '#EEEEEE' }],
             titleFont: {
-                color: '#FFFFFF', fontFamily: 'Segoe UI'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#FFFFFF', fontFamily: 'Segoe UI'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#969696', fontFamily: 'Segoe UI'
+                color: '#969696', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#969696', fontFamily: 'Segoe UI'
+                color: '#969696', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#969696', fontFamily: 'Segoe UI'
+                color: '#969696', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#000000', fontFamily: 'Segoe UI'
+                color: '#000000', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -207,22 +205,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: theme === 'MaterialDark' ? '#00B0FF' : theme === 'FabricDark' ? '#0074CC' : '#0070F0',
             rangeStrokes: [{ color: '#8D8D8D' }, { color: '#ADADAD' }, { color: '#EEEEEE' }],
             titleFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#676767', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -250,22 +248,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#007BFF',
             rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }],
             titleFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#666666', fontFamily: 'Helvetica'
+                color: '#666666', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica'
+                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica'
+                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica'
+                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -293,22 +291,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#4F46E5',
             rangeStrokes: [{ color: '#9CA3AF' }, { color: '#D1D5DB' }, { color: '#E5E7EB' }],
             titleFont: {
-                color: '#374151', fontFamily: 'Inter'
+                color: '#374151', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#374151', fontFamily: 'Inter'
+                color: '#374151', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#374151', fontFamily: 'Inter'
+                color: '#374151', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#6B7280', fontFamily: 'Inter'
+                color: '#6B7280', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#6B7280', fontFamily: 'Inter'
+                color: '#6B7280', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Inter'
+                color: '#F9FAFB', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -336,22 +334,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#22D3EE',
             rangeStrokes: [{ color: '#6B7280' }, { color: '#4B5563' }, { color: '#374151' }],
             titleFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#D1D5DB', fontFamily: 'Inter'
+                color: '#D1D5DB', fontFamily: 'Inter', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#9CA3AF', fontFamily: 'Inter'
+                color: '#9CA3AF', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#9CA3AF', fontFamily: 'Inter'
+                color: '#9CA3AF', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#1F2937', fontFamily: 'Inter'
+                color: '#1F2937', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -379,22 +377,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#0D6EFD',
             rangeStrokes: [{ color: '#9CA3AF' }, { color: '#D1D5DB' }, { color: '#E5E7EB' }],
             titleFont: {
-                color: '#343A40', fontFamily: 'Helvetica'
+                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica'
+                color: '#343A40', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#343A40', fontFamily: 'Helvetica'
+                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica'
+                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica'
+                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica'
+                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -422,22 +420,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#0D6EFD',
             rangeStrokes: [{ color: '#6C757D' }, { color: '#495057' }, { color: '#343A40' }],
             titleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#CED4DA', fontFamily: 'Helvetica'
+                color: '#CED4DA', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica'
+                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -465,22 +463,22 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#0078D4',
             rangeStrokes: [{ color: '#C8C6C4' }, { color: '#D2D0CE' }, { color: '#EDEBE9' }],
             titleFont: {
-                color: '#201F1E', fontFamily: 'Segoe UI'
+                color: '#201F1E', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#323129', fontFamily: 'Segoe UI'
+                color: '#323129', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#49454E', fontFamily: 'Segoe UI'
+                color: '#49454E', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#3B3A39', fontFamily: 'Segoe UI'
+                color: '#3B3A39', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#3B3A39', fontFamily: 'Segoe UI'
+                color: '#3B3A39', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#323130', fontFamily: 'Segoe UI'
+                color: '#323130', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -508,68 +506,154 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#0078D4',
             rangeStrokes: [{ color: '#484644' }, { color: '#3B3A39' }, { color: '#292827' }],
             titleFont: {
-                color: '#C8C6C4', fontFamily: 'Segoe UI'
+                color: '#C8C6C4', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '500'
             },
             subTitleFont: {
-                color: '#F3F2F1', fontFamily: 'Segoe UI'
+                color: '#F3F2F1', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#D2D0CE', fontFamily: 'Segoe UI'
+                color: '#D2D0CE', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#C8C6C4', fontFamily: 'Segoe UI'
+                color: '#C8C6C4', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#D2D0CE', fontFamily: 'Segoe UI'
+                color: '#D2D0CE', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F3F2F1', fontFamily: 'Segoe UI'
+                color: '#F3F2F1', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
-        case 'Material3':
-            style = {
-                majorTickLineColor: '#C4C7C5',
-                minorTickLineColor: '#C4C7C5',
-                background: 'transparent',
-                labelFontColor: '#1E192B',
-                categoryFontColor: '#1E192B',
-                labelFontFamily: 'Roboto',
-                tooltipFill: '#313033',
-                legendLabel: '#49454E',
-                tooltipBoldLabel: '#F4EFF4',
-                featuredMeasureColor: '#79747E',
-                comparativeMeasureColor: '#79747E',
-                titleFontColor: '#1C1B1F',
-                dataLabelFontColor: '#49454E',
-                titleFontFamily: 'Roboto',
-                subTitleFontColor: '#1C1B1F',
-                subTitleFontFamily: 'Roboto',
-                firstRangeColor: '#a6a6a9',
-                secondRangeColor: '#C4C7C5',
-                thirdRangeColor: '#E7E0EC',
+    case 'Fluent2':
+        style = {
+            majorTickLineColor: '#C8C6C4',
+            minorTickLineColor: '#C8C6C4',
+            background: 'transparent',
+            labelFontColor: '#C8C6C4',
+            categoryFontColor: '#616161',
+            labelFontFamily: 'Segoe UI',
+            tooltipFill: '#FFFFFF',
+            legendLabel: '#242424',
+            tooltipBoldLabel: '#242424',
+            featuredMeasureColor: '#A19F9D',
+            comparativeMeasureColor: '#A19F9D',
+            titleFontColor: '#242424',
+            dataLabelFontColor: '#424242',
+            titleFontFamily: 'Segoe UI',
+            subTitleFontColor: '#616161',
+            subTitleFontFamily: 'Segoe UI',
+            firstRangeColor: '#C8C6C4',
+            secondRangeColor: '#D2D0CE',
+            thirdRangeColor: '#EDEBE9',
+            tabColor: '#0078D4',
+            rangeStrokes: [{ color: '#C8C6C4' }, { color: '#D2D0CE' }, { color: '#EDEBE9' }],
+            titleFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: Browser.isDevice ? '16px' : '14px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            subTitleFont: {
+                color: '#616161', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            axisLabelFont: {
+                color: '#616161', fontFamily: 'Segoe UI', size: Browser.isDevice ? '14px' : '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            dataLabelFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            }
+        };
+        break;
+    case 'Fluent2Dark':
+        style = {
+            majorTickLineColor: '#484644',
+            minorTickLineColor: '#484644',
+            background: 'transparent',
+            labelFontColor: '#ADADAD',
+            categoryFontColor: '#ADADAD',
+            labelFontFamily: 'Segoe UI',
+            tooltipFill: '#292929',
+            legendLabel: '#FFFFFF',
+            tooltipBoldLabel: '#FFFFFF',
+            featuredMeasureColor: '#8A8886',
+            comparativeMeasureColor: '#8A8886',
+            titleFontColor: '#FFFFFF',
+            dataLabelFontColor: '#FFFFFF',
+            titleFontFamily: 'Segoe UI',
+            subTitleFontColor: '#ADADAD',
+            subTitleFontFamily: 'Segoe UI',
+            firstRangeColor: '#484644',
+            secondRangeColor: '#3B3A39',
+            thirdRangeColor: '#292827',
+            tabColor: '#0078D4',
+            rangeStrokes: [{ color: '#484644' }, { color: '#3B3A39' }, { color: '#292827' }],
+            titleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: Browser.isDevice ? '16px' : '14px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            subTitleFont: {
+                color: '#ADADAD', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            axisLabelFont: {
+                color: '#ADADAD', fontFamily: 'Segoe UI', size: Browser.isDevice ? '14px' : '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            dataLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            }
+        };
+        break;
+    case 'Material3':
+        style = {
+            majorTickLineColor: '#C4C7C5',
+            minorTickLineColor: '#C4C7C5',
+            background: 'transparent',
+            labelFontColor: '#1E192B',
+            categoryFontColor: '#1E192B',
+            labelFontFamily: 'Roboto',
+            tooltipFill: '#313033',
+            legendLabel: '#49454E',
+            tooltipBoldLabel: '#F4EFF4',
+            featuredMeasureColor: '#79747E',
+            comparativeMeasureColor: '#79747E',
+            titleFontColor: '#1C1B1F',
+            dataLabelFontColor: '#49454E',
+            titleFontFamily: 'Roboto',
+            subTitleFontColor: '#1C1B1F',
+            subTitleFontFamily: 'Roboto',
+            firstRangeColor: '#a6a6a9',
+            secondRangeColor: '#C4C7C5',
+            thirdRangeColor: '#E7E0EC',
             tabColor: '#49454E',
-                rangeStrokes: [{ color: '#a6a6a9' }, { color: '#C4C7C5' }, { color: '#E7E0EC' }],
-                titleFont: {
-                        color: '#1C1B1F', fontFamily: 'Roboto'
-                    },
-                subTitleFont: {
-                        color: '#49454E', fontFamily: 'Roboto'
-                    },
-                legendLabelFont: {
-                        color: '#49454E', fontFamily: 'Roboto'
-                    },
-                axisLabelFont: {
-                        color: '#1E192B', fontFamily: 'Roboto'
-                    },
-                dataLabelFont: {
-                        color: '#49454E', fontFamily: 'Roboto'
-                    },
-                tooltipLabelFont: {
-                        color: '#F4EFF4', fontFamily: 'Roboto'
-                    }
-            };
-            break;
+            rangeStrokes: [{ color: '#a6a6a9' }, { color: '#C4C7C5' }, { color: '#E7E0EC' }],
+            titleFont: {
+                color: '#1C1B1F', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '500'
+            },
+            subTitleFont: {
+                color: '#49454E', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            legendLabelFont: {
+                color: '#49454E', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            axisLabelFont: {
+                color: '#1E192B', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            dataLabelFont: {
+                color: '#49454E', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#F4EFF4', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            }
+        };
+        break;
     case 'Material3Dark':
         style = {
             majorTickLineColor: '#444746',
@@ -594,28 +678,27 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             tabColor: '#CAC4D0',
             rangeStrokes: [{ color: 'rgba(147,143,153,0.4)' }, { color: '#444746' }, { color: '#49454F' }],
             titleFont: {
-                    color: '#E6E1E5', fontFamily: 'Roboto'
-                },
+                color: '#E6E1E5', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '500'
+            },
             subTitleFont: {
-                    color: '#CAC4D0', fontFamily: 'Roboto'
-                },
+                color: '#CAC4D0', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
             legendLabelFont: {
-                    color: '#CAC4D0', fontFamily: 'Roboto'
-                },
+                color: '#CAC4D0', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+            },
             axisLabelFont: {
-                    color: '#CAC4D0', fontFamily: 'Roboto'
-                },
+                color: '#CAC4D0', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
             dataLabelFont: {
-                    color: '#CAC4D0', fontFamily: 'Roboto'
-                },
+                color: '#CAC4D0', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
             tooltipLabelFont: {
-                    color: '#313033', fontFamily: 'Roboto'
-                }
+                color: '#313033', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            }
         };
         break;
     default:
-        // eslint-disable-next-line no-self-assign
-        style = style;
+        //style = style;
         break;
     }
     return style;

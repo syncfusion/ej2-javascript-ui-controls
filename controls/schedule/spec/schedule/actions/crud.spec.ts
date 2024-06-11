@@ -1915,6 +1915,51 @@ describe('Schedule CRUD', () => {
         });
     });
 
+    describe('Schedule addEvent in appointment template checking', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Meeting',
+            StartTime: new Date(2023, 7, 23, 10, 0),
+            EndTime: new Date(2023, 7, 23, 12, 30),
+            RoomId: 1
+        }
+        ];
+        const eventTemplate: string = '<div>Subject: ${Subject}</div>';
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2023, 7, 23),
+                eventSettings: { template: eventTemplate },
+                views: ['Week'],
+                currentView: 'Week',
+                group: { resources: ['Rooms'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('adding appointment', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+                expect((schObj.element.querySelector('.e-appointment') as HTMLElement).innerText).toEqual('Subject: Meeting');
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(0);
+            schObj.addEvent(data[0]);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

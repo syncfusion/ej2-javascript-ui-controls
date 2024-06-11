@@ -1,7 +1,7 @@
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as events from '../../common/base/constant';
-import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../base';
+import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo, INumberIndex } from '../../base';
 import { DrillThroughEventArgs } from '../../common/base/interface';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
 import { EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
@@ -140,7 +140,7 @@ export class DrillThrough {
 
     private getCalcualtedFieldValue(indexArray: string[], rawData: IDataSet[]): IDataSet[] {
         for (let k: number = 0; k < indexArray.length; k++) {
-            const colIndex: { [key: string]: string } = {};
+            const colIndex: { [key: string]: Object } = {};
             colIndex[indexArray[k as number]] = indexArray[k as number];
             for (let i: number = 0; i < this.parent.dataSourceSettings.calculatedFieldSettings.length; i++) {
                 let indexValue: number;
@@ -152,8 +152,7 @@ export class DrillThrough {
                     }
                 }
                 if (!isNullOrUndefined(rawData[k as number])) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const calculatedFeildValue: number = this.parent.engineModule.getAggregateValue([Number(indexArray[k as number])], colIndex as any, indexValue, 'calculatedfield', false);
+                    const calculatedFeildValue: number = this.parent.engineModule.getAggregateValue([Number(indexArray[k as number])], colIndex as INumberIndex, indexValue, 'calculatedfield', false);
                     rawData[k as number][this.parent.dataSourceSettings.calculatedFieldSettings[i as number].name] = (isNaN(calculatedFeildValue) && isNullOrUndefined(calculatedFeildValue)) ? '#DIV/0!' : calculatedFeildValue;
                 }
             }
@@ -161,26 +160,25 @@ export class DrillThrough {
         return rawData;
     }
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     private frameData(eventArgs: DrillThroughEventArgs): DrillThroughEventArgs {
         let keyPos: number = 0;
         let dataPos: number = 0;
-        const data: any = [];
+        const data: { [key: string]: Object }[] = [];
         while (dataPos < eventArgs.rawData.length) {
-            const framedHeader: any = {};
+            const framedHeader: { [key: string]: Object } = {};
             while (keyPos < eventArgs.gridColumns.length) {
                 framedHeader[eventArgs.gridColumns[keyPos as number].field] = this.parent.dataSourceSettings.mode === 'Server' ?
                     eventArgs.rawData[dataPos as number][this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos as number]
                         .field) !== -1 ? this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos as number].field) : 0] :
                     eventArgs.rawData[dataPos as number][this.parent.engineModule.fieldKeys[eventArgs.gridColumns[keyPos as number]
-                        .field] as any];
+                        .field] as string | number];
                 keyPos++;
             }
             data.push(framedHeader);
             dataPos++;
             keyPos = 0;
         }
-        eventArgs.rawData = data;
+        eventArgs.rawData = data as IDataSet[];
         return eventArgs;
     }
 
@@ -206,8 +204,7 @@ export class DrillThrough {
         if (this.parent.dataSourceSettings.type === 'CSV') {
             eventArgs = this.frameData(eventArgs);
         }
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const drillThrough: DrillThrough = this;
+        const drillThrough: DrillThrough = this as DrillThrough;
         this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
             if (!eventArgs.cancel) {
                 drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);

@@ -8,14 +8,6 @@
 
 ## [Unreleased]
 
-## 25.1.40 (2024-04-16)
-
-### LinearGauge
-
-#### Bug Fixes
-
-- `#I573933` - The tooltips will now be properly aligned with the axis line when the `offset` property is set in the axis line.
-
 ## 18.3.47 (2020-11-05)
 
 ### LinearGauge

@@ -107,7 +107,7 @@ export class UndoRedoManager {
         return textContent;
     }
     private isElementStructureEqual(previousFragment: DocumentFragment | HTMLElement, currentFragment: DocumentFragment | HTMLElement):
-     boolean {
+    boolean {
         if (previousFragment.childNodes.length !== currentFragment.childNodes.length) {
             return false;
         }

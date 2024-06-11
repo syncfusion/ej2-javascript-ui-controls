@@ -1,6 +1,6 @@
-import { ChildProperty, Collection, Property } from "@syncfusion/ej2-base";
-import { RibbonGalleryItemModel } from "./ribbon-gallery-item-model";
-import { RibbonGalleryItem } from "./ribbon-gallery-item";
+import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';
+import { RibbonGalleryItemModel } from './ribbon-gallery-item-model';
+import { RibbonGalleryItem } from './ribbon-gallery-item';
 
 /**
  * Defines the ribbon gallery group.
@@ -18,7 +18,7 @@ export class RibbonGalleryGroup extends ChildProperty<RibbonGalleryGroup>  {
 
     /**
      * Defines the header for the group items present in Ribbon Gallery popup.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -26,15 +26,15 @@ export class RibbonGalleryGroup extends ChildProperty<RibbonGalleryGroup>  {
 
     /**
      * Defines the width of the gallery items.
-     * 
+     *
      * @default 'auto'
      */
     @Property('auto')
     public itemWidth: string;
-    
+
     /**
      * Defines the height of the gallery item.
-     * 
+     *
      * @default 'auto'
      */
     @Property('auto')
@@ -42,7 +42,7 @@ export class RibbonGalleryGroup extends ChildProperty<RibbonGalleryGroup>  {
 
     /**
      * Defines the CSS class to customize the gallery groups.
-     * 
+     *
      * @default ''
      */
     @Property('')

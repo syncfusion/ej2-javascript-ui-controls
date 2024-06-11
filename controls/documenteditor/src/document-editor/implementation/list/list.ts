@@ -35,11 +35,12 @@ export class WList {
     }
     /**
      * @private
+     * @returns {void}
      */
     public clear(): void {
         if (!isNullOrUndefined(this.levelOverrides)) {
             for (let i: number = 0; i < this.levelOverrides.length; i++) {
-                let levelOverride: WLevelOverride = this.levelOverrides[parseInt(i.toString(), 10)];
+                const levelOverride: WLevelOverride = this.levelOverrides[parseInt(i.toString(), 10)];
                 levelOverride.clear();
             }
             this.levelOverrides = [];
@@ -51,12 +52,14 @@ export class WList {
     }
     /**
      * Disposes the internal objects which are maintained.
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.levelOverrides)) {
             for (let i: number = 0; i < this.levelOverrides.length; i++) {
-                let levelOverride: WLevelOverride = this.levelOverrides[parseInt(i.toString(), 10)];
+                const levelOverride: WLevelOverride = this.levelOverrides[parseInt(i.toString(), 10)];
                 levelOverride.destroy();
             }
             this.levelOverrides = [];
@@ -68,7 +71,7 @@ export class WList {
         }
         this.abstractListId = undefined;
         this.listId = undefined;
-        this.sourceListId = undefined; 
+        this.sourceListId = undefined;
     }
     public mergeList(list: WList): void {
         if (!isNullOrUndefined(this.abstractListId) && this.abstractListId !== -1) {

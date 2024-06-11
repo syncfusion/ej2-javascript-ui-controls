@@ -54,8 +54,8 @@ export class RangeSelector {
                 new Date(stockChart.endValue)],
             margin : this.findMargin(),
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'OnDemand' },
-            labelPlacement:'OnTicks',
-            labelPosition:'Inside',
+            labelPlacement: 'OnTicks',
+            labelPosition: 'Inside',
             dataSource: stockChart.dataSource,
             intervalType : stockChart.primaryXAxis.intervalType,
             enableRtl: stockChart.enableRtl,
@@ -121,6 +121,6 @@ export class RangeSelector {
      * @returns {void}
      */
     public sliderChange(start: number, end: number): void {
-        this.stockChart.rangeNavigator.rangeSlider.performAnimation(start, end, this.stockChart.rangeNavigator, 0);
+        this.stockChart.rangeNavigator.rangeSlider.performAnimation(start, end, this.stockChart.rangeNavigator);
     }
 }

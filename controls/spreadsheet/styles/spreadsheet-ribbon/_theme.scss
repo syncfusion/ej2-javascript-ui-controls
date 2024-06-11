@@ -10,8 +10,6 @@
         @else {
           background-color: inherit;
         }
-        
-
         @if $skin-name == 'bootstrap' {
           &::before {
             border-bottom-color: $spreadsheet-ribbon-border-color;
@@ -29,19 +27,15 @@
           @if $skin-name != 'Material3' {
             background: $spreadsheet-ribbon-focus-bg-color;
           }
-
           @if $spreadsheet-ribbon-skin == 'fabric' or $spreadsheet-ribbon-skin == 'highcontrast' {
             border-color: $spreadsheet-ribbon-focused-wrap-focus-border-color;
           }
-
           @if $spreadsheet-ribbon-skin == 'bootstrap5' {
             border: 1px solid $spreadsheet-ribbon-focused-wrap-focus-border-color;
           }
-
           @if $spreadsheet-ribbon-skin == 'highcontrast' {
             border-style: solid;
           }
-
           @if $spreadsheet-ribbon-skin == 'bootstrap5' or $spreadsheet-ribbon-skin == 'FluentUI' {
             .e-tab-icon {
               color: $spreadsheet-ribbon-comb-icon-color;
@@ -56,7 +50,6 @@
           }
         }
       }
-
       @if $skin-name == 'material' {
         & .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator {
           border-color: $separator-border-color;
@@ -66,13 +59,9 @@
           border: 0;
         }
       }
-
       @if $skin-name == 'FluentUI' {
         & .e-toolbar,
-        & .e-toolbar-items {
-          background-color: $spreadsheet-ribbon-header-bg-color;
-        }
-
+        & .e-toolbar-items,
         & .e-hscroll .e-scroll-nav.e-scroll-left-nav,
         & .e-hscroll .e-scroll-nav.e-scroll-right-nav {
           background-color: $spreadsheet-ribbon-header-bg-color;
@@ -85,13 +74,12 @@
     }
 
     & .e-tab .e-content .e-toolbar {
-      border-bottom-color: transparent;
-      border-top-color: transparent;
-      @if $skin-name == 'FluentUI' {
+      border-bottom-color: $spreadsheet-ribbon-content-tbar-border-color;
+      border-top-color: $spreadsheet-ribbon-content-tbar-border-color;
+      @if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
         box-shadow: none;
       }
     }
-
     @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
       & .e-tab {
         & .e-tab-header .e-toolbar-item {
@@ -114,7 +102,17 @@
 
     & .e-menu-wrapper {
       background-color: transparent;
-
+      @if $skin-name == 'fluent2' {
+        &.e-file-menu .e-menu {
+          & .e-menu-item.e-selected {
+            background: $spreadsheet-file-menu-press-background;
+            color: $spreadsheet-file-menu-press-font-color;
+            & .e-caret {
+              color: $spreadsheet-file-menu-press-font-color;
+            }
+          }
+        }
+      }
       @if $skin-name == 'bootstrap4' {
         & ul {
           background-color: transparent;
@@ -130,21 +128,15 @@
         }
       }
     }
-
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
       & .e-tab,
       & .e-tab.e-focused {
-
         & .e-tab-header .e-toolbar-item {
-
           & .e-tab-wrap:focus {
             border: 1px solid transparent;
           }
 
-          & .e-tab-wrap:focus-visible {
-            border: 1px solid $spreadsheet-ribbon-focused-wrap-focus-border-color;
-          }
-
+          & .e-tab-wrap:focus-visible,
           & .e-tab-wrap:focus-visible:hover {
             border: 1px solid $spreadsheet-ribbon-focused-wrap-focus-border-color;
           }
@@ -152,11 +144,7 @@
       }
 
       & .e-tab .e-tab-header {
-
-        & .e-toolbar-item.e-active .e-tab-wrap {
-          border: 1px solid transparent;
-        }
-
+        & .e-toolbar-item.e-active .e-tab-wrap,
         & .e-toolbar-item.e-active .e-tab-wrap:hover {
           border: 1px solid transparent;
         }

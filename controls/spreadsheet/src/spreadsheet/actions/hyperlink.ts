@@ -1,5 +1,5 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer, completeAction, isLockedCells } from '../index';
-import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus } from '../common/index';
+import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { editHyperlink, openHyperlink, editAlert, removeHyperlink, isImported } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -112,6 +112,10 @@ export class SpreadsheetHyperlink {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (sheet.isProtected && (!sheet.protectSettings.insertLink || isLockedCells(this.parent))) {
             this.parent.notify(editAlert, null);
+            return;
+        }
+        if (isReadOnlyCells(this.parent)) {
+            this.parent.notify(readonlyAlert, null);
             return;
         }
         const l10n: L10n = this.parent.serviceLocator.getService(locale);

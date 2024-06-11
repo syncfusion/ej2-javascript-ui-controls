@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell } from '../common/index';
-import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote } from '../common/index';
+import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue, createNoteIndicator } from '../common/index';
 import { removeAllChildren, isImported } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
@@ -154,6 +154,13 @@ export class CellRenderer implements ICellRenderer {
                     detach(hyperlink);
                 }
             }
+            if (args.cell && args.td.children.length > 0 &&
+                args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
+                const noteIndicator: Element = args.td.querySelector('.e-addNoteIndicator');
+                if (noteIndicator) {
+                    detach(noteIndicator);
+                }
+            }
             if (!args.cell && args.td.classList.contains('e-wraptext')) {
                 args.td.classList.remove('e-wraptext');
             }
@@ -202,6 +209,18 @@ export class CellRenderer implements ICellRenderer {
                     this.mergeFreezeCol(sheet, args.rowIdx, args.colIdx, colSpan);
                 }
             }
+            if (!isNullOrUndefined(args.cell.notes)){
+                this.parent.notify(createNoteIndicator, {targetElement: args.td, rowIndex: args.rowIdx, columnIndex: args.colIdx});
+            } else if (!isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
+                this.parent.notify(deleteNote, {rowIndex: args.rowIdx, columnIndex: args.colIdx});
+            }
+            if (args.cell.isNoteEditable) {
+                this.parent.notify(showNote,
+                                   {rowIndex: args.rowIdx, columnIndex: args.colIdx, isNoteEditable: true, isScrollWithNote: true});
+            }
+        }
+        if (args.isRefresh && isNullOrUndefined(args.cell) && !isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
+            this.parent.notify(deleteNote, {rowIndex: args.rowIdx, columnIndex: args.colIdx});
         }
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
         if (args.lastCell && this.parent.chartColl && this.parent.chartColl.length) {
@@ -227,8 +246,8 @@ export class CellRenderer implements ICellRenderer {
         }
         if (args.cell && !isNullOrUndefined(args.cell.wrap)) {
             this.parent.notify(wrapEvent, {
-                range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: args.cell.wrap, sheet: sheet, initial: true, td: args.td, row:
-                    args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh && getRowHeight(sheet, args.rowIdx) > 20
+                range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: args.cell.wrap, sheet: sheet, initial: true, td: args.td,
+                row: args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh && getRowHeight(sheet, args.rowIdx) > 20
             });
         }
         const validation: ValidationModel = (args.cell && args.cell.validation) || (sheet.columns && sheet.columns[args.colIdx] &&
@@ -246,7 +265,7 @@ export class CellRenderer implements ICellRenderer {
             this.parent.notify(applyCellFormat, <CellFormatArgs>args);
         }
     }
-    private createImageAndChart(args: CellRenderArgs) {
+    private createImageAndChart(args: CellRenderArgs): void {
         if (args.cell.chart && args.cell.chart.length > 0) {
             this.parent.notify(
                 setChart, { chart : args.cell.chart, isInitCell: true, range: getCellAddress(args.rowIdx, args.colIdx),
@@ -280,8 +299,11 @@ export class CellRenderer implements ICellRenderer {
             args.cell.value = '';
         }
         const isFormula: boolean = checkIsFormula(args.cell.formula);
-        const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
-            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing, isDependentRefresh: args.isDependentRefresh, isRandomFormula: args.isRandomFormula };
+        const eventArgs: { [key: string]: string | number | boolean } = {
+            action: 'refreshCalculate', value: args.cell.formula, rowIndex: args.rowIdx, colIndex: args.colIdx,
+            isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing,
+            isDependentRefresh: args.isDependentRefresh, isRandomFormula: args.isRandomFormula
+        };
         this.parent.notify(workbookFormulaOperation, eventArgs);
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
@@ -530,7 +552,7 @@ export class CellRenderer implements ICellRenderer {
                 templateString = template;
             }
             compiledStr = compile(templateString);
-            if (!(this.parent as { isVue?: boolean }).isVue || this.isSelector(template)) {
+            if (!(this.parent).isVue || this.isSelector(template)) {
                 return (compiledStr(cell, this.parent, 'ranges', '', true)[0] as HTMLElement).outerHTML;
             } else {
                 return compiledStr(cell, this.parent, 'ranges', '');

@@ -1526,13 +1526,13 @@ describe('Group Node - SendToBack & BringToFront', () => {
     it('Send group node front and check z index', (done: Function) => {
         diagram.select([diagram.getObject('group1')]);
         diagram.bringToFront();
-        expect(diagram.selectedItems.nodes[0].zIndex === 4).toBe(true);
+        expect(diagram.selectedItems.nodes[0].zIndex === 6).toBe(true);
         done();
     });
     it('Send group back and check z index', (done: Function) => {
         diagram.select([diagram.getObject('group1')]);
         diagram.sendToBack();
-        expect(diagram.selectedItems.nodes[0].zIndex === -1).toBe(true);
+        expect(diagram.selectedItems.nodes[0].zIndex === 2).toBe(true);
         done();
     });
 })
@@ -1579,7 +1579,7 @@ describe('Child Node - Backward & Forward', () => {
     it('Send group node front and check z index', (done: Function) => {
         diagram.select([diagram.getObject('node1')]);
         diagram.sendBackward();
-        expect(diagram.selectedItems.nodes[0].zIndex === 1).toBe(true);
+        expect(diagram.selectedItems.nodes[0].zIndex === -1).toBe(true);
         done();
     });
     it('Send group back and check z index', (done: Function) => {
@@ -2357,7 +2357,7 @@ describe('Bezier annotation bounds Issue', () => {
         ele.remove();
     });
     it('Check the annotation bounds', (done: Function) => {
-        expect(Math.round(diagram.connectors[0].wrapper.children[3].bounds.x) === 190 && Math.round(diagram.connectors[0].wrapper.children[3].bounds.y) === 300).toBe(true);
+        expect(Math.round(diagram.connectors[0].wrapper.children[3].bounds.x) === 191 && Math.round(diagram.connectors[0].wrapper.children[3].bounds.y) === 300).toBe(true);
         done();
     });
     it('Drag the node and check the bounds', (done: Function) => {
@@ -2366,7 +2366,7 @@ describe('Bezier annotation bounds Issue', () => {
         mouseEvents.dragAndDropEvent(diagramCanvas, 500, 200, 650, 250);
         mouseEvents.clickEvent(diagramCanvas, 300, 500);
         mouseEvents.dragAndDropEvent(diagramCanvas, 300, 500, 400, 600);
-        expect(Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 232 || Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 227 || Math.round(diagram.connectors[0].wrapper.children[3].bounds.x) === 507).toBe(true);
+        expect(Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 232 || Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 227 || Math.round(diagram.connectors[0].wrapper.children[3].bounds.x) === 509).toBe(true);
         expect(Math.floor(diagram.connectors[0].wrapper.children[3].bounds.y) === 420 || Math.floor(diagram.connectors[0].wrapper.children[3].bounds.y) === 425 || Math.round(diagram.connectors[0].wrapper.children[3].bounds.y) === 423).toBe(true);
         done();
     });

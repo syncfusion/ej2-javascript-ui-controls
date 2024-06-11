@@ -50,7 +50,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     public getFrozenRightVirtualRowByIndex(index: number): Element {
         return this.getRowCollection(index, false, false, true) as Element;
     }
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getRowCollection(index: number, isMovable: boolean, isRowObject?: boolean, isFrozenRight?: boolean): Element | Object {
         const startIdx: number = parseInt(this.parent.getRows()[0].getAttribute(literals.dataRowIndex), 10);
         const rowCollection: Element[] = this.parent.getDataRows();
@@ -444,7 +444,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             else if (this.parent.getFrozenColumns() > 0) {
                 scrollArgs.offset.top = scrollArgs.offset.top + 80;
                 this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
-                scrollArgs.offset.top - (outBuffer * rowHeight) + 10 : 0;
+                    scrollArgs.offset.top - (outBuffer * rowHeight) + 10 : 0;
             }
             else {
                 this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
@@ -502,10 +502,10 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.previousInfo = viewInfo;
             this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
             const page: number = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+            this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
             if (downScroll && this.endIndex === this.totalRecords && viewInfo.loadNext) {
                 viewInfo.loadNext = false;
             }
-            this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
             this.requestType = 'virtualscroll';
             if (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left') {
                 viewInfo.event = viewInfo.event === 'refresh-virtual-block' ? 'model-changed' : viewInfo.event;

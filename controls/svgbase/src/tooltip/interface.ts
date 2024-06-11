@@ -59,7 +59,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#000000',
             tooltipLightLabel: '#000000',
             tooltipHeaderLine: '#969696',
-            textStyle: { fontFamily: 'Segoe UI', color: '#000000' }
+            textStyle: { fontFamily: 'Segoe UI', color: '#000000', fontWeight: null }
         };
         break;
     case 'MaterialDark':
@@ -70,7 +70,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A',
             tooltipLightLabel: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A',
             tooltipHeaderLine: '#9A9A9A',
-            textStyle: theme === 'MaterialDark' ? { fontFamily: 'Roboto', color: 'rgba(18, 18, 18, 1)' } : theme === 'FabricDark' ? { fontFamily: 'Segoe UI', color: '#DADADA' } : { fontFamily: 'Helvetica', color: '#1A1A1A' }
+            textStyle: theme === 'MaterialDark' ? { fontFamily: 'Roboto', color: 'rgba(18, 18, 18, 1)', fontWeight: null } : theme === 'FabricDark' ? { fontFamily: 'Segoe UI', color: '#DADADA', fontWeight: null } : { fontFamily: 'Helvetica', color: '#1A1A1A', fontWeight: null }
         };
         break;
     case 'Bootstrap4':
@@ -79,7 +79,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#F9FAFB',
             tooltipLightLabel: '#F9FAFB',
             tooltipHeaderLine: 'rgba(255, 255, 255, 0.2)',
-            textStyle: { fontFamily: 'Helvetica', color: '#F9FAFB' }
+            textStyle: { fontFamily: 'Helvetica', color: '#F9FAFB', fontWeight: null }
         };
         break;
     case 'Tailwind':
@@ -88,7 +88,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#F9FAFB',
             tooltipLightLabel: '#F9FAFB',
             tooltipHeaderLine: '#6B7280',
-            textStyle: { fontFamily: 'Inter', color: '#F9FAFB' }
+            textStyle: { fontFamily: 'Inter', color: '#F9FAFB', fontWeight: null }
         };
         break;
     case 'TailwindDark':
@@ -97,7 +97,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#1F2937',
             tooltipLightLabel: '#1F2937',
             tooltipHeaderLine: '#9CA3AF',
-            textStyle: { fontFamily: 'Inter', color: '#1F2937' }
+            textStyle: { fontFamily: 'Inter', color: '#1F2937', fontWeight: null }
         };
         break;
     case 'Bootstrap5':
@@ -106,7 +106,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#F9FAFB',
             tooltipLightLabel: '#F9FAFB',
             tooltipHeaderLine: '#9CA3AF',
-            textStyle: { fontFamily: 'Helvetica', color: '#F9FAFB' }
+            textStyle: { fontFamily: 'Helvetica', color: '#F9FAFB', fontWeight: null }
         };
         break;
     case 'Bootstrap5Dark':
@@ -115,7 +115,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#212529',
             tooltipLightLabel: '#212529',
             tooltipHeaderLine: '#ADB5BD',
-            textStyle: { fontFamily: 'Helvetica', color: '#212529' }
+            textStyle: { fontFamily: 'Helvetica', color: '#212529', fontWeight: null }
         };
         break;
     case 'Fluent':
@@ -124,7 +124,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#323130',
             tooltipLightLabel: '#323130',
             tooltipHeaderLine: '#D2D0CE',
-            textStyle: { fontFamily: 'Segoe UI', color: '#323130' }
+            textStyle: { fontFamily: 'Segoe UI', color: '#323130', fontWeight: null }
         };
         break;
     case 'FluentDark':
@@ -133,7 +133,25 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#F3F2F2',
             tooltipLightLabel: '#F3F2F1',
             tooltipHeaderLine: '#3B3A39',
-            textStyle: { fontFamily: 'Segoe UI', color: '#F3F2F1' }
+            textStyle: { fontFamily: 'Segoe UI', color: '#F3F2F1', fontWeight: null }
+        };
+        break;
+    case 'Fluent2':
+        style = {
+            tooltipFill: '#FFFFFF',
+            tooltipBoldLabel: '#242424',
+            tooltipLightLabel: '#242424',
+            tooltipHeaderLine: '#D2D0CE',
+            textStyle: { fontFamily: 'Segoe UI', color: '#242424', fontWeight: null }
+        };
+        break;
+    case 'Fluent2Dark':
+        style = {
+            tooltipFill: '#292929',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#3B3A39',
+            textStyle: { fontFamily: 'Segoe UI', color: '#FFFFFF', fontWeight: null }
         };
         break;
     case 'Material3':
@@ -142,7 +160,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#F4EFF4',
             tooltipLightLabel: '#F4EFF4',
             tooltipHeaderLine: '#F4EFF4',
-            textStyle: { fontFamily: 'Roboto', color: '#F4EFF4' }
+            textStyle: { fontFamily: 'Roboto', color: '#F4EFF4', fontWeight: null }
         };
         break;
     case 'Material3Dark':
@@ -151,7 +169,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: '#313033',
             tooltipLightLabel: '#313033',
             tooltipHeaderLine: '#313033',
-            textStyle: { fontFamily: 'Roboto', color: '#313033' }
+            textStyle: { fontFamily: 'Roboto', color: '#313033', fontWeight: null }
         };
         break;
     default:
@@ -160,7 +178,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: theme === 'Material' ? 'rgba(249, 250, 251, 1)' : theme === 'Fabric' ? '#333333' : '#F9FAFB',
             tooltipLightLabel: theme === 'Material' ? 'rgba(249, 250, 251, 1)' : theme === 'Fabric' ? '#333333' : '#F9FAFB',
             tooltipHeaderLine: theme === 'Fabric' ? '#D2D0CE' : '#ffffff',
-            textStyle: theme === 'Material' ? { fontFamily: 'Roboto', color: 'rgba(249, 250, 251, 1)' } : theme === 'Fabric' ? { fontFamily: 'Segoe UI', color: '#333333' } : { fontFamily: 'Helvetica', color: '#F9FAFB' }
+            textStyle: theme === 'Material' ? { fontFamily: 'Roboto', color: 'rgba(249, 250, 251, 1)', fontWeight: null } : theme === 'Fabric' ? { fontFamily: 'Segoe UI', color: '#333333', fontWeight: null } : { fontFamily: 'Helvetica', color: '#F9FAFB', fontWeight: null }
         };
         break;
     }

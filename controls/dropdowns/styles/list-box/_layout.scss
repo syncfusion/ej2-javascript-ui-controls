@@ -15,14 +15,15 @@
       box-sizing: border-box;
     }
 
+    @if $skin-name == 'fluent2' {
+      border-radius: 4px;
+    }
+
     &.e-listboxtool-container .e-list-wrap {
       @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
         width: calc(100% - 16%) !important; /* stylelint-disable-line declaration-no-important */
       }
-      @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
-        width: calc(100% - 14%) !important; /* stylelint-disable-line declaration-no-important */
-      }
-      @else if $skin-name == 'fabric' {
+      @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $skin-name == 'fabric' {
         width: calc(100% - 14%) !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'highcontrast' {
@@ -39,6 +40,14 @@
       pointer-events: none;
     }
 
+    & .e-list-item.e-disabled,
+    & .e-list-item.e-disabled .e-list-icon {
+      @if $skin-name == 'fluent2' {
+        color: $content-text-color-disabled;
+        opacity: 1;
+      }
+    }
+
     &:not(.e-list-template) .e-list-nrt {
       text-align: center;
     }
@@ -46,15 +55,14 @@
     &:not(.e-list-template) .e-list-item,
     .e-list-nrt,
     .e-selectall-parent {
-      @if $skin-name == 'bootstrap5' {
-        height: $listbox-item-height;
-      }
-      @else {
-        height: $listbox-item-height;
-      }
+      height: $listbox-item-height;
       line-height: $listbox-item-line-height;
       padding: $listbox-item-padding;
       position: relative;
+      @if $skin-name == 'fluent2' {
+        font-size: 14px;
+        border-radius: 4px !important; /* stylelint-disable-line declaration-no-important */
+      }
     }
 
     .e-list-parent {
@@ -66,6 +74,14 @@
       border-bottom: $listbox-border-size solid;
       outline: none;
 
+      &:focus-visible {
+        @if $skin-name == 'fluent2' {
+          background-color: $content-bg-color !important; /* stylelint-disable-line declaration-no-important */
+          color: $content-text-color !important; /* stylelint-disable-line declaration-no-important */
+          box-shadow: $secondary-shadow-focus;
+        }
+      }
+
       &.e-disabled {
         pointer-events: none;
       }
@@ -75,21 +91,25 @@
       opacity: .7;
     }
 
+    & .e-list-group-item,
+    & .e-list-item {
+      @if $skin-name == 'fluent2' {
+        margin: 4px;
+      }
+    }
+
     & .e-list-parent {
       margin: 0;
       padding: 0;
     }
 
-    & .e-list-header .e-text.header {
+    & .e-list-header .e-text.header,
+    & .e-list-header .e-headertemplate-text.nested-header {
       display: none;
     }
 
     & .e-icon-back {
       margin-top: $listbox-icon-back-margin;
-    }
-
-    & .e-list-header .e-headertemplate-text.nested-header {
-      display: none;
     }
 
     & .e-list-header {
@@ -187,14 +207,8 @@
       width: 100%;
     }
 
-    & .e-list-icon + .e-list-text {
-      width: calc(100% - 60px);
-    }
-
-    & .e-icon-wrapper .e-list-text {
-      width: calc(100% - 60px);
-    }
-
+    & .e-list-icon + .e-list-text,
+    & .e-icon-wrapper .e-list-text,
     & .e-icon-wrapper.e-text-content.e-checkbox .e-list-text {
       width: calc(100% - 60px);
     }
@@ -247,16 +261,17 @@
         margin-top: $listbox-rtl-icon-back-margin;
       }
 
-      & .e-checkbox .e-checkbox-left {
+      & .e-checkbox .e-checkbox-left,
+      .e-checkbox-wrapper {
         margin: $listbox-rtl-checkbox-left-margin;
+        @if $skin-name == 'fluent2' {
+          padding: 2px 0 2px 12px;
+          vertical-align: top;
+        }
       }
 
       & .e-checkbox .e-checkbox-right {
         margin: $listbox-rtl-checkbox-right-margin;
-      }
-
-      .e-checkbox-wrapper {
-        margin: $listbox-rtl-checkbox-left-margin;
       }
     }
 
@@ -266,6 +281,14 @@
       vertical-align: middle;
       @if $skin-name == 'Material3' {
         position: relative;
+      }
+      @if $skin-name == 'fluent2' {
+        padding: 2px 12px 2px 0;
+        vertical-align: top;
+
+        & .e-frame {
+          margin: 0 !important; /* stylelint-disable-line declaration-no-important */
+        }
       }
     }
 
@@ -299,7 +322,12 @@
     .e-placeholder {
       background-color: $badge-bgcolor;
       display: block;
-      height: 1px;
+      @if $skin-name == 'fluent2' {
+        border: 2px solid $badge-bgcolor;
+      }
+      @else {
+        height: 1px;
+      }
     }
   }
 
@@ -307,17 +335,9 @@
     display: block;
   }
 
-  .e-listbox-wrapper:not(.e-listbox-container) {
+  .e-listbox-wrapper:not(.e-listbox-container),
+  .e-listbox-wrapper.e-filter-list .e-list-parent {
     overflow: auto;
-  }
-
-  .e-listbox-wrapper {
-
-    &.e-filter-list {
-      & .e-list-parent {
-        overflow: auto;
-      }
-    }
   }
 
   .e-listbox-wrapper.e-sortableclone,
@@ -328,6 +348,9 @@
 
     .e-list-item {
       list-style-type: none;
+      @if $skin-name != 'fluent2' {
+        height: 38px !important; /* stylelint-disable-line declaration-no-important */
+      }
     }
 
     .e-ripple {
@@ -373,7 +396,8 @@
       pointer-events: none;
     }
 
-    .e-listbox-wrapper {
+    .e-listbox-wrapper,
+    .e-list-wrap {
       flex: 1;
     }
 
@@ -498,10 +522,7 @@
       }
     }
 
-    .e-list-header .e-text.header {
-      display: none;
-    }
-
+    .e-list-header .e-text.header,
     .e-list-header .e-headertemplate-text.nested-header {
       display: none;
     }

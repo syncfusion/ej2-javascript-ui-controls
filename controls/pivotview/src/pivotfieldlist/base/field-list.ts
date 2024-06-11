@@ -603,7 +603,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             addPrompt: 'Add field here',
             adaptiveFieldHeader: 'Choose field',
             centerHeader: 'Drag fields between axes below:',
-            add: 'add',
+            add: 'Add',
             drag: 'Drag',
             filter: 'Filter',
             filtered: 'Filtered',
@@ -827,8 +827,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.getEngine('initialRender', null, null, null, null, null, null);
             } else {
                 const request: Fetch = new Fetch(this.dataSourceSettings.url, 'GET');
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                request.send().then((response: any) => typeof(response) === 'string' ? response : response.text())
+                request.send().then((response: Response) => typeof (response) === 'string' ? response : response.text())
                     .then(this.onReadyStateChange.bind(this));
             }
         } else {
@@ -850,10 +849,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const customProperties: any = {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            pageSettings: this.pivotGridModule ? JSON.parse((this.pivotGridModule as any).getPageSettings()).pageSettings : undefined,
+        const customProperties: { [key: string]: Object } = {
+            pageSettings: this.pivotGridModule ? JSON.parse(this.pivotGridModule.getPageSettings()).pageSettings : undefined,
             enableValueSorting: this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined,
             enableDrillThrough: this.pivotGridModule ?
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
@@ -900,15 +897,26 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         });
         this.request.open('POST', this.dataSourceSettings.url, true);
         this.request.onreadystatechange = this.onSuccess.bind(this);
-        const keys: string[] = Object.keys(params.internalProperties.headers);
+        let contentTypeExists: boolean = false;
+        const keys: string[] = Object.keys((params.internalProperties as { [key: string]: Object }).headers);
         for (let i: number = 0; i < keys.length; i++) {
-            this.request.setRequestHeader(keys[i], params.internalProperties.headers[keys[i] as string]);
+            const headerKey: string = keys[i as number] as string;
+            const headerValue: string =
+            String(((params.internalProperties as { [key: string]: Object }).headers as { [key: string]: Object })[headerKey as string]);
+            this.request.setRequestHeader(headerKey, headerValue);
+            if (headerKey === 'Content-type') {
+                contentTypeExists = true;
+            }
         }
-        if (params.internalProperties.requestType === 'string') {
-            this.request.setRequestHeader('Content-type', 'application/json');
+        if ((params.internalProperties as { [key: string]: Object }).requestType === 'string') {
+            if (!contentTypeExists) {
+                this.request.setRequestHeader('Content-type', 'application/json');
+            }
             this.request.send(JSON.stringify(params));
-        } else if (params.internalProperties.requestType === 'base64') {
-            this.request.setRequestHeader('Content-type', 'application/octet-stream');
+        } else if ((params.internalProperties as { [key: string]: Object }).requestType === 'base64') {
+            if (!contentTypeExists) {
+                this.request.setRequestHeader('Content-type', 'application/octet-stream');
+            }
             this.request.send(btoa(JSON.stringify(params)));
         }
     }
@@ -921,20 +929,32 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     response: this.request.responseText
                 };
                 this.trigger(events.afterServiceInvoke, params);
-                /* eslint-disable @typescript-eslint/no-explicit-any */
-                const engine: any = JSON.parse(this.request.responseText);
+                const engine: {
+                    members: string,
+                    memberName: string,
+                    fieldList: string,
+                    fields: string,
+                    dataSourceSettings: string,
+                    pivotValue: string,
+                    pivotCount: string
+                } = JSON.parse(this.request.responseText);
                 if (this.currentAction === 'fetchFieldMembers') {
-                    const currentMembers: any = JSON.parse(engine.members);
-                    const dateMembers: any = [];
-                    const members: any = {};
-                    /* eslint-enable @typescript-eslint/no-explicit-any */
+                    const currentMembers: { [key: string]: Object } = JSON.parse(engine.members);
+                    const dateMembers: IAxisSet[] = [];
+                    const members: { [key: string]: Object } = {};
                     this.engineModule.globalize = !isNullOrUndefined(this.globalize) ? this.globalize : new Internationalization();
                     this.engineModule.formatFields = this.engineModule.setFormattedFields(this.dataSourceSettings.formatSettings);
                     const isDateField: boolean = PivotUtil.isDateField(engine.memberName as string, this.engineModule as PivotEngine);
                     const isNumberType: boolean = this.engineModule.fieldList[engine.memberName].type === 'number';
                     const keys: string[] = Object.keys(currentMembers);
                     for (let i: number = 0, j: number = keys.length; i < j; i++) {
-                        const values: any = currentMembers[keys[i as number] as string]; // eslint-disable-line @typescript-eslint/no-explicit-any
+                        const values: {
+                            Name?: string,
+                            Caption?: string,
+                            Index?: number[],
+                            Ordinal?: number,
+                            IsDrilled?: boolean
+                        } = currentMembers[keys[i as number] as string];
                         const formattedValue: IAxisSet = isDateField ?
                             this.engineModule.getFormattedValue(values.Name as string, engine.memberName) :
                             { formattedText: values.Caption };
@@ -972,8 +992,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this.engineModule.rowFirstLvl = JSON.parse(engine.pivotCount).RowFirstLevel;
                     this.engineModule.colFirstLvl = JSON.parse(engine.pivotCount).ColumnFirstLevel;
                     let rowPos: number;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const pivotValues: any = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
+                    const pivotValues: IAxisSet[][] = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
                     for (let rCnt: number = 0; rCnt < pivotValues.length; rCnt++) {
                         if (pivotValues[rCnt as number] && pivotValues[rCnt as number][0] && pivotValues[rCnt as number][0].axis === 'row') {
                             rowPos = rCnt;
@@ -982,13 +1001,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     }
                     this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
                     this.engineModule.pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const valueSort: any = JSON.parse(engine.dataSourceSettings).ValueSortSettings;
+                    const valueSort: { [key: string]: Object } = JSON.parse(engine.dataSourceSettings).ValueSortSettings;
                     this.engineModule.valueSortSettings = {
-                        headerText: valueSort.HeaderText,
-                        headerDelimiter: valueSort.HeaderDelimiter,
-                        sortOrder: valueSort.SortOrder,
-                        columnIndex: valueSort.ColumnIndex
+                        headerText: valueSort.HeaderText as string,
+                        headerDelimiter: valueSort.HeaderDelimiter as string,
+                        sortOrder: valueSort.SortOrder as Sorting,
+                        columnIndex: valueSort.ColumnIndex as number
                     };
                     this.engineModule.pivotValues = pivotValues;
                     this.engineModule.isEmptyData = this.dataSourceSettings.values.length === 0 ? true : false;
@@ -1224,9 +1242,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
     private initEngine(): void {
         if (this.dataType === 'pivot') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const data: any = !isNullOrUndefined(this.dataSourceSettings.dataSource) ? (this.dataSourceSettings.dataSource as IDataSet[])[0]
-                : !isNullOrUndefined(this.engineModule.data) ? (this.engineModule.data as IDataSet[])[0] : undefined;
+            const data: IDataSet = !isNullOrUndefined(this.dataSourceSettings.dataSource) ?
+                (this.dataSourceSettings.dataSource as IDataSet[])[0] : !isNullOrUndefined(this.engineModule.data) ?
+                    (this.engineModule.data as IDataSet[])[0] : undefined;
             if (data && this.pivotCommon) {
                 const isArray: boolean = Object.prototype.toString.call(data) === '[object Array]';
                 if (isArray && this.dataSourceSettings.type === 'JSON') {
@@ -1267,8 +1285,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivotFieldList: this.pivotFieldList,
                     pivotValues: this.engineModule.pivotValues
                 };
-                // eslint-disable-next-line @typescript-eslint/no-this-alias
-                const this$: PivotFieldList = this;
+                const this$: PivotFieldList = this as PivotFieldList;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
                     this$.engineModule.pivotValues = observedArgs.pivotValues;
@@ -1282,8 +1299,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivotFieldList: this.pivotFieldList,
                     pivotValues: this.olapEngineModule.pivotValues
                 };
-                // eslint-disable-next-line @typescript-eslint/no-this-alias
-                const this$: PivotFieldList = this;
+                const this$: PivotFieldList = this as PivotFieldList;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
                     this$.olapEngineModule.pivotValues = observedArgs.pivotValues;
@@ -1330,7 +1346,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         return args;
     }
 
-    private getHeaderSortInfo(sortingObj: HeadersSortEventArgs): HeadersSortEventArgs {
+    /**
+     *
+     * @param {HeadersSortEventArgs} sortingObj - It contains the current sorting information.
+     * @returns {void}
+     * @hidden
+     */
+    public getHeaderSortInfo(sortingObj: HeadersSortEventArgs): HeadersSortEventArgs {
         const args: HeadersSortEventArgs = sortingObj;
         this.trigger(events.onHeadersSort, args);
         return args;
@@ -1368,8 +1390,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.fieldListSpinnerElement = this.element.querySelector('.e-pivotfieldlist-container');
         }
         if (this.spinnerTemplate) {
-            createSpinner({ // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate as any,
+            createSpinner({
+                target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate as string,
                 cssClass: this.cssClass ? this.cssClass : undefined
             }, this.createElement);
         } else {
@@ -1442,8 +1464,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.pivotGridModule.showWaitingPopup();
         }
         showSpinner(this.fieldListSpinnerElement as HTMLElement);
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const pivot: PivotFieldList = this;
+        const pivot: PivotFieldList = this as PivotFieldList;
         const control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
         //setTimeout(() => {
         let isOlapDataRefreshed: boolean = false;
@@ -1533,9 +1554,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         pivot.lastFilterInfo = {};
                     }
                 } else {
-                    /* eslint-disable */
-                    isOlapDataRefreshed = pivot.updateOlapDataSource(pivot, isSorted, isCalcChange, isOlapDataRefreshed, enableValueSorting);
-                    /* eslint-enable */
+                    isOlapDataRefreshed = pivot.updateOlapDataSource(
+                        pivot, isSorted, isCalcChange, isOlapDataRefreshed, enableValueSorting
+                    );
                 }
                 pivot.getFieldCaption(pivot.dataSourceSettings);
             } else {

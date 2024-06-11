@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart Selection src file
  */
@@ -46,6 +43,8 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * Binding events for selection module.
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.accumulation.isDestroyed) { return; }
@@ -55,6 +54,8 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * UnBinding events for selection module.
+     *
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (this.accumulation.isDestroyed) { return; }
@@ -62,7 +63,10 @@ export class AccumulationSelection extends BaseSelection {
         this.accumulation.off('click', this.mouseClick);
     }
     /**
-     * To initialize the private variables
+     * To initialize the private variables.
+     *
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @returns {void}
      */
     private initPrivateVariables(accumulation: AccumulationChart): void {
         this.styleId = accumulation.element.id + '_ej2_chart_selection';
@@ -73,7 +77,7 @@ export class AccumulationSelection extends BaseSelection {
     /**
      * Invoke selection for rendered chart.
      *
-     * @param {AccumulationChart} accumulation Define the chart to invoke the selection.
+     * @param {AccumulationChart} accumulation - Define the chart to invoke the selection.
      * @returns {void}
      */
     public invokeSelection(accumulation: AccumulationChart): void {
@@ -85,12 +89,20 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To get series selection style by series.
+     *
+     * @param {AccumulationSeriesModel} series - The series for which to get the selection style.
+     * @param {number} point - The index of the point within the series.
+     * @returns {string} - The selection style for the specified series.
      */
     private generateStyle(series: AccumulationSeriesModel, point?: number): string {
         return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index + '_point_' + point);
     }
     /**
-     * To get series selection style while hovering legend
+     * To get series selection style while hovering legend.
+     *
+     * @param {AccumulationSeriesModel} series - The series for which to get the selection style.
+     * @param {string} eventType - The event type indicating the legend interaction (e.g., hover).
+     * @returns {string} - The selection style for the specified series.
      */
     private generateLegendClickStyle(series: AccumulationSeriesModel, eventType: string): string {
         if (eventType === 'mousemove') {
@@ -101,13 +113,21 @@ export class AccumulationSelection extends BaseSelection {
         return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index);
     }
     /**
-     * To get elements by index, series
+     * To get elements by index, series.
+     *
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {AccumulationSeriesModel} series - The series for which to get the elements.
+     * @param {Index} index - The index of the element within the series.
+     * @returns {Element[]} - The elements corresponding to the specified index and series.
      */
     private findElements(accumulation: AccumulationChart, series: AccumulationSeriesModel, index: Index): Element[] {
         return [this.getElementByIndex(index)];
     }
     /**
-     * To get series point element by index
+     * To get series point element by index.
+     *
+     * @param {Index} index - The index of the element within the series.
+     * @returns {Element} - The elements corresponding to the specified index.
      */
     private getElementByIndex(index: Index): Element {
         const elementId: string = this.control.element.id + '_Series_' + index.series + '_Point_' + index.point;
@@ -116,7 +136,9 @@ export class AccumulationSelection extends BaseSelection {
     /**
      * To find the selected element.
      *
-     * @return {void}
+     * @param {Element} targetElement - The target element to check for selection.
+     * @param {string} eventType - The type of event that triggered the selection.
+     * @returns {boolean} - Indicates whether the element is selected.
      * @private
      */
     public isAlreadySelected(targetElement: Element, eventType: string): boolean {
@@ -156,18 +178,25 @@ export class AccumulationSelection extends BaseSelection {
     }
 
     /**
-     * To calculate selected elements on mouse click or touch
+     * To calculate selected elements on mouse click or touch.
      *
      * @private
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {Event} event - The event object representing the mouse click or touch event.
+     * @returns {void}
      */
     public mouseClick(accumulation: AccumulationChart, event: Event): void {
         this.calculateSelectedElements(accumulation, event.target as Element, event.type);
     }
 
     /**
-     * To calculate selected elements on mouse click or touch
+     * To calculate selected elements on mouse click or touch.
      *
      * @private
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {Element} targetEle - The target element that triggered the event.
+     * @param {string} eventType - The type of event that triggered the selection.
+     * @returns {void}
      */
     public calculateSelectedElements(accumulation: AccumulationChart, targetEle: Element, eventType: string): void {
         if (isNullOrUndefined(targetEle)) {
@@ -195,6 +224,11 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To perform the selection process based on index and element.
+     *
+     * @param {Index} index - The index of the data to select.
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {Element} element - The element representing the selected data.
+     * @returns {void}
      */
     private performSelection(index: Index, accumulation: AccumulationChart, element?: Element): void {
         element = element.id.indexOf('datalabel') > -1 ?
@@ -212,9 +246,12 @@ export class AccumulationSelection extends BaseSelection {
     }
 
     /**
-     *  Method to get the selected data index
+     *  Method to get the selected data index.
      *
      * @private
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {AccumulationSeries} series - The series to retrieve the selected data from index.
+     * @returns {void}
      */
     private selectionComplete(accumulation: AccumulationChart, series: AccumulationSeries): void {
         let pointIndex: number;
@@ -238,6 +275,11 @@ export class AccumulationSelection extends BaseSelection {
 
     /**
      * To select the element by index. Adding or removing selection style class name.
+     *
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {Index} index - The index of the element to select or deselect.
+     * @param {Element[]} selectedElements - The array of selected elements.
+     * @returns {void}
      */
     private selection(accumulation: AccumulationChart, index: Index, selectedElements: Element[]): void {
         if (!accumulation.isMultiSelect && this.styleId.indexOf('highlight') === -1 &&
@@ -281,6 +323,8 @@ export class AccumulationSelection extends BaseSelection {
      * To redraw the selection process on accumulation chart refresh.
      *
      * @private
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @returns {void}
      */
     public redrawSelection(accumulation: AccumulationChart): void {
         let selectedDataIndexes: Indexes[] = <Indexes[]>extend([], this.selectedDataIndexes, null, true);
@@ -296,6 +340,10 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To remove the selected elements style classes by indexes.
+     *
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {Index[]} indexes - The array of indexes representing elements to remove selection styles.
+     * @returns {void}
      */
     private removeSelectedElements(accumulation: AccumulationChart, indexes: Index[]): void {
         for (const index of indexes) {
@@ -303,7 +351,7 @@ export class AccumulationSelection extends BaseSelection {
         }
         const points: AccPoints[] = accumulation.visibleSeries[0].points;
         for (let i: number = 0; i < points.length; i++) {
-            const index: Index = new Index(0, points[i as number].index)
+            const index: Index = new Index(0, points[i as number].index);
             this.removeStyles([this.getElementByIndex(index)], index);
         }
     }
@@ -337,6 +385,10 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To select the element by selected data indexes.
+     *
+     * @param {Index[]} indexes - The array of indexes representing elements to select.
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @returns {void}
      */
     private selectDataIndex(indexes: Index[], accumulation: AccumulationChart): void {
         let element: Element;
@@ -349,6 +401,12 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To remove the selection styles for multi selection process.
+     *
+     * @param {AccumulationChart} accumulation - The Accumulation Chart control.
+     * @param {Index[]} index - The array of indexes representing elements to remove selection styles for multi selection process.
+     * @param {Index} currentIndex - The current index to remove from selection.
+     * @param {AccumulationSeriesModel[]} seriesCollection - The array of visible series in the accumulation chart.
+     * @returns {void}
      */
     private removeMultiSelectEelments(accumulation: AccumulationChart, index: Index[], currentIndex: Index,
                                       seriesCollection: AccumulationSeriesModel[]): void {
@@ -364,6 +422,10 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To apply the opacity effect for accumulation chart series elements.
+     *
+     * @param  {string} pieId - The id of the pie element.
+     * @param  {AccumulationSeries[]} visibleSeries - The array of visible series in the accumulation chart.
+     * @returns {void}
      */
     private blurEffect(pieId: string, visibleSeries: AccumulationSeries[]): void {
         const visibility: boolean = (this.checkVisibility(this.highlightDataIndexes) ||
@@ -377,6 +439,11 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To check selection elements by style class name.
+     *
+     * @param  {Element} element - The element to check selection elements by style class name.
+     * @param  {string} className - The class name to check.
+     * @param  {boolean} visibility - Indicates whether the element should be visible.
+     * @returns {void}
      */
     private checkSelectionElements(element: Element, className: string, visibility: boolean): void {
         const children: NodeList = element.childNodes[0].childNodes;
@@ -406,7 +473,8 @@ export class AccumulationSelection extends BaseSelection {
                 this.removeSvgClass(children[i as number] as HTMLElement, this.unselected);
                 this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
             }
-            if ((this.control as AccumulationChart).accumulationLegendModule && (this.control as AccumulationChart).legendSettings.visible) {
+            if ((this.control as AccumulationChart).accumulationLegendModule &&
+            (this.control as AccumulationChart).legendSettings.visible) {
                 legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + i);
                 if (legendShape) {
                     if (elementClass.indexOf(className) === -1 && parentClass.indexOf(className) === -1 && visibility) {
@@ -420,13 +488,18 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To apply selection style for elements.
+     *
+     * @param  {Element[]} elements - The array of elements to apply the selection style.
+     * @param  {Index} index - The index to apply the selection style.
+     * @returns {void}
      */
     private applyStyles(elements: Element[], index: Index): void {
         const accumulationTooltip: AccumulationTooltip = (this.control as AccumulationChart).accumulationTooltipModule;
         for (const element of elements) {
             let legendShape: Element;
             if (element) {
-                if ((this.control as AccumulationChart).accumulationLegendModule && (this.control as AccumulationChart).legendSettings.visible) {
+                if ((this.control as AccumulationChart).accumulationLegendModule &&
+                (this.control as AccumulationChart).legendSettings.visible) {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
                     this.addSvgClass(legendShape, this.getSelectionClass(legendShape.id, index.point));
@@ -442,20 +515,29 @@ export class AccumulationSelection extends BaseSelection {
         }
     }
     /**
-     * To get selection style class name by id
+     * To get selection style class name by id.
+     *
+     * @param  {string} id - The id of the element to retrieve the selection style class name.
+     * @param  {number} point - The point for the selection.
+     * @returns {string} - The selection style class name.
      */
     private getSelectionClass(id: string, point?: number): string {
         return this.generateStyle((this.control as AccumulationChart).series[indexFinder(id).series], point);
     }
     /**
      * To remove selection style for elements.
+     *
+     * @param  {Element[]} elements - The array of elements from which to remove the selection style.
+     * @param  {Index} index - The index to remove from the selection.
+     * @returns {void}
      */
     private removeStyles(elements: Element[], index: Index): void {
         const accumulationTooltip: AccumulationTooltip = (this.control as AccumulationChart).accumulationTooltipModule;
         let legendShape: Element;
         for (const element of elements) {
             if (element) {
-                if ((this.control as AccumulationChart).accumulationLegendModule && (this.control as AccumulationChart).legendSettings.visible) {
+                if ((this.control as AccumulationChart).accumulationLegendModule &&
+                (this.control as AccumulationChart).legendSettings.visible) {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id, index.point));
                 }
@@ -469,6 +551,11 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * To apply or remove selected elements index.
+     *
+     * @param  {Index[]} indexes - The array of indexes representing elements to apply or remove selection.
+     * @param  {Index} index - The index to add or remove from the selection.
+     * @param  {boolean} add - Indicates whether to add or remove the index.
+     * @returns {void}
      */
     private addOrRemoveIndex(indexes: Index[], index: Index, add?: boolean): void {
         for (let i: number = 0; i < indexes.length; i++) {
@@ -480,12 +567,22 @@ export class AccumulationSelection extends BaseSelection {
         if (add) { indexes.push(index); }
     }
     /**
-     * To check two index, point and series are equal
+     * To check two index, point and series are equal.
+     *
+     * @param  {Index} first - The first index.
+     * @param  {Index} second - The second index.
+     * @returns {boolean} - Indicates whether the two indexes are equal.
      */
     private checkEquals(first: Index, second: Index): boolean {
         return ((first.point === second.point) && (first.series === second.series));
     }
-    /** @private */
+    /**
+     *The mouse move event.
+     *
+     * @private
+     * @param  {PointerEvent | TouchEvent} event - The mouse move event or touch event.
+     * @returns {void}
+     */
     public mouseMove(event: PointerEvent | TouchEvent): void{
         const accumulation: AccumulationChart = this.accumulation;
         let targetElement: Element = <Element>event.target;
@@ -506,7 +603,10 @@ export class AccumulationSelection extends BaseSelection {
         }
     }
     /**
-     * To check selected points are visibility
+     * To check selected points are visibility.
+     *
+     * @param  {Indexes[]} selectedDataIndexes - The array of indexes representing selected points.
+     * @returns {boolean} - Indicates whether the selected points are visible.
      */
     private checkPointVisibility(selectedDataIndexes: Indexes[]): boolean {
         let visible: boolean = false;
@@ -520,6 +620,8 @@ export class AccumulationSelection extends BaseSelection {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {
         return 'AccumulationSelection';

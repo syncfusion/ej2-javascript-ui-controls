@@ -32,7 +32,7 @@ describe('Ribbon', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -675,8 +675,20 @@ describe('Ribbon', () => {
             }, ribbonEle);
             ribbon.dataBind();
             (ribbon.element.querySelector('#ribbon_backstage') as HTMLElement).click();
-            document.querySelector('.e-ribbon-backstage-popup').dispatchEvent((new KeyboardEvent('keydown', { 'code' : 'Escape' })));
+            document.querySelector('.e-ribbon-backstage-popup').dispatchEvent((new KeyboardEvent('keyup', { 'code' : 'Escape' })));
             expect(document.querySelector('.e-ribbon-backstage-popup').classList.contains('e-popup-close')).toBe(true);
+            (ribbon.element.querySelector('#ribbon_backstage') as HTMLElement).click();
+            expect(document.querySelector('.e-ribbon-backstage-popup').classList.contains('e-popup-open')).toBe(true);
+            document.querySelector('.e-ribbon-backstage-popup').dispatchEvent((new KeyboardEvent('keyup', { 'key' : 'ArrowDown' })));
+            document.querySelector('#editItem').classList.contains('e-focused');
+            document.querySelector('.e-ribbon-backstage-popup').dispatchEvent((new KeyboardEvent('keyup', { 'key' : 'ArrowUp' })));
+            document.querySelector('#fileItem').classList.contains('e-focused');
+            document.querySelector('.e-ribbon-backstage-popup').dispatchEvent((new KeyboardEvent('keyup', { 'key' : 'ArrowUp' })));
+            document.querySelector('.e-ribbon-backstage-popup').dispatchEvent((new KeyboardEvent('keyup', { 'key' : 'ArrowUp' })));
+            document.querySelector('#editItem').classList.contains('e-focused');
+            document.querySelector('.e-ribbon-backstage-popup').dispatchEvent((new KeyboardEvent('keyup', { 'key' : 'ArrowDown' })));
+            document.querySelector('.e-ribbon-backstage-popup').dispatchEvent((new KeyboardEvent('keyup', { 'key' : 'ArrowDown' })));
+            document.querySelector('#fileItem').classList.contains('e-focused');
         });
     });
 });

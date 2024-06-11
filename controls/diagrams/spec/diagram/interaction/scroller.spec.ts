@@ -614,8 +614,8 @@ describe('Diagram Control', () => {
                 { id: 'node23', offsetX: 2500, offsetY: 3000, width: 100, height: 100, annotations: [{ content: 'Preparation' }] },
                 { id: 'node24', offsetX: 3000, offsetY: 3500, width: 100, height: 100, annotations: [{ content: 'Decision' }] },
                 { id: 'node25', offsetX: 3500, offsetY: 4000, width: 100, height: 100, annotations: [{ content: 'End' }] },
-    
-    
+
+
               ];
             diagram = new Diagram({
                 width: '900px', height: '700px',

@@ -1,6 +1,6 @@
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n } from '@syncfusion/ej2-base';
 import { Mention } from '../../src/mention/mention';
-import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, Query, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
 
 L10n.load({
@@ -346,7 +346,11 @@ describe('Mention', () => {
         let mentionObj: any;
         let popupObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
-        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        let remoteData: DataManager = new DataManager({
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
+        });
         beforeEach(() => {
             document.body.appendChild(element);
         });
@@ -1083,7 +1087,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">@PERL</span> ');
+            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">@PERL</span>');
         });
     });
 
@@ -1119,7 +1123,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick and check change event being triggered', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">@PERL</span> </p>');
+            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">@PERL</span></p>');
             expect(changeAction).toHaveBeenCalled();
         });
     });
@@ -1186,7 +1190,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick and check change event being triggered', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">PERL</span> </p>');
+            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">PERL</span></p>');
             expect(changeAction).toHaveBeenCalled();
         });
     });

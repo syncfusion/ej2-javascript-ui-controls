@@ -5,7 +5,7 @@ import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '
 import { ComboBox, CustomValueSpecifierEventArgs } from '../../src/combo-box/combo-box';
 import { ChangeEventArgs } from '../../src/drop-down-list/drop-down-list';
 import { FilteringEventArgs, PopupEventArgs } from '../../src/drop-down-base';
-import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 let languageData: { [key: string]: Object }[] = [
@@ -220,28 +220,6 @@ describe('ComboBox', () => {
             expect(comboBoxObj.index).toBe(3);
         });
 
-        it('value at dynamic changes with allowObjectBinding', (done) => {
-            let changeAction: EmitType<Object> = jasmine.createSpy('Change');
-            comboBoxObj = new ComboBox({
-                dataSource: languageData,
-                allowObjectBinding: true,
-                fields: { text: 'text', value: 'id' },
-                change: changeAction
-            });
-            comboBoxObj.appendTo(element);
-            comboBoxObj.value = { id: 'id1', text: 'HTML' };
-            comboBoxObj.dataBind();
-            setTimeout(() => { 
-                expect(comboBoxObj.isObjectInArray({ id: "id1", text: "HTML" }, [comboBoxObj.value])).toBe(true)
-                comboBoxObj.value = { id: 'list2', text: 'PYTHON' };
-                setTimeout(() => {
-                    expect(comboBoxObj.isObjectInArray({ id: 'list2', text: 'PYTHON' }, [comboBoxObj.value])).toBe(true)
-                    expect(isNullOrUndefined(comboBoxObj.popupObj)).toBe(true);
-                    done();
-                }, 800);
-            }, 800);
-        });
-
         it(' text property - not allowed the custom value when disabled the allowCustom property ', () => {
             comboBoxObj = new ComboBox({
                 dataSource: languageData,
@@ -297,6 +275,52 @@ describe('ComboBox', () => {
             expect(comboBoxObj.text).toBe(null);
             expect(comboBoxObj.value).toBe(null);
             expect(comboBoxObj.index).toBe(null);
+        });
+    });
+
+    describe('dynamic change', () => {
+        let comboBoxObj: any;
+        let popupObj: any;
+        let originalTimeout: number;
+
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combobox' });
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: 72 };
+        let languageData: { [key: string]: Object }[] = [
+            { id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
+            { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'PYTHON' }, { id: 'list5', text: 'HTMLCSS' }];
+        beforeEach(() => {
+            Browser.userAgent = navigator.userAgent;
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('value at dynamic changes with allowObjectBinding', (done) => {
+            let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+            comboBoxObj = new ComboBox({
+                dataSource: languageData,
+                allowObjectBinding: true,
+                fields: { text: 'text', value: 'id' },
+                change: changeAction
+            });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.value = { id: 'id1', text: 'HTML' };
+            comboBoxObj.dataBind();
+            setTimeout(() => { 
+                expect(comboBoxObj.isObjectInArray({ id: "id1", text: "HTML" }, [comboBoxObj.value])).toBe(true)
+                comboBoxObj.value = { id: 'list2', text: 'PYTHON' };
+                setTimeout(() => {
+                    expect(comboBoxObj.isObjectInArray({ id: 'list2', text: 'PYTHON' }, [comboBoxObj.value])).toBe(true)
+                    expect(isNullOrUndefined(comboBoxObj.popupObj)).toBe(true);
+                    done();
+                }, 800);
+            }, 800);
         });
     });
 
@@ -1123,8 +1147,9 @@ describe('ComboBox', () => {
         let ddlObj: any;
         let element: HTMLInputElement;
         let data: DataManager = new DataManager({
-            url: '/api/Employees',
-            adaptor: new ODataV4Adaptor
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
         });
         let keyEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
@@ -1164,8 +1189,9 @@ describe('ComboBox', () => {
         let ddlObj: any;
         let element: HTMLInputElement;
         let data: DataManager = new DataManager({
-            url: '/api/Employees',
-            adaptor: new ODataV4Adaptor
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
         });
         let keyEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
@@ -1526,11 +1552,16 @@ describe('ComboBox', () => {
     describe('dataBound event', () => {
         let mouseEventArgs: any = { which: 3, button: 2, preventDefault: function () { }, target: null };
         let dropDowns: any;
+        let originalTimeout: number;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
         beforeAll(() => {
             document.body.appendChild(element);
+            // originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            // jasmine.DEFAULT_TIMEOUT_INTERVAL = 13000;
         });
         afterAll(() => {
+            //jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            //console.log('timeout', jasmine.DEFAULT_TIMEOUT_INTERVAL);
             dropDowns.destroy();
             element.remove();
         });
@@ -1553,7 +1584,11 @@ describe('ComboBox', () => {
             }, 450);
         });
         it(' trigger on remote data', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
             let isDataBound: boolean = false;
             dropDowns = new ComboBox({
                 dataSource: remoteData,
@@ -1563,6 +1598,7 @@ describe('ComboBox', () => {
                 }
             });
             dropDowns.appendTo(element);
+            debugger;
             expect(isDataBound).toBe(false);
             dropDowns.showPopup();
             setTimeout(() => {
@@ -1621,7 +1657,11 @@ describe('ComboBox', () => {
         });
 
         it(' actionComplete event', (done) => {
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
             dropDowns = new ComboBox({
                 dataSource: remoteData,
                 fields: { value: 'FirstName', text:'FirstName' },
@@ -1688,6 +1728,7 @@ describe('ComboBox', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
         beforeAll(() => {
             document.body.appendChild(element);
+            
         });
         afterAll(() => {
             dropDowns.destroy();
@@ -3097,5 +3138,405 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 done();
             }, 450);
         })
+    });
+    describe('Disable items', () => {  
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('checked with disableItem method', (done) => {
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem("Game4");
+                expect(listObj.liCollections[3].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[3].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[3].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.liCollections[6].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[6].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[6].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem({ "State": true, "Game": "Hockey", "Id" : 'Game7' });
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem(0);
+                expect(listObj.liCollections[0].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[0].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[0].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(7);
+                listObj.disableItem("Game8");
+                expect(listObj.liCollections[7].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[7].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[7].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(6);
+                listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                expect(listObj.liCollections[9].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem(0);
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem("Game8");
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem(listObj.liCollections[8]);
+                expect(listObj.liCollections[8].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[8].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[8].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(4);
+                done();
+            }, 450);
+        });
+    });
+    describe('Disable items', function () {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                value: 'Game7',
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('checked with value binding', function (done) { 
+            setTimeout(function () {
+                expect(listObj.value).toBe(null);
+                listObj.value = "Game4";
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                listObj.value = "Game1";
+                listObj.dataBind();
+                listObj.disableItem(0);
+                expect(listObj.value === null).toBe(true);
+                done();
+            }, 450);
+        });
+    });
+    describe('Disable Items', function () {          
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                value: { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+                allowObjectBinding: true,
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('checked with object value binding', function (done) {     
+            setTimeout(function () {
+                expect(listObj.value).toBe(null);
+                listObj.value = { "State": true, "Game": "Cricket", "Id" : 'Game4' };
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                listObj.value = { "State": false, "Game": "American Football", "Id" : 'Game1' };
+                listObj.dataBind();
+                listObj.disableItem(0);
+                expect(listObj.value === null).toBe(true);
+                done();
+            }, 450);
+        });
+    });
+    describe('Disable items with allowfiltering', function () {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'escape' };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                allowFiltering: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('to check the enabled value with enter key action', function (done) { 
+            listObj.showPopup();
+            setTimeout(function () {
+                listObj.filterInput.value = "s";
+                listObj.onInput()
+                listObj.onFilterUp(keyEventArgs); 
+                keyEventArgs.action = 'enter';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.liCollections[0].classList.contains('e-active')).toBe(true);
+                done();
+            }, 200);
+        });
+        it('to check the diabled value with enter key action', function (done) { 
+            setTimeout(function () {
+                listObj.showPopup();
+                listObj.filterInput.value = "c";
+                listObj.onInput()
+                listObj.onFilterUp(keyEventArgs); 
+                keyEventArgs.action = 'enter';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.liCollections[0].classList.contains('e-active')).toBe(false);
+                expect(listObj.liCollections[0].classList.contains('e-disabled')).toBe(true);
+                done();
+            }, 400);
+        });
+    });
+    describe('Disable items', function () {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                text: "Hockey",
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('checked with text binding', function (done) {  
+            setTimeout(function () {
+                expect(listObj.value).toBe(null);
+                listObj.text = "Cricket";
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                listObj.text = "American Football";
+                listObj.dataBind();
+                listObj.disableItem("Game1");
+                expect(listObj.value === null).toBe(true);
+                done();
+            }, 450);
+        });
+    });
+    describe('Disable items', function () {        
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                index: 6,
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('checked with index binding', function (done) {        
+            setTimeout(function () {
+                expect(listObj.value).toBe(null);
+                listObj.index = 3;
+                listObj.dataBind();
+                expect(listObj.value === null).toBe(true);
+                listObj.index = 0;
+                listObj.dataBind();
+                listObj.disableItem({ "State": false, "Game": "American Football", "Id" : 'Game1' });
+                expect(listObj.value === null).toBe(true);
+                done();
+            }, 450);
+        });
+    });
+    describe('keyboard interaction with disabled items', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up' };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": true, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": true, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": true, "Game": "Golf", "Id" : 'Game6' },
+        
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('up and down action', (done) => {       
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelector('.e-item-focus').getAttribute('data-value') === "Game2").toBe(true);
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game2").toBe(true);
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game2").toBe(true);
+                keyEventArgs.action = 'down';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game5").toBe(true);
+                keyEventArgs.action = 'down';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game5").toBe(true);
+                keyEventArgs.action = 'up';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Game2").toBe(true);
+                done();
+            }, 450);
+        });
+        it('all disabled items', (done) => {         
+            listObj.showPopup();
+            setTimeout(() => {
+                listObj.disableItem('Game2');
+                listObj.disableItem('Game5');
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'down';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'up';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'down';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'up';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                done();
+            }, 450);
+        });
     });
 });

@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, ContextMenu, Sort, ColumnMenu, RowDD, ITaskbarEditedEventArgs, TimelineSettingsModel, ContextMenuClickEventArgs, Reorder, Resize, VirtualScroll, ExcelExport, PdfExport } from '../../src/index';
-import { projectResources, projectData1, projectData, baselineData, normalResourceData, resourceCollection, StringResourceSelefReferenceData, StringMultiResources, splitTasksData } from '../base/data-source.spec';
+import { projectResources, projectData1, projectData, baselineData, normalResourceData, resourceCollection, StringResourceSelefReferenceData, StringMultiResources, splitTasksData, predcessor1, rangeContainer, rangeContainerResource } from '../base/data-source.spec';
 import { createGantt, destroyGantt, getKeyUpObj, triggerMouseEvent } from '../base/gantt-util.spec';
 import * as cls from '../../src/gantt/base/css-constants';
 Gantt.Inject(Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, ContextMenu, Sort, ColumnMenu, RowDD, Reorder, Resize, VirtualScroll, ExcelExport, PdfExport);
@@ -662,7 +662,7 @@ describe('Gantt - Render with Enable RTL', () => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'save' && args.taskBarEditAction === 'ChildDrag') {
                     expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.startDate, 'MM/dd/yyyy')).toEqual('04/03/2019');
-                    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.endDate, 'MM/dd/yyyy')).toEqual('04/09/2019');
+                    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.endDate, 'MM/dd/yyyy')).toEqual('04/08/2019');
                 }
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
@@ -816,6 +816,296 @@ describe('Gantt - Render with Enable RTL', () => {
             let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
             // expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(16);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('predecessor collection as object', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: predcessor1,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    connectorLineBackground:'blue',
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    enableTimelineVirtualization : true,
+                    enableVirtualization : true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 100);
+        });
+        it('predecessor validation as object', () => {
+            expect(ganttObj.currentViewData[6].ganttProperties.predecessorsName).toBe("11FS,10FS");
+            expect(ganttObj.connectorLineBackground).toBe('blue');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('updating spliter position as grid', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                enableRtl : true,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children'
+                },
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('12/30/2017'),
+            }, done);
+        });
+        it('updating spliter position', () => {
+            let splitterView = ganttObj.splitterSettings.view;
+            splitterView = 'Grid';
+            ganttObj.setSplitterPosition(splitterView, 'view');
+            expect(ganttObj.splitterSettings.view).toBe('Grid');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('updating spliter position as chart', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                enableRtl : true,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children'
+                },
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('12/30/2017'),
+            }, done);
+        });
+        it('updating spliter position', () => {
+            let splitterView = ganttObj.splitterSettings.view;
+            splitterView = 'Chart';
+            ganttObj.setSplitterPosition(splitterView, 'view');
+            expect(ganttObj.splitterSettings.view).toBe('Chart');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('range container in rtl', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: rangeContainer,
+                enableRtl : true,
+                resources: rangeContainerResource,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/17/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                    from: "04/04/2019",
+                    to: "04/05/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+                
+                }],
+                readOnly: false,
+               //gridLines: "Both",
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        it('range container in rtl', () => {
+            expect((document.querySelectorAll('.e-chart-rows-container')[0].lastChild as Element).classList.contains('e-rangecontainer')).toBe(true);
         });
         afterAll(() => {
             if (ganttObj) {

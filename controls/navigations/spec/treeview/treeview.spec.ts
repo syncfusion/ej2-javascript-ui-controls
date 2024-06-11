@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11 } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable } from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -72,7 +72,7 @@ describe('TreeView control', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
         });
@@ -669,6 +669,55 @@ describe('TreeView control', () => {
                     expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
                     done();
                 }, 100);
+            });
+            it('showCheckBox and enablePersistence property testing', (done: Function) => {
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData1, id: 'nodeId', text: 'nodeText', child: 'nodeChild',
+                        iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr', selected: 'nodeSelected' },
+                    showCheckBox: true,
+                    enablePersistence: true
+                }, '#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    const checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                    var e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    var e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    var e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    done();
+                }, 100);
+            });
+
+            it('drawNode event with selectable field testing', () => {
+                let i: number = 0;
+                function clickFn(): void {
+                    i++;
+                }
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalDataWithSelectable, id: "nodeId", text: "nodeText", child:"nodeChild", selectable: "selectable" },
+                    drawNode: clickFn,
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = li[1].querySelector('.e-text-content');
+                expect((li[1] as Element).classList.contains('e-active')).toBe(false);
+                expect(treeObj.element.querySelectorAll('[aria-selected]').length).toBe(0);
+                treeObj.touchClickObj.tap(tapEvent);
+                expect((li[1] as Element).classList.contains('e-active')).toBe(true);
+                expect(treeObj.element.querySelectorAll('[aria-selected]').length).toBe(1);
+                expect(li[1].getAttribute('aria-selected')).toBe('true');
+                mouseEventArgs.target = li[0].querySelector('.e-text-content');
+                expect((li[0] as Element).classList.contains('e-active')).toBe(false);            
+                treeObj.touchClickObj.tap(tapEvent);
+                expect((li[1] as Element).classList.contains('e-active')).toBe(true);
+                expect((li[0] as Element).classList.contains('e-active')).toBe(false);
+                expect(treeObj.element.querySelectorAll('[aria-selected]').length).toBe(1);
+                expect(li[1].getAttribute('aria-selected')).toBe('true');
+                expect(i).toEqual(5);
             });
             it('showCheckBox property right click testing', (done: Function) => {
                 let mouseEventArgs: any = {
@@ -9763,6 +9812,7 @@ describe('TreeView control', () => {
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 let originalTimeout: any;
+                let request: JasmineAjaxRequest;
                 beforeAll((done: Function) => {
                     jasmine.Ajax.install();
                     document.body.appendChild(ele);
@@ -9776,8 +9826,8 @@ describe('TreeView control', () => {
                         }
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: remoteData, __count: 15})
                     });
@@ -9806,8 +9856,8 @@ describe('TreeView control', () => {
                     expect(newli[1].childElementCount).toBe(1);
                     treeObj.preventContextMenu(mouseEventArgs);
                     treeObj.touchClickObj.tap(tapEvent);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: [], __count: 0})
                     });
@@ -9852,6 +9902,7 @@ describe('TreeView control', () => {
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 let originalTimeout: any;
+                let request: JasmineAjaxRequest;
                 beforeEach((done: Function) => {
                     jasmine.Ajax.install();
                     document.body.appendChild(ele);
@@ -9865,8 +9916,8 @@ describe('TreeView control', () => {
                         fullRowSelect: false,                        
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: remoteData, __count: 15})
                     });
@@ -9897,8 +9948,8 @@ describe('TreeView control', () => {
                     mouseEventArgs.target = newli[1].querySelector('.e-icons');
                     expect(newli[1].childElementCount).toBe(1);
                     treeObj.touchClickObj.tap(tapEvent);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: [], __count: 0})
                     });
@@ -10021,6 +10072,7 @@ describe('TreeView control', () => {
                     tapCount: 1
                 };
                 let treeObj: any;
+                let request: JasmineAjaxRequest;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' , updateUrl: 'TreeView/Update'});
                 beforeEach((done: Function) => {
@@ -10037,8 +10089,8 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: remoteData2, __count: 2})
                     });
@@ -10063,8 +10115,8 @@ describe('TreeView control', () => {
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
                     treeObj.touchEditObj.tap(tapEvent);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({ d: remoteData2_1, __count: 2 })
                     });
@@ -10366,6 +10418,7 @@ describe('TreeView control', () => {
             });
             xdescribe('template support testing with string', () => {
                 let treeObj: any;
+                let request: JasmineAjaxRequest;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 beforeEach((done: Function) => {
@@ -10381,8 +10434,8 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: remoteData2, __count: 2})
                     });
@@ -10416,6 +10469,7 @@ describe('TreeView control', () => {
                     tapCount: 1
                 };
                 let treeObj: any;
+                let request: JasmineAjaxRequest;
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 beforeEach((done: Function) => {
@@ -10436,8 +10490,8 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: remoteData2, __count: 2})
                     });
@@ -10463,8 +10517,8 @@ describe('TreeView control', () => {
                     mouseEventArgs.target = li[0].querySelector('.e-list-text');
                     treeObj.touchExpandObj.tap(tapEvent);
                     treeObj.touchEditObj.tap(tapEvent);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                     });
@@ -10575,13 +10629,14 @@ describe('TreeView control', () => {
                     tapCount: 1
                 };
                 let treeObj: any;
+                let request: JasmineAjaxRequest;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager;
                 beforeAll((done: Function) => {
                     jasmine.Ajax.install();
                     dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true })
-                     this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: remoteData3_1, __count: 2})
                     });
@@ -10644,6 +10699,7 @@ describe('TreeView control', () => {
             let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData', updateUrl: '/TreeView/Update' });
             let dataManager2: DataManager = new DataManager({ url: '/TreeView/remoteData2', updateUrl: '/TreeView/Update' });
             let originalTimeout: any;
+            let request: JasmineAjaxRequest;
             beforeEach((done: Function) => {
                 mouseEventArgs = {
                     preventDefault: (): void => {},
@@ -10671,8 +10727,8 @@ describe('TreeView control', () => {
                     fullRowSelect: false,
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10697,8 +10753,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
                 treeObj.fields.dataSource = dataManager2;
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData1_1, __count: 2})
                 });
@@ -10725,8 +10781,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
                 treeObj.fields = { text: 'subText' };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10752,8 +10808,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
                 treeObj.fields = { id: 'subId' };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10779,8 +10835,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
                 treeObj.fields = { iconCss: 'subIcon' };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10806,8 +10862,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
                 treeObj.fields = { imageUrl: 'subImage' };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10833,8 +10889,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
                 treeObj.fields = { tooltip: 'subTooltip' };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10860,8 +10916,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
                 treeObj.fields = { htmlAttributes: 'subHtmlAttr' };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10890,8 +10946,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
                 treeObj.fields = { selected: 'subSelected' };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10921,8 +10977,8 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelector('.e-list-url').href.indexOf('http://npmci.syncfusion.com/')).not.toBe(-1);
                 treeObj.fields = { navigateUrl: 'subUrl' };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -10973,8 +11029,8 @@ describe('TreeView control', () => {
                 expect(li[0].getAttribute('data-uid')).toBe('01');
                 treeObj.sortOrder = 'Ascending';
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2_1, __count: 2})
                 });
@@ -11045,8 +11101,8 @@ describe('TreeView control', () => {
                 mouseEventArgs.target = li[0].querySelector('.e-list-text');
                 treeObj.touchExpandObj.tap(tapEvent);
                 treeObj.touchEditObj.tap(tapEvent);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2_1, __count: 2 })
                 });
@@ -11175,8 +11231,8 @@ describe('TreeView control', () => {
                 expect(li[0].querySelector('b')).toBe(null);
                 treeObj.nodeTemplate = 'template';
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -11274,6 +11330,7 @@ describe('TreeView control', () => {
             });
             beforeAll((done: Function) => {
                 jasmine.Ajax.install();
+                let request: JasmineAjaxRequest;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 document.body.appendChild(ele);
                 treeObj = new TreeView({ 
@@ -11306,8 +11363,8 @@ describe('TreeView control', () => {
                     dataSourceChanged: dataSourceChangedFunction,
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -11336,8 +11393,8 @@ describe('TreeView control', () => {
                 mouseEventArgs.target = li[0].querySelector('.e-icons');
                 treeObj.touchClickObj.tap(tapEvent);
                 expect(expandingFunction).toHaveBeenCalled();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 15})
                 });
@@ -11403,8 +11460,8 @@ describe('TreeView control', () => {
                 expect((li[0].querySelector('.e-input') as HTMLInputElement).value).toBe('Music');
                 (li[0].querySelector('.e-input') as HTMLInputElement).value = 'Music node';
                 (li[0].querySelector('.e-input') as HTMLInputElement).blur();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({ d: updatedremoteNode_3, __count: 2 })
                     });
@@ -11465,6 +11522,7 @@ describe('TreeView control', () => {
             let mouseEventArgs: any;
             let tapEvent: any;
             let treeObj: any;
+            let request: JasmineAjaxRequest;
             let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData', updateUrl: '/TreeView/remoteData', insertUrl: '/TreeView/Insert' });
             let originalTimeout: any;
             let j: number = 0;
@@ -11496,8 +11554,8 @@ describe('TreeView control', () => {
                     dataSourceChanged: dsChangeFn,
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -11529,8 +11587,8 @@ describe('TreeView control', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 expect(li[0].childElementCount).toBe(2);
                 treeObj.expandAll();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -11581,8 +11639,8 @@ describe('TreeView control', () => {
                     };
                 treeObj.showCheckBox = true;
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -11626,8 +11684,8 @@ describe('TreeView control', () => {
                 treeObj.allowEditing = true;
                 treeObj.dataBind();
                 treeObj.updateNode(li[0], 'Rain');
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: updatedremoteNode_1, __count: 2 })
                 });
@@ -11668,8 +11726,8 @@ describe('TreeView control', () => {
                         child: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText",}
                     };
                 treeObj.dataBind();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({d: remoteData2, __count: 2})
                 });
@@ -11814,8 +11872,8 @@ describe('TreeView control', () => {
                         fullRowSelect: false,
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    let request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: remoteData2, __count: 2})
                     });
@@ -11834,8 +11892,8 @@ describe('TreeView control', () => {
                     mouseEventArgs.target = newli[0].querySelector('.e-icons');
                     expect(newli[0].childElementCount).toBe(1);
                     treeObj.touchClickObj.tap(tapEvent);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    let request = jasmine.Ajax.requests.mostRecent();
+                    request.respondWith({
                         status: 200,
                         responseText: JSON.stringify({d: [], __count: 0})
                     });
@@ -14705,8 +14763,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 actionFailure: actionFailed
             });
             treeObj.appendTo(ele);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
+            let request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({
                 status: 200,
                 responseText: JSON.stringify({ d: remoteData, __count: 15 })
             });
@@ -14725,8 +14783,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
             let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
             mouseEventArgs.target = newli[1].querySelector('.e-icons');
             treeObj.touchClickObj.tap(tapEvent);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
+            let request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({
                 'status': 404,
                 'contentType': 'application/json',
                 'responseText': 'Page not found'
@@ -14795,8 +14853,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     dataSourceChanged: dsChangeFn
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -14816,8 +14874,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.removeNodes(null);
                 expect(j).toEqual(0);
                 treeObj.removeNodes(['01']);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: deletedRemoteData, __count: 2 })
                 });
@@ -14851,8 +14909,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     dataSourceChanged: dsChangeFn
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -14872,8 +14930,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.removeNodes(null);
                 expect(j).toEqual(0);
                 treeObj.removeNodes([li[0]]);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: deletedRemoteData, __count: 2 })
                 });
@@ -14907,8 +14965,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     dataSourceChanged: dsChangeFn
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -14928,8 +14986,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.removeNodes(null);
                 expect(j).toEqual(0);
                 treeObj.removeNodes(['01', '02']);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: [], __count: 2 })
                 });
@@ -14963,8 +15021,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     dataSourceChanged: dsChangeFn
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -14984,8 +15042,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.removeNodes(null);
                 expect(j).toEqual(0);
                 treeObj.removeNodes([li[0], li[1]]);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: [], __count: 2 })
                 });
@@ -15029,8 +15087,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     nodeEdited: nodeAfterEdit
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -15055,8 +15113,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.dataBind();
                 treeObj.updateNode('01', 'Rain');
                 expect(beforeEdit).toEqual(1);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: updatedremoteNode_1, __count: 1 })
                 });
@@ -15101,8 +15159,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     nodeEdited: nodeAfterEdit
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -15127,8 +15185,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.dataBind();
                 treeObj.updateNode(li[0], 'Rain');
                 expect(beforeEdit).toEqual(1);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: updatedremoteNode_1, __count: 1 })
                 });
@@ -15163,8 +15221,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     dataSourceChanged: dsChangeFn,
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -15181,8 +15239,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 expect(treeObj.getTreeData().length).toBe(2);
                 treeObj.addNodes(updatedremoteNode_1)
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: updatedremoteNode_1, __count: 1 })
                 });
@@ -15219,8 +15277,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     dataSourceChanged: dsChangeFn,
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -15236,8 +15294,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 expect(j).toEqual(0);
                 expect(treeObj.getTreeData().length).toBe(2);
                 treeObj.addNodes(remoteData2_3);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2_3, __count: 1 })
                 });
@@ -15271,8 +15329,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     dataSourceChanged: dsChangeFn,
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData1, __count: 2 })
                 });
@@ -15291,8 +15349,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 expect(treeObj.getTreeData().length).toBe(25);
                 treeObj.addNodes([data], li[0]);
                 let element: Element[] = li;
-                this.request = jasmine.Ajax.requests.mostRecent()
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent()
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: updatedAddNodes, __count: 6 })
                 });
@@ -15348,8 +15406,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     actionFailure: actionFailed
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -15422,8 +15480,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     actionFailure: actionFailed
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -15493,8 +15551,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     actionFailure: actionFailed
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                let request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
                     status: 200,
                     responseText: JSON.stringify({ d: remoteData2, __count: 2 })
                 });
@@ -15862,8 +15920,8 @@ xdescribe('Remote data binding with loadOnDemand with tableName fieldName', () =
             }
         });
         treeObj.appendTo(ele);
-        this.request = jasmine.Ajax.requests.mostRecent();
-        this.request.respondWith({
+        let request = jasmine.Ajax.requests.mostRecent();
+        request.respondWith({
             status: 200,
             responseText: JSON.stringify({d: remoteData4, __count: 3})
         });
@@ -15882,8 +15940,8 @@ xdescribe('Remote data binding with loadOnDemand with tableName fieldName', () =
         treeObj.touchExpandObj.tap(tapEvent);
         tapEvent.tapCount = 2;
         treeObj.touchExpandObj.tap(tapEvent);
-        this.request = jasmine.Ajax.requests.mostRecent();
-        this.request.respondWith({
+        let request = jasmine.Ajax.requests.mostRecent();
+        request.respondWith({
             status: 200,
             responseText: JSON.stringify({ d: remoteData4_1, __count: 1 })
         });
@@ -15967,6 +16025,20 @@ describe('Hierarchical data binding testing', () => {
             expect(treeObj.element.querySelectorAll('li')[1].classList.contains('firstnode')).toBe(true);
             expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
         });
+        it('IE browser with allowTextWrap property testing', (done: Function) => {
+            treeObj = new TreeView({ 
+                fields: { dataSource: hierarchicalData9, id: "nodeId", text: "nodeText", child: "nodeChild", iconCss: 'nodeIcon', imageUrl: 'nodeImage',
+             },
+             allowTextWrap: true
+            },'#tree1');
+            setTimeout(function() {
+                expect(treeObj.element.classList.contains('e-text-wrap')).toBe(true);
+                treeObj.allowTextWrap = false;
+                treeObj.dataBind();
+                expect(treeObj.element.classList.contains('e-text-wrap')).toBe(false);
+                done();
+            }, 100);
+        });
     });
     describe('Drag and drop with different TreeView functionality testing with one treeview checkbox', () => {
         let treeObj: any;
@@ -16029,7 +16101,6 @@ describe('Hierarchical data binding testing', () => {
         it('testing with dynamic checkbox', () => {
             expect(i).toBe(0);
             expect(j).toBe(0);
-            debugger;
             expect(treeObj.getTreeData().length).toBe(5);
             expect(treeObj1.getTreeData().length).toBe(2);
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -16051,5 +16122,433 @@ describe('Hierarchical data binding testing', () => {
             expect(treeObj.getTreeData().length).toBe(4);
             expect(treeObj1.getTreeData().length).toBe(2);
         });
+    });
+});
+
+describe('TreeView Null or undefined value testing', () => {
+    let treeObj: any;
+    let mouseEventArgs: any;
+    let tapEvent: any;
+    beforeEach((): void => {
+        mouseEventArgs = {
+            preventDefault: (): void => {},
+            stopImmediatePropagation: (): void => {},
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false,
+            originalEvent:{target:null}
+        };
+        tapEvent = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        treeObj = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (treeObj)
+            treeObj.destroy();
+        document.body.innerHTML = '';
+    });
+    it('allowDragAndDrop', () => {
+        treeObj = new TreeView({ allowDragAndDrop: null },'#tree1');
+        expect(treeObj.allowDragAndDrop).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ allowDragAndDrop: undefined },'#tree1');
+        expect(treeObj.allowDragAndDrop).toBe(false);
+        treeObj.destroy();
+    });
+    it('allowEditing', () => {
+        treeObj = new TreeView({ allowEditing: null },'#tree1');
+        expect(treeObj.allowEditing).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ allowEditing: undefined },'#tree1');
+        expect(treeObj.allowEditing).toBe(false);
+        treeObj.destroy();
+    });
+    it('allowMultiSelection', () => {
+        treeObj = new TreeView({ allowMultiSelection: null },'#tree1');
+        expect(treeObj.allowMultiSelection).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ allowMultiSelection: undefined },'#tree1');
+        expect(treeObj.allowMultiSelection).toBe(false);
+        treeObj.destroy();
+    });
+    it('allowTextWrap', () => {
+        treeObj = new TreeView({ allowTextWrap: null },'#tree1');
+        expect(treeObj.allowTextWrap).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ allowTextWrap: undefined },'#tree1');
+        expect(treeObj.allowTextWrap).toBe(false);
+        treeObj.destroy();
+    });
+        it('animation', () => {
+        treeObj = new TreeView({ animation: null },'#tree1');
+        expect(treeObj.animation.expand.effect).toBe('SlideDown');
+        treeObj.destroy();
+        treeObj = new TreeView({ animation: undefined },'#tree1');
+        expect(treeObj.animation.expand.effect).toBe('SlideDown');
+        treeObj.destroy();
+    });
+    it('checkedNodes', () => {
+        treeObj = new TreeView({ checkedNodes: null },'#tree1');
+        expect(treeObj.checkedNodes).toEqual([]);
+        treeObj.destroy();
+        treeObj = new TreeView({ checkedNodes: undefined },'#tree1');
+        expect(treeObj.checkedNodes).toEqual([]);
+        treeObj.destroy();
+    });
+    it('cssClass', () => {
+        treeObj = new TreeView({ cssClass: null },'#tree1');
+        expect(treeObj.cssClass).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ cssClass: undefined },'#tree1');
+        expect(treeObj.cssClass).toBe('');
+        treeObj.destroy();
+    });
+    it('enableHtmlSanitizer', () => {
+        treeObj = new TreeView({ enableHtmlSanitizer: null },'#tree1');
+        expect(treeObj.enableHtmlSanitizer).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ enableHtmlSanitizer: undefined },'#tree1');
+        expect(treeObj.enableHtmlSanitizer).toBe(true);
+        treeObj.destroy();
+    });
+    it('expandedNodes', () => {
+        treeObj = new TreeView({ expandedNodes: null },'#tree1');
+        expect(treeObj.expandedNodes).toEqual([]);
+        treeObj.destroy();
+        treeObj = new TreeView({ expandedNodes: undefined },'#tree1');
+        expect(treeObj.expandedNodes).toEqual([]);
+        treeObj.destroy();
+    });
+    // disabled
+    it('disabled', () => {
+        treeObj = new TreeView({ disabled: null },'#tree1');
+        expect(treeObj.disabled).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ disabled: undefined },'#tree1');
+        expect(treeObj.disabled).toBe(false);
+        treeObj.destroy();
+    });
+    // enablePersistence
+    it('enablePersistence', () => {
+        treeObj = new TreeView({ enablePersistence: null },'#tree1');
+        expect(treeObj.enablePersistence).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ enablePersistence: undefined },'#tree1');
+        expect(treeObj.enablePersistence).toBe(false);
+        treeObj.destroy();
+    });
+    // enableRtl
+    it('enableRtl', () => {
+        treeObj = new TreeView({ enableRtl: null },'#tree1');
+        expect(treeObj.enableRtl).toBe(false);
+        treeObj.destroy();
+        treeObj = new TreeView({ enableRtl: undefined },'#tree1');
+        expect(treeObj.enableRtl).toBe(false);
+        treeObj.destroy();
+    });
+    it('fields', () => {
+        treeObj = new TreeView({ fields: null },'#tree1');
+        expect(treeObj.fields.id).toBe("id");
+        treeObj.destroy();
+        treeObj = new TreeView({ fields: undefined },'#tree1');
+        expect(treeObj.fields.id).toBe("id");
+        treeObj.destroy();
+    });
+    it('fullRowSelect', () => {
+        treeObj = new TreeView({ fullRowSelect: null },'#tree1');
+        expect(treeObj.fullRowSelect).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ fullRowSelect: undefined },'#tree1');
+        expect(treeObj.fullRowSelect).toBe(true);
+        treeObj.destroy();
+    });
+    it('loadOnDemand', () => {
+        treeObj = new TreeView({ loadOnDemand: null },'#tree1');
+        expect(treeObj.loadOnDemand).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ loadOnDemand: undefined },'#tree1');
+        expect(treeObj.loadOnDemand).toBe(true);
+        treeObj.destroy();
+    });
+    it('nodeTemplate', () => {
+        treeObj = new TreeView({ nodeTemplate: null },'#tree1');
+        expect(treeObj.nodeTemplate).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ nodeTemplate: undefined },'#tree1');
+        expect(treeObj.nodeTemplate).toBe(undefined);
+        treeObj.destroy();
+    });
+    it('selectedNodes', () => {
+        treeObj = new TreeView({ selectedNodes: null },'#tree1');
+        expect(treeObj.selectedNodes).toEqual([]);
+        treeObj.destroy();
+        treeObj = new TreeView({ selectedNodes: undefined },'#tree1');
+        expect(treeObj.selectedNodes).toEqual([]);
+        treeObj.destroy();
+    });
+    it('showCheckBox', () => {
+        treeObj = new TreeView({ showCheckBox: null },'#tree1');
+        expect(treeObj.showCheckBox).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ showCheckBox: undefined },'#tree1');
+        expect(treeObj.showCheckBox).toBe(false);
+        treeObj.destroy();
+    });
+    it('sortOrder', () => {
+        treeObj = new TreeView({ sortOrder: null },'#tree1');
+        expect(treeObj.sortOrder).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ sortOrder: undefined },'#tree1');
+        expect(treeObj.sortOrder).toBe('None');
+        treeObj.destroy();
+    });
+    it('dragArea', () => {
+        treeObj = new TreeView({ dragArea: null },'#tree1');
+        expect(treeObj.dragArea).toBe(null);
+        treeObj.destroy();
+        treeObj = new TreeView({ dragArea: undefined },'#tree1');
+        expect(treeObj.dragArea).toBe(null);
+        treeObj.destroy();
+    });
+});
+
+describe('Google Pixel 4 running testing', () => {
+    let treeObj: any;
+    let mouseEventArgs: any = {
+        preventDefault: (): void => {},
+        stopImmediatePropagation: (): void => {},
+        changedTouches: [{clientX:0,clientY:0}],
+        target: null,
+        type: null,
+    };
+    let tapEvent: any = {
+        originalEvent: mouseEventArgs,
+        tapCount: 1
+    };
+    let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Mobile Safari/537.36';
+    beforeEach(() => {
+        Browser.userAgent = androidPhoneUa;
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        document.body.appendChild(ele);
+        treeObj = new TreeView({ 
+            fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild", },
+            allowEditing: true,
+        });
+        treeObj.appendTo(ele);
+    });
+    afterEach(() => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
+        if (treeObj)
+            treeObj.destroy();
+        document.body.innerHTML = '';
+    });
+    it('node editing testing', () => {
+        expect(treeObj.touchEditObj.isDestroyed).toBe(false);
+        expect(treeObj.touchClickObj.isDestroyed).toBe(false);
+        expect(treeObj.touchExpandObj.isDestroyed).toBe(false);
+        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+        mouseEventArgs.changedTouches[0].clientX = mouseEventArgs.target.offsetLeft;
+        mouseEventArgs.changedTouches[0].clientY = mouseEventArgs.target.offsetTop;
+        treeObj.touchEditObj.tap(tapEvent);
+        tapEvent.tapCount = 2;
+        treeObj.touchEditObj.tap(tapEvent);
+        treeObj.allowEditing = false;
+        treeObj.dataBind();
+        tapEvent.tapCount = 1;
+        treeObj.touchClickObj.tap(tapEvent);
+        treeObj.touchExpandObj.tap(tapEvent);
+        treeObj.expandOn = 'DblClick';
+        treeObj.dataBind();
+        treeObj.touchExpandObj.tap(tapEvent);
+        tapEvent.tapCount = 2;
+        treeObj.touchExpandObj.tap(tapEvent);
+        expect(treeObj.touchEditObj.isDestroyed).toBe(true);
+        treeObj.destroy();
+    });
+});
+
+describe('TreeView Insert operation', () => {
+    let j: number = 0;
+    function dsChangeFn(): void {
+        j++;
+    }
+    let treeObj: any;
+    let ele: HTMLElement;
+    beforeEach((done: Function) => {
+        ele = createElement('div', { id: 'tree1' });
+        let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+        spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+            json: function () {
+                return Promise.resolve({ d: remoteData2, __count: 2 });
+            }
+        }));
+        document.body.appendChild(ele);
+        treeObj = new TreeView({ 
+            fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
+                tooltip: 'nodeTooltip', selected: 'nodeSelected' 
+            },
+            allowEditing: true,
+            fullRowSelect: false,
+            dataBound:() => {
+                done();
+            },
+            dataSourceChanged: dsChangeFn,
+        });
+        treeObj.isOffline = true;
+        treeObj.appendTo(ele);
+    });
+    afterEach(() => {
+        if (treeObj)
+        treeObj.destroy();
+        if (ele)
+            ele.remove();
+        document.body.innerHTML = '';
+    });
+    it('Add a single node with out target', (done: Function) => {
+        expect(j).toEqual(0);
+        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        expect(treeObj.getTreeData().length).toBe(2);
+        treeObj.addNodes(updatedremoteNode_1)
+        setTimeout(function () {
+            expect(j).toEqual(1);
+            let nli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(nli.length).toBe(3);
+            expect((nli[2].querySelector('.e-list-text') as HTMLElement).textContent).toBe('Rain');
+            done();
+        }, 450);
+    });
+});
+
+describe('TreeView Delete operation', () => {
+    let treeObj: any;
+    let ele: HTMLElement = createElement('div', { id: 'tree1' });
+    let j: number = 0;
+    function dsChangeFn(): void {
+        j++;
+    }
+    beforeEach((done: Function) => {
+        let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+        spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+            json: function () {
+                return Promise.resolve({ d: remoteData2, __count: 2 });
+            }
+        }));
+        document.body.appendChild(ele);
+        treeObj = new TreeView({
+            fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
+                tooltip: 'nodeTooltip', selected: 'nodeSelected' 
+            },
+            dataBound: () => {
+                done();
+            },
+            dataSourceChanged: dsChangeFn
+        });
+        treeObj.appendTo(ele);
+        j = 0;
+    });
+    afterEach(() => {
+        if (ele)
+            ele.remove();
+        document.body.innerHTML = '';
+    });
+    it('remove nodes testing with a single node and the node type as Element', (done: Function) => {
+        expect(j).toEqual(0);
+        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        treeObj.removeNodes();
+        expect(treeObj.getTreeData().length).toBe(3);
+        treeObj.removeNodes(null);
+        expect(j).toEqual(0);
+        treeObj.removeNodes([li[0]]);
+        setTimeout(function () {
+            expect(j).toEqual(1);
+            expect(treeObj.getTreeData().length).toBe(2);
+            done();
+        }, 450);
+    });
+});
+
+describe('TreeView Update operation', () => {
+    let treeObj: any;
+    let ele: HTMLElement = createElement('div', { id: 'tree1' });
+    let j: number = 0;
+    let beforeEdit: number = 0;
+    let afterEdit: number = 0;
+    function dsChangeFn(): void {
+        j++;
+    }
+    function nodeBeforeEdit(): void {
+        beforeEdit++;
+    }
+    function nodeAfterEdit(): void {
+        afterEdit++;
+    }
+    beforeEach((done: Function) => {
+        let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+        spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+            json: function () {
+                return Promise.resolve({ d: remoteData2, __count: 2 });
+            }
+        }));
+        document.body.appendChild(ele);
+        treeObj = new TreeView({
+            fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
+                tooltip: 'nodeTooltip', selected: 'nodeSelected' 
+            },
+            dataBound: () => {
+                done();
+            },
+            dataSourceChanged: dsChangeFn,
+            nodeEditing: nodeBeforeEdit,
+            nodeEdited: nodeAfterEdit
+        });
+        treeObj.appendTo(ele);
+        j = 0;
+        beforeEdit = 0;
+        afterEdit = 0;
+    });
+    afterEach(() => {
+        if (ele)
+            ele.remove();
+        document.body.innerHTML = '';
+    });
+    it('rename node and the node type as Element', (done: Function) => {
+        expect(j).toEqual(0);
+        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        treeObj.updateNode(null);
+        expect(j).toEqual(0);
+        treeObj.updateNode(li[0], 'Rain');
+        expect(beforeEdit).toEqual(0);
+        treeObj.allowEditing = true;
+        treeObj.dataBind();
+        treeObj.updateNode(li[0], 'Rain');
+        expect(beforeEdit).toEqual(1);
+        setTimeout(function () {
+            expect(j).toEqual(1);
+            expect((li[0].querySelector('.e-list-text') as HTMLElement).textContent).toBe('Rain');
+            expect(afterEdit).toEqual(1);
+            done();
+        }, 450);
     });
 });

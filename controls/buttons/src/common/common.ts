@@ -31,6 +31,8 @@ export function wrapperInitialize(
         }
         attributes(element, { 'class': WRAPPER });
         element.appendChild(input);
+        element.classList.add(role);
+        element.classList.remove(role);
         setValue('ej2_instances', ejInstance, input);
         deleteObject(element, 'ej2_instances');
     }

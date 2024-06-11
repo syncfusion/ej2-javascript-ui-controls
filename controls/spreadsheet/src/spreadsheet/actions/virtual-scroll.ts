@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { closest, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { spreadsheetDestroyed, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, RefreshType } from '../common/index';
+import { spreadsheetDestroyed, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, RefreshType, removeAllChildren } from '../common/index';
 import { colWidthChanged, updateTableWidth, focus, updateTranslate } from '../common/index';
 import { IScrollArgs, onVerticalScroll, onHorizontalScroll, rowHeightChanged, deInitProperties } from '../common/index';
 import { SheetModel, getRowsHeight, getColumnsWidth, getRangeIndexes, skipHiddenIdx, isHiddenCol } from './../../workbook/index';
@@ -631,7 +631,7 @@ export class VirtualScroll {
         }
         if (args.rowIdx >= frozenRow && args.rowIdx < this.parent.viewport.topIndex + frozenRow) {
             const mainPanel: Element = this.parent.element.getElementsByClassName('e-main-panel')[0];
-            this.parent.scrollModule.prevScroll.scrollTop= mainPanel.scrollTop+args.threshold;
+            this.parent.scrollModule.prevScroll.scrollTop = mainPanel.scrollTop + args.threshold;
             this.parent.scrollModule.offset.top.size += args.threshold;
             mainPanel.scrollTop += args.threshold;
             this.translateY += args.threshold;
@@ -736,9 +736,9 @@ export class VirtualScroll {
 
     private destroy(): void {
         this.removeEventListener();
-        if (this.rowHeader) { this.rowHeader.remove(); }
-        if (this.colHeader) { this.colHeader.remove(); }
-        if (this.content) { this.content.remove(); }
+        if (this.rowHeader) { removeAllChildren(this.rowHeader); this.rowHeader.remove(); }
+        if (this.colHeader) { removeAllChildren(this.colHeader); this.colHeader.remove(); }
+        if (this.content) { removeAllChildren(this.content); this.content.remove(); }
         this.rowHeader = null; this.colHeader = null; this.content = null; this.parent = null;
         this.scroll.length = 0; this.translateX = null; this.translateY = null;
     }

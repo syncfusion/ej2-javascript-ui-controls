@@ -23,8 +23,6 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
     private isForm: boolean = false;
     private initialValue: string;
     private inputPreviousValue: string = null;
-    private isAngular: boolean = false;
-    private isVue: boolean = false;
     private preventChange: boolean;
     private clearButton: HTMLElement;
 
@@ -124,26 +122,32 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
      *
      * @default None
      */
-    @Property('Vertical')
+    @Property('Both')
     public resizeMode: Resize;
 
     /**
      * Specifies the maximum number of characters allowed in TextArea.
+     *
+     * @aspType int?
      */
     @Property(null)
     public maxLength: number;
 
     /**
      * specifies the visible width of the textarea, measured in average character widths.
+     *
+     * @aspType int?
      */
     @Property(null)
-    public columnsCount: number;
+    public cols: number;
 
     /**
      * specifies the visible height of the textarea, measured in lines
+     *
+     * @aspType int?
      */
     @Property(null)
-    public rowsCount: number;
+    public rows: number;
 
     /**
      * Triggers when the TextArea component is created.
@@ -291,14 +295,14 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
                 this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
                 Input.setPlaceholder(this.placeholder, this.element);
                 break;
-            case 'rowsCount':
-                if (this.rowsCount) {
-                    this.element.setAttribute('rows', this.rowsCount.toString());
+            case 'rows':
+                if (this.rows) {
+                    this.element.setAttribute('rows', this.rows.toString());
                 }
                 break;
-            case 'columnsCount':
-                if (this.columnsCount) {
-                    this.element.setAttribute('cols', this.columnsCount.toString());
+            case 'cols':
+                if (this.cols) {
+                    this.element.setAttribute('cols', this.cols.toString());
                     if (this.width == null) {
                         this.textareaWrapper.container.classList.add(AUTO_WIDTH);
                     }
@@ -318,7 +322,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
                     if (this.element.style.width && (this.resizeMode === 'None' || this.resizeMode === 'Vertical')) {
                         Input.setWidth(this.element.style.width, this.textareaWrapper.container);
                     } else {
-                        const currentWidth = this.element.offsetWidth;
+                        const currentWidth: number = this.element.offsetWidth;
                         this.element.style.width = currentWidth + 'px';
                         if (this.textareaWrapper.container.style.width) {
                             this.textareaWrapper.container.style.width = '';
@@ -374,11 +378,11 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         if (!this.element.hasAttribute('name')) {
             this.element.setAttribute('name', this.element.getAttribute('id'));
         }
-        if (this.rowsCount) {
-            this.element.setAttribute('rows', this.rowsCount.toString());
+        if (this.rows) {
+            this.element.setAttribute('rows', this.rows.toString());
         }
-        if (this.columnsCount) {
-            this.element.setAttribute('cols', this.columnsCount.toString());
+        if (this.cols) {
+            this.element.setAttribute('cols', this.cols.toString());
         }
         if (this.maxLength) {
             this.element.setAttribute('maxlength', this.maxLength.toString());
@@ -437,10 +441,10 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         return 'textarea';
     }
 
-    /* eslint-disable valid-jsdoc, jsdoc/require-returns */
     /**
      * Gets the properties to be maintained in the persisted state.
      *
+     * @returns {string} - Returns the string value.
      */
     public getPersistData(): string {
         const keyEntity: string[] = ['value'];
@@ -526,12 +530,12 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             detach(this.textareaWrapper.container);
         }
         this.textareaWrapper = null;
-        this.formElement = null;
         Input.destroy({
             element: this.element,
             floatLabelType: this.floatLabelType,
             properties: this.properties
         }, this.clearButton);
+        this.formElement = null;
         super.destroy();
     }
 
@@ -564,8 +568,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
     }
 
     private inputHandler(args: KeyboardEvent): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias
-        const textareaObj: any = this;
+        const textareaObj: any = null || this;
         const eventArgs: InputEventArgs = {
             event: args,
             value: this.element.value,
@@ -648,7 +651,6 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         }
     }
 
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns */
     /**
      * Adding the multiple attributes as key-value pair to the TextArea element.
      *
@@ -731,13 +733,13 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
 
     /**
      * Sets up the width for the textarea wrapper.
-     * 
+     *
      * @returns {void}
      */
     private setWrapperWidth(): void {
-        if (this.enabled && ((this.resizeMode !== 'None' && this.resizeMode !== 'Vertical') || (this.columnsCount || this.element.getAttribute('cols')))) {
+        if (this.enabled && ((this.resizeMode !== 'None' && this.resizeMode !== 'Vertical') || (this.cols || this.element.getAttribute('cols')))) {
             if (this.resizeMode !== 'None' && this.resizeMode !== 'Vertical') {
-                if(this.textareaWrapper.container.style.width) {
+                if (this.textareaWrapper.container.style.width) {
                     this.setElementWidth(this.textareaWrapper.container.style.width);
                     this.textareaWrapper.container.style.width = '';
                     this.textareaWrapper.container.classList.add(AUTO_WIDTH);
@@ -790,5 +792,4 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
     private getCurrentResizeClass(resizeMode: string): string {
         return resizeMode === 'None' ? RESIZE_NONE : (resizeMode === 'Both' ? RESIZE_XY : resizeMode === 'Horizontal' ? RESIZE_X : RESIZE_Y );
     }
-  
 }

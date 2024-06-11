@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.35 (2024-06-11)
+
+### DocumentEditor
+
+#### Features
+
+- `#F155458`, `#I329106`, `#I324222`, `#I315874`, `#I295727`, `#I291743`, `#I282998`, `#I280778`, `#I277336`, `#I275144`, `#I274602`, `#I273391`, `#I269063`, `#I268167`, `#I269063`, `#I361328`, `#I438671`, `#I546241`, `#I582321` - Content controls are individual controls that users can add and customize for use in templates, forms, and documents. (Rich text, plain text, dropdown list, check box, date picker, combo box and picture). Check out the [demo](https://ej2.syncfusion.com/demos/#/bootstrap5/document-editor/bindUI-to-document.html) here.
+
 ## 25.2.7 (2024-06-04)
 
 ### DocumentEditor

@@ -55,6 +55,7 @@ const SDRADICALOFFSET: string = '--speeddialRadialOffset';
 const SDRADICALMINHEIGHT: string = '--speeddialRadialMinHeight';
 const SDRADICALMINWIDTH: string = '--speeddialRadialMinWidth';
 const SDOVERFLOWLIMIT: string = '--speeddialOverflowLimit';
+const SDRADICALHORZDIST: string = '--speeddialRadialHorzDist';
 
 
 /**
@@ -874,7 +875,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
 
     private createItems(): void {
         this.focusedIndex = -1;
-        const ul = this.popupEle.querySelector('.' + SDUL) as HTMLElement;
+        const ul: HTMLElement = this.popupEle.querySelector('.' + SDUL) as HTMLElement;
         for (let index: number = 0; index < this.items.length; index++) {
             const item: SpeedDialItemModel = this.items[parseInt(index.toString(), 10)];
             const li: HTMLElement = this.createElement('li', {
@@ -974,7 +975,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         case 'enter':
         case 'space':
             if (this.isMenuOpen && e.target !== this.element) {
-                this.hidePopupEle(e);   
+                this.hidePopupEle(e);
             }
             break;
         }
@@ -1162,7 +1163,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
                 popupUlEle.style.setProperty(SDOVERFLOWLIMIT, limit + 'px');
             }
         } else {
-            limit = (this.direction === 'Right') ? right : left;
+            limit = this.enableRtl ? (this.direction === 'Right' ? left : right) : (this.direction === 'Right' ? right : left);
             if (limit < popupUlEle.offsetWidth) {
                 this.popupEle.classList.add(SDOVERFLOW, SDHORZOVERFLOW);
                 popupUlEle.style.setProperty(SDOVERFLOWLIMIT, limit + 'px');
@@ -1174,12 +1175,27 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         //Check whether the position value should be in top
         const isTop: boolean = (this.actualLinDirection === 'Down') || ((this.actualLinDirection === 'Auto') && (topPosition.indexOf(this.position) !== -1)) ||
             (!this.isVertical && (bottomPosition.indexOf(this.position) === -1));
+        const elementOffSetHeight: number = this.element.offsetHeight / 2;
+        const isMiddle: boolean = ['MiddleRight', 'MiddleCenter', 'MiddleLeft'].indexOf(this.position) !== -1;
         if (isTop) {
             vertDist = this.element.offsetTop + (this.isVertical ? this.element.offsetHeight : 0);
+            if (isMiddle) {
+                if (this.actualLinDirection === 'Right' || this.actualLinDirection === 'Left') {
+                    vertDist = this.element.offsetTop - elementOffSetHeight;
+                }
+                if (this.actualLinDirection === 'Down') {
+                    vertDist = vertDist - elementOffSetHeight;
+                }
+            }
             if (!this.isVertical) { this.popupEle.classList.add(SDHORIZONTALTOP); }
         } else {
-            vertDist = this.isFixed ? window.innerHeight : this.targetEle.clientHeight;
+            vertDist = this.isFixed ? window.document.documentElement.clientHeight : this.targetEle.clientHeight;
             vertDist = (vertDist - this.element.offsetTop - (this.isVertical ? 0 : this.element.offsetHeight));
+            if (isMiddle) {
+                if (this.actualLinDirection === 'Auto' || this.actualLinDirection === 'Up') {
+                    vertDist = vertDist + elementOffSetHeight;
+                }
+            }
             if (this.isVertical) { this.popupEle.classList.add(SDVERTICALBOTTOM); }
         }
         this.popupEle.classList.add(isTop ? SDTOP : SDBOTTOM);
@@ -1197,13 +1213,31 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         }
     }
     private setLeft(): void {
-        const horzDist: number = this.element.offsetLeft + (this.isVertical ? 0 : this.element.offsetWidth);
+        const elementOffSetWidth: number = this.element.offsetWidth / 2;
+        const isCenter: boolean = [ 'TopCenter', 'MiddleCenter', 'BottomCenter'].indexOf(this.position) !== -1;
+        let horzDist: number = this.element.offsetLeft + (this.isVertical ? 0 : this.element.offsetWidth);
+        if (isCenter) {
+            if (this.actualLinDirection === 'Auto' || this.actualLinDirection === 'Down' || this.actualLinDirection === 'Up') {
+                horzDist = this.element.offsetLeft - elementOffSetWidth;
+            }
+            else {
+                horzDist = this.actualLinDirection === 'Right' ? this.element.offsetLeft + elementOffSetWidth : horzDist + elementOffSetWidth;
+            }
+        }
         this.popupEle.style.setProperty(SDHORZDIST, horzDist + 'px');
         this.popupEle.classList.add(SDLEFT);
     }
     private setRight(): void {
-        let horzDist: number = this.isFixed ? window.innerWidth : this.targetEle.clientWidth;
+        const elementOffSetWidth: number = this.element.offsetWidth / 2;
+        const isCenter: boolean = [ 'TopCenter', 'MiddleCenter', 'BottomCenter'].indexOf(this.position) !== -1;
+        let horzDist: number = this.isFixed ? window.document.documentElement.clientWidth : this.targetEle.clientWidth;
         horzDist = (horzDist - this.element.offsetLeft - (this.isVertical ? this.element.offsetWidth : 0));
+        if (isCenter && this.actualLinDirection === 'Left') {
+            horzDist = horzDist + elementOffSetWidth;
+        }
+        if (this.popupEle.classList.contains('e-rtl') && isCenter) {
+            horzDist = horzDist - elementOffSetWidth;
+        }
         this.popupEle.style.setProperty(SDHORZDIST, horzDist + 'px');
         this.popupEle.classList.add(SDRIGHT);
     }
@@ -1230,6 +1264,72 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.popupEle.classList.add((!(this.enableRtl || isRight) || (this.enableRtl && isRight)) ? SDLEFT : SDRIGHT);
     }
 
+    private setCustomRadialPosition(): void {
+        const viewportWidth: number = document.documentElement.clientWidth;
+        const viewportHeight: number = document.documentElement.clientHeight;
+        if (['TopLeft', 'BottomLeft', 'MiddleLeft'].indexOf(this.position) !== -1) {
+            let horzDist: number;
+            if (this.enableRtl) {
+                if (this.isFixed) {
+                    horzDist = viewportWidth - (this.element.offsetLeft + this.element.offsetWidth);
+                }
+                else {
+                    horzDist = this.targetEle.clientWidth - (this.element.offsetLeft + this.element.offsetWidth);
+                }
+            }
+            else {
+                horzDist = this.element.offsetLeft;
+            }
+            this.popupEle.style.setProperty(SDRADICALHORZDIST, horzDist + 'px');
+        }
+        if (['TopLeft', 'TopCenter', 'TopRight'].indexOf(this.position) !== -1) {
+            this.popupEle.style.top = this.element.offsetTop + 'px';
+        }
+        if (['TopRight', 'BottomRight', 'MiddleRight'].indexOf(this.position) !== -1) {
+            let horzDist: number;
+            if (this.enableRtl) {
+                horzDist = this.element.offsetLeft;
+            }
+            else {
+                if (this.isFixed) {
+                    horzDist = viewportWidth - (this.element.offsetLeft + this.element.offsetWidth);
+                }
+                else {
+                    horzDist = this.targetEle.clientWidth - (this.element.offsetLeft + this.element.offsetWidth);
+                }
+            }
+            this.popupEle.style.setProperty(SDRADICALHORZDIST, horzDist + 'px');
+        }
+        if (['BottomLeft', 'BottomCenter', 'BottomRight'].indexOf(this.position) !== -1) {
+            if (this.isFixed) {
+                this.popupEle.style.bottom = viewportHeight - (this.element.offsetTop + this.element.offsetHeight) + 'px';
+            }
+            else {
+                this.popupEle.style.bottom = this.targetEle.clientHeight - (this.element.offsetTop + this.element.offsetHeight) + 'px';
+            }
+        }
+        if (['TopCenter', 'MiddleCenter', 'BottomCenter'].indexOf(this.position) !== -1) {
+            let horzDist: number;
+            if (this.enableRtl) {
+                if (this.isFixed) {
+                    horzDist = viewportWidth - (this.element.offsetLeft + this.element.offsetWidth) - this.popupEle.offsetWidth / 2;
+                }
+                else {
+                    const targetEleWidth: number = this.targetEle.clientWidth;
+                    const popupEleWidth: number = this.popupEle.offsetWidth;
+                    horzDist = targetEleWidth - (this.element.offsetLeft + this.element.offsetWidth) - popupEleWidth / 2;
+                }
+            }
+            else {
+                horzDist = ((this.element.offsetLeft) - this.popupEle.offsetWidth / 2);
+            }
+            this.popupEle.style.setProperty(SDRADICALHORZDIST, horzDist + 'px');
+        }
+        if (['MiddleLeft', 'MiddleCenter', 'MiddleRight'].indexOf(this.position) !== -1) {
+            this.popupEle.style.top = ((this.element.offsetTop) - this.popupEle.offsetHeight / 2) + 'px';
+        }
+    }
+
     private setRadialPosition(): void {
         this.setRadialCorner();
         const range: RadialSettingsModel = this.getActualRange();
@@ -1245,7 +1345,8 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         const perAngle: number = availableAngle / gaps;
         for (let i: number = 0; i < li.length; i++) {
             const ele: HTMLElement = li[parseInt(i.toString(), 10)];
-            let angle: number = this.isClock ? ((range.startAngle as number) + (perAngle * i)) : ((range.startAngle as number) - (perAngle * i));
+            const startAngle: number = range.startAngle;
+            let angle: number = this.isClock ? ((startAngle) + (perAngle * i)) : ((startAngle) - (perAngle * i));
             angle = angle % 360; // removing the Zerp crossing changes.
             ele.style.setProperty(SDRADICALANGLE, angle + 'deg');
         }
@@ -1263,8 +1364,8 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     // 0,360 is at right, 90 is at Bottom, 180 is at left, 270 is at top
     private getActualRange(): RadialSettingsModel {
         const range: RadialSettingsModel = { offset: this.radialSettings.offset };
-        let start = this.radialSettings.startAngle as number;
-        let end = this.radialSettings.endAngle as number;
+        let start: number = this.radialSettings.startAngle;
+        let end: number = this.radialSettings.endAngle;
         let isClockwise: boolean = false;
         switch (this.position) {
         case 'TopLeft':
@@ -1370,6 +1471,9 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     private clearHorizontalPosition(): void {
         this.popupEle.style.removeProperty(SDHORZDIST);
+        this.popupEle.style.removeProperty(SDRADICALHORZDIST);
+        this.popupEle.style.removeProperty('top');
+        this.popupEle.style.removeProperty('bottom');
         this.popupEle.classList.remove(SDRIGHT, SDLEFT, SDCENTER);
         this.popupEle.classList.remove(SDVERTICALRIGHT, SDHORIZONTALLEFT, SDHORIZONTALRIGHT);
     }
@@ -1435,6 +1539,12 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     private showPopupEle(e?: Event): void {
         if (!this.popupEle || this.isMenuOpen) { return; }
+        if (this.popupTemplate || (this.mode === 'Radial')) {
+            this.setCustomRadialPosition();
+        }
+        else {
+            this.setLinearPosition();
+        }
         const eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e as Event, cancel: false };
         this.trigger('beforeOpen', eventArgs, (args: SpeedDialBeforeOpenCloseEventArgs) => {
             if (args.cancel) { return; }
@@ -1554,7 +1664,6 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      *@returns {void}
      */
     public refreshPosition(): void {
-        this.fab.refreshPosition();
         this.resizeHandler();
     }
     private resizeHandler(e?: Event): void {

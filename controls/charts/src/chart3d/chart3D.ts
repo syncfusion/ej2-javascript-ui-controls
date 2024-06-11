@@ -384,12 +384,12 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Options for customizing the title of the Chart.
      */
-    @Complex<TitleSettingsModel>({ fontFamily: null, size: '16px', fontStyle: 'Normal', fontWeight: '600', color: null }, TitleSettings)
+    @Complex<TitleSettingsModel>({ fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null }, TitleSettings)
     public titleStyle: TitleSettingsModel;
     /**
      * Options for customizing the Subtitle of the Chart.
      */
-    @Complex<TitleSettingsModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '400', color: null }, TitleSettings)
+    @Complex<TitleSettingsModel>({ fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null }, TitleSettings)
     public subTitleStyle: TitleSettingsModel;
     /**
      * The chart legend configuration options.
@@ -986,7 +986,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Animate the series bounds.
      *
+     * @param {number} duration - Specifies the duration of the animation.
      * @private
+     * @returns {void}
      */
     public animate(duration?: number): void {
         this.redraw = true;
@@ -1078,7 +1080,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                     titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
                     maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
                 }
-                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.enableRtl, this.themeStyle.chartSubTitleFont);
+                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle,
+                                                   maxWidth, this.enableRtl, this.themeStyle.chartSubTitleFont);
                 subTitleHeight = (measureText(this.subTitle, this.subTitleStyle,
                                               this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length) +
                     padding;
@@ -1443,7 +1446,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         const padding: number = 10;
         const alignment: Alignment = this.titleStyle.textAlignment;
         for (const titleText of this.titleCollection) {
-            titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
+            titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartTitleFont).width;
             maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
         }
         const subTitleElementSize: Size = measureText(this.subTitleCollection.
@@ -1533,13 +1536,12 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * To provide the array of modules needed for control rendering
      *
-     * @returns {ModuleDeclaration[]}
+     * @returns {ModuleDeclaration[]} - Array of modules needed for control rendering
      * @private
      */
-    /* eslint-disable  */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
-        let series: Chart3DSeriesModel[] = this.series;
+        const series: Chart3DSeriesModel[] = this.series;
         let moduleName: string;
         let dataLabelEnable: boolean = false;
         if (this.tooltip.enable) {
@@ -1610,7 +1612,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         let categoryEnabled: boolean = false;
         let logarithmicEnabled: boolean = false;
         let dateTimeCategoryEnabled: boolean = false;
-        for (let axis of axisCollections) {
+        for (const axis of axisCollections) {
             datetimeEnabled = axis.valueType === 'DateTime' || datetimeEnabled;
             categoryEnabled = axis.valueType === 'Category' || categoryEnabled;
             logarithmicEnabled = axis.valueType === 'Logarithmic' || logarithmicEnabled;
@@ -1642,9 +1644,11 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return modules;
     }
- 
+
     /**
      * Sets the theme for the chart.
+     *
+     * @returns {void}
      */
     private setTheme(): void {
         /*! Set theme */
@@ -1663,23 +1667,26 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * Renders the three-dimensional chart, creating a 3D visualization.
      *
      * The function sets up a 3D perspective, depth, rotation, and tilt to create a 3D visualization of the chart.
+     *
+     * @returns {void}
      */
     private render3DChart(): void {
-        let chart = this;
-        this.chart3D = chart.svgRenderer.createGroup({ 'id': chart.element.id + '-svg-chart-3d' });
+        this.chart3D = this.svgRenderer.createGroup({ 'id': this.element.id + '-svg-chart-3d' });
         this.chart3D.setAttribute('role', 'region');
         this.chart3D.setAttribute('aria-hidden', 'false');
         this.draw3DAxis();
-        this.wallRender.update3DWall(chart);
+        this.wallRender.update3DWall(this);
         this.renderSeries();
-        appendChildElement(false, chart.svgObject, chart.chart3D, chart.redraw);
-        let size: Size = new Size(chart.availableSize.width, chart.availableSize.height);
+        appendChildElement(false, this.svgObject, this.chart3D, this.redraw);
+        const size: Size = new Size(this.availableSize.width, this.availableSize.height);
         this.graphics.prepareView(this.perspectiveAngle, this.depth, this.rotation, this.tilt, size, this);
         this.graphics.view(this.svgObject, this);
     }
+
     /**
      * Draws three-dimensional axes for the chart.
      *
+     * @returns {void}
      */
     private draw3DAxis(): void {
         for (let i: number = 0; i < this.axisCollections.length; i++) {
@@ -1689,8 +1696,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Renders chart series elements.
-     * 
+     *
      * @private
+     * @returns {void}
      */
     public renderSeries(): void {
         let visibility: boolean;
@@ -1710,6 +1718,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {Chart3DSeries} series - The series to which the axis belongs.
      * @param {Chart3DAxis} axis - The axis to be configured and initialized.
      * @param {boolean} isSeries - Indicates whether the axis configuration is for the series.
+     * @returns {void}
      */
     private initAxis(series: Chart3DSeries, axis: Chart3DAxis, isSeries: boolean): void {
         if (series.xAxisName === axis.name || (series.xAxisName == null && axis.name === 'primaryXAxis')) {
@@ -1727,6 +1736,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * Calculate the visible axis.
      *
      * @private
+     * @returns {void}
      */
     private calculateVisibleAxis(): void {
         let axis: Chart3DAxis;
@@ -1830,6 +1840,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the long press on chart.
      *
+     * @param {TapEventArgs} e - Specifies the tap event arguments.
      * @returns {boolean} false
      * @private
      */
@@ -1845,16 +1856,17 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the mouse click on chart.
      *
+     * @param {PointerEvent | TouchEvent} e - Specifies the pointer event.
      * @returns {boolean} false
      * @private
      */
     public chartOnMouseClick(e: PointerEvent | TouchEvent): boolean {
         const element: Element = <Element>e.target;
-        const chart: Chart3D = this;
+        const chart: Chart3D = this as Chart3D;
         this.clickCount++;
         let timeInterval: number = 400;
         if (this.clickCount === 1) {
-            this.singleClickTimer = +setTimeout(function () {
+            this.singleClickTimer = +setTimeout(function (): void {
                 chart.clickCount = 0;
                 chart.trigger('chart3DMouseClick', { target: element.id, x: chart.mouseX, y: chart.mouseY });
             }, timeInterval);
@@ -1865,7 +1877,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         }
         const isAngular: string = 'isAngular';
         if (this[isAngular as string]) {
-            const observers: string = 'observers';
+            //const observers: string = 'observers';
             timeInterval = 0;
         } else {
             timeInterval = 0;
@@ -1881,9 +1893,13 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         this.notify('click', e);
         return false;
     }
-    
+
     /**
      * Export method for the chart.
+     *
+     * @param {ExportType} type - Specifies the type of the export.
+     * @param {string} fileName - Specifies the file name of the exported file.
+     * @returns {void}
      */
     public export(type: ExportType, fileName: string): void {
         if (this.export3DModule) {
@@ -1939,6 +1955,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {string} event - The type of event to trigger.
      * @param {PointerEvent | TouchEvent} [e] - (Optional) The event data associated with the triggered event.
+     * @returns {void}
      */
     private triggerPointEvent(event: string, e?: PointerEvent | TouchEvent): void {
         const evt: PointerEvent = e as PointerEvent;
@@ -1966,7 +1983,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                 series: series,
                 point: point,
                 seriesIndex: seriesIndex, pointIndex: pointIndex,
-                x: this.mouseX, y: this.mouseY,
+                x: this.mouseX, y: this.mouseY
             });
         }
     }
@@ -1974,15 +1991,14 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the mouse down on chart.
      *
+     * @param {PointerEvent} e - Specifies the pointer event.
      * @returns {boolean} false
      * @private
      */
     public chartOnMouseDown(e: PointerEvent): boolean {
         let pageX: number;
         let pageY: number;
-        let target: Element;
         let touchArg: TouchEvent;
-        const offset: number = Browser.isDevice ? 20 : 30;
         const rect: ClientRect = this.element.getBoundingClientRect();
         const element: Element = <Element>e.target;
         this.trigger('chart3DMouseDown', { target: element.id, x: this.mouseX, y: this.mouseY });
@@ -1991,12 +2007,10 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
             touchArg = <TouchEvent & PointerEvent>e;
             pageX = touchArg.changedTouches[0].clientX;
             pageY = touchArg.changedTouches[0].clientY;
-            target = <Element>touchArg.target;
         } else {
             this.isTouch = e.pointerType === 'touch';
             pageX = e.clientX;
             pageY = e.clientY;
-            target = <Element>e.target;
         }
         const svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
         this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
@@ -2015,6 +2029,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the mouse move on chart.
      *
+     * @param {PointerEvent} e - Specifies the pointer event.
      * @returns {boolean} false
      * @private
      */
@@ -2042,6 +2057,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the mouse leave on chart.
      *
+     * @param {PointerEvent} e - Specifies the pointer event.
      * @returns {boolean} false
      * @private
      */
@@ -2067,6 +2083,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the mouse up on chart.
      *
+     * @param {PointerEvent} e - Specifies the pointer event.
      * @returns {boolean} false
      * @private
      */
@@ -2092,8 +2109,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the mouse up on chart.
      *
-     * @returns {boolean}
+     * @param {PointerEvent | TouchEvent} e - Specifies the pointer event.
      * @private
+     * @returns {boolean} false
      */
     public chartOnMouseUp(e: PointerEvent | TouchEvent): boolean {
         const element: Element = <Element>e.target;
@@ -2109,9 +2127,10 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Prints the chart in the page. 
-     * 
-     * @param {string[] | string | Element} id - The id of the chart to be printed on the page. 
+     * Prints the chart in the page.
+     *
+     * @param {string[] | string | Element} id - The id of the chart to be printed on the page.
+     * @returns {void}
      */
     public print(id?: string[] | string | Element): void {
         const printChart: PrintUtils  = new PrintUtils(this);
@@ -2121,6 +2140,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the mouse move on chart.
      *
+     * @param {PointerEvent | TouchEvent} e - Specifies the pointer event.
      * @returns {boolean} false
      * @private
      */
@@ -2135,8 +2155,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
             this.axisTooltip(e, this.mouseX, this.mouseY);
         }
         if (this.rotateActivate && withInBounds(this.mouseX, this.mouseY, this.chartAxisLayoutPanel.seriesClipRect)) {
-            let difX: number = this.previousCoords.x - this.mouseX;
-            let difY: number = this.previousCoords.y - this.mouseY;
+            const difX: number = this.previousCoords.x - this.mouseX;
+            const difY: number = this.previousCoords.y - this.mouseY;
             if (difX || difY) {
                 this.tilt -= difY;
                 this.rotation += difX;
@@ -2146,10 +2166,10 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                     grpElement.remove();
                 }
                 else {
-                    document.querySelectorAll("[id*=\"axis-label-" + "\"]").forEach(function (axisElement) { return axisElement.remove(); });
+                    document.querySelectorAll('[id*="axis-label-"]').forEach(function (axisElement: Element): void { return axisElement.remove(); });
                     this.delayRedraw = true;
                 }
-                let size: Size = { width: this.availableSize.width, height: this.availableSize.height };
+                const size: Size = { width: this.availableSize.width, height: this.availableSize.height };
                 this.graphics.view(this.svgObject, this, this.rotation, this.tilt, size, this.perspectiveAngle, this.depth);
                 appendChildElement(false, this.svgObject, this.chart3D, this.redraw);
                 this.previousCoords.y = this.mouseY;
@@ -2169,6 +2189,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {number} x - The X-coordinate for the tooltip.
      * @param {number} y - The Y-coordinate for the tooltip.
      * @param {boolean} [isTouch] - (Optional) Indicates whether the event was triggered by a touch input.
+     * @returns {void}
      */
     private titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         const targetId: string = (<HTMLElement>event.target).id;
@@ -2193,7 +2214,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To find mouse x, y coordinate for the chart.
-     * 
+     *
      * @param {number} pageX - Specifies the x value of the pageX.
      * @param {number} pageY - Specifies the y value of the pageY.
      * @returns {void}
@@ -2210,6 +2231,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Handles the mouse leave on chart.
      *
+     * @param {PointerEvent | TouchEvent} e - Specifies the pointer event.
      * @returns {boolean} false
      * @private
      */
@@ -2224,12 +2246,12 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         this.delayRedraw = false;
         return false;
     }
-    
+
     /**
      * Handles the 'onkeydown' keyboard event on the chart.
      *
      * @param {KeyboardEvent} e - Specifies the keydown event arguments.
-     * @returns {boolean}
+     * @returns {boolean} false
      * @private
      */
     public chartKeyDown(e: KeyboardEvent): boolean {
@@ -2251,8 +2273,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
             actionKey = 'CtrlP';
         }
 
-        if (actionKey !== '')
+        if (actionKey !== '') {
             this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
+        }
 
         return false;
     }
@@ -2299,7 +2322,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         if (e.code === 'Tab') {
             if (this.previousTargetId !== '') {
                 if ((this.previousTargetId.indexOf('-series-') > -1 && targetId.indexOf('-series-') === -1)) {
-                    const previousElement: Element = getElement(this.element.id + '-svg-0-region-series-' + this.currentSeriesIndex +'-point-' + this.currentPointIndex);
+                    const previousElement: Element = getElement(this.element.id + '-svg-0-region-series-' + this.currentSeriesIndex + '-point-' + this.currentPointIndex);
                     this.setTabIndex(previousElement as HTMLElement, seriesElement as HTMLElement);
                     this.currentPointIndex = 0;
                     this.currentSeriesIndex = 0;
@@ -2310,7 +2333,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 else if (this.previousTargetId.indexOf('_chart_legend_g_') > -1 && targetId.indexOf('_chart_legend_g_') === -1) {
                     groupElement = getElement(this.element.id + '_chart_legend_translate_g') as HTMLElement;
-                    this.setTabIndex(groupElement.children[this.currentLegendIndex] as HTMLElement, groupElement.firstElementChild as HTMLElement);
+                    this.setTabIndex(groupElement.children[this.currentLegendIndex] as HTMLElement,
+                                     groupElement.firstElementChild as HTMLElement);
                 }
             }
             this.previousTargetId = targetId;
@@ -2360,10 +2384,12 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                     this.currentPointIndex += e.code === 'ArrowUp' ? 1 : -1;
                 }
                 if (targetId.indexOf('-point-') > -1) {
-                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex, this.visibleSeries[this.currentSeriesIndex].points.length ? this.currentSeries.points.length : 1);
+                    this.currentPointIndex = this.getActualIndex(
+                        this.currentPointIndex, this.visibleSeries[this.currentSeriesIndex].points.length ?
+                            this.currentSeries.points.length : 1);
                     const pointElements: NodeListOf<Element> = document.querySelectorAll('[id*="svg-0-region-series-' + this.currentSeriesIndex + '-point-' +
                         this.currentPointIndex + '"]');
-                    for (let i = 0; i < pointElements.length; i++) {
+                    for (let i: number = 0; i < pointElements.length; i++) {
                         if (pointElements[i as number].id.split('-point-')[1].split('-')[0] === this.currentPointIndex.toString()) {
                             currentPoint = pointElements[i as number];
                         }
@@ -2390,6 +2416,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {HTMLElement} previousElement - The element whose tabindex should be removed.
      * @param {HTMLElement} currentElement - The element to which tabindex should be set.
+     * @returns {void}
      */
     private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
         if (previousElement) {
@@ -2400,27 +2427,27 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-     /**
-      * Calculates the actual index considering boundary conditions within a given range.
-      *
-      * @param {number} index - The index to be adjusted.
-      * @param {number} totalLength - The total length or maximum allowed index value.
-      * @returns {number} - The adjusted index within the valid range.
-      */
+    /**
+     * Calculates the actual index considering boundary conditions within a given range.
+     *
+     * @param {number} index - The index to be adjusted.
+     * @param {number} totalLength - The total length or maximum allowed index value.
+     * @returns {number} - The adjusted index within the valid range.
+     */
     private getActualIndex(index: number, totalLength: number): number {
         return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index);
     }
 
     /**
      *  Used to configure tooltips for the chart's axes.
-     * 
+     *
      * @private
      * @param {Event} event - Specifies the event args.
      * @param {number} x - Specifies the x value.
      * @param {number} y - Specifies the y value.
      * @param {boolean} isTouch - Specifies the boolean value.
      * @description - Handles the axis tooltip.
-     * 
+     * @returns {void}
      */
     private axisTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         const targetId: string = (<HTMLElement>event.target).id;
@@ -2443,14 +2470,13 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns {string} - The matching axis label, or an empty string if no match is found.
      */
     private findAxisLabel(text: string): string {
-        let texts: string[];
-        texts = ((text.replace(this.element.id + '-', '')).replace('-axis-label', '')).split('-');
+        const texts: string[] = ((text.replace(this.element.id + '-', '')).replace('-axis-label', '')).split('-');
         return this.axisCollections[parseInt(texts[0], 10)].visibleLabels[parseInt(texts[1], 10)].originalText;
     }
 
     /**
      * Sets focus on a child element within the parent element.
-     * 
+     *
      * @param {HTMLElement} element - The parent element containing the child to be focused.
      * @returns {string} - A message indicating the result of the focus operation.
      */
@@ -2473,6 +2499,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {KeyboardEvent} e - The keyboard event triggering the navigation.
      * @private
+     * @returns {void}
      */
     private documentKeyHandler(e: KeyboardEvent): void {
         if (e.altKey && e.keyCode === 74 && !isNullOrUndefined(this.element)) {
@@ -2480,90 +2507,94 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-   /**
-    * Handles chart keyboard navigation events.
-    * 
-    * @param {KeyboardEvent} e - The keyboard event triggering the navigation.
-    * @param {string} targetId - The ID of the target element or chart component.
-    * @param { string} actionKey - - The type of keyboard action (e.g., 'Tab' or 'ArrowMove').
-    */
+    /**
+     * Handles chart keyboard navigation events.
+     *
+     * @param {KeyboardEvent} e - The keyboard event triggering the navigation.
+     * @param {string} targetId - The ID of the target element or chart component.
+     * @param { string} actionKey - - The type of keyboard action (e.g., 'Tab' or 'ArrowMove').
+     * @returns {void}
+     */
     private chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
         this.isLegendClicked = false;
         switch (actionKey) {
-            case 'Tab':
-            case 'ArrowMove':
+        case 'Tab':
+        case 'ArrowMove':
+            if (this.highlight3DModule) {
+                this.highlight3DModule.removeLegendHighlightStyles();
+            }
+            if (targetId.indexOf('-point-') > -1) {
+                if (document.activeElement) {
+                    const element: Element = document.activeElement;
+                    const rect: DOMRect | ClientRect = element.getBoundingClientRect();
+                    // Client coordinates (relative to the viewport)
+                    const clientX: number = rect.left + rect.width / 2;
+                    const clientY: number = rect.top;
+                    // Page coordinates (relative to the whole document)
+                    const pageX: number = window.scrollX + clientX;
+                    const pageY: number = window.scrollY + clientY;
+                    this.mouseX = pageX;
+                    this.mouseY = pageY;
+                }
                 if (this.highlight3DModule) {
-                    this.highlight3DModule.removeLegendHighlightStyles();
+                    this.highlight3DModule.highlightChart(document.getElementById(targetId), 'mousemove');
+                    this.highlight3DModule.completeSelection();
                 }
-                if (targetId.indexOf('-point-') > -1) {
-                    if (document.activeElement) {
-                        const element = document.activeElement;
-                        const rect = element.getBoundingClientRect();
-                        // Client coordinates (relative to the viewport)
-                        const clientX = rect.left + rect.width / 2;
-                        const clientY = rect.top;
-                        // Page coordinates (relative to the whole document)
-                        const pageX = window.scrollX + clientX;
-                        const pageY = window.scrollY + clientY;
-                        this.mouseX = pageX;
-                        this.mouseY = pageY;
-                    }
-                    if (this.highlight3DModule) {
-                        this.highlight3DModule.highlightChart(document.getElementById(targetId), 'mousemove');
-                        this.highlight3DModule.completeSelection(document.getElementById(targetId), 'mousemove');
-                    }
-                    if (this.tooltip3DModule) {
-                        const data = { series: this.visibleSeries[targetId.split('-series-')[1].split('-point-')[0]], point: this.visibleSeries[targetId.split('-series-')[1].split('-point-')[0]].points[targetId.split('-point-')[1].split('-')[0]] }
-                        const svgElement: HTMLElement = document.getElementById(this.element.id + '_tooltip_svg');
-                        const isFirst: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
-                        const tooltipDiv: HTMLDivElement = this.tooltip3DModule.getTooltipElement(isFirst);
-                        if (this.tooltip3DModule.pushData((data as Point3D), !isFirst, tooltipDiv, true)) {
-                        this.tooltip3DModule.triggerTooltipRender(data, !isFirst, this.tooltip3DModule.getTooltipText(data), this.tooltip3DModule.findHeader(data));
-                        }
+                if (this.tooltip3DModule) {
+                    const data: Point3D = { series: this.visibleSeries[targetId.split('-series-')[1].split('-point-')[0]], point: this.visibleSeries[targetId.split('-series-')[1].split('-point-')[0]].points[targetId.split('-point-')[1].split('-')[0]] };
+                    const svgElement: HTMLElement = document.getElementById(this.element.id + '_tooltip_svg');
+                    const isFirst: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+                    const tooltipDiv: HTMLDivElement = this.tooltip3DModule.getTooltipElement(isFirst);
+                    if (this.tooltip3DModule.pushData((data as Point3D), !isFirst, tooltipDiv, true)) {
+                        this.tooltip3DModule.triggerTooltipRender(data, !isFirst,
+                                                                  this.tooltip3DModule.getTooltipText(data),
+                                                                  this.tooltip3DModule.findHeader(data));
                     }
                 }
-                if (this.highlight3DModule && this.highlightMode !== 'None') {
-                    targetId = targetId.indexOf('_chart_legend_g_') > -1 ? document.getElementById(targetId).firstChild['id'] : targetId;
-                    const legendID: string = this.element.id + '_chart_legend';
-                    const legendItemsId: string[] = [legendID + '_text_', legendID + '_shape_marker_',
+            }
+            if (this.highlight3DModule && this.highlightMode !== 'None') {
+                targetId = targetId.indexOf('_chart_legend_g_') > -1 ? document.getElementById(targetId).firstChild['id'] : targetId;
+                const legendID: string = this.element.id + '_chart_legend';
+                const legendItemsId: string[] = [legendID + '_text_', legendID + '_shape_marker_',
                     legendID + '_shape_'];
-                    for (let i: number = 0; i < legendItemsId.length; i++) {
-                        const id: string = legendItemsId[i as number];
-                        if (targetId.indexOf(id) > -1) {
-                            document.getElementById(targetId).setAttribute('class', '');
-                            this.highlight3DModule.legendSelection(this, parseInt(targetId.split(id)[1], 10),
-                                document.getElementById(targetId), 'mousemove');
-                            break;
-                        }
+                for (let i: number = 0; i < legendItemsId.length; i++) {
+                    const id: string = legendItemsId[i as number];
+                    if (targetId.indexOf(id) > -1) {
+                        document.getElementById(targetId).setAttribute('class', '');
+                        this.highlight3DModule.legendSelection(this, parseInt(targetId.split(id)[1], 10),
+                                                               document.getElementById(targetId), 'mousemove');
+                        break;
                     }
                 }
-                break;
+            }
+            break;
 
-            case 'Enter':
-            case 'Space':
-                if (targetId.indexOf('_chart_legend_') > -1) {
-                    this.isLegendClicked = true;
-                    this.legend3DModule.click(e as Event);
-                    this.focusChild(document.getElementById(targetId).parentElement);
-                } else {
-                    this.selection3DModule.calculateSelectedElements(document.getElementById(targetId), 'click');
-                }
-                break;
-            case 'CtrlP':
-                this.print();
-                break;
-            case 'ESC':
-                this.tooltip3DModule.removeTooltip(1);
-                break;
+        case 'Enter':
+        case 'Space':
+            if (targetId.indexOf('_chart_legend_') > -1) {
+                this.isLegendClicked = true;
+                this.legend3DModule.click(e as Event);
+                this.focusChild(document.getElementById(targetId).parentElement);
+            } else {
+                this.selection3DModule.calculateSelectedElements(document.getElementById(targetId), 'click');
+            }
+            break;
+        case 'CtrlP':
+            this.print();
+            break;
+        case 'ESC':
+            this.tooltip3DModule.removeTooltip(1);
+            break;
         }
 
     }
 
     /**
      *  Applys the style for chart.
-     * 
+     *
      * @private
      * @param {HTMLElement} element - Specifies the element.
+     * @returns {void}
      */
     private setStyle(element: HTMLElement): void {
         const disableScroll: boolean = this.selectionMode !== 'None' || this.highlightMode !== 'None';
@@ -2580,11 +2611,10 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * The method to determine whether it is a secondary axis or not.
-     *  
+     *
+     * @param  {Chart3DAxis} axis - Specifies the axis.
+     * @returns {boolean} Returns the boolean value.
      * @private
-     * @param  {Chart3DAxis} axis 
-     * @returns {boolean}
-     * 
      */
     public isSecondaryAxis(axis: Chart3DAxis): boolean {
         return ((this as Chart3D).axes.indexOf(axis) > -1);
@@ -2594,9 +2624,11 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * To refresh the rows and columns.
      *
      * @param {Chart3DRow[] | Chart3DColumn} definitions - Specifies the row or column definition.
+     * @private
+     * @returns {void}
      */
     private refreshDefinition(definitions: Chart3DRow[] | Chart3DColumn[]): void {
-        for (let item of definitions) {
+        for (const item of definitions) {
             item.axes = [];
         }
     }
@@ -2604,7 +2636,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Adds new series to the chart
      *
-     * @param {Chart3DSeriesModel[]} seriesCollection - The series collection to be added to the chart. 
+     * @param {Chart3DSeriesModel[]} seriesCollection - The series collection to be added to the chart.
+     * @returns {void}
      */
     public addSeries(seriesCollection: Chart3DSeriesModel[]): void {
         this.animateSeries = false;
@@ -2619,6 +2652,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * Removes a series from the chart
      *
      * @param {number} index - The index of the series to be removed from the chart.
+     * @returns {void}
      */
     public removeSeries(index: number): void {
         this.redraw = false;
@@ -2640,6 +2674,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * Refresh the axis default value.
      *
      * @private
+     * @returns {void}
      */
     public refreshAxis(): void {
         let axis: Chart3DAxis = <Chart3DAxis>this.primaryXAxis;
@@ -2657,8 +2692,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Refresh the 3D chart axis.
      *
-     * @param {Chart3DAxis} axis 
-     * @returns {boolean}
+     * @param {Chart3DAxis} axis - Specifies the axis.
+     * @returns {boolean} Returns the boolean value.
      * @private
      */
     private axisChange(axis: Chart3DAxis): boolean {
@@ -2674,9 +2709,13 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Get visible series by index.
+     *
+     * @param {Chart3DSeries[]} visibleSeries - Specifies the visible series.
+     * @param {number} index - Specifies the index.
+     * @returns {Chart3DSeries} Returns the chart 3D series.
      */
     private getVisibleSeries(visibleSeries: Chart3DSeries[], index: number): Chart3DSeries {
-        for (let series of visibleSeries) {
+        for (const series of visibleSeries) {
             if (index === series.index) {
                 return series;
             }
@@ -2686,6 +2725,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To remove style element.
+     *
+     * @private
+     * @returns {void}
      */
     private removeStyles(): void {
         removeElement(this.element.id + '_ej2_chart_selection');
@@ -2694,7 +2736,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * To find the 3D chart visible series.
-     * 
+     *
+     * @private
+     * @returns {void}
      */
     private calculateVisibleSeries(): void {
         let series: Chart3DSeries;
@@ -2713,23 +2757,23 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
             series.index = i;
             series.interior = series.fill || colors[i % count];
             if (this.isSecondaryAxis(series.xAxis)) {
-                series.xAxis.internalVisibility = series.xAxis.series.some((value) => (value.visible));
+                series.xAxis.internalVisibility = series.xAxis.series.some((value: Chart3DSeries) => (value.visible));
             }
             if (this.isSecondaryAxis(series.yAxis)) {
-                series.yAxis.internalVisibility = series.yAxis.series.some((value) => (value.visible));
+                series.yAxis.internalVisibility = series.yAxis.series.some((value: Chart3DSeries) => (value.visible));
             }
             switch (series.type) {
-                case 'Bar':
-                case 'StackingBar':
-                case 'StackingBar100':
-                    if (seriesCollection[0].type.indexOf('Bar') === -1) {
-                        continue;
-                    } break;
-                default:
-                    if (seriesCollection[0].type.indexOf('Bar') > -1) {
-                        continue;
-                    }
-                    break;
+            case 'Bar':
+            case 'StackingBar':
+            case 'StackingBar100':
+                if (seriesCollection[0].type.indexOf('Bar') === -1) {
+                    continue;
+                } break;
+            default:
+                if (seriesCollection[0].type.indexOf('Bar') > -1) {
+                    continue;
+                }
+                break;
             }
             this.visibleSeries.push(series);
             seriesCollection[i as number] = series;
@@ -2737,7 +2781,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     public highlightAnimation(element: HTMLElement, index: number, duration: number, startOpacity: number): void {
-        let endOpacity: number = parseFloat(this.visibleSeries[index as number].opacity.toString());
+        const endOpacity: number = parseFloat(this.visibleSeries[index as number].opacity.toString());
         if (endOpacity) {
             new Animation({}).animate(element, {
                 duration: duration,
@@ -2754,9 +2798,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    public stopElementAnimation(element: HTMLElement, index: number) {
-        let endOpacity: number = parseFloat(this.visibleSeries[index as number].opacity.toString());
-        const animation = element.getAttribute('e-animate');
+    public stopElementAnimation(element: HTMLElement, index: number): void {
+        const endOpacity: number = parseFloat(this.visibleSeries[index as number].opacity.toString());
+        const animation: string = element.getAttribute('e-animate');
         if (animation) {
             Animation.stop(element);
         }
@@ -2764,11 +2808,13 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-      * To destroy the widget
-      *
-      * @function destroy
-      * @member of Chart
-      */
+     * To destroy the widget.
+     *
+     * @function destroy
+     * @member of Chart
+     * @returns {void}
+     */
+
     public destroy(): void {
         this.horizontalAxes = [];
         this.verticalAxes = [];
@@ -2789,7 +2835,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
             if ((this as any).isReact) { this.clearTemplate(); }
             super.destroy();
             this.polygons = [];
-            let grpElement: Element = document.getElementById(this.chart3D.id);
+            const grpElement: Element = document.getElementById(this.chart3D.id);
             if (grpElement) {
                 grpElement.innerHTML = '';
                 grpElement.remove();
@@ -2805,7 +2851,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns {string} returns the module name
      * @private
      */
-     public getModuleName(): string {
+    public getModuleName(): string {
         return 'chart3d';
     }
 
@@ -2813,6 +2859,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * Get the properties to be maintained in the persisted state.
      *
      * @private
+     * @returns {string} returns the string.
      */
     public getPersistData(): string {
         const keyEntity: string[] = ['loaded'];
@@ -2821,167 +2868,172 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Called internally if any of the property value changed.
+     *
      * @private
+     * @param {Chart3DModel} newProp - Specifies the new property.
+     * @param {Chart3DModel} oldProp - Specifies the old property.
+     * @returns {void}
      */
     public onPropertyChanged(newProp: Chart3DModel, oldProp: Chart3DModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         let axis: Chart3DAxis;
         this.animateSeries = false;
+        let len: number;
+        let seriesRefresh: boolean = false;
+        let series: Chart3DSeriesModel;
         if (!this.delayRedraw) {
-            for (let prop of Object.keys(newProp)) {
+            for (const prop of Object.keys(newProp)) {
                 switch (prop) {
-                    case 'primaryXAxis':
-                        axis = <Chart3DAxis>newProp.primaryXAxis;
-                        refreshBounds = this.axisChange(axis);
-                        if (newProp.primaryXAxis.edgeLabelPlacement) {
-                            renderer = true;
-                        }
+                case 'primaryXAxis':
+                    axis = <Chart3DAxis>newProp.primaryXAxis;
+                    refreshBounds = this.axisChange(axis);
+                    if (newProp.primaryXAxis.edgeLabelPlacement) {
+                        renderer = true;
+                    }
+                    refreshBounds = true;
+                    if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
+                        (this.primaryXAxis as Chart3DAxis).setIsInversedAndOpposedPosition();
+                    }
+                    break;
+                case 'primaryYAxis':
+                    axis = <Chart3DAxis>newProp.primaryYAxis;
+                    refreshBounds = this.axisChange(axis);
+                    if (newProp.primaryYAxis.edgeLabelPlacement) {
+                        renderer = true;
+                    }
+                    refreshBounds = true;
+                    if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
+                        (this.primaryYAxis as Chart3DAxis).setIsInversedAndOpposedPosition();
+                    }
+                    break;
+                case 'axes':
+                    for (const index of Object.keys(newProp.axes)) {
+                        axis = newProp.axes[index as string] as Chart3DAxis;
+                        refreshBounds = refreshBounds || this.axisChange(axis);
                         refreshBounds = true;
                         if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
-                            (this.primaryXAxis as Chart3DAxis).setIsInversedAndOpposedPosition();
+                            (this.axes[index as string] as Chart3DAxis).setIsInversedAndOpposedPosition();
                         }
-                        break;
-                    case 'primaryYAxis':
-                        axis = <Chart3DAxis>newProp.primaryYAxis;
-                        refreshBounds = this.axisChange(axis);
-                        if (newProp.primaryYAxis.edgeLabelPlacement) {
-                            renderer = true;
-                        }
+                    }
+                    break;
+                case 'height':
+                case 'width':
+                    this.createChartSvg();
+                    refreshBounds = true;
+                    break;
+                case 'subTitle':
+                case 'title':
+                    refreshBounds = true;
+                    break;
+                case 'titleStyle':
+                    if (newProp.titleStyle && (newProp.titleStyle.size || newProp.titleStyle.textOverflow)) {
                         refreshBounds = true;
-                        if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
-                            (this.primaryYAxis as Chart3DAxis).setIsInversedAndOpposedPosition();
-                        }
-                        break;
-                    case 'axes':
-                        for (let index of Object.keys(newProp.axes)) {
-                            axis = newProp.axes[index] as Chart3DAxis;
-                            refreshBounds = refreshBounds || this.axisChange(axis);
-                            refreshBounds = true;
-                            if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
-                                (this.axes[index] as Chart3DAxis).setIsInversedAndOpposedPosition()
-                            }
-                        }
-                        break;
-                    case 'height':
-                    case 'width':
-                        this.createChartSvg();
-                        refreshBounds = true;
-                        break;
-                    case 'subTitle':
-                    case 'title':
-                        refreshBounds = true;
-                        break;
-                    case 'titleStyle':
-                        if (newProp.titleStyle && (newProp.titleStyle.size || newProp.titleStyle.textOverflow)) {
-                            refreshBounds = true;
-                        } else {
-                            renderer = true;
-                        }
-                        break;
-                    case 'subTitleStyle':
-                        if (newProp.subTitleStyle && (newProp.subTitleStyle.size || newProp.subTitleStyle.textOverflow)) {
-                            refreshBounds = true;
-                        } else {
-                            renderer = true;
-                        }
-                        break;
-                    case 'border':
+                    } else {
                         renderer = true;
-                        break;
-                    case 'series':
-                        let len: number = this.series.length;
-                        let seriesRefresh: boolean = false;
-                        let series: Chart3DSeriesModel;
-                        for (let i: number = 0; i < len; i++) {
-                            series = newProp.series[i];
-                            if (series && (series.dataSource || series.query || series.xName ||
-                                series.yName || series.size || series.fill || series.name || series.type)) {
-                                extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
-                                seriesRefresh = true;
-                            }
-                        }
-                        if (this.availableSize && this.element) {
-                            this.element.style.height = (!this.element.style.height || this.element.style.height == 'inherit') ? (this.availableSize.height + 'px') : this.element.style.height;
-                        }
-                        if (seriesRefresh) {
-                            this.calculateVisibleSeries();
-                            this.refreshDefinition(<Chart3DColumn[]>this.columns);
-                            this.refreshDefinition(<Chart3DRow[]>this.rows);
-                            this.calculateVisibleAxis();
-                            this.processData(false);
-                            refreshBounds = true;
-                        }
-                        break;
-                    case 'background':
+                    }
+                    break;
+                case 'subTitleStyle':
+                    if (newProp.subTitleStyle && (newProp.subTitleStyle.size || newProp.subTitleStyle.textOverflow)) {
+                        refreshBounds = true;
+                    } else {
                         renderer = true;
-                        break;
-                    case 'dataSource':
+                    }
+                    break;
+                case 'border':
+                    renderer = true;
+                    break;
+                case 'series':
+                    len = this.series.length;
+                    for (let i: number = 0; i < len; i++) {
+                        series = newProp.series[i as number];
+                        if (series && (series.dataSource || series.query || series.xName ||
+                            series.yName || series.size || series.fill || series.name || series.type)) {
+                            extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
+                            seriesRefresh = true;
+                        }
+                    }
+                    if (this.availableSize && this.element) {
+                        this.element.style.height = (!this.element.style.height || this.element.style.height === 'inherit') ? (this.availableSize.height + 'px') : this.element.style.height;
+                    }
+                    if (seriesRefresh) {
+                        this.calculateVisibleSeries();
+                        this.refreshDefinition(<Chart3DColumn[]>this.columns);
+                        this.refreshDefinition(<Chart3DRow[]>this.rows);
+                        this.calculateVisibleAxis();
                         this.processData(false);
                         refreshBounds = true;
-                        break;
-                    case 'legendSettings':
-                        if (!newProp.legendSettings.background || !newProp.legendSettings.opacity) {
-                            refreshBounds = true;
+                    }
+                    break;
+                case 'background':
+                    renderer = true;
+                    break;
+                case 'dataSource':
+                    this.processData(false);
+                    refreshBounds = true;
+                    break;
+                case 'legendSettings':
+                    if (!newProp.legendSettings.background || !newProp.legendSettings.opacity) {
+                        refreshBounds = true;
+                    }
+                    renderer = true; break;
+                case 'palettes':
+                    this.calculateVisibleSeries();
+                    renderer = true;
+                    break;
+                case 'selectedDataIndexes':
+                    if (this.selection3DModule) {
+                        this.selection3DModule.currentMode = this.selectionMode;
+                        this.selection3DModule.selectedDataIndexes = this.selectedDataIndexes as Indexes[];
+                        this.selection3DModule.styleId = this.element.id + '_ej2_chart_selection';
+                        this.selection3DModule.redrawSelection(this, oldProp.selectionMode, true);
+                    }
+                    break;
+                case 'selectionMode':
+                    if (this.selection3DModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
+                        this.selection3DModule.currentMode = this.selectionMode;
+                        this.selection3DModule.styleId = this.element.id + '_ej2_chart_selection';
+                        this.selection3DModule.redrawSelection(this, oldProp.selectionMode, true);
+                    }
+                    break;
+                case 'isMultiSelect':
+                    if (this.selection3DModule && !newProp.isMultiSelect && this.selection3DModule.selectedDataIndexes.length > 1) {
+                        this.selection3DModule.currentMode = this.selectionMode;
+                        this.selection3DModule.styleId = this.element.id + '_ej2_chart_selection';
+                        this.selection3DModule.redrawSelection(this, oldProp.selectionMode);
+                    }
+                    break;
+                case 'highlightMode':
+                case 'selectionPattern':
+                case 'highlightPattern':
+                    this.removeStyles();
+                    renderer = true;
+                    break;
+                case 'theme':
+                    this.animateSeries = true;
+                    break;
+                case 'enableRtl':
+                case 'locale':
+                case 'currencyCode':
+                    this.refresh();
+                    break;
+                case 'tooltip':
+                    if (this.tooltip3DModule) { // To check the tooltip enable is true.
+                        this.tooltip3DModule.previousPoints = [];
+                        if (this.tooltip.template) {
+                            this.tooltip3DModule.template = this.tooltip.template;
                         }
-                        renderer = true; break;
-                    case 'palettes':
-                        this.calculateVisibleSeries();
-                        renderer = true;
-                        break;
-                    case 'selectedDataIndexes':
-                        if (this.selection3DModule) {
-                            this.selection3DModule.currentMode = this.selectionMode;
-                            this.selection3DModule.selectedDataIndexes = this.selectedDataIndexes as Indexes[];
-                            this.selection3DModule.styleId = this.element.id + '_ej2_chart_selection';
-                            this.selection3DModule.redrawSelection(this, oldProp.selectionMode, true);
-                        }
-                        break;
-                    case 'selectionMode':
-                        if (this.selection3DModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
-                            this.selection3DModule.currentMode = this.selectionMode;
-                            this.selection3DModule.styleId = this.element.id + '_ej2_chart_selection';
-                            this.selection3DModule.redrawSelection(this, oldProp.selectionMode, true);
-                        }
-                        break;
-                    case 'isMultiSelect':
-                        if (this.selection3DModule && !newProp.isMultiSelect && this.selection3DModule.selectedDataIndexes.length > 1) {
-                            this.selection3DModule.currentMode = this.selectionMode;
-                            this.selection3DModule.styleId = this.element.id + '_ej2_chart_selection';
-                            this.selection3DModule.redrawSelection(this, oldProp.selectionMode);
-                        }
-                        break;
-                    case 'highlightMode':
-                    case 'selectionPattern':
-                    case 'highlightPattern':
-                        this.removeStyles();
-                        renderer = true;
-                        break;
-                    case 'theme':
-                        this.animateSeries = true;
-                        break;
-                    case 'enableRtl':
-                    case 'locale':
-                    case 'currencyCode':
-                        this.refresh();
-                        break;
-                    case 'tooltip':
-                        if (this.tooltip3DModule) { // To check the tooltip enable is true.
-                            this.tooltip3DModule.previousPoints = [];
-                            if (this.tooltip.template) {
-                                this.tooltip3DModule.template = this.tooltip.template;
-                            }
-                        }
-                        break;
-                    case 'enableRotation':
-                    case 'tilt':
-                    case 'depth':
-                    case 'wallSize':
-                    case 'rotation':
-                    case 'perspectiveAngle':
-                    case 'enableSideBySidePlacement':
-                        renderer = true;
-                        break;
+                    }
+                    break;
+                case 'enableRotation':
+                case 'tilt':
+                case 'depth':
+                case 'wallSize':
+                case 'rotation':
+                case 'perspectiveAngle':
+                case 'enableSideBySidePlacement':
+                    renderer = true;
+                    break;
                 }
             }
             if (!refreshBounds && renderer) {

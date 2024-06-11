@@ -389,14 +389,16 @@ export class Sort {
             dataSource: data,
             fields: { id: 'id' },
             height: '100%',
+            /* eslint-disable */
             template: initializeCSPTemplate( function(data: any): string {
-                return (`<div class="e-sort-listwrapper">` +
+                return ('<div class="e-sort-listwrapper">' +
                 `<span class="text">${data.text}</span>` +
-                `<div class="e-sort-row"><div class="e-sort-field"></div>` +
-                `<div class="e-sort-order">` +
+                '<div class="e-sort-row"><div class="e-sort-field"></div>' +
+                '<div class="e-sort-order">' +
                 `<span class="e-sort-ordertxt" style="display:none;">${data.order}</span></div>` +
-                `<span class="e-icons e-sort-delete" tabindex="0"></span></div>`);
+                '<span class="e-icons e-sort-delete" tabindex="0"></span></div>');
             }) as any,
+            /* eslint-enable */
             cssClass: 'e-sort-template'
         });
         return listviewObj;
@@ -529,6 +531,7 @@ export class Sort {
      * @param {Object} args - Specifies the args.
      * @param {SortOptions} args.sortOptions - Specifies the sort options.
      * @param {string} args.range - Specifies the range.
+     * @param {SortCollectionModel} args.previousSort - Specifies the previous sort collection.
      * @returns {void}
      */
     private applySortHandler(args: { sortOptions?: SortOptions, range?: string, previousSort?: SortCollectionModel }): void {
@@ -552,8 +555,7 @@ export class Sort {
         if (beforeArgs.cancel) { return; }
         this.parent.notify(beginAction, { eventArgs: beforeArgs, action: 'beforeSort' });
         this.parent.showSpinner();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
+        const promise: Promise<SortEventArgs> = new Promise((resolve: Function) => { resolve((() => { /** */ })()); });
         const sortArgs: { promise: Promise<SortEventArgs>, args: { range: string, checkForHeader?: boolean, sortOptions: SortOptions },
             previousSort: SortCollectionModel } = { args: { range: beforeArgs.range, sortOptions: beforeArgs.sortOptions, checkForHeader:
                 isSingle && address !== beforeArgs.range }, promise: promise, previousSort: args && args.previousSort };

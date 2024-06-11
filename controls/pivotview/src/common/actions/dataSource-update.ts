@@ -20,8 +20,7 @@ export class DataSourceUpdate {
     /** @hidden */
     public btnElement: HTMLElement;
     /** @hidden */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public control: any;
+    public control: PivotView | PivotFieldList;
     /** @hidden */
     public pivotButton: PivotButton;
 
@@ -74,8 +73,8 @@ export class DataSourceUpdate {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
             dropAxis: droppedClass, dropPosition: droppedPosition, draggedAxis: draggedClass, cancel: false
         };
-        const control: PivotView | PivotFieldList = this.control.getModuleName() === 'pivotfieldlist' && this.control.isPopupView ?
-            this.control.pivotGridModule : this.control;
+        const control: PivotView | PivotFieldList = this.control.getModuleName() === 'pivotfieldlist' && (this.control as PivotFieldList).isPopupView ?
+            (this.control as PivotFieldList).pivotGridModule : this.control;
         control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
             if (!observedArgs.cancel) {
                 droppedClass = observedArgs.dropAxis;

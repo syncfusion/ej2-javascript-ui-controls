@@ -300,7 +300,7 @@ export class TabItem extends ChildProperty<TabItem> {
      * @default -1
      */
     @Property(-1)
-    public tabIndex: number
+    public tabIndex: number;
 }
 
 /** @hidden */
@@ -368,9 +368,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private draggingItems: TabItemModel[];
     private draggableItems: Draggable[] = [];
     private tbId: string;
-    private isAngular: boolean;
-    private isReact: boolean;
-    private isVue: boolean;
     private resizeContext: EventListenerObject = this.refreshActiveTabBorder.bind(this);
     /**
      * Contains the keyboard configuration of the Tab.
@@ -943,7 +940,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
             }
             const tabIndex : string =  isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString();
-            const wrapAttrs: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex , role: 'tab', 'aria-selected': 'false', 'aria-disabled': 'false' };
+            const wrapAttrs: { [key: string]: string } = (item.disabled) ? { role: 'tab', 'aria-disabled': 'true'} : { tabIndex: tabIndex, 'data-tabindex': tabIndex , role: 'tab', 'aria-selected': 'false', 'aria-disabled': 'false' };
             tCont.appendChild(this.btnCls.cloneNode(true));
             const wrap: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAttrs });
             wrap.appendChild(tCont);
@@ -1333,7 +1330,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
     private setCssClass(ele: HTEle, cls: Str, val: boolean): void {
-        if (cls === '') {
+        if (cls === '' || isNOU(cls)) {
             return;
         }
         const list: Str[] = cls.split(' ');

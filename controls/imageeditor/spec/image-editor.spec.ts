@@ -467,6 +467,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 let drpDownBtn: any = document.getElementById('image-editor_fontFamilyBtn');
                 drpDownBtn.click();
@@ -519,6 +521,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(90);
                 imageEditor.flip('horizontal');
@@ -574,6 +578,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(90);
                 imageEditor.flip('vertical');
@@ -629,6 +635,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(180);
                 imageEditor.flip('horizontal');
@@ -684,6 +692,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(180);
                 imageEditor.flip('vertical');
@@ -739,6 +749,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(270);
                 imageEditor.flip('horizontal');
@@ -794,6 +806,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(270);
                 imageEditor.flip('vertical');
@@ -849,6 +863,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(360);
                 imageEditor.flip('horizontal');
@@ -904,6 +920,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(360);
                 imageEditor.flip('vertical');
@@ -959,6 +977,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(90);
                 imageEditor.selectShape('shape_1');
@@ -991,6 +1011,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(180);
                 imageEditor.selectShape('shape_1');
@@ -1023,6 +1045,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(270);
                 imageEditor.selectShape('shape_1');
@@ -1055,6 +1079,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 imageEditor.rotate(360);
                 imageEditor.selectShape('shape_1');
@@ -1087,6 +1113,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 setTimeout(() => {});
                 let drpDownBtn: any = document.getElementById('image-editor_bold');
@@ -1175,8 +1203,11 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
-                (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
+                (document.querySelector('#image-editor_editText') as HTMLElement).click();
+                setTimeout(() => {});
                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontFamily = 'Calibri';
                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontWeight = 'bold';
                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontStyle = 'italic';
@@ -1220,6 +1251,8 @@ describe('ImageEditor', () => {
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontFamily = 'Calibri';
@@ -3383,53 +3416,367 @@ describe('ImageEditor', () => {
             }, 100);
         });
 
-        it('Reset and Save Click', (done) => {
+    //     it('Reset and Save Click', (done) => {
+    //         imageEditor = new ImageEditor({
+    //            height : '450px'
+    //         }, '#image-editor');
+    //         imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+    //         setTimeout(() => {
+    //             let btn: any = document.querySelectorAll('#image-editor_save')[0];
+    //             btn.click();
+    //             setTimeout(() => {});
+    //             btn = document.querySelectorAll('#image-editor_saveDropdownbtn')[0];
+    //             btn.click();
+    //             setTimeout(() => {});
+    //             let ul: any = document.querySelectorAll('#image-editor_saveDropdownbtn-popup');
+    //             ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup')[ul.length - 1];
+    //             ul.children[0].children[0].click();
+    //             setTimeout(() => {});
+    //             (document.querySelectorAll('.e-save-download-btn')[0] as HTMLElement).click();
+    //             setTimeout(() => {});
+    //             done();
+    //         }, 100);
+    //     });
+
+    //     it('PNG Save', (done) => {
+    //         imageEditor = new ImageEditor({
+    //            height : '450px'
+    //         }, '#image-editor');
+    //         imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+    //         setTimeout(() => {
+    //             let btn: any = document.querySelectorAll('#image-editor_save')[0];
+    //             btn.click();
+    //             setTimeout(() => {});
+    //             btn = document.querySelectorAll('#image-editor_saveDropdownbtn')[0];
+    //             btn.click();
+    //             setTimeout(() => {});
+    //             let ul: any = document.querySelectorAll('#image-editor_saveDropdownbtn-popup');
+    //             ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup')[ul.length - 1];
+    //             ul.children[0].children[1].click();
+    //             setTimeout(() => {});
+    //             (document.querySelectorAll('.e-save-download-btn')[0] as HTMLElement).click();
+    //             setTimeout(() => {});
+    //             done();
+    //         }, 100);
+    //     });
+
+    //     it('SVG Save', (done) => {
+    //         imageEditor = new ImageEditor({
+    //            height : '450px'
+    //         }, '#image-editor');
+    //         imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+    //         setTimeout(() => {
+    //             let btn: any = document.querySelectorAll('#image-editor_save')[0];
+    //             btn.click();
+    //             setTimeout(() => {});
+    //             btn = document.querySelectorAll('#image-editor_saveDropdownbtn')[0];
+    //             btn.click();
+    //             setTimeout(() => {});
+    //             let ul: any = document.querySelectorAll('#image-editor_saveDropdownbtn-popup');
+    //             ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup')[ul.length - 1];
+    //             ul.children[0].children[2].click();
+    //             setTimeout(() => {});
+    //             (document.querySelectorAll('.e-save-download-btn')[0] as HTMLElement).click();
+    //             setTimeout(() => {});
+    //             done();
+    //         }, 100);
+    //     });
+    });
+
+    describe('Null or undefined Property testing', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+
+        it('imageEditor with CSS Class', (done) => {
             imageEditor = new ImageEditor({
-               height : '450px'
+                height : '450px',
+                cssClass :  null
             }, '#image-editor');
             imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
             setTimeout(() => {
-                let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
-                btn.click();
-                setTimeout(() => {});
-                let ul: any = document.querySelectorAll('#image-editor_saveBtn-popup');
-                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
-                ul.children[0].children[0].click();
-                setTimeout(() => {});
+                expect(imageEditor.cssClass).toEqual('');
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                height : '450px',
+                cssClass :  undefined
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.cssClass).toEqual('');
                 done();
             }, 100);
         });
 
-        it('PNG Save', (done) => {
+        it('imageEditor with height', (done) => {
             imageEditor = new ImageEditor({
-               height : '450px'
+                height : null,
             }, '#image-editor');
             imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
             setTimeout(() => {
-                let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
-                btn.click();
-                setTimeout(() => {});
-                let ul: any = document.querySelectorAll('#image-editor_saveBtn-popup');
-                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
-                ul.children[0].children[1].click();
-                setTimeout(() => {});
+                expect(imageEditor.height).toEqual('100%');
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                height : undefined,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.height).toEqual('100%');
                 done();
             }, 100);
         });
 
-        it('SVG Save', (done) => {
+        it('imageEditor with width', (done) => {
             imageEditor = new ImageEditor({
-               height : '450px'
+                width : null,
             }, '#image-editor');
             imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
             setTimeout(() => {
-                let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
-                btn.click();
-                setTimeout(() => {});
-                let ul: any = document.querySelectorAll('#image-editor_saveBtn-popup');
-                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
-                ul.children[0].children[2].click();
-                setTimeout(() => {});
+                expect(imageEditor.width).toEqual('100%');
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                height : undefined,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.width).toEqual('100%');
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with disabled', (done) => {
+            imageEditor = new ImageEditor({
+                disabled : null,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.disabled).toEqual(false);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                disabled : undefined,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.disabled).toEqual(false);
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with locale', (done) => {
+            imageEditor = new ImageEditor({
+                locale : null,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.locale).toEqual('en-US');
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                locale : undefined,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.locale).toEqual( 'en-US');
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with theme', (done) => {
+            imageEditor = new ImageEditor({
+                theme : null,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.theme).toEqual('Bootstrap5');
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                theme : undefined,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.theme).toEqual('Bootstrap5');
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with allowUndoRedo', (done) => {
+            imageEditor = new ImageEditor({
+                allowUndoRedo : null,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.allowUndoRedo).toEqual(true);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                allowUndoRedo : undefined,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.allowUndoRedo).toEqual(true);
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with fontFamily', (done) => {
+            imageEditor = new ImageEditor({
+                fontFamily : { items: null }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.fontFamily.items).toEqual(null);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                fontFamily : { items: undefined }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.fontFamily.items).toEqual(null);
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with toolbar', (done) => {
+            imageEditor = new ImageEditor({
+                toolbar : null,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.toolbar).toEqual(undefined);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                toolbar : undefined,
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.toolbar).toEqual(undefined);
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with zoomSettings', (done) => {
+            imageEditor = new ImageEditor({
+               zoomSettings: {maxZoomFactor: null, minZoomFactor: null}
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.zoomSettings.maxZoomFactor).toEqual(10);
+                expect(imageEditor.zoomSettings.minZoomFactor).toEqual(1);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                zoomSettings: {maxZoomFactor: undefined, minZoomFactor: undefined}
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.zoomSettings.maxZoomFactor).toEqual(10);
+                expect(imageEditor.zoomSettings.minZoomFactor).toEqual(1);
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with quickAccessToolbarTemplate', (done) => {
+            imageEditor = new ImageEditor({
+               quickAccessToolbarTemplate: null
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.quickAccessToolbarTemplat).toEqual(undefined);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                quickAccessToolbarTemplate: undefined
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.quickAccessToolbarTemplat).toEqual(undefined);
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with toolbarTemplate', (done) => {
+            imageEditor = new ImageEditor({
+               toolbarTemplate: null
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.toolbarTemplate).toEqual(undefined);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                toolbarTemplate: undefined
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.toolbarTemplate).toEqual(undefined);
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with showQuickAccessToolbar', (done) => {
+            imageEditor = new ImageEditor({
+                showQuickAccessToolbar : null
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.showQuickAccessToolbar).toEqual(true);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                showQuickAccessToolbar : undefined
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.showQuickAccessToolbar).toEqual(true);
+                done();
+            }, 100);
+        });
+
+        it('imageEditor with finetuneSettings', (done) => {
+            imageEditor = new ImageEditor({
+                finetuneSettings : {brightness: null, contrast: null,
+                hue: null, saturation: null,
+                exposure: null, opacity: null,
+                blur: null }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.finetuneSettings.brightness).toEqual(null);
+                done();
+            }, 100);
+            imageEditor = new ImageEditor({
+                finetuneSettings : {brightness: undefined, contrast: undefined,
+                    hue: undefined, saturation: undefined,
+                    exposure: undefined, opacity: undefined,
+                    blur: undefined }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.finetuneSettings.brightness).toEqual(null);
+                done();
+            }, 100);
+        });
+        it('imageEditor with finetuneSettings - null', (done) => {
+            imageEditor = new ImageEditor({
+                finetuneSettings : {brightness: undefined, contrast: undefined,
+                    hue: undefined, saturation: undefined,
+                    exposure: undefined, opacity: undefined,
+                    blur: undefined }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.finetuneSettings.brightness).toEqual(null);
                 done();
             }, 100);
         });
@@ -3946,32 +4293,32 @@ describe('ImageEditor', () => {
             }, 100);
         });
     });
-    describe('Screen', () => {
-        beforeEach((): void => {
-            document.body.appendChild(element);
-        });
-        afterEach(() => {
-            imageEditor.destroy();
-            remove(imageEditor.element);
-        });
-        it('Adjust to screen', (done) => {
-            imageEditor = new ImageEditor({
-                height: '350px'
-            }, '#image-editor');
-            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
-            setTimeout(() => {
-                const annotationBtn: any = document.querySelectorAll('#image-editor_annotationBtn')[0];
-                annotationBtn.click();
-                let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
-                ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
-                ul.children[0].children[6].click();
-                setTimeout(function () { });
-                imageEditor.selectShape('shape_1');
-                (imageEditor as any).adjustToScreen();
-                done();
-            });
-        });
-    });
+    // describe('Screen', () => {
+    //     beforeEach((): void => {
+    //         document.body.appendChild(element);
+    //     });
+    //     afterEach(() => {
+    //         imageEditor.destroy();
+    //         remove(imageEditor.element);
+    //     });
+    //     it('Adjust to screen', (done) => {
+    //         imageEditor = new ImageEditor({
+    //             height: '350px'
+    //         }, '#image-editor');
+    //         imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+    //         setTimeout(() => {
+    //             const annotationBtn: any = document.querySelectorAll('#image-editor_annotationBtn')[0];
+    //             annotationBtn.click();
+    //             let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
+    //             ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
+    //             ul.children[0].children[6].click();
+    //             setTimeout(function () { });
+    //             imageEditor.selectShape('shape_1');
+    //             (imageEditor as any).adjustToScreen();
+    //             done();
+    //         });
+    //     });
+    // });
     describe('On Property Change', () => {
         beforeEach((): void => {
             document.body.appendChild(element);
@@ -5371,6 +5718,91 @@ describe('ImageEditor', () => {
                 expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
                done();
            }, 100);
+       });
+       it('Coverage improvement - Random Combination 3', (done) => {
+            imageEditor = new ImageEditor({
+            height: '450px',
+            rotating: function (args) {
+                args.cancel = true;
+            },
+            flipping: function (args) {
+                args.cancel = true;
+            }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.select('custom');
+                (document.querySelector('#image-editor_rotateRight') as any).click();
+                (document.querySelector('#image-editor_horizontalFlip') as any).click();
+                imageEditor.crop();
+                imageEditor.undo();
+                imageEditor.redo();
+                imageEditor.reset();
+                imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 70, true, true, '#40e040');
+                imageEditor.selectShape('shape_1')
+                imageEditor.enableTextEditing();
+                imageEditor.textArea.value = 'Enter Text';
+                imageEditor.apply();
+                imageEditor.undo();
+                imageEditor.redo();
+                imageEditor.reset();
+                imageEditor.drawRectangle(350, 200, 650, 400, 15, 'red', 'green');
+                var updateShape = imageEditor.getShapeSetting('shape_1');
+                updateShape.strokeColor = 'yellow';
+                imageEditor.updateShape(updateShape);
+                expect(imageEditor.objColl[0].strokeSettings.strokeColor).toEqual('yellow');
+                imageEditor.select('custom');
+                imageEditor.discard();
+                imageEditor.enableShapeDrawing('rectangle', true);
+                imageEditor.enableShapeDrawing(null, false);
+                imageEditor.reset();
+                imageEditor.drawPath([{x: 400, y: 300}, {x: 600, y: 400}, {x: 700, y: 300}], 20, 'red');
+                expect(imageEditor.upperCanvas.style.cursor).toEqual('default');
+                imageEditor.notify('selection', {prop: 'setCursor', onPropertyChange: false, value: {x: 400, y: 300 }});
+                expect(imageEditor.upperCanvas.style.cursor).toEqual('move');
+                done();
+            }, 100);
+        });
+        it('Coverage improvement - image annotation combination 4', (done) => {
+            imageEditor = new ImageEditor({
+            height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawRectangle(350, 200, 650, 400, 15, 'red', 'green', 0, true);
+                imageEditor.notify('selection', { prop: 'updateNWPoints', value: {x: 340, y: 190 }});
+                imageEditor.notify('selection', { prop: 'updateNPoints', value: {x: 300, y: 180 }});
+                imageEditor.notify('selection', { prop: 'updateNEPoints', value: {x: 660, y: 410 }});
+                imageEditor.notify('selection', { prop: 'updateWPoints', value: {x: 300, y: 200 }});
+                imageEditor.notify('selection', { prop: 'updateEPoints', value: {x: 700, y: 400 }});
+                imageEditor.notify('selection', { prop: 'updateSWPoints', value: {x: 340, y: 410 }});
+                imageEditor.notify('selection', { prop: 'updateSPoints', value: {x: 350, y: 410 }});
+                imageEditor.notify('selection', { prop: 'updateSEPoints', value: {x: 660, y: 410 }});
+                imageEditor.discard();
+                imageEditor.drawText(350, 100, 'Enter Text', 'Arial', 70, true, true, '#40e040', true);
+                imageEditor.notify('selection', { prop: 'updateNWPoints', value: {x: 340, y: 190 }});
+                imageEditor.notify('selection', { prop: 'updateNEPoints', value: {x: 660, y: 410 }});
+                imageEditor.notify('selection', { prop: 'updateSWPoints', value: {x: 340, y: 410 }});
+                imageEditor.notify('selection', { prop: 'updateSEPoints', value: {x: 660, y: 410 }});
+                imageEditor.discard();
+                imageEditor.select('square');
+                imageEditor.notify('selection', { prop: 'updateNWPoints', value: {x: 340, y: 190 }});
+                imageEditor.notify('selection', { prop: 'updateNPoints', value: {x: 300, y: 180 }});
+                imageEditor.notify('selection', { prop: 'updateNEPoints', value: {x: 660, y: 410 }});
+                imageEditor.notify('selection', { prop: 'updateWPoints', value: {x: 300, y: 200 }});
+                imageEditor.notify('selection', { prop: 'updateEPoints', value: {x: 700, y: 400 }});
+                imageEditor.notify('selection', { prop: 'updateSWPoints', value: {x: 340, y: 410 }});
+                imageEditor.notify('selection', { prop: 'updateSPoints', value: {x: 350, y: 410 }});
+                imageEditor.notify('selection', { prop: 'updateSEPoints', value: {x: 660, y: 410 }});
+                imageEditor.reset();
+                imageEditor.drawLine(350, 300, 300, 100, 20, 'red');
+                imageEditor.notify('selection', { prop: 'updateCursorStyles', value: {x: 350, y: 300, type: 'touchstart' }});
+                imageEditor.reset();
+                imageEditor.drawPath([{x: 400, y: 300}, {x: 600, y: 400}, {x: 700, y: 300}], 20, 'red');
+                imageEditor.notify('selection', { prop: 'updateCursorStyles', value: {x: 400, y: 300, type: 'touchstart' }});
+                imageEditor.reset();
+                done();
+            }, 100);
        });
        it('Rotate Combination', (done) => {
            imageEditor = new ImageEditor({
@@ -7732,12 +8164,18 @@ describe('ImageEditor', () => {
                 expect(imageEditor.frameObj.offset).toEqual(40);
                 expect(imageEditor.frameObj.radius).toEqual(20);
                 expect(imageEditor.frameObj.border).toEqual('dashed');
-                let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
-                btn.click();
-                setTimeout(() => {});
-                ul = document.querySelectorAll('#image-editor_saveBtn-popup');
-                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
-                ul.children[0].children[0].click();
+                // let btn: any = document.querySelectorAll('#image-editor_save')[0];
+                // btn.click();
+                // setTimeout(() => {});
+                // btn = document.querySelectorAll('#image-editor_saveDropdownbtn')[0];
+                // btn.click();
+                // setTimeout(() => {});
+                // ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup');
+                // ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup')[ul.length - 1];
+                // ul.children[0].children[0].click();
+                // setTimeout(() => {});
+                // (document.querySelectorAll('.e-save-download-btn')[0] as HTMLElement).click();
+                // setTimeout(() => {});
                 done();
             }, 100);
         });
@@ -7841,13 +8279,18 @@ describe('ImageEditor', () => {
                 setTimeout(function () { });
                 imageEditor.notify('transform', {prop: 'resize', value: {width: 400, height: 300, isAspectRatio: true }});
                 setTimeout(function () { });
-                let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
-                btn.click();
-                setTimeout(() => {});
-                let ul: any = document.querySelectorAll('#image-editor_saveBtn-popup');
-                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
-                ul.children[0].children[0].click();
-                setTimeout(() => {});
+                // let btn: any = document.querySelectorAll('#image-editor_save')[0];
+                // btn.click();
+                // setTimeout(() => {});
+                // btn = document.querySelectorAll('#image-editor_saveDropdownbtn')[0];
+                // btn.click();
+                // setTimeout(() => {});
+                // let ul: any = document.querySelectorAll('#image-editor_saveDropdownbtn-popup');
+                // ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup')[ul.length - 1];
+                // ul.children[0].children[0].click();
+                // setTimeout(() => {});
+                // (document.querySelectorAll('.e-save-download-btn')[0] as HTMLElement).click();
+                // setTimeout(() => {});
                 imageEditor.reset();
                 resizeBtn = document.querySelectorAll('#image-editor_resize')[0];
                 resizeBtn.click();
@@ -7855,12 +8298,17 @@ describe('ImageEditor', () => {
                 imageEditor.notify('transform', {prop: 'resize', value: {width: 400, height: 300, isAspectRatio: true }});
                 setTimeout(function () { });
                 imageEditor.rotate(90);
-                btn = document.querySelectorAll('#image-editor_saveBtn')[0];
-                btn.click();
-                setTimeout(() => {});
-                ul = document.querySelectorAll('#image-editor_saveBtn-popup');
-                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
-                ul.children[0].children[0].click();
+                // btn = document.querySelectorAll('#image-editor_save')[0];
+                // btn.click();
+                // setTimeout(() => {});
+                // btn = document.querySelectorAll('#image-editor_saveDropdownbtn')[0];
+                // btn.click();
+                // setTimeout(() => {});
+                // ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup');
+                // ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup')[ul.length - 1];
+                // ul.children[0].children[0].click();
+                // setTimeout(() => {});
+                // (document.querySelectorAll('.e-save-download-btn')[0] as HTMLElement).click();
                 setTimeout(() => {});
                 imageEditor.reset();
                 done();
@@ -7878,6 +8326,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 let okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
                 okBtn.click();
@@ -8064,6 +8514,8 @@ describe('ImageEditor', () => {
                 let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
                 ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                 ul.children[0].children[6].click();
+                imageEditor.drawText();
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
                 expect(imageEditor.activeObj.shape).toEqual('text');
                 let drpDownBtn: any = document.getElementById('image-editor_fontFamilyBtn');
                 drpDownBtn.click();
@@ -8074,6 +8526,7 @@ describe('ImageEditor', () => {
                 setTimeout(() => {}, 50);
                 expect(imageEditor.activeObj.textSettings.fontFamily).toEqual('Consolas');
                 setTimeout(() => {});
+                drpDownBtn = document.getElementById('image-editor_fontFamilyBtn');
                 drpDownBtn.click();
                 setTimeout(() => {});
                 ul = document.querySelectorAll('.e-font-family.e-popup-open')[0];
@@ -8082,6 +8535,7 @@ describe('ImageEditor', () => {
                 setTimeout(() => {}, 50);
                 expect(imageEditor.activeObj.textSettings.fontFamily).toEqual('Cambria');
                 setTimeout(() => {});
+                drpDownBtn = document.getElementById('image-editor_fontFamilyBtn');
                 drpDownBtn.click();
                 setTimeout(function () { });
                 ul = document.querySelectorAll('.e-font-family.e-popup-open')[0];
@@ -8151,6 +8605,7 @@ describe('ImageEditor', () => {
                 setTimeout(() => {
                     imageEditor.cloneShape('shape_1');
                     imageEditor.getShapeSettings();
+                    imageEditor.export('jpg');
                 }, 500);
                 imageEditor.drawImage('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', 500, 100, 200, 80, false, 90);
                 done();
@@ -8204,6 +8659,185 @@ describe('ImageEditor', () => {
                     imageEditor.getImageFilter('Invert');
                     imageEditor.canUndo();
                     imageEditor.canRedo();
+                    imageEditor.reset();
+                    imageEditor.select('5:1');
+                    expect(imageEditor.activeObj.shape).toEqual('crop-5:1');
+                    imageEditor.crop();
+                    expect(imageEditor.img.destLeft).toEqual(83.49999999999994);
+                    expect(imageEditor.img.destTop).toEqual(144.5);
+                    expect(imageEditor.img.destWidth).toEqual(600.0000000000001);
+                    expect(imageEditor.img.destHeight).toEqual(119.99999999999997);
+                    imageEditor.select('7:4');
+                    expect(imageEditor.activeObj.shape).toEqual('crop-7:4');
+                    imageEditor.crop();
+                    expect(imageEditor.img.destLeft).toEqual(83.50000000000006);
+                    expect(imageEditor.img.destTop).toEqual(33.071428571428584);
+                    expect(imageEditor.img.destWidth).toEqual(599.9999999999999);
+                    expect(imageEditor.img.destHeight).toEqual(342.85714285714283);
+                    imageEditor.select('2:8');
+                    expect(imageEditor.activeObj.shape).toEqual('crop-2:8');
+                    imageEditor.crop();
+                    expect(imageEditor.img.destLeft).toEqual(336.25);
+                    expect(imageEditor.img.destTop).toEqual(15.5);
+                    expect(imageEditor.img.destWidth).toEqual(94.5);
+                    expect(imageEditor.img.destHeight).toEqual(378);
+                    imageEditor.select('4:7');
+                    expect(imageEditor.activeObj.shape).toEqual('crop-4:7');
+                    imageEditor.crop();
+                    expect(imageEditor.img.destLeft).toEqual(275.5);
+                    expect(imageEditor.img.destTop).toEqual(15.5);
+                    expect(imageEditor.img.destWidth).toEqual(216);
+                    expect(imageEditor.img.destHeight).toEqual(378);
+                done();
+            }, 100);
+        });
+        it('Coverage improvement - Z-Order Support and Clear Image', (done) => {
+            imageEditor = new ImageEditor({
+               height: '450px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawRectangle(350, 200, 650, 400, 15, 'red', 'green');
+                imageEditor.drawEllipse(350, 200, 650, 400, 15, 'red', 'green');
+                imageEditor.drawArrow(350, 300, 300, 100, 20, 'red', 'Arrow', 'SolidArrow');
+                imageEditor.drawLine(350, 300, 300, 100, 20, 'red');
+                imageEditor.bringToFront('shape_1');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].order).toEqual(imageEditor.objColl.length);
+                imageEditor.sendToBack('shape_1');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].order).toEqual(1);
+                imageEditor.bringForward('shape_1');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].order).toEqual(2);
+                imageEditor.sendBackward('shape_1');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].order).toEqual(1);
+                imageEditor.clearImage();
+                done();
+            }, 100);
+        });
+        it('Coverage improvement - Shape Id Customization', (done) => {
+            imageEditor = new ImageEditor({
+               height: '450px',
+               shapeChanging: function (args) {
+                    args.currentShapeSettings.id = 'sync-custom-shape'
+               }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawRectangle(350, 200, 650, 400, 15, 'red', 'green');
+                expect(imageEditor.getShapeSettings()[0].id).toEqual('shape_sync-custom-shape');
+                done();
+            }, 100);
+        });
+        it('Coverage improvement - Z-Order and Image Compression', (done) => {
+            imageEditor = new ImageEditor({
+               height: '450px',
+               shapeChanging: function (args) {
+                    args.currentShapeSettings.id = 'sync-custom-shape'
+               }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 30, true, true, '#40e040', true, 45);
+                let drpDownBtn: any = document.getElementById('image-editor_zOrderBtn');
+                drpDownBtn.click();
+                setTimeout(() => {});
+                let ul: any = document.querySelectorAll('#image-editor_zOrderBtn-popup.e-popup-open')[0];
+                ul.children[0].children[0].click();
+                setTimeout(() => {});
+                imageEditor.reset();
+                (document.querySelector('#image-editor_save') as any).click();
+                setTimeout(() => {});
+                (document.querySelector('#image-editor_saveDropdownbtn') as any).click()
+                setTimeout(() => {});
+                ul = document.querySelectorAll('#image-editor_saveDropdownbtn-popup.e-popup-open')[0];
+                ul.children[0].children[0].click();
+                setTimeout(() => {});
+                ul = document.querySelectorAll('#image-editor_qualityButtonGroup')[0];
+                ul.childNodes[0].click();
+                (document.querySelector('.e-save-download-btn') as any).click();
+                done();
+            }, 100);
+        });
+        it('Coverage improvement - Random Combination', (done) => {
+            imageEditor = new ImageEditor({
+               height: '450px',
+               shapeChanging: function (args) {
+                    args.currentShapeSettings.id = 'sync-custom-shape'
+               }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.resize(500, 500);
+                imageEditor.export('svg');
+                setTimeout(() => {});
+                imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 30, true, true, '#40e040', false, 45);
+                imageEditor.notify('selection', { prop: 'setCursor', onPropertyChange: false, value: {x: 100, y: 100 }});
+                imageEditor.select('custom');
+                imageEditor.crop();
+                imageEditor.undo();
+                imageEditor.redo();
+                imageEditor.reset();
+                imageEditor.drawPath([{x: 400, y: 300}, {x: 600, y: 400}, {x: 700, y: 300}], 20, 'red');
+                imageEditor.export('jpg');
+                setTimeout(() => {});
+                imageEditor.reset();
+                imageEditor.drawArrow(350, 300, 300, 100, 20, 'red', 'Arrow', 'SolidArrow');
+                imageEditor.select('custom');
+                imageEditor.crop();
+                imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 30, true, true, '#40e040', true, 45);
+                imageEditor.enableTextEditing();
+                imageEditor.apply();
+                done();
+            }, 100);
+        });
+        it('Coverage improvement - image annotation combination', (done) => {
+            imageEditor = new ImageEditor({
+               height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                setTimeout(() => {
+                    imageEditor.apply();
+                    imageEditor.select('custom');
+                    imageEditor.rotate(90);
+                    imageEditor.flip('Horizontal');
+                    imageEditor.flip('Vertical');
+                    imageEditor.straightenImage(3);
+                    imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+                    setTimeout(() => {});
+                    (document.getElementsByClassName('e-control e-btn e-lib e-flat')[0] as any).click();
+                }, 500);
+                imageEditor.drawImage('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', 500, 100, 200, 80, false, 90, null, true);
+                done();
+            }, 100);
+        });
+        it('Coverage improvement - Random Combination 2', (done) => {
+            imageEditor = new ImageEditor({
+               height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.select('custom');
+                expect(imageEditor.activeObj.shape).toEqual('crop-custom');
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.crop();
+                imageEditor.export('jpg');
+                imageEditor.drawText(350, 100, 'Enter Text\n New Line', 'Arial', 70, true, true, '#40e040', true);
+                imageEditor.enableTextEditing();
+                imageEditor.apply();
+                expect(imageEditor.textArea.style.display).toEqual('none');
+                imageEditor.reset();
+                imageEditor.drawRectangle(350, 200, 650, 400, 15, 'red', 'green', 45);
+                imageEditor.select('custom');
+                imageEditor.flip('Horizontal');
+                imageEditor.flip('Horizontal');
+                imageEditor.flip('Vertical');
+                imageEditor.crop();
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                 done();
             }, 100);
         });

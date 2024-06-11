@@ -11,16 +11,17 @@ import { Page } from '../../src/treegrid/actions/page';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { projectDatas as data } from './datasource.spec';
-import { DataManager, RemoteSaveAdaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, RemoteSaveAdaptor, Query, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Resize } from '../../src/treegrid/actions/resize';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Freeze } from '../../src/treegrid/actions/freeze-column';
+import { Logger } from '../../src/treegrid/actions/logger';
+import { Print } from '../../src/treegrid/actions/print';
 
 /**
  * Grid base spec
  */
-
-TreeGrid.Inject(ColumnMenu, Toolbar, Page, Filter, Sort, Resize, Edit, Freeze);
+TreeGrid.Inject(ColumnMenu, Toolbar, Page, Filter, Sort, Resize, Edit, Freeze, Logger, Print);
 
 L10n.load({
     'de-DE': {
@@ -49,7 +50,7 @@ describe('TreeGrid base module', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -2128,7 +2129,7 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
               ]
           });
       gridObj.appendTo('#Grid');
-      this.request = window.fetch['calls'].mostRecent();
+      request = window.fetch['calls'].mostRecent();
   });
 
   it('checking script error', (done: Function) => {
@@ -2378,6 +2379,45 @@ describe('EJ2-70639 - Provide XSS- security for Tree Grid', () => {
     });
 });
 
+describe('878792 - OnClick event was not binded while creating button in treegrid with HtmlEncode enabled in Javascript Treegrid', () => {
+    let TreeGridObj: TreeGrid;
+    
+    beforeAll((done: Function) => {
+        TreeGridObj = createGrid(
+            {
+                dataSource: [
+                    {
+                        taskName:
+                            '<button id="editComment"  data-toggle="tooltip" data-placement="top" title="Edit Comment" onclick="buttonClick()" type=\'button\' class=\'e-control e-btn e-lib e-small e-primary btn-savecomment e-button-80pt\'><i class="ms-Icon ms-Icon--EditSolid12"></i> Edit Comment</button>',
+                    },
+                ],
+                allowPaging: true,
+                childMapping: 'subtasks',
+                height: 350,
+                treeColumnIndex: 1,
+                columns: [
+                    { type: 'checkbox', width: 60 },
+                    {
+                      field: 'taskName',
+                      headerText: 'Task Name',
+                      width: 200,
+                      textAlign: 'Left',
+                      disableHtmlEncode: false,
+                    },
+                  ],
+            }, done);
+    });
+
+    it('check button click present', () => {
+        debugger
+        expect(document.getElementById('editComment').onclick.length === 1).toBe(true);
+    });
+    afterAll(() => {
+        destroy(TreeGridObj);
+    });
+});
+
+
 describe('EJ2-71118 - Tab navigation throws script error while navigating to the next row of the collapsed items.', () => {
     let gridObj: TreeGrid;
     const preventDefault: Function = new Function();
@@ -2416,43 +2456,6 @@ describe('EJ2-71118 - Tab navigation throws script error while navigating to the
     });
 });
 
-describe('878792 - OnClick event was not binded while creating button in treegrid with HtmlEncode enabled in Javascript Treegrid', () => {
-    let TreeGridObj: TreeGrid;
-
-    beforeAll((done: Function) => {
-        TreeGridObj = createGrid(
-            {
-                dataSource: [
-                    {
-                        taskName:
-                            '<button id="editComment"  data-toggle="tooltip" data-placement="top" title="Edit Comment" onclick="buttonClick()" type=\'button\' class=\'e-control e-btn e-lib e-small e-primary btn-savecomment e-button-80pt\'><i class="ms-Icon ms-Icon--EditSolid12"></i> Edit Comment</button>',
-                    },
-                ],
-                allowPaging: true,
-                childMapping: 'subtasks',
-                height: 350,
-                treeColumnIndex: 1,
-                columns: [
-                    { type: 'checkbox', width: 60 },
-                    {
-                      field: 'taskName',
-                      headerText: 'Task Name',
-                      width: 200,
-                      textAlign: 'Left',
-                      disableHtmlEncode: false,
-                    },
-                  ],
-            }, done);
-    });
-
-    it('check button click present', () => {
-        expect(document.getElementById('editComment').onclick.length === 1).toBe(true);
-    });
-    afterAll(() => {
-        destroy(TreeGridObj);
-    });
-});
-
 describe('Bug 839261: Column template is not working properly when using getPersistData method', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
@@ -2482,3 +2485,1128 @@ describe('Bug 839261: Column template is not working properly when using getPers
         destroy(gridObj);
     });
 });
+
+describe('Null or undefined check', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', template: '<span>test</span>', headerText: 'Task Name' },
+                    { field: 'startDate', headerText: 'Start Date'},
+                    { field: 'duration', headerText: 'duration' }
+                ]
+            },
+            done
+        );
+    });
+    it('Paging', () => {
+        gridObj.allowPaging = null;
+        gridObj.dataBind();
+        expect(gridObj.allowPaging).toBe(null);
+        gridObj.allowPaging = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowPaging).toBe(undefined);
+    });
+    it('Filtering', () => {
+        gridObj.allowFiltering = null;
+        gridObj.dataBind();
+        expect(gridObj.allowFiltering).toBe(null);
+        gridObj.allowFiltering = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowFiltering).toBe(undefined);
+    });
+    it('Sorting', () => {
+        gridObj.allowSorting = null;
+        gridObj.dataBind();
+        expect(gridObj.allowSorting).toBe(null);
+        gridObj.allowSorting = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowSorting).toBe(undefined);
+    });
+    it('MultiSorting', () => {
+        gridObj.allowMultiSorting = null;
+        gridObj.dataBind();
+        expect(gridObj.allowMultiSorting).toBe(null);
+        gridObj.allowMultiSorting = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowMultiSorting).toBe(undefined);
+    });
+    it('ExcelExport', () => {
+        gridObj.allowExcelExport = null;
+        gridObj.dataBind();
+        expect(gridObj.allowExcelExport).toBe(null);
+        gridObj.allowExcelExport = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowExcelExport).toBe(undefined);
+    });
+    it('Keyboard', () => {
+        gridObj.allowKeyboard = null;
+        gridObj.dataBind();
+        expect(gridObj.allowKeyboard).toBe(null);
+        gridObj.allowKeyboard = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowKeyboard).toBe(undefined);
+    });
+    it('PDFExport', () => {
+        gridObj.allowPdfExport = null;
+        gridObj.dataBind();
+        expect(gridObj.allowPdfExport).toBe(null);
+        gridObj.allowPdfExport = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowPdfExport).toBe(undefined);
+    });
+    it('Reordering', () => {
+        gridObj.allowReordering = null;
+        gridObj.dataBind();
+        expect(gridObj.allowReordering).toBe(null);
+        gridObj.allowReordering = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowReordering).toBe(undefined);
+    });
+    it('Resizing', () => {
+        gridObj.allowResizing = null;
+        gridObj.dataBind();
+        expect(gridObj.allowResizing).toBe(null);
+        gridObj.allowResizing = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowResizing).toBe(undefined);
+    });
+    it('RowDragAndDrop', () => {
+        gridObj.allowRowDragAndDrop = null;
+        gridObj.dataBind();
+        expect(gridObj.allowRowDragAndDrop).toBe(null);
+        gridObj.allowRowDragAndDrop = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowRowDragAndDrop).toBe(undefined);
+    });
+    it('Selection', () => {
+        gridObj.allowSelection = null;
+        gridObj.dataBind();
+        expect(gridObj.allowSelection).toBe(null);
+        gridObj.allowSelection = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowSelection).toBe(undefined);
+    });
+    it('TextWrap', () => {
+        gridObj.allowTextWrap = null;
+        gridObj.dataBind();
+        expect(gridObj.allowTextWrap).toBe(null);
+        gridObj.allowTextWrap = undefined;
+        gridObj.dataBind();
+        expect(gridObj.allowTextWrap).toBe(undefined);
+    });
+    it('AdaptiveUI', () => {
+        gridObj.enableAdaptiveUI = null;
+        gridObj.dataBind();
+        expect(gridObj.enableAdaptiveUI).toBe(null);
+        gridObj.enableAdaptiveUI = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableAdaptiveUI).toBe(undefined);
+    });
+    it('Alternative Row', () => {
+        gridObj.enableAltRow = null;
+        gridObj.dataBind();
+        expect(gridObj.enableAltRow).toBe(null);
+        gridObj.enableAltRow = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableAltRow).toBe(undefined);
+    });
+    it('AutoFill', () => {
+        gridObj.enableAutoFill = null;
+        gridObj.dataBind();
+        expect(gridObj.enableAutoFill).toBe(null);
+        gridObj.enableAutoFill = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableAutoFill).toBe(undefined);
+    });    
+    it('Initial rendering collapsed state', () => {
+        gridObj.enableCollapseAll = null;
+        gridObj.dataBind();
+        expect(gridObj.enableCollapseAll).toBe(null);
+        gridObj.enableCollapseAll = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableCollapseAll).toBe(undefined);
+    });
+    it('Column Virtualization', () => {
+        gridObj.enableColumnVirtualization = null;
+        gridObj.dataBind();
+        expect(gridObj.enableColumnVirtualization).toBe(null);
+        gridObj.enableColumnVirtualization = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableColumnVirtualization).toBe(undefined);
+    });
+    it('Hovering', () => {
+        gridObj.enableHover = null;
+        gridObj.dataBind();
+        expect(gridObj.enableHover).toBe(null);
+        gridObj.enableHover = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableHover).toBe(undefined);
+    });
+    it('Html Sanitizer', () => {
+        gridObj.enableHtmlSanitizer = null;
+        gridObj.dataBind();
+        expect(gridObj.enableHtmlSanitizer).toBe(null);
+        gridObj.enableHtmlSanitizer = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableHtmlSanitizer).toBe(undefined);
+    });
+    it('Immutable mode', () => {
+        gridObj.enableImmutableMode = null;
+        gridObj.dataBind();
+        expect(gridObj.enableImmutableMode).toBe(null);
+        gridObj.enableImmutableMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableImmutableMode).toBe(undefined);
+    });
+    it('Infinity Scrolling', () => {
+        gridObj.enableInfiniteScrolling = null;
+        gridObj.dataBind();
+        expect(gridObj.enableInfiniteScrolling).toBe(null);
+        gridObj.enableInfiniteScrolling = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableInfiniteScrolling).toBe(undefined);
+    });
+    it('Persistance', () => {
+        gridObj.enablePersistence = null;
+        gridObj.dataBind();
+        expect(gridObj.enablePersistence).toBe(null);
+        gridObj.enablePersistence = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enablePersistence).toBe(undefined);
+    });
+    it('RTL', () => {
+        gridObj.enableRtl = null;
+        gridObj.dataBind();
+        expect(gridObj.enableRtl).toBe(null);
+        gridObj.enableRtl = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableRtl).toBe(undefined);
+    });
+    it('Virtual Mask Row', () => {
+        gridObj.enableVirtualMaskRow = null;
+        gridObj.dataBind();
+        expect(gridObj.enableVirtualMaskRow).toBe(null);
+        gridObj.enableVirtualMaskRow = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableVirtualMaskRow).toBe(undefined);
+    });
+    it('Virtualization', () => {
+        gridObj.enableVirtualization = null;
+        gridObj.dataBind();
+        expect(gridObj.enableVirtualization).toBe(null);
+        gridObj.enableVirtualization = undefined;
+        gridObj.dataBind();
+        expect(gridObj.enableVirtualization).toBe(undefined);
+    });
+    it('Aggregate', () => {
+        gridObj.aggregates = null;
+        gridObj.dataBind();
+        expect(gridObj.aggregates.length).toBe(0);
+        gridObj.aggregates = undefined;
+        gridObj.dataBind();
+        expect(gridObj.aggregates.length).toBe(0);
+    });
+    it("clipMode", () => {
+        gridObj.clipMode = null;
+        gridObj.dataBind();
+        expect(gridObj.clipMode).toBe(null);
+        gridObj.clipMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.clipMode).toBe(undefined);
+    });
+    it("columnMenuItems", () => {
+        gridObj.columnMenuItems = null;
+        gridObj.dataBind();
+        expect(gridObj.columnMenuItems).toBe(null);
+        gridObj.columnMenuItems = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columnMenuItems).toBe(undefined);
+    });
+    it("columnQueryMode", () => {
+        gridObj.columnQueryMode = null;
+        gridObj.dataBind();
+        expect(gridObj.columnQueryMode).toBe(null);
+        gridObj.columnQueryMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columnQueryMode).toBe(undefined);
+    });
+    it("columns", () => {
+        gridObj.columns = null;
+        gridObj.dataBind();
+        expect(gridObj.columns).toBe(null);
+        gridObj.columns = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columns).toBe(undefined);
+    });
+    it("contextMenuItems", () => {
+        gridObj.contextMenuItems = null;
+        gridObj.dataBind();
+        expect(gridObj.contextMenuItems).toBe(null);
+        gridObj.contextMenuItems = undefined;
+        gridObj.dataBind();
+        expect(gridObj.contextMenuItems).toBe(undefined);
+    });
+    it("dataSource", () => {
+        gridObj.dataSource = null;
+        gridObj.dataBind();
+        expect(gridObj.dataSource).toBe(null);
+        gridObj.dataSource = undefined;
+        gridObj.dataBind();
+        expect(gridObj.dataSource).toBe(undefined);
+    });
+    it("detailTemplate", () => {
+        gridObj.detailTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.detailTemplate).toBe(null);
+        gridObj.detailTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.detailTemplate).toBe(undefined);
+    });
+    it("frozenColumns", () => {
+        gridObj.frozenColumns = null;
+        gridObj.dataBind();
+        expect(gridObj.frozenColumns).toBe(null);
+        gridObj.frozenColumns = undefined;
+        gridObj.dataBind();
+        expect(gridObj.frozenColumns).toBe(undefined);
+    });
+    it("frozenRows", () => {
+        gridObj.frozenRows = null;
+        gridObj.dataBind();
+        expect(gridObj.frozenRows).toBe(null);
+        gridObj.frozenRows = undefined;
+        gridObj.dataBind();
+        expect(gridObj.frozenRows).toBe(undefined);
+    });
+    it("gridLines", () => {
+        gridObj.gridLines = null;
+        gridObj.dataBind();
+        expect(gridObj.gridLines).toBe(null);
+        gridObj.gridLines = undefined;
+        gridObj.dataBind();
+        expect(gridObj.gridLines).toBe(undefined);
+    });
+    it("height", () => {
+        gridObj.height = null;
+        gridObj.dataBind();
+        expect(gridObj.height).toBe(null);
+        gridObj.height = undefined;
+        gridObj.dataBind();
+        expect(gridObj.height).toBe(undefined);
+    });
+    it("loadingIndicator", () => {
+        gridObj.loadingIndicator.indicatorType = null;
+        gridObj.dataBind();
+        expect(gridObj.loadingIndicator.indicatorType).toBe(null);
+        gridObj.loadingIndicator.indicatorType = undefined;
+        gridObj.dataBind();
+        expect(gridObj.loadingIndicator.indicatorType).toBe(undefined);
+    });
+    it("locale", () => {
+        gridObj.locale = null;
+        gridObj.dataBind();
+        expect(gridObj.locale).toBe(null);
+        gridObj.locale = undefined;
+        gridObj.dataBind();
+        expect(gridObj.locale).toBe(undefined);
+    });
+    it("pagerTemplate", () => {
+        gridObj.pagerTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.pagerTemplate).toBe(null);
+        gridObj.pagerTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.pagerTemplate).toBe(undefined);
+    });
+    it("printMode", () => {
+        gridObj.printMode = null;
+        gridObj.dataBind();
+        expect(gridObj.printMode).toBe(null);
+        gridObj.printMode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.printMode).toBe(undefined);
+    });
+    it("query", () => {
+        gridObj.query = null;
+        gridObj.dataBind();
+        expect(gridObj.query).toBe(null);
+        gridObj.query = undefined;
+        gridObj.dataBind();
+        expect(gridObj.query).toBe(undefined);
+    });
+    it("rowHeight", () => {
+        gridObj.rowHeight = null;
+        gridObj.dataBind();
+        expect(gridObj.rowHeight).toBe(null);
+        gridObj.rowHeight = undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowHeight).toBe(undefined);
+    });
+    it("rowTemplate", () => {
+        gridObj.rowTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.rowTemplate).toBe(null);
+        gridObj.rowTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowTemplate).toBe(undefined);
+    });
+    it("selectedRowIndex", () => {
+        gridObj.selectedRowIndex = null;
+        gridObj.dataBind();
+        expect(gridObj.selectedRowIndex).toBe(null);
+        gridObj.selectedRowIndex = undefined;
+        gridObj.dataBind();
+        expect(gridObj.selectedRowIndex).toBe(undefined);
+    });
+    it("showColumnChooser", () => {
+        gridObj.showColumnChooser = null;
+        gridObj.dataBind();
+        expect(gridObj.showColumnChooser).toBe(null);
+        gridObj.showColumnChooser = undefined;
+        gridObj.dataBind();
+        expect(gridObj.showColumnChooser).toBe(undefined);
+    });
+    it("showColumnMenu", () => {
+        gridObj.showColumnMenu = null;
+        gridObj.dataBind();
+        expect(gridObj.showColumnMenu).toBe(null);
+        gridObj.showColumnMenu = undefined;
+        gridObj.dataBind();
+        expect(gridObj.showColumnMenu).toBe(undefined);
+    });
+    it("toolbar", () => {
+        gridObj.toolbar = null;
+        gridObj.dataBind();
+        expect(gridObj.toolbar).toBe(null);
+        gridObj.toolbar = undefined;
+        gridObj.dataBind();
+        expect(gridObj.toolbar).toBe(undefined);
+    });
+
+    it("toolbarTemplate", () => {
+        gridObj.toolbarTemplate = null;
+        gridObj.dataBind();
+        expect(gridObj.toolbarTemplate).toBe(null);
+        gridObj.toolbarTemplate = undefined;
+        gridObj.dataBind();
+        expect(gridObj.toolbarTemplate).toBe(undefined);
+    });
+    it("width", () => {
+        gridObj.width = null;
+        gridObj.dataBind();
+        expect(gridObj.width).toBe(null);
+        gridObj.width = undefined;
+        gridObj.dataBind();
+        expect(gridObj.width).toBe(undefined);
+    });
+
+
+    it("clipboardModule", () => {
+        gridObj.clipboardModule = null;
+        gridObj.dataBind();
+        expect(gridObj.clipboardModule).toBe(null);
+        gridObj.clipboardModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.clipboardModule).toBe(undefined);
+    });
+    it("columnMenuModule", () => {
+        gridObj.columnMenuModule = null;
+        gridObj.dataBind();
+        expect(gridObj.columnMenuModule).toBe(null);
+        gridObj.columnMenuModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columnMenuModule).toBe(undefined);
+    });
+    it("contextMenuModule", () => {
+        gridObj.contextMenuModule = null;
+        gridObj.dataBind();
+        expect(gridObj.contextMenuModule).toBe(null);
+        gridObj.contextMenuModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.contextMenuModule).toBe(undefined);
+    });
+    it("editModule", () => {
+        gridObj.editModule = null;
+        gridObj.dataBind();
+        expect(gridObj.editModule).toBe(null);
+        gridObj.editModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.editModule).toBe(undefined);
+    });
+    it("excelExportModule", () => {
+        gridObj.excelExportModule = null;
+        gridObj.dataBind();
+        expect(gridObj.excelExportModule).toBe(null);
+        gridObj.excelExportModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.excelExportModule).toBe(undefined);
+    });
+    it("filterModule", () => {
+        gridObj.filterModule = null;
+        gridObj.dataBind();
+        expect(gridObj.filterModule).toBe(null);
+        gridObj.filterModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.filterModule).toBe(undefined);
+    });
+    it("keyboardModule", () => {
+        gridObj.keyboardModule = null;
+        gridObj.dataBind();
+        expect(gridObj.keyboardModule).toBe(null);
+        gridObj.keyboardModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.keyboardModule).toBe(undefined);
+    });
+    it("pagerModule", () => {
+        gridObj.pagerModule = null;
+        gridObj.dataBind();
+        expect(gridObj.pagerModule).toBe(null);
+        gridObj.pagerModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.pagerModule).toBe(undefined);
+    });
+    it("pdfExportModule", () => {
+        gridObj.pdfExportModule = null;
+        gridObj.dataBind();
+        expect(gridObj.pdfExportModule).toBe(null);
+        gridObj.pdfExportModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.pdfExportModule).toBe(undefined);
+    });
+    it("printModule", () => {
+        gridObj.printModule = null;
+        gridObj.dataBind();
+        expect(gridObj.printModule).toBe(null);
+        gridObj.printModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.printModule).toBe(undefined);
+    });
+    it("reorderModule", () => {
+        gridObj.reorderModule = null;
+        gridObj.dataBind();
+        expect(gridObj.reorderModule).toBe(null);
+        gridObj.reorderModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.reorderModule).toBe(undefined);
+    });
+    it("rowDragAndDropModule", () => {
+        gridObj.rowDragAndDropModule = null;
+        gridObj.dataBind();
+        expect(gridObj.rowDragAndDropModule).toBe(null);
+        gridObj.rowDragAndDropModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowDragAndDropModule).toBe(undefined);
+    });
+    it("selectionModule", () => {
+        gridObj.selectionModule = null;
+        gridObj.dataBind();
+        expect(gridObj.selectionModule).toBe(null);
+        gridObj.selectionModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.selectionModule).toBe(undefined);
+    });
+    it("sortModule", () => {
+        gridObj.sortModule = null;
+        gridObj.dataBind();
+        expect(gridObj.sortModule).toBe(null);
+        gridObj.sortModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.sortModule).toBe(undefined);
+    });
+    it("toolbarModule", () => {
+        gridObj.toolbarModule = null;
+        gridObj.dataBind();
+        expect(gridObj.toolbarModule).toBe(null);
+        gridObj.toolbarModule = undefined;
+        gridObj.dataBind();
+        expect(gridObj.toolbarModule).toBe(undefined);
+    });
+    it("editSettings", () => {
+        // Test with null value
+        gridObj.editSettings.allowAdding = null;
+        gridObj.editSettings.allowDeleting = null;
+        gridObj.editSettings.allowEditOnDblClick = null;
+        gridObj.editSettings.allowEditing = null;
+        gridObj.editSettings.allowNextRowEdit = null;
+        gridObj.editSettings.dialog = null;
+        gridObj.editSettings.mode = null;
+        gridObj.dataBind();
+        expect(gridObj.editSettings.allowAdding).toBe(null);
+        expect(gridObj.editSettings.allowDeleting).toBe(null);
+        expect(gridObj.editSettings.allowEditOnDblClick).toBe(null);
+        expect(gridObj.editSettings.allowEditing).toBe(null);
+        expect(gridObj.editSettings.allowNextRowEdit).toBe(null);
+        expect(gridObj.editSettings.dialog).toBe(null);
+        expect(gridObj.editSettings.mode).toBe(null);
+
+        // Test with undefined value
+        gridObj.editSettings.allowAdding = undefined;
+        gridObj.editSettings.allowDeleting = undefined;
+        gridObj.editSettings.allowEditOnDblClick= undefined;
+        gridObj.editSettings.allowEditing = undefined;
+        gridObj.editSettings.allowNextRowEdit = undefined;
+        gridObj.editSettings.dialog = undefined;
+        gridObj.editSettings.mode = undefined;
+        gridObj.dataBind();
+        expect(gridObj.editSettings.allowAdding).toBe(undefined);
+        expect(gridObj.editSettings.allowDeleting).toBe(undefined);
+        expect(gridObj.editSettings.allowEditOnDblClick).toBe(undefined);
+        expect(gridObj.editSettings.allowEditing).toBe(undefined);
+        expect(gridObj.editSettings.allowNextRowEdit).toBe(undefined);
+        expect(gridObj.editSettings.dialog).toBe(undefined);
+        expect(gridObj.editSettings.mode).toBe(undefined);
+    });
+    it("filterSettings", () => {
+        // Test with null value
+        gridObj.filterSettings.columns = null;
+        gridObj.filterSettings.ignoreAccent = null;
+        gridObj.filterSettings.immediateModeDelay = null;
+        gridObj.filterSettings.mode = null;
+        gridObj.filterSettings.operators = null;
+        gridObj.filterSettings.showFilterBarStatus = null;
+        gridObj.filterSettings.type = null;
+        gridObj.dataBind();
+        expect(gridObj.filterSettings.columns.length).toBe(0);
+        expect(gridObj.filterSettings.ignoreAccent).toBe(null);
+        expect(gridObj.filterSettings.immediateModeDelay).toBe(null);
+        expect(gridObj.filterSettings.mode).toBe(null);
+        expect(gridObj.filterSettings.operators).toBe(null);
+        expect(gridObj.filterSettings.showFilterBarStatus).toBe(null);
+        expect(gridObj.filterSettings.type).toBe(null);
+
+        // Test with undefined value
+        gridObj.filterSettings.columns = undefined;
+        gridObj.filterSettings.ignoreAccent = undefined;
+        gridObj.filterSettings.immediateModeDelay = undefined;
+        gridObj.filterSettings.mode = undefined;
+        gridObj.filterSettings.operators = undefined;
+        gridObj.filterSettings.showFilterBarStatus = undefined;
+        gridObj.filterSettings.type = undefined;
+        gridObj.dataBind();
+        expect(gridObj.filterSettings.columns.length).toBe(0);
+        expect(gridObj.filterSettings.ignoreAccent).toBe(undefined);
+        expect(gridObj.filterSettings.immediateModeDelay).toBe(undefined);
+        expect(gridObj.filterSettings.mode).toBe(undefined);
+        expect(gridObj.filterSettings.operators).toBe(undefined);
+        expect(gridObj.filterSettings.showFilterBarStatus).toBe(undefined);
+        expect(gridObj.filterSettings.type).toBe(undefined);
+    });
+    it("infiniteScrollSettings", () => {
+        // Test with null value
+        gridObj.infiniteScrollSettings.enableCache = null;
+        gridObj.infiniteScrollSettings.initialBlocks = null;
+        gridObj.infiniteScrollSettings.maxBlocks = null;
+        gridObj.dataBind();
+        expect(gridObj.infiniteScrollSettings.enableCache).toBe(null);
+        expect(gridObj.infiniteScrollSettings.initialBlocks).toBe(null);
+        expect(gridObj.infiniteScrollSettings.maxBlocks).toBe(null);
+
+        // Test with undefined value
+        gridObj.infiniteScrollSettings.enableCache = undefined;
+        gridObj.infiniteScrollSettings.initialBlocks = undefined;
+        gridObj.infiniteScrollSettings.maxBlocks = undefined;
+        gridObj.dataBind();
+        expect(gridObj.infiniteScrollSettings.enableCache).toBe(undefined);
+        expect(gridObj.infiniteScrollSettings.initialBlocks).toBe(undefined);
+        expect(gridObj.infiniteScrollSettings.maxBlocks).toBe(undefined);
+    });
+    
+
+    it("selectionSettings", () => {
+        // Test with null value
+        gridObj.selectionSettings.cellSelectionMode = null;
+        gridObj.selectionSettings.checkboxMode = null;
+        gridObj.selectionSettings.checkboxOnly = null;
+        gridObj.selectionSettings.enableToggle = null;
+        gridObj.selectionSettings.mode = null;
+        gridObj.selectionSettings.persistSelection = null;
+        gridObj.selectionSettings.mode = null;
+        gridObj.selectionSettings.type = null;
+        gridObj.dataBind();
+        expect(gridObj.selectionSettings.cellSelectionMode).toBe(null);
+        expect(gridObj.selectionSettings.checkboxMode).toBe(null);
+        expect(gridObj.selectionSettings.checkboxOnly).toBe(null);
+        expect(gridObj.selectionSettings.enableToggle).toBe(null);
+        expect(gridObj.selectionSettings.mode).toBe(null);
+        expect(gridObj.selectionSettings.type).toBe(null);
+        expect(gridObj.selectionSettings.mode).toBe(null);
+        expect(gridObj.selectionSettings.persistSelection).toBe(null);
+
+        // Test with undefined value
+        gridObj.selectionSettings.cellSelectionMode = undefined;
+        gridObj.selectionSettings.checkboxMode = undefined;
+        gridObj.selectionSettings.checkboxOnly = undefined;
+        gridObj.selectionSettings.enableToggle = undefined;
+        gridObj.selectionSettings.mode = undefined;
+        gridObj.selectionSettings.persistSelection = undefined;
+        gridObj.selectionSettings.mode = undefined;
+        gridObj.selectionSettings.type = undefined;
+        gridObj.dataBind();
+        expect(gridObj.selectionSettings.cellSelectionMode).toBe(undefined);
+        expect(gridObj.selectionSettings.checkboxMode).toBe(undefined);
+        expect(gridObj.selectionSettings.checkboxOnly).toBe(undefined);
+        expect(gridObj.selectionSettings.enableToggle).toBe(undefined);
+        expect(gridObj.selectionSettings.mode).toBe(undefined);
+        expect(gridObj.selectionSettings.type).toBe(undefined);
+        expect(gridObj.selectionSettings.mode).toBe(undefined);
+        expect(gridObj.selectionSettings.persistSelection).toBe(undefined);
+    });
+
+    it("rowDropSettings", () => {
+        // Test with null value
+        gridObj.rowDropSettings.targetID= null;
+        gridObj.dataBind();
+        expect(gridObj.rowDropSettings.targetID).toBe(null);
+
+        // Test with undefined value
+        gridObj.rowDropSettings.targetID= undefined;
+        gridObj.dataBind();
+        expect(gridObj.rowDropSettings.targetID).toBe(undefined);
+    });
+
+    
+    it("sortSettings", () => {
+        // Test with null value
+        gridObj.sortSettings.allowUnsort = null;
+        gridObj.sortSettings.columns = null;
+        gridObj.dataBind();
+        expect(gridObj.sortSettings.allowUnsort).toBe(null);
+        expect(gridObj.sortSettings.columns.length).toBe(0);
+
+        // Test with undefined value
+        gridObj.sortSettings.allowUnsort = undefined;
+        gridObj.sortSettings.columns = undefined;
+        gridObj.dataBind();
+        expect(gridObj.sortSettings.allowUnsort).toBe(undefined);
+        expect(gridObj.sortSettings.columns.length).toBe(0);
+    });
+
+    // Test cases for each public property
+    it("textWrapSettings", () => {
+        // Test with null value
+        gridObj.textWrapSettings.wrapMode= null;
+        gridObj.dataBind();
+        expect(gridObj.textWrapSettings.wrapMode).toBe(null);
+
+        // Test with undefined value
+        gridObj.textWrapSettings.wrapMode= undefined;
+        gridObj.dataBind();
+        expect(gridObj.textWrapSettings.wrapMode).toBe(undefined);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Logger module with row drag and drop', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowRowDragAndDrop: true,
+                childMapping: 'subtasks',
+                height: '400',
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'startDate', headerText: 'Start Date' },
+                    { field: 'duration', headerText: 'duration' }
+                ]
+            },
+            done
+        );
+    });
+    it('Logger module with row drag and drop', () => {
+        expect(gridObj.getPrimaryKeyFieldNames().length === 0).toBe(true);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('ActionFailure with sorting', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowSorting: true,
+                childMapping: 'subtasks',
+                height: '400',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Cell',
+                    newRowPosition: 'Below'
+    
+                },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'startDate', headerText: 'Start Date' },
+                    { field: 'duration', headerText: 'duration' }
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).toHaveBeenCalled();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('ActionFailure without treecolumnindex', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowSorting: true,
+                childMapping: 'subtasks',
+                height: '400',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Cell',
+                    newRowPosition: 'Below'
+    
+                },
+                treeColumnIndex:-1,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple' },
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'startDate', headerText: 'Start Date' },
+                    { field: 'duration', headerText: 'duration' }
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).toHaveBeenCalled();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Print action', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource:sampleData,
+                allowSorting: true,
+                childMapping: 'subtasks',
+                height: 400,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Cell',
+                    newRowPosition: 'Below'
+                },
+                allowPaging: true,
+                treeColumnIndex:1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'startDate', headerText: 'Start Date' },
+                    { field: 'duration', headerText: 'duration' }
+                ]
+            },
+            done
+    );
+    });
+    it('Print action', (done: Function) => {
+        let printComplete = (args?: { element: Element }): void => {
+            expect(args.element.querySelectorAll('.e-gridpager').length).toBe(0);
+            done();
+        };
+        window.print = () => { };
+        (<any>Window).print = () => { };
+        gridObj.printComplete = printComplete;
+        gridObj.print();
+    });
+    afterAll(() => {
+        gridObj.printModule.destroy();
+        destroy(gridObj);
+    });
+});
+
+describe('Enable virtualization action without virtual scroll module', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                enableVirtualization: true,
+                height: 200,
+                columns: [
+                    { field: "taskID", headerText: "Task Id", width: 90 },
+                    { field: 'taskName', headerText: 'taskName', width: 60 },
+                    { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+                    { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+                ],
+            },
+            done
+        );
+    });
+
+    it('check module present', () => {
+        expect(gridObj['virtualScrollModule'] === undefined);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Checkbox column', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                autoCheckHierarchy: true,
+                height: 400,
+                columns: [
+                    { field: "taskID", headerText: "Task Id", width: 90, showCheckbox: true },
+                    { field: 'taskName', headerText: 'taskName', width: 60, showCheckbox: true },
+                    { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+                    { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).toHaveBeenCalled();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Remote data', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                height: 400,
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).toHaveBeenCalled();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Checking template position in react', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                    {
+                        headerText: 'Template', textAlign: 'Center',
+                        template: '<button id="button">Button</button>', width: 90
+                    }
+                ],
+                load: function(){
+                    this.isReact = true
+                }
+            },
+            done
+        );
+    });
+    it('Checking template position when the template column is marked as treeColumnIndex ', () => {
+        const cell = document.getElementsByClassName('e-templatecell')[0];
+        expect((cell.getElementsByClassName('e-treecell')[0] as any).innerText == 'Button').toBe(true);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('column template', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                autoCheckHierarchy: true,
+                height: 400,
+                columns: [
+                    { field: "taskID", headerText: "Task Id", width: 90, template:'Test1' },
+                    { field: 'taskName', headerText: 'taskName', width: 60, template:'Test2'},
+                    { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+                    { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+                ],
+                load: function(){
+                    this.isReact = true
+                }
+            },
+            done
+        );
+    });
+
+    it('column template in react platform', () => {
+        expect(gridObj.getRows()[0].querySelectorAll('td')[1].classList.contains('e-templatecell')).toBe(true);
+        expect(gridObj.getRows()[0].querySelectorAll('td')[0].classList.contains('e-templatecell')).toBe(true);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj.renderModule.destroy();
+    });
+});
+
+describe('Bug 887848: Script Error shown in Column Template sample', () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                height: 350,
+                treeColumnIndex: 1,
+                allowPaging: true,
+                columns: [
+                    {
+                        field: 'taskID', template: `
+                <a href="https://www.w3schools.com">hello</a>`, headerText: 'Task ID', width: 70, textAlign: 'Right'
+                    },
+                    { field: 'taskName', headerText: 'Task Name', width: 200, textAlign: 'Left' },
+                    { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'endDate', headerText: 'End Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                    { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+                    { field: 'priority', headerText: 'Priority', width: 90 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('column template with downarrow', () => {
+        const event: MouseEvent = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        gridObj.getCellFromIndex(0, 0).dispatchEvent(event);
+        gridObj.keyboardModule.keyAction({
+            action: 'downArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1]
+        } as any);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj.renderModule.destroy();
+    });
+});
+
+describe('Bug 887848: Script Error shown in Column Template sample', () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                height: 350,
+                treeColumnIndex: 1,
+                allowPaging: true,
+                columns: [
+                    {
+                        field: 'taskID', template: `
+                <a href="https://www.w3schools.com">hello</a>`, headerText: 'Task ID', width: 70, textAlign: 'Right'
+                    },
+                    { field: 'taskName', headerText: 'Task Name', width: 200, textAlign: 'Left' },
+                    { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'endDate', headerText: 'End Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                    { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+                    { field: 'priority', headerText: 'Priority', width: 90 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('column template with uparrow action', () => {
+        const event: MouseEvent = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        gridObj.getCellFromIndex(2, 0).dispatchEvent(event);
+        gridObj.keyboardModule.keyAction({
+            action: 'uparrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1]
+        } as any);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj.renderModule.destroy();
+    });
+})

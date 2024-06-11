@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isNullOrUndefined as isNOU, isObject, merge } from './util';
 
 /**
@@ -144,11 +145,9 @@ export class Fetch {
                     }
                 }
                 return response[responseType as string]();
-                // eslint-disable-next-line
             }).then((data: any) => {
                 this.triggerEvent(this['onSuccess'], data, this);
                 return data;
-                // eslint-disable-next-line
             }).catch((error: any) => {
                 let returnVal: Object = {};
                 if (this.emitError) {

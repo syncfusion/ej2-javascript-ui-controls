@@ -2,9 +2,9 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Eve
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from './index';
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, XmlHttpRequestHandler, beforeXmlHttpRequestSend } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
-import { Print, SearchResultsChangeEventArgs } from './index';
+import { Print, SearchResultsChangeEventArgs, SelectionWidgetInfo, Dictionary, ElementBox } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
 import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';
 import { SfdtReader } from './index';
@@ -32,12 +32,12 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType } from './base';
+import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
-import { FootNoteWidget } from './implementation/viewer/page';
-import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges } from './base/constants';
+import { ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';
+import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange } from './base/constants';
 import { Optimized, Regular, HelperMethods } from './index';
 import { ColumnsDialog } from './implementation/dialogs/columns-dialog';
 import { DocumentCanvasElement } from './implementation/viewer/document-canvas';
@@ -47,6 +47,10 @@ import { TabDialog } from './implementation/dialogs/tab-dialog';
 import { RulerHelper } from './implementation/utility/dom-util';
 import { ColorPickerModel } from '@syncfusion/ej2-inputs';
 import { MentionModel } from '@syncfusion/ej2-dropdowns';
+import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';
+import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';
+import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';
+import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -123,6 +127,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     /**
      * Gets or sets the maximum number of rows allowed while inserting a table in Document editor component.
      * > The maximum value is 32767, as per Microsoft Word application and you can set any value less than 32767 to this property. If you set any value greater than 32767, then Syncfusion Document editor will automatically reset as 32767.
+     *
      * @default 32767
      * @returns {number}
      */
@@ -132,6 +137,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     /**
      * Gets or sets the maximum number of columns allowed while inserting a table in Document editor component.
      * > The maximum value is 63, as per Microsoft Word application and you can set any value less than 63 to this property. If you set any value greater than 63, then Syncfusion Document editor will automatically reset as 63.
+     *
      * @default 63
      * @returns {number}
      */
@@ -159,7 +165,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     public showBookmarks: boolean;
 
     /**
-     * Gets or sets a value indicating whether to highlight the editable ranges in the document where the current user can edit. 
+     * Gets or sets a value indicating whether to highlight the editable ranges in the document where the current user can edit.
      *
      * @default true
      * @aspType bool
@@ -207,7 +213,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     /**
      * Gets ot sets the mention configuration used in Document Editor. 
      */
-    @Property({mentionChar: '@'})
+    @Property({ mentionChar: '@' })
     public mentionSettings: MentionModel;
 
 }
@@ -290,6 +296,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public isContainerResize: boolean = false;
+    /**
+     * @private
+     */
     public isLayoutEnabled: boolean = true;
     /**
      * @private
@@ -302,11 +312,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
-     public isTableMarkerDragging : boolean =false;
-     /**
+    public isTableMarkerDragging : boolean = false;
+    /**
      * @private
      */
-     public startXPosition : number =0;
+    public startXPosition : number = 0;
     /**
      * @private
      */
@@ -320,11 +330,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public skipSettingsOps: boolean = false;
     /**
-     * @private 
+     * @private
      */
     public hRuler: Ruler;
-    /** 
-     * @private 
+    /**
+     * @private
      */
     public vRuler: Ruler;
     /**
@@ -413,6 +423,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public dateContentDialogModule: DatePickerDialog;
+    /**
+     * @private
+     */
+    public picContentControlDialogModule: PicContentControlDialog;
+    /**
+     * @private
+     */
+    public picturePositionY: number;
+    /**
+     * @private
+     */
+    public contentControlPropertiesDialogModule : ContentControlPropertiesDialog;
+    /**
+     * @private
+     */
     public columnsDialogModule: ColumnsDialog;
     /**
      * @private
@@ -487,6 +513,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public textMeasureHelper: Regular | Optimized
     /**
      * Enable collaborative editing in document editor.
+     *
      * @default false
      */
     @Property(false)
@@ -890,11 +917,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Gets or sets a value indicating whether to start automatic resize with the specified time interval and iteration count.
-     * 
+     *
      * > * Resize action triggers automatically for the specified number of iterations, or till the parent element's height and width is non-zero.
-     * 
+     *
      * > * If the parent element's height and width is zero even in the last iteration, then the default height and width (200) is allocated for the Document editor.
-     * 
+     *
      * @default false
      * @returns {boolean}
      */
@@ -1112,6 +1139,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public revisionsInternal: RevisionCollection;
     /**
+     * @private
+     */
+    public enableDateContentDialog: boolean;
+    /**
+     * @private
+     */
+    public enablePicContentControlDialog: boolean;
+    /**
+     * @private
+     */
+    public enableContentControlPropertiesDialog: boolean;
+    /**
      * Gets the total number of pages.
      *
      * @returns {number} Returns the page count.
@@ -1222,6 +1261,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * @private
+     * @param {boolean} value - Specifies whether the document is loaded or not.
+     * @returns {void}
      */
     public set isDocumentLoaded(value: boolean) {
         this.isDocumentLoadedIn = value;
@@ -1234,27 +1275,27 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @default false
      */
     public get isDocumentEmpty(): boolean {
-        if(this.documentHelper.pages.length == 1) {
-            const firstPage = this.documentHelper.pages[0];
-            const headerWidget = firstPage.headerWidget;
-            const footerWidget = firstPage.footerWidget;
-            let isHeaderEmpty = true;
-            let isFooterEmpty = true;
-            if(!isNullOrUndefined(headerWidget) && !isNullOrUndefined(headerWidget.firstChild)) {
-                if(!(headerWidget.firstChild instanceof ParagraphWidget) || !headerWidget.firstChild.isEmpty()) {
+        if (this.documentHelper.pages.length === 1) {
+            const firstPage: Page = this.documentHelper.pages[0];
+            const headerWidget: HeaderFooterWidget = firstPage.headerWidget;
+            const footerWidget: HeaderFooterWidget = firstPage.footerWidget;
+            let isHeaderEmpty: boolean = true;
+            let isFooterEmpty: boolean = true;
+            if (!isNullOrUndefined(headerWidget) && !isNullOrUndefined(headerWidget.firstChild)) {
+                if (!(headerWidget.firstChild instanceof ParagraphWidget) || !headerWidget.firstChild.isEmpty()) {
                     isHeaderEmpty = false;
                 }
             }
-            if(!isNullOrUndefined(footerWidget) && !isNullOrUndefined(footerWidget.firstChild)) {
-                if(!(footerWidget.firstChild instanceof ParagraphWidget) || !footerWidget.firstChild.isEmpty()) {
+            if (!isNullOrUndefined(footerWidget) && !isNullOrUndefined(footerWidget.firstChild)) {
+                if (!(footerWidget.firstChild instanceof ParagraphWidget) || !footerWidget.firstChild.isEmpty()) {
                     isFooterEmpty = false;
                 }
             }
-            if(isHeaderEmpty && isFooterEmpty) {
-                const firstBodywidget = firstPage.bodyWidgets[0];
-                if(isNullOrUndefined(firstBodywidget.nextWidget)) {
-                    const firstChild = firstBodywidget.firstChild;
-                    if(firstChild instanceof ParagraphWidget
+            if (isHeaderEmpty && isFooterEmpty) {
+                const firstBodywidget: BodyWidget = firstPage.bodyWidgets[0];
+                if (isNullOrUndefined(firstBodywidget.nextWidget)) {
+                    const firstChild: IWidget = firstBodywidget.firstChild;
+                    if (firstChild instanceof ParagraphWidget
                         && firstChild.isEmpty()
                         && isNullOrUndefined(firstChild.nextWidget)) {
                         return true;
@@ -1406,16 +1447,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * @private
+     * @returns {void}
      */
-    public renderRulers() {
+    public renderRulers(): void {
         // if (this.documentEditorSettings.showRuler) {
-            this.rulerHelper = new RulerHelper();
-            this.rulerContainer = this.rulerHelper.renderOverlapElement(this);
-            this.rulerHelper.renderRuler(this, true);
-            this.rulerHelper.renderRuler(this, false);
-            this.rulerHelper.renderRulerMarkerIndicatorElement(this);
-            this.rulerHelper.createIndicatorLines(this);
-            this.showHideRulers();
+        this.rulerHelper = new RulerHelper();
+        this.rulerContainer = this.rulerHelper.renderOverlapElement(this);
+        this.rulerHelper.renderRuler(this, true);
+        this.rulerHelper.renderRuler(this, false);
+        this.rulerHelper.renderRulerMarkerIndicatorElement(this);
+        this.rulerHelper.createIndicatorLines(this);
+        this.showHideRulers();
         // }
     }
     /**
@@ -1423,7 +1465,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public showHideRulers(): void {
         if (this.rulerHelper && this.documentEditorSettings && !isNullOrUndefined(!this.documentEditorSettings.showRuler)) {
-            let showRuler: boolean = this.documentEditorSettings.showRuler && !this.isReadOnlyMode;
+            const showRuler: boolean = this.documentEditorSettings.showRuler && !this.isReadOnlyMode;
             this.rulerHelper.hideTabStopSwitch(showRuler);
             this.rulerHelper.hideRulerBottom(showRuler);
             if (this.vRuler) {
@@ -1436,7 +1478,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     private renderNavigationPane(): void {
         if (!this.isReadOnly && this.optionsPaneModule) {
-            this.optionsPaneModule.showHideOptionsPane(this.documentEditorSettings.showNavigationPane); 
+            this.optionsPaneModule.showHideOptionsPane(this.documentEditorSettings.showNavigationPane);
         }
     }
     /**
@@ -1459,43 +1501,43 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public onPropertyChanged(model: DocumentEditorModel, oldProp: DocumentEditorModel): void {
         for (const prop of Object.keys(model)) {
             switch (prop) {
-                case 'enableTrackChanges':
-                    this.notify(trackChanges, model);
-                    this.getSettingData('enableTrackChanges', model.enableTrackChanges);
-                    if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges) {
-                        this.enableTrackChanges = true;
+            case 'enableTrackChanges':
+                this.notify(trackChanges, model);
+                this.getSettingData('enableTrackChanges', model.enableTrackChanges);
+                if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges) {
+                    this.enableTrackChanges = true;
+                }
+                break;
+            case 'autoResizeOnVisibilityChange':
+                if (model.autoResizeOnVisibilityChange) {
+                    this.documentHelper.triggerAutoResizeInterval();
+                }
+                break;
+            case 'zoomFactor':
+                if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
+                    this.documentHelper.zoomFactor = model.zoomFactor;
+                    if (this.rulerHelper && this.documentEditorSettings && this.documentEditorSettings.showRuler) {
+                        this.rulerHelper.updateRuler(this, true);
                     }
+                    if (this.enableCollaborativeEditing && this.collaborativeEditingHandlerModule) {
+                        this.collaborativeEditingHandlerModule.updateCaretPosition();
+                    }
+                }
+                break;
+            case 'layoutType':
+                if (this.selectionModule && this.selectionModule.isWebLayout) {
                     break;
-                case 'autoResizeOnVisibilityChange':
-                    if (model.autoResizeOnVisibilityChange) {
-                        this.documentHelper.triggerAutoResizeInterval();
+                }
+                this.viewer.destroy();
+                if (this.layoutType === 'Pages') {
+                    this.viewer = new PageLayoutViewer(this);
+                } else {
+                    if (this.enableHeaderAndFooter === true) {
+                        this.selectionModule.closeHeaderFooter();
                     }
-                    break;
-                case 'zoomFactor':
-                    if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
-                        this.documentHelper.zoomFactor = model.zoomFactor;
-                        if (this.rulerHelper && this.documentEditorSettings && this.documentEditorSettings.showRuler) {
-                            this.rulerHelper.updateRuler(this, true);
-                        }
-                        if (this.enableCollaborativeEditing && this.collaborativeEditingHandlerModule) {
-                            this.collaborativeEditingHandlerModule.updateCaretPosition();
-                        }
-                    }
-                    break;
-                case 'layoutType':
-                    if (this.selectionModule && this.selectionModule.isWebLayout) {
-                        break;
-                    }
-                    this.viewer.destroy();
-                    if (this.layoutType === 'Pages') {
-                        this.viewer = new PageLayoutViewer(this);
-                    } else {
-                        if (this.enableHeaderAndFooter === true) {
-                            this.selectionModule.closeHeaderFooter();
-                        }
-                        this.viewer = new WebLayoutViewer(this);
-                    }
-                    /* eslint-disable */
+                    this.viewer = new WebLayoutViewer(this);
+                }
+                /* eslint-disable */
                     const paragraph: ParagraphWidget = this.selectionModule.start.paragraph;
                     if (paragraph.containerWidget instanceof FootNoteWidget) {
                         this.selectionModule.clearSelectionHighlightInSelectedWidgets();
@@ -1921,6 +1963,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      * @returns {void}
      */
+    public fireOptionPaneChange(show: boolean): void {
+        const eventArgs: any = { show: show };
+        this.notify(internalOptionPaneChange, eventArgs);
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
     public fireBeformFieldFill(): void {
         const eventArgs: FormFieldFillEventArgs = {};
         this.trigger(beforeFieldFillEvent, eventArgs);
@@ -2078,6 +2128,142 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.tableDialogModule.show();
         } else {
             this.checkModuleInjection('TableDialog', this.enableTableDialog);
+        }
+    }
+    /**
+     * Shows Date picker content dialog
+     * 
+     * @private
+     * @returns {void}
+     */
+    public showDateContentDialog(): void {
+        if (this.dateContentDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.dateContentDialogModule.show();
+        } else {
+            this.checkModuleInjection('DateContentDialog', this.enableDateContentDialog);
+        }
+    }
+    /**
+    * Apply Content control properties
+    *
+    * @private
+    * @returns {void}
+    */
+    public showPicContentControlDialog(): void {
+        let contentControlImage: ElementBox = this.getImageContentControl();
+        let showPicCCButton: boolean = true;
+        let pictureElement: boolean = true;
+        let picturePositionY = this.picturePositionY;
+        // to check whether the selection is empty =true, open the pic content control dialog 
+        if (this.selection.isEmpty) {
+            this.renderPictureContentControlElement(this, showPicCCButton, pictureElement, picturePositionY);
+        }
+        // to check whether selected image have content control =false , apply content control    
+        if (this.selection.isImageSelected) {
+            this.renderPictureContentControlElement(this, showPicCCButton, pictureElement, picturePositionY);
+            if (!(contentControlImage instanceof ContentControl && contentControlImage.contentControlProperties.type != 'Picture')) {
+                this.editor.insertContentControl('Picture');
+            }
+        }
+    }
+    /**
+     * Shows Picture Content Control dialog
+     *
+     * @private
+     * @returns {void}
+     */
+    public showpicContentControlDialogModule(): void {
+        if (this.picContentControlDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.picContentControlDialogModule.show();
+        } else {
+            this.checkModuleInjection('PicContentControlDialog', this.enablePicContentControlDialog);
+        }
+    }
+    /**
+        * Shows Picture Content Control button
+        *
+        * @private
+        * @returns {void}
+    */
+    public renderPictureContentControlElement(documentEditor: DocumentEditor, showPicContentControl: boolean, pictureElement: boolean, picturePositionY?: number): void {
+        const PICTURE_CONTENT_CONTROL: string = '_picture_Content_Control';
+        if (!this.enableSelection) {
+            return;
+        }
+        let left: number = this.documentHelper.owner.selection.sectionFormat.leftMargin;
+        let top: number;
+        if (!this.selection.isForward) {
+            left += this.selection.end.location.x;
+            top = this.selection.end.location.y;
+
+        } else {
+            left += this.selection.start.location.x;
+            top = picturePositionY;
+        }
+        const attributes: Object = {
+            'id': this.element.id + 'PICTURE_CONTENT_CONTROL', innerHTML: 'Picture',
+            class: 'e-btn-icon e-icons e-de-ctnr-image e-icon-left',
+            style: 'height:' + 20 + 'px;width:' + 70 + 'px;left:' + left + 'px;top:' + top + 'px;z-index:5;position:absolute;background-color:#ccc;border:1px solid #ccc;display:',
+
+        };
+        let pictureCC: HTMLElement;
+        let contentControlImage: ElementBox;
+        let element: HTMLElement = document.getElementById(this.element.id + '_viewerContainer');
+        let picture_cc: HTMLElement = document.getElementById(this.element.id + 'PICTURE_CONTENT_CONTROL');
+        if ((isNullOrUndefined(picture_cc) && showPicContentControl) || pictureElement) {
+            pictureCC = this.rulerHelper.createHtmlElement('div', attributes);
+            element.insertBefore(pictureCC, element.firstChild);
+            pictureCC.style.display = "block";
+            pictureCC.addEventListener('click', (event) => {
+                contentControlImage = this.getImageContentControl();
+                if (isNullOrUndefined(contentControlImage) || !(contentControlImage.contentControlProperties.type == 'Picture')) {
+                    this.picContentControlDialogModule.show();
+                }
+            });
+        } else if (!isNullOrUndefined(picture_cc) && showPicContentControl && !pictureElement) {
+            picture_cc.style.display = "block";
+            picture_cc.addEventListener('click', (event) => {
+                contentControlImage =this.getImageContentControl();
+                if ((contentControlImage instanceof ContentControl && !contentControlImage.contentControlProperties.lockContentControl && contentControlImage.contentControlProperties.type == 'Picture' && !this.documentHelper.owner.isReadOnlyMode)) {
+                    this.picContentControlDialogModule.show();
+                }
+            });
+        } else if (!isNullOrUndefined(picture_cc) && !showPicContentControl && !pictureElement) {
+            picture_cc.style.display = "none";
+        }
+        const locale: L10n = new L10n('documenteditor', this.defaultLocale);
+        locale.setLocale(this.locale);
+        locale.getConstant('Picture')
+    }
+    /**
+    * @private
+    * @returns {ElementBox}
+    */
+    public getImageContentControl(): ElementBox {
+        let contentControlImage: ElementBox;
+        let contentControlPara = this.documentHelper.owner.selectionModule.start.currentWidget.paragraph;
+        for (let i: number = 0; i < contentControlPara.childWidgets.length; i++) {
+            for (let j: number = 0; j < ((contentControlPara as ParagraphWidget).childWidgets[i] as LineWidget).children.length; j++) {
+                let contentControlImageCheck = ((contentControlPara as ParagraphWidget).childWidgets[i] as LineWidget).children[j];
+                if (contentControlImageCheck instanceof ContentControl && contentControlImageCheck.type == 0 && contentControlImageCheck.contentControlProperties.type == 'Picture') {
+                    contentControlImage = ((contentControlPara as ParagraphWidget).childWidgets[i] as LineWidget).children[j];
+                    break;
+                }
+            }
+        }
+        return contentControlImage;
+    } 
+    /**
+     * Shows content Control properties dialog
+     * 
+     * @private
+     * @returns {void}
+     */
+    public showContentPropertiesDialog(): void {
+        if (this.contentControlPropertiesDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.contentControlPropertiesDialogModule.show();
+        } else {
+            this.checkModuleInjection('ContentControlPropertiesDialog', this.enableContentControlPropertiesDialog);
         }
     }
     /**
@@ -2268,6 +2454,21 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 modules.push({
                     member: 'TableDialog', args: [this.documentHelper]
                 });
+            }
+            if (this.enableDateContentDialog){
+                modules.push({
+                    member: 'DateContentDialog', args: [this.documentHelper]
+                })
+            }
+            if (this.enablePicContentControlDialog) {
+                modules.push({
+                    member: 'PicContentControlDialog', args: [this.documentHelper]
+                });
+            }
+            if (this.enableContentControlPropertiesDialog){
+                modules.push({
+                    member: 'ContentControlPropertiesDialog', args: [this.documentHelper]
+                })
             }
             if (this.enableBookmarkDialog) {
                 modules.push({
@@ -2571,6 +2772,23 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Copy': 'Copy',
         'Paste': 'Paste',
         'Hyperlink': 'Hyperlink',
+        'Remove Content Control': 'Remove Content Control',
+        'Content Control Properties':'Content Control Properties',
+        'Remove content control when contents are edited' : 'Remove content control when contents are edited',
+        'Content control cannot be deleted':'Content control cannot be deleted',
+        'Contents cannot be edited' : 'Contents cannot be edited',
+        'Plain Text properties' : 'Plain Text properties',
+        'Allow carriage returns':'Allow carriage returns',
+        'Drop_Down List properties':'Drop_Down List properties',
+        'Display Text' : 'Display Text',
+        'Locking' : 'Locking',
+        'Tag' : 'Tag',
+        'Value' : 'Value',
+        'PictureContentControl': 'PictureContentControl',
+        'Upload from computer': 'Upload from computer',
+        'Picture':'Picture',
+        'Choose an item': 'Choose an item',
+        'Insert Pictures':'Insert Pictures',
         'Open Hyperlink': 'Open Hyperlink',
         'Copy Hyperlink': 'Copy Hyperlink',
         'Remove Hyperlink': 'Remove Hyperlink',
@@ -2884,41 +3102,244 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     };
     /* eslint-enable */
     // Public Implementation Starts
-    /**
-     * Opens the given Sfdt text.
-     *
-     * @param {string} sfdtText Specifies the sfdt text.
-     * @returns {void}
-     */
-    public open(sfdtText: string): void {
-        // sfdtText = HelperMethods.sanitizeString(sfdtText);
-        if (!isNullOrUndefined(this.viewer) && !isNullOrUndefined(sfdtText) && sfdtText.length > 0) {
-            this.clearPreservedCollectionsInViewer();
-            this.documentHelper.userCollection.push('Everyone');
-            this.documentHelper.lists = [];
-            this.documentHelper.abstractLists = [];
-            this.documentHelper.styles = new WStyles();
-            this.documentHelper.cachedPages = [];
-            this.clearSpellCheck();
-            if (this.isSpellCheck) {
-                if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
-                    this.documentHelper.triggerElementsOnLoading = true;
-                    this.documentHelper.triggerSpellCheck = true;
-                }
-            }
-            if (!isNullOrUndefined(sfdtText) && this.viewer) {
-                let incrementalOps: Record<string, ActionInfo[]> = {};
-                this.documentHelper.setDefaultDocumentFormat();
-                this.documentHelper.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText, incrementalOps), incrementalOps);
-            }
-            if (this.isSpellCheck) {
-                if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
-                    this.documentHelper.triggerElementsOnLoading = false;
-                    this.documentHelper.triggerSpellCheck = false;
-                }
+        /**
+         * Opens the given sfdt text or base 64 string or url.
+         *
+         * @param {string} sfdtText Specifies the sfdt text or base 64 string or url.
+         * @returns {void}
+         */    
+        public open(inputData:string):void;
+        /**
+         * Opens the given blob.
+         *
+         * @param {string} blob Specifies the Blob object containing the document data.
+         * @returns {void}
+         */
+        public open(blob:Blob):void;
+        /**
+         * Opens the given file.
+         *
+         * @param {string} file Specifies the File object containing the document data..
+         * @returns {void}
+         */
+        public open(file:File):void;
+    
+        public open(sfdtText: string | File | Blob): void {
+            // sfdtText = HelperMethods.sanitizeString(sfdtText);
+            showSpinner(this.element);
+            try {
+                if (!isNullOrUndefined(sfdtText)) {
+                    let fileName: string = this.isValidUrl(sfdtText as string);
+                    if (fileName !== null) {
+                         this.getSfdtFromUrl(sfdtText as string, fileName)
+                        .then((sfdt) => {
+                            sfdtText = sfdt;
+                            // Continue with the next steps after getting sfdt from URL
+                            this.processSfdt(sfdtText);
+                        })
+                        .catch((error) => {
+                            // Handle error
+                            console.error(error);
+                        });;
+                    } else if (this.isValidBase64(sfdtText as string)) {
+                        this.getSfdtFromBase64string(sfdtText as string)
+                        .then((sfdt) => {
+                            sfdtText = sfdt;
+                            // Continue with the next steps after getting sfdt from base64 string
+                            this.processSfdt(sfdtText);
+                        })
+                        .catch((error) => {
+                            // Handle error
+                            console.error(error);
+                        });
+                    } else if (sfdtText instanceof File) {
+                        this.convertToSfdt(sfdtText)
+                        .then((sfdt) => {
+                            sfdtText = sfdt;
+                            // Continue with the next steps after converting file to sfdt
+                            this.processSfdt(sfdtText);
+                        })
+                        .catch((error) => {
+                            // Handle error
+                            console.error(error);
+                        });
+                    } else if (sfdtText instanceof Blob) {
+                        let name: string[] = sfdtText.type.split('/');
+                        if (name[name.length - 1] === 'sfdt') {
+                            this.convertFromSfdtBlob(sfdtText)
+                                .then((sfdt) => {
+                                    sfdtText = sfdt;
+                                    // Continue with the next steps after converting from sfdt blob
+                                    this.processSfdt(sfdtText);
+                                })
+                                .catch((error) => {
+                                    // Handle error
+                                    console.error(error);
+                                });
+                        } else {
+                            this.convertFromBlob(sfdtText)
+                                .then((sfdt) => {
+                                    sfdtText = sfdt;
+                                    // Continue with the next steps after converting from blob
+                                    this.processSfdt(sfdtText);
+                                })
+                                .catch((error) => {
+                                    // Handle error
+                                    console.error(error);
+                                });
+                        }
+                    } else {
+                        this.processSfdt(sfdtText);
+                    }
+                }        
+     
+            } catch (error) {
+                hideSpinner(this.element);
+                this.failureHandler('onError');
             }
         }
-    }
+        private processSfdt(sfdtText:string) {
+            if (!isNullOrUndefined(this.viewer) && !isNullOrUndefined(sfdtText)) {
+                this.clearPreservedCollectionsInViewer();
+                this.documentHelper.userCollection.push('Everyone');
+                this.documentHelper.lists = [];
+                this.documentHelper.abstractLists = [];
+                this.documentHelper.styles = new WStyles();
+                this.documentHelper.cachedPages = [];
+                this.clearSpellCheck();
+                if (this.isSpellCheck) {
+                    if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
+                        this.documentHelper.triggerElementsOnLoading = true;
+                        this.documentHelper.triggerSpellCheck = true;
+                    }
+                }
+                if (!isNullOrUndefined(sfdtText) && this.viewer) {
+                    const incrementalOps: Record<string, ActionInfo[]> = {};
+                    this.documentHelper.setDefaultDocumentFormat();
+                    this.documentHelper.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText as string, incrementalOps), incrementalOps);
+                }
+                if (this.isSpellCheck) {
+                    if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
+                        this.documentHelper.triggerElementsOnLoading = false;
+                        this.documentHelper.triggerSpellCheck = false;
+                    }
+                }
+          }
+            hideSpinner(this.element);
+        }
+        private isValidUrl(url: string): string | null {
+            try {
+                const parsedUrl = new URL(url);
+                const pathname = parsedUrl.pathname;
+                const segments = pathname.split('/');
+                const fileName = segments.pop();
+                return fileName || null;
+            } catch (error) {
+                return null;
+            }
+        }
+        private isValidBase64(input: string): boolean {
+            try {
+                const decoded = atob(input);
+                const reencoded = btoa(decoded);
+                return reencoded === input;
+            } catch(error) {
+                return false;
+            }
+        }
+        private async getSfdtFromUrl(value: string, fileName: string): Promise<string> {
+            let documentEditor: DocumentEditor = this;
+            return new Promise((resolve, reject) => {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', value, true);
+            xhr.responseType = 'blob';
+            xhr.onload = async function () {
+                if (xhr.status === 200) {
+                    var blob = xhr.response;
+                    var formData = new FormData();
+                    formData.append('file', blob, fileName);
+                    let sfdt: string = await documentEditor.send(formData);
+                    resolve(sfdt);
+                }
+            };
+            xhr.onerror = function () {
+                reject(null);
+            };
+            xhr.send();
+            });
+        };
+        private async convertToSfdt(file: File): Promise<string> {
+            const formData: FormData = new FormData();
+            formData.append('files', file);
+            return await this.send(formData);
+        }
+        private async getSfdtFromBase64string(value: string): Promise<string> {
+            let binaryString = atob(value);
+            let byteArray = new Uint8Array(binaryString.length);
+            for (let i: number = 0; i < binaryString.length; i++) {
+                byteArray[parseInt(i.toString(), 10)] = binaryString.charCodeAt(parseInt(i.toString(), 10));
+            }
+            let blob = new Blob([byteArray], { type: 'application/octet-stream' });
+            const formData: FormData = new FormData();
+            formData.append('file', blob);
+            return await this.send(formData);
+        }
+        private async convertFromBlob(blob: Blob): Promise<string> {
+            const formData: FormData = new FormData();
+            let name: string[] = blob.type.split('/');
+            let type: string = null;
+            if (name[name.length - 1] === 'html' || name[name.length - 1] === 'rtf') {
+                type = '.' + name[name.length - 1];
+            } else {
+                type = blob.type;
+            }
+            formData.append('files', blob, type);
+            return await this.send(formData);
+        }
+        private send(formData: FormData): Promise<string> {
+            let serviceUrl: string = this.serviceUrl + 'Import';
+            return new Promise((resolve, reject) => {
+                const ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
+                ajax.url = serviceUrl;
+                ajax.onSuccess = (result: any) => {
+                    resolve(result.data);
+                };
+                ajax.onFailure = this.failureHandler.bind(this);
+                ajax.onError = this.failureHandler.bind(this);
+                ajax.customHeaders = this.headers;
+                const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'Import', headers: this.headers, timeout: 0, cancel: false, withCredentials: false };
+                this.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
+                if (httprequestEventArgs.cancel) {
+                    reject(null);
+                } else {
+                    ajax.send(formData);
+                }
+            });
+        }
+        private convertFromSfdtBlob(blob: Blob): Promise<string> {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const text = (event.target as FileReader).result as string;
+                    resolve(text);
+                };
+                reader.readAsText(blob);
+            });
+        }
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        private failureHandler(args: any): void {
+            const locale: L10n = new L10n('documenteditor', this.defaultLocale);
+            if (args.name === 'onError') {
+                DialogUtility.alert({
+                    content: locale.getConstant('Error in establishing connection with web server'),
+                    closeOnEscape: true, showCloseIcon: true,
+                    position: { X: 'center', Y: 'center' }
+                }).enableRtl = this.enableRtl;
+            } else if (args === 'onError') {
+                alert(locale.getConstant('Failed to load the file'));
+                //this.fireServiceFailure(args);
+            }
+        }
     /**
      * Scrolls view to start of the given page number if exists.
      *
@@ -2943,13 +3364,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableEditor = this.enableImageResizer = this.enableEditorHistory
             = this.enableHyperlinkDialog = this.enableTableDialog = this.enableBookmarkDialog
             = this.enableTableOfContentsDialog = this.enableFootnoteAndEndnoteDialog
-            = this.enablePageSetupDialog = this.enableStyleDialog
+            = this.enablePageSetupDialog = this.enableStyleDialog = this.enableDateContentDialog
+            = this.enablePicContentControlDialog
+            = this.enableContentControlPropertiesDialog
             = this.enableListDialog = this.enableParagraphDialog = this.enableFontDialog
             = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
             = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment
             = this.enableFormField = this.enableColumnsDialog = true;
         /* eslint-disable-next-line max-len */
-        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, TabDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, ColumnsDialog);
+        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, TabDialog, DatePickerDialog, PicContentControlDialog, ContentControlPropertiesDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, ColumnsDialog);
     }
     /**
      * Resizes the component and its sub elements based on given size or container size.
@@ -2980,11 +3403,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.collaborativeEditingHandlerModule.updateCaretPosition();
         }
     }
-    /**
+     /**
      * Resize Document Editor
      * @private
      */
-    public triggerResize(): void{
+     public triggerResize(): void{
         if (this) {
             setTimeout(() => {
                 if (this) {
@@ -3068,7 +3491,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         for (let i: number = 0; i < formFields.length; i++) {
             if (isNullOrUndefined(name) || name === formFields[parseInt(i.toString(), 10)].formFieldData.name) {
                 if (formFields[parseInt(i.toString(), 10)].formFieldData instanceof TextFormField) {
-                    this.editorModule.updateFormField(formFields[parseInt(i.toString(), 10)], (formFields[parseInt(i.toString(), 10)].formFieldData as TextFormField).defaultValue, true);
+                    this.editorModule.updateFormField(formFields[parseInt(i.toString(), 10)], (formFields[parseInt(
+                        i.toString(), 10)].formFieldData as TextFormField).defaultValue, true);
                 } else if (formFields[parseInt(i.toString(), 10)].formFieldData instanceof CheckBoxFormField) {
                     /* eslint-disable-next-line max-len */
                     this.editorModule.toggleCheckBoxFormField(formFields[parseInt(i.toString(), 10)], true, (formFields[parseInt(i.toString(), 10)].formFieldData as CheckBoxFormField).defaultValue);
@@ -3095,7 +3519,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             for (let j: number = 0; j < formField.length; j++) {
                 if (formField[parseInt(j.toString(), 10)].formFieldData.name === fieldName) {
                     if (formField[parseInt(j.toString(), 10)].formFieldData instanceof CheckBoxFormField) {
-                        this.editorModule.toggleCheckBoxFormField(formField[parseInt(j.toString(), 10)], true, formFieldData.value as boolean);
+                        this.editorModule.toggleCheckBoxFormField(formField[parseInt(j.toString(), 10)],
+                                                                  true, formFieldData.value as boolean);
                     } else if (formField[parseInt(j.toString(), 10)].formFieldData instanceof TextFormField) {
                         this.editorModule.updateFormField(formField[parseInt(j.toString(), 10)], formFieldData.value as string);
                     } else if (formField[parseInt(j.toString(), 10)].formFieldData instanceof DropDownFormField) {
@@ -3140,6 +3565,131 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         return data;
     }
     /**
+     * Imports content control data and returns the processed content control information.
+     * 
+     * @param {ContentControlInfo[]} contentControlInfo - The array of content control information to be imported.
+     * @returns {ContentControlInfo[]} The processed content control information.
+     */
+    public importContentControlData(contentControlInfo: ContentControlInfo[]): ContentControlInfo[]{
+        for (let i: number = 0; i < contentControlInfo.length; i++) {
+            const contentInfo: ContentControlInfo = contentControlInfo[parseInt(i.toString(), 10)];
+            for (let j: number = 0; j < this.documentHelper.contentControlCollection.length; j++) {
+                const contentControl: ContentControl = this.documentHelper.contentControlCollection[parseInt(j.toString(), 10)];
+                if (contentInfo.title === contentControl.contentControlProperties.title) {
+                    this.editorModule.updateContentControl(contentControl, contentInfo.value);
+                }
+            }
+        }
+        return[];
+    }
+    /**
+     * Exports the content control values.
+     *
+     * @returns {ContentControlInfo[]} The array of content control data.
+     */
+    public exportContentControlData(): ContentControlInfo[] {
+        this.selection.contentControleditRegionHighlighters.clear();
+        this.selection.isHighlightContentControlEditRegion = true;
+        const data: ContentControlInfo[] = [];
+        const properties: ContentControl[] = this.documentHelper.contentControlCollection;
+        for (const contentControl of properties) {
+            if (contentControl instanceof ContentControl) {
+                const contentControlData: ContentControlInfo = { title: '', tag: '', value: '', canDelete: false, canEdit: false, type: contentControl.contentControlProperties.type };
+                contentControlData.title = contentControl.contentControlProperties.title;
+                contentControlData.tag = contentControl.contentControlProperties.tag;
+                if (contentControl.contentControlProperties.lockContentControl) {
+                    contentControlData.canDelete = true;
+                }
+                if (contentControl.contentControlProperties.lockContents) {
+                    contentControlData.canEdit = true;
+                }
+                const element:ElementBox = contentControl.nextElement;
+                if (contentControl.contentControlProperties.type === 'Picture') {
+                    if (element instanceof ImageElementBox) {
+                        contentControlData.value = this.documentHelper.getImageString(element);
+                    }
+                } else if (contentControl.contentControlProperties.type === 'CheckBox') {
+                    contentControlData.value = String(contentControl.contentControlProperties.isChecked);
+                } else if (contentControl.contentControlProperties.type === 'Date') {
+                    contentControlData.value = (element as TextElementBox).text;
+                } else if (contentControl.contentControlProperties.type === 'ComboBox' || contentControl.contentControlProperties.type === 'DropDownList') {
+                    contentControlData.value = this.getContentControlValue(element as TextElementBox);
+                } else {
+                    contentControlData.value = this.getContentControlValueForText(contentControl);
+                }
+
+                data.push(contentControlData);
+            }
+        }
+        return data;
+    }    
+    /**
+     * Resets the content control data.
+     * @param {ContentControlInfo[]} contentControlInfo - The array of content control information to be reset
+     * @returns void
+     */
+    public resetContentControlData(contentControInfo: ContentControlInfo[]): void {
+        for (let i = 0; i < contentControInfo.length; i++) {
+            let contentInfo: ContentControlInfo = contentControInfo[parseInt(i.toString(), 10)];
+            for (let j = 0; j < this.documentHelper.contentControlCollection.length; j++) {
+                let contentControl: ContentControl = this.documentHelper.contentControlCollection[parseInt(j.toString(), 10)];
+                if (contentInfo.title === contentControl.contentControlProperties.title) {
+                    this.editorModule.updateContentControl(contentControl, contentInfo.value, true);
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {String}
+     */
+    public getContentControlValue(element: TextElementBox): string {
+        let text: string = '';
+        while (element) {
+            if (element instanceof ContentControl) {
+                break;
+            }
+            if (element instanceof TextElementBox) {
+                text += element.text;
+            }
+            element = element.nextElement as TextElementBox;
+        }
+        return text;
+    }
+    /**
+     * @private
+     * @returns {String}
+     */
+    public getContentControlValueForText(element: ContentControl): string {
+        let text: string = '';
+        let startIndex: number = element.line.children.indexOf(element) + 1;
+        let skip: boolean = false;
+        if (this.selection.contentControleditRegionHighlighters.containsKey(element)) {
+            let contentInfo: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.selection.contentControleditRegionHighlighters.get(element);
+            for (let i = 0; i < contentInfo.keys.length; i++) {
+                let line: LineWidget = contentInfo.keys[parseInt(i.toString(), 10)];
+                if (i > 0 && line.paragraph !== contentInfo.keys[i - 1].paragraph) {
+                    text += '/n';
+                }
+                for (let j = startIndex; j < line.children.length; j++) {
+                    startIndex = 0;
+                    let textElement: ElementBox = line.children[parseInt(j.toString(), 10)] as ElementBox;
+                    if (textElement instanceof TextElementBox) {
+                        text += textElement.text;
+                    }
+                    if (textElement instanceof ContentControl) {
+                        skip = true;
+                        break;
+                    }   
+                }
+                if (skip) {
+                    break;
+                }
+            }
+        }
+        return text;
+    }
+    /**
      * Updates the fields in the current document.
      * Currently cross reference field only supported.
      *
@@ -3154,7 +3704,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             const code: string = this.selectionModule.getFieldCode(field);
             if (code.toLowerCase().trim().indexOf('ref ') === 0) {
                 const fieldPara: ParagraphWidget = field.line.paragraph;
-                if(!isNullOrUndefined(fieldPara)
+                if (!isNullOrUndefined(fieldPara)
                     && !isNullOrUndefined(this.selectionModule)
                     && !isNullOrUndefined(this.selectionModule.getPage(fieldPara))) {
                     this.selectionModule.updateRefField(field);
@@ -3221,7 +3771,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
             //get the image data from the canvas
             const imageData: string = this.documentHelper.render.pageCanvas.toDataURL();
-            (this.documentHelper.render.pageCanvas as DocumentCanvasElement).getContext("2d").renderedPath = "";
+            (this.documentHelper.render.pageCanvas as DocumentCanvasElement).getContext('2d').renderedPath = '';
             this.documentHelper.render.isExporting = false;
             return imageData;
         }
@@ -3304,7 +3854,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     const blob: Blob = new Blob([jsonString], {
                         type: 'application/json'
                     });
-                    const archiveItem: ZipArchiveItem = new ZipArchiveItem(blob, "sfdt");
+                    const archiveItem: ZipArchiveItem = new ZipArchiveItem(blob, 'sfdt');
                     const mArchive: ZipArchive = new ZipArchive();
                     mArchive.addItem(archiveItem);
                     mArchive.saveAsBlob().then((blob: Blob): void => {
@@ -3325,11 +3875,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private zipArchiveBlobToSfdtFile(blob: Blob, fileName: string): void {
-        let reader: FileReader = new FileReader();
+        const reader: FileReader = new FileReader();
         reader.readAsDataURL(blob);
-        reader.onload = function () {
-            let dataUrl: string = reader.result as string;
-            let base64 = dataUrl.split(',')[1];
+        reader.onload = function () : void {
+            const dataUrl: string = reader.result as string;
+            const base64: string = dataUrl.split(',')[1];
             const jsonString: any = {};
             jsonString.sfdt = base64;
             const blob: Blob = new Blob([JSON.stringify(jsonString)], {
@@ -3337,7 +3887,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             });
             Save.save(fileName + '.sfdt', blob);
         };
-    };
+    }
     /**
      * Saves the document as blob.
      *
@@ -3384,10 +3934,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         });
     }
     private getBase64StringFromBlob(blob: Blob): Promise<string> {
-        return new Promise((resolve: (value: string | PromiseLike<string>) => void, reject: (value: string | PromiseLike<string>) => void) => {
+        return new Promise((resolve: (value: string | PromiseLike<string>) => void,
+                            reject: (value: string | PromiseLike<string>) => void) => {
             const reader: FileReader = new FileReader();
             reader.readAsDataURL(blob);
-            reader.onload = function () {
+            reader.onload = function () : void {
                 const dataUrl: string = reader.result as string;
                 const base64: string = dataUrl.split(',')[1];
                 resolve(base64);
@@ -3415,7 +3966,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.editorModule.intializeDefaultStyles();
                 const style: WStyle = this.documentHelper.styles.findByName('Normal') as WStyle;
                 for (let i: number = 0; i < sections.length; i++) {
-                    let paragraph: ParagraphWidget = sections[parseInt(i.toString(), 10)].childWidgets[0] as ParagraphWidget;
+                    const paragraph: ParagraphWidget = sections[parseInt(i.toString(), 10)].childWidgets[0] as ParagraphWidget;
                     paragraph.paragraphFormat.baseStyle = style;
                     paragraph.paragraphFormat.listFormat.baseStyle = style;
                 }
@@ -3468,51 +4019,60 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public showDialog(dialogType: DialogType): void {
         switch (dialogType) {
-            case 'Hyperlink':
-                this.showHyperlinkDialog();
-                break;
-            case 'Table':
-                this.showTableDialog();
-                break;
-            case 'Bookmark':
-                this.showBookmarkDialog();
-                break;
-            case 'TableOfContents':
-                this.showTableOfContentsDialog();
-                break;
-            case 'PageSetup':
-                this.showPageSetupDialog();
-                break;
-            case 'Columns':
-                this.showColumnsDialog();
-                break;
-            case 'List':
-                this.showListDialog();
-                break;
-            case 'Styles':
-                this.showStylesDialog();
-                break;
-            case 'Style':
-                this.showStyleDialog();
-                break;
-            case 'Paragraph':
-                this.showParagraphDialog();
-                break;
-            case 'Font':
-                this.showFontDialog();
-                break;
-            case 'TableProperties':
-                this.showTablePropertiesDialog();
-                break;
-            case 'BordersAndShading':
-                this.showBordersAndShadingDialog();
-                break;
-            case 'TableOptions':
-                this.showTableOptionsDialog();
-                break;
-            case 'SpellCheck':
-                this.showSpellCheckDialog();
-                break;
+        case 'Hyperlink':
+            this.showHyperlinkDialog();
+            break;
+        case 'Table':
+            this.showTableDialog();
+            break;
+        case 'Bookmark':
+            this.showBookmarkDialog();
+            break;
+        case 'TableOfContents':
+            this.showTableOfContentsDialog();
+            break;
+        case 'PageSetup':
+            this.showPageSetupDialog();
+            break;
+        case 'Columns':
+            this.showColumnsDialog();
+            break;
+        case 'List':
+            this.showListDialog();
+            break;
+        case 'Styles':
+            this.showStylesDialog();
+            break;
+        case 'Style':
+            this.showStyleDialog();
+            break;
+        case 'Paragraph':
+            this.showParagraphDialog();
+            break;
+        case 'Font':
+            this.showFontDialog();
+            break;
+        case 'TableProperties':
+            this.showTablePropertiesDialog();
+            break;
+        case 'BordersAndShading':
+            this.showBordersAndShadingDialog();
+            break;
+        case 'TableOptions':
+            this.showTableOptionsDialog();
+            break;
+        case 'SpellCheck':
+            this.showSpellCheckDialog();
+            break;
+        case 'DatepickerContentControl':
+            this.showDateContentDialog();
+            break;
+        case 'PictureContentControl':
+            this.showPicContentControlDialog();
+            break;
+        case 'ContentControlProperties':
+            this.showContentPropertiesDialog();
+            break;
             // case 'TabStop':
             //     this.showTabDialog();
             //     break;
@@ -3612,11 +4172,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.documentHelper = undefined;
     }
     /**
+     * @param {WStyle} styleInCollection - Specifies the style in collection.
+     * @param {WStyle} style - Specifies the style.
      * @private
+     * @returns {void} - Returns the void.
      */
     public updateStyle(styleInCollection: WStyle, style: WStyle): void {
         if (!isNullOrUndefined(this.styleDialogModule)) {
-            let type: string = style.type == 'Paragraph' ? !isNullOrUndefined(style.link) ? 'Linked Style' : 'Paragraph' : 'Character';
+            const type: string = style.type === 'Paragraph' ? !isNullOrUndefined(style.link) ? 'Linked Style' : 'Paragraph' : 'Character';
             styleInCollection.type = this.styleDialogModule.getTypeValue(type);
             styleInCollection.basedOn = style.basedOn;
 
@@ -3624,12 +4187,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 styleInCollection.next = style.next;
                 (styleInCollection as WParagraphStyle).characterFormat.destroy();
                 (styleInCollection as WParagraphStyle).characterFormat.copyFormat((style as WParagraphStyle).characterFormat);
-                let oldListId: number = (styleInCollection as WParagraphStyle).paragraphFormat.listFormat.listId;
+                const oldListId: number = (styleInCollection as WParagraphStyle).paragraphFormat.listFormat.listId;
                 (styleInCollection as WParagraphStyle).paragraphFormat.copyFormat((style as WParagraphStyle).paragraphFormat);
                 // this.updateList();
                 styleInCollection.link = style.link;
                 if (!isNullOrUndefined(oldListId) && oldListId > -1) {
-                    let list = this.documentHelper.getListById(oldListId);
+                    const list: WList = this.documentHelper.getListById(oldListId);
                     if (!isNullOrUndefined(list)) {
                         this.documentHelper.lists.splice(this.documentHelper.lists.indexOf(list), 1);
                     }
@@ -3667,7 +4230,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
+     * @param {string} name - Specifies the name.
+     * @param {number} listId - Specifies the list id.
      * @private
+     * @returns {void} - Returns the void.
      */
     public setStyleData(name: string, listId?: number): void {
         if (!this.enableCollaborativeEditing) {
@@ -3676,7 +4242,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.isSettingOp = true;
         let operation: Operation;
         if (!isNullOrUndefined(name) && !isNullOrUndefined(this.documentHelper.owner.sfdtExportModule)) {
-            let style = this.documentHelper.styles.findByName(name);
+            const style: Object = this.documentHelper.styles.findByName(name);
             if (!isNullOrUndefined(style)) {
                 let styleObject = this.getStyleObject(style, listId);
                 if (!isNullOrUndefined(style) && this.enableCollaborativeEditing) {
@@ -3690,7 +4256,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.fireContentChange();
     }
-
     /**
      * 
      * @private
@@ -3702,14 +4267,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNullOrUndefined(style)) {
             const keyIndex: number = this.documentHelper.owner.sfdtExportModule.keywordIndex;
             this.documentHelper.owner.sfdtExportModule.keywordIndex = 1;
-            const styleData = this.documentHelper.owner.sfdtExportModule.writeStyle(style as WStyle);
-            const styleObject = {
+            const styleData: any = this.documentHelper.owner.sfdtExportModule.writeStyle(style as WStyle);
+            const styleObject: any = {
                 'optimizeSfdt': true,
                 'sty': [styleData]
             };
-            if (!isNullOrUndefined((style as WStyle).link)) {
+            if (this.editorModule.isLinkedStyle((style as WStyle).name)) {
                 const linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).name + ' Char') as WStyle;
-                const linkedStyleData = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
+                const linkedStyleData: any = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
                 styleObject.sty.push(linkedStyleData);
             }
             if (!isNullOrUndefined(listId) && listId > -1) {
@@ -3726,7 +4291,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * @param {string} name - Specifies the name.
+     * @param {boolean} value - Specifies the value.
+     * @param {string} hashValue - Specifies the hash value.
+     * @param {string} saltValue - Specifies the salt value.
+     * @param {ProtectionType} protectionType - Specifies the protection type.
      * @private
+     * @returns {void} - Returns the void.
      */
     public getSettingData(name: string, value: boolean, hashValue?: string, saltValue?: string, protectionType?: ProtectionType): void {
         if (!this.enableCollaborativeEditing || this.editorModule.isRemoteAction) {
@@ -3740,16 +4311,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 saltValue: saltValue,
                 hashValue: hashValue,
                 protectionType: protectionType
-            }
+            };
             operation = {
                 text: name,
                 protectionData: protectionData
-            }
+            };
         } else {
             operation = {
                 text: name,
                 enableTrackChanges: value
-            }
+            };
         }
         if (!this.skipSettingsOps) {
             this.documentSettingOps.push(operation);
@@ -3838,6 +4409,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.tablePropertiesDialogModule) {
             this.tablePropertiesDialogModule.destroy();
             this.tablePropertiesDialogModule = undefined;
+        }
+        if(this.contentControlPropertiesDialogModule){
+            this.contentControlPropertiesDialogModule.destroy();
+            this.contentControlPropertiesDialogModule = undefined;
+        }
+        if (this.picContentControlDialogModule) {
+            this.picContentControlDialogModule.destroy();
+            this.picContentControlDialogModule = undefined;
         }
         if (this.bordersAndShadingDialogModule) {
             this.bordersAndShadingDialogModule.destroy();

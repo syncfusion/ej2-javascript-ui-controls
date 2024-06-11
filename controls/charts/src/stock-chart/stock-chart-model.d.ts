@@ -93,8 +93,6 @@ export interface StockChartModel extends ComponentModel{
 
     /**
      * Options to configure the vertical axis.
-     *
-     * @complex {opposedPosition=true, labelPosition=AxisPosition.Outside}
      */
 
     primaryYAxis?: StockChartAxisModel;

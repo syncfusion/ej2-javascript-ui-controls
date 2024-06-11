@@ -9,7 +9,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
  * Defines the items of Ribbon.
  */
 export class RibbonButton {
-    private parent: Ribbon
+    private parent: Ribbon;
 
     constructor(parent: Ribbon) {
         this.parent = parent;
@@ -58,7 +58,12 @@ export class RibbonButton {
         buttonEle.onclick = (e: Event) => {
             if (btnSettings.clicked) { btnSettings.clicked.call(this, e); }
         };
-        buttonEle.setAttribute('aria-label', btnSettings.content);
+        if (btnSettings.content) {
+            buttonEle.setAttribute('aria-label', btnSettings.content);
+        }
+        else {
+            buttonEle.setAttribute('aria-label', 'button');
+        }
     }
 
     /**

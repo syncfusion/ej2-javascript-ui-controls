@@ -1587,3 +1587,57 @@ describe('Gantt toolbar action with adaptive', () => {
         expect(toolbar.getElementsByClassName('e-toolbar-item').length).toBe(15);
     });
 });
+describe('Gantt with crtical path', () => {
+    Gantt.Inject(Edit, Toolbar, Selection, Filter,CriticalPath);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowSelection: true,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    segments: 'Segments'
+                },
+                loadingIndicator: { indicatorType: 'Shimmer' },
+                enableCriticalPath:false,
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Multiple',
+                    enableToggle: false
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                load: function() {
+                    this.isAdaptive = true;
+                },
+                toolbar: ['ZoomIn','ZoomOut','ZoomToFit','Add', 'Edit', 'Update', 'Delete', 'Cancel', 'CriticalPath'],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('gantt with critical path', () => {
+        let toolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_critical-path') as HTMLElement;
+        triggerMouseEvent(toolbar, 'click');
+    });
+});

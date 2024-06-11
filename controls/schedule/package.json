@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-schedule",
-	"version": "25.2.6",
+	"version": "22.9.0",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-schedule.umd.min.js",
@@ -16,7 +16,8 @@
 		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-navigations": "*",
-		"@syncfusion/ej2-popups": "*"
+		"@syncfusion/ej2-popups": "*",
+		"@types/requirejs": "^2.1.37"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

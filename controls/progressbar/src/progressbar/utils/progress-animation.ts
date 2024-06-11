@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Animation, AnimationOptions, isNullOrUndefined, animationMode } from '@syncfusion/ej2-base';
 import { degreeToLocation, effect, getPathArc } from '../utils/helper';
 import { ProgressBar } from '../progressbar';
@@ -9,7 +7,16 @@ import { lineCapRadius, completeAngle } from '../model/constant';
  */
 export class ProgressAnimation {
 
-    /** Linear Animation */
+    /**
+     * Performs linear animation on the specified element.
+     *
+     * @param {Element} element - The HTML element to animate.
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {number} delay - The delay before starting the animation, in milliseconds.
+     * @param {number} previousWidth - The previous width of the progress.
+     * @param {Element} active - The active element to control the animation.
+     * @returns {void}
+     */
     public doLinearAnimation(element: Element, progress: ProgressBar, delay: number, previousWidth?: number, active?: Element): void {
         const animation: Animation = new Animation({});
         const linearPath: HTMLElement = <HTMLElement>element;
@@ -24,7 +31,7 @@ export class ProgressAnimation {
         const rtlX: number = parseInt(x, 10) - end;
         linearPath.style.visibility = 'hidden';
         animation.animate(linearPath, {
-            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000: duration,
+            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000 : duration,
             delay: delay,
             progress: (args: AnimationOptions): void => {
                 progress.cancelResize = true;
@@ -81,7 +88,16 @@ export class ProgressAnimation {
         });
     }
 
-    /** Linear Indeterminate */
+    /**
+     * Initiates linear animation for an indeterminate progress bar.
+     *
+     * @param {Element} element - The HTML element representing the progress bar.
+     * @param {number} progressWidth - The width of the progress bar.
+     * @param {number} thickness - The thickness of the progress bar.
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {Element} clipPath - The SVG clip path element to control the animation.
+     * @returns {void}
+     */
     public doLinearIndeterminate(
         element: Element, progressWidth: number, thickness: number, progress: ProgressBar, clipPath: Element
     ): void {
@@ -94,7 +110,7 @@ export class ProgressAnimation {
         const end: number = (progress.progressRect.x + progress.progressRect.width) + ((width) ? (parseInt(width, 10)) : progressWidth);
         const duration: number = (!progress.enableProgressSegments) ? progress.animation.duration : progress.animation.duration + 1000;
         animation.animate(<HTMLElement>clipPath, {
-            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000: duration,
+            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000 : duration,
             delay: 0,
             progress: (args: AnimationOptions): void => {
                 if (progress.enableRtl && !(progress.cornerRadius === 'Round4px')) {
@@ -129,12 +145,19 @@ export class ProgressAnimation {
         });
     }
 
-    /** Linear striped */
+    /**
+     * Performs striped animation on the specified element.
+     *
+     * @param {Element} element - The HTML element to animate.
+     * @param {ProgressBar} progress - The progress bar object.
+     * @param {number} value - The value indicating the progress of the animation.
+     * @returns {void}
+     */
     public doStripedAnimation(element: Element, progress: ProgressBar, value: number): void {
         const animation: Animation = new Animation({});
         const point: number = 1000 / progress.animation.duration;
         animation.animate(<HTMLElement>element, {
-            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000: progress.animation.duration,
+            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000 : progress.animation.duration,
             delay: progress.animation.delay,
             progress: (): void => {
                 value += (progress.enableRtl) ? -point : point;
@@ -148,7 +171,23 @@ export class ProgressAnimation {
         });
     }
 
-    /** Circular animation */
+    /**
+     * Initiates circular animation on the specified element.
+     *
+     * @param {number} x - The x-coordinate of the center of the circle.
+     * @param {number} y - The y-coordinate of the center of the circle.
+     * @param {number} radius - The radius of the circle.
+     * @param {number} progressEnd - The end value of the progress.
+     * @param {number} totalEnd - The total end value of the progress.
+     * @param {Element} element - The HTML element representing the circular progress.
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {number} thickness - The thickness of the circular progress.
+     * @param {number} delay - The delay before starting the animation, in milliseconds.
+     * @param {number} startValue - The starting value of the progress.
+     * @param {number} previousTotal - The previous total value of the progress.
+     * @param {Element} active - The active element to control the animation.
+     * @returns {void}
+     */
     public doCircularAnimation(
         x: number, y: number, radius: number, progressEnd: number, totalEnd: number,
         element: Element, progress: ProgressBar, thickness: number, delay: number, startValue?: number,
@@ -179,7 +218,7 @@ export class ProgressAnimation {
         const endPos: number = (!isNullOrUndefined(startValue)) ? totalEnd - previousTotal : totalEnd;
         circularPath.setAttribute('visibility', 'Hidden');
         animation.animate(circularPath, {
-            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000: duration,
+            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000 : duration,
             delay: delay,
             progress: (args: AnimationOptions): void => {
                 progress.cancelResize = true;
@@ -214,14 +253,27 @@ export class ProgressAnimation {
         });
     }
 
-    /** Circular indeterminate */
+    /**
+     * Initiates circular animation for an indeterminate progress bar.
+     *
+     * @param {Element} circularProgress - The HTML element representing the circular progress bar.
+     * @param {ProgressBar} progress - The progress bar object.
+     * @param {number} start - The starting value of the progress.
+     * @param {number} end - The ending value of the progress.
+     * @param {number} x - The x-coordinate of the center of the circle.
+     * @param {number} y - The y-coordinate of the center of the circle.
+     * @param {number} radius - The radius of the circle.
+     * @param {number} thickness - The thickness of the circular progress bar.
+     * @param {Element} clipPath - The SVG clip path element to control the animation.
+     * @returns {void}
+     */
     public doCircularIndeterminate(
         circularProgress: Element, progress: ProgressBar,
         start: number, end: number, x: number, y: number, radius: number, thickness: number, clipPath: Element
     ): void {
         const animation: Animation = new Animation({});
         const pathRadius: number = radius + ((!progress.enableProgressSegments) ? (thickness / 2) : 0);
-        const duration: number = (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000: progress.animation.duration;
+        const duration: number = (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000 : progress.animation.duration;
         const value: number = (!progress.enableProgressSegments) ? 6000 / duration : 4000 / duration;
         animation.animate((<HTMLElement>clipPath), {
             progress: (): void => {
@@ -241,7 +293,17 @@ export class ProgressAnimation {
         });
     }
 
-    /** To do the label animation for progress bar */
+    /**
+     * Initiates label animation for a progress bar.
+     *
+     * @param {Element} labelPath - The SVG path element representing the label.
+     * @param {number} start - The starting value of the progress.
+     * @param {number} end - The ending value of the progress.
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {number} delay - The delay before starting the animation, in milliseconds.
+     * @param {number} textSize - The size of the text.
+     * @returns {void}
+     */
     public doLabelAnimation(labelPath: Element, start: number, end: number, progress: ProgressBar, delay: number, textSize?: number): void {
         const animation: Animation = new Animation({});
         const label: Animation = new Animation({});
@@ -263,7 +325,7 @@ export class ProgressAnimation {
             endPos = (progress.enableRtl) ? startPos - posX : posX - startPos;
         }
         animation.animate(<HTMLElement>labelPath, {
-            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000: progress.animation.duration,
+            duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000 : progress.animation.duration,
             delay: delay,
             progress: (args: AnimationOptions): void => {
                 progress.cancelResize = true;
@@ -311,7 +373,15 @@ export class ProgressAnimation {
         });
     }
 
-    /** To do the annotation animation for circular progress bar */
+    /**
+     * Initiates annotation animation for a circular progress bar.
+     *
+     * @param {Element} circularPath - The SVG path element representing the circular progress bar.
+     * @param {ProgressBar} progress - The progress bar object.
+     * @param {number} previousEnd - The previous end value of the progress.
+     * @param {number} previousTotal - The previous total value of the progress.
+     * @returns {void}
+     */
     public doAnnotationAnimation(circularPath: Element, progress: ProgressBar, previousEnd?: number, previousTotal?: number): void {
         const animation: Animation = new Animation({});
         let value: number = 0;
@@ -345,7 +415,7 @@ export class ProgressAnimation {
             annotatElementChanged.innerHTML = annotateValue + '%';
         } else {
             animation.animate((<HTMLElement>circularPath), {
-                duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000: progress.animation.duration,
+                duration: (progress.animation.duration === 0 && animationMode === 'Enable') ? 2000 : progress.animation.duration,
                 delay: progress.animation.delay,
                 progress: (args: AnimationOptions): void => {
                     progress.cancelResize = true;

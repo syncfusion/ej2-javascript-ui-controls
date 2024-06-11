@@ -26,13 +26,8 @@ $ddl-back-icon-padding: 0 8px !default;
 $ddl-popup-shadow: $shadow-md !default;
 $ddl-filter-margin: 0 !default;
 $ddl-icon-hover-bg: rgba($content-text-color, .08) !default;
-
-// Small Size
 $ddl-small-list-font-size: $text-xs !default;
-
-// touch small
 $ddl-bigger-small-list-font-size: $text-sm !default;
-
 @include export-module('dropdownlist-Material3') {
   .e-ddl.e-control-wrapper .e-ddl-icon::before {
     transform: rotate(0deg);
@@ -128,7 +123,6 @@ $ddl-bigger-small-list-font-size: $text-sm !default;
     border-bottom-width: 0;
   }
 
-  // small size
   #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
   .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
   .e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
@@ -147,7 +141,6 @@ $ddl-bigger-small-list-font-size: $text-sm !default;
     padding: 4px 5px 4px 12px;
   }
 
-  // Touch Small
   .e-bigger.e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
   .e-bigger.e-small#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
   .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
@@ -173,7 +166,6 @@ $ddl-bigger-small-list-font-size: $text-sm !default;
     margin: 0 4px;
   }
 
-  // outline class style for filter input
   .e-ddl.e-popup.e-outline .e-filter-parent {
     padding: 4px 8px;
   }

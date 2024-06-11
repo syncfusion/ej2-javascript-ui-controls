@@ -1,16 +1,10 @@
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable valid-jsdoc */
 import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue, animationMode } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { DataLabelSettingsModel, MarkerSettingsModel, TrendlineModel, ChartSegmentModel, ParetoOptionsModel } from '../series/chart-series-model';
-import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';
+import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement, getElement } from '../../common/utils/helper';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
-import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';
-import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
+import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue} from '../../common/utils/helper';
+import { Rect, SvgRenderer, CanvasRenderer, Size } from '@syncfusion/ej2-svg-base';
 import { ChartSeriesType, ChartShape, SeriesValueType, SplineType, StepPosition } from '../utils/enum';
 import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';
 import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';
@@ -27,9 +21,10 @@ import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { seriesRender } from '../../common/model/constants';
 import { Alignment, EmptyPointMode, LabelPosition, LegendShape, SeriesCategories, ShapeType } from '../../common/utils/enum';
 import { BoxPlotMode, Segment } from '../utils/enum';
-import { sort, getVisiblePoints, setRange } from '../../common/utils/helper';
+import { getVisiblePoints, setRange } from '../../common/utils/helper';
 import { Browser } from '@syncfusion/ej2-base';
 import { StockSeries } from '../../stock-chart/index';
+import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
 
 /**
  * Configures the data label in the series.
@@ -169,7 +164,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * Option for customizing the data label text.
      */
 
-    @Complex<FontModel>({ size: '12px', color: null, fontStyle: 'Normal', fontWeight: '400', fontFamily: null }, Font)
+    @Complex<FontModel>({ size: null, color: null, fontStyle: null, fontWeight: null, fontFamily: null }, Font)
     public font: FontModel;
 
     /**
@@ -320,48 +315,48 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
  */
 
 export class ParetoOptions extends ChildProperty<ParetoOptions> {
-    
-    /** 
-     * The fill color of the pareto line that accepts value in hex and rgba as a valid CSS color string. By default, it will take color based on theme. 
-     * 
+
+    /**
+     * The fill color of the pareto line that accepts value in hex and rgba as a valid CSS color string. By default, it will take color based on theme.
+     *
      * @default null
-     */ 
-    
+     */
+
     @Property(null)
     public fill: string;
 
-    /** 
+    /**
      * Defines the width of the pareto line series.
-     * 
+     *
      * @default 1
-     */ 
+     */
 
     @Property(1)
     public width: number;
 
-    /** 
-     * Defines the pattern of dashes and gaps to stroke. 
-     * 
-     * @default '0' 
-     */ 
+    /**
+     * Defines the pattern of dashes and gaps to stroke.
+     *
+     * @default '0'
+     */
 
     @Property('0')
     public dashArray: string;
 
-    /** 
-     * Options for displaying and customizing markers for individual points in a pareto line. 
+    /**
+     * Options for displaying and customizing markers for individual points in a pareto line.
      */
 
     @Complex<MarkerSettingsModel>(null, MarkerSettings)
     public marker: MarkerSettingsModel;
 
-    /** 
-     * By default, the axis for the Pareto line will be displayed, but this can be disabled by using the 'showAxis' property. 
-     * 
-     * @default true 
-     */ 
+    /**
+     * By default, the axis for the Pareto line will be displayed, but this can be disabled by using the 'showAxis' property.
+     *
+     * @default true
+     */
 
-    @Property(true) 
+    @Property(true)
     public showAxis: boolean;
 }
 
@@ -614,7 +609,14 @@ export class Trendline extends ChildProperty<Trendline> {
     /** @private */
     public index: number;
 
-    /** @private */
+    /**
+     * Sets the data source for the specified series in the provided chart.
+     *
+     * @private
+     * @param {Series} series - The series for which the data source is set.
+     * @param {Chart} chart - The chart in which the data source is set.
+     * @returns {void}
+     */
     public setDataSource(series: Series, chart: Chart): void {
         if (series) {
             this.points = (series as Series).points;
@@ -1103,10 +1105,11 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * Process data for the series.
      *
      * @hidden
+     * @returns {void}
      */
     public processJsonData(): void {
         let i: number = 0;
-        let point: Points = new Points();
+        const point: Points = new Points();
         const xName: string = (this instanceof Series && this.type === 'Histogram') ? 'x' : this.xName;
         const textMappingName: string = this instanceof Series && this.marker.dataLabel.name ?
             this.marker.dataLabel.name : '';
@@ -1133,11 +1136,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.getSeriesType();
         if (this.xAxis.valueType === 'Category') {
             while (i < len) {
-                point = this.dataPoint(i, textMappingName, xName);
-                this.pushCategoryData(point, i, <string>point.x);
-                this.pushData(point, i);
-                this.setEmptyPoint(point, i);
-                this.rangeColorsInterior(point);
+                this.pushCategoryPoint(point, i, textMappingName, xName);
                 i++;
             }
 
@@ -1149,35 +1148,90 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             const dateParser: Function = this.chart.intl.getDateParser(option);
             const dateFormatter: Function = this.chart.intl.getDateFormat(option);
             while (i < len) {
-                point = this.dataPoint(i, textMappingName, xName);
-                if (!isNullOrUndefined(point.x) && point.x !== '') {
-                    point.x = new Date(
-                        DataUtil.parse.parseJson({ val: point.x }).val
-                    );
-                    if (this.xAxis.valueType === 'DateTime') {
-                        point.xValue = Date.parse(point.x.toString());
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                        this.chart.isBlazor ? this.pushCategoryData(point, i, Date.parse(point.x.toString()).toString()) :
-                            this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
-                    }
-                    this.pushData(point, i);
-                    this.setEmptyPoint(point, i);
-                    //this.rangeColorsInterior(point);
-                } else {
-                    point.visible = false;
-                }
+                this.pushDateTimePoint(point, i, textMappingName, xName, dateParser, dateFormatter);
                 i++;
             }
         } else {
             while (i < len) {
-                point = this.dataPoint(i, textMappingName, xName);
-                point.xValue = <number>point.x;
-                this.pushData(point, i);
-                this.setEmptyPoint(point, i);
+                this.pushDoublePoint(point, i, textMappingName, xName);
                 i++;
             }
         }
+        this.updateSplineValue();
+    }
+
+    /**
+     * Pushes a category point to the data collection.
+     *
+     * @param {Points} point -The point to be pushed.
+     * @param {number} index -The index of the point.
+     * @param {string} textMappingName -The name of the text mapping.
+     * @param {string} xName -The name of the x-coordinate.
+     * @returns {void}
+     * @private
+     */
+    public pushCategoryPoint(point: Points, index: number, textMappingName: string, xName: string): void {
+        point = this.dataPoint(index, textMappingName, xName);
+        this.pushCategoryData(point, index, <string>point.x);
+        this.pushData(point, index);
+        this.setEmptyPoint(point, index);
+        this.rangeColorsInterior(point);
+    }
+
+    /**
+     * Pushes a double point to the data collection.
+     *
+     * @param {Points} point -The point to be pushed.
+     * @param {number} index -The index of the point.
+     * @param {string} textMappingName -The name of the text mapping.
+     * @param {string} xName -The name of the x-coordinate.
+     * @returns {void}
+     * @private
+     */
+    public pushDoublePoint(point: Points, index: number, textMappingName: string, xName: string): void {
+        point = this.dataPoint(index, textMappingName, xName);
+        point.xValue = <number>point.x;
+        this.pushData(point, index);
+        this.setEmptyPoint(point, index);
+    }
+
+    /**
+     * Pushes a DateTime point to the data collection.
+     *
+     * @param {Points} point -The point to be pushed.
+     * @param {number} index -The index of the point.
+     * @param {string} textMappingName -The name of the text mapping.
+     * @param {string} xName -The name of the x-coordinate.
+     * @param {Function} dateParser -The date parser function.
+     * @param {Function} dateFormatter -The date formatter function.
+     * @returns {void}
+     * @private
+     */
+    public pushDateTimePoint(point: Points, index: number, textMappingName: string, xName: string,
+                             dateParser: Function, dateFormatter: Function): void {
+        point = this.dataPoint(index, textMappingName, xName);
+        if (!isNullOrUndefined(point.x) && point.x !== '') {
+            point.x = new Date(
+                DataUtil.parse.parseJson({ val: point.x }).val
+            );
+            if (this.xAxis.valueType === 'DateTime') {
+                point.xValue = Date.parse(point.x.toString());
+            } else {
+                if (this.chart.isBlazor) {
+                    this.pushCategoryData(point, index, Date.parse(point.x.toString()).toString());
+                }
+                else {
+                    this.pushCategoryData(point, index, Date.parse(dateParser(dateFormatter(point.x))).toString());
+                }
+            }
+            this.pushData(point, index);
+            this.setEmptyPoint(point, index);
+        } else {
+            point.visible = false;
+        }
+    }
+
+    public updateSplineValue(): void {
         if (this instanceof Series && !(this.chart.stockChart && this.xAxis.valueType === 'DateTimeCategory')) {
             if (this.type.indexOf('Spline') > -1 || (this.drawType.indexOf('Spline') > -1 && this.chart.chartAreaType === 'PolarRadar')) {
                 const isArea: boolean = (this.type.indexOf('Area') > -1 || this.drawType.indexOf('Area') > -1);
@@ -1208,7 +1262,15 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         }
     }
 
-    private pushData(point: Points, i: number): void {
+    /**
+     * Sets the empty point values.
+     *
+     * @param {Points} point - The point to be set.
+     * @param {number} i - The index of the point.
+     * @private
+     * @returns {void}
+     */
+    public pushData(point: Points, i: number): void {
         point.index = i;
         point.yValue = <number>point.y;
         point.series = this;
@@ -1217,7 +1279,16 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.xMax = Math.max(this.xMax, point.xValue);
         this.xData.push(point.xValue);
     }
-    /** @private */
+    /**
+     * Retrieves the data point at the specified index with the given text mapping name and x-name.
+     *
+     * @protected
+     * @param {number} i - The index of the data point to retrieve.
+     * @param {string} textMappingName - The name used to map text data.
+     * @param {string} xName - The name used for the x-axis.
+     * @returns {Points} - The data point at the specified index.
+     * @private
+     */
     protected dataPoint(i: number, textMappingName: string, xName: string): Points {
         this.points[i as number] = new Points();
         const point: Points = <Points>this.points[i as number];
@@ -1282,13 +1353,24 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         return color;
     }
 
-    private getObjectValue(mappingName: string, data: Object): Object {
+    /**
+     * Pushes a category point to the data collection.
+     *
+     * @param {string} mappingName - The name of the mapping.
+     * @param {Object} data - The data to be pushed.
+     * @returns {Object} - The data point at the specified index.
+     * @private
+     */
+    public getObjectValue(mappingName: string, data: Object): Object {
         return data[mappingName as string];
     }
     /**
-     * To set empty point value based on empty point mode
+     * Sets the specified data point as an empty point at the given index.
      *
      * @private
+     * @param {Points} point - The data point to set as empty.
+     * @param {number} i - The index of the data point.
+     * @returns {void}
      */
     public setEmptyPoint(point: Points, i: number): void {
         if (!this.findVisibility(point)) {
@@ -1374,7 +1456,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         }
     }
     /**
-     * To get Y min max for the provided point seriesType XY
+     * To get Y min max for the provided point seriesType XY.
+     *
+     * @param {number} yValue - The y value used to determine the minimum and maximum values for the x and y coordinates.
+     * @returns {void}
      */
     private setXYMinMax(yValue: number): void {
         const isLogAxis: boolean = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic');
@@ -1392,7 +1477,12 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.yMax = Math.max(this.yMax, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     }
     /**
-     * To get Y min max for the provided point seriesType XY
+     * Sets the minimum and maximum values for the high and low values.
+     *
+     * @private
+     * @param {number} high - The high value used to determine the maximum value.
+     * @param {number} low - The low value used to determine the minimum value.
+     * @returns {void}
      */
     private setHiloMinMax(high: number, low: number): void {
         this.yMin = Math.min(this.yMin, Math.min((isNullOrUndefined(low) || isNaN(low)) ? this.yMin : low,
@@ -1401,9 +1491,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                                                  (isNullOrUndefined(high) || isNaN(high)) ? this.yMax : high));
     }
     /**
-     * Finds the type of the series
+     * Finds the type of the series.
      *
      * @private
+     * @returns {void}
      */
     private getSeriesType(): void {
         let type: SeriesValueType;
@@ -1432,7 +1523,16 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         }
         this.seriesType = type;
     }
-    /** @private */
+    /**
+     * Pushes category data into the series points.
+     *
+     * @protected
+     * @param {Points} point - The point to which category data will be pushed.
+     * @param {number} index - The index of the data point.
+     * @param {string} pointX - The x-value of the point.
+     * @returns {void}
+     * @private
+     */
     protected pushCategoryData(point: Points, index: number, pointX: string): void {
         if (!this.chart.tooltip.shared) {
             if (!this.visible) {
@@ -1446,14 +1546,24 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             }
             point.xValue = this.xAxis.indexLabels[pointX as string];
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            this.xAxis.labels[index as number] ? this.xAxis.labels[index as number] += ', ' + pointX :
+            if (this.xAxis.labels[index as number]) {
+                this.xAxis.labels[index as number] += ', ' + pointX;
+            }
+            else {
                 this.xAxis.labels.push(pointX);
+            }
+            // this.xAxis.labels[index as number] ? this.xAxis.labels[index as number] += ', ' + pointX :
+            //     this.xAxis.labels.push(pointX);
             point.xValue = index;
         }
     }
     /**
-     * To find average of given property
+     * Gets the average value of a member in the specified data array or current view data.
+     *
+     * @param {string} member - The member whose average is to be calculated.
+     * @param {number} i - The index of the data point.
+     * @param {Object} data - The data array from which to calculate the average. Defaults to the current view data.
+     * @returns {number} - The average value of the specified member.
      */
     private getAverage(member: string, i: number, data: Object = this.currentViewData): number {
         const previous: number = data[i - 1] ? (data[i - 1][member as string] || 0) : 0;
@@ -1462,8 +1572,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
 
     /**
-     * To find the control points for spline.
+     * Refreshes the data manager for the provided chart.
      *
+     * @param {Chart} chart - The chart whose data manager is to be refreshed.
      * @returns {void}
      * @private
      */
@@ -1574,6 +1685,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /** @private */
     private recordsCount: number;
     private isRectTypeSeries: boolean = false;
+    public removedPointIndex: number = null;
+    /** @private */
+    public isLegendClicked: boolean = false;
 }
 
 /**
@@ -1777,10 +1891,10 @@ export class Series extends SeriesBase {
     @Complex<MarkerSettingsModel>(null, MarkerSettings)
     public marker: MarkerSettingsModel;
 
-    /** 
-     * Options for customizing the pareto line series. 
-     */ 
-    @Complex<ParetoOptionsModel>(null, ParetoOptions) 
+    /**
+     * Options for customizing the pareto line series.
+     */
+    @Complex<ParetoOptionsModel>(null, ParetoOptions)
     public paretoOptions: ParetoOptionsModel;
 
     /**
@@ -2003,9 +2117,9 @@ export class Series extends SeriesBase {
     public sumIndexes: number[];
 
     /**
-     * Defines the position for the steps in the step line, step area, and step range area chart types. 
-     * * Left: Steps start from the left side of the 2nd point. 
-     * * Center: Steps start between the data points. 
+     * Defines the position for the steps in the step line, step area, and step range area chart types.
+     * * Left: Steps start from the left side of the 2nd point.
+     * * Center: Steps start between the data points.
      * * Right: Steps start from the right side of the 1st point. 
      *
      * @default 'Left'
@@ -2066,7 +2180,6 @@ export class Series extends SeriesBase {
     public delayedAnimation: boolean = false;
     /** @private */
     public rangeColorName: string = this.colorName.length > 0 ? this.colorName : this.yName;
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
@@ -2078,7 +2191,7 @@ export class Series extends SeriesBase {
      * @private
      */
     public refreshAxisLabel(): void {
-        if (this.xAxis.valueType.indexOf('Category') == -1) {
+        if (this.xAxis.valueType.indexOf('Category') === -1) {
             return null;
         }
         this.xAxis.labels = [];
@@ -2117,13 +2230,14 @@ export class Series extends SeriesBase {
         return seriesCollection;
     }
     /**
-     * To get the column type series.
+     * Checks if the series in the chart are rectangular.
      *
-     * @returns {void}
-     * @private
+     * @param {Series} series - The series to be checked.
+     * @param {boolean} isStack - Specifies whether the series are stacked.
+     * @returns {boolean} - Returns true if the series in the chart are rectangular, otherwise false.
      */
-    private rectSeriesInChart(series: Series, isStack: boolean): Boolean {
-        const type: String = (series.type).toLowerCase();
+    private rectSeriesInChart(series: Series, isStack: boolean): boolean {
+        const type: string = (series.type).toLowerCase();
         return (
             type.indexOf('column') !== -1 || type.indexOf('bar') !== -1 || type.indexOf('histogram') !== -1 ||
             type.indexOf('hiloopenclose') !== -1 || type.indexOf('candle') !== -1 || type.indexOf('pareto') !== -1 ||
@@ -2132,8 +2246,10 @@ export class Series extends SeriesBase {
         );
     }
     /**
-     * To calculate the stacked values.
+     * Calculates the stacked value for the chart.
      *
+     * @param {boolean} isStacking100 - Specifies whether the stacking is 100%.
+     * @param {Chart} chart - The chart for which the stacked value is calculated.
      * @returns {void}
      * @private
      */
@@ -2205,7 +2321,8 @@ export class Series extends SeriesBase {
                             value = !isNaN(value) ? value : 0;
                             visiblePoints[j as number].percentage = +(value.toFixed(2));
                         } else {
-                            stackedValues[j as number] = stackedValues[j as number] ? stackedValues[j as number] + Math.abs(value) : Math.abs(value);
+                            stackedValues[j as number] = stackedValues[j as number] ?
+                                stackedValues[j as number] + Math.abs(value) : Math.abs(value);
                         }
                         if (value >= 0) {
                             lastValue = lastPositive[stackingGroup as string][visiblePoints[j as number].xValue];
@@ -2279,7 +2396,13 @@ export class Series extends SeriesBase {
          this.refreshChart();
      }*/
 
-    /** @private */
+    /**
+     * Renders the series on the chart.
+     *
+     * @param {Chart} chart - The chart on which the series is rendered.
+     * @returns {void}
+     * @private
+     */
     public renderSeries(chart: Chart): void {
         if (this.chart.stockChart && this.xAxis.valueType === 'DateTimeCategory') {
             for (let i: number = 0; i < this.points.length; i++) {
@@ -2323,8 +2446,9 @@ export class Series extends SeriesBase {
     }
 
     /**
-     * To create seris element.
+     * Creates elements for the series on the chart.
      *
+     * @param {Chart} chart - The chart for which series elements are created.
      * @returns {void}
      * @private
      */
@@ -2357,7 +2481,8 @@ export class Series extends SeriesBase {
                 options = new RectOption(
                     elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1,
                     {
-                        x: (this.xAxis.columnIndex === 0) ? -markerWidth : 0, y: (this.yAxis.rowIndex === chart.rows.length - 1) ? -markerHeight : 0,
+                        x: (this.xAxis.columnIndex === 0) ? -markerWidth : 0, y:
+                        (this.yAxis.rowIndex === chart.rows.length - 1) ? -markerHeight : 0,
                         width: this.clipRect.width + (this.xAxis.columnIndex === chart.columns.length - 1 ? markerWidth * 2 : markerWidth),
                         height: this.clipRect.height + (this.yAxis.rowIndex === 0 ?  markerHeight * 2 : markerHeight)
                     });
@@ -2385,14 +2510,17 @@ export class Series extends SeriesBase {
 
     private checkTabindex(visibleSeries: Series[], index: number): boolean {
         for (let i: number = 0; i < index; i++) {
-            if (visibleSeries[i as number].visible)
+            if (visibleSeries[i as number].visible) {
                 return true;
+            }
         }
         return false;
     }
     /**
-     * To append the series.
+     * Appends a series element to the chart.
      *
+     * @param {Element} element - The series element to append.
+     * @param {Chart} chart - The chart to which the series element will be appended.
      * @returns {void}
      * @private
      */
@@ -2427,8 +2555,13 @@ export class Series extends SeriesBase {
         }
     }
     /**
-     * To perform animation for chart series.
+     * Performs animation for the specified chart elements.
      *
+     * @param {Chart} chart - The chart for which animation is performed.
+     * @param {string} type - The type of animation to be performed.
+     * @param {ErrorBarSettingsModel} errorBar - The error bar settings for the animation.
+     * @param {MarkerSettingsModel} marker - The marker settings for the animation.
+     * @param {DataLabelSettingsModel} dataLabel - The data label settings for the animation.
      * @returns {void}
      * @private
      */
@@ -2436,7 +2569,7 @@ export class Series extends SeriesBase {
         chart: Chart, type: string, errorBar: ErrorBarSettingsModel,
         marker: MarkerSettingsModel, dataLabel: DataLabelSettingsModel
     ): void {
-        if (((this.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && chart.animateSeries && (!chart.stockChart || !chart.stockChart.isStockChartRendered)) {
+        if (((this.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && chart.animateSeries && (!chart.stockChart || !chart.stockChart.isStockChartRendered)) {
             chart[type + 'SeriesModule'].doAnimation(this);
             if (errorBar.visible) {
                 chart.errorBarModule.doErrorBarAnimation(this);
@@ -2452,8 +2585,11 @@ export class Series extends SeriesBase {
     }
 
     /**
-     * To set border color for empty point
+     * Sets the color of a data point.
      *
+     * @param {Points} point - The data point.
+     * @param {string} color - The color to set.
+     * @returns {string} - The updated color.
      * @private
      */
     public setPointColor(point: Points, color: string): string {
@@ -2461,13 +2597,438 @@ export class Series extends SeriesBase {
         return point.isEmpty ? (this.emptyPointSettings.fill || color) : color;
     }
     /**
-     * To set border color for empty point
+     * Sets the border color of a data point.
      *
+     * @param {Points} point - The data point.
+     * @param {BorderModel} border - The border color to set.
+     * @returns {BorderModel} - The updated border color.
      * @private
      */
     public setBorderColor(point: Points, border: BorderModel): BorderModel {
         border.width = point.isEmpty ? (this.emptyPointSettings.border.width || border.width) : border.width;
         border.color = point.isEmpty ? (this.emptyPointSettings.border.color || border.color) : border.color;
         return border;
+    }
+
+    /**
+     * Adds a data point to the data source.
+     *
+     * @function addPoint
+     * @param {Object} dataPoint - The data point to be added.
+     * @param {number} duration - The duration for the animation.
+     * @returns {void}
+     */
+    public addPoint(dataPoint: Object, duration?: number ): void {
+        const yMin: number = this.yMin;
+        const yMax: number = this.yMax;
+        this.removeTrackballElements();
+        (this.dataSource as Object[]).push(dataPoint);
+        if (this.type === 'Radar' || this.type === 'Polar') {
+            return this.chart.refresh();
+        }
+        if (this.type === 'Histogram') {
+            this.currentViewData = this.chart[firstToLowerCase(this.type) + 'SeriesModule'].
+                processInternalData(extend([], this.dataSource, null, true) as Object[], this);
+            for (let i: number = 0; i < (this.currentViewData as Object[]).length; i++) {
+                this.updatePoint(i);
+            }
+        } else {
+            this.currentViewData = this.dataSource;
+            const pointIndex: number = this.points.length === 0 ? 0 : this.points[this.points.length - 1].index + 1;
+            this.updatePoint(pointIndex);
+        }
+        if (this.category === 'Pareto') {
+            const dataSource: Object[] = extend([], this.dataSource, null, true) as Object[];
+            const series: Series = this.chart.visibleSeries[this.index + this.chart.series.length];
+            series.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(dataSource, this);
+            for (let i: number = 0; i < (series.currentViewData as Object[]).length; i++) {
+                if (!series.points[i as number]) {
+                    series.updatePoint(i);
+                }
+                series.points[i as number].y = series.points[i as number].yValue = series.currentViewData[i as number][series.yName];
+            }
+        }
+        this.updateSplineValue();
+        this.chart.calculateStackValues();
+        this.chart.redraw = this.chart.enableAnimation;
+        const chartDuration: number = this.chart.duration;
+        this.chart.duration = isNullOrUndefined(duration) ? 500 : duration;
+        this.chart.animateSeries = false;
+        this.chart.pointsAdded = true;
+        if (this.chart.enableAnimation && (!(this.isRectSeries || this.type === 'Bubble' || this.type === 'Scatter')) && (this.type.indexOf('step') === -1)) {
+            if (this.marker && this.marker.visible && this.visible) {
+                for (let i: number = this.points.length - 2; i >= 0; i--) {
+                    if (this.points[i as number] && this.points[i as number].symbolLocations[0] !== undefined) {
+                        this.chart.markerRender.renderMarker(this, this.points[this.points.length - 2],
+                                                             this.points[i as number].symbolLocations[0], null, true);
+                        break;
+                    }
+                }
+            }
+        }
+        if (this.yMin >= yMin && this.yMax <= yMax) {
+            if (!setRange(this.xAxis)) {
+                this.xAxis.baseModule.calculateRangeAndInterval(new Size(this.xAxis.rect.width, this.chart.availableSize.height),
+                                                                this.xAxis);
+                this.xAxis.updateAxis();
+            }
+            this.chart.pointsAdded = false;
+            this.updateSeries(true , false);
+        }
+        if (this.yMin < yMin || this.yMax > yMax) {
+            this.updateChartAxis();
+            this.chart.pointsAdded = false;
+            this.updateSeries(true , true);
+        }
+        this.chart.redraw = false;
+        this.chart.duration = chartDuration;
+    }
+
+    /**
+     * Removes a data point from the series data source at the specified index.
+     *
+     * @function removePoint
+     * @param {number} index - The index of the data point to be removed.
+     * @param {number} duration - The duration for the animation.
+     * @returns {void}
+     */
+    public removePoint(index: number, duration?: number): void {
+        const dataSource: Object[] = extend([], this.dataSource, null, true) as Object[];
+        const chartDuration: number = this.chart.duration;
+        if (dataSource.length > 0 && index >= 0 && index < dataSource.length) {
+            dataSource.splice(index, 1);
+            (this.dataSource as object[]).splice(index, 1);
+            this.removeTrackballElements(index);
+            if (this.type === 'Radar' || this.type === 'Polar') {
+                return this.chart.refresh();
+            }
+            this.chart.redraw = this.chart.enableAnimation; this.chart.animateSeries = false;
+            this.chart.pointsAdded = true;
+            this.chart.duration = isNullOrUndefined(duration) ? 500 : duration;
+            if (this.type === 'Histogram') {
+                const length: number = this.points.length;
+                this.points = []; this.visiblePoints = [];
+                this.currentViewData = this.chart[firstToLowerCase(this.type) + 'SeriesModule'].
+                    processInternalData(extend([], this.dataSource, null, true) as Object[], this);
+                for (let i: number = 0; i < (this.currentViewData as Object[]).length; i++) {
+                    this.updatePoint(i as number);
+                }
+                if (length > this.points.length) {
+                    this.removedPointIndex = index;
+                }
+            } else {
+                this.removedPointIndex = index;
+                this.points.splice(index, 1);
+                this.visiblePoints.splice(index, 1);
+            }
+            this.yData = []; this.xData = [];
+            const yMin: number = this.yMin;
+            const yMax: number = this.yMax;
+            this.yMin = Infinity; this.xMin = Infinity;
+            this.yMax = -Infinity; this.xMax = -Infinity;
+            if (this.xAxis.valueType.indexOf('Category') > -1 && this.chart.series.length === 1) {
+                this.xAxis.labels = []; this.xAxis.indexLabels = {};
+            }
+            if (index === 0) { this.chart.pointsRemoved = this.chart.enableAnimation; }
+            for (let i: number = 0; i < this.points.length; i++) {
+                this.updatePointsAfterRemoval(i as number);
+            }
+            if (this.category === 'Pareto') {
+                const series: Series = this.chart.visibleSeries[this.index + this.chart.series.length];
+                series.yMin = Infinity; series.xMin = Infinity; series.yMax = -Infinity; series.xMax = -Infinity;
+                series.points.splice(index, 1); series.visiblePoints.splice(index, 1);
+                series.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(this.dataSource, this);
+                for (let i: number = 0; i < (series.currentViewData as Object[]).length; i++) {
+                    series.points[i as number].y = series.points[i as number].yValue = series.currentViewData[i as number][series.yName];
+                    series.updatePointsAfterRemoval(i as number);
+                }
+            }
+            this.updateSplineValue();
+            this.chart.calculateStackValues();
+
+            if (!setRange(this.xAxis) && yMax === this.yMax && yMin === this.yMin) {
+                this.xAxis.baseModule.calculateRangeAndInterval(new Size(this.xAxis.rect.width, this.chart.availableSize.height),
+                                                                this.xAxis);
+                this.xAxis.updateAxis();
+                this.createSeriesElements(this.chart);
+                this.chart.pointsAdded = false;
+                this.updateSeries(true, false);
+            }
+            else if (yMax < this.yMax || yMin > this.yMin || yMax > this.yMax || yMin < this.yMin) {
+                this.updateChartAxis();
+                this.createSeriesElements(this.chart);
+                this.chart.pointsAdded = false;
+                this.updateSeries(true, true);
+            }
+        }
+        appendChildElement(this.chart.enableCanvas, this.chart.seriesElements, this.seriesElement, true);
+        this.chart.redraw = false;
+        this.chart.duration = chartDuration;
+        this.chart.pointsRemoved = false;
+        this.removedPointIndex = null;
+    }
+
+    private updatePointsAfterRemoval(index: number): void {
+        const point: Points = this.points[index as number];
+        const option: DateFormatOptions = {
+            skeleton: 'full',
+            type: 'dateTime'
+        };
+        const dateParser: Function = this.chart.intl.getDateParser(option);
+        const dateFormatter: Function = this.chart.intl.getDateFormat(option);
+        if (this.xAxis.valueType === 'Category' && this.chart.series.length === 1) {
+            this.pushCategoryData(point, index, <string>point.x);
+        } else if (this.xAxis.valueType === 'DateTimeCategory' && this.chart.series.length === 1) {
+            this.pushCategoryData(point, index, Date.parse(dateParser(dateFormatter(point.x))).toString());
+        }
+        this.pushData(point, index);
+        this.setEmptyPoint(this.points[index as number], index);
+    }
+
+    /**
+     * Removes trackball elements from the series.
+     *
+     * @param {number} index - The index of the data point.
+     * @returns {void}
+     */
+    private removeTrackballElements(index?: number): void {
+        if (this.marker.visible) {
+            if (index !== undefined) {
+                const baseId: string = this.chart.element.id + '_Series_' + this.index + '_Point_' + index + '_Trackball_';
+                const trackball0: Element = getElement(baseId + '0');
+                if (trackball0) { trackball0.remove(); }
+                const trackball1: Element = getElement(baseId + '1');
+                if (trackball1) { trackball1.remove(); }
+                const symbolElement: Element = getElement(this.chart.element.id + '_Series_' + this.index + '_Point_' + index + '_Symbol');
+                if (symbolElement) {
+                    symbolElement.setAttribute('visibility', 'visible');
+                }
+            } else {
+                const baseClassPattern: string = this.chart.element.id + '_EJ2-Trackball_Series_' + this.index + '_Point_';
+                const elements: NodeListOf<Element> = document.querySelectorAll(`[class*="${baseClassPattern}"]`);
+                if (elements[0]) {
+                    const pointIndexMatch: RegExpMatchArray = elements[0].id.match(/_Point_(\d+)_/);
+                    const pointIndex: number = pointIndexMatch ? parseInt(pointIndexMatch[1], 10) : null;
+                    elements[0].remove();
+                    const symbolElement: Element = getElement(this.chart.element.id + '_Series_' + this.index + '_Point_' + pointIndex + '_Symbol');
+                    if (symbolElement) {
+                        symbolElement.setAttribute('visibility', 'visible');
+                    }
+                }
+                if (elements[1]) { elements[1].remove(); }
+            }
+        }
+        if (this.chart.tooltip.enable) {
+            this.chart.tooltipModule.previousPoints = [];
+            const tooltipElement: Element = getElement(this.chart.element.id + '_tooltip');
+            if (tooltipElement) { tooltipElement.remove(); }
+        }
+    }
+
+    /**
+     * Sets the data source with the provided data.
+     *
+     * @function setData
+     * @param {Object[]} data - An array of objects representing the data points.
+     * @param {number} duration - The duration for the animation.
+     * @returns {void}
+     */
+    public setData(data: Object[], duration?: number): void {
+
+        if (!data) {
+            return null;
+        }
+        const yMin: number = this.yMin;
+        const yMax: number = this.yMax;
+        this.yMin = Infinity; this.yMax = -Infinity;
+        const pointList: number[] = [];
+        let samePoints: boolean = false;
+        if ((this.dataSource as Object[]).length === data.length && !(this.type === 'Radar' || this.type === 'Polar')) {
+            samePoints = true;
+            this.yData = [];
+            if (this.type === 'Histogram' && (this.dataSource as Object[]).length === data.length) {
+                const newHistogramData: Object[] = this.chart[firstToLowerCase(this.type) + 'SeriesModule'].
+                    processInternalData(extend([], data, null, true) as Object[], this);
+                this.currentViewData = newHistogramData;
+                for (let j: number = 0; j < newHistogramData.length; j++) {
+                    this.updatePoint(j);
+                }
+            } else {
+                for (let i: number = 0; i < data.length; i++) {
+                    let newData: number | string = data[i as number][this.xName];
+                    let existingData: number | string = this.dataSource[i as number][this.xName];
+                    if (data[i as number][this.xName] instanceof Date) {
+                        newData = data[i as number][this.xName].getTime();
+                        existingData = this.dataSource[i as number][this.xName].getTime();
+                    }
+                    if (existingData === newData) {
+                        const point: Points = this.points[i as number];
+                        const getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
+                        const existingPoint: Object = this.dataSource[i as number]; const newPoint: Object = data[i as number];
+                        if ((this.seriesType === 'XY' || this.seriesType === 'BoxPlot') && (existingPoint[this.yName] !== newPoint[this.yName] || existingPoint[this.size] !== newPoint[this.size])) {
+                            point.y = getObjectValueByMappingString(this.yName, newPoint);
+                            if (this.type === 'Bubble' && existingPoint[this.size] !== newPoint[this.size]) {
+                                point.size = getObjectValueByMappingString(this.size, newPoint);
+                            }
+                            pointList.push(i);
+                        } else if (existingPoint[this.high] !== newPoint[this.high] || existingPoint[this.low] !== newPoint[this.low] ||
+                             existingPoint[this.open] !== newPoint[this.open] || existingPoint[this.close] !== newPoint[this.close] ||
+                             existingPoint[this.volume] !== newPoint[this.volume]) {
+                            point.high = getObjectValueByMappingString(this.high, newPoint);
+                            point.low = getObjectValueByMappingString(this.low, newPoint);
+                            point.open = getObjectValueByMappingString(this.open, newPoint);
+                            point.close = getObjectValueByMappingString(this.close, newPoint);
+                            point.volume = getObjectValueByMappingString(this.volume, newPoint);
+                            pointList.push(i);
+                        }
+                        point.yValue = <number>point.y;
+                        this.setEmptyPoint(point, i);
+                        this.dataSource[i as number] = data[i as number];
+                    }
+                    else {
+                        samePoints = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!samePoints) {
+            this.dataSource = data;
+        } else {
+            this.chart.redraw = this.chart.enableAnimation; this.chart.animateSeries = false;
+            this.chart.pointsAdded = true;
+            const chartDuration: number = this.chart.duration;
+            this.chart.duration = isNullOrUndefined(duration) ? 500 : duration;
+            this.chart.calculateStackValues();
+            this.updateSplineValue();
+            if (yMax === this.yMax && yMin === this.yMin && this.visible) {
+                this.chart.pointsAdded = false;
+                this.chart[firstToLowerCase((this.category === 'Pareto' ? 'Column' : this.type.replace('100', ''))) + 'SeriesModule'].updateDirection(this, pointList, this.chart.requireInvertedAxis);
+                if (this.chart.annotationModule) {
+                    this.chart.annotationModule.renderAnnotations(getElement((this.chart.element.id) + '_Secondary_Element'));
+                }
+            }
+            else if ((yMax < this.yMax || yMin > this.yMin || yMax > this.yMax || yMin < this.yMin) && this.visible) {
+                const maximumLabelWidth: number = this.yAxis.maxLabelSize.width;
+                this.yAxis.baseModule.calculateRangeAndInterval(
+                    new Size(this.chart.availableSize.width, this.yAxis.rect.height),
+                    this.yAxis);
+                if (maximumLabelWidth < this.yAxis.maxLabelSize.width) {
+                    this.chart.calculateBounds();
+                    this.chart.axisCollections.forEach(function (axis: Axis): void {
+                        if (!setRange(axis)) { axis.updateAxis(); }
+                    });
+                    (this.chart.chartAxisLayoutPanel as CartesianAxisLayoutPanel).drawPaneLines(this.chart);
+                    this.chart.renderAreaBorder();
+                }
+                else {
+                    if (!setRange(this.yAxis)) {
+                        this.yAxis.updateAxis();
+                    }
+                    if (this.type === 'Histogram' && !setRange(this.xAxis)) {
+                        this.xAxis.baseModule.calculateRangeAndInterval(new Size(this.xAxis.rect.width,
+                                                                                 this.chart.availableSize.height), this.xAxis);
+                        this.xAxis.updateAxis();
+                    }
+                }
+                this.chart.pointsAdded = false;
+                this.updateSeries(false, true);
+                if (this.marker.dataLabel.visible && this.chart.dataLabelModule) {
+                    this.chart.dataLabelModule.doDataLabelAnimation(this);
+                }
+                if (this.chart.stripLineModule) {
+                    this.chart.stripLineModule.renderStripLine(this.chart, 'Behind', this.chart.axisCollections);
+                }
+            }
+            this.chart.redraw = false; this.chart.pointsRemoved = false;
+            this.chart.duration = chartDuration;
+        }
+    }
+
+    /**
+     * Updates the chart axes based on current data and axis bounds.
+     *
+     * @returns {void}
+     */
+    private updateChartAxis(): void {
+        const maximumLabelWidth: number = this.yAxis.maxLabelSize.width;
+        this.yAxis.baseModule.calculateRangeAndInterval(new Size(this.chart.availableSize.width, this.yAxis.rect.height), this.yAxis);
+        if (maximumLabelWidth < this.yAxis.maxLabelSize.width) {
+            this.chart.calculateBounds();
+            this.chart.axisCollections.forEach((axis: Axis) => {
+                if (!setRange(axis)) { axis.updateAxis(); }
+            });
+            (this.chart.chartAxisLayoutPanel as CartesianAxisLayoutPanel).drawPaneLines(this.chart);
+            this.chart.renderAreaBorder();
+        }
+        else {
+            if (!setRange(this.xAxis)) {
+                this.xAxis.baseModule.calculateRangeAndInterval(new Size(this.xAxis.rect.width,
+                                                                         this.chart.availableSize.height), this.xAxis);
+                this.xAxis.updateAxis();
+            }
+            if (!setRange(this.yAxis)) {
+                this.yAxis.updateAxis();
+            }
+        }
+        if (this.chart.stripLineModule) {
+            this.chart.stripLineModule.renderStripLine(this.chart, 'Behind', this.chart.axisCollections);
+        }
+    }
+
+    private updateSeries(xAxis: boolean, yAxis: boolean): void {
+        let seriesCollection: Series[] = [];
+        if (xAxis && yAxis) {
+            const set: Set<Series> = new Set(this.xAxis.series.concat(this.yAxis.series));
+            set.forEach((series: Series) => {
+                seriesCollection.push(series);
+            });
+        }
+        else {
+            seriesCollection = xAxis ? this.xAxis.series.slice() : this.yAxis.series.slice();
+        }
+        for (const series of seriesCollection) {
+            if (series.visible) {
+                series.chart[firstToLowerCase(series.type.replace('100', '')) + 'SeriesModule'].render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, series.chart.enableAnimation);
+                if (series.marker.visible && (series.chart.chartAreaType === 'Cartesian') && series.type !== 'Scatter' && series.type !== 'Bubble'
+                    && series.type !== 'Candle' && series.type !== 'Hilo' && series.type !== 'HiloOpenClose' && series.symbolElement) {
+                    appendChildElement(series.chart.enableCanvas, series.chart.seriesElements, series.symbolElement, true);
+                }
+                if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                    series.chart.dataLabelCollections = [];
+                    series.chart.dataLabelModule.render(series, series.chart, series.marker.dataLabel);
+                    if (series.textElement) {
+                        appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.shapeElement, true);
+                        appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.textElement, true);
+                    }
+                }
+                if (series.chart.annotationModule) {
+                    series.chart.annotationModule.renderAnnotations(getElement((series.chart.element.id) + '_Secondary_Element'));
+                }
+            }
+        }
+    }
+    private updatePoint(index: number): void {
+        const point: Points = new Points();
+        const textMappingName: string = this instanceof Series && this.marker.dataLabel.name ?
+            this.marker.dataLabel.name : '';
+        const xName: string = (this instanceof Series && this.type === 'Histogram') ? 'x' : this.xName;
+
+        if (this.xAxis.valueType === 'Category') {
+            this.pushCategoryPoint(point, index, textMappingName, xName);
+        }
+        else if (this.xAxis.valueType.indexOf('DateTime') > -1) {
+            const point: Points = this.points[index as number];
+            const option: DateFormatOptions = {
+                skeleton: 'full',
+                type: 'dateTime'
+            };
+            const dateParser: Function = this.chart.intl.getDateParser(option);
+            const dateFormatter: Function = this.chart.intl.getDateFormat(option);
+            this.pushDateTimePoint(point, index, textMappingName, xName, dateParser, dateFormatter);
+        }
+        else {
+            this.pushDoublePoint(point, index, textMappingName, xName);
+        }
     }
 }

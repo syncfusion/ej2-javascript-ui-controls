@@ -233,9 +233,13 @@ export function triggerSwipeEvent(target: Element, x?: number, y?: number): void
  */
 // eslint-disable-next-line max-len
 export function triggerMouseEvent(node: HTMLElement, eventType: string, x: number = 0, y: number = 0, isShiftKey?: boolean, isCtrlKey?: boolean): void {
-    const mouseEve: MouseEvent = new MouseEvent(eventType);
-    mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, isCtrlKey, false, isShiftKey, false, 0, null);
-    node.dispatchEvent(mouseEve);
+    if (!(node as HTMLButtonElement).disabled) {
+        const mouseEve: MouseEvent = new MouseEvent(eventType, {
+            bubbles: true, cancelable: true, view: window, detail: 0, screenX: 0, screenY: 0, clientX: x, clientY: y,
+            ctrlKey: isCtrlKey, altKey: false, shiftKey: isShiftKey, metaKey: false, button: 0, relatedTarget: null
+        });
+        node.dispatchEvent(mouseEve);
+    }
 }
 
 /**

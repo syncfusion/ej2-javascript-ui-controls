@@ -466,17 +466,19 @@ export class Audio {
         if (e.selectNode[0].nodeName !== 'AUDIO') {
             return;
         }
-        const subCommand: string = ((e.args as ClickEventArgs).item) ?
+        const subCommand: string = ((e.args as ClickEventArgs).item && ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Break';
-        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent,
+                                      { selectNode: e.selectNode, subCommand: subCommand });
     }
     private inline(e: IImageNotifyArgs): void {
         if (e.selectNode[0].nodeName !== 'AUDIO') {
             return;
         }
-        const subCommand: string = ((e.args as ClickEventArgs).item) ?
+        const subCommand: string = ((e.args as ClickEventArgs).item && ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Inline';
-        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent,
+                                      { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private editAreaClickHandler(e: IImageNotifyArgs): void {
@@ -587,7 +589,7 @@ export class Audio {
             return;
         }
         const audioDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-audio-dialog', id: this.rteID + '_audio' });
-        this.parent.element.appendChild(audioDialog);
+        this.parent.rootContainer.appendChild(audioDialog);
         const audioInsert: string = this.i10n.getConstant('dialogInsert');
         const audiolinkCancel: string = this.i10n.getConstant('dialogCancel');
         const audioHeader: string = this.i10n.getConstant('audioHeader');
@@ -669,7 +671,6 @@ export class Audio {
         }
     }
 
-    // eslint-disable-next-line
     private audioUrlPopup(e: IImageNotifyArgs): HTMLElement {
         const audioUrl: HTMLElement = this.parent.createElement('div', { className: 'audioUrl' });
         const placeUrl: string = this.i10n.getConstant('audioUrl');
@@ -687,7 +688,7 @@ export class Audio {
             }
         });
         if (e.selectNode && this.isAudioElem(e.selectNode[0] as HTMLElement)) {
-            const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+            const regex: RegExp = new RegExp(/([^\S]|^)(((https?:\/\/)|(www\.))(\S+))/gi);
             const sourceElement: HTMLSourceElement = (e.selectNode[0] as HTMLElement).querySelector('source');
             (this.inputUrl as HTMLInputElement).value = sourceElement.src.match(regex) ? sourceElement.src : '';
         }

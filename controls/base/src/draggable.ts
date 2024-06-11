@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Base } from './base';
 import { Browser } from './browser';
 import { isVisible } from './dom';
@@ -110,7 +111,7 @@ export interface Instance extends HTMLElement {
     /**
      * Specifies current instance collection in element
      */
-    // eslint-disable-next-line
+    // eslint-disable-next-line camelcase
     ej2_instances: { [key: string]: Object }[];
 }
 /**
@@ -373,7 +374,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private prevTop: number = 0;
     private dragProcessStarted: boolean = false;
     private eleTop: number = 0;
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     private tapHoldTimer: any = 0;
     private dragElePosition: any;
     public currentStateTarget: any;
@@ -463,7 +463,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             return this.getScrollableParent(element.parentNode as HTMLElement, axis);
         }
     }
-    /* eslint-disable */
     private getScrollableValues(): void {
         this.parentScrollX = 0;
         this.parentScrollY = 0;
@@ -471,7 +470,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         const verticalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'vertical');
         const horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
     }
-    /* eslint-enable */
     private initialize(evt: MouseEvent & TouchEvent, curTarget?: EventTarget): void {
         this.currentStateTarget = evt.target;
         if (this.isDragStarted()) {
@@ -483,8 +481,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.target = <HTMLElement>(evt.currentTarget || curTarget);
         this.dragProcessStarted = false;
         if (this.abort) {
-            /* tslint:disable no-any */
-            // eslint-disable-next-line
             let abortSelectors: any = this.abort;
             if (typeof abortSelectors === 'string') {
                 abortSelectors = [abortSelectors];
@@ -550,7 +546,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         /* istanbul ignore next */
         if (this.isReplaceDragEle) {
-            // eslint-disable-next-line
             element = this.currentStateCheck(evt.target as any, element);
         }
         this.offset = this.calculateParentPosition(element);
@@ -673,7 +668,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             top: (rect.top + window.pageYOffset) - parseInt(style.marginTop, 10)
         };
     }
-    // tslint:disable-next-line:max-func-body-length
     private intDrag(evt: MouseEvent & TouchEvent): void {
         if (!isUndefined(evt.changedTouches) && (evt.changedTouches.length !== 1)) {
             return;
@@ -698,7 +692,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         const eleObj: DropObject = this.checkTargetElement(evt);
         if (eleObj.target && eleObj.instance) {
-            /* tslint:disable no-any */
             let flag: boolean = true;
             if (this.hoverObject) {
                 if (this.hoverObject.instance !== eleObj.instance) {
@@ -708,7 +701,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             }
             if (flag) {
-                // eslint-disable-next-line
                 (<any>eleObj).instance.dragData[this.scope] = this.droppables[this.scope];
                 eleObj.instance.intOver(evt, eleObj.target);
                 this.hoverObject = eleObj;
@@ -847,8 +839,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             if (elements.length === 0) {
                 elements = this.getPathElements(evt);
             }
-            /* tslint:disable no-any */
-            // eslint-disable-next-line
             let scrollParent: any = this.getScrollParent(elements, false);
             if (this.elementInViewport(this.helperElement)) {
                 this.getScrollPosition(scrollParent, draEleTop);
@@ -871,11 +861,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.pageX = pagex;
         this.pageY = pagey;
     }
-    /* tslint:disable no-any */
-    // eslint-disable-next-line
     private getScrollParent(node: any, reverse: boolean): any {
-        /* tslint:disable no-any */
-        // eslint-disable-next-line
         const nodeEl: any = reverse ? node.reverse() : node;
         let hasScroll: string;
         for (let i: number = nodeEl.length - 1; i >= 0; i--) {
@@ -962,7 +948,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         const eleObj: DropObject = this.checkTargetElement(evt);
         if (eleObj.target && eleObj.instance) {
             eleObj.instance.dragStopCalled = true;
-            // eslint-disable-next-line
             (<any>eleObj).instance.dragData[this.scope] = this.droppables[this.scope];
             eleObj.instance.intDrop(evt, eleObj.target);
         }
@@ -974,7 +959,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      * @private
      */
-    // eslint-disable-next-line
     public intDestroy(evt: MouseEvent & TouchEvent): void {
         this.dragProcessStarted = false;
         this.toggleEvents();
@@ -989,7 +973,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
     // triggers when property changed
-    // eslint-disable-next-line
     public onPropertyChanged(newProp: DraggableModel, oldProp: DraggableModel): void {
         //No Code to handle
     }
@@ -1019,7 +1002,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             eleWidthBound = ele.scrollWidth ? ele.scrollWidth : elementArea.right - elementArea.left;
             eleHeightBound = ele.scrollHeight ? (this.dragArea && !isNullOrUndefined(this.helperElement) && this.helperElement.classList.contains('e-treeview')) ? ele.clientHeight : ele.scrollHeight : elementArea.bottom - elementArea.top;
             const keys: string[] = ['Top', 'Left', 'Bottom', 'Right'];
-            /* eslint-disable */
             const styles: any = getComputedStyle(ele);
             for (let i: number = 0; i < keys.length; i++) {
                 const key: string = keys[parseInt(i.toString(), 10)];
@@ -1029,7 +1011,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 (<any>this.borderWidth)[`${lowerKey}`] = isNaN(parseFloat(tborder)) ? 0 : parseFloat(tborder);
                 (<any>this.padding)[`${lowerKey}`] = isNaN(parseFloat(tpadding)) ? 0 : parseFloat(tpadding);
             }
-            /* eslint-enable */
             if (this.dragArea && !isNullOrUndefined(this.helperElement) && this.helperElement.classList.contains('e-treeview')) {
                 top = elementArea.top + document.scrollingElement.scrollTop;
             } else {
@@ -1067,8 +1048,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         return elem;
     }
     private getMousePosition(evt: MouseEvent & TouchEvent, isdragscroll?: boolean): PositionModel {
-        /* tslint:disable no-any */
-        // eslint-disable-next-line
         const dragEle: any = evt.srcElement !== undefined ? evt.srcElement : evt.target;
         const intCoord: Coordinates = this.getCoordinates(evt);
         let pageX: number;

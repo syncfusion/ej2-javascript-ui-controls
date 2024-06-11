@@ -2,14 +2,14 @@ import { ItemModel, Toolbar as tool, ClickEventArgs } from '@syncfusion/ej2-navi
 import { RenderType } from '../base/enum';
 import { CLS_HR_SEPARATOR } from '../base/classes';
 import * as events from '../base/constant';
-import { getTooltipText, isIDevice, toObjectLowerCase } from '../base/util';
+import { getTooltipText, toObjectLowerCase } from '../base/util';
 import { ToolbarItems } from '../base/enum';
 import { tools, templateItems, windowKeys } from '../models/items';
 import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IToolbarItems, IToolsItems, ICssClassArgs } from '../base/interface';
 import { IToolbarOptions, IToolbarItemModel } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined, extend, EmitType, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, EmitType } from '@syncfusion/ej2-base';
 import { IHtmlUndoRedoData } from '../../editor-manager';
 
 /**
@@ -166,10 +166,11 @@ export class BaseToolbar {
                             this.parent.formatter.saveData();
                         }
                         callback.call(this);
-                        if(this.parent.formatter.getUndoRedoStack().length > 0 ){
+                        if (this.parent.formatter.getUndoRedoStack().length > 0 ){
                             const currentContentElem: HTMLElement = this.parent.createElement('div');
-                            let stackItem: IHtmlUndoRedoData = this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1];
-                            let clonedItem:DocumentFragment = (stackItem.text).cloneNode(true) as DocumentFragment;
+                            const stackItem: IHtmlUndoRedoData = this.parent.formatter.
+                                getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1];
+                            const clonedItem: DocumentFragment = (stackItem.text).cloneNode(true) as DocumentFragment;
                             currentContentElem.appendChild(clonedItem);
                             if (currentContentElem.innerHTML.trim() === this.parent.inputElement.innerHTML.trim()) {
                                 return;
@@ -187,15 +188,16 @@ export class BaseToolbar {
             for (let num : number = 0; num < items.length; num++) {
                 const tooltipText : string = items[num as number].tooltipText;
                 let shortCutKey : string;
-                const isMacDev = window.navigator.platform.toLocaleLowerCase().includes('mac')
+                const isMacDev: boolean = window.navigator.platform.toLocaleLowerCase().includes('mac');
                 if (windowKeys[`${tooltipText}`]){
                     shortCutKey = isMacDev ? windowKeys[`${tooltipText}`].replace('Ctrl+', '⌘').replace('Shift+', '⇧').replace('Alt+', '⌥') : windowKeys[`${tooltipText}`];
-                } else{
+                }
+                else{
                     shortCutKey = tooltipText;
                 }
                 if (shortCutKey) {
-                    if (!((items[num as number] as any).command === "Images" && (items[num as number] as any).subCommand === "InsertLink")) {
-                        items[num as number].tooltipText = (tooltipText !== shortCutKey) ? (isMacDev)? shortCutKey : tooltipText + ' (' + shortCutKey + ')' : tooltipText;
+                    if (!((items[num as number] as IToolbarItems).command === 'Images' && (items[num as number] as IToolbarItems).subCommand === 'InsertLink')) {
+                        items[num as number].tooltipText = (tooltipText !== shortCutKey) ? tooltipText + ' (' + shortCutKey + ')' : tooltipText;
                     }
                 }
             }

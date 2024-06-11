@@ -1,7 +1,7 @@
-import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, completeAction, showAggregate, dialog, locale, hideAutoFillOptions, performUndoRedo, hideAutoFillElement } from '../../spreadsheet/index';
+import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, completeAction, showAggregate, dialog, locale, hideAutoFillOptions, performUndoRedo, hideAutoFillElement, removeAllChildren } from '../../spreadsheet/index';
 import { Spreadsheet, contentLoaded, positionAutoFillElement, getCellPosition, getRowIdxFromClientY } from '../../spreadsheet/index';
 import { performAutoFill, isLockedCells } from '../../spreadsheet/index';
-import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo } from '../common/index';
+import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, Workbook, getRowsHeight, getColumnsWidth, isInRange } from '../../workbook/index';
 import { getCell, CellModel, SheetModel, getRangeAddress, isHiddenCol, beginAction } from '../../workbook/index';
@@ -16,6 +16,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 export class AutoFill {
     private parent: Spreadsheet;
     private autoFillElement: HTMLElement;
+    private splitBtnElem: HTMLElement;
     private autoFillElementPosition: { left: number, top: number };
     private autoFillCell: { rowIndex: number, colIndex: number };
     public autoFillDropDown: DropDownButton;
@@ -44,13 +45,17 @@ export class AutoFill {
                 element.appendChild(ele);
             }
             this.autoFillElement = ele;
+            if (this.autoFillDropDown) {
+                this.autoFillDropDown.destroy();
+                this.autoFillDropDown = null;
+            }
             this.getautofillDDB({ id: this.parent.element.id + '_autofilloptionbtn', appendElem: element });
         }
     }
 
     private getautofillDDB(args: { id: string, appendElem: HTMLElement }): DropDownButton {
-        const splitBtnElem: HTMLElement = this.parent.createElement('button', { id: args.id, className: 'e-filloption', attrs: { 'type': 'button' } });
-        splitBtnElem.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text' }));
+        this.splitBtnElem = this.parent.createElement('button', { id: args.id, className: 'e-filloption', attrs: { 'type': 'button' } });
+        this.splitBtnElem.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text' }));
         this.autoFillDropDown = new DropDownButton({
             cssClass: 'e-dragfill-ddb',
             iconCss: 'e-icons e-dragfill-icon',
@@ -63,8 +68,8 @@ export class AutoFill {
             beforeOpen: (): void => this.autoFillClick()
         });
         this.autoFillDropDown.createElement = this.parent.createElement;
-        this.autoFillDropDown.appendTo(splitBtnElem);
-        args.appendElem.appendChild(splitBtnElem);
+        this.autoFillDropDown.appendTo(this.splitBtnElem);
+        args.appendElem.appendChild(this.splitBtnElem);
         return this.autoFillDropDown;
     }
 
@@ -125,8 +130,8 @@ export class AutoFill {
         this.positionAutoFillElement({ isautofill: true });
         const autoFillArgs: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType,
             selectedRange: string, undoArgs: object } = { dataRange: eventArgs.dataRange, fillRange: eventArgs.fillRange,
-                fillType: eventArgs.fillType, direction: eventArgs.direction, selectedRange: sheet.name + '!' + getRangeAddress(currcell),
-                undoArgs: <object>evtArgs.undoArgs };
+            fillType: eventArgs.fillType, direction: eventArgs.direction, selectedRange: sheet.name + '!' + getRangeAddress(currcell),
+            undoArgs: <object>evtArgs.undoArgs };
         this.parent.notify(completeAction, { eventArgs: autoFillArgs, action: 'autofill' });
         if (this.parent.showAggregate) {
             this.parent.notify(showAggregate, {});
@@ -390,14 +395,19 @@ export class AutoFill {
 
     private performAutoFill(
         args: { event?: MouseEvent & TouchEvent, dAutoFillCell: string, fillType?: AutoFillType, rangeInfo?: FillRangeInfo }): void {
-        if (args.rangeInfo || !(args.event.clientX > this.autoFillElementPosition.left && args.event.clientX < this.autoFillElementPosition.left + 10) ||
+        if (args.rangeInfo || !(args.event.clientX > this.autoFillElementPosition.left &&
+            args.event.clientX < this.autoFillElementPosition.left + 10) ||
             !(args.event.clientY > this.autoFillElementPosition.top && args.event.clientY < this.autoFillElementPosition.top + 10)) {
             let autofillRange: FillRangeInfo;
             if (args.rangeInfo) {
                 autofillRange = args.rangeInfo;
             } else {
-                const rowObj: { clientY: number; target: Element; } = { clientY: getClientY(args.event), target: args.event.target as Element };
-                const colObj: { clientX: number; target: Element; } = { clientX: getClientX(args.event), target: args.event.target as Element };
+                const rowObj: { clientY: number; target: Element; } = {
+                    clientY: getClientY(args.event), target: args.event.target as Element
+                };
+                const colObj: { clientX: number; target: Element; } = {
+                    clientX: getClientX(args.event), target: args.event.target as Element
+                };
                 this.parent.notify(getRowIdxFromClientY, rowObj);
                 this.parent.notify(getColIdxFromClientX, colObj);
                 autofillRange = this.getAutoFillRange({ rowIndex: rowObj.clientY, colIndex: colObj.clientX });
@@ -409,6 +419,12 @@ export class AutoFill {
                     fillRange: sheet.name + '!' + getRangeAddress(autofillRange.fillRange), direction: autofillRange.direction,
                     fillType: args.fillType || this.parent.autoFillSettings.fillType, cancel: false
                 };
+                const isReadonlyCells: boolean = isReadOnlyCells(this.parent, getRangeIndexes(args.dAutoFillCell)) ||
+                    isReadOnlyCells(this.parent, autofillRange.fillRange);
+                if (isReadonlyCells) {
+                    this.parent.notify(readonlyAlert, null);
+                    return;
+                }
                 this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'autofill' });
                 if (eventArgs.cancel) {
                     return;
@@ -580,6 +596,8 @@ export class AutoFill {
         this.autoFillDropDown = null;
         this.isVerticalFill = null;
         this.fillOptionIndex = null;
+        if (this.splitBtnElem) { removeAllChildren(this.splitBtnElem); this.splitBtnElem.remove(); }
+        this.splitBtnElem = null;
         this.parent = null;
     }
     /**

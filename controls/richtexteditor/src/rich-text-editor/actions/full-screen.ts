@@ -30,6 +30,9 @@ export class FullScreen {
             && !isNOU(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
+        if (this.parent.showTooltip && !isNOU(document.querySelector('.e-tooltip-wrap'))) {
+            this.parent.notify(events.destroyTooltip, {args: event});
+        }
         this.scrollableParent = getScrollableParent(this.parent.element);
         if (!this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             const evenArgs: { [key: string]: Object } = {
@@ -47,8 +50,6 @@ export class FullScreen {
                     }
                     this.parent.element.classList.add(classes.CLS_FULL_SCREEN);
                     this.toggleParentOverflow(true);
-                    const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
-                    this.parent.setContentHeight('Maximize', isExpand);
                     if (this.parent.toolbarModule) {
                         if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
                             this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
@@ -82,6 +83,9 @@ export class FullScreen {
             && !isNOU(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
+        if (this.parent.showTooltip && !isNOU(document.querySelector('.e-tooltip-wrap'))) {
+            this.parent.notify(events.destroyTooltip, {args: event});
+        }
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             const evenArgs: { [key: string]: Object } = {
                 cancel: false,
@@ -96,8 +100,6 @@ export class FullScreen {
                     for (let i: number = 0; i < elem.length; i++) {
                         removeClass([elem[i as number]], ['e-rte-overflow']);
                     }
-                    const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
-                    this.parent.setContentHeight('Minimize', isExpand);
                     if (this.parent.toolbarModule) {
                         if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
                             this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);

@@ -1,6 +1,4 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-import { withInRange, sum } from '../../common/utils/helper';
+import { withInRange, sum, appendChildElement, getElement } from '../../common/utils/helper';
 import { getSaturationColor, ChartLocation, getPoint } from '../../common/utils/helper';
 import { Size, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -18,48 +16,22 @@ import { Axis } from '../../chart/axis/axis';
  */
 export class BoxAndWhiskerSeries extends ColumnBase {
 
+    private sideBySideInfo: DoubleRange;
     /**
-     * Render BoxAndWhisker series.
+     * Renders the BoxAndWhisker series on the chart.
      *
+     * @param {Series} series - The series to be rendered.
+     * @param {Axis} xAxis - The X-axis associated with the series.
+     * @param {Axis} yAxis - The Y-axis associated with the series.
+     * @param {boolean} isInverted - Indicates whether the chart is inverted or not.
      * @returns {void}
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
-        const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
+        this.sideBySideInfo = this.getSideBySideInfo(series);
         let argsData: IPointRenderEventArgs;
         for (const point of series.points) {
-            point.symbolLocations = []; point.regions = [];
-            let centerRegion: Rect;
-            if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
-                this.findBoxPlotValues(point.y as number[], point, series.boxPlotMode);
-                //region to cover the top and bottom ticks
-                this.updateTipRegion(series, point, sideBySideInfo);
-                //get middle rect
-                centerRegion = this.getRectangle(
-                    (point.xValue + sideBySideInfo.start),
-                    point.upperQuartile, (point.xValue + sideBySideInfo.end),
-                    point.lowerQuartile, series
-                );
-                point.regions.push(centerRegion);
-                argsData = this.triggerEvent(
-                    series, point, series.interior, {
-                        color: (!isNullOrUndefined(series.border.color) && series.border.color !== 'transparent') ? series.border.color :
-                            getSaturationColor(series.interior, -0.6),
-                        width: series.border.width ? series.border.width : 1
-                    }
-                );
-                if (!argsData.cancel) {
-                    this.renderBoxAndWhisker(
-                        series, point, argsData,
-                        this.getPathString(
-                            point, series,
-                            getPoint(point.xValue, point.median, xAxis, yAxis, isInverted),
-                            getPoint(point.xValue + sideBySideInfo.median, point.average, xAxis, yAxis, isInverted)
-                        ),
-                        sideBySideInfo.median
-                    );
-                }
-            }
+            this.renderPoint(series, point, this.sideBySideInfo, argsData, xAxis, yAxis, isInverted);
         }
         if (series.marker.visible) {
             series.chart.markerRender.render(series);
@@ -103,6 +75,75 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         point.regions.push(region);
     }
 
+    private renderPoint(series: Series, point: Points, sideBySideInfo: DoubleRange,
+                        argsData: IPointRenderEventArgs, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+        point.symbolLocations = []; point.regions = [];
+        let centerRegion: Rect;
+        if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
+            this.findBoxPlotValues(point.y as number[], point, series.boxPlotMode);
+            //region to cover the top and bottom ticks
+            this.updateTipRegion(series, point, sideBySideInfo);
+            //get middle rect
+            centerRegion = this.getRectangle(
+                (point.xValue + sideBySideInfo.start),
+                point.upperQuartile, (point.xValue + sideBySideInfo.end),
+                point.lowerQuartile, series
+            );
+            point.regions.push(centerRegion);
+            argsData = this.triggerEvent(
+                series, point, series.interior, {
+                    color: (!isNullOrUndefined(series.border.color) && series.border.color !== 'transparent') ? series.border.color :
+                        getSaturationColor(series.interior, -0.6),
+                    width: series.border.width ? series.border.width : 1
+                }
+            );
+            if (!argsData.cancel) {
+                this.renderBoxAndWhisker(
+                    series, point, argsData,
+                    this.getPathString(
+                        point, series,
+                        getPoint(point.xValue, point.median, xAxis, yAxis, isInverted),
+                        getPoint(point.xValue + sideBySideInfo.median, point.average, xAxis, yAxis, isInverted)
+                    ),
+                    sideBySideInfo.median
+                );
+            }
+        }
+    }
+
+    /**
+     * Updates the direction of rendering for the specified series.
+     *
+     * @param {Series} series - The series to be rendered.
+     * @param {number[]} point - The point to be updated.
+     * @param {boolean} isInverted - Specifies the inverted axis.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[], isInverted: boolean): void {
+        let argsData: IPointRenderEventArgs;
+        for (let i: number = 0; i < point.length; i++) {
+            const visiblePoint: Points = series.points[point[i as number]];
+            this.renderPoint(series, visiblePoint, this.sideBySideInfo, argsData, series.xAxis, series.yAxis, isInverted);
+            if (visiblePoint.symbolLocations && visiblePoint.symbolLocations.length && series.marker.visible) {
+                series.chart.markerRender.renderMarker(
+                    series, visiblePoint, visiblePoint.symbolLocations[0], visiblePoint.symbolLocations.length - 1, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelCollections = [];
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                if (visiblePoint.outliers.length === 0) {
+                    const element: Element = getElement(series.chart.dataLabelModule.commonId + visiblePoint.index + '_Text_' + 5);
+                    if (element) { element.remove(); }
+                }
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, visiblePoint,
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
+    }
     /**
      * Calculation for path direction performed here.
      *
@@ -169,7 +210,8 @@ export class BoxAndWhiskerSeries extends ColumnBase {
     ): void {
         let location: ChartLocation;
         let size: Size;
-        const symbolId: string = series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
+        const symbolId: string = series.chart.element.id + '_Series_' + series.index + '_Point_' + ((series.removedPointIndex !== null && series.removedPointIndex <= point.index) ? (point.index + 1) : point.index);
+        const previusDirection: string = getElement(symbolId + '_BoxPath') ? getElement((symbolId + '_BoxPath')).getAttribute('d') : '';
         const element: HTMLElement = series.chart.renderer.drawPath(
             new PathOption(
                 symbolId + '_BoxPath',
@@ -183,7 +225,12 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         const parentElement: Element = series.chart.renderer.createGroup({
             'id': symbolId
         });
-        parentElement.appendChild(element);
+        appendChildElement(series.chart.enableCanvas, parentElement, element,
+                           series.chart.redraw, true, null, null, null, previusDirection);
+        if (series.removedPointIndex !== null && series.removedPointIndex <= point.index) {
+            parentElement.id = series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
+            element.id = series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index + '_BoxPath';
+        }
         for (let i: number = 0; i < point.outliers.length; i++) {
             location = getPoint(
                 (point.xValue + median), point.outliers[i as number], series.xAxis, series.yAxis,
@@ -199,7 +246,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
                 true
             );
         }
-        series.seriesElement.appendChild(parentElement);
+        appendChildElement(series.chart.enableCanvas, series.seriesElement, parentElement, series.chart.redraw);
     }
     /**
      * To find the box plot values.
@@ -365,7 +412,6 @@ export class BoxAndWhiskerSeries extends ColumnBase {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
          * Destroys the candle series.

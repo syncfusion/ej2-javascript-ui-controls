@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/indent */
 /**
  * Used for stock event calculations.
  */
@@ -63,16 +62,16 @@ export class StockEvents extends BaseTooltip {
                     );
                     let stockEventDate: number = this.dateParse(stockEvent.date).getTime();
                     stockEventDate = this.stockChart.isDateTimeCategory ? series.xAxis.labels.indexOf(stockEventDate.toString()) :
-                    stockEventDate;
+                        stockEventDate;
                     if (withIn(stockEventDate , series.xAxis.visibleRange) && (stockEventDate >= series.xMin &&
                         stockEventDate <= series.xMax)) {
                         if (stockEvent.seriesIndexes.length > 0) {
                             for (let j: number = 0; j < stockEvent.seriesIndexes.length; j++) {
                                 if (stockEvent.seriesIndexes[j as number] === series.index) {
-                                        stockEventsElementGroup.appendChild(
-                                            this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
-                                 }
-                             }
+                                    stockEventsElementGroup.appendChild(
+                                        this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
+                                }
+                            }
                         } else {
                             stockEventsElementGroup.appendChild(
                                 this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
@@ -126,95 +125,95 @@ export class StockEvents extends BaseTooltip {
         const stockId: string = this.chartId + '_Series_' + series.index + '_StockEvents_' + i;
         const border: BorderModel = stockEve.border;
         switch (stockEve.type) {
-            case 'Flag':
-            case 'Circle':
-            case 'Square':
-                stockEventElement.appendChild(
-                    drawSymbol(
-                        new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '',
-                        new PathOption( stockId + '_Circle', 'transparent', border.width, border.color),
-                        this.dateParse(stockEve.date).toISOString()
-                    )
-                );
-                stockEventElement.appendChild(
-                    drawSymbol(
-                        new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '',
-                        new PathOption(stockId + '_Path', border.color, border.width, border.color),
-                        this.dateParse(stockEve.date).toISOString()
-                    )
-                );
-                stockEventElement.appendChild(
-                    drawSymbol(
-                        new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height),
-                        stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color),
-                        this.dateParse(stockEve.date).toISOString()
-                    )
-                );
-                textElement(
-                    this.stockChart.renderer as unknown as SvgRenderer,
-                    new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2,
-                                   (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'),
-                    stockEve.textStyle, stockEve.textStyle.color, stockEventElement
-                );
-                break;
+        case 'Flag':
+        case 'Circle':
+        case 'Square':
+            stockEventElement.appendChild(
+                drawSymbol(
+                    new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '',
+                    new PathOption( stockId + '_Circle', 'transparent', border.width, border.color),
+                    this.dateParse(stockEve.date).toISOString()
+                )
+            );
+            stockEventElement.appendChild(
+                drawSymbol(
+                    new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '',
+                    new PathOption(stockId + '_Path', border.color, border.width, border.color),
+                    this.dateParse(stockEve.date).toISOString()
+                )
+            );
+            stockEventElement.appendChild(
+                drawSymbol(
+                    new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height),
+                    stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color),
+                    this.dateParse(stockEve.date).toISOString()
+                )
+            );
+            textElement(
+                this.stockChart.renderer as unknown as SvgRenderer,
+                new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2,
+                               (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'),
+                stockEve.textStyle, stockEve.textStyle.color, stockEventElement
+            );
+            break;
 
-            case 'ArrowUp':
-            case 'ArrowDown':
-            case 'ArrowRight':
-            case 'ArrowLeft':
-                pathString = 'M' + ' ' + lx + ' ' + ly + ' ' + this.findArrowpaths(stockEve.type);
-                pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
-                stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
-                break;
-            case 'Triangle':
-            case 'InvertedTriangle':
-                result.height = 3 * textSize.height;
-                result.width = textSize.width + (1.5 * textSize.width);
-                stockEventElement.appendChild(
-                    drawSymbol(
-                        new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '',
-                        new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color),
-                        this.dateParse(stockEve.date).toISOString()
-                    )
-                );
-                textElement(
-                    this.stockChart.renderer as unknown as SvgRenderer,
-                    new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'),
-                    stockEve.textStyle, stockEve.textStyle.color, stockEventElement
-                );
-                break;
-            case 'Text':
-                textSize.height += 8; //padding for text height
-                pathString = 'M' + ' ' + (lx) + ' ' + (ly) + ' ' +
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'ArrowRight':
+        case 'ArrowLeft':
+            pathString = 'M' + ' ' + lx + ' ' + ly + ' ' + this.findArrowpaths(stockEve.type);
+            pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
+            stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
+            break;
+        case 'Triangle':
+        case 'InvertedTriangle':
+            result.height = 3 * textSize.height;
+            result.width = textSize.width + (1.5 * textSize.width);
+            stockEventElement.appendChild(
+                drawSymbol(
+                    new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '',
+                    new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color),
+                    this.dateParse(stockEve.date).toISOString()
+                )
+            );
+            textElement(
+                this.stockChart.renderer as unknown as SvgRenderer,
+                new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'),
+                stockEve.textStyle, stockEve.textStyle.color, stockEventElement
+            );
+            break;
+        case 'Text':
+            textSize.height += 8; //padding for text height
+            pathString = 'M' + ' ' + (lx) + ' ' + (ly) + ' ' +
                     'L' + ' ' + (lx - 5) + ' ' + (ly - 5) + ' ' +
                     'L' + ' ' + (lx - ((textSize.width ) / 2)) + ' ' + (ly - 5) + ' ' +
                     'L' + ' ' + (lx - ((textSize.width ) / 2)) + ' ' + (ly - textSize.height) + ' ' +
                     'L' + ' ' + (lx + ((textSize.width ) / 2)) + ' ' + (ly - textSize.height) + ' ' +
                     'L' + ' ' + (lx + ((textSize.width ) / 2)) + ' ' + (ly - 5) + ' ' +
                     'L' + ' ' + (lx + 5) + ' ' + (ly - 5) + ' ' + 'Z';
-                pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
-                stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
-                textElement(
-                    this.stockChart.renderer as unknown as SvgRenderer,
-                    new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'),
-                    stockEve.textStyle, stockEve.textStyle.color, stockEventElement
-                );
-                break;
-            default:
-                //pin type calculation.
-                pathString = 'M' + ' ' + lx + ' ' + ly + ' ' +
+            pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
+            stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
+            textElement(
+                this.stockChart.renderer as unknown as SvgRenderer,
+                new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'),
+                stockEve.textStyle, stockEve.textStyle.color, stockEventElement
+            );
+            break;
+        default:
+            //pin type calculation.
+            pathString = 'M' + ' ' + lx + ' ' + ly + ' ' +
                     'L' + ' ' + (lx - ((textSize.width) / 2)) + ' ' + (ly - textSize.height / 3) + ' ' +
                     'L' + ' ' + (lx - ((textSize.width) / 2)) + ' ' + (ly - textSize.height) + ' ' +
                     'L' + ' ' + (lx + ((textSize.width) / 2)) + ' ' + (ly - textSize.height) + ' ' +
                     'L' + ' ' + (lx + ((textSize.width) / 2)) + ' ' + (ly - textSize.height / 3) + ' ' + 'Z';
-                pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
-                stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
-                //append text element
-                textElement(
-                    this.stockChart.renderer as unknown as SvgRenderer,
-                    new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'),
-                    stockEve.textStyle, stockEve.textStyle.color, stockEventElement
-                );
+            pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
+            stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
+            //append text element
+            textElement(
+                this.stockChart.renderer as unknown as SvgRenderer,
+                new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'),
+                stockEve.textStyle, stockEve.textStyle.color, stockEventElement
+            );
         }
     }
 
@@ -281,18 +280,18 @@ export class StockEvents extends BaseTooltip {
     private findArrowpaths(type: FlagType): string {
         let arrowString: string = '';
         switch (type) {
-            case 'ArrowUp':
-                arrowString = 'l -10 10 l 5 0 l 0 10 l 10 0 l 0 -10 l 5 0 z';
-                break;
-            case 'ArrowDown':
-                arrowString = 'l -10 -10 l 5 0 l 0 -10 l 10 0 l 0 10 l 5 0 z';
-                break;
-            case 'ArrowLeft':
-                arrowString = 'l -10 -10 l 0 5 l -10 0 l 0 10 l 10 0 l 0 5 z';
-                break;
-            case 'ArrowRight':
-                arrowString = 'l 10 -10 l 0 5 l 10 0 l 0 10 l -10 0 l 0 5 z';
-                break;
+        case 'ArrowUp':
+            arrowString = 'l -10 10 l 5 0 l 0 10 l 10 0 l 0 -10 l 5 0 z';
+            break;
+        case 'ArrowDown':
+            arrowString = 'l -10 -10 l 5 0 l 0 -10 l 10 0 l 0 10 l 5 0 z';
+            break;
+        case 'ArrowLeft':
+            arrowString = 'l -10 -10 l 0 5 l -10 0 l 0 10 l 10 0 l 0 5 z';
+            break;
+        case 'ArrowRight':
+            arrowString = 'l 10 -10 l 0 5 l 10 0 l 0 10 l -10 0 l 0 5 z';
+            break;
         }
         return arrowString;
     }
@@ -332,14 +331,14 @@ export class StockEvents extends BaseTooltip {
     }
 }
 
-// eslint-disable-next-line valid-jsdoc
 /**
- * To initialthe array
+ * To initial the array.
  *
- * @param {number} numrows numrows
- * @param {number} numcols numcols
- * @param {ChartLocation} initial initial
- * @returns {ChartLocation[][]} ChartLocation
+ * @private
+ * @param {number} numrows The number of rows in the array.
+ * @param {number} numcols The number of columns in the array.
+ * @param {ChartLocation} initial The initial value to fill the array with.
+ * @returns {ChartLocation[]} An array filled with the specified initial value.
  */
 function initialArray(numrows: number, numcols: number, initial: ChartLocation): ChartLocation[][] {
     const arr: ChartLocation[][] = [];

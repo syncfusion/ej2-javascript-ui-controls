@@ -1,13 +1,17 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
 /**
  * Theme of the progressbar
  */
 import { ProgressTheme } from './index';
-import { IProgressStyle, IFontMapping } from '../model/progress-interface';
+import { IProgressStyle } from '../model/progress-interface';
+import { Browser } from '@syncfusion/ej2-base';
 
-/** @private */
+/**
+ * Retrieves the theme color settings for a progress bar.
+ *
+ * @param {ProgressTheme} theme - The theme of the progress bar.
+ * @returns {IProgressStyle} - The style settings for the progress bar based on the theme.
+ * @private
+ */
 export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
     let style: IProgressStyle;
     switch (theme) {
@@ -36,7 +40,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: 'rgba(249, 250, 251, 1)', fontFamily: 'Roboto'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#000000', fontStyle: 'Normal', fontFamily: 'Roboto'
             },
             circularLabelFont: {
@@ -69,7 +73,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#F9FAFB', fontFamily: 'Helvetica Neue'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#000000', fontStyle: 'Normal', fontFamily: 'Helvetica Neue'
             },
             circularLabelFont: {
@@ -102,7 +106,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#F9FAFB', fontFamily: 'Helvetica Neue'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#000000', fontStyle: 'Normal', fontFamily: 'Helvetica Neue'
             },
             circularLabelFont: {
@@ -135,7 +139,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#000000', fontFamily: 'Segoe UI'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
             },
             circularLabelFont: {
@@ -168,7 +172,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#F9FAFB', fontFamily: 'Inter'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Inter'
             },
             circularLabelFont: {
@@ -201,7 +205,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#1F2937', fontFamily: 'Inter'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#D1D5DB', fontStyle: 'Normal', fontFamily: 'Inter'
             },
             circularLabelFont: {
@@ -236,7 +240,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: theme === 'BootstrapDark' ? '#1A1A1A' : theme === 'FabricDark' ? '#DADADA' : 'rgba(18, 18, 18, 1)', fontFamily: theme === 'BootstrapDark' ? 'Helvetica Neue' : theme === 'FabricDark' ? 'Segoe UI' : 'Roboto'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#000000', fontStyle: 'Normal', fontFamily: theme === 'BootstrapDark' ? 'Helvetica Neue' : theme === 'FabricDark' ? 'Segoe UI' : 'Roboto'
             },
             circularLabelFont: {
@@ -269,7 +273,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#F9FAFB', fontFamily: 'Helvetica Neue'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Helvetica Neue'
             },
             circularLabelFont: {
@@ -302,7 +306,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#212529', fontFamily: 'Helvetica Neue'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Helvetica Neue'
             },
             circularLabelFont: {
@@ -335,7 +339,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#323130', fontFamily: 'Segoe UI'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Segoe UI'
             },
             circularLabelFont: {
@@ -368,7 +372,7 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             tooltipLabelFont: {
                 color: '#F3F2F1', fontFamily: 'Segoe UI'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Segoe UI'
             },
             circularLabelFont: {
@@ -376,72 +380,138 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             }
         };
         break;
-        case 'Material3':
-            style = {
-                linearTrackColor: '#E7E0EC',
-                linearProgressColor: '#6750A4',
-                circularTrackColor: '#E7E0EC',
-                circularProgressColor: '#6750A4',
-                backgroundColor: 'transparent',
-                progressOpacity: 1,
-                trackOpacity: 1,
-                bufferOpacity: 0.24,
-                linearGapWidth: 4,
-                circularGapWidth: 4,
-                linearTrackThickness: 4,
-                linearProgressThickness: 4,
-                circularTrackThickness: 4,
-                circularProgressThickness: 4,
-                tooltipFill: '#313033',
-                tooltipLightLabel: '#F4EFF4',
-                success: '#0B6A0B',
-                danger: '#D13438',
-                warning: '#CA5010',
-                info: '#038387',
-                tooltipLabelFont: {
-                    size: '12px', fontWeight: '400', color: '#F4EFF4', fontStyle: 'Normal', fontFamily: 'Roboto'
-                },
-                linearLabelFont:{ 
-                    size: '10', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Roboto'
-                }, 
-                circularLabelFont: {
-                    size: '12', fontWeight: '500', color: '#6750A4', fontStyle: 'Normal', fontFamily: 'Roboto'
-                }
-            };
-            break;
-        case 'Material3Dark':
-            style = {
-                linearTrackColor: '#49454F',
-                linearProgressColor: '#D0BCFF',
-                circularTrackColor: '#49454F',
-                circularProgressColor: '#D0BCFF',
-                backgroundColor: 'transparent',
-                progressOpacity: 1,
-                trackOpacity: 1,
-                bufferOpacity: 0.24,
-                linearGapWidth: 4,
-                circularGapWidth: 4,
-                linearTrackThickness: 4,
-                linearProgressThickness: 4,
-                circularTrackThickness: 4,
-                circularProgressThickness: 4,
-                tooltipFill: '#E6E1E5',
-                tooltipLightLabel: '#313033',
-                success: '#0B6A0B',
-                danger: '#D13438',
-                warning: '#CA5010',
-                info: '#038387',
+    case 'Fluent2':
+        style = {
+            linearTrackColor: '#E6E6E6',
+            linearProgressColor: '#0F6CBD',
+            circularTrackColor: '#E6E6E6',
+            circularProgressColor: '#0F6CBD',
+            backgroundColor: 'transparent',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.35,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: Browser.isDevice ? 4 : 2,
+            linearProgressThickness: Browser.isDevice ? 4 : 2,
+            circularTrackThickness: Browser.isDevice ? 2 : 2,
+            circularProgressThickness: Browser.isDevice ? 2 : 2,
+            tooltipFill: '#FFFFFF',
+            tooltipLightLabel: '#242424',
+            success: '#107C10',
+            danger: '#D13438',
+            warning: '#BC4B09',
+            info: '#008AA9',
+            tooltipLabelFont: {
+                color: '#242424', fontFamily: 'Segoe UI'
+            },
+            linearLabelFont: {
+                size: '12', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
+            },
+            circularLabelFont: {
+                size: '12', fontWeight: '500', color: '#242424', fontStyle: 'Normal', fontFamily: 'Segoe UI'
+            }
+        };
+        break;
+    case 'Fluent2Dark':
+        style = {
+            linearTrackColor: '#333333',
+            linearProgressColor: '#115EA3',
+            circularTrackColor: '#333333',
+            circularProgressColor: '#115EA3',
+            backgroundColor: 'transparent',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.35,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: Browser.isDevice ? 4 : 2,
+            linearProgressThickness: Browser.isDevice ? 4 : 2,
+            circularTrackThickness: Browser.isDevice ? 2 : 2,
+            circularProgressThickness: Browser.isDevice ? 2 : 2,
+            tooltipFill: '#292929',
+            tooltipLightLabel: '#FFFFFF',
+            success: '#107C10',
+            danger: '#DC626D',
+            warning: '#FAA06B',
+            info: '#0099BC',
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI'
+            },
+            linearLabelFont: {
+                size: '12', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
+            },
+            circularLabelFont: {
+                size: '12', fontWeight: '500', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
+            }
+        };
+        break;
+    case 'Material3':
+        style = {
+            linearTrackColor: '#E7E0EC',
+            linearProgressColor: '#6750A4',
+            circularTrackColor: '#E7E0EC',
+            circularProgressColor: '#6750A4',
+            backgroundColor: 'transparent',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.24,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: 4,
+            linearProgressThickness: 4,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            tooltipFill: '#313033',
+            tooltipLightLabel: '#F4EFF4',
+            success: '#0B6A0B',
+            danger: '#D13438',
+            warning: '#CA5010',
+            info: '#038387',
+            tooltipLabelFont: {
+                size: '12px', fontWeight: '400', color: '#F4EFF4', fontStyle: 'Normal', fontFamily: 'Roboto'
+            },
+            linearLabelFont: {
+                size: '10', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Roboto'
+            },
+            circularLabelFont: {
+                size: '12', fontWeight: '500', color: '#6750A4', fontStyle: 'Normal', fontFamily: 'Roboto'
+            }
+        };
+        break;
+    case 'Material3Dark':
+        style = {
+            linearTrackColor: '#49454F',
+            linearProgressColor: '#D0BCFF',
+            circularTrackColor: '#49454F',
+            circularProgressColor: '#D0BCFF',
+            backgroundColor: 'transparent',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.24,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: 4,
+            linearProgressThickness: 4,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            tooltipFill: '#E6E1E5',
+            tooltipLightLabel: '#313033',
+            success: '#0B6A0B',
+            danger: '#D13438',
+            warning: '#CA5010',
+            info: '#038387',
             tooltipLabelFont: {
                 color: '#313033', fontFamily: 'roboto'
             },
-            linearLabelFont:{ 
+            linearLabelFont: {
                 size: '10', fontWeight: '400', color: '#371E73', fontStyle: 'Normal', fontFamily: 'Roboto'
             },
             circularLabelFont: {
                 size: '12', fontWeight: '500', color: '#D0BCFF', fontStyle: 'Normal', fontFamily: 'Roboto'
             }
-            };
-            break;
+        };
+        break;
     default:
         style = {
             linearTrackColor: '#EAEAEA',
@@ -465,13 +535,13 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             warning: '#944000',
             info: '#0056b3',
             tooltipLabelFont: {
-                color: '#333333', fontFamily:'Segoe UI'
+                color: '#333333', fontFamily: 'Segoe UI'
             },
-            linearLabelFont:{ 
-                size: '10', fontWeight: '400', color: null, fontStyle: 'Normal', fontFamily:'Segoe UI'
+            linearLabelFont: {
+                size: '10', fontWeight: '400', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI'
             },
             circularLabelFont: {
-                size: '12', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily:'Segoe UI'
+                size: '12', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI'
             }
         };
         break;

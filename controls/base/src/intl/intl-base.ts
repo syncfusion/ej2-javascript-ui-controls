@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
 import { NumberFormatOptions, DateFormatOptions, defaultCurrencyCode } from '../internationalization';
 import { NumericParts } from './number-parser';
 import { getValue, isNullOrUndefined, extend, isBlazor } from '../util';
@@ -32,12 +33,12 @@ export const blazorCultureFormats: Object = {
 /**
  * Date base common constants and function for date parser and formatter.
  */
-// eslint-disable-next-line
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace IntlBase {
-    /* eslint-disable */
-    // tslint:disable-next-line:max-line-length.
+    // eslint-disable-next-line security/detect-unsafe-regex
     export const negativeDataRegex: RegExp = /^(('[^']+'|''|[^*#@0,.E])*)(\*.)?((([#,]*[0,]*0+)(\.0*[0-9]*#*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
-    export const customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*[0#\ ]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
+    // eslint-disable-next-line security/detect-unsafe-regex
+    export const customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*[0# ]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     export const latnParseRegex: RegExp = /0|1|2|3|4|5|6|7|8|9/g;
     const fractionRegex: RegExp = /[0-9]/g;
     export const defaultCurrency: string = '$';
@@ -89,8 +90,8 @@ export namespace IntlBase {
         minimumFraction?: number;
         maximumFraction?: number;
     }
-    export const formatRegex: RegExp = new regExp("(^[ncpae]{1})([0-1]?[0-9]|20)?$", "i");
-    export const currencyFormatRegex: RegExp = new regExp("(^[ca]{1})([0-1]?[0-9]|20)?$", "i");
+    export const formatRegex: RegExp = new regExp('(^[ncpae]{1})([0-1]?[0-9]|20)?$', 'i');
+    export const currencyFormatRegex: RegExp = new regExp('(^[ca]{1})([0-1]?[0-9]|20)?$', 'i');
     export const curWithoutNumberRegex: RegExp = /(c|a)$/ig;
     const typeMapper: Object = {
         '$': 'isCurrency',
@@ -111,7 +112,6 @@ export namespace IntlBase {
         gmtFormat?: string;
         gmtZeroFormat?: string;
     }
-    /* tslint:disable:quotemark */
     export const defaultObject: Object = {
         'dates': {
             'calendars': {
@@ -662,7 +662,6 @@ export namespace IntlBase {
             }
         }
     };
-    /* tslint:enable:quotemark */
     export const monthIndex: Object = {
         3: 'abbreviated',
         4: 'wide',
@@ -814,7 +813,7 @@ export namespace IntlBase {
         const ret: NumericSkeleton = {};
         const pattern: string = matches[1].toUpperCase();
         ret.isAccount = (pattern === 'A');
-        (<any>ret).type = patternMatcher[pattern];
+        (<any>ret).type = patternMatcher[`${pattern}`];
         if (skeleton.length > 1) {
             ret.fractionDigits = parseInt(matches[2], 10);
         }
@@ -864,7 +863,7 @@ export namespace IntlBase {
     export function changeCurrencySymbol(val: string, sym: string): string {
         if (val) {
             val = val.replace(IntlBase.defaultCurrency, sym);
-            return (sym === '')? val.trim() : val;
+            return (sym === '') ? val.trim() : val;
         }
         return '';
     }
@@ -897,7 +896,7 @@ export namespace IntlBase {
         const formatSplit: string[] = format.split(';');
         const data: string[] = ['pData', 'nData', 'zeroData'];
         for (let i: number = 0; i < formatSplit.length; i++) {
-            (<any>options)[data[i]] = customNumberFormat(formatSplit[i], dOptions, obj);
+            (<any>options)[`${data[parseInt(i.toString(), 10)]}`] = customNumberFormat(formatSplit[parseInt(i.toString(), 10)], dOptions, obj);
         }
         if (isNullOrUndefined(options.nData)) {
             options.nData = extend({}, options.pData);
@@ -924,8 +923,8 @@ export namespace IntlBase {
         cOptions.nlead = pattern[1];
         cOptions.nend = pattern[10];
         let integerPart: string = pattern[6];
-        const spaceCapture: boolean = integerPart.match(/\ $/g) ? true : false;
-        const spaceGrouping: boolean = integerPart.replace(/\ $/g, '').indexOf(' ') !== -1;
+        const spaceCapture: boolean = integerPart.match(/ $/g) ? true : false;
+        const spaceGrouping: boolean = integerPart.replace(/ $/g, '').indexOf(' ') !== -1;
         cOptions.useGrouping = integerPart.indexOf(',') !== -1 || spaceGrouping;
         integerPart = integerPart.replace(/,/g, '');
         const fractionPart: string = pattern[7];
@@ -956,7 +955,7 @@ export namespace IntlBase {
             const symbolPattern: string = getSymbolPattern(
                 cOptions.type, dOptions.numberMapper.numberSystem, numObject, false);
             if (cOptions.useGrouping) {
-                cOptions.groupSeparator = spaceGrouping? ' ' : (<any>dOptions).numberMapper.numberSymbols[mapper[2]];
+                cOptions.groupSeparator = spaceGrouping ? ' ' : (<any>dOptions).numberMapper.numberSymbols[mapper[2]];
                 cOptions.groupData = NumberFormat.getGroupingDetails(symbolPattern.split(';')[0]);
             }
             cOptions.nlead = cOptions.nlead.replace(/'/g, '');
@@ -979,8 +978,8 @@ export namespace IntlBase {
             const part: string = parts[parseInt(i.toString(), 10)];
             const loc: number = part.indexOf(actual);
             if ((loc !== -1) && ((loc < part.indexOf('\'')) || (loc > part.lastIndexOf('\'')))) {
-                (<any>options)[(<any>typeMapper)[i]] = part.substr(0, loc) + symbol + part.substr(loc + 1);
-                (<any>options)[(<any>typeMapper)[actual]] = true;
+                (<any>options)[`${(<any>typeMapper)[parseInt(i.toString(), 10)]}`] = part.substr(0, loc) + symbol + part.substr(loc + 1);
+                (<any>options)[`${(<any>typeMapper)[`${actual}`]}`] = true;
                 options.type = options.isCurrency ? 'currency' : 'percent';
                 break;
             }
@@ -995,7 +994,7 @@ export namespace IntlBase {
      * @returns {string} ?
      */
     export function getDateSeparator(dateObj: Object): string {
-        const value: string[] = (getValue('dateFormats.short', dateObj) || '').match(/[d‏M‏]([^d‏M])[d‏M‏]/i);
+        const value: string[] = (getValue('dateFormats.short', dateObj) || '').match(/[dM]([^dM])[dM]/i);
         return value ? value[1] : '/';
     }
 
@@ -1017,7 +1016,7 @@ export namespace IntlBase {
         let actualPattern: string = options.format || getResultantPattern(options.skeleton, dependable.dateObject, options.type);
         if (isExcelFormat) {
             actualPattern = actualPattern.replace(patternRegex, (pattern: string): string => {
-                return (<any>patternMatch)[pattern];
+                return (<any>patternMatch)[`${pattern}`];
             });
             if (actualPattern.indexOf('z') !== -1) {
                 const tLength: number = actualPattern.match(/z/g).length;
@@ -1048,9 +1047,9 @@ export namespace IntlBase {
      * @param {any} option ?
      * @returns {any} ?
      */
-    function processSymbol(actual: string, option: any): any {
+    export function processSymbol(actual: string, option: any): any {
         if (actual.indexOf(',') !== -1) {
-            let split: any = actual.split(',');
+            const split: any = actual.split(',');
             actual = (split[0] + getValue('numberMapper.numberSymbols.group', option) +
                 split[1].replace('.', getValue('numberMapper.numberSymbols.decimal', option)));
         } else {

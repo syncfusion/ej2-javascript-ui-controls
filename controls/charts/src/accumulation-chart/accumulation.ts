@@ -1,11 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable radix */
-/* eslint-disable curly */
-/* eslint-disable jsdoc/valid-types */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart file
  */
@@ -18,7 +10,7 @@ import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';
 import { AccumulationType, AccumulationSelectionMode, AccumulationHighlightMode } from './model/enum';
 import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs } from './model/pie-interface';
 import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs, IAccSelectionCompleteEventArgs } from './model/pie-interface';
-import { Theme, getThemeColor } from '../common/model/theme';
+import { getThemeColor } from '../common/model/theme';
 import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs, ITooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, pointClick } from '../common/model/constants';
@@ -212,7 +204,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Options for customizing the `title` of accumulation chart.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public titleStyle: FontModel;
 
     /**
@@ -227,7 +219,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Options for customizing the `subtitle` of accumulation chart.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public subTitleStyle: FontModel;
 
     /**
@@ -460,7 +452,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after accumulation chart loaded.
      *
-     * @event
+     * @event loaded
      * @blazorProperty 'Loaded'
      */
     @Event()
@@ -477,7 +469,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before accumulation chart load.
      *
-     * @event
+     * @event load
      */
     @Event()
     public load: EmitType<IAccLoadedEventArgs>;
@@ -485,7 +477,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the series gets rendered.
      *
-     * @event
+     * @event seriesRender
      * @deprecated
      */
     @Event()
@@ -494,7 +486,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the legend gets rendered.
      *
-     * @event
+     * @event legendRender
      * @deprecated
      */
     @Event()
@@ -503,7 +495,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the data label for series gets rendered.
      *
-     * @event
+     * @event textRender
      * @deprecated
      */
     @Event()
@@ -512,7 +504,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the tooltip for series gets rendered.
      *
-     * @event
+     * @event tooltipRender
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
@@ -520,7 +512,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before each points for series gets rendered.
      *
-     * @event
+     * @event pointRender
      * @deprecated
      */
 
@@ -530,7 +522,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the annotation gets rendered.
      *
-     * @event
+     * @event annotationRender
      * @deprecated
      */
 
@@ -540,7 +532,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the prints gets started.
      *
-     * @event
+     * @event beforePrint
      * @blazorProperty 'OnPrint'
      */
 
@@ -550,7 +542,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on hovering the accumulation chart.
      *
-     * @event
+     * @event chartMouseMove
      * @blazorProperty 'OnChartMouseMove'
      */
 
@@ -560,7 +552,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on clicking the accumulation chart.
      *
-     * @event
+     * @event chartMouseClick
      * @blazorProperty 'OnChartMouseClick'
      */
 
@@ -570,7 +562,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on double clicking the accumulation chart.
      *
-     * @event
+     * @event chartDoubleClick
      * @blazorProperty 'OnChartDoubleClick'
      */
 
@@ -580,7 +572,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on point click.
      *
-     * @event
+     * @event pointClick
      * @blazorProperty 'OnPointClick'
      */
 
@@ -590,7 +582,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on point move.
      *
-     * @event
+     * @event pointMove
      * @blazorProperty 'PointMoved'
      */
 
@@ -600,7 +592,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after animation gets completed for series.
      *
-     * @event
+     * @event animationComplete
      * @blazorProperty 'OnAnimationComplete'
      */
     @Event()
@@ -609,7 +601,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on mouse down.
      *
-     * @event
+     * @event chartMouseDown
      * @blazorProperty 'OnChartMouseDown'
      */
 
@@ -619,7 +611,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers while cursor leaves the accumulation chart.
      *
-     * @event
+     * @event chartMouseLeave
      * @blazorProperty 'OnChartMouseLeave'
      */
 
@@ -629,7 +621,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on mouse up.
      *
-     * @event
+     * @event chartMouseUp
      * @blazorProperty 'OnChartMouseUp'
      */
 
@@ -639,7 +631,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before window resize.
      *
-     * @event
+     * @event beforeResize
      * @blazorProperty 'BeforeResize'
      */
     @Event()
@@ -648,7 +640,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after window resize.
      *
-     * @event
+     * @event resized
      * @blazorProperty 'Resized'
      */
 
@@ -658,7 +650,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after the export completed.
      *
-     * @event
+     * @event afterExport
      * @blazorProperty 'AfterExport'
      */
     @Event()
@@ -687,6 +679,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Animate the series bounds on data change.
      *
      * @private
+     * @param {number} duration - The duration of the animation.
+     * @returns {void}
      */
     public animate(duration?: number): void {
         this.duration = (duration === 0 && animationMode === 'Enable') ? 700 : duration;
@@ -784,7 +778,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public previousTargetId: string = '';
     /** @private */
     public isLegendClicked: boolean = false;
-    /** @private */
+    /**
+     * Gets the type of accumulation chart.
+     *
+     * @returns {AccumulationType} - The type of accumulation chart.
+     * @private
+     * */
     public get type(): AccumulationType {
         if (this.series && this.series.length) {
             return this.series[0].type;
@@ -813,17 +812,21 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /** @private */
     public accumulationResizeBound: EventListenerOrEventListenerObject;
     /**
-     * Constructor for creating the AccumulationChart widget
+     * Constructor for creating the AccumulationChart widget.
      *
      * @private
+     * @param {AccumulationChartModel} options - Specifies the accumulation chart model.
+     * @param {string | HTMLElement} element - Specifies the element for the accumulation chart.
      */
     constructor(options?: AccumulationChartModel, element?: string | HTMLElement) {
         super(options, element);
     }
 
-    // accumulation chart methods
+    // accumulation chart methods.
     /**
-     *  To create svg object, renderer and binding events for the container.
+     * To create svg object, renderer and binding events for the container.
+     *
+     * @returns {void}
      */
     protected preRender(): void {
         const blazor: string = 'Blazor';
@@ -841,15 +844,18 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.element.setAttribute('dir', this.enableRtl ? 'rtl' : 'ltr');
     }
     /**
-     * Themeing for chart goes here
+     * Themeing for chart goes here.
+     *
+     * @returns {void}
      */
-
     private setTheme(): void {
         /*! Set theme for accumulation chart */
-        this.themeStyle = getThemeColor(this.theme, false);
+        this.themeStyle = getThemeColor(this.theme, false, this);
     }
     /**
-     * To render the accumulation chart elements
+     * To render the accumulation chart elements.
+     *
+     * @returns {void}
      */
     protected render(): void {
         if (this.element.className.indexOf('e-accumulationchart') === -1) {
@@ -883,12 +889,13 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     }
     /**
-     * Method to unbind events for accumulation chart
+     * Method to unbind events for accumulation chart.
+     *
+     * @returns {void}
      */
-
     private unWireEvents(): void {
         /*! Find the Events type */
-        const isIE11Pointer: Boolean = Browser.isPointer;
+        const isIE11Pointer: boolean = Browser.isPointer;
 
         const start: string = Browser.touchStartEvent;
         const move: string = Browser.touchMoveEvent;
@@ -912,7 +919,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         );
     }
     /**
-     * Method to bind events for the accumulation chart
+     * Method to bind events for the accumulation chart.
+     *
+     * @returns {void}
      */
     private wireEvents(): void {
         /**
@@ -923,7 +932,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         /*! Find the Events type */
 
-        const isIE11Pointer: Boolean = Browser.isPointer;
+        const isIE11Pointer: boolean = Browser.isPointer;
         const start: string = Browser.touchStartEvent;
         const stop: string = Browser.touchEndEvent;
         const move: string = Browser.touchMoveEvent;
@@ -950,7 +959,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.setStyle(<HTMLElement>this.element);
     }
     /**
-     * Method to set mouse x, y from events
+     * Method to set mouse x, y from events.
+     *
+     * @param {PointerEvent} e - The pointer event containing mouse coordinates.
+     * @returns {void}
      */
     private setMouseXY(e: PointerEvent): void {
         let pageX: number;
@@ -976,7 +988,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the mouse end.
      *
-     * @returns {boolean} Mouse end of accumulation chart.
+     * @param {PointerEvent} e - The pointer event containing mouse coordinates.
+     * @returns {boolean} - Mouse end of accumulation chart.
      * @private
      */
     public accumulationMouseEnd(e: PointerEvent): boolean {
@@ -1007,7 +1020,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the mouse start.
      *
-     * @returns {boolean} Mouse start of accumulation chart.
+     * @param {PointerEvent} e - The pointer event containing mouse coordinates.
+     * @returns {boolean} - Mouse start of accumulation chart.
      * @private
      */
     public accumulationMouseStart(e: PointerEvent): boolean {
@@ -1018,7 +1032,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the accumulation chart resize.
      *
-     * @returns {boolean} Resize method of accumulation chart.
+     * @returns {boolean} - Resize method of accumulation chart.
      * @private
      */
     public accumulationResize(): boolean {
@@ -1058,6 +1072,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Handles the print method for accumulation chart control.
+     *
+     * @param {string[] | string | Element} id - The id of the accumulation chart to be printed on the page.
+     * @returns {void}
      */
     public print(id?: string[] | string | Element): void {
         // To handle the print funtion in IE and Edge browsers
@@ -1070,6 +1087,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Export method for the chart.
+     *
+     * @param {ExportType} type - The type of export.
+     * @param {string} fileName - The name of the file for export.
+     * @returns {void}
      */
     public export(type: ExportType, fileName: string): void {
         if (this.exportModule) {
@@ -1081,7 +1102,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     }
 
     /**
-     * Applying styles for accumulation chart element
+     * Applying styles for accumulation chart element.
+     *
+     * @param {HTMLElement} element - Specifies the element.
+     * @returns {void}
      */
     private setStyle(element: HTMLElement): void {
         element.style.touchAction = 'element';
@@ -1117,6 +1141,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         case 'FluentDark':
             tabColor = '#9e9e9e';
             break;
+        case 'Fluent2':
+        case 'Fluent2Dark':
+            tabColor = '#0078D4';
+            break;
         default:
             tabColor = '#9e9e9e';
             break;
@@ -1131,6 +1159,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Method to set the annotation content dynamically for accumulation.
+     *
+     * @param {number} annotationIndex - The index of the annotation.
+     * @param {string} content - The content to set for the annotation.
+     * @returns {void}
      */
     public setAnnotationValue(annotationIndex: number, content: string): void {
         const annotation: AccumulationAnnotationSettings = <AccumulationAnnotationSettings>this.annotations[annotationIndex as number];
@@ -1156,7 +1188,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the mouse move on accumulation chart.
      *
-     * @returns {boolean} Mouse move of accumulation chart.
+     * @param {PointerEvent} e - The pointer event containing mouse coordinates.
+     * @returns {boolean} - Mouse move of accumulation chart.
      * @private
      */
     public accumulationMouseMove(e: PointerEvent): boolean {
@@ -1208,7 +1241,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the keyboard onkeydown on chart.
      *
-     * @returns {boolean} false
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {boolean} - false
      * @private
      */
     public accumulationChartKeyDown(e: KeyboardEvent): boolean {
@@ -1226,16 +1260,17 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             actionKey = 'CtrlP';
         }
 
-        if (actionKey !== '')
+        if (actionKey !== '') {
             this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
-
+        }
         return false;
     }
 
     /**
      * Handles the keyboard onkeydown on chart.
      *
-     * @returns {boolean} false
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {boolean} - false
      * @private
      */
     public accumulationChartKeyUp(e: KeyboardEvent): boolean {
@@ -1326,8 +1361,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (actionKey !== '') {
             this.chartKeyboardNavigations(e, targetId, actionKey);
         }
-
-
         return false;
     }
 
@@ -1361,6 +1394,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the document onkey.
      *
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {void}
      * @private
      */
     private documentKeyHandler(e: KeyboardEvent): void {
@@ -1467,7 +1502,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the mouse double click on accumulation chart.
      *
-     * @returns {boolean} Mouse double click of accumulation chart.
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {boolean} - Mouse double click of accumulation chart.
      * @private
      */
     public accumulationOnDoubleClick(e: PointerEvent): boolean {
@@ -1477,7 +1513,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the mouse click on accumulation chart.
      *
-     * @returns {boolean} Mouse click of accumulation chart.
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {boolean} - Mouse click of accumulation chart.
      * @private
      */
     public accumulationOnMouseClick(e: PointerEvent): boolean {
@@ -1517,7 +1554,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the mouse right click on accumulation chart.
      *
-     * @returns {boolean} Right click of accumulation chart.
+     * @param {MouseEvent | PointerEvent} event - The mouse event or pointer event.
+     * @returns {boolean} - Right click of accumulation chart.
      * @private
      */
     public accumulationRightClick(event: MouseEvent | PointerEvent): boolean {
@@ -1532,7 +1570,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Handles the mouse leave on accumulation chart.
      *
-     * @returns {boolean} Mouse leave of accumulation chart.
+     * @param {PointerEvent} e - The pointer event.
+     * @returns {boolean} - Mouse leave of accumulation chart.
      * @private
      */
     public accumulationMouseLeave(e: PointerEvent): boolean {
@@ -1548,7 +1587,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     }
 
     /**
-     * Method to set culture for chart
+     * Method to set culture for chart.
+     *
+     * @returns {void}
      */
     private setCulture(): void {
         this.intl = new Internationalization();
@@ -1556,6 +1597,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Method to create SVG element for accumulation chart.
+     *
+     * @returns {void}
      */
     private createPieSvg(): void {
         this.removeSvg();
@@ -1564,7 +1607,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * To Remove the SVG from accumulation chart.
      *
-     * @returns {boolean} Remove svg.
+     * @returns {boolean} - Remove svg.
      * @private
      */
     public removeSvg(): void {
@@ -1587,6 +1630,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     }
     /**
      * Method to create the secondary element for tooltip, datalabel and annotaitons.
+     *
+     * @returns {void}
      */
     private createSecondaryElement(): void {
         const element: Element = redrawElement(this.redraw, this.element.id + '_Secondary_Element') ||
@@ -1598,7 +1643,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     }
 
     /**
-     * Method to find visible series based on series types
+     * Method to find visible series based on series types.
+     *
+     * @returns {void}
      */
     private calculateVisibleSeries(): void {
         this.visibleSeries = [];
@@ -1611,7 +1658,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * To find points from dataSource
+     * To find points from dataSource.
+     *
+     * @param {boolean} render - Indicates whether to render the points (default: true).
+     * @returns {void}
      */
     private processData(render: boolean = true): void {
         this.seriesCounts = 0;
@@ -1621,9 +1671,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * To refresh the accumulation chart
+     * To refresh the accumulation chart.
      *
      * @private
+     * @returns {void}
      */
     public refreshChart(): void {
         this.doGrouppingProcess();
@@ -1633,7 +1684,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         removeElement('chartmeasuretext');
     }
     /**
-     * Method to find groupped points
+     * Method to find groupped points.
+     *
+     * @returns {void}
      */
     private doGrouppingProcess(): void {
         const series: AccumulationSeries = this.visibleSeries[0];
@@ -1643,7 +1696,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * Method to calculate bounds for accumulation chart
+     * Method to calculate bounds for accumulation chart.
+     *
+     * @returns {void}
      */
     public calculateBounds(): void {
         this.initialClipRect = new Rect(this.margin.left, this.margin.top, this.availableSize.width, this.availableSize.height);
@@ -1654,16 +1709,20 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         let maxWidth: number = 0;
         let titleWidth: number = 0;
         if (this.title) {
-            this.titleCollection = getTitle(this.title, this.titleStyle, this.initialClipRect.width, this.enableRtl, this.themeStyle.chartTitleFont);
+            this.titleCollection = getTitle(this.title, this.titleStyle, this.initialClipRect.width,
+                                            this.enableRtl, this.themeStyle.chartTitleFont);
         }
-        titleHeight = this.title ? measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height * this.titleCollection.length : titleHeight;
+        titleHeight = this.title ? measureText(this.title, this.titleStyle,
+                                               this.themeStyle.chartTitleFont).height * this.titleCollection.length : titleHeight;
         if (this.subTitle) {
             for (const titleText of this.titleCollection) {
                 titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
                 maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
             }
-            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.enableRtl, this.themeStyle.chartTitleFont);
-            subTitleHeight = (measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length);
+            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.enableRtl,
+                                               this.themeStyle.chartSubTitleFont);
+            subTitleHeight = (measureText(this.subTitle, this.subTitleStyle,
+                                          this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length);
         }
         subtractRect(
             this.initialClipRect,
@@ -1675,8 +1734,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.calculateLegendBounds();
 
     }
-    /*
-     * Method to calculate legend bounds for accumulation chart
+    /**
+     * Method to calculate legend bounds for accumulation chart.
+     *
+     * @returns {void}
      */
     private calculateLegendBounds(): void {
         if (!this.accumulationLegendModule || !this.legendSettings.visible) {
@@ -1686,9 +1747,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.accumulationLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
     }
     /**
-     * To render elements for accumulation chart
+     * To render elements for accumulation chart.
      *
      * @private
+     * @returns {void}
      */
     public renderElements(): void {
 
@@ -1721,9 +1783,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.animateSeries = false;
     }
     /**
-     * To set the left and top position for data label template for center aligned chart
+     * To set the left and top position for data label template for center aligned chart.
      *
      * @private
+     * @returns {void}
      */
     public setSecondaryElementPosition(): void {
         const tooltipParent: HTMLDivElement = getElement(this.element.id + '_Secondary_Element') as HTMLDivElement;
@@ -1740,6 +1803,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * To render the annotaitions for accumulation series.
      *
      * @private
+     * @returns {void}
      */
     public renderAnnotation(): void {
         if (this.annotationModule) {
@@ -1749,9 +1813,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * Method to process the explode in accumulation chart
+     * Method to process the explode in accumulation chart.
      *
      * @private
+     * @returns {void}
      */
     public processExplode(): void {
         if (this.redraw) {
@@ -1763,7 +1828,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.accBaseModule.invokeExplode();
     }
     /**
-     * Method to render series for accumulation chart
+     * Method to render series for accumulation chart.
+     *
+     * @returns {void}
      */
     private renderSeries(): void {
         if (!this.redraw) {
@@ -1778,7 +1845,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     }
 
     /**
-     * Method to render border for accumulation chart
+     * Method to render border for accumulation chart.
+     *
+     * @returns {void}
      */
     private renderBorder(): void {
         const padding: number = this.border.width;
@@ -1803,7 +1872,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * Method to render legend for accumulation chart
+     * Method to render legend for accumulation chart.
+     *
+     * @returns {void}
      */
     private renderLegend(): void {
         if (!this.accumulationLegendModule || !this.legendSettings.visible) {
@@ -1819,9 +1890,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * To process the selection in accumulation chart
+     * To process the selection in accumulation chart.
      *
      * @private
+     * @returns {void}
      */
     public processSelection(): void {
         let selectedDataIndexes: Indexes[] = [];
@@ -1838,7 +1910,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * To render title for accumulation chart
+     * To render title for accumulation chart.
+     *
+     * @returns {void}
      */
     private renderTitle(): void {
         const margin: MarginModel = this.margin;
@@ -1866,15 +1940,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         );
         const space: number = (this.series[0].type === 'Pie' && this.visibleSeries[0].dataLabel.position === 'Outside' && this.visibleSeries[0].dataLabel.connectorStyle.length) ? stringToNumber(this.visibleSeries[0].dataLabel.connectorStyle.length , this.accBaseModule.radius) : 0;
         if (!this.subTitle && (this.series[0].type !== 'Funnel' && this.series[0].type !== 'Pyramid')) {
-            options.y = parseInt(this.series[0].radius) >= 80 ? options.y :
+            options.y = parseInt(this.series[0].radius, 10) >= 80 ? options.y :
                 (this.accBaseModule.center.y - this.accBaseModule.radius - padding
                     - titleHeight - legendHeight - expodeValue - space);
-            if (this.series[0].type === 'Pie' && (parseInt(this.series[0].radius) < 80 || isNaN(parseInt(this.series[0].radius)))) {
+            if (this.series[0].type === 'Pie' && (parseInt(this.series[0].radius, 10) < 80 || isNaN(parseInt(this.series[0].radius, 10)))) {
                 options.y = options.y < (this.initialClipRect.y - legendHeight) ? (this.initialClipRect.y - legendHeight) : options.y;
             }
         }
         const element: Element = textElement(
-            this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitleFont.color, this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartTitleFont
+            this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitleFont.color,
+            this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartTitleFont
         );
         if (element) {
             element.setAttribute('tabindex', '0');
@@ -1887,6 +1962,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * To update center label on mouse move.
+     *
+     * @param {Event} event - The mouse move event.
+     * @returns {void}
      */
     private updateCenterLabel(event: Event): void {
         const data: AccPointData = this.getPieData(event as PointerEvent);
@@ -1896,6 +1974,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Function to get pie data on mouse move.
+     *
+     * @param {PointerEvent | TouchEvent} e - The event object containing mouse or touch coordinates.
+     * @returns {AccPointData} - The data of the pie.
      */
     private getPieData(e: PointerEvent | TouchEvent): AccPointData {
         const dataIndex: Index = indexFinder((e.target as Element).id, true);
@@ -1907,18 +1988,22 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Function to get format of pie data on mouse move.
+     *
+     * @param {AccPoints} point - The point data.
+     * @param {AccumulationSeries} series - The series to which the point belongs.
+     * @param {string} format - The format string for the data.
+     * @returns {string} - The formatted data.
      */
     private parseFormat(point: AccPoints, series: AccumulationSeries, format: string): string {
         let value: RegExp;
         let textValue: string;
+        const regExp: RegExpConstructor = RegExp;
         for (const dataValue of Object.keys(point)) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            value = new RegExp('${point' + '.' + dataValue + '}', 'gm');
+            value = new regExp('${point' + '.' + dataValue + '}', 'gm');
             format = format.replace(value.source, point[dataValue as string]);
         }
         for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            value = new RegExp('${series' + '.' + dataValue + '}', 'gm');
+            value = new regExp('${series' + '.' + dataValue + '}', 'gm');
             textValue = series[dataValue as string];
             format = format.replace(value.source, textValue);
         }
@@ -1927,6 +2012,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * To render center label for accumulation chart.
+     *
+     * @param {boolean} isanimate - Specifies whether to animate the rendering.
+     * @returns {void}
      */
     private renderCenterLabel(isanimate?: boolean): void {
         if (!this.centerLabel.text) {
@@ -1937,14 +2025,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         const getAnchor: string = getTextAnchor(this.centerLabel.textStyle.textAlignment, this.enableRtl);
         const padding: number = 10;
         // To get side of square inside the circle , which is considered as maxwidth , d*sqrt(0.5)
-        const maxwidth: number = this.pieSeriesModule.innerRadius ? ((2 * this.pieSeriesModule.innerRadius) * (0.7071067)) : ((2 * this.pieSeriesModule.radius) * (0.7071067));
+        const maxwidth: number = this.pieSeriesModule.innerRadius ? ((2 * this.pieSeriesModule.innerRadius) * (0.7071067)) :
+            ((2 * this.pieSeriesModule.radius) * (0.7071067));
         const labelCollection: string[] = (this.format || this.centerLabel.text).split('<br>');
         const centerLabelSize: Size = measureText(labelCollection[0], this.centerLabel.textStyle, this.themeStyle.chartTitleFont);
         const collectionLength: number = labelCollection.length;
         for (let i: number = 0; i < collectionLength; i++) {
             const labelSize: Size = measureText(labelCollection[i as number], this.centerLabel.textStyle, this.themeStyle.chartTitleFont);
             if (labelSize.width > maxwidth) {
-                labelCollection.splice(i, 1, ...(textWrap(labelCollection[i as number], maxwidth, this.centerLabel.textStyle, this.enableRtl, null, null, this.themeStyle.chartTitleFont)));
+                labelCollection.splice(i, 1, ...(textWrap(labelCollection[i as number], maxwidth, this.centerLabel.textStyle,
+                                                          this.enableRtl, null, null, this.themeStyle.chartTitleFont)));
             }
         }
         if (centerLabelSize.height * (labelCollection.length) > maxwidth) {
@@ -1952,7 +2042,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         else if ((series.startAngle && series.endAngle) && (Math.abs(series.endAngle - series.startAngle) === 180)) {
             ypos = this.accBaseModule.center.y - (centerLabelSize.height * labelCollection.length / 2) +
-            ((centerLabelSize.height + padding) / 2) - this.pieSeriesModule.innerRadius / 2 + (this.pieSeriesModule.innerRadius ? padding : 0);
+            ((centerLabelSize.height + padding) / 2) - this.pieSeriesModule.innerRadius / 2 +
+            (this.pieSeriesModule.innerRadius ? padding : 0);
             if ((centerLabelSize.height * (labelCollection.length) + this.pieSeriesModule.innerRadius / 2 + padding > maxwidth)) {
                 ypos = this.accBaseModule.center.y + ((centerLabelSize.height + padding) / 2) - (maxwidth / 2);
             }
@@ -1963,16 +2054,17 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         const options: TextOption = new TextOption(
             this.element.id + '_centerLabel',
-            (((this.series[0].animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && isanimate) ? this.pieSeriesModule.center.x - 1 : this.pieSeriesModule.center.x,
+            (((this.series[0].animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && isanimate) ? this.pieSeriesModule.center.x - 1 : this.pieSeriesModule.center.x,
             ypos,
             getAnchor, '', '', 'auto'
         );
         const element: Element = textElement(
             this.renderer, options, this.centerLabel.textStyle, this.centerLabel.textStyle.color ||
-             this.themeStyle.chartTitleFont.color, this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartTitleFont
+             this.themeStyle.chartTitleFont.color, this.svgObject, false, this.redraw,
+            null, null, null, null, null, null, null, null, this.themeStyle.chartTitleFont
         );
         for (let i: number = 0; i < labelCollection.length; i++) {
-            const tspanOption: Object = { x: options.x, y: options.y + (i * centerLabelSize.height), fill: '', };
+            const tspanOption: Object = { x: options.x, y: options.y + (i * centerLabelSize.height), fill: '' };
             const tspanElement: HTMLElement = <HTMLElement>(this.renderer as SvgRenderer).createTSpan(tspanOption, '');
             tspanElement.style.fontFamily = 'inherit';
             tspanElement.style.fontStyle = 'inherit';
@@ -1981,13 +2073,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             tspanElement.textContent = labelCollection[i as number].replace(/<\/?b>/g, '');
             element.appendChild(tspanElement);
         }
-        if (isanimate && ((this.series[0].animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && this.animateSeries) {
+        if (isanimate && ((this.series[0].animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && this.animateSeries) {
             this.centerLabelDelay(element);
         }
     }
 
     /**
      * Function to delay Center label at initial stage of accumulation chart.
+     *
+     * @param {Element} element - The element to delay.
+     * @returns {void}
      */
     private centerLabelDelay(element: Element): void {
         (element as HTMLElement).style.visibility = 'hidden';
@@ -2026,17 +2121,19 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                     this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartSubTitleFont);
     }
     /**
-     * To get the series parent element
+     * To get the series parent element.
      *
      * @private
+     * @returns {Element} - The parent element of the series.
      */
     public getSeriesElement(): Element {
         return this.svgObject.getElementsByTagName('g')[0];
     }
     /**
-     * To refresh the all visible series points
+     * To refresh the all visible series points.
      *
      * @private
+     * @returns {void}
      */
     public refreshSeries(): void {
         for (const series of this.visibleSeries) {
@@ -2044,9 +2141,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * To refresh points label region and visible
+     * To refresh points label region and visible.
      *
      * @private
+     * @param {AccPoints[]} points - The array of points to refresh.
+     * @returns {void}
      */
     public refreshPoints(points: AccPoints[]): void {
         for (const point of points) {
@@ -2056,17 +2155,19 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * To get Module name
+     * To get Module name.
      *
-     *  @private
+     * @private
+     * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {
         return 'accumulationchart';
     }
     /**
-     * To destroy the accumulationcharts
+     * To destroy the accumulation charts.
      *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         /**
@@ -2077,7 +2178,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             super.destroy();
             this.element.classList.remove('e-accumulationchart');
             this.element.classList.remove('e-accumulationchart-focused');
-            let element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_accumulationchart_focus');
+            const element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_accumulationchart_focus');
             if (element) { element.remove(); }
             removeElement('chartmeasuretext');
             this.removeSvg();
@@ -2085,9 +2186,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
     }
     /**
-     * To provide the array of modules needed for control rendering
+     * To provide the array of modules needed for control rendering.
      *
-     * @returns {ModuleDeclaration[]} required modules
+     * @returns {ModuleDeclaration[]} - required modules.
      * @private
      */
     public requiredModules(): ModuleDeclaration[] {
@@ -2146,7 +2247,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         return modules;
     }
     /**
-     * To find datalabel visibility in series
+     * To find datalabel visibility in series.
+     *
+     * @returns {boolean} - false
      */
     private findDatalabelVisibility(): boolean {
         for (const series of this.series) {
@@ -2157,7 +2260,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         return false;
     }
     /**
-     * Get visible series for accumulation chart by index
+     * Get visible series for accumulation chart by index.
+     *
+     * @param {AccumulationSeries[]} visibleSeries - The array of visible series in the accumulation chart.
+     * @param {number} index - The index of the series to retrieve.
+     * @returns {AccumulationSeries} - The visible series at the specified index.
      */
     private changeVisibleSeries(visibleSeries: AccumulationSeries[], index: number): AccumulationSeries {
         for (const series of visibleSeries) {
@@ -2171,6 +2278,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Get the properties to be maintained in the persisted state.
      *
      * @private
+     * @returns {string} - The persisted data containing the properties.
      */
     public getPersistData(): string {
         return '';
@@ -2179,8 +2287,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Called internally if any of the property value changed.
      *
      * @private
+     * @param {AccumulationChartModel} newProp - The new AccumulationChartModel.
+     * @param {AccumulationChartModel} oldProp - The old AccumulationChartModel.
+     * @returns {void}
      */
-    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: AccumulationChartModel, oldProp: AccumulationChartModel): void {
         const update: { refreshElements: boolean, refreshBounds: boolean } = {
             refreshElements: false, refreshBounds: false

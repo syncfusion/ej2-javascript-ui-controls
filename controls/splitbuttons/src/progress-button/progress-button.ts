@@ -351,7 +351,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         this.setSpinPosition(spinner);
         createSpinner(
             {
-                target: spinner, width: this.spinSettings.width || 16, template: this.spinSettings.template as any
+                target: spinner, width: this.spinSettings.width || 16, template: this.spinSettings.template as string
             },
             this.createElement);
     }
@@ -422,7 +422,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         const isVertical: boolean = clsList.contains('e-vertical');
         clsList.add(PROGRESSACTIVE);
         if (!(clsList.contains(HIDESPINNER))) {
-            showSpinner(this.element.querySelector(".e-spinner"));
+            showSpinner(this.element.querySelector('.e-spinner'));
         }
         this.startAnimate(
             Date.now(), progressTime ? progressTime : 0, progressTime ? Date.now() - (this.duration * 1 / 100) : Date.now(),
@@ -507,7 +507,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
             (new Animation({})).animate(
                 ele,
                 {
-                    duration: (this.animationSettings.duration === 0 && animationMode === 'Enable') ? 400: this.animationSettings.duration,
+                    duration: (this.animationSettings.duration === 0 && animationMode === 'Enable') ? 400 : this.animationSettings.duration,
                     name: 'Progress' + this.animationSettings.effect as Effect,
                     timingFunction: this.animationSettings.easing,
                     begin: () => {
@@ -557,7 +557,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     private hideSpin(): void {
         const cont: Element = this.element.getElementsByClassName(CONTENTCLS)[0];
         if (!(this.element.classList.contains(HIDESPINNER))) {
-            hideSpinner(this.element.querySelector(".e-spinner"));
+            hideSpinner(this.element.querySelector('.e-spinner'));
         }
         this.element.classList.remove(PROGRESSACTIVE);
         if (this.animationSettings.effect !== 'None') {
@@ -616,7 +616,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
                 this.setContent();
                 this.createSpinner();
                 if (isSpinning) {
-                    showSpinner(this.element.querySelector(".e-spinner"));
+                    showSpinner(this.element.querySelector('.e-spinner'));
                     isSpinning = false;
                 }
                 if (this.enableProgress) {

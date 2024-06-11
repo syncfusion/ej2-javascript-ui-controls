@@ -1,5 +1,5 @@
-import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs, FontModel, PolygonTooltipSettingsModel, PolygonSettingModel, GeoPosition } from '../index';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
+import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs, FontModel, PolygonTooltipSettingsModel, PolygonSettingModel, GeoPosition, BorderModel } from '../index';
+import { Tooltip, TooltipTheme } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
 import { MapLocation, getMousePosition, Internalize, checkPropertyPath, getValueFromObject,
@@ -249,8 +249,17 @@ export class MapsTooltip {
                                 || this.maps.themeStyle.fontWeight;
                             tooltipArgs.options['textStyle']['opacity'] = tooltipArgs.options['textStyle']['opacity']
                                 || this.maps.themeStyle.tooltipTextOpacity;
+                            const borderObject: BorderModel = isPolygon ? {
+                                color: polygonTooltipOption.border.color ||
+                                    this.maps.themeStyle.tooltipBorderColor, width: polygonTooltipOption.border.width,
+                                opacity: polygonTooltipOption.border.opacity
+                            } : {
+                                color: option.border.color ||
+                                    this.maps.themeStyle.tooltipBorderColor, width: option.border.width, opacity: option.border.opacity
+                            };
                             if (tooltipArgs.cancel) {
                                 this.svgTooltip = new Tooltip({
+                                    theme: this.maps.theme as TooltipTheme,
                                     enable: true,
                                     header: '',
                                     data: option['data'],
@@ -265,10 +274,11 @@ export class MapsTooltip {
                                     availableSize: this.maps.availableSize,
                                     fill: option.fill || this.maps.themeStyle.tooltipFillColor,
                                     enableShadow: true,
-                                    border: isPolygon ? polygonTooltipOption.border : option.border
+                                    border: borderObject
                                 });
                             } else {
                                 this.svgTooltip = new Tooltip({
+                                    theme: this.maps.theme as TooltipTheme,
                                     enable: true,
                                     header: '',
                                     data: tooltipArgs.options['data'],
@@ -283,7 +293,7 @@ export class MapsTooltip {
                                     availableSize: this.maps.availableSize,
                                     fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
                                     enableShadow: true,
-                                    border: isPolygon ? polygonTooltipOption.border : option.border
+                                    border: borderObject
                                 });
                             }
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any

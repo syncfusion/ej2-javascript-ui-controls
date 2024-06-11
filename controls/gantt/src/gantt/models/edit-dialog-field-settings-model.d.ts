@@ -32,7 +32,7 @@ export interface EditDialogFieldSettingsModel {
     fields?: string[];
 
     /**
-     * Defines the properties of Grid or RTE or TreeGrid controls in Gantt edit dialog. 
+     * Defines the properties of Grid or RTE or TreeGrid controls in Gantt edit dialog.
      *
      * @default null
      */

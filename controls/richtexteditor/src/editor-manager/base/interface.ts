@@ -141,10 +141,6 @@ export interface IHtmlKeyboardEvent {
      */
     event: KeyboardEventArgs
     /**
-     * Specifies the ignoreDefault.
-     */
-    ignoreDefault?: boolean
-    /**
      * Specifies the notifier name.
      */
     name?: string
@@ -234,4 +230,13 @@ export interface CSSPropCollection {
 export interface IHTMLMouseEventArgs {
     name: string;
     args: MouseEvent;
+}
+
+/**
+ * @private
+ * @hidden
+ */
+export interface ITableSelection {
+    getBlockNodes(action?: boolean): HTMLElement[];
+    getTextNodes(): Node[];
 }

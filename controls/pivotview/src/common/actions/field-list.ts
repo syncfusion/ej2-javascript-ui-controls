@@ -17,7 +17,7 @@ export class FieldList implements IAction {
      */
     private parent: PivotView;
     private element: HTMLElement;
-    private timeOutObj: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    private timeOutObj: ReturnType<typeof setTimeout>;
 
     /**
      * Constructor for Field List module.
@@ -92,8 +92,13 @@ export class FieldList implements IAction {
             this.parent.actionObj.actionName = 'Field list refreshed';
         }
         if (this.element) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (((this.parent.toolbar as any).includes('FieldList')) && this.parent.dataSourceSettings.mode === 'Server'){
+            let hasFieldList: boolean;
+            for (let i: number = 0; i < this.parent.toolbar.length; i++) {
+                if (this.parent.toolbar[i as number] === 'FieldList') {
+                    hasFieldList = true;
+                }
+            }
+            if (hasFieldList && this.parent.dataSourceSettings.mode === 'Server') {
                 this.element.style.display = 'none';
             } else {
                 this.element.style.display = 'block';

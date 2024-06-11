@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { ZIndex, Anchor, BorderType, SizeType } from '../utils/enum';import { Theme } from '../../common/model/theme';import { Font, Border } from '../../common/model/base';import { BorderModel, FontModel } from '../../common/model/base-model';import { Units, Alignment, Regions, Position, TextOverflow } from '../../common/utils/enum';
+import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { ZIndex, Anchor, BorderType, SizeType } from '../utils/enum';import { Font, Border } from '../../common/model/base';import { BorderModel, FontModel } from '../../common/model/base-model';import { Units, Alignment, Regions, Position, TextOverflow } from '../../common/utils/enum';
 
 /**
  * Interface for a class ChartAnnotationSettings

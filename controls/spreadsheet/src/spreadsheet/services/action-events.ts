@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { SortEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, BeforeSaveEventArgs, triggerDataChange } from '../../workbook/index';
 import { BeforeSortEventArgs, beginAction } from '../../workbook/index';
-import { CellSaveEventArgs, BeforeOpenEventArgs, BeforeSelectEventArgs, completeAction, positionAutoFillElement } from '../common/index';
+import { CellSaveEventArgs, BeforeOpenEventArgs, BeforeSelectEventArgs, completeAction, positionAutoFillElement, NoteSaveEventArgs } from '../common/index';
 import { BeforePasteEventArgs, setActionData, updateUndoRedoCollection, BeforeChartEventArgs, spreadsheetDestroyed } from '../common/index';
 
 /**
@@ -78,8 +78,8 @@ export class ActionEvents {
         if (args.isRedo) { actionArgs.isUndo = false; delete args.isRedo; }
         actionArgs.args = args;
         this.parent.trigger('actionBegin', actionArgs);
-        if (!preventAction && (args.action === 'clipboard' || args.action === 'format' ||
-            args.action === 'cellSave' || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'filter'
+        if (!preventAction && !this.parent.isPrintingProcessing && (args.action === 'clipboard' || args.action === 'format' ||
+            args.action === 'cellSave' || args.action === 'addNote' || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'filter'
             || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart' || args.action === 'chartDesign'
             || args.action === 'cellDelete' || args.action === 'autofill' || args.action === 'removeValidation' || args.action === 'hyperlink' || args.action === 'removeHyperlink' || args.action === 'deleteImage')) {
             this.parent.notify(setActionData, { args: args });
@@ -90,8 +90,8 @@ export class ActionEvents {
     }
 
     private actionCompleteHandler(
-        args: { eventArgs: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs, action: string, preventAction?: boolean,
-            preventEventTrigger?: boolean }): void {
+        args: { eventArgs: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs | NoteSaveEventArgs, action: string,
+            preventAction?: boolean, preventEventTrigger?: boolean }): void {
         const preventAction: boolean = args.preventAction; delete args.preventAction;
         this.parent.notify(triggerDataChange, args);
         if (!args.preventEventTrigger) {

@@ -54,8 +54,10 @@ export class CanvasRenderer implements IRenderer {
         let grd: CanvasGradient;
         if (options.gradient.type !== 'None') {
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
-                max = max !== undefined ? options.gradient.stops[parseInt(i.toString(), 10)].offset : Math.max(max, options.gradient.stops[parseInt(i.toString(), 10)].offset);
-                min = min !== undefined ? options.gradient.stops[parseInt(i.toString(), 10)].offset : Math.min(min, options.gradient.stops[parseInt(i.toString(), 10)].offset);
+                max = max !== undefined ? options.gradient.stops[parseInt(i.toString(), 10)].offset
+                    : Math.max(max, options.gradient.stops[parseInt(i.toString(), 10)].offset);
+                min = min !== undefined ? options.gradient.stops[parseInt(i.toString(), 10)].offset
+                    : Math.min(min, options.gradient.stops[parseInt(i.toString(), 10)].offset);
             }
             if (options.gradient.type === 'Linear') {
                 const linear: LinearGradientModel = options.gradient;
@@ -351,7 +353,7 @@ export class CanvasRenderer implements IRenderer {
      */
     public renderPath(canvas: HTMLCanvasElement, options: PathAttributes, collection: Object[]): void {
         if (options.visible === true) {
-            let arcCount = 0;
+            let arcCount: number = 0;
             const ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
             let x0: number; let y0: number; let x1: number; let y1: number; let x2: number; let y2: number;
             let x: number; let y: number; let length: number; let i: number; const segs: Object[] = collection;
@@ -382,12 +384,20 @@ export class CanvasRenderer implements IRenderer {
                 case 'A':
                 // eslint-disable-next-line
                 let curr: PointModel = { x: x0, y: y0 }; let rx: number; let ry: number;
-                if((options as any).arc && (options as any).arc.length > 0){
-                    seg.r1 === 0 ? rx = (options as any).arc[parseInt(arcCount.toString(), 10)].r1 : rx = seg.r1;
-                    seg.r2 === 0 ? ry = (options as any).arc[parseInt(arcCount.toString(), 10)].r2 : ry = seg.r2;
+                if ((options as any).arc && (options as any).arc.length > 0) {
+                    if (seg.r1 === 0) {
+                        rx = (options as any).arc[parseInt(arcCount.toString(), 10)].r1;
+                    } else {
+                        rx = seg.r1;
+                    }
+                    if (seg.r2 === 0) {
+                        ry = (options as any).arc[parseInt(arcCount.toString(), 10)].r2;
+                    } else {
+                        ry = seg.r2;
+                    }
                     arcCount++;
                 }
-                else{
+                else {
                     rx = seg.r1; ry = seg.r2;
                 }
                 const xAxisRotation: number = seg.angle * (Math.PI / 180.0);

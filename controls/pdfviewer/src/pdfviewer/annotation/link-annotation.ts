@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { PdfViewer, PdfViewerBase } from '../index';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LineTool, PolygonDrawingTool } from '../drawing/tools';
@@ -15,20 +14,18 @@ export class LinkAnnotation {
     /**
      * @private
      */
-     public linkAnnotation: number[];
-     /**
-      * @private
-      */
-     public linkPage: number[];
-     /**
-      * @private
-      */
-     public annotationY: number[];
+    public linkAnnotation: number[];
     /**
-     * @param pdfViewer
-     * @param viewerBase
-     * @param pdfViewer
-     * @param viewerBase
+     * @private
+     */
+    public linkPage: number[];
+    /**
+     * @private
+     */
+    public annotationY: number[];
+    /**
+     * @param {PdfViewer} pdfViewer -It describes about the PdfViewer
+     * @param {PdfViewerBase} viewerBase - It describes about the viewerbase
      * @private
      */
     constructor(pdfViewer: PdfViewer, viewerBase: PdfViewerBase) {
@@ -37,13 +34,11 @@ export class LinkAnnotation {
     }
 
     /**
-     * @param data
-     * @param pageIndex
-     * @param data
-     * @param pageIndex
+     * @param {any} data - It describes about the data
+     * @param {number} pageIndex - It describes about the number
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line
     public renderHyperlinkContent(data: any, pageIndex: number): void {
         if (this.pdfViewer.enableHyperlink) {
             const hyperlinks: string[] = data.hyperlinks;
@@ -60,105 +55,112 @@ export class LinkAnnotation {
         }
     }
 
-    /** 
+    /**
+     * @param {HTMLElement} eventTarget - It describes about the event target
+     * @param {MouseEvent} evt - It describes about the event
+     * @param {any} element - It describes about the element
      * @private
+     * @returns {void}
      */
     public disableHyperlinkNavigationUnderObjects(eventTarget: HTMLElement, evt: MouseEvent | TouchEvent, element: any): void {
-        let objects: any = findObjectsUnderMouse(element, element.pdfViewer, evt as MouseEvent);
+        const objects: any = findObjectsUnderMouse(element, element.pdfViewer, evt as MouseEvent);
         if (objects.length > 0) {
-            if((evt.target as any).classList.contains('e-pv-hyperlink')) {
+            if ((evt.target as any).classList.contains('e-pv-hyperlink')) {
                 eventTarget.style.cursor = 'move';
                 eventTarget.style.pointerEvents = 'none';
                 eventTarget.title = '';
             }
-       } else {
-           let hyperlinkObjects: any = document.getElementsByClassName('e-pv-hyperlink');
-           if (hyperlinkObjects && hyperlinkObjects.length > 0) {
-               for (let i: number = 0; i < hyperlinkObjects.length; i++) {
-                   if (hyperlinkObjects[i].style.pointerEvents === 'none')
-                        hyperlinkObjects[i].style.pointerEvents = 'all'; 
-                   if (!hyperlinkObjects[i].title)
-                        hyperlinkObjects[i].title = hyperlinkObjects[i].href;
-               }
-           }
-       }
+        } else {
+            const hyperlinkObjects: any = document.getElementsByClassName('e-pv-hyperlink');
+            if (hyperlinkObjects && hyperlinkObjects.length > 0) {
+                for (let i: number = 0; i < hyperlinkObjects.length; i++) {
+                    if (hyperlinkObjects[parseInt(i.toString(), 10)].style.pointerEvents === 'none')
+                    {hyperlinkObjects[parseInt(i.toString(), 10)].style.pointerEvents = 'all'; }
+                    if (!hyperlinkObjects[parseInt(i.toString(), 10)].title)
+                    {hyperlinkObjects[parseInt(i.toString(), 10)].title = hyperlinkObjects[parseInt(i.toString(), 10)].href; }
+                }
+            }
+        }
     }
 
     private renderWebLink(hyperlinks: string[], hyperlinksBounds: number[], pageIndex: number): void {
+        // eslint-disable-next-line
         const proxy: LinkAnnotation = this;
-        let isHyperlinkClicked :boolean = false;
+        let isHyperlinkClicked : boolean = false;
         for (let i: number = 0; i < hyperlinks.length; i++) {
             let aTag: HTMLAnchorElement = createElement('a', { id: 'weblinkdiv_' + i + '_' + pageIndex }) as HTMLAnchorElement;
-            // eslint-disable-next-line
-            let rect: any = hyperlinksBounds[i];
+            const rect: any = hyperlinksBounds[parseInt(i.toString(), 10)];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
-            aTag.title = hyperlinks[i];
-            if (hyperlinks[i] && hyperlinks[i].split('http').length === 1) {
-                let hyperlinkText = "http://" + hyperlinks[i];
+            aTag.title = hyperlinks[parseInt(i.toString(), 10)];
+            if (hyperlinks[parseInt(i.toString(), 10)] && hyperlinks[parseInt(i.toString(), 10)].split('http').length === 1) {
+                const hyperlinkText: string = 'http://' + hyperlinks[parseInt(i.toString(), 10)];
                 aTag.setAttribute('href', hyperlinkText);
             } else {
-                aTag.setAttribute('href', hyperlinks[i]);
+                aTag.setAttribute('href', hyperlinks[parseInt(i.toString(), 10)]);
             }
             if (this.pdfViewer.hyperlinkOpenState === 'CurrentTab') {
                 aTag.target = '_self';
-                aTag.onclick = async (e:any) => {  
-                    if( !isHyperlinkClicked)   {
+                aTag.onclick = async (e: any) => {
+                    if ( !isHyperlinkClicked)   {
                         e.preventDefault();
-
                         if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                             return false;
-                        } else {                        
-                            let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
-                            if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 && this.pdfViewer.selectedItems.formFields.length === 0) {
-                                isHyperlinkClicked=true;
+                        } else {
+                            const isCancel: boolean =
+                             await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[parseInt(i.toString(), 10)], aTag);
+                            if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 &&
+                                 this.pdfViewer.selectedItems.formFields.length === 0) {
+                                isHyperlinkClicked = true;
                                 aTag.click();
                             }
                             return isCancel;
                         }
                     }else{
-                        isHyperlinkClicked= false;
+                        isHyperlinkClicked = false;
                         return true;
-                    }      
+                    }
                 };
                 aTag.onmouseover = () => {
                     proxy.triggerHyperlinkEvent(aTag);
                 };
             } else if (this.pdfViewer.hyperlinkOpenState === 'NewTab') {
                 aTag.target = '_blank';
-                aTag.onclick = async (e:any) => {  
-                    if( !isHyperlinkClicked)   {
+                aTag.onclick = async (e: any) => {
+                    if ( !isHyperlinkClicked)   {
                         e.preventDefault();
-
                         if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                             return false;
-                        } else {                        
-                            let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
-                            if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 && this.pdfViewer.selectedItems.formFields.length === 0) {
-                                isHyperlinkClicked=true;
+                        } else {
+                            const isCancel: boolean =
+                             await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[parseInt(i.toString(), 10)], aTag);
+                            if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 &&
+                                 this.pdfViewer.selectedItems.formFields.length === 0) {
+                                isHyperlinkClicked = true;
                                 aTag.click();
                             }
                             return isCancel;
                         }
                     }else{
-                        isHyperlinkClicked= false;
+                        isHyperlinkClicked = false;
                         return true;
-                    }      
+                    }
                 };
                 aTag.onmouseover = () => {
                     proxy.triggerHyperlinkEvent(aTag);
                 };
             } else if (this.pdfViewer.hyperlinkOpenState === 'NewWindow') {
-                aTag.onclick = async (e:any) => { 
+                aTag.onclick = async (e: any) => {
                     e.preventDefault();
                     if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                         return false;
-                    } else {                        
-                        let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
-                        if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 && this.pdfViewer.selectedItems.formFields.length === 0) {
+                    } else {
+                        const isCancel: boolean =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[parseInt(i.toString(), 10)], aTag);
+                        if (isCancel && this.pdfViewer.selectedItems.annotations.length === 0 &&
+                             this.pdfViewer.selectedItems.formFields.length === 0) {
                             window.open(aTag.href, '_blank', 'scrollbars=yes,resizable=yes');
                         }
                         return false;
-                    } 
+                    }
                 };
                 aTag.onmouseover = () => {
                     proxy.triggerHyperlinkEvent(aTag);
@@ -181,50 +183,47 @@ export class LinkAnnotation {
     }
 
     private renderDocumentLink(linkAnnotation: number[], linkPage: number[], annotationY: number[], pageIndex: number): void {
+        // eslint-disable-next-line
         const proxy: LinkAnnotation = this;
         for (let i: number = 0; i < linkAnnotation.length; i++) {
             let aTag: HTMLAnchorElement = createElement('a', { id: 'linkdiv_' + i + '_' + pageIndex }) as HTMLAnchorElement;
-            // eslint-disable-next-line
-            let rect: any = linkAnnotation[i];
+            const rect: any = linkAnnotation[parseInt(i.toString(), 10)];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.setAttribute('href', 'javascript:void(0)');
-            if (linkPage[i] !== undefined && linkPage[i] >= 0) {
-                const destPageHeight: number = (this.pdfViewerBase.pageSize[pageIndex].height);
+            if (linkPage[parseInt(i.toString(), 10)] !== undefined && linkPage[parseInt(i.toString(), 10)] >= 0) {
+                const destPageHeight: number = (this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height);
                 let destLocation: number;
                 let scrollValue: number;
-                let pageSize: any = this.pdfViewerBase.pageSize[linkPage[i]];
+                const pageSize: any = this.pdfViewerBase.pageSize[linkPage[parseInt(i.toString(), 10)]];
                 if (pageSize) {
                     if (annotationY.length !== 0) {
-                        destLocation = (annotationY[i]);
-                        // eslint-disable-next-line max-len
-                        scrollValue = pageSize.top * this.pdfViewerBase.getZoomFactor() + ((destPageHeight - destLocation) * this.pdfViewerBase.getZoomFactor());
+                        destLocation = (annotationY[parseInt(i.toString(), 10)]);
+                        scrollValue = pageSize.top * this.pdfViewerBase.getZoomFactor() +
+                         ((destPageHeight - destLocation) * this.pdfViewerBase.getZoomFactor());
                     } else {
-                        // eslint-disable-next-line max-len
                         scrollValue = pageSize.top * this.pdfViewerBase.getZoomFactor();
                     }
                 }
                 if (scrollValue !== undefined) {
                     aTag.name = scrollValue.toString();
-                    aTag.setAttribute('aria-label', scrollValue.toString())
+                    aTag.setAttribute('aria-label', scrollValue.toString());
                     aTag.onclick = () => {
                         if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                             return false;
                         } else {
-                            // eslint-disable-next-line radix
-                            proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name);
+                            proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name, 10);
                             return false;
                         }
                     };
                 }
                 const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
-                if(!isNullOrUndefined(pageDiv)) {
+                if (!isNullOrUndefined(pageDiv)) {
                     pageDiv.appendChild(aTag);
                 }
             }
         }
     }
 
-    // eslint-disable-next-line
     private setHyperlinkProperties(aTag: HTMLAnchorElement, rect: any, pageIndex: number): HTMLAnchorElement {
         aTag.className = 'e-pv-hyperlink';
         aTag.style.background = 'transparent';
@@ -244,11 +243,10 @@ export class LinkAnnotation {
     }
 
     /**
-     * @param pageNumber
-     * @param isAdd
-     * @param pageNumber
-     * @param isAdd
+     * @param {number} pageNumber - It describes about the page number
+     * @param {boolean} isAdd - It describes about the isAdd
      * @private
+     * @returns {void}
      */
     public modifyZindexForTextSelection(pageNumber: number, isAdd: boolean): void {
         if (this.pdfViewerBase.pageCount > 0) {
@@ -256,7 +254,7 @@ export class LinkAnnotation {
             if (pageDiv) {
                 const pageChildNodes: NodeList = pageDiv.childNodes;
                 for (let i: number = 0; i < pageChildNodes.length; i++) {
-                    const childElement: HTMLElement = (pageChildNodes[i] as HTMLElement);
+                    const childElement: HTMLElement = (pageChildNodes[parseInt(i.toString(), 10)] as HTMLElement);
                     if (childElement.tagName === 'A') {
                         if (isAdd) {
                             childElement.classList.add('e-pv-onselection');
@@ -270,11 +268,10 @@ export class LinkAnnotation {
     }
 
     /**
-     * @param element
-     * @param isAdd
-     * @param element
-     * @param isAdd
+     * @param {HTMLElement} element - It describes about the element
+     * @param {boolean} isAdd - It describes about the isAdd
      * @private
+     * @returns {void}
      */
     public modifyZindexForHyperlink(element: HTMLElement, isAdd: boolean): void {
         if (isAdd) {
@@ -285,23 +282,25 @@ export class LinkAnnotation {
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         for (let i: number = 0; i < this.pdfViewerBase.pageCount - 1; i++) {
             const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + i);
             if (pageDiv) {
-                // eslint-disable-next-line max-len
                 const aElement: any = pageDiv.getElementsByTagName('a');
                 if (aElement.length !== 0) {
                     for (let index: number = aElement.length - 1; index >= 0; index--) {
-                        aElement[index].parentNode.removeChild(aElement[index]);
+                        aElement[parseInt(index.toString(), 10)].parentNode.removeChild(aElement[parseInt(index.toString(), 10)]);
                     }
                 }
             }
         }
     }
+
     /**
      * @private
+     * @returns {string} - string
      */
     public getModuleName(): string {
         return 'LinkAnnotation';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Parser
  */
@@ -88,10 +89,8 @@ export class ParserBase {
         const propKeys: string[] | number[] = keys || Object.keys(prop);
         const res: Object = {};
         for (const key of propKeys) {
-            // eslint-disable-next-line
-            if (!res.hasOwnProperty((<any>prop)[key])) {
-                // eslint-disable-next-line
-                (<any>res)[(<any>prop)[key]] = key;
+            if (!Object.prototype.hasOwnProperty.call(res, (<any>prop)[`${key}`])) {
+                (<any>res)[(<any>prop)[`${key}`]] = key;
             }
         }
         return res;
@@ -118,8 +117,7 @@ export class ParserBase {
         const matchKeys: string[] = Object.keys(defaultNumberSymbols);
         const ret: Object = {};
         for (const key of matchKeys) {
-            // eslint-disable-next-line
-            (<any>ret)[(<any>prop)[key]] = (<any>defaultNumberSymbols)[key];
+            (<any>ret)[(<any>prop)[`${key}`]] = (<any>defaultNumberSymbols)[`${key}`];
         }
         return ret;
     }
@@ -151,8 +149,7 @@ export class ParserBase {
      */
     public static convertValueParts(value: string, regex: RegExp, obj: Object): string {
         return value.replace(regex, (str: string): string => {
-            // eslint-disable-next-line
-            return (<any>obj)[str];
+            return (<any>obj)[`${str}`];
         });
     }
     /**
@@ -204,7 +201,6 @@ export class ParserBase {
      * @param {boolean} isNumber ?
      * @returns {NumberMapper} ?
      */
-    // eslint-disable-next-line
     public static getNumberMapper(curObj: Object, numberSystem: Object, isNumber?: boolean): NumberMapper {
         const ret: NumberMapper = { mapper: {} };
         const cur: NumericObject = this.getDefaultNumberingSystem(curObj);
@@ -215,8 +211,7 @@ export class ParserBase {
             const digits: string = getValue(cur.nSystem + '._digits', numberSystem);
             if (!isUndefined(digits)) {
                 for (const i of latnNumberSystem) {
-                    // eslint-disable-next-line
-                    (<any>ret).mapper[i] = digits[i];
+                    (<any>ret).mapper[parseInt(i.toString(), 10)] = digits[parseInt(i.toString(), 10)];
                 }
             }
         }

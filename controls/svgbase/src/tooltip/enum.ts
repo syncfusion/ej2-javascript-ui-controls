@@ -73,6 +73,10 @@ export type TooltipTheme =
     'Fluent' |
     /**  Render a chart with FluentDark theme. */
     'FluentDark' |
+    /**  Render a chart with Fluent 2 theme. */
+    'Fluent2' |
+    /**  Render a chart with Fluent 2 dark theme. */
+    'Fluent2Dark' |
     /**  Render a chart with material 3 theme */
     'Material3' |
     /**  Render a chart with material 3 dark theme */

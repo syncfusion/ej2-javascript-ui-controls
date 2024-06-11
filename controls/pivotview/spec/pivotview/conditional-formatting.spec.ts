@@ -12,7 +12,7 @@ describe('Conditional Formatting', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -734,6 +734,77 @@ describe('Conditional Formatting', () => {
                 pivotGridObj.destroy();
             }
             remove(elem);
+        });
+    });
+    describe(' - Opening the conditional formatting dialog', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: [],
+                    conditionalFormatSettings: [
+                        {
+                            measure: 'balance',
+                            value1: 100000,
+                            conditions: 'LessThan',
+                            style: {
+                                backgroundColor: '#80cbc4',
+                                color: 'black',
+                                fontFamily: 'Tahoma',
+                                fontSize: '12px'
+                            }
+                        },
+                        {
+                            value1: 500,
+                            value2: 1000,
+                            measure: 'quantity',
+                            conditions: 'Between',
+                            style: {
+                                backgroundColor: '#f48fb1',
+                                color: 'black',
+                                fontFamily: 'Tahoma',
+                                fontSize: '12px'
+                            }
+                        }
+                    ]
+                },
+                height: 300,
+                allowConditionalFormatting: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 100);
+        });
+
+        it('- Using the corresponding method', (done: Function) => {
+            setTimeout(() => {
+                pivotGridObj.showConditionalFormattingDialog();
+                expect(document.querySelectorAll('.e-format-outer-div').length).toBe(2);
+                (document.querySelectorAll('.e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+            let element = document.querySelector('#' + pivotGridObj.element.id)
+            while(element) {
+                remove(elem);
+                element = document.querySelector('#' + pivotGridObj.element.id)
+            }
         });
     });
 

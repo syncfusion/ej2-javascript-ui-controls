@@ -1,31 +1,31 @@
-import { ModuleDeclaration } from "@syncfusion/ej2-base";
-import { SelectedItem } from "@syncfusion/ej2-lists";
-import { ContextMenu, ContextMenuModel } from "@syncfusion/ej2-navigations";
-import { Diagram } from "../diagram";
-import { Gridlines } from "../diagram/grid-lines";
-import { ContextMenuSettings } from "../diagram/keyboard-commands";
-import { Layer } from "../diagram/layer";
-import { DiagramRuler } from "../diagram/ruler-settings";
-import { DiagramConstraints, DiagramTools, SelectorConstraints, SnapConstraints } from "../enum/enum";
-import { Connector } from "../objects/connector";
-import { ConnectorModel } from "../objects/connector-model";
-import { ContextMenuItemModel } from "../objects/interface/interfaces";
-import { NodeModel } from "../objects/node-model";
-import { ConnectorProperties } from "./connectorProperties";
-import { LabelProperties } from "./labelProperties";
-import { NodeProperties } from "./nodeProperties";
-import { PortProperties } from "./portProperties";
+import { ModuleDeclaration } from '@syncfusion/ej2-base';
+import { SelectedItem } from '@syncfusion/ej2-lists';
+import { ContextMenu, ContextMenuModel } from '@syncfusion/ej2-navigations';
+import { Diagram } from '../diagram';
+import { Gridlines } from '../diagram/grid-lines';
+import { ContextMenuSettings } from '../diagram/keyboard-commands';
+import { Layer } from '../diagram/layer';
+import { DiagramRuler } from '../diagram/ruler-settings';
+import { DiagramConstraints, DiagramTools, SelectorConstraints, SnapConstraints } from '../enum/enum';
+import { Connector } from '../objects/connector';
+import { ConnectorModel } from '../objects/connector-model';
+import { ContextMenuItemModel } from '../objects/interface/interfaces';
+import { NodeModel } from '../objects/node-model';
+import { ConnectorProperties } from './connectorProperties';
+import { LabelProperties } from './labelProperties';
+import { NodeProperties } from './nodeProperties';
+import { PortProperties } from './portProperties';
 
 
 export class Ej1Serialization {
 
     private diagram: Diagram;
 
-    public labelProperties = new LabelProperties(this);
-    public connectorProperties  =  new ConnectorProperties(this.labelProperties);
-    public portProperties = new PortProperties(this);
+    public labelProperties: LabelProperties = new LabelProperties(this);
+    public connectorProperties: ConnectorProperties  =  new ConnectorProperties(this.labelProperties);
+    public portProperties: PortProperties = new PortProperties(this);
 
-    public nodeProperties = new NodeProperties(this.labelProperties, this.portProperties);
+    public nodeProperties: NodeProperties = new NodeProperties(this.labelProperties, this.portProperties);
     constructor(diagram: Diagram) {
         this.diagram = diagram;
     }
@@ -170,7 +170,7 @@ export class Ej1Serialization {
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Update the ruler settings
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public setRulerSettings(convertedData: Object | any, data: Object | any) :void {
+    public setRulerSettings(convertedData: Object | any, data: Object | any): void {
         convertedData.rulerSettings = {};
         convertedData.rulerSettings.showRulers = data.rulerSettings.showRulers;
         convertedData.rulerSettings.horizontalRuler = this.setRulerProperties(data.rulerSettings.horizontalRuler);
@@ -180,10 +180,10 @@ export class Ej1Serialization {
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Update the orientation of the ruler
     public setRulerProperties(ruler: any) : any {
-        let rulerProperties: any = {};
+        const rulerProperties: any = {};
         rulerProperties.interval = ruler.interval;
         rulerProperties.segmentWidth = ruler.segmentWidth;
-       // rulerProperties.tickAlignment = ruler.tickAlignment === 'rightorbottom' ? 'RightOrBottom' : 'LeftOrTop';
+        // rulerProperties.tickAlignment = ruler.tickAlignment === 'rightorbottom' ? 'RightOrBottom' : 'LeftOrTop';
         rulerProperties.markerColor = ruler.markerColor;
         rulerProperties.thickness = ruler.thickness;
         rulerProperties.arrangeTick = ruler.arrangeTick;
@@ -232,7 +232,7 @@ export class Ej1Serialization {
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Update the gridlines
     public setGridLines(gridlines: any) : any {
-        let gridLinesProperties: any = {};
+        const gridLinesProperties: any = {};
         gridLinesProperties.lineColor = gridlines.lineColor;
         gridLinesProperties.lineDashArray = gridlines.lineDashArray;
         gridLinesProperties.lineIntervals = gridlines.lineInterval;
@@ -296,9 +296,9 @@ export class Ej1Serialization {
     //Update the contextmenu items
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public getContextMenuItems(contextMenuItems: any): any {
-        let menuItem: any = {};
+        const menuItem: any = {};
         for (let i : number = 0; i < contextMenuItems.length; i++) {
-            let oldMenuItem = contextMenuItems[parseInt(i.toString(), 10)];
+            const oldMenuItem: any = contextMenuItems[parseInt(i.toString(), 10)];
             menuItem.id = oldMenuItem.name;
             menuItem.text = oldMenuItem.text;
             this.items.push(menuItem);
@@ -339,10 +339,10 @@ export class Ej1Serialization {
             type: (data.layout.type).charAt(0).toUpperCase() + (data.layout.type).slice(1),
             getLayoutInfo: data.layout.getLayoutInfo,
             bounds: data.layout.bounds,
-            root: data.layout.root,
+            root: data.layout.root
         };
-        if (data.layout && data.layout.type === "hierarchicaltree") {
-            convertedData.layout.type = "None";
+        if (data.layout && data.layout.type === 'hierarchicaltree') {
+            convertedData.layout.type = 'None';
         }
     }
 
@@ -351,12 +351,12 @@ export class Ej1Serialization {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public setSelectedItems(convertedData: Object | any, data: Object | any) : void {
         convertedData.selectedItems = {};
-        let nodes : NodeModel[] = [];
-        let connectors : ConnectorModel[] = [];
+        const nodes : NodeModel[] = [];
+        const connectors : ConnectorModel[] = [];
         if (data.children && data.children.length > 0) {
             for (let i : number = 0; i < data.children.length; i++) {
-                let selectedElement = data.children[parseInt(i.toString(), 10)];
-                if (selectedElement.segments) {
+                const selectedElement: object = data.children[parseInt(i.toString(), 10)];
+                if ((selectedElement as ConnectorModel).segments) {
                     connectors.push(selectedElement);
                 }
                 else {
@@ -474,10 +474,10 @@ export class Ej1Serialization {
     //  }
 
     /**
- *To destroy the ruler
- *
- * @returns {void} To destroy the ruler
- */
+     * To destroy the ruler
+     *
+     * @returns {void} To destroy the ruler
+     */
 
     public destroy(): void {
         /**
@@ -486,15 +486,14 @@ export class Ej1Serialization {
     }
 
     /**
- * Get module name.
- */
+     * Get module name.
+     *
+     * @returns {string} Returns the module name
+     */
     protected getModuleName(): string {
         /**
          * Returns the module name
          */
         return 'Ej1Serialization';
-
     }
-
-
 }

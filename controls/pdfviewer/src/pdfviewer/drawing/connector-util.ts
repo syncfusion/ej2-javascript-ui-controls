@@ -19,6 +19,7 @@ export function getConnectorPoints(obj: PdfAnnotationBaseModel, points?: PointMo
     }
     return newPoints;
 }
+
 /**
  * @private
  * @param {PdfAnnotationBaseModel} connector - Specified the annotation connector model.
@@ -45,7 +46,6 @@ export function getSegmentPath(connector: PdfAnnotationBaseModel, points: PointM
     }
     return path;
 }
-
 
 /**
  * @private
@@ -186,8 +186,8 @@ export function clipDecorator(connector: PdfAnnotationBaseModel, points: PointMo
  * @hidden
  * @returns {TextElement[]} - Returns the text element collections.
  */
-// eslint-disable-next-line max-len
-export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation, pdfviewer: PdfViewer): TextElement[] {
+export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation,
+                                  pdfviewer: PdfViewer): TextElement[] {
     const labels: TextElement[] = [];
     const angle: number = Point.findAngle(points[0], points[1]);
     const textele: TextElement = textElement(obj, angle);
@@ -262,8 +262,8 @@ export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureA
  * @hidden
  * @returns {TextElement[]} - Returns the text element collections.
  */
-// eslint-disable-next-line max-len
-export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation, pdfviewer: PdfViewer): TextElement[] {
+export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[],
+                                   measure: MeasureAnnotation, pdfviewer: PdfViewer): TextElement[] {
     const labels: TextElement[] = [];
     const angle: number = Point.findAngle(points[0], points[1]);
     const textele: TextElement = textElement(obj, angle);
@@ -413,7 +413,6 @@ export function initLeader(
     rotateMatrix(matrix, angle, element.offsetX, element.offsetY);
     rotatedPoint = transformPointByMatrix(matrix, newPoint1);
     const finalPoint: PointModel = { x: point1.x, y: point1.y };
-
     element.offsetX = finalPoint.x; element.offsetY = finalPoint.y;
     element.transform = RotateTransform.Self;
     const getPath: string = 'M' + point1.x + ',' + point1.y + ',L' + rotatedPoint.x + ',' + rotatedPoint.y + 'Z';
@@ -421,11 +420,9 @@ export function initLeader(
     element.pivot.x = .5;
     if (isSecondLeader) {
         element.id = 'leader2_' + randomId();
-
         element.pivot.y = 0;
     } else {
         element.id = 'leader1_' + randomId();
-
         element.pivot.y = 1;
     }
     setElementStype(obj, element);
@@ -508,8 +505,7 @@ export function findNearestPoint(reference: PointModel, start: PointModel, end: 
  * @returns {string} - Returns the annotation decorator shape value.
  */
 export function getDecoratorShape(shape: DecoratorShapes ): string {
-    // eslint-disable-next-line
-    return (decoratorShapes as any)[shape];
+    return (decoratorShapes as any)[`${shape}`];
 }
 const decoratorShapes: {} = {
     'OpenArrow': 'M15.9,23 L5,16 L15.9,9 L17,10.7 L8.7,16 L17,21.3Z',

@@ -296,7 +296,8 @@ describe('Number formatter', () => {
             26: '12',
             27: '2345634.343',
             28: '-1,234',
-            29: 'N/A'
+            29: 'N/A',
+            30: '$ 1324342.0'
         },
         'ar-QA': {
             0: '٢٬٣٤٥٬٦٣٤٫٣٤٣',
@@ -343,7 +344,8 @@ describe('Number formatter', () => {
             26: '١٢',
             27: '٢٣٤٥٦٣٤٫٣٤٣',
             28: '؜-١٬٢٣٤',
-            29: 'N/A'
+            29: 'N/A',
+            30: 'ر.ق.‏ ١٣٢٤٣٤٢٫٠'
         }
     };
     let cultureList: String[] = ['en', 'ar-QA'];
@@ -851,6 +853,10 @@ describe('Number formatter', () => {
             it('N/A support for negative numbers', () => {
                 formatter = NumberFormat.numberFormatter(culName, { format: '0;N/A' }, cldrData);
                 expect(formatter(nagativeValue)).toBe(cusLocalExpected[29]);
+            });
+            it('use grouping with custom format should not met with any exception', () => {
+                formatter = NumberFormat.numberFormatter(culName, { format: '$ ###.0', useGrouping: true, currency: currency }, cldrData);
+                expect(formatter(intValue)).toBe(cusLocalExpected[30]);
             });
         });
     });

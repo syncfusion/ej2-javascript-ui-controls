@@ -1,7 +1,4 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-returns */
-import { getPoint, ChartLocation, appendClipElement, pathAnimation } from '../../common/utils/helper';
+import { getPoint, ChartLocation, appendClipElement, pathAnimation, animateAddPoints } from '../../common/utils/helper';
 import { PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
@@ -28,6 +25,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {Function} getPointLocation getPointLocation
      * @param {ChartLocation} startPoint startPoint
      * @param {string} startPath startPath
+     * @returns {string} Returns the area path direction.
      */
     public getAreaPathDirection(
         xValue: number, yValue: number, series: Series,
@@ -50,6 +48,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {Series} series series
      * @param {boolean} isInverted isInverted
      * @param {Function} getPointLocation getPointLocation
+     * @returns {string} Returns the empty point direction.
      */
     public getAreaEmptyDirection(
         firstPoint: ChartLocation, secondPoint: ChartLocation, series: Series,
@@ -67,7 +66,14 @@ export class MultiColoredSeries extends LineBase {
         return direction;
     }
     /**
-     * To set point color.
+     * Set the color for a point based on its current state and previous state.
+     *
+     * @param {Points} currentPoint - The current point whose color needs to be set.
+     * @param {Points} previous - The previous state of the point.
+     * @param {Series} series - The series associated with the point.
+     * @param {boolean} isXSegment - Indicates whether the point is in the x-segment.
+     * @param {ChartSegmentModel[]} segments - The segments associated with the point.
+     * @returns {boolean} - Returns true if the color is set successfully, false otherwise.
      */
     public setPointColor(currentPoint: Points, previous: Points, series: Series, isXSegment : boolean,
                          segments: ChartSegmentModel[]): boolean {
@@ -110,11 +116,13 @@ export class MultiColoredSeries extends LineBase {
      * @param {Series} series series
      * @param {PathOption[]} options options
      * @param {ChartSegmentModel[]} segments chartSegments
+     * @param {boolean} pointAnimate pointAnimate
+     * @returns {void}
      */
-    public applySegmentAxis(series: Series, options: PathOption[], segments: ChartSegmentModel[]): void {
+    public applySegmentAxis(series: Series, options: PathOption[], segments: ChartSegmentModel[], pointAnimate?: boolean): void {
         if (series.pointColorMapping !== '') {
             options.map((option: PathOption) => {
-                this.appendLinePath(option, series, '');
+                this[pointAnimate ? 'addMulticolorPath' : 'appendLinePath'](option, series, '');
             });
             return null;
         }
@@ -150,9 +158,14 @@ export class MultiColoredSeries extends LineBase {
                     if (areaBorderCount % 2 === 0 && this.chart.multiColoredAreaSeriesModule && series.border.color !== 'transparent' &&  attributeOptions['stroke-width'] !== 0) {
                         attributeOptions.fill = 'transparent';
                     }
-                    pathAnimation(getElement(attributeOptions.id), attributeOptions.d, chart.redraw);
+                    if (pointAnimate) {
+                        this.addMulticolorPath(attributeOptions, series, '', true);
+                    }
+                    else {
+                        pathAnimation(getElement(attributeOptions.id), attributeOptions.d, chart.redraw);
+                    }
                     series.pathElement = chart.renderer.drawPath(attributeOptions);
-                    if (!series.chart.enableCanvas) {
+                    if (!series.chart.enableCanvas && !pointAnimate) {
                         series.seriesElement.appendChild(
                             chart.renderer.drawPath(attributeOptions)
                         );
@@ -170,6 +183,45 @@ export class MultiColoredSeries extends LineBase {
             segments.push({value : axis.visibleRange.max, color : series.interior});
         }
     }
+    private addMulticolorPath(options: PathAttributes, series: Series, clipRect: string, isSegnment?: boolean): void {
+        const points: { element: Element; previousDirection: string; chart: Chart } =
+            this.appendPathElement(options, series, clipRect);
+        if (points.previousDirection === null || points.previousDirection === '') {
+            points.previousDirection = 'M ' + (options.d).split(' ').slice(-3)[0] + ' ' + (options.d).split(' ').slice(-5)[0] + ' L ' + (options.d).split(' ').slice(-3)[0] + ' ' + (options.d).split(' ').slice(-5)[0] + ' L ' + (options.d).split(' ').slice(-3)[0] + ' ' + (options.d).split(' ').slice(-5)[0];
+        }
+        if (options.d === null || options.d === '') {
+            options.d = 'M ' + (points.previousDirection).split(' ').slice(-3)[0] + ' ' + (points.previousDirection).split(' ').slice(-5)[0] + ' L ' + (points.previousDirection).split(' ').slice(-3)[0] + ' ' + (points.previousDirection).split(' ').slice(-5)[0];
+        }
+        if (isSegnment) {
+            const startPathCommands: string[] = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (startPathCommands.length === endPathCommands.length) {
+                animateAddPoints(getElement(options.id), options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+            }
+            if (startPathCommands.length < endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        startPathCommands.splice(
+                            startPathCommands.length - ((series.type.indexOf('Line') !== -1) ? 1 : 2),
+                            0,
+                            startPathCommands[startPathCommands.length - ((series.type.indexOf('Line') !== -1) ? 1 : 2)]
+                        );
+                    }
+                }
+                animateAddPoints(getElement(options.id), options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+            }
+            if (startPathCommands.length > endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        endPathCommands.splice(1, 0, endPathCommands[1].replace('M', 'L'));
+                    }
+                }
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, startPathCommands.join(''), this.chart.duration, options.d);
+            }
+        }
+    }
     /**
      * To create clip rect for segment axis.
      *
@@ -178,6 +230,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {Series} series series
      * @param {number} index index
      * @param {boolean} isX isX
+     * @returns {string} clip rect for segment axis
      */
     public createClipRect(
         startValue: number, endValue: number, series: Series,
@@ -197,7 +250,8 @@ export class MultiColoredSeries extends LineBase {
         endPointLocation = isRequired ?
             [startPointLocation, startPointLocation = endPointLocation][0] : endPointLocation;
         let options: RectOption;
-        if (((series.xAxis.isInversed || series.xAxis.isAxisInverse)  ? startPointLocation.x - endPointLocation.x > 0 : endPointLocation.x - startPointLocation.x > 0) &&
+        if (((series.xAxis.isInversed || series.xAxis.isAxisInverse)  ?
+            startPointLocation.x - endPointLocation.x > 0 : endPointLocation.x - startPointLocation.x > 0) &&
             (series.yAxis.isInversed ? startPointLocation.y - endPointLocation.y > 0 : endPointLocation.y - startPointLocation.y > 0)) {
             options = new RectOption(
                 series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index,
@@ -205,7 +259,8 @@ export class MultiColoredSeries extends LineBase {
                 {
                     x: (series.xAxis.isInversed || series.xAxis.isAxisInverse) ? endPointLocation.x : startPointLocation.x,
                     y: series.yAxis.isInversed ? endPointLocation.y : startPointLocation.y,
-                    width: (series.xAxis.isInversed || series.xAxis.isAxisInverse) ? startPointLocation.x - endPointLocation.x : endPointLocation.x - startPointLocation.x,
+                    width: (series.xAxis.isInversed || series.xAxis.isAxisInverse) ? startPointLocation.x - endPointLocation.x :
+                        endPointLocation.x - startPointLocation.x,
                     height: series.yAxis.isInversed ? startPointLocation.y - endPointLocation.y : endPointLocation.y - startPointLocation.y
                 }
             );
@@ -224,6 +279,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {Object} segmentValue segmentValue
      * @param {Axis} axis axis
      * @param {Chart} chart chart
+     * @returns {number} - Returns segment value.
      */
     public getAxisValue(segmentValue: Object, axis: Axis, chart: Chart): number {
         if (segmentValue === null) {

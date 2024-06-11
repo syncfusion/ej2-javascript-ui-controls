@@ -1,6 +1,4 @@
 @include export-module('switch-layout') {
-
-  /*! switch layout */
   .e-switch-wrapper,
   .e-css.e-switch-wrapper {
     cursor: pointer;
@@ -12,11 +10,18 @@
     @if $skin-name == 'FluentUI' {
       border: 1px solid transparent;
     }
+    @if $skin-name == 'fluent2' {
+      margin: 8px;
+    }
 
     &:focus,
     &.e-focus {
       @if $skin-name == 'FluentUI' {
         border: 1px solid $switch-inner-focus-border;
+      }
+      @if $skin-name == 'fluent2' {
+        box-shadow: $switch-box-shadow !important; /* stylelint-disable-line declaration-no-important */
+        border-radius: 1px;
       }
     }
 
@@ -268,6 +273,9 @@
   #{if(&, '&', '*')}.e-small.e-css.e-switch-wrapper {
     height: $switch-small-wrapper-height;
     width: $switch-small-wrapper-width;
+    @if $skin-name == 'fluent2' {
+      margin: 6px;
+    }
 
     & .e-switch-handle {
       height: $switch-small-handle-height;
@@ -366,6 +374,9 @@
   #{if(&, '&', '*')}.e-bigger.e-small.e-css.e-switch-wrapper {
     height: $switch-bigger-small-wrapper-height;
     width: $switch-bigger-small-wrapper-width;
+    @if $skin-name == 'fluent2' {
+      margin: 8px;
+    }
 
     & .e-switch-handle {
       height: $switch-bigger-small-handle-height;
@@ -462,6 +473,9 @@
   #{if(&, '&', '*')}.e-bigger.e-css.e-switch-wrapper {
     height: $switch-bigger-wrapper-height;
     width: $switch-bigger-wrapper-width;
+    @if $skin-name == 'fluent2' {
+      margin: 10px;
+    }
 
     & .e-switch-handle {
       height: $switch-bigger-handle-height;

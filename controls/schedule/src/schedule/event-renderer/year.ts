@@ -162,7 +162,8 @@ export class YearEvent extends TimelineEvent {
                             continue;
                         }
                     }
-                    const enableAppRender: boolean  = this.maxOrIndicator || (overlapIndex < eventsPerRow) || (this.cellHeight > availedHeight);
+                    const enableAppRender: boolean = this.maxOrIndicator || (overlapIndex < eventsPerRow) ||
+                        (this.cellHeight > availedHeight);
                     if (this.parent.rowAutoHeight || enableAppRender || this.cellHeight > availedHeight) {
                         this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, monthStart, dayIndex);
                         if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {

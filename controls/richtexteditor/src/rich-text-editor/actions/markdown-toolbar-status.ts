@@ -123,7 +123,7 @@ export class MarkdownToolbarStatus {
         return text.search('\\' + cmd + '') !== -1;
     }
     private multiCharRegx(cmd: string): RegExp {
-        // eslint-disable-next-line
-        return new RegExp('(\\' + cmd + ')', 'g');
+        const regExp: RegExpConstructor = RegExp;
+        return new regExp('(\\' + cmd + ')', 'g');
     }
 }

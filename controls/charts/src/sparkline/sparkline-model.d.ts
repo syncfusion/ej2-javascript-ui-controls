@@ -23,18 +23,21 @@ export interface SparklineModel extends ComponentModel{
 
     /**
      * To configure Sparkline series type.
+     *
      * @default 'Line'
      */
     type?: SparklineType;
 
     /**
      * To configure Sparkline series type.
+     *
      * @default 'None'
      */
     rangePadding?: SparklineRangePadding;
 
     /**
      * To configure sparkline data source.
+     *
      * @isGenericType true
      * @default null
      */
@@ -42,96 +45,112 @@ export interface SparklineModel extends ComponentModel{
 
     /**
      * Specifies the query for filter the data.
+     *
      * @default null
      */
     query?: Query;
 
     /**
      * To configure sparkline series value type.
+     *
      * @default 'Numeric'
      */
     valueType?: SparklineValueType;
 
     /**
      * To configure sparkline series xName.
+     *
      * @default null
      */
     xName?: string;
 
     /**
      * To configure sparkline series yName.
+     *
      * @default null
      */
     yName?: string;
 
     /**
      * To configure sparkline series fill.
+     *
      * @default '#00bdae'
      */
     fill?: string;
 
     /**
      * To configure sparkline series highest y value point color.
+     *
      * @default ''
      */
     highPointColor?: string;
 
     /**
      * To configure sparkline series lowest y value point color.
+     *
      * @default ''
      */
     lowPointColor?: string;
 
     /**
      * To configure sparkline series first x value point color.
+     *
      * @default ''
      */
     startPointColor?: string;
 
     /**
      * To configure sparkline series last x value point color.
+     *
      * @default ''
      */
     endPointColor?: string;
 
     /**
      * To configure sparkline series negative y value point color.
+     *
      * @default ''
      */
     negativePointColor?: string;
 
     /**
      * To configure sparkline winloss series tie y value point color.
+     *
      * @default ''
      */
     tiePointColor?: string;
 
     /**
      * To configure sparkline series color palette. It applicable to column and pie type series.
+     *
      * @default []
      */
     palette?: string[];
 
     /**
      * To configure sparkline line series width.
+     *
      * @default '1'
      */
     lineWidth?: number;
 
     /**
      * To configure sparkline line series opacity.
+     *
      * @default '1'
      */
     opacity?: number;
 
     /**
      * To apply internationalization for sparkline.
+     *
      * @default null
      */
     format?: string;
 
     /**
-     * To enable the separator
+     * To enable the separator.
+     *
      * @default false
      */
     useGroupingSeparator?: boolean;
@@ -173,85 +192,99 @@ export interface SparklineModel extends ComponentModel{
 
     /**
      * To configure sparkline theme.
+     *
      * @default 'Material'
      */
     theme?: SparklineTheme;
 
     /**
      * Triggers after sparkline rendered.
-     * @event
+     *
+     * @event loaded
      */
     loaded?: EmitType<ISparklineLoadedEventArgs>;
 
     /**
      * Triggers before sparkline render.
-     * @event
+     *
+     * @event load
      */
     load?: EmitType<ISparklineLoadEventArgs>;
 
     /**
      * Triggers before sparkline tooltip render.
-     * @event
+     *
+     * @event tooltipInitialize
      */
     tooltipInitialize?: EmitType<ITooltipRenderingEventArgs>;
 
     /**
      * Triggers before sparkline series render.
-     * @event
+     *
+     * @event seriesRendering
      */
     seriesRendering?: EmitType<ISeriesRenderingEventArgs>;
 
     /**
      * Triggers before sparkline axis render.
-     * @event
+     *
+     * @event axisRendering
      */
     axisRendering?: EmitType<IAxisRenderingEventArgs>;
 
     /**
      * Triggers before sparkline points render.
-     * @event
+     *
+     * @event pointRendering
      */
     pointRendering?: EmitType<ISparklinePointEventArgs>;
 
     /**
      * Triggers while mouse move on the sparkline point region.
-     * @event
+     *
+     * @event pointRegionMouseMove
      */
     pointRegionMouseMove?: EmitType<IPointRegionEventArgs>;
 
     /**
      * Triggers while mouse click on the sparkline point region.
-     * @event
+     *
+     * @event pointRegionMouseClick
      */
     pointRegionMouseClick?: EmitType<IPointRegionEventArgs>;
 
     /**
      * Triggers while mouse move on the sparkline container.
-     * @event
+     *
+     * @event sparklineMouseMove
      */
     sparklineMouseMove?: EmitType<ISparklineMouseEventArgs>;
 
     /**
      * Triggers while mouse click on the sparkline container.
-     * @event
+     *
+     * @event sparklineMouseClick
      */
     sparklineMouseClick?: EmitType<ISparklineMouseEventArgs>;
 
     /**
      * Triggers before the sparkline datalabel render.
-     * @event
+     *
+     * @event dataLabelRendering
      */
     dataLabelRendering?: EmitType<IDataLabelRenderingEventArgs>;
 
     /**
      * Triggers before the sparkline marker render.
-     * @event
+     *
+     * @event markerRendering
      */
     markerRendering?: EmitType<IMarkerRenderingEventArgs>;
 
     /**
      * Triggers on resizing the sparkline.
-     * @event
+     *
+     * @event resize
      */
     resize?: EmitType<ISparklineResizeEventArgs>;
 

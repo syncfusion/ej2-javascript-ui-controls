@@ -8,7 +8,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { NodeSelection } from '../../selection/selection';
-import { ContentHeightSource, EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
+import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
@@ -44,6 +44,11 @@ import { EmojiPicker } from '../actions/emoji-picker';
  * @deprecated
  */
 export interface IRichTextEditor extends Component<HTMLElement> {
+    /**
+     * Specifies the root container of the Rich Text Editor component.
+     *
+     **/
+    rootContainer: HTMLElement;
     toolbarSettings?: ToolbarSettingsModel
 
     quickToolbarSettings?: QuickToolbarSettingsModel
@@ -184,7 +189,6 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     getText(): string
     updateValueData?(): void
     getBaseToolbarObject(): BaseToolbar
-    setContentHeight(target: ContentHeightSource, isExpand?: boolean): void
     keyConfig?: { [key: string]: string }
     undoRedoTimer?: number
     sourceCode?(): void
@@ -272,7 +276,8 @@ export interface NotifyArgs {
     range?: Range
     /** Defines the action. */
     action?: string
-    callBack?(args?: string | IImageCommandsArgs, cropImageData?: { [key: string]: string | boolean | number }[], pasteTableSource?: string): void
+    callBack?(args?: string | IImageCommandsArgs, cropImageData?:
+    { [key: string]: string | boolean | number }[], pasteTableSource?: string): void
     file?: Blob
     insertElement?: Element
     touchData?: ITouchData
@@ -282,6 +287,7 @@ export interface NotifyArgs {
     ariaLabel?: string
     /**
      * Defines the source of the Table content.
+     *
      * @private
      */
     pasteTableSource?: string
@@ -614,6 +620,7 @@ export interface IToolbarItems {
     template?: string
     tooltipText?: string
     command?: string
+    subCommand?: string
     undo?: boolean
     click?: EmitType<ClickEventArgs>
 }

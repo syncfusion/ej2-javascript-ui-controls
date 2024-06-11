@@ -1,7 +1,7 @@
 /**
  * Defines common util methods used by Rich Text Editor.
  */
-import { isNullOrUndefined, Browser, createElement, detach } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, createElement, detach, removeClass } from '@syncfusion/ej2-base';
 import { IToolbarStatus } from './interface';
 
 const inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
@@ -176,7 +176,8 @@ export function getDefaultHtmlTbStatus(): IToolbarStatus {
         fontsize: null,
         formats: null,
         createlink: false,
-        insertcode: false
+        insertcode: false,
+        blockquote: false
     };
 }
 
@@ -208,11 +209,11 @@ export function getDefaultMDTbStatus(): IToolbarStatus {
 export function nestedListCleanUp(range: Range): void {
     if (range.startContainer.parentElement.closest('ol,ul') !== null && range.endContainer.parentElement.closest('ol,ul') !== null) {
         range.extractContents();
-        while ((range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('li :empty').length > 0 ||
-        (range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('ol :empty').length > 0) {
-            let emptyLI = (range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('li :empty');
+        while ((range.startContainer.nodeName === '#text' ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('li :empty').length > 0 ||
+        (range.startContainer.nodeName === '#text' ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('ol :empty').length > 0) {
+            const emptyLI: NodeListOf<Element> = (range.startContainer.nodeName === '#text' ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('li :empty');
             if (emptyLI.length > 0) {
-                emptyLI.forEach((item) => {
+                emptyLI.forEach((item: Element) => {
                     item.remove();
                 });
             }
@@ -220,11 +221,11 @@ export function nestedListCleanUp(range: Range): void {
                 break;
             }
         }
-        let liElem = (range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll("li");
+        const liElem: NodeListOf<HTMLLIElement> = (range.startContainer.nodeName === '#text' ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('li');
         if (liElem.length > 0) {
-            liElem.forEach((item) => {
-                if(!isNullOrUndefined(item.firstChild) && (item.firstChild.nodeName === "OL" || item.firstChild.nodeName === "UL")){
-                    item.style.listStyleType = "none";
+            liElem.forEach((item: HTMLLIElement) => {
+                if (!isNullOrUndefined(item.firstChild) && (item.firstChild.nodeName === 'OL' || item.firstChild.nodeName === 'UL')){
+                    item.style.listStyleType = 'none';
                 }
             });
         }
@@ -276,4 +277,45 @@ export function scrollToCursor(
             }
         }
     }
+}
+
+/**
+ * Inserts items at a specific index in an array.
+ *
+ * @template T
+ * @param {Array<T>} oldArray - Specifies the old array.
+ * @param {Array<T>} newArray - Specifies the elements to insert.
+ * @param {number} indexToInsert - Specifies the index to insert.
+ * @returns {Array<T>} - Returns the array after inserting the elements.
+ */
+export function insertItemsAtIndex<T>(oldArray: Array<T>, newArray: Array<T>, indexToInsert: number): Array<T> {
+    // This is a work around for ES6 ...spread operator usage.
+    // Usecase: When a new array is inserted into an existing array at a specific index.
+    for (let i: number = 0; i < newArray.length; i++) {
+        if (i === 0) {
+            oldArray.splice(indexToInsert + i, 1, newArray[i as number]);
+        } else {
+            oldArray.splice(indexToInsert + i, 0, newArray[i as number]);
+        }
+    }
+    return oldArray;
+}
+
+/**
+ * Wrapper function to remove a class from the element and remove the attribute if the class is empty.
+ *
+ * @param  {Element[]|NodeList} elements - An array of elements that need to remove a list of classes
+ * @param  {string|string[]} classes - String or array of string that need to add an individual element as a class
+ *
+ * @returns {Element[]|NodeList} - Returns the array of elements after removing the class.
+ * @private
+ */
+export function removeClassWithAttr(elements: Element[] | NodeList, classes: string | string[]): Element[] | NodeList {
+    removeClass(elements, classes);
+    for (let i: number = 0; i < elements.length; i++) {
+        if ((elements[i as number] as Element).classList.length === 0 && (elements[i as number] as Element).getAttribute('class')) {
+            (elements[i as number] as Element).removeAttribute('class');
+        }
+    }
+    return elements;
 }

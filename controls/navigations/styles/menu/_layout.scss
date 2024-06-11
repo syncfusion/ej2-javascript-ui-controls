@@ -1,7 +1,5 @@
 @import '../context-menu/layout-mixin.scss';
 @include export-module('menu-layout') {
-  
-  /*! menu layout */
   .e-menu-wrapper,
   .e-menu-container {
     border: $menu-ul-border;
@@ -20,6 +18,12 @@
         padding: $menu-ul-padding;
         text-align: left;
         white-space: nowrap;
+
+        & .e-separator {
+          @if $skin-name == 'fluent2' {
+            padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
 
         &.e-vertical {
           min-width: 120px;
@@ -66,13 +70,18 @@
             line-height: $menu-li-height;
             margin-right: $menu-icon-margin-right;
             text-align: center;
-            margin-bottom: 4px;
+            @if $skin-name == 'fluent2' {
+              margin-bottom: 2px;
+            }
+            @else {
+              margin-bottom: 4px;
+            }
           }
 
           & .e-caret {
             font-size: $menu-caret-font-size;
             height: auto;
-            @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
+            @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2' {
               line-height: $menu-icon-li-height;
             }
             @else {
@@ -106,6 +115,9 @@
 
           & .e-caret {
             font-size: $submenu-caret-font-size;
+            @if $skin-name == 'fluent2' {
+              padding: 9px 0;
+            }
           }
         }
       }
@@ -178,10 +190,7 @@
     & .e-scroll-nav .e-nav-arrow {
       font-size: $menu-scroll-nav-icon-size;
 
-      &.e-nav-left-arrow {
-        transform: rotate(180deg);
-      }
-
+      &.e-nav-left-arrow,
       &.e-nav-up-arrow {
         transform: rotate(180deg);
       }
@@ -315,6 +324,9 @@
         font-size: $menu-icon-bigger-font-size;
         line-height: $menu-bigger-li-height;
         margin-right: $menu-bigger-icon-margin-right;
+        @if $skin-name == 'fluent2' {
+          margin-bottom: 3px;
+        }
       }
 
       &.e-menu-caret-icon {
@@ -323,7 +335,7 @@
 
       & .e-caret {
         font-size: $menu-bigger-caret-font-size;
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'fluent2' {
           line-height: $menu-bigger-li-icon-height;
         }
         @else {
@@ -357,7 +369,9 @@
 
       & .e-menu-item  {
         @include bigger-li-size;
-        padding: $cmenu-li-padding;
+        @if $skin-name != 'fluent2' {
+          padding: $cmenu-li-padding;
+        }
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
           padding: $menu-bigger-li-padding;
         }
@@ -459,7 +473,12 @@
 
         &.e-menu-caret-icon {
           padding-left: $cmenu-caret-li-padding;
-          padding-right: $cmenu-li-right-padding;
+          @if $skin-name == 'fluent2' {
+            padding-right: 9px;
+          }
+          @else {
+            padding-right: $cmenu-li-right-padding;
+          }
         }
 
         &.e-blankicon {
@@ -529,7 +548,6 @@
         }
 
         /* stylelint-disable */
-
 		    & .e-menu-item[aria-expanded = "true"] .e-caret {
 			    -webkit-transition: -webkit-transform .3s ease-in-out;
           transition: -webkit-transform .3s ease-in-out;
@@ -582,7 +600,8 @@
         height: auto;
         padding: 0;
 
-        &.e-menu-caret-icon {
+        &.e-menu-caret-icon,
+        &.e-blankicon {
           padding: 0;
         }
 
@@ -591,10 +610,6 @@
           min-width: 120px;
           text-indent: 0;
           width: 100%;
-        }
-
-        &.e-blankicon {
-          padding: 0;
         }
 
         &.e-separator {
@@ -712,5 +727,11 @@
 
   .e-menu-container .e-vscroll ul {
     position: relative;
+  }
+
+  .e-bigger .e-menu-container .e-ul .e-menu-item .e-caret {
+    @if $skin-name == 'fluent2' {
+      padding: 9px 0;
+    }
   }
 }

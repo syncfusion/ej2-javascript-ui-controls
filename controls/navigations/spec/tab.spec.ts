@@ -32,7 +32,7 @@ describe('Tab Control', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -851,6 +851,8 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-overlay')).toEqual(false);
             expect(element.querySelectorAll('.e-toolbar-item').item(1).classList.contains('e-disable')).toEqual(true);
             expect(element.querySelectorAll('.e-toolbar-item').item(1).classList.contains('e-overlay')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-item').item(1).firstElementChild.getAttribute('role')).toEqual('tab');
+            expect(element.querySelectorAll('.e-toolbar-item').item(1).firstElementChild.getAttribute('aria-disabled')).toEqual('true');
         });
     });
     describe('Testing visible property for item', () => {
@@ -2653,6 +2655,304 @@ describe('Tab Control', () => {
             expect(tab.selectedItem).toEqual(0);
             expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-active')).toEqual(true);
             expect(element.querySelectorAll('.e-toolbar-item').item(1).classList.contains('e-active')).toEqual(false);
+        });
+    });
+    describe('Tabs public property null or undefined testing', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('allowDragAndDrop testing', () => {
+            tab = new Tab({
+                height: 300
+            });
+            tab.appendTo('#ej2Tab');
+            tab.allowDragAndDrop = null;
+            tab.dataBind();
+            expect(tab.allowDragAndDrop).toEqual(null);
+            tab.allowDragAndDrop = undefined;
+            tab.dataBind();
+            expect(tab.allowDragAndDrop).toEqual(undefined );
+        });
+        it('animation testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.animation.next.duration = null;
+            tab.animation.next.easing = null;
+            tab.animation.next.effect = null;
+            tab.animation.previous.duration = null;
+            tab.animation.previous.easing = null;
+            tab.animation.previous.effect = null;
+            tab.dataBind();
+            expect(tab.animation.next.duration).toEqual(null);
+            expect(tab.animation.next.easing).toEqual(null);
+            expect(tab.animation.next.effect).toEqual(null);
+            expect(tab.animation.previous.duration).toEqual(null);
+            expect(tab.animation.previous.easing).toEqual(null);
+            expect(tab.animation.previous.effect).toEqual(null);
+            tab.animation.next.duration = undefined;
+            tab.animation.next.easing = undefined;
+            tab.animation.next.effect = undefined;
+            tab.animation.previous.duration = undefined;
+            tab.animation.previous.easing = undefined;
+            tab.animation.previous.effect = undefined;
+            tab.dataBind();
+            expect(tab.animation.next.duration).toEqual(undefined);
+            expect(tab.animation.next.easing).toEqual(undefined);
+            expect(tab.animation.next.effect).toEqual(undefined);
+            expect(tab.animation.previous.duration).toEqual(undefined);
+            expect(tab.animation.previous.easing).toEqual(undefined);
+            expect(tab.animation.previous.effect).toEqual(undefined);
+        });
+        it('clearTemplates testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.clearTemplates = null;
+            tab.dataBind();
+            expect(tab.clearTemplates).toEqual(null);
+            tab.clearTemplates = undefined;
+            tab.dataBind();
+            expect(tab.clearTemplates).toEqual(undefined);
+        });
+        it('cssClass testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.cssClass = null;
+            tab.dataBind();
+            expect(tab.cssClass).toEqual(null);
+            tab.cssClass = undefined
+            tab.dataBind();
+            expect(tab.cssClass).toEqual(undefined);
+        });
+        it('dragArea testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.dragArea = null;
+            tab.dataBind();
+            expect(tab.dragArea).toEqual(null);
+            tab.dragArea = undefined;
+            tab.dataBind();
+            expect(tab.dragArea).toEqual(undefined);
+        });
+        it('enablePersistence testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.enablePersistence = null;
+            tab.dataBind();
+            expect(tab.enablePersistence).toEqual(null);
+            tab.enablePersistence = undefined;
+            tab.dataBind();
+            expect(tab.enablePersistence).toEqual(undefined);
+        });
+        it('enablePersistence testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.enablePersistence = null;
+            tab.dataBind();
+            expect(tab.enablePersistence).toEqual(null);
+            tab.enablePersistence = undefined;
+            tab.dataBind();
+            expect(tab.enablePersistence).toEqual(undefined);
+        });
+        it('enableRtl testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.enableRtl = null;
+            tab.dataBind();
+            expect(tab.enableRtl).toEqual(null);
+            tab.enableRtl = undefined;
+            tab.dataBind();
+            expect(tab.enableRtl).toEqual(undefined);
+        });
+        it('headerPlacement testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.headerPlacement = null;
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual(null);
+            tab.headerPlacement = undefined;
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual(undefined);
+        });
+        it('height testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.height = null;
+            tab.dataBind();
+            expect(tab.height).toEqual(null);
+            tab.height = undefined;
+            tab.dataBind();
+            expect(tab.height).toEqual(undefined);
+        });
+        it('heightAdjustMode testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.heightAdjustMode = null;
+            tab.dataBind();
+            expect(tab.heightAdjustMode).toEqual(null);
+            tab.heightAdjustMode = undefined;
+            tab.dataBind();
+            expect(tab.heightAdjustMode).toEqual(undefined);
+        });
+        it('items testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.items = null;
+            tab.dataBind();
+            expect(tab.items.length).toEqual(0);
+            tab.items = undefined;
+            tab.dataBind();
+            expect(tab.items.length).toEqual(0);
+        });
+        it('locale testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.locale = null;
+            tab.dataBind();
+            expect(tab.locale).toEqual(null);
+            tab.locale = undefined;
+            tab.dataBind();
+            expect(tab.locale).toEqual(undefined);
+        });
+        it('overflowMode testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.overflowMode = null;
+            tab.dataBind();
+            expect(tab.overflowMode).toEqual(null);
+            tab.overflowMode = undefined;
+            tab.dataBind();
+            expect(tab.overflowMode).toEqual(undefined);
+        });
+        it('reorderActiveTab testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.reorderActiveTab = null;
+            tab.dataBind();
+            expect(tab.reorderActiveTab).toEqual(null);
+            tab.reorderActiveTab = undefined;
+            tab.dataBind();
+            expect(tab.reorderActiveTab).toEqual(undefined);
+        });
+        it('scrollStep testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.scrollStep = null;
+            tab.dataBind();
+            expect(tab.scrollStep).toEqual(null);
+            tab.scrollStep = undefined;
+            tab.dataBind();
+            expect(tab.scrollStep).toEqual(undefined);
+        });
+        it('selectedItem testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.selectedItem = null;
+            tab.dataBind();
+            expect(tab.selectedItem).toEqual(0);
+            tab.selectedItem = undefined;
+            tab.dataBind();
+            expect(tab.selectedItem).toEqual(0);
+        });
+        it('showCloseButton testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.showCloseButton = null;
+            tab.dataBind();
+            expect(tab.showCloseButton).toEqual(null);
+            tab.showCloseButton = undefined;
+            tab.dataBind();
+            expect(tab.showCloseButton).toEqual(undefined);
+        });
+        it('width testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.width = null;
+            tab.dataBind();
+            expect(tab.width).toEqual(null);
+            tab.width = undefined;
+            tab.dataBind();
+            expect(tab.width).toEqual(undefined);
         });
     });
     describe('enableTab method testing', () => {
@@ -11349,6 +11649,212 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('Tab property testing', () => {
+        let tab: Tab;
+        let newItems: object[];
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            let el2: HTMLElement = createElement('div', { id: 'templateId' });
+            el2.innerHTML = "<span class='content-template'>Content Template</span>";
+            newItems = [
+                { header: { "text": "item3" }, content: "Content3" },
+                { header: { "text": "item4" }, content: "Content4" }
+            ];
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('checking null content', () => {
+            tab = new Tab({
+                items: [{ header: { 'text': 'item1' }, content: null}],
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(1);
+        });
+        it('checking item rendering in react', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items,
+            });
+            (tab as any).isReact = true;
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            tab.refresh();
+        });
+        it('react refreshActiveTab testing', () => {
+            tab = new Tab({
+                items: [
+                    { headerTemplate: "item1", content: "#templateId" },
+                ]
+            });
+            (tab as any).isReact = true;
+            tab.appendTo('#ej2Tab');
+            tab.refreshActiveTab();
+        });
+        it('changing items to empty in react', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items
+            });
+            (tab as any).isReact = true;
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            tab.items[0].header.text = '';
+            tab.items[0].content = '';
+            tab.dataBind();
+        });
+        it('checking addTab method in react', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items
+            });
+            (tab as any).isReact = true;
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            tab.addTab(newItems, 0);
+            tab.dataBind();
+        });
+        it('changing tab items dynamically in angular', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            tab.items = newItems;
+            tab.selectedItem = 1;
+            tab.dataBind();
+        });
+        it('changing visible property of items', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            tab.items[1].visible = false;
+            tab.dataBind();
+            tab.items[1].visible = true;
+            tab.dataBind();
+        });
+        it('propertychange testing', function () {
+            tab = new Tab({
+                width: '300px',
+                height: '250px',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ],
+                cssClass: 'e-custom'       
+            });
+            tab.appendTo('#ej2Tab');
+            expect(tab.width).toEqual('300px');
+            expect(tab.cssClass).toEqual('e-custom');
+            tab.cssClass = 'e-custom1';
+            tab.scrollStep = 50;
+            tab.allowDragAndDrop = true;
+            tab.dragArea = '.e-header';    
+            tab.dataBind();
+        });
+        it('enableHtmlSanitizer property testing', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items,
+                enableHtmlSanitizer: false
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+        });
+        it('hideTab testing in popup mode', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items,
+                overflowMode: 'Popup'
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            tab.hideTab(1);
+        });
+    });
+
+    describe('Tab items checking in Vue', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('enableHtmlSanitizer property testing in vue', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items,
+                enableHtmlSanitizer: false
+            });
+            (tab as any).isVue = true;
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+        });        
+        it('checking item rendering', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items
+            });
+            (tab as any).isVue = true;
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+        });
+    });
+      
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

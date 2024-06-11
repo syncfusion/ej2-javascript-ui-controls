@@ -145,6 +145,7 @@ export class Quad {
                 }
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         target = this;
         this.objects.push(this.spatialSearch.childNode);
         return { target: this };

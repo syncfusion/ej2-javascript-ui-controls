@@ -83,7 +83,8 @@ export class TableResizer {
             }
             let startingPointX: number = tableWidget.x;
             for (let i: number = 0; i < tableWidget.tableHolder.columns.length; i++) {
-                const preferredWidth: number = HelperMethods.convertPointToPixel(tableWidget.tableHolder.columns[parseInt(i.toString(), 10)].preferredWidth);
+                const preferredWidth: number = HelperMethods.convertPointToPixel(
+                    tableWidget.tableHolder.columns[parseInt(i.toString(), 10)].preferredWidth);
                 /* eslint-disable-next-line max-len */
                 if ((this.documentHelper.isInsideRect(startingPointX - 1, tableWidget.y, tableWidget.leftBorderWidth + resizerBoundaryWidth, tableWidget.height, touchPoint))) {
                     return position = i > 0 ? i : 0;
@@ -123,7 +124,8 @@ export class TableResizer {
             }
             let startingPointX: number = childTableWidget.x;
             for (let i: number = 0; i < childTableWidget.tableHolder.columns.length; i++) {
-                const preferredWidth: number = HelperMethods.convertPointToPixel(childTableWidget.tableHolder.columns[parseInt(i.toString(), 10)].preferredWidth);
+                const preferredWidth: number = HelperMethods.convertPointToPixel(
+                    childTableWidget.tableHolder.columns[parseInt(i.toString(), 10)].preferredWidth);
                 /* eslint-disable-next-line max-len */
                 if ((this.documentHelper.isInsideRect(startingPointX - 1, childTableWidget.y, childTableWidget.leftBorderWidth + 2, childTableWidget.height, touchPoint))) {
                     return position = i > 0 ? i : 0;
@@ -267,17 +269,17 @@ export class TableResizer {
                     break;
                 }
                 if (this.documentHelper.owner.layoutType === 'Pages') {
-                const body: BodyWidget = currentPage.headerWidget;
-                widget = this.getTableWidgetFromWidget(cursorPoint, body);
-                if (!isNullOrUndefined(widget)) {
-                    break;
+                    const body: BodyWidget = currentPage.headerWidget;
+                    widget = this.getTableWidgetFromWidget(cursorPoint, body);
+                    if (!isNullOrUndefined(widget)) {
+                        break;
+                    }
+                    const bodywid: BodyWidget = currentPage.footerWidget;
+                    widget = this.getTableWidgetFromWidget(cursorPoint, bodywid);
+                    if (!isNullOrUndefined(widget)) {
+                        break;
+                    }
                 }
-                const bodywid: BodyWidget = currentPage.footerWidget;
-                widget = this.getTableWidgetFromWidget(cursorPoint, bodywid);
-                if (!isNullOrUndefined(widget)) {
-                    break;
-                }
-            }
             }
         }
         return widget;
@@ -313,17 +315,17 @@ export class TableResizer {
                     break;
                 }
                 if (this.documentHelper.owner.layoutType === 'Pages' && this.viewer.owner.enableHeaderAndFooter) {
-                const body: BodyWidget = currentPage.headerWidget;
-                widget = body.getTableCellWidget(cursorPoint);
-                if (!isNullOrUndefined(widget)) {
-                    break;
+                    const body: BodyWidget = currentPage.headerWidget;
+                    widget = body.getTableCellWidget(cursorPoint);
+                    if (!isNullOrUndefined(widget)) {
+                        break;
+                    }
+                    const bodywid: BodyWidget = currentPage.footerWidget;
+                    widget = bodywid.getTableCellWidget(cursorPoint);
+                    if (!isNullOrUndefined(widget)) {
+                        break;
+                    }
                 }
-                const bodywid: BodyWidget = currentPage.footerWidget;
-                widget = bodywid.getTableCellWidget(cursorPoint);
-                if (!isNullOrUndefined(widget)) {
-                    break;
-                }
-            }
             }
         }
         return widget;
@@ -964,7 +966,7 @@ export class TableResizer {
             rowFormat.gridAfterWidth = value;
         }
     }
-     
+
     /**
      * @private
      * @returns {void}

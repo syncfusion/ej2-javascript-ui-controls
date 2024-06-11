@@ -490,7 +490,7 @@ describe('FileManager control Grid view', () => {
             });
             setTimeout(function () {
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
-                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[3].textContent).toBe('1.png');
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[3].textContent).toBe('1');
                 feObj.showFileExtension = true;
                 feObj.dataBind();
                 this.request = jasmine.Ajax.requests.mostRecent();

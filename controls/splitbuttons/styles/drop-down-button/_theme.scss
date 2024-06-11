@@ -1,13 +1,6 @@
 @include export-module('drop-down-button-theme') {
-
-  /*! drop-down button theme */
   .e-dropdown-popup {
-    @if $skin-name == 'Material3' {
-      background: $drop-down-btn-ul-bgcolor;
-    }
-    @else {
-      background: $drop-down-btn-ul-bgcolor;
-    }
+    background: $drop-down-btn-ul-bgcolor;
     color: $drop-down-btn-color;
 
     & ul {
@@ -53,6 +46,13 @@
             @else {
               color: $drop-down-btn-selected-color;
             }
+          }
+        }
+
+        &:focus-visible {
+          @if $theme-name == 'fluent2' {
+            background-color: $flyout-bg-color-focus;
+            box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
       }

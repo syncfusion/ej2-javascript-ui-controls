@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';
 import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, setValue } from '@syncfusion/ej2-base';
 import { EmitType, Event, formatUnit, ChildProperty, compile, closest, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';
@@ -634,9 +635,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
             this.cellSize[0] = this.element.parentElement &&
                 ((this.element.parentElement.offsetWidth));
-            this.cellSize[0] = this.element.parentElement
+            if (!isNullOrUndefined(this.cellSpacing)) {
+                this.cellSize[0] = this.element.parentElement
                 && ((this.element.parentElement.offsetWidth - ((this.maxCol() - 1) * this.cellSpacing[0]))
                     / (this.maxCol()));
+            }
             this.cellSize[1] = <number>this.cellSize[0] / this.cellAspectRatio;
         }
     }
@@ -667,9 +670,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected updateOldRowColumn(): void {
         for (let i: number = 0; i < this.panels.length; i++) {
             const id: string = this.panels[i as number].id;
-            if (this.element.querySelector("[id='" + id + "']")) {
-                const row: number = parseInt(this.element.querySelector("[id='" + id + "']").getAttribute('data-row'), 10);
-                const col: number = parseInt(this.element.querySelector("[id='" + id + "']").getAttribute('data-col'), 10);
+            if (this.element.querySelector('[id=\'' + id + '\']')) {
+                const row: number = parseInt(this.element.querySelector('[id=\'' + id + '\']').getAttribute('data-row'), 10);
+                const col: number = parseInt(this.element.querySelector('[id=\'' + id + '\']').getAttribute('data-col'), 10);
                 this.oldRowCol[this.panels[i as number].id] = { row: row, col: col };
             } else {
                 continue;
@@ -721,8 +724,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 content = (content as string).trim();
             }
         } else {
-            // eslint-disable-next-line
-            const compilerFn: any = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
+            const compilerFn: HTMLElement[] = templateFn({}, this, prop, type, isStringTemplate, null, appendElement) as HTMLElement[];
             if (compilerFn) {
                 for (const item of compilerFn) {
                     templateElements.push(item);
@@ -803,7 +805,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             model.enabled = true;
         }
         panelElement.style.zIndex = '' + model.zIndex;
-        // eslint-disable-next-line
         const panelProp: Panel = new Panel((<any>this), 'panels', model, true);
         this.panels.push(panelProp);
         this.oldRowCol[model.id] = { row: model.row, col: model.col };
@@ -823,8 +824,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected bindEvents(): void {
         this.refreshListener = this.refresh.bind(this);
-        // eslint-disable-next-line
-        EventHandler.add(window as any, 'resize', this.refreshListener);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.refreshListener);
         this.resizeEvents();
     }
     protected downResizeHandler(e: MouseEvent): void {
@@ -1245,10 +1245,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         } else {
             if (this.element.classList.contains(responsive)) {
                 removeClass([this.element], [responsive]);
-                // eslint-disable-next-line
-                const internalPanels : any =  this.element.querySelectorAll(((this.element.id) ? '#' + this.element.id + ' > ' : '') + '.e-panel');
+                const internalPanels: NodeList = this.element.querySelectorAll(((this.element.id) ? '#' + this.element.id + ' > ' : '') + '.e-panel');
                 for (let i: number = 0; i < internalPanels.length; i++) {
-                    const ele: HTMLElement = internalPanels[i as number];
+                    const ele: HTMLElement = internalPanels[i as number] as HTMLElement;
                     const cellInstance: PanelModel = this.getCellInstance(ele.id);
                     const row: number = parseInt(ele.getAttribute('data-row'), 10);
                     const col: number = parseInt(ele.getAttribute('data-col'), 10);
@@ -1261,13 +1260,13 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.panelResponsiveUpdate();
             this.updateGridLines();
         }
-        if (!isNullOrUndefined(this.panelCollection)){
+        if (!isNullOrUndefined(this.panelCollection)) {
             this.removeResizeClasses(this.panelCollection);
             this.setClasses(this.panelCollection);
         }
         this.resizeEvents();
-        if (!isNullOrUndefined(this.panelCollection)){
-        this.checkDragging(this.dragCollection);
+        if (!isNullOrUndefined(this.panelCollection)) {
+            this.checkDragging(this.dragCollection);
         }
     }
 
@@ -1319,8 +1318,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updatedRows = updatedPanel.length;
         for (let i: number = 0; i < updatedPanel.length; i++) {
             const panelElement: HTMLElement = document.getElementById(updatedPanel[i as number].id);
-            // eslint-disable-next-line
-            let updatedHeight: any;
+            let updatedHeight: number;
             if (panelElement) {
                 setStyle(<HTMLElement>panelElement, { 'width': '100%' });
                 (<HTMLElement>panelElement).style.height = ' ' + ((this.element.parentElement
@@ -1328,19 +1326,18 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 if (updatedPanel[i as number].sizeY > 1) {
                     updatedHeight = ((this.element.parentElement
                         && this.element.parentElement.offsetWidth / this.cellAspectRatio) * updatedPanel[i as number].sizeY) +
-                        // eslint-disable-next-line radix
-                        parseInt((Math.round(updatedPanel[i as number].sizeY / 2) * this.cellSpacing[1]).toString(), 0);
+                        parseInt((Math.round(updatedPanel[i as number].sizeY / 2) * this.cellSpacing[1]).toString(), 10);
                     (<HTMLElement>panelElement).style.height = '' + updatedHeight + 'px';
                 }
                 this.resizeHeight = true;
                 this.panelPropertyChange(updatedPanel[i as number], { row: i, col: 0 });
                 this.setPanelPosition(<HTMLElement>panelElement, updatedPanel[i as number].row, updatedPanel[i as number].col);
                 this.panelsSizeY = this.panelsSizeY + updatedPanel[i as number].sizeY;
-                if (!isNullOrUndefined(this.panelCollection)){
+                if (!isNullOrUndefined(this.panelCollection)) {
                     this.setClasses(this.panelCollection);
                     this.removeResizeClasses(this.panelCollection);
                 }
-                if (!isNullOrUndefined(this.dragCollection)){
+                if (!isNullOrUndefined(this.dragCollection)) {
                     this.checkDragging(this.dragCollection);
                 }
             }
@@ -1370,7 +1367,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected setHeightWidth(): void {
         let heightValue: string;
-        let widthValue: string;
+        if (isNullOrUndefined(this.cellSpacing)) { return; }
         if (this.checkMediaQuery()) {
             let entirePanelsY: number = 0;
             for (let i: number = 0; i < this.panels.length; i++) {
@@ -1386,8 +1383,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 (<number>this.cellSize[0] / this.cellAspectRatio) + (this.maxRow() - 1) * this.cellSpacing[1]) + 'px';
         }
         setStyle(this.element, { 'height': heightValue });
-        // eslint-disable-next-line prefer-const
-        widthValue = window.getComputedStyle(this.element).width;
+        const widthValue: string = window.getComputedStyle(this.element).width;
         setStyle(this.element, { 'width': widthValue });
     }
 
@@ -1483,7 +1479,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
 
     protected panelPropertyChange(panel: PanelModel, value: IChangePanel): void {
-        // eslint-disable-next-line
         (panel as any).setProperties(value, true);
     }
 
@@ -1527,9 +1522,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         for (let h: number = 0; h < sizeY; ++h) {
             for (let w: number = 0; w < sizeX; ++w) {
                 item = this.getPanel(row + h, col + w, ignore);
-                if (item && (!ignore || (<HTMLElement[]>ignore).indexOf(this.element.querySelector("[id='" + item.id + "']")) === -1) &&
-                    (<HTMLElement[]>items).indexOf(this.element.querySelector("[id='" + item.id + "']")) === -1) {
-                    items.push(this.element.querySelector("[id='" + item.id + "']"));
+                if (item && (!ignore || (<HTMLElement[]>ignore).indexOf(this.element.querySelector('[id=\'' + item.id + '\']')) === -1) &&
+                    (<HTMLElement[]>items).indexOf(this.element.querySelector('[id=\'' + item.id + '\']')) === -1) {
+                    items.push(this.element.querySelector('[id=\'' + item.id + '\']'));
                 }
             }
         }
@@ -1817,8 +1812,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 exclusions.push(ele);
                 if (updatedCollision.length === 0) {
                     isRightAdjudtable = true;
-                    // eslint-disable-next-line no-self-assign
-                    this.spacedColumnValue = this.spacedColumnValue;
                     return isRightAdjudtable;
                 } else {
                     isRightAdjudtable = false;
@@ -1884,7 +1877,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         if (this.mainElement && this.oldRowCol !== this.cloneObject) {
             for (let i: number = 0; i < this.panels.length; i++) {
-                const element: HTMLElement = this.element.querySelector("[id='" + this.panels[i as number].id + "']");
+                const element: HTMLElement = this.element.querySelector('[id=\'' + this.panels[i as number].id + '\']');
                 if (element === this.mainElement) {
                     continue;
                 }
@@ -2088,11 +2081,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             }
         }
         if (collisionModels.length > 0) {
-            // eslint-disable-next-line
-            const proxy: DashboardLayout = this;
             collisionModels.forEach((item1: HTMLElement) => {
-                if (proxy.overlapElement.indexOf(item1) === -1) {
-                    proxy.overlapElement.push(item1);
+                if (this.overlapElement.indexOf(item1) === -1) {
+                    this.overlapElement.push(item1);
                 }
             });
             if (this.overlapElement && this.overlapElement.indexOf(element) !== -1) {
@@ -2209,12 +2200,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         const panelModel: PanelModel = this.getCellInstance(clone.id);
         this.panelPropertyChange(panelModel, { row: updatedRow, col: colValue });
         if (collisionModels.length > 0) {
-            // eslint-disable-next-line
-            const proxy: DashboardLayout = this;
             this.overlapElement = [];
             this.shouldRestrict = true;
             collisionModels.forEach((item1: HTMLElement) => {
-                proxy.overlapElement.push(item1);
+                this.overlapElement.push(item1);
             });
             const overlapElementRow1: number = parseInt(clone.getAttribute('data-row'), 10);
             for (let m: number = 0; m < this.overlapElement.length; m++) {
@@ -2235,10 +2224,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     if (this.mainElement && collisionModels1.indexOf(this.mainElement) !== -1) {
                         collisionModels1.splice(collisionModels1.indexOf(this.mainElement), 1);
                     }
-                    // eslint-disable-next-line
-                    const proxy: DashboardLayout = this;
                     collisionModels1.forEach((item1: HTMLElement) => {
-                        proxy.overlapElement.push(item1);
+                        this.overlapElement.push(item1);
                     });
                     if (collisionModels1.length > 0) {
                         this.updateRowColumn(rowVal, this.overlapElement, this.overlapSubElementClone[p as number]);
@@ -2304,14 +2291,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected setXYAttributes(element: HTMLElement, panelModel: PanelModel): void {
         const value: IAttributes = {
             value: {
-                sizeX: panelModel.sizeX.toString(),
-                sizeY: panelModel.sizeY.toString(),
-                minSizeX: panelModel.minSizeX.toString(),
-                minSizeY: panelModel.minSizeY.toString(),
+                sizeX: !isNullOrUndefined(panelModel.sizeX) ? panelModel.sizeX.toString() : undefined,
+                sizeY: !isNullOrUndefined(panelModel.sizeY) ? panelModel.sizeY.toString() : undefined,
+                minSizeX: !isNullOrUndefined(panelModel.minSizeX) ? panelModel.minSizeX.toString() : undefined,
+                minSizeY: !isNullOrUndefined(panelModel.minSizeY) ? panelModel.minSizeY.toString() : undefined,
                 maxSizeX: !isNullOrUndefined(panelModel.maxSizeX) ? panelModel.maxSizeX.toString() : undefined,
                 maxSizeY: !isNullOrUndefined(panelModel.maxSizeY) ? panelModel.maxSizeY.toString() : undefined,
-                row: panelModel.row.toString(),
-                col: panelModel.col.toString()
+                row: !isNullOrUndefined(panelModel.row) ? panelModel.row.toString() : undefined,
+                col: !isNullOrUndefined(panelModel.col) ? panelModel.col.toString() : undefined
             }
         };
         this.setAttributes(value, element);
@@ -2476,7 +2463,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected updateDragArea(): void {
         this.dragCollection.forEach((dragobj: Draggable) => {
-            // eslint-disable-next-line
             (<any>dragobj).setDragArea();
         });
     }
@@ -2490,8 +2476,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     private onDraggingStart(args: DragEventArgs): void {
         const dragArgs: DragEventArgs = args;
-        // eslint-disable-next-line
-        this.trigger('dragStart', dragArgs, (dragArgs: DragEventArgs) => {
+        this.trigger('dragStart', dragArgs, () => {
             if (isNullOrUndefined(args.cancel)) {
                 args.cancel = false;
             }
@@ -2525,13 +2510,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             removeClass([args.element], [dragging]);
         }
     }
-    // eslint-disable-next-line
     private cloneModels(source?: any, target?: any): PanelModel[] {
         if (target === undefined) {
             target = [];
         }
         for (let i: number = 0; i < source.length; i++) {
-            // tslint:disable-next-line
             if (!target[i as number]) {
                 target[i as number] = {};
             }
@@ -2576,7 +2559,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.mainElement = args.element;
                         const model: PanelModel = panelModel;
                         this.checkCollision = this.collisions(model.row, model.col, model.sizeX, model.sizeY, args.element);
-                        if (panelModel.col >= this.checkColumnValue) {
+                        if (panelModel.col >= 0 || panelModel.col >= this.checkColumnValue) {
                             this.checkCollision = [];
                         }
                         this.updatePanelLayout(args.element, panelModel);
@@ -2698,7 +2681,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             panel.id = 'layout_' + this.panelID.toString();
             this.panelID = this.panelID + 1;
         }
-        // eslint-disable-next-line
         const panelProp: Panel = new Panel((<any>this), 'panels', panel, true);
         this.panels.push(panelProp);
         this.panelsInitialModel = this.cloneModels(this.panels);
@@ -3039,8 +3021,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      */
 
     public destroy(): void {
-        // eslint-disable-next-line
-        EventHandler.remove(window as any, 'resize', this.refreshListener);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.refreshListener);
         removeClass([this.element], ['e-dashboardlayout', 'e-lib', 'e-responsive', 'e-control']);
         this.element.removeAttribute('style');
         for (let i: number = 0; i < this.dragCollection.length; i++) {
@@ -3143,8 +3124,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * @private
      */
 
-    // eslint-disable-next-line
-    public onPropertyChanged(newProp: DashboardLayoutModel, oldProp: DashboardLayoutModel): void {
+    public onPropertyChanged(newProp: DashboardLayoutModel): void {
         if (newProp.panels && newProp.panels.length > 0 && newProp.panels[0] instanceof Panel) { this.checkForIDValues(newProp.panels); }
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
@@ -3267,8 +3247,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             for (const key of keys) {
                 if ((typeof getValue(key, this) === 'object' && !isNullOrUndefined(getValue(key, this)))) {
                     if (Array.isArray(getValue(key, this)) && key === 'panels') {
-                        // eslint-disable-next-line
-                        this.mergePanels(<Panel[]>dataObj[key], <Panel[]>this[key]);
+                        this.mergePanels(dataObj[key as keyof DashboardLayout] as Panel[], (this[key as keyof DashboardLayout] as Panel[]));
                         (<any>this)[key as keyof DashboardLayout] = dataObj[key as keyof DashboardLayout];
                     }
                 }

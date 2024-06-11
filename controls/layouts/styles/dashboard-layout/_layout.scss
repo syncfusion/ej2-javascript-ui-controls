@@ -16,20 +16,20 @@
       border-collapse: collapse;
       height: $panel-full-height;
       width: $panel-full-width;
-    }
 
-    .e-dashboard-gridline-table tbody tr td.e-dashboard-gridline {
-      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
-        border: 1px dashed $gridline-border;
+      td.e-dashboard-gridline {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
+          border: 1px dashed $gridline-border;
+        }
+        @else {
+          border: 1px dotted $gridline-border;
+        }
+  
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'fluent2') {
+          border-radius: $gridline-border-radius;
+        }
+        position: absolute;
       }
-      @else {
-        border: 1px dotted $gridline-border;
-      }
-
-      @if ($skin-name == 'bootstrap5') {
-        border-radius: $gridline-border-radius;
-      }
-      position: absolute;
     }
 
     &.e-responsive {
@@ -40,7 +40,15 @@
       user-select: $panel-drag-prevent;
     }
 
+    & .e-panel.e-ssr {
+      position: relative;
+    }
+
     & .e-panel {
+      border: $panel-border;
+      height: $panel-full-height;
+      user-select: none;
+      width: $panel-full-width;
 
       & .e-resize.e-dl-icon {
         @if ($skin-name == 'tailwind') {
@@ -49,12 +57,14 @@
       }
 
       &:hover {
-        @if ($skin-name != 'tailwind') {
+        @if ($skin-name != 'tailwind' and $skin-name != 'fluent2') {
           border: $panel-hover-border;
         }
-
-        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
           box-shadow: $panel-hover-box-shadow;
+        }
+        @if $skin-name == 'fluent2' {
+          background: $panel-hover-background;
         }
 
         & .e-panel-container {
@@ -71,6 +81,20 @@
       }
 
       & .e-panel-container {
+        height: $panel-full-height;
+        width: $panel-full-width;
+
+        & .e-panel-content{
+          @if $skin-name == 'tailwind' {
+            padding: $panel-content-padding;
+          }
+
+          .e-blazor-template {
+            height: $panel-content-template-height;
+            width: $panel-content-template-width;
+          }
+        }
+
         & .e-resize.e-dl-icon {
           display: none;
         }
@@ -115,29 +139,6 @@
           float: right;
         }
       }
-
-      & .e-panel-container {
-        height: $panel-full-height;
-        width: $panel-full-width;
-
-        & .e-panel-content .e-blazor-template {
-          height: $panel-content-template-height;
-          width: $panel-content-template-width;
-        }
-      }
-
-      & .e-panel-content {
-        @if $skin-name == 'tailwind' {
-          padding: $panel-content-padding;
-        }
-      }
-    }
-
-    & .e-panel {
-      border: $panel-border;
-      height: $panel-full-height;
-      user-select: none;
-      width: $panel-full-width;
 
       & .e-resize.e-single,
       & .e-resize.e-double {
@@ -189,6 +190,29 @@
         font-family: 'e-icons';
         position: $panel-position;
       }
+
+      &.e-dragging,
+      &.e-item-moving {
+        cursor: $panel-dragging-cursor;
+        z-index: $panel-dragging-zindex;
+        @if $skin-name == 'fluent2' {
+          border: none;
+        }
+      }
+
+      &.e-rtl {
+        & .e-panel-header {
+          & .e-header-template {
+            float: left;
+          }
+        }
+      }
+
+      &.e-bigger {
+        & .e-panel-header {
+          @include bigger-header-style;
+        }
+      }
     }
 
     & .e-drag:hover {
@@ -199,22 +223,6 @@
       &.e-drag:hover,
       .e-drag:hover {
         cursor: default;
-      }
-    }
-
-    & .e-panel.e-dragging,
-    & .e-panel.e-item-moving {
-      cursor: $panel-dragging-cursor;
-      z-index: $panel-dragging-zindex;
-    }
-
-    & .e-panel.e-rtl {
-
-      & .e-panel-header {
-
-        & .e-header-template {
-          float: left;
-        }
       }
     }
 
@@ -230,12 +238,6 @@
 
       @if $skin-name != 'highcontrast' {
         border-radius: $panel-border-radius;
-      }
-    }
-
-    .e-panel.e-bigger {
-      & .e-panel-header {
-        @include bigger-header-style;
       }
     }
   }

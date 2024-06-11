@@ -21,8 +21,6 @@
     }
   }
 
-  // Rtl small size
-
   .e-small.e-rtl,
   .e-small .e-rtl,
   .e-rtl .e-small {
@@ -47,8 +45,6 @@
     }
   }
 
-  // Rtl bigger size
-
   .e-bigger.e-rtl,
   .e-bigger .e-rtl,
   .e-rtl .e-bigger {
@@ -67,8 +63,6 @@
       }
     }
   }
-
-  // Rtl bigger small size
 
   .e-small.e-bigger.e-rtl,
   .e-small.e-bigger .e-rtl,
@@ -143,10 +137,10 @@
 
       #{if(&, '&', '*')} .e-list-item.e-active,
       #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
-        @if $skin-name == 'Material3' {
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
           background: $ddl-list-active-bg-color;
         }
-        @if $skin-name != 'Material3' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
           background-color: $ddl-list-active-bg-color;
         }
         border-color: $ddl-list-active-border-color;
@@ -263,7 +257,6 @@
     text-align: left;
   }
 
-  // small size
   .e-small .e-dropdownbase,
   .e-dropdownbase.e-small {
     @at-root {
@@ -287,8 +280,6 @@
       }
     }
   }
-
-  // Bigger small size
 
   .e-bigger.e-small .e-dropdownbase,
   .e-dropdownbase.e-small.e-bigger {

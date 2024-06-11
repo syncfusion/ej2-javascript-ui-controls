@@ -3,7 +3,7 @@ import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOpera
 import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
 import { ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { insertFormatRange } from '../../workbook/index';
-import { Spreadsheet } from '../../spreadsheet';
+import { IViewport, Spreadsheet } from '../../spreadsheet';
 
 /**
  * The `WorkbookInsert` module is used to insert cells, rows, columns and sheets in to workbook.
@@ -217,7 +217,7 @@ export class WorkbookInsert {
             }
             model.forEach((sheet: SheetModel): void => {
                 if (isModel) { this.updateRangeModel(sheet.ranges); }
-                const viewport: any = (this.parent as Spreadsheet).viewport;
+                const viewport: IViewport = (this.parent as Spreadsheet).viewport;
                 const refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
                 const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, resolveAfterFullDataLoaded?: boolean } = {
                     sheet: sheet, resolveAfterFullDataLoaded: true,

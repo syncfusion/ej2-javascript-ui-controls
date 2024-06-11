@@ -170,8 +170,7 @@ export class Formula {
         this.isPopupOpened = true;
         e.popup.relateTo = this.getRelateToElem();
         (<HTMLElement>e.popup.element.firstChild).style.maxHeight = '180px';
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        new Promise((resolve: Function, reject: Function) => {
+        new Promise((resolve: Function) => {
             setTimeout(() => { resolve(); }, 100);
         }).then(() => {
             this.triggerKeyDownEvent(keyCodes.DOWN);
@@ -394,8 +393,8 @@ export class Formula {
         const isSingleCell: boolean = sRange.length > 1 && sRange[0] === sRange[1];
         const name: DefineNameModel[] = this.parent.definedNames.filter(
             (name: DefineNameModel) => {
-                let splitSheetName: string[] = name.refersTo.split('!');
-                if (splitSheetName[0].includes("'") && splitSheetName[0].match(/^='.*'$/)) {
+                const splitSheetName: string[] = name.refersTo.split('!');
+                if (splitSheetName[0].includes('\'') && splitSheetName[0].match(/^='.*'$/)) {
                     splitSheetName[0] = '=' + splitSheetName[0].slice(2, -1);
                 }
                 const referValue: string = splitSheetName[0] + '!' + splitSheetName[1].split('$').join('');

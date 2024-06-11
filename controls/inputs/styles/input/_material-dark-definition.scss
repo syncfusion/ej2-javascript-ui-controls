@@ -333,6 +333,7 @@ $small-outline-float-label-font-size: 13px !default;
 $outline-float-label-disbale-font-color: rgba($grey-light-font, .38) !default;
 $outline-disabled-input-font-color: rgba($grey-light-font, .38) !default;
 $outline-input-group-disabled-color: rgba($grey-light-font, .38) !default;
+$textarea-float-top: -22px !default;
 
 //dimensions
 @mixin input-sizing {
@@ -494,13 +495,13 @@ $filled-bigger-float-input-rtl-padding: 20px $zero-value 6px 4px !default;
 $filled-bigger-small-float-input-rtl-padding: 14px $zero-value 5px 2px !default;
 $filled-small-float-input-rtl-padding: 12px $zero-value 4px 2px !default;
 
-$filled-textarea-padding: $zero-value 12px 10px !default;
-$filled-bigger-textarea-padding: $zero-value 16px 16px !default;
+$filled-textarea-padding: $zero-value 12px 9px !default;
+$filled-bigger-textarea-padding: $zero-value 16px 8px !default;
 $filled-bigger-small-textarea-padding: $zero-value 12px 10px !default;
 $filled-small-textarea-padding: $zero-value 8px 7px !default;
 
 $filled-float-textarea-padding: $zero-value 12px 5px !default;
-$filled-bigger-float-textarea-padding: $zero-value 16px 5px !default;
+$filled-bigger-float-textarea-padding: $zero-value 16px 8px !default;
 $filled-bigger-small-float-textarea-padding: $zero-value 12px 5px !default;
 $filled-small-float-textarea-padding: $zero-value 8px 4px !default;
 

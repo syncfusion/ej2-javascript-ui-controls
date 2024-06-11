@@ -28,8 +28,11 @@ export class NonWorkingDay {
             this.nonworkingContainer = createElement('div', {
                 className: cls.nonworkingContainer
             });
-            this.parent.enableTimelineVirtualization ? this.nonworkingContainer.style.height = "100%" : {};
-            this.parent.ganttChartModule.chartBodyContent.insertBefore(this.nonworkingContainer, this.parent.ganttChartModule.chartBodyContent.lastChild);
+            if (this.parent.enableTimelineVirtualization) {
+                this.nonworkingContainer.style.height = '100%';
+            }
+            this.parent.ganttChartModule.chartBodyContent.insertBefore(
+                this.nonworkingContainer, this.parent.ganttChartModule.chartBodyContent.lastChild);
         }
     }
     /**
@@ -46,8 +49,8 @@ export class NonWorkingDay {
                     className: cls.holidayContainer
                 });
                 if (this.parent.enableTimelineVirtualization) {
-                    this.holidayContainer.style.height = "100%";
-                    this.holidayContainer.style.zIndex = "-1";
+                    this.holidayContainer.style.height = '100%';
+                    this.holidayContainer.style.zIndex = '-1';
                 }
                 this.nonworkingContainer.appendChild(this.holidayContainer);
             }
@@ -69,12 +72,12 @@ export class NonWorkingDay {
         let toDate: Date;
         const container: HTMLElement = createElement('div');
         const height: number = this.parent.contentHeight;
-      // eslint-disable-next-line
-         let toolbarHeight: number = 0;
-        if(!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
-           toolbarHeight =  this.parent.toolbarModule.element.offsetHeight 
+        let toolbarHeight: number = 0;
+        if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
+            toolbarHeight =  this.parent.toolbarModule.element.offsetHeight;
         }
-        const viewportHeight: number = this.parent.ganttHeight- toolbarHeight-this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
+        const viewportHeight: number =
+        this.parent.ganttHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
         for (let i: number = 0; i < this.parent.holidays.length; i++) {
             if (this.parent.holidays[i as number].from && this.parent.holidays[i as number].to) {
                 fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].from);
@@ -92,7 +95,7 @@ export class NonWorkingDay {
             const width: number = (this.parent.holidays[i as number].from && this.parent.holidays[i as number].to) ?
                 this.parent.dataOperation.getTaskWidth(fromDate, toDate) : this.parent.perDayWidth;
             const left: number = this.parent.dataOperation.getTaskLeft(fromDate, false, true);
-            const align: string = this.parent.enableRtl? `right:${left}px;` : `left:${left}px;`;
+            const align: string = this.parent.enableRtl ? `right:${left}px;` : `left:${left}px;`;
             const holidayDiv: HTMLElement = createElement('div', {
                 className: cls.holidayElement, styles: `${align} width:${width}px; height:100%;`
             });
@@ -125,8 +128,8 @@ export class NonWorkingDay {
                     className: cls.weekendContainer
                 });
                 if (this.parent.enableTimelineVirtualization) {
-                    this.weekendContainer.style.height = "100%";
-                    this.weekendContainer.style.zIndex = "-1";
+                    this.weekendContainer.style.height = '100%';
+                    this.weekendContainer.style.zIndex = '-1';
                 }
                 this.nonworkingContainer.appendChild(this.weekendContainer);
             }
@@ -145,10 +148,12 @@ export class NonWorkingDay {
      */
     private getWeekendElements(): HTMLElement {
         const container: HTMLElement = createElement('div');
-        let leftValueForStartDate: any = (this.parent.enableTimelineVirtualization && this.parent.ganttChartModule.scrollObject.element.scrollLeft != 0)
+        const leftValueForStartDate: number = (this.parent.enableTimelineVirtualization &&
+            this.parent.ganttChartModule.scrollObject.element.scrollLeft !== 0)
             ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : null;
         const startDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
-            ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).getTime()) : new Date(this.parent.timelineModule.timelineStartDate.getTime());
+            ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).getTime()) :
+            new Date(this.parent.timelineModule.timelineStartDate.getTime());
         const endDate: Date = this.parent.enableTimelineVirtualization ? new Date((this.parent.timelineModule.weekendEndDate).getTime()) :
             new Date(this.parent.timelineModule.timelineEndDate.getTime());
         const nonWorkingIndex: number[] = this.parent.nonWorkingDayIndex;
@@ -165,15 +170,17 @@ export class NonWorkingDay {
                     width = this.parent.dataOperation.getTaskWidth(start, tempEnd);
                     isFirstCell = false;
                 }
-                let sDate: Date = new Date(startDate);
-                sDate.setDate(sDate.getDate() +1);
-                if (sDate.getTimezoneOffset() != this.parent.timelineModule.timelineStartDate.getTimezoneOffset() && !this.weekendWidthUpdated) {
-                    if (this.parent.timelineModule.bottomTier == 'Hour' && this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1) {
+                const sDate: Date = new Date(startDate);
+                sDate.setDate(sDate.getDate() + 1);
+                if (sDate.getTimezoneOffset() !== this.parent.timelineModule.timelineStartDate.getTimezoneOffset() &&
+                !this.weekendWidthUpdated) {
+                    if (this.parent.timelineModule.bottomTier === 'Hour' &&
+                    this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1) {
                         width = width - this.parent.timelineSettings.timelineUnitSize;
                         this.weekendWidthUpdated = true;
                     }
                 }
-                const align: string = this.parent.enableRtl? `right:${left}px;` : `left:${left}px;`;
+                const align: string = this.parent.enableRtl ? `right:${left}px;` : `left:${left}px;`;
                 const weekendDiv: HTMLElement = createElement('div', {
                     className: cls.weekend, styles: `${align} width:${width}px;height:100%;`
                 });
@@ -187,13 +194,12 @@ export class NonWorkingDay {
 
     private updateHolidayLabelHeight(): void {
         const height: number = this.parent.getContentHeight();
-        let gantttable = document.getElementById(this.parent.element.id);
-        // eslint-disable-next-line
+        const gantttable: HTMLElement = document.getElementById(this.parent.element.id);
         let toolbarHeight: number = 0;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
-           toolbarHeight =  this.parent.toolbarModule.element.offsetHeight 
+            toolbarHeight =  this.parent.toolbarModule.element.offsetHeight;
         }
-        const viewportHeight = (this.parent.height === 'auto') ? gantttable.offsetHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight :
+        const viewportHeight: number = (this.parent.height === 'auto') ? gantttable.offsetHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight :
             this.parent.ganttHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
         const top: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
         const labels: NodeList = this.holidayContainer.querySelectorAll('.' + cls.holidayLabel);

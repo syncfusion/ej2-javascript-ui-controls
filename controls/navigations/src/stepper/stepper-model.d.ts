@@ -77,6 +77,9 @@ export interface StepperModel extends StepperBaseModel{
      * {% codeBlock src='stepper/template/index.md' %}{% endcodeBlock %}
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     template?: string | Function;
@@ -85,6 +88,9 @@ export interface StepperModel extends StepperBaseModel{
      * Defines the template content for the tooltip.
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     tooltipTemplate?: string | Function;
@@ -123,7 +129,7 @@ export interface StepperModel extends StepperBaseModel{
     stepType?: string | StepType;
 
     /**
-     * Event triggers after active step changed. 
+     * Event triggers after active step changed.
      *
      * @event stepChanged
      */

@@ -21,7 +21,6 @@ export function getPortShape(shape: PortShapes): string {
  * @returns { string }     ShapeDictionary defines the shape of the default nodes and ports.\
  * @param {DecoratorShapes} shape - provide the element value.
  * @param {DecoratorModel} decorator - provide the element value.
-
  *
  * @private
  */
@@ -32,11 +31,11 @@ export function getDecoratorShape(shape: DecoratorShapes, decorator: DecoratorMo
     return decoratorShapes[`${shape}`];
 }
 
-export function getSegmentThumbShapeHorizontal(shapes : SegmentThumbShapes)
+export function getSegmentThumbShapeHorizontal(shapes : SegmentThumbShapes): string
 {
     return segmentThumbShapeHorizontal[`${shapes}`];
 }
-export function getSegmentThumbShapeVertical(shapes: SegmentThumbShapes)
+export function getSegmentThumbShapeVertical(shapes: SegmentThumbShapes): string
 {
     return segmentThumbShapeVertical[`${shapes}`];
 }

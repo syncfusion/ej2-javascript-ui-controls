@@ -1,20 +1,22 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-namespace */
-import { ChartTheme, IFontMapping } from '../../index';
+import { ChartTheme } from '../../index';
 import { IRangeStyle } from '../model/range-navigator-interface';
 import { RangeNavigator, ThumbSettingsModel } from '../index';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 
-/** @private */
-// tslint:disable-next-line:max-func-body-length
+/**
+ * Methods for getting the theme color for the range navigator.
+ *
+ * @private
+ * @param {ChartTheme} theme - The theme to apply.
+ * @param {RangeNavigator} range - The range navigator control.
+ * @returns {IRangeStyle} - The theme color.
+ */
 export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IRangeStyle {
     const thumbSize: ThumbSettingsModel = range.navigatorStyleSettings.thumb;
     const thumbWidth: number = isNullOrUndefined(thumbSize.width) ? (Browser.isDevice ? 15 : 20) : thumbSize.width;
     const thumbHeight: number = isNullOrUndefined(thumbSize.height) ? (Browser.isDevice ? 15 : 20) : thumbSize.height;
     const darkAxisColor: string = (theme === 'HighContrast') ? '#969696' : '#6F6C6C';
     const darkGridlineColor: string = (theme === 'HighContrast') ? '#4A4848' : '#414040';
-    const darkBackground: string = theme === 'MaterialDark' ? '#383838' : (theme === 'FabricDark' ? '#242424' : '#1b1b1b');
     let style: IRangeStyle = {
         gridLineColor: '#E0E0E0',
         axisLineColor: '#000000',
@@ -31,10 +33,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
         thumbWidth: thumbWidth,
         thumbHeight: thumbHeight,
         axisLabelFont: {
-            color: theme === 'Material' ? 'rgba(97, 97, 97, 1)' : theme === 'Fabric' ? '#666666' : '#676767', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+            color: theme === 'Material' ? 'rgba(97, 97, 97, 1)' : theme === 'Fabric' ? '#666666' : '#676767', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
         },
         tooltipLabelFont: {
-            color: theme === 'Material' ? 'rgba(249, 250, 251, 1)' : theme === 'Fabric' ? '#333333' : '#F9FAFB', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica'
+            color: theme === 'Material' ? 'rgba(249, 250, 251, 1)' : theme === 'Fabric' ? '#333333' : '#F9FAFB', fontFamily: theme === 'Material' ? 'Roboto' : theme === 'Fabric' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
         }
     };
     switch (theme) {
@@ -61,10 +63,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#969696', fontFamily: 'Segoe UI'
+                color: '#969696', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#000000', fontFamily: 'Segoe UI'
+                color: '#000000', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -85,10 +87,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#969696', fontFamily: 'Segoe UI'
+                color: '#969696', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#000000', fontFamily: 'Segoe UI'
+                color: '#000000', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -112,10 +114,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#CED4DA', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : theme === 'FabricDark' ? '#A19F9D' : '#CED4DA', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
+                color: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -136,10 +138,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica'
+                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica'
+                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -160,10 +162,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#6B7280', fontFamily: 'Inter'
+                color: '#6B7280', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Inter'
+                color: '#F9FAFB', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -184,10 +186,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#9CA3AF', fontFamily: 'Inter'
+                color: '#9CA3AF', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#1F2937', fontFamily: 'Inter'
+                color: '#1F2937', fontFamily: 'Inter', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -208,10 +210,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica'
+                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica'
+                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -232,10 +234,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#CED4DA', fontFamily: 'Helvetica'
+                color: '#CED4DA', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica'
+                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -256,10 +258,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#3B3A39', fontFamily: 'Segoe UI'
+                color: '#3B3A39', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#323130', fontFamily: 'Segoe UI'
+                color: '#323130', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -280,15 +282,63 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#C8C6C4', fontFamily: 'Segoe UI'
+                color: '#C8C6C4', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F3F2F1', fontFamily: 'Segoe UI'
+                color: '#F3F2F1', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
-        case 'Material3':
-            style = {
+    case 'Fluent2':
+        style = {
+            gridLineColor: '#EDEBE9',
+            axisLineColor: '#D2D0CE',
+            labelFontColor: '#616161',
+            unselectedRectColor: range.series.length ? 'rgba(250, 250, 250, 0.1)' : '#A19F9D',
+            thumpLineColor: '#A19F9D',
+            thumbBackground: '#FAFAFA',
+            gripColor: '#424242',
+            background: 'transparent',
+            thumbHoverColor: '#FAFAFA',
+            selectedRegionColor: range.series.length ? 'rgba(161, 159, 157, 0.4)' : '#797775',
+            tooltipBackground: '#FFFFFF',
+            tooltipFontColor: '#242424',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight,
+            axisLabelFont: {
+                color: '#616161', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#242424', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            }
+        };
+        break;
+    case 'Fluent2Dark':
+        style = {
+            gridLineColor: '#8A8886',
+            axisLineColor: '#3B3A39',
+            labelFontColor: '#ADADAD',
+            unselectedRectColor: range.series.length ? 'transparent' : '#A19F9D',
+            thumpLineColor: '#8A8886',
+            thumbBackground: '#1F1F1F',
+            gripColor: '#D6D6D6',
+            background: 'transparent',
+            thumbHoverColor: '#1F1F1F',
+            selectedRegionColor: range.series.length ? 'rgba(138, 136, 134, 0.4)' : '#797775',
+            tooltipBackground: '#292929',
+            tooltipFontColor: '#FFFFFF',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight,
+            axisLabelFont: {
+                color: '#ADADAD', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            }
+        };
+        break;
+    case 'Material3':
+        style = {
             gridLineColor: '#C4C7C5',
             axisLineColor: '#C4C7C5',
             labelFontColor: '#1E192B',
@@ -304,13 +354,13 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#1E192B', fontFamily: 'Roboto'
+                color: '#1E192B', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F4EFF4', fontFamily: 'Roboto'
+                color: '#F4EFF4', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
-            };
-            break;
+        };
+        break;
     case 'Material3Dark':
         style = {
             gridLineColor: '#444746',
@@ -328,10 +378,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#CAC4D0', fontFamily: 'Roboto'
+                color: '#CAC4D0', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F4EFF4', fontFamily: 'Roboto'
+                color: '#F4EFF4', fontFamily: 'Roboto', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;

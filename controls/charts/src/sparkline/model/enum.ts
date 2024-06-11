@@ -98,6 +98,10 @@ export type SparklineTheme =
     'Bootstrap5Dark' |
     /**  Render a sparkline with Fluent theme. */
     'Fluent' |
+    /**  Render a sparkline with Fluent 2 theme. */
+    'Fluent2' |
+    /**  Render a sparkline with Fluent 2 dark theme. */
+    'Fluent2Dark' |
     /**  Render a sparkline with FluentDark theme. */
     'FluentDark' |
     /**  Render a smithchart with Material 3 theme. */

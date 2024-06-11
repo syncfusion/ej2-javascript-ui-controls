@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-pdf",
-	"version": "25.1.39",
+	"version": "17.9.0",
 	"description": "Feature-rich JavaScript PDF library with built-in support for loading and manipulating PDF document.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -9,7 +9,8 @@
 	"es2015": "./dist/es6/ej2-pdf.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-compression": "*"
+		"@syncfusion/ej2-compression": "*",
+		"@types/node": "^20.12.7"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

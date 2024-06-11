@@ -258,6 +258,7 @@ describe('Enable track changes in collaborative editing', () => {
         expect(argsEle.operations[3].action).toBe('Format');
         expect(argsEle.operations[3].offset).toBe(1);
     });
+
     it('Insert text inside the cell', () => {
         console.log('Insert text inside the cell');
         let argsEle: ContainerContentChangeEventArgs;

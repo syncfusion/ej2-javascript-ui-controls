@@ -1,8 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Chart } from '../chart';
 import { EventHandler, Browser, createElement } from '@syncfusion/ej2-base';
 import { getRectLocation, minMax, getElement, ChartLocation, RectOption } from '../../common/utils/helper';
@@ -36,11 +31,11 @@ export class Zoom {
     /** @private */
     public isZoomed: boolean;
     /** @private */
-    public isPointer: Boolean;
+    public isPointer: boolean;
     /** @private */
     public pinchTarget: Element;
     /** @private */
-    public isDevice: Boolean;
+    public isDevice: boolean;
     /** @private */
     public browserName: string;
     /** @private */
@@ -52,7 +47,7 @@ export class Zoom {
     /** @private */
     public zoomAxes: IZoomAxisRange[];
     /** @private */
-    public isIOS: Boolean;
+    public isIOS: boolean;
     /** @private */
     public performedUI: boolean;
     private zoomkitOpacity: number;
@@ -93,8 +88,11 @@ export class Zoom {
     }
 
     /**
-     * Function that handles the Rectangular zooming.
+     * Renders the zooming functionality for the chart.
      *
+     * @param {PointerEvent | TouchEvent} e - The pointer or touch event.
+     * @param {Chart} chart - The chart instance.
+     * @param {boolean} isTouch - Indicates whether the event is a touch event.
      * @returns {void}
      */
     public renderZooming(e: PointerEvent | TouchEvent, chart: Chart, isTouch: boolean): void {
@@ -180,7 +178,7 @@ export class Zoom {
         if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, zoomingEventArgs, () => {
                 if (zoomingEventArgs.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
                 }
                 else {
                     this.performDefferedZoom(chart);
@@ -189,7 +187,7 @@ export class Zoom {
         } else {
             this.chart.trigger(onZooming, zoomingEventArgs, () => {
                 if (zoomingEventArgs.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
                 }
                 else {
                     this.performDefferedZoom(chart);
@@ -228,6 +226,7 @@ export class Zoom {
     /**
      * Redraw the chart on zooming.
      *
+     * @param {Chart} chart - The chart instance.
      * @returns {void}
      * @private
      */
@@ -243,7 +242,13 @@ export class Zoom {
             } else if (chart.disableTrackTooltip) {
                 chart.disableTrackTooltip = false;
                 chart.delayRedraw = false;
-                chart.enableCanvas ? chart.createChartSvg() : chart.removeSvg() ;
+                if (chart.enableCanvas) {
+                    chart.createChartSvg();
+                }
+                else {
+                    chart.removeSvg();
+                }
+                // chart.enableCanvas ? chart.createChartSvg() : chart.removeSvg();
                 chart.refreshAxis();
                 chart.refreshBound();
             }
@@ -309,9 +314,9 @@ export class Zoom {
 
         const onZoomingEventArg: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
         if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArg, () => { 
+            this.chart.trigger(onZooming, onZoomingEventArg, () => {
                 if (onZoomingEventArg.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
                 }
                 else {
                     this.zoomingRect = new Rect(0, 0, 0, 0);
@@ -321,7 +326,7 @@ export class Zoom {
         } else {
             this.chart.trigger(onZooming, onZoomingEventArg, () => {
                 if (onZoomingEventArg.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
                 }
                 else {
                     this.zoomingRect = new Rect(0, 0, 0, 0);
@@ -331,7 +336,14 @@ export class Zoom {
         }
     }
 
-    /** It is used to redraw the chart and trigger zoomComplete event */
+    /**
+     * Redraws the chart on zooming.
+     *
+     * @param {Chart} chart - The chart instance.
+     * @param {boolean} [isRedraw=true] - Indicates whether to redraw the chart.
+     * @param {boolean} [isMouseUp=false] - Indicates whether the mouse button is released.
+     * @returns {void}
+     */
     private redrawOnZooming(chart: Chart, isRedraw: boolean = true, isMouseUp: boolean = false): void {
         const zoomCompleteCollection: IZoomCompleteEventArgs[] = isMouseUp ? this.toolkit.zoomCompleteEvtCollection :
             this.zoomCompleteEvtCollection;
@@ -357,10 +369,14 @@ export class Zoom {
     }
 
     /**
-     * Function that handles the Mouse wheel zooming.
+     * Performs mouse wheel zooming on the chart.
      *
+     * @param {WheelEvent} e - The wheel event.
+     * @param {number} mouseX - The X-coordinate of the mouse pointer.
+     * @param {number} mouseY - The Y-coordinate of the mouse pointer.
+     * @param {Chart} chart - The chart instance.
+     * @param {AxisModel[]} axes - The axes in the chart.
      * @returns {void}
-     * @private
      */
     public performMouseWheelZooming(e: WheelEvent, mouseX: number, mouseY: number, chart: Chart, axes: AxisModel[]): void {
         const direction: number = (this.browserName === 'mozilla' && !this.isPointer) ?
@@ -401,7 +417,8 @@ export class Zoom {
                     argsData.currentZoomFactor = zoomFactor;
                     argsData.currentZoomPosition = zoomPosition;
                 }
-                if (argsData.currentZoomFactor === argsData.previousZoomFactor && argsData.currentZoomPosition === argsData.previousZoomPosition) {
+                if (argsData.currentZoomFactor === argsData.previousZoomFactor &&
+                    argsData.currentZoomPosition === argsData.previousZoomPosition) {
                     chart.disableTrackTooltip = false;
                 }
                 if (!argsData.cancel) {
@@ -417,31 +434,32 @@ export class Zoom {
         }
         const onZoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArgs, () => { 
+            this.chart.trigger(onZooming, onZoomingEventArgs, () => {
                 if (onZoomingEventArgs.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
                 }
                 else {
-                    this.performZoomRedraw(chart)
-                } 
+                    this.performZoomRedraw(chart);
+                }
             });
         } else {
-            this.chart.trigger(onZooming, onZoomingEventArgs, () => { 
+            this.chart.trigger(onZooming, onZoomingEventArgs, () => {
                 if (onZoomingEventArgs.cancel) {
-                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection);
                 }
                 else {
-                    this.redrawOnZooming(chart); 
+                    this.redrawOnZooming(chart);
                 }
             });
         }
     }
 
     /**
-     * Function that handles the Pinch zooming.
+     * Performs pinch zooming on the chart.
      *
-     * @returns {void}
-     * @private
+     * @param {TouchEvent} e - The touch event.
+     * @param {Chart} chart - The chart instance.
+     * @returns {boolean} - Indicates whether pinch zooming is performed.
      */
     public performPinchZooming(e: TouchEvent, chart: Chart): boolean {
         if ((this.zoomingRect.width > 0 && this.zoomingRect.height > 0) || (chart.startMove && chart.crosshair.enable)) {
@@ -634,7 +652,7 @@ export class Zoom {
         const render: SvgRenderer | CanvasRenderer = chart.svgRenderer;
         const length: number = this.isDevice ? 1 : toolboxItems.length;
         const iconSize: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).width : 16;
-        const height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).height : 22;
+        const height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).height : chart.theme.indexOf('Fluent2') > -1 ? 18 : 22;
         const width: number = (length * iconSize) + ((length + 1) * spacing) + ((length - 1) * spacing);
         const transX: number = areaBounds.x + areaBounds.width - width - spacing;
         const transY: number = (areaBounds.y + spacing);
@@ -655,7 +673,7 @@ export class Zoom {
         });
         this.toolkitElements.appendChild(defElement);
         const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' : this.chart.theme === 'Fluent' ? '#F3F2F1' :
-            (this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Material3Dark' ? '#1C1B1F' : '#fafafa');
+            (this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Material3Dark' ? '#1C1B1F' : this.chart.theme === 'Fluent2' ? '#F5F5F5' : this.chart.theme === 'Fluent2Dark' ? '#141414' : '#fafafa');
         this.toolkitElements.appendChild(render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
             1, new Rect(0, 0, width, (height + (spacing * 2))), 4, 4
@@ -667,9 +685,9 @@ export class Zoom {
         if (this.chart.theme === 'Tailwind' || this.chart.theme === 'TailwindDark') {
             outerElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');
         }
-        else if (this.chart.theme === 'Material3' || this.chart.theme === 'Material3Dark') {
+        else if (this.chart.theme === 'Material3' || this.chart.theme === 'Material3Dark' || this.chart.theme === 'Fluent2' || this.chart.theme === 'Fluent2Dark') {
             outerElement.setAttribute('filter', 'drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.15)) drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3))');
-            outerElement.setAttribute('fill', this.chart.theme === 'Material3' ? '#FFFFFF' : '#1C1B1F');
+            outerElement.setAttribute('fill', this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Fluent2' ? '#F5F5F5' : '#1C1B1F');
             outerElement.setAttribute('rx', '4px');
             outerElement.setAttribute('ry', '4px');
             outerElement.setAttribute('opacity', '1');
@@ -683,7 +701,7 @@ export class Zoom {
         for (let i: number = 1; i <= length; i++) {
             currentItem = toolboxItems[i - 1];
             element = render.createGroup({
-                transform: 'translate(' + xPosition + ',' + (this.isDevice ? spacing : (spacing + 3)) + ')'
+                transform: 'translate(' + xPosition + ',' + (this.isDevice ? spacing : chart.theme.indexOf('Fluent2') > -1 ? (spacing + 1) : (spacing + 3)) + ')'
             });
             // for desktop toolkit hight is 32 and top padding is 8 icon size 16
             switch (currentItem) {
@@ -725,10 +743,11 @@ export class Zoom {
         return true;
     }
     /**
-     * To the show the zooming toolkit.
+     * Applies the zoom toolkit on the chart.
      *
+     * @param {Chart} chart - The chart instance.
+     * @param {AxisModel[]} axes - The axis models.
      * @returns {void}
-     * @private
      */
     public applyZoomToolkit(chart: Chart, axes: AxisModel[]): void {
         const showToolkit: boolean = this.isAxisZoomed(axes);
@@ -750,10 +769,11 @@ export class Zoom {
     }
 
     /**
-     * To cancel zoom event.
+     * Cancels the zoom action.
      *
+     * @param {AxisModel[]} axes - The axis models.
+     * @param {IZoomCompleteEventArgs[]} zoomCompleteEventCollection - The collection of zoom complete events.
      * @returns {void}
-     * @public
      */
     public zoomCancel(axes: AxisModel[], zoomCompleteEventCollection: IZoomCompleteEventArgs[]): void {
         for (const zoomCompleteEvent of (zoomCompleteEventCollection as IZoomCompleteEventArgs[])) {
@@ -769,10 +789,10 @@ export class Zoom {
     }
 
     /**
-     * Return boolean property to show zooming toolkit.
+     * Checks if any of the axes is zoomed.
      *
-     * @returns {void}
-     * @private
+     * @param {AxisModel[]} axes - The axis models.
+     * @returns {boolean} - True if any axis is zoomed; otherwise, false.
      */
     public isAxisZoomed(axes: AxisModel[]): boolean {
         let showToolkit: boolean = false;
@@ -796,7 +816,9 @@ export class Zoom {
         return false;
     }
     /**
-     * @hidden
+     * Adds event listeners for the chart.
+     *
+     * @returns {void}
      */
     public addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -807,7 +829,9 @@ export class Zoom {
         this.chart.on(this.cancelEvent, this.mouseCancelHandler, this);
     }
     /**
-     * @hidden
+     * Remove event listeners for the chart.
+     *
+     * @returns {void}
      */
     public removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -819,10 +843,10 @@ export class Zoom {
     }
 
     /**
-     * Handles the mouse wheel on chart.
+     * Handles the mouse wheel event on the chart.
      *
-     * @returns {boolean} false
-     * @private
+     * @param {WheelEvent} e - The wheel event.
+     * @returns {boolean} - Returns false.
      */
     public chartMouseWheel(e: WheelEvent): boolean {
         const chart: Chart = this.chart;
@@ -839,7 +863,11 @@ export class Zoom {
         return false;
     }
     /**
-     * @hidden
+     * Handles the mouse move event on the chart.
+     *
+     * @param {PointerEvent | TouchEvent} e - The mouse move event or touch event.
+     * @returns {void}
+     * @private
      */
     private mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         //Zooming for chart
@@ -865,7 +893,11 @@ export class Zoom {
         }
     }
     /**
-     * @hidden
+     * Handles the mouse down event on the chart.
+     *
+     * @param {PointerEvent} e - The mouse down event.
+     * @returns {void}
+     * @private
      */
     private mouseDownHandler(e: PointerEvent): void {
         //Zooming for chart
@@ -888,7 +920,11 @@ export class Zoom {
         }
     }
     /**
-     * @hidden
+     * Handles the mouse up event on the chart.
+     *
+     * @param {PointerEvent} e - The mouse up event.
+     * @returns {void}
+     * @private
      */
     private mouseUpHandler(e: PointerEvent): void {
         const chart: Chart = this.chart;
@@ -907,7 +943,10 @@ export class Zoom {
         }
     }
     /**
-     * @hidden
+     * Handles the mouse cancel event on the chart.
+     *
+     * @returns {void}
+     * @private
      */
     private mouseCancelHandler(): void {
         if (this.isZoomed) {
@@ -918,10 +957,12 @@ export class Zoom {
         this.touchMoveList = [];
     }
     /**
-     * Handles the touch pointer.
+     * Adds touch pointer to the touch list.
      *
-     * @returns {ITouches[]} touchList collection
-     * @private
+     * @param {ITouches[]} touchList - The touch list.
+     * @param {PointerEvent} e - The pointer event.
+     * @param {TouchList} touches - The touch list.
+     * @returns {ITouches[]} - The updated touch list.
      */
     public addTouchPointer(touchList: ITouches[], e: PointerEvent, touches: TouchList): ITouches[] {
         if (touches) {
@@ -947,6 +988,8 @@ export class Zoom {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         // Returns te module name
@@ -959,7 +1002,7 @@ export class Zoom {
      * @private
      */
     public destroy(): void {
-        // Destroy method performed here
+        // Destroy method performed here.
         this.removeEventListener();
     }
 

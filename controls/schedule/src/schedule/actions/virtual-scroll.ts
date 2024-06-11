@@ -69,7 +69,7 @@ export class VirtualScroll {
                 conTable.offsetHeight / this.renderedLength) + 'px';
             const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
             if ((conWrap.scrollHeight - conWrap.scrollTop) < conWrap.offsetHeight * this.bufferCount) {
-                virtual.style.height = parseInt(virtual.style.height) + (conWrap.offsetHeight * this.bufferCount) + 'px';
+                virtual.style.height = parseInt(virtual.style.height, 10) + (conWrap.offsetHeight * this.bufferCount) + 'px';
             }
         } else {
             virtual.style.height = '';
@@ -117,9 +117,10 @@ export class VirtualScroll {
             const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
             const eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
             let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-            const endIndex = (firstTDIndex + this.renderedLength);
+            const endIndex: number = (firstTDIndex + this.renderedLength);
             firstTDIndex = (endIndex > this.parent.resourceBase.expandedResources.length) ?
                 (this.parent.resourceBase.expandedResources.length - this.renderedLength) : firstTDIndex;
+            firstTDIndex = firstTDIndex < 0 ? 0 : firstTDIndex;
             this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.slice(firstTDIndex, endIndex);
             if (this.parent.resourceBase.renderedResources.length > 0) {
                 this.updateContent(resWrap, conWrap, eventWrap, this.parent.resourceBase.renderedResources);

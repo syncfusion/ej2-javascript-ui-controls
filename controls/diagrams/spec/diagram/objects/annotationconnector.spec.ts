@@ -249,8 +249,8 @@ describe('Diagram Control', () => {
             console.log(element2.offsetX, element2.offsetY);
             console.log(element3.offsetX, element3.offsetY);
             expect(element1.offsetX=== 200 && element1.offsetY === 192.79999999999998 &&
-                element2.offsetX=== 385.65625  && element2.offsetY === 192.79999999999998  &&
-                element3.offsetX === 614.34375  && element3.offsetY === 192.79999999999998 ).toBe(true);
+                Math.round(element2.offsetX)=== 387  && element2.offsetY === 192.79999999999998  &&
+                Math.round(element3.offsetX) === 613  && element3.offsetY === 192.79999999999998 ).toBe(true);
             done();
         });
 
@@ -302,8 +302,8 @@ describe('Diagram Control', () => {
             console.log(element2.offsetX, element2.offsetY);
             console.log(element3.offsetX, element3.offsetY);
             expect(element1.offsetX=== 200 && element1.offsetY=== 192.79999999999998 &&
-                element2.offsetX === 385.65625  && element2.offsetY === 192.79999999999998   &&
-                element3.offsetX === 614.34375 && element3.offsetY === 192.79999999999998  ).toBe(true);
+                Math.round(element2.offsetX)=== 387 && element2.offsetY === 192.79999999999998   &&
+                Math.round(element3.offsetX) === 613 && element3.offsetY === 192.79999999999998  ).toBe(true);
             done();
         });
 
@@ -421,8 +421,8 @@ describe('Diagram Control', () => {
             console.log(element2.offsetX, element2.offsetY);
             console.log(element3.offsetX, element3.offsetY);
             expect(element1.offsetX === 100 && element1.offsetY === 107.2 &&
-                element2.offsetX === 314.34375 && element2.offsetY === 107.2 &&
-                element3.offsetX === 485.65625  && element3.offsetY === 107.2).toBe(true);
+                Math.round(element2.offsetX) === 313 && element2.offsetY === 107.2 &&
+                Math.round(element3.offsetX) === 487  && element3.offsetY === 107.2).toBe(true);
             done();
         });
 

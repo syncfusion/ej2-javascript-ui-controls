@@ -100,6 +100,10 @@
     content: '\e73a';
   }
 
+  .e-de-ctnr-content-control::before {
+    content: '\e9be';
+  }
+
   .e-de-ctnr-strikethrough::before {
     content: '\e786';
   }
@@ -342,6 +346,16 @@
 
   .e-de-textform::before {
     content: '\e198';
+    font-family: 'e-icons';
+  }
+
+  .e-de-combo-box::before {
+    content: '\e9bb';
+    font-family: 'e-icons';
+  }
+
+  .e-de-dropdown-list::before {
+    content: '\e9ba';
     font-family: 'e-icons';
   }
 

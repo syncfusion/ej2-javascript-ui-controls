@@ -151,7 +151,9 @@ export class LineDistribution {
             }
             const obssegments: ObstacleSegmentValues[] = [];
             for (let j: number = 1; j < pts.length; j++) {
-                const obstacle: ObstacleSegmentValues = this.ObstacleSegment({ startpt: pts[j - 1], endpt: pts[parseInt(j.toString(), 10)], id: connector.id });
+                const obstacle: ObstacleSegmentValues = this.ObstacleSegment({
+                    startpt: pts[j - 1], endpt: pts[parseInt(j.toString(), 10)], id: connector.id
+                });
                 obssegments.push(obstacle);
             }
 
@@ -192,7 +194,7 @@ export class LineDistribution {
 
             connectorObstacles.push(connectorObstacle);
         }
-        this.sortConnectors(graph,diagram)
+        this.sortConnectors(graph, diagram);
         const modifiedgrap: ModifiedgrapObject[] = [];
         for (let m: number = 0; m < graph.length; m++) {
             const row: GraphObject = graph[parseInt(m.toString(), 10)];
@@ -210,12 +212,16 @@ export class LineDistribution {
                 const obstacleSegment: ObstacleSegmentValues = sortedrow[parseInt(n.toString(), 10)];
                 if (!((groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).length > 0) || maxEnd >= obstacleSegment.start) {
                     (groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).push(obstacleSegment);
-                    maxEnd = Math.max(maxEnd, groupby[parseInt(index.toString(), 10)][(groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end);
+                    maxEnd = Math.max(maxEnd,
+                                      groupby[parseInt(index.toString(), 10)][(groupby[parseInt(
+                                          index.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end);
                 } else {
                     index++;
                     groupby.push([] as ObstacleSegmentValues);
                     (groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).push(obstacleSegment);
-                    maxEnd = groupby[parseInt(index.toString(), 10)][(groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end;
+                    maxEnd = groupby[parseInt(
+                        index.toString(), 10)][(
+                        groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end;
                 }
             }
 
@@ -279,8 +285,9 @@ export class LineDistribution {
                 }
 
                 let subrow: ObstacleSegmentValues[] = [];
-                const descAdding: boolean = mutual.length > 0 && (sortedGroup[0].direction === mutual[0].direction
-                    || sortedGroup[sortedGroup.length - 1].direction === mutual[mutual.length - 1].direction);
+                const descAdding: boolean = mutual.length > 0 && (sortedGroup[sortedGroup.length - 1].direction
+                    === mutual[mutual.length - 1].direction
+                    || sortedGroup[0].direction === mutual[0].direction);
                 if (descAdding) {
                     subrow = directedRow;
                     for (let p: number = 0; p < mutualRow.length; p++) {
@@ -357,28 +364,27 @@ export class LineDistribution {
             /* tslint:enable */
             //EJ2-70198 - The layout ConnectionPointOrigin DifferentPoint property is not working for bezier connector
             //Bug 851920: Connector overlaps the node in complex hierarchical tree layout. Here the below condition is modified to check connector type.
-            if(connectorObstacle.wrapper.type === "Orthogonal"){
+            if (connectorObstacle.wrapper.type === 'Orthogonal') {
                 this.resetConnectorPoints(connectorObstacle.wrapper, diagram);
             }
         }
     }
     //Bug 862601: Connectors are not rendered properly with lineRouting and lineDistribution enables during doLayout process.
     //To sort the connectors order in graph based on its target point and orientation to avoid connector segments path in same line.
-    private sortConnectors(graph:GraphObject[],diagram:Diagram){
-        for (let i = 0; i < graph.length; i++) {
-            for (let j = 0; j < graph[parseInt(i.toString(), 10)].value.length; j++) {
+    private sortConnectors(graph: GraphObject[], diagram: Diagram): void {
+        for (let i: number = 0; i < graph.length; i++) {
+            for (let j: number = 0; j < graph[parseInt(i.toString(), 10)].value.length; j++) {
                 if (graph[parseInt(i.toString(), 10)].value.length > 1) {
                     if (diagram.layout.orientation === 'LeftToRight' || diagram.layout.orientation === 'RightToLeft') {
-                        graph[parseInt(i.toString(), 10)].value.sort((a, b) => {
-                            const connectorA = diagram.nameTable[`${a.id}`];
-                            const connectorB = diagram.nameTable[`${b.id}`];
-
+                        graph[parseInt(i.toString(), 10)].value.sort((a: ObstacleSegmentValues, b: ObstacleSegmentValues) => {
+                            const connectorA: ConnectorModel = diagram.nameTable[`${a.id}`];
+                            const connectorB: ConnectorModel = diagram.nameTable[`${b.id}`];
                             return connectorA.targetPoint.y - connectorB.targetPoint.y;
                         });
-                    }else if(diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop'){
-                        graph[parseInt(i.toString(), 10)].value.sort((a, b) => {
-                            const connectorA = diagram.nameTable[`${a.id}`];
-                            const connectorB = diagram.nameTable[`${b.id}`];
+                    } else if (diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop') {
+                        graph[parseInt(i.toString(), 10)].value.sort((a: ObstacleSegmentValues, b: ObstacleSegmentValues) => {
+                            const connectorA: ConnectorModel = diagram.nameTable[`${a.id}`];
+                            const connectorB: ConnectorModel = diagram.nameTable[`${b.id}`];
 
                             return connectorA.targetPoint.x - connectorB.targetPoint.x;
                         });
@@ -386,7 +392,7 @@ export class LineDistribution {
                 }
             }
         }
-    };
+    }
     private inflate(rect: Rect, x: number, y: number): Rect {
         rect.x -= x;
         rect.y -= y;
@@ -465,7 +471,8 @@ export class LineDistribution {
         while (i < pts.length - 1) {
             if (Point.equals(pts[i - 1], pts[parseInt(i.toString(), 10)])) {
                 pts.splice(i, 1);
-            } else if (Point.findAngle(pts[i - 1], pts[parseInt(i.toString(), 10)]) === Point.findAngle(pts[parseInt(i.toString(), 10)], pts[i + 1])) {
+            } else if (Point.findAngle(pts[i - 1], pts[parseInt(i.toString(), 10)])
+                === Point.findAngle(pts[parseInt(i.toString(), 10)], pts[i + 1])) {
                 pts.splice(i, 1);
             } else {
                 i++;
@@ -562,9 +569,11 @@ export class LineDistribution {
                 if (k === segmentRow.length - 1) {
                     segmentRow[k + 1] = [] as ObstacleSegmentValues;
                 }
-
                 if (!((segmentRow[parseInt(k.toString(), 10)] as ObstacleSegmentValues[]).length > 0)
-                    || segmentRow[parseInt(k.toString(), 10)][(segmentRow[parseInt(k.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end < obstacleSegment.start) {
+                    || segmentRow[parseInt(
+                        k.toString(), 10)][(segmentRow[parseInt(
+                        k.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end
+                    < obstacleSegment.start) {
                     (segmentRow[parseInt(k.toString(), 10)] as ObstacleSegmentValues[]).push(obstacleSegment);
                     break;
                 }
@@ -800,300 +809,7 @@ export class LineDistribution {
             cell.visitedParents.push(parent);
         }
     }
-    private getFixedTerminalPoint(): PointModel {
-        const pt: PointModel = null;
-        return pt;
-    }
-    private setAbsoluteTerminalPoint(point: PointModel, isSource: boolean, edge: Connector): void {
-        const absolutePoints: string = 'absolutePoints';
-        if (isSource) {
-            if (edge[`${absolutePoints}`] == null) {
-                edge[`${absolutePoints}`] = [];
-            }
 
-            if (edge[`${absolutePoints}`].length === 0) {
-                edge[`${absolutePoints}`].push(point);
-            } else {
-                edge[`${absolutePoints}`][0] = point;
-            }
-        } else {
-            if (edge[`${absolutePoints}`] == null) {
-                edge[`${absolutePoints}`] = [];
-                edge[`${absolutePoints}`].push(null);
-                edge[`${absolutePoints}`].push(point);
-            } else if (edge[`${absolutePoints}`].length === 1) {
-                edge[`${absolutePoints}`].push(point);
-            } else {
-                edge[`${absolutePoints}`][edge[`${absolutePoints}`].length - 1] = point;
-            }
-        }
-    }
-    private updateFixedTerminalPoint(edge: Connector, source: boolean): void {
-        this.setAbsoluteTerminalPoint(this.getFixedTerminalPoint(), source, edge);
-    }
-
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private updateFixedTerminalPoints(connectors: Connector, diagram: Diagram): void {
-        this.updateFixedTerminalPoint(connectors, true);
-        this.updateFixedTerminalPoint(connectors, false);
-    }
-    private updatePoints(edge: Connector, points: PointModel[]): void {
-        const absolutePoints: string = 'absolutePoints';
-        if (edge != null) {
-            const pts: PointModel[] = [];
-            pts.push(edge[`${absolutePoints}`][0]);
-            for (let i: number = 0; i < points.length; i++) {
-                if (points[parseInt(i.toString(), 10)] != null) {
-                    const pt: PointModel = points[parseInt(i.toString(), 10)];
-                    pts.push(pt);
-                }
-            }
-            const tmp: PointModel[] = edge[`${absolutePoints}`];
-            pts.push(tmp[tmp.length - 1]);
-
-            edge[`${absolutePoints}`] = pts;
-        }
-    }
-    private updateFloatingTerminalPoint(edge: Connector, start: Node, end: Node, source: boolean): void {
-        this.setAbsoluteTerminalPoint(this.getFloatingTerminalPoint(edge, start, end, source), source, edge);
-    }
-
-    private getNextPoint(edge: Connector, opposite: Node, source: boolean): PointModel {
-        const absolutePoints: string = 'absolutePoints';
-        const pts: PointModel[] = edge[`${absolutePoints}`];
-        let point: PointModel = null;
-
-        if (pts != null && pts.length >= 2) {
-            const count: number = pts.length;
-            point = pts[(source) ? Math.min(1, count - 1) : Math.max(0, count - 2)];
-        }
-        return point;
-    }
-
-    private getCenterX(start: Rect | Node): number {
-        if ((start as Node).offsetX) {
-            return (start as Node).offsetX + start.width;
-        } else {
-            return (start as Rect).x + start.width;
-        }
-    }
-    private getCenterY(start: Rect | Node): number {
-        if ((start as Node).offsetY) {
-            return (start as Node).offsetY + start.height;
-        } else {
-            return (start as Rect).y + start.height;
-        }
-    }
-    private getPerimeterBounds(border: Node): Rect {
-        //let newBounds: Rect;
-        const newBounds: Rect = border.wrapper.outerBounds;
-        return newBounds;
-    }
-
-    private getPerimeterFunction(bounds: Rect, next: PointModel, orthogonal: number): PointModel {
-
-        const cx: number = this.getCenterX(bounds);
-        const cy: number = this.getCenterY(bounds);
-        const dx: number = next.x - cx;
-        const dy: number = next.y - cy;
-        const alpha: number = Math.atan2(dy, dx);
-        const point: PointModel = this.getPointvalue(0, 0);
-        const pi: number = Math.PI;
-        const pi2: number = Math.PI / 2;
-        const beta: number = pi2 - alpha;
-        const t: number = Math.atan2(bounds.height, bounds.width);
-
-        if (alpha < -pi + t || alpha > pi - t) {
-            // Left edge
-            (point as Point).x = bounds.x;
-            (point as Point).y = cy - bounds.width * Math.tan(alpha) / 2;
-        } else if (alpha < -t) {
-            // Top Edge
-            (point as Point).y = bounds.y;
-            (point as Point).x = cx - bounds.height * Math.tan(beta) / 2;
-        } else if (alpha < t) {
-            // Right Edge
-            (point as Point).x = bounds.x + bounds.width;
-            (point as Point).y = cy + bounds.width * Math.tan(alpha) / 2;
-        } else {
-            // Bottom Edge
-            (point as Point).y = bounds.y + bounds.height;
-            (point as Point).x = cx + bounds.height * Math.tan(beta) / 2;
-        }
-
-        if (orthogonal) {
-            if (next.x >= bounds.x &&
-                next.x <= bounds.x + bounds.width) {
-                (point as Point).x = next.x;
-            } else if (next.y >= bounds.y &&
-                next.y <= bounds.y + bounds.height) {
-                (point as Point).y = next.y;
-            }
-            if (next.x < bounds.x) {
-                (point as Point).x = bounds.x;
-            } else if (next.x > bounds.x + bounds.width) {
-                (point as Point).x = bounds.x + bounds.width;
-            }
-            if (next.y < bounds.y) {
-                (point as Point).y = bounds.y;
-            } else if (next.y > bounds.y + bounds.height) {
-                (point as Point).y = bounds.y + bounds.height;
-            }
-        }
-
-        return point;
-    }
-    private getPerimeterPoint(terminal: Node, next: PointModel, orthogonal: number): PointModel {
-        let point: PointModel = null;
-        if (terminal != null) {
-            if (next != null) {
-                const bounds: Rect = this.getPerimeterBounds(terminal);
-
-                if (bounds.width > 0 || bounds.height > 0) {
-                    point = this.getPointvalue(next.x, next.y);
-                    point = this.getPerimeterFunction(bounds, point, orthogonal);
-                }
-            }
-        }
-        return point;
-    }
-    private getFloatingTerminalPoint(edge: Connector, start: Node, end: Node, source: boolean): PointModel {
-        start = start;
-        const next: PointModel = this.getNextPoint(edge, end, source);
-        const orth: number = 1;
-        const alpha: number = 0;
-        const pt: PointModel = this.getPerimeterPoint(start, next, alpha === 0 && orth);
-        return pt;
-    }
-    private updateFloatingTerminalPoints(state: Connector, source: Node, target: Node): void {
-        const absolutePoints: string = 'absolutePoints';
-        const pts: PointModel[] = state[`${absolutePoints}`];
-        const p0: PointModel = pts[0];
-        const pe: PointModel = pts[pts.length - 1];
-
-        if (pe == null && target != null) {
-            this.updateFloatingTerminalPoint(state, target, source, false);
-        }
-
-        if (p0 == null && source != null) {
-            this.updateFloatingTerminalPoint(state, source, target, true);
-        }
-    }
-    private getConnectorPoints(connectors: Connector, diagram: Diagram): void {
-        const absolutePoints: string = 'absolutePoints';
-        const geometry: string = 'geometry';
-        this.updateFixedTerminalPoints(connectors, diagram);
-        this.updatePoints(connectors, connectors[`${geometry}`].points);
-        this.updateFloatingTerminalPoints(connectors, diagram.nameTable[connectors.sourceID], diagram.nameTable[connectors.targetID]);
-        connectors[`${absolutePoints}`][0].y = connectors.sourcePoint.y;
-        connectors[`${absolutePoints}`][connectors[`${absolutePoints}`].length - 1].y = connectors.targetPoint.y;
-    }
-    private adjustSegmentPoints(temppoints: PointModel[], points: PointModel[], diagram: Diagram): void {
-
-        if (diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop') {
-            temppoints[0].x = points[0].x;
-            temppoints[1].x = points[1].x;
-            temppoints[temppoints.length - 1].x = points[points.length - 1].x;
-            temppoints[temppoints.length - 2].x = points[points.length - 2].x;
-
-            if (diagram.layout.orientation === 'TopToBottom') {
-                temppoints[temppoints.length - 2].y = temppoints[temppoints.length - 1].y - diagram.layout.verticalSpacing / 2;
-                temppoints[1].y = temppoints[0].y + diagram.layout.verticalSpacing / 2;
-            } else {
-                temppoints[1].y = temppoints[0].y - diagram.layout.verticalSpacing / 2;
-                temppoints[temppoints.length - 2].y = temppoints[temppoints.length - 1].y + diagram.layout.verticalSpacing / 2;
-            }
-
-            temppoints[2].y = temppoints[1].y;
-
-            temppoints[temppoints.length - 3].y = temppoints[temppoints.length - 2].y;
-        }
-        if (diagram.layout.orientation === 'RightToLeft' || diagram.layout.orientation === 'LeftToRight') {
-            //EJ2-842769-Curved Connectors Instead of Straight Lines When enableRouting is Set to True
-            let newPoints:PointModel[] = JSON.parse(JSON.stringify(points));
-            temppoints[0] = newPoints[0];
-            temppoints[1] = newPoints[1];
-            temppoints[temppoints.length - 1] = newPoints[newPoints.length - 1];
-            temppoints[temppoints.length - 2] = newPoints[newPoints.length - 2];
-            if (diagram.layout.orientation === 'RightToLeft') {
-                temppoints[1].x = temppoints[0].x - diagram.layout.verticalSpacing / 2;
-            }
-            if (diagram.layout.orientation === 'LeftToRight') {
-                temppoints[1].x = temppoints[0].x + diagram.layout.verticalSpacing / 2;
-            }
-            temppoints[2].x = temppoints[1].x;
-            if (diagram.layout.orientation === 'RightToLeft') {
-                temppoints[temppoints.length - 2].x = temppoints[temppoints.length - 1].x + diagram.layout.verticalSpacing / 2;
-            }
-            if (diagram.layout.orientation === 'LeftToRight') {
-
-                temppoints[temppoints.length - 2].x = temppoints[temppoints.length - 1].x - diagram.layout.verticalSpacing / 2;
-            }
-            temppoints[temppoints.length - 3].x = temppoints[temppoints.length - 2].x;
-
-        }
-
-    }
-    private updateConnectorSegmentPoints(temppoints: PointModel[], diagram: Diagram): void {
-        if (temppoints.length > 1) {
-            if ((diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop')) {
-                for (let i: number = 1; i < temppoints.length - 1; i = i + 2) {
-                    if (temppoints[parseInt(i.toString(), 10)].y !== temppoints[i + 1].y && (diagram.layout.orientation === 'TopToBottom'
-                        || diagram.layout.orientation === 'BottomToTop')) {
-                        temppoints[i + 1].y = temppoints[parseInt(i.toString(), 10)].y;
-                    }
-                }
-            } else {
-                let check: boolean = false;
-                for (let i: number = temppoints.length - 1; i > 1; i = i = i - 2) {
-                    if (diagram.layout.orientation === 'RightToLeft' || diagram.layout.orientation === 'LeftToRight') {
-                        if (!check) {
-                            temppoints[i - 1].x = temppoints[i - 2].x;
-                            check = true;
-                        } else {
-                            temppoints[i - 2].x = temppoints[i - 1].x;
-                            check = false;
-                        }
-                    } else {
-                        temppoints[i + 1].x = temppoints[parseInt(i.toString(), 10)].x;
-                    }
-                }
-            }
-        }
-    }
-
-    private updateConnectorSegmentPoint(connector: Connector, diagram: Diagram): void {
-        const absolutePoints: string = 'absolutePoints';
-        const segments: OrthogonalSegment[] = [];
-        for (let i: number = 0; i < connector[`${absolutePoints}`].length - 1; i++) {
-            const point1: PointModel[] = connector[`${absolutePoints}`][parseInt(i.toString(), 10)];
-            const point2: PointModel[] = connector[`${absolutePoints}`][i + 1];
-            let length: number = findDistance(point1, point2);
-            const direction: string = getConnectorDirection(point1, point2);
-            if (i === connector[`${absolutePoints}`].length - 2) {
-                if ((diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
-                    || (diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
-                    || (diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
-                    || (diagram.layout.orientation === 'BottomToTop' && direction === 'Top')) {
-                    length = length / 2;
-                }
-
-            }
-
-            const tempSegment: OrthogonalSegment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-            tempSegment.length = length;
-            tempSegment.direction = direction as Direction;
-            segments.push(tempSegment);
-        }
-        connector.segments = segments;
-
-        connector.type = 'Orthogonal';
-        diagram.connectorPropertyChange(connector as Connector, {} as Connector, {
-            type: 'Orthogonal',
-            segments: connector.segments
-        } as Connector);
-    }
     /** @private */
     public resetConnectorSegments(connector: Connector): void {
         const segements: OrthogonalSegment[] = connector.segments as OrthogonalSegment[];
@@ -1107,9 +823,11 @@ export class LineDistribution {
     /** @private */
     public resetRoutingSegments(connector: Connector, diagram: Diagram, points: PointModel[]): void {
         if (connector['levelSkip']) {
+            //Bug 877799: Optimize the routing segment distance while using enableRouting in layout.
             let sourceLevel;
             let targetLevel;
             let collection = (diagram.layout as any).ranks.reverse();
+            //To find the source level and target level of the level skip connector
             for(let i=0;i<collection.length;i++){
                 for(let j=0;j<collection[parseInt(i.toString(), 10)].length;j++){
                     if(connector.sourceID === collection[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].id){
@@ -1119,21 +837,23 @@ export class LineDistribution {
                         targetLevel = i;
                     }
                 }
-            };
+            }
+            // To find the overlapping collection between the source and target level
             let overlappCollection = [];
-            if(sourceLevel < targetLevel){
-                for(let i=0;i<collection.length;i++){
-                    if(i > sourceLevel && i < targetLevel){
+            if (sourceLevel < targetLevel) {
+                for (let i = 0; i < collection.length; i++) {
+                    if (i > sourceLevel && i < targetLevel) {
                         overlappCollection.push(collection[parseInt(i.toString(), 10)]);
-                    } 
+                    }
                 }
-            }else{
-                for(let i=0;i<collection.length;i++){
-                    if(i < sourceLevel && i > targetLevel){
+            } else {
+                for (let i = 0; i < collection.length; i++) {
+                    if (i < sourceLevel && i > targetLevel) {
                         overlappCollection.push(collection[parseInt(i.toString(), 10)]);
-                    } 
+                    }
                 }
-            };
+            }
+            // To find the overlapping nodes between the source and target level
             let overLapNodesCollection = [];
             for(let i = 0; i< overlappCollection.length;i++){
                 for(let j=0;j<overlappCollection[parseInt(i.toString(), 10)].length;j++){
@@ -1147,6 +867,8 @@ export class LineDistribution {
             if(!(diagram as any).routingConnectors){
                 (diagram as any).routingConnectors = [];
             }
+            //To find whether the connector is overlapping with the nodes in the overlapping collection.
+            // eslint-disable-next-line no-labels
             overlapping:
             for(let count = 0; count < overLapNodesCollection.length;count++){
                 let bounds = overLapNodesCollection[parseInt(count.toString(), 10)].wrapper.bounds;
@@ -1159,8 +881,9 @@ export class LineDistribution {
                             let connectorPoints = this.pointsAlongLine(lineStart, lineEnd);
                             isInsideBounds = this.pointInsideBounds(connectorPoints, bounds);
                             if (isInsideBounds) {
-                            (diagram as any).routingConnectors.push(connector);
-                            break overlapping;
+                                (diagram as any).routingConnectors.push(connector);
+                                // eslint-disable-next-line no-labels
+                                break overlapping;
                             }
                         }
                     }
@@ -1168,6 +891,12 @@ export class LineDistribution {
             }
         }
     }
+    /**
+     * Calculates points along a line between two given points.
+     *  @param start The starting point of the line.
+     *  @param end The ending point of the line.
+     *  @return An array of points along the line.
+     */
     private pointsAlongLine(start:PointModel, end:PointModel){
         const granularity = 1;
         const dx = end.x - start.x;
@@ -1178,26 +907,32 @@ export class LineDistribution {
 
         const points = [];
         for (let i = 0; i <= length; i += granularity) {
-          points.push({ x: start.x + stepX * i, y: start.y + stepY * i });
+            points.push({ x: start.x + stepX * i, y: start.y + stepY * i });
         }
 
         return points;
-    };
-
+    }
+    /**
+     *
+     * Checks if any of the given points fall inside the specified bounding rectangle.
+     *  @param points An array of points to be checked.
+     *  @param bounds The bounding rectangle to check against.
+     *  @return True if any point is inside the bounds, false otherwise.
+     */
     private pointInsideBounds(points:PointModel[], bounds:Rect){
         let padding = 10;
-            for (const point of points) {
-              if (
+        for (const point of points) {
+            if (
                 bounds.right > point.x &&
                 bounds.left < point.x &&
                 bounds.top < point.y &&
                 bounds.bottom > point.y
-              ) {
+            ) {
                 return true;
-              }
             }
-            return false;
-    };
+        }
+        return false;
+    }
     /* tslint:enable */
 
     /** @private */
@@ -1537,7 +1272,8 @@ export class LineDistribution {
         keyValue: string | number | MatrixCellGroupObject | Connector | string[]):
         boolean {
         for (let i: number = 0; i < list.length; i++) {
-            if ((list[parseInt(i.toString(), 10)] as MatrixCellGroupObject).key === keyValue || list[parseInt(i.toString(), 10)] === keyValue) {
+            if ((list[parseInt(i.toString(), 10)] as MatrixCellGroupObject).key === keyValue
+                || list[parseInt(i.toString(), 10)] === keyValue) {
                 return true;
             }
         }

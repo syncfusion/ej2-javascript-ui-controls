@@ -1,9 +1,9 @@
 import { PdfTreeGridCell } from './../export/pdf-base/pdf-grid-table';
 import { PdfBorders } from './../export/pdf-base/pdf-borders';
 import { ColumnModel } from './../models/column';
-import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat, PdfTrueTypeFont,PdfStandardFont, PdfTextWebLink, PdfImage  } from '@syncfusion/ej2-pdf-export';
+import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat, PdfTrueTypeFont, PdfStandardFont, PdfTextWebLink, PdfImage  } from '@syncfusion/ej2-pdf-export';
 import {
-    ContextMenuType, PdfPageSize, PageOrientation, ExportType, PdfTheme, TaskType,ContentType,PdfPageNumberType, PdfDashStyle,
+    ContextMenuType, PdfPageSize, PageOrientation, ExportType, PdfTheme, TaskType, ContentType, PdfPageNumberType, PdfDashStyle,
     PdfHAlign, PdfVAlign
 } from './enum';
 import { ContextMenuOpenEventArgs as GridContextMenuOpenEventArgs } from '@syncfusion/ej2-grids';
@@ -424,8 +424,8 @@ export interface IConnectorLineObject {
     parentIndexInCurrentView?: number;
     childIndexInCurrentView?: number;
     isCritical?: boolean;
-    parentEndPoint?:number;
-    childEndPoint?:number;
+    parentEndPoint?: number;
+    childEndPoint?: number;
 }
 
 export interface ISplitterResizedEventArgs {
@@ -664,10 +664,10 @@ export interface RowDeselectEventArgs extends GridRowDeselectEventArgs {
 }
 
 export interface IEventMarkerInfo{
-    id?:number;
-    left?:number;
-    label?:string;
-    date?:Date;
+    id?: number;
+    left?: number;
+    label?: string;
+    date?: Date;
 }
 export interface ActionCompleteArgs extends ZoomEventArgs, IKeyPressedEventArgs {
     element?: HTMLElement;
@@ -981,9 +981,9 @@ export interface ITaskbarStyle {
     /** Defines the baseline border color */
     baselineBorderColor?: PdfColor;
     /** Defines the split line background color */
-    splitLineBackground?:PdfColor;
+    splitLineBackground?: PdfColor;
     /** Defines the unscheduled taskbar background color */
-    unscheduledTaskBarColor?:PdfColor;
+    unscheduledTaskBarColor?: PdfColor;
     /** Defines the manualParent Background color */
     manualParentBackground?: PdfColor;
     /** Defines the manualParent Progress color */
@@ -992,19 +992,19 @@ export interface ITaskbarStyle {
     manualChildBackground?: PdfColor;
     /** Defines the manualChild Progress color */
     manualChildProgress?: PdfColor;
-     /** Defines the manual line color */
-    manualLineColor?:PdfColor;
+    /** Defines the manual line color */
+    manualLineColor?: PdfColor;
     /** Defines the manualParent Background color */
-    manualParentBorder?:PdfColor;
+    manualParentBorder?: PdfColor;
     /** Defines the manualChild Background color */
-    manualChildBorder?:PdfColor;
+    manualChildBorder?: PdfColor;
 
 }
 
 export interface FitToWidthSettings{
-    /** Specifies whether to export gantt data where each row is adjusted and rendered to fit the PDF document page size. */ 
+    /** Specifies whether to export gantt data where each row is adjusted and rendered to fit the PDF document page size. */
     isFitToWidth?: boolean;
-    /** Specifies the grid width in percentage while exporting. */ 
+    /** Specifies the grid width in percentage while exporting. */
     gridWidth?: string;
     /** Specifies the chart width in percentage while exporting. */
     chartWidth?: string;
@@ -1054,22 +1054,22 @@ export interface PdfQueryTaskbarInfoEventArgs {
      *  Defines the customized string content or image for the left, right and task label
      * */
     labelSettings?: ILabel;
-    /** 
-     * Defines the taskbar element appearance customizations and provides options to add image and string in taskbar 
+    /**
+     * Defines the taskbar element appearance customizations and provides options to add image and string in taskbar
      * */
     taskbarTemplate?: ITemplateDetails;
 }
 
 export interface ILabel {
-    /** 
-     * Defines the customized string content or image for the leftLabel 
+    /**
+     * Defines the customized string content or image for the leftLabel
      * */
     leftLabel?: ITemplateDetails;
-    /** 
+    /**
      * Defines the customized string content or image for the rightLabel
      *  */
     rightLabel?: ITemplateDetails;
-    /** 
+    /**
      * Defines the customized string content or image for the task label
      *  */
     taskLabel?: ITemplateDetails;
@@ -1080,10 +1080,10 @@ export interface ILabel {
      */
     left?: number;
     /**
-      * Specifies the isLeftCalculated or not.
-      *
-      * @private
-      */
+     * Specifies the isLeftCalculated or not.
+     *
+     * @private
+     */
     isLeftCalculated?: boolean;
 }
 

@@ -689,7 +689,7 @@ describe('Collaborative Editing ->', () => {
         it('Remove Hyperlink', (done: Function) => {
             helper.setAnimationToNone('#spreadsheet_contextmenu');
             helper.getElement().focus();
-            helper.openAndClickCMenuItem(6, 0, [11]);
+            helper.openAndClickCMenuItem(6, 0, [13]);
             setTimeout(() => {
                 expect(getCell(6, 0, sheets2[0]).hyperlink).toBeUndefined();
                 expect(getCell(6, 0, sheets2[1]).hyperlink).toBeUndefined();

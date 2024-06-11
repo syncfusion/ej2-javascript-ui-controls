@@ -1,8 +1,7 @@
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType, CommentStatus } from './index';
-import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel, KeyGestureModel, KeyboardCommandModel } from '../pdfviewer-model';
+import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel, KeyboardCommandModel } from '../pdfviewer-model';
 import { IFormField, IFormFieldBound } from '../form-designer';
-import { KeyboardCommand } from '../pdfviewer';
 /**
  * Exports types used by PDF viewer.
  */
@@ -18,7 +17,6 @@ export interface LoadEventArgs extends BaseEventArgs {
     /**
      * Defines the page details and page count of the PDF document.
      */
-    // eslint-disable-next-line
     pageData: any;
 }
 
@@ -155,12 +153,11 @@ export interface AjaxRequestSuccessEventArgs extends BaseEventArgs {
     /**
      * Get the data as a JSON object from the request.
      */
-    // eslint-disable-next-line
     data: any
     /**
      * If TRUE, the exportAnnotation methods returns base64 string. False by default.
      */
-     cancel: boolean
+    cancel: boolean
 }
 /**
  * The event arguments furnish essential details about the completion of the page rendering event.
@@ -177,7 +174,6 @@ export interface PageRenderCompleteEventArgs extends BaseEventArgs {
     /**
      * Specifies the data related to the completion of page rendering.
      */
-    // eslint-disable-next-line
     data: any
 
 }
@@ -188,7 +184,6 @@ export interface ValidateFormFieldsArgs extends BaseEventArgs {
     /**
      * The form fields object from PDF document being loaded.
      */
-    // eslint-disable-next-line
     formField: any;
     /**
      * Document name to be loaded into PdfViewer
@@ -197,7 +192,6 @@ export interface ValidateFormFieldsArgs extends BaseEventArgs {
     /**
      * Defines the non-fillable form fields.
      */
-    // eslint-disable-next-line
     nonFillableFields: any;
 }
 
@@ -290,12 +284,10 @@ export interface AnnotationAddEventArgs extends BaseEventArgs {
     /**
      * Defines the settings of the annotation added to the PDF document.
      */
-    // eslint-disable-next-line
     annotationSettings: any;
     /**
      * Defines the bounds of the annotation added in the page of the PDF document.
      */
-    // eslint-disable-next-line
     annotationBound: any;
     /**
      * Defines the id of the annotation added in the page of the PDF document.
@@ -328,7 +320,6 @@ export interface AnnotationAddEventArgs extends BaseEventArgs {
     /**
      * Defines the multi page annotation collections.
      */
-    // eslint-disable-next-line
     multiplePageCollection?: any;
     /**
      * Defines the name of the custom stamp added to the PDF page.
@@ -355,7 +346,6 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
     /**
      * Defines the bounds of the annotation removed from the page of the PDF document.
      */
-    // eslint-disable-next-line
     annotationBounds: any;
     /**
      * Defines the selected text content in the text markup annotation.
@@ -372,7 +362,6 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
     /**
      * Defines the multi page annotation collections.
      */
-    // eslint-disable-next-line
     multiplePageCollection?: any;
 }
 
@@ -465,7 +454,6 @@ export interface AnnotationPropertiesChangeEventArgs extends BaseEventArgs {
     /**
      * Defines the multi page annotation collections.
      */
-    // eslint-disable-next-line
     multiplePageCollection?: any;
     /**
      * Specifies whether the text of the FreeText annotation is changed or not.
@@ -496,12 +484,10 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
     /**
      * Defines the settings of the annotation resized in the PDF document.
      */
-    // eslint-disable-next-line
     annotationSettings: any;
     /**
      * Defines the bounds of the annotation resized in the page of the PDF document.
      */
-    // eslint-disable-next-line
     annotationBound: any;
     /**
      * Defines the type of the annotation resized in the page of the PDF document.
@@ -526,7 +512,6 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
     /**
      * Defines the multiple page annotation collections.
      */
-    // eslint-disable-next-line
     multiplePageCollection?: any;
 }
 
@@ -549,7 +534,6 @@ export interface AnnotationMoveEventArgs extends BaseEventArgs {
     /**
      * Defines the settings of the annotation moved in the PDF document.
      */
-    // eslint-disable-next-line
     annotationSettings: any;
     /**
      * Previous position of annotations in the page text content.
@@ -564,7 +548,7 @@ export interface AnnotationMoveEventArgs extends BaseEventArgs {
 /**
  * Describes the event arguments of AnnotationMovingEventArgs.
  */
- export interface AnnotationMovingEventArgs extends BaseEventArgs {
+export interface AnnotationMovingEventArgs extends BaseEventArgs {
     /**
      * Defines the annotation id moving in the PDF page.
      */
@@ -580,7 +564,6 @@ export interface AnnotationMoveEventArgs extends BaseEventArgs {
     /**
      * Defines the annotation setting moving in the PDF page.
      */
-    // eslint-disable-next-line
     annotationSettings: any;
     /**
      * Previous position of annotations in the page text content.
@@ -599,7 +582,6 @@ export interface AddSignatureEventArgs extends BaseEventArgs {
     /**
      * Defines the bounds of the signature added in the page of the PDF document.
      */
-    // eslint-disable-next-line
     bounds: any;
     /**
      * Defines the id of the signature added in the page of the PDF document.
@@ -612,7 +594,6 @@ export interface AddSignatureEventArgs extends BaseEventArgs {
     /**
      * Define the type of the signature added in the page of the PDF document.
      */
-    // eslint-disable-next-line
     type: any;
     /**
      * Define the opacity of the signature added in the page of the PDF document.
@@ -639,7 +620,6 @@ export interface RemoveSignatureEventArgs extends BaseEventArgs {
     /**
      * Defines the bounds of the signature removed in the page of the PDF document.
      */
-    // eslint-disable-next-line
     bounds: any;
     /**
      * Defines the id of the signature removed in the page of the PDF document.
@@ -724,12 +704,10 @@ export interface SignaturePropertiesChangeEventArgs extends BaseEventArgs {
     /**
      * Defines the old property value of the signature.
      */
-    // eslint-disable-next-line
     oldValue: any;
     /**
      * Defines the new property value of the signature.
      */
-    // eslint-disable-next-line
     newValue: any;
 }
 
@@ -764,12 +742,10 @@ export interface ResizeSignatureEventArgs extends BaseEventArgs {
     /**
      * Defines the current Position of the signature added in the page of the PDF document.
      */
-    // eslint-disable-next-line
     currentPosition: any;
     /**
      * Defines the previous position of the signature added in the page of the PDF document.
      */
-    // eslint-disable-next-line
     previousPosition: any;
 }
 
@@ -787,6 +763,23 @@ export interface SignatureSelectEventArgs extends BaseEventArgs {
     pageIndex: number
     /**
      * Defines the properties of the selected signature.
+     */
+    signature: object
+}
+/**
+ * This event arguments provides the necessary information about signature unselect event.
+ */
+export interface SignatureUnselectEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the signature unselected in the page of the PDF document.
+     */
+    id: string
+    /**
+     * Defines the page number in which the signature is unselected.
+     */
+    pageIndex: number
+    /**
+     * Defines the properties of the unselected signature.
      */
     signature: object
 }
@@ -819,12 +812,10 @@ export interface AnnotationMouseoverEventArgs extends BaseEventArgs {
     /**
      * Defines the annotation object mouse hover in the PDF document.
      */
-    // eslint-disable-next-line
     annotation: any;
     /**
      * Defines the bounds of the annotation resized in the page of the PDF document.
      */
-    // eslint-disable-next-line
     annotationBounds: any;
     /**
      * Defines the mouseover x position with respect to page container.
@@ -873,30 +864,23 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
     /**
      * Defines the annotation selected in the PDF document.
      */
-    // eslint-disable-next-line
     annotation: any;
     /**
      * Defines the overlapped annotations of the selected annotation.
      */
-    // eslint-disable-next-line
     annotationCollection?: any;
     /**
      * Defines the multi page annotation collections.
      */
-    // eslint-disable-next-line
     multiplePageCollection?: any;
-
     /**
      * Defines the annotation selection by mouse.
      */
     isProgrammaticSelection?: boolean
-
     /**
      * Defines the annotation add mode.
      */
     annotationAddMode?: string
-
-
 }
 /**
  * This event arguments provides the necessary information about annotation UnSelect event.
@@ -913,7 +897,6 @@ export interface AnnotationUnSelectEventArgs extends BaseEventArgs {
     /**
      * Defines the annotation unselected in the PDF document.
      */
-    // eslint-disable-next-line
     annotation: any;
 }
 
@@ -932,7 +915,6 @@ export interface AnnotationDoubleClickEventArgs extends BaseEventArgs {
     /**
      * Defines the annotation double clicked in the PDF document.
      */
-    // eslint-disable-next-line
     annotation: any;
 }
 
@@ -992,7 +974,6 @@ export interface TextSelectionEndEventArgs extends BaseEventArgs {
     /**
      * Defines the bounds of the selected text in the page.
      */
-    // eslint-disable-next-line
     textBounds: any;
 }
 
@@ -1003,14 +984,11 @@ export interface ImportStartEventArgs extends BaseEventArgs {
     /**
      * json annotation Data to be imported into PdfViewer.
      */
-    // eslint-disable-next-line
     importData: any;
     /**
      * json form field data to be imported into PdfViewer.
      */
-    // eslint-disable-next-line
     formFieldData: any;
-
 }
 
 /**
@@ -1020,20 +998,17 @@ export interface ExportStartEventArgs extends BaseEventArgs {
     /**
      * specifies the annotation data exported from the loaded document.
      */
-    // eslint-disable-next-line
     exportData: any;
     /**
      * Specifies the form field data exported from the loaded document..
      */
-    // eslint-disable-next-line
     formFieldData: any;
     /**
      * It allows you to control the execution of an exporting event. When set to true, it prevents further processing of the event, effectively stopping the exporting operation.
-     * 
+     *
      * @default false
      */
     cancel: boolean;
-
 }
 
 /**
@@ -1043,12 +1018,12 @@ export interface ImportSuccessEventArgs extends BaseEventArgs {
     /**
      * Specifies the annotation data to be imported in loaded document.
      */
-    // eslint-disable-next-line
+
     importData: any;
     /**
      * Specifies the form field data to be imported in loaded document.
      */
-    // eslint-disable-next-line
+
     formFieldData: any;
 
 }
@@ -1060,7 +1035,6 @@ export interface ExportSuccessEventArgs extends BaseEventArgs {
     /**
      * Specifies the annotation data exported from the loaded documents.
      */
-    // eslint-disable-next-line
     exportData: any;
     /**
      * Specifies the exported annotations json file name.
@@ -1069,9 +1043,7 @@ export interface ExportSuccessEventArgs extends BaseEventArgs {
     /**
      * Specifies the form field data exported from the loaded documents.
      */
-    // eslint-disable-next-line
     formFieldData: any;
-
 }
 
 /**
@@ -1081,7 +1053,6 @@ export interface ImportFailureEventArgs extends BaseEventArgs {
     /**
      * specifies the annotation data to be imported in loaded document.
      */
-    // eslint-disable-next-line
     importData: any;
     /**
      * Error details for import annotations.
@@ -1090,9 +1061,7 @@ export interface ImportFailureEventArgs extends BaseEventArgs {
     /**
      * specifies the form field data to be imported in loaded document.
      */
-    // eslint-disable-next-line
     formFieldData: any;
-
 }
 
 /**
@@ -1102,7 +1071,6 @@ export interface ExportFailureEventArgs extends BaseEventArgs {
     /**
      * specifies the annotation data to be exported from the loaded document.
      */
-    // eslint-disable-next-line
     exportData: any;
     /**
      * Error details for export annotations.
@@ -1111,9 +1079,7 @@ export interface ExportFailureEventArgs extends BaseEventArgs {
     /**
      * specifies the form field data to be exported from the loaded document.
      */
-    // eslint-disable-next-line
     formFieldData: any;
-
 }
 
 /**
@@ -1132,7 +1098,6 @@ export interface AjaxRequestInitiateEventArgs extends BaseEventArgs {
     /**
      * Specified the data to be sent in to server.
      */
-    // eslint-disable-next-line
     JsonData: any;
 }
 /**
@@ -1142,7 +1107,6 @@ export interface PageRenderInitiateEventArgs extends BaseEventArgs {
     /**
      * Specifies the data requesting page rendering.
      */
-    // eslint-disable-next-line
     jsonData: any;
 }
 
@@ -1154,6 +1118,12 @@ export interface DownloadStartEventArgs extends BaseEventArgs {
      * File name of the currently loaded PDF document in the PDF Viewer.
      */
     fileName: string
+    /**
+     * It allows you to control the execution of an download event. When set to true, it prevents further processing of the event, effectively stopping the downloading operation.
+     *
+     * @default false
+     */
+    cancel: boolean
 }
 
 /**
@@ -1377,18 +1347,19 @@ export interface FormFieldPropertiesChangeArgs extends BaseEventArgs {
     /**
      * Specifies the old value of the form field.
      */
-    // eslint-disable-next-line
     oldValue?: any;
     /**
      * Specifies the new value of the form field.
      */
-    // eslint-disable-next-line
     newValue?: any;
     /**
      * Specifies whether the field name is changed or not.
      */
-    // eslint-disable-next-line
-    isNameChanged?:boolean;
+    isNameChanged?: boolean;
+    /**
+     * Specifies whether the custom data is changed or not.
+     */
+    isCustomDataChanged?:boolean;
 }
 
 /**
@@ -1546,7 +1517,7 @@ export interface CustomContextMenuSelectEventArgs extends BaseEventArgs {
 /**
  * This event provides essential information about the 'CustomContextMenuBeforeOpen' event through its arguments.
  */
-export interface CustomContextMenuBeforeOpenEventArgs extends BaseEventArgs {  
+export interface CustomContextMenuBeforeOpenEventArgs extends BaseEventArgs {
     /**
      * ids -Defines an array containing the identifiers of the added custom context menu items.
      */
@@ -1575,7 +1546,7 @@ export interface PageOrganizerSaveAsEventArgs extends BaseEventArgs {
     downloadDocument: string
     /**
      * It allows you to control the execution of an save as event. When set to true, it prevents further processing of the event, effectively stopping the save as operation.
-     * 
+     *
      * @default false
      */
     cancel: boolean;

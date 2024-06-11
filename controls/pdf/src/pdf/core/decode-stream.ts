@@ -102,4 +102,3 @@ export class _PdfDecodeStream extends _PdfBaseStream {
         throw new Error('Invalid call from decode stream');
     }
 }
-

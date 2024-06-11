@@ -7,8 +7,7 @@ import { FormValidatorModel } from './form-validator-model';
 /**
  * global declarations
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const regex: any = {
+export const regex: { [key: string]: RegExp } = {
     /* eslint-disable no-useless-escape */
     EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,}' +
         '|[.]{1}[a-zA-Z0-9]{2,4}[.]{1}[a-zA-Z0-9]{2,4})$'),
@@ -230,19 +229,19 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             delete this.rules[`${name}`];
         } else if (!isNullOrUndefined(this.rules[`${name}`] && rules)) {
             for (let i: number = 0; i < rules.length; i++) {
-                delete this.rules[`${name}`][rules[parseInt(i.toString())]];
+                delete this.rules[`${name}`][rules[parseInt(i.toString(), 10)]];
             }
         } else {
             return;
         }
     }
-    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Validate the current form values using defined rules.
      * Returns `true` when the form is valid otherwise `false`
      *
      * @param {string} selected - Optional parameter to validate specified element.
-     * @returns {boolean}
+     * @returns {boolean} - Returns form validation status.
      */
     public validate(selected?: string): boolean {
         const rules: string[] = Object.keys(this.rules);
@@ -260,7 +259,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             return this.errorRules.length === 0;
         }
     }
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Reset the value of all the fields in form.
      *
@@ -270,18 +269,18 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         this.element.reset();
         this.clearForm();
     }
-    /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Get input element by name.
      *
      * @param {string} name - Input element name attribute value.
-     * @returns {HTMLInputElement}
+     * @returns {HTMLInputElement} - Returns the input element.
      */
     public getInputElement(name: string): HTMLInputElement {
         this.inputElement = <HTMLInputElement>(select('[name="' + name + '"]', this.element));
         return this.inputElement;
     }
-    /* eslint-enable valid-jsdoc, jsdoc/require-returns-description */
+
     /**
      * Destroy the form validator object and error elements.
      *
@@ -363,11 +362,12 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     public getModuleName(): string {
         return 'formvalidator';
     }
+
     /**
      * @param {any} args - Specifies the culture name.
+     * @returns {void}
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     public afterLocalization(args: any): void {
         this.locale = args.locale;
         this.localeFunc();
@@ -421,12 +421,14 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         for (const element of elements) {
             const input: HTMLInputElement = <HTMLInputElement>element;
             input.removeAttribute('aria-invalid');
-            const inputParent = input.parentElement;
-            const grandParent = inputParent.parentElement;
-            if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') || (input.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
+            const inputParent: HTMLElement = input.parentElement;
+            const grandParent: HTMLElement = inputParent.parentElement;
+            if (inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') ||
+            (input.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
                 inputParent.classList.remove(this.errorClass);
             }
-            else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+            else if ((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') ||
+                   grandParent.classList.contains('e-wrapper'))) {
                 grandParent.classList.remove(this.errorClass);
             }
             else {
@@ -437,10 +439,12 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                 this.getErrorElement(input.name);
                 this.hideMessage(input.name);
             }
-            if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') || (input.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
+            if (inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') ||
+              (input.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
                 inputParent.classList.remove(this.validClass);
             }
-            else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+            else if ((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') ||
+                      grandParent.classList.contains('e-wrapper'))) {
                 grandParent.classList.remove(this.validClass);
             }
             else {
@@ -688,13 +692,15 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                     // Set aria attributes to invalid elements
                     this.inputElement.setAttribute('aria-invalid', 'true');
                     this.inputElement.setAttribute('aria-describedby', this.inputElement.id + '-info');
-                    const inputParent = this.inputElement.parentElement;
-                    const grandParent = inputParent.parentElement;
-                    if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') || (this.inputElement.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
+                    const inputParent: HTMLElement = this.inputElement.parentElement;
+                    const grandParent: HTMLElement = inputParent.parentElement;
+                    if (inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') ||
+                      (this.inputElement.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
                         inputParent.classList.add(this.errorClass);
                         inputParent.classList.remove(this.validClass);
                     }
-                    else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+                    else if ((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') ||
+                          grandParent.classList.contains('e-wrapper'))) {
                         grandParent.classList.add(this.errorClass);
                         grandParent.classList.remove(this.validClass);
                     }
@@ -709,11 +715,13 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                     }
                     eventArgs.errorElement = this.infoElement;
                     eventArgs.status = 'failure';
-                    if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') || (this.inputElement.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
+                    if (inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') ||
+                    (this.inputElement.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
                         inputParent.classList.add(this.errorClass);
                         inputParent.classList.remove(this.validClass);
                     }
-                    else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+                    else if ((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') ||
+                    grandParent.classList.contains('e-wrapper'))) {
                         grandParent.classList.add(this.errorClass);
                         grandParent.classList.remove(this.validClass);
                     }
@@ -781,8 +789,8 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         const formats: string[] = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (let i: number = 0; i < formats.length; i++) {
-                const value: string = ruleValue instanceof Array ? ruleValue[parseInt(i.toString())] : ruleValue;
-                message = message.replace(formats[parseInt(i.toString())], value);
+                const value: string = ruleValue instanceof Array ? ruleValue[parseInt(i.toString(), 10)] : ruleValue;
+                message = message.replace(formats[parseInt(i.toString(), 10)], value);
             }
         }
         return message;
@@ -815,12 +823,12 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             // Call custom placement function if customPlacement is not null
             this.customPlacement.call(this, this.inputElement, errorElement);
         } else {
-            const inputParent = this.inputElement.parentElement;
-            const grandParent = inputParent.parentElement;
-            if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper')) {
-               grandParent.insertBefore(errorElement, inputParent.nextSibling); 
+            const inputParent: HTMLElement = this.inputElement.parentElement;
+            const grandParent: HTMLElement = inputParent.parentElement;
+            if (inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper')) {
+                grandParent.insertBefore(errorElement, inputParent.nextSibling);
             }
-            else if(grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper')) {
+            else if (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper')) {
                 grandParent.parentElement.insertBefore(errorElement, grandParent.nextSibling);
             }
             else {
@@ -845,7 +853,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     // Remove existing rule from errorRules object
     private removeErrorRules(name: string): void {
         for (let i: number = 0; i < this.errorRules.length; i++) {
-            const rule: ErrorRule = this.errorRules[parseInt(i.toString())];
+            const rule: ErrorRule = this.errorRules[parseInt(i.toString(), 10)];
             if (rule.name === name) {
                 this.errorRules.splice(i, 1);
             }
@@ -864,13 +872,14 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         if (this.infoElement) {
             this.infoElement.style.display = 'none';
             this.removeErrorRules(name);
-            const inputParent = this.inputElement.parentElement;
-            const grandParent = inputParent.parentElement;
-            if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') || (this.inputElement.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
+            const inputParent: HTMLElement = this.inputElement.parentElement;
+            const grandParent: HTMLElement = inputParent.parentElement;
+            if (inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper') ||
+                (this.inputElement.classList.contains('e-input') && inputParent.classList.contains('e-input-group'))) {
                 inputParent.classList.add(this.validClass);
                 inputParent.classList.remove(this.errorClass);
             }
-            else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+            else if ((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
                 grandParent.classList.add(this.validClass);
                 grandParent.classList.remove(this.errorClass);
             }
@@ -918,10 +927,10 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             return regex.DIGITS.test(option.value);
         },
         maxLength: (option: ValidArgs): boolean => {
-            return option.value.length <= option.param;
+            return option.value.length <= Number(option.param);
         },
         minLength: (option: ValidArgs): boolean => {
-            return option.value.length >= option.param;
+            return option.value.length >= Number(option.param);
         },
         rangeLength: (option: ValidArgs): boolean => {
             const param: number[] = <number[]>option.param;
@@ -933,9 +942,9 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         },
         date: (option: ValidArgs): boolean => {
             if (!isNullOrUndefined(option.param) && (typeof (option.param) === 'string' && option.param !== '')) {
-                var globalize = new Internationalization;
-                var dateOptions = { format: option.param.toString(), type: 'dateTime', skeleton: 'yMd' };
-                var dateValue = globalize.parseDate(option.value, dateOptions);
+                const globalize: Internationalization = new Internationalization;
+                const dateOptions: { format: string, type: string, skeleton: string } = { format: option.param.toString(), type: 'dateTime', skeleton: 'yMd' };
+                const dateValue: Date = globalize.parseDate(option.value, dateOptions);
                 return (!isNullOrUndefined(dateValue) && dateValue instanceof Date && !isNaN(+dateValue));
             }
             else {
@@ -945,7 +954,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         max: (option: ValidArgs): boolean => {
             if (!isNaN(Number(option.value))) {
                 // Maximum rule validation for number
-                return +option.value <= option.param;
+                return +option.value <= +option.param;
             }
             // Maximum rule validation for date
             return new Date(option.value).getTime() <= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
@@ -953,10 +962,10 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         min: (option: ValidArgs): boolean => {
             if (!isNaN(Number(option.value))) {
                 // Minimum rule validation for number
-                return +option.value >= option.param;
+                return +option.value >= +option.param;
             } else if ((option.value).indexOf(',') !== -1) {
                 const uNum: string = (option.value).replace(/,/g, '');
-                return parseFloat(uNum) >= option.param;
+                return parseFloat(uNum) >= Number(option.param); // Convert option.param to a number
             } else {
                 // Minimum rule validation for date
                 return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
@@ -973,7 +982,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         }
     };
 
-    // Return boolean result if the input have chekcable or submit types
+    // Return boolean result if the input have checkable or submit types
     private static isCheckable(input: Element): boolean {
         const inputType: string = input.getAttribute('type');
         return inputType && (inputType === 'checkbox' || inputType === 'radio' || inputType === 'submit');

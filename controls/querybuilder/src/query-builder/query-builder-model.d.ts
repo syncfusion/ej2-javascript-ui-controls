@@ -1,5 +1,5 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append, ModuleDeclaration, getDefaultDateObject } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';import { Button, CheckBox, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, RadioButtonModel } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection, DropDownTreeModel, DropDownTree } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs, MultiSelectModel, DropDownListModel } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { TextBoxModel, NumericTextBoxModel } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs, DatePickerModel } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, createSpinner, showSpinner, hideSpinner, TooltipEventArgs } from '@syncfusion/ej2-popups';import { compile as templateCompiler } from '@syncfusion/ej2-base';
-import {TemplateColumn,Validation,FormatObject,ActionEventArgs,ChangeEventArgs,RuleChangeEventArgs,FieldMode,DisplayMode,SortDirection} from "./query-builder";
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append, ModuleDeclaration, Draggable, remove } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';import { Button, CheckBox, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, RadioButtonModel } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection, DropDownTreeModel, DropDownTree } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs, MultiSelectModel, DropDownListModel } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { TextBoxModel, NumericTextBoxModel } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs, DatePickerModel } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, createSpinner, showSpinner, hideSpinner, TooltipEventArgs } from '@syncfusion/ej2-popups';import { compile as templateCompiler } from '@syncfusion/ej2-base';
+import {TemplateColumn,Validation,FormatObject,ActionEventArgs,ChangeEventArgs,RuleChangeEventArgs,DragEventArgs,DropEventArgs,FieldMode,DisplayMode,SortDirection} from "./query-builder";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -98,7 +98,6 @@ export interface ColumnsModel {
      * Specifies the sub fields in columns.
      *
      * @default null
-     *
      */
     columns?: ColumnsModel[];
 
@@ -326,6 +325,27 @@ export interface QueryBuilderModel extends ComponentModel{
     ruleChange?: EmitType<RuleChangeEventArgs>;
 
     /**
+     * Triggers when rule/ group dragging starts.
+     *
+     *
+     */
+    dragStart?: EmitType<DragEventArgs>;
+
+    /**
+     * Triggers when rule/ group are dragged (moved) continuously.
+     *
+     *
+     */
+    drag?: EmitType<DragEventArgs>;
+
+    /**
+     * Triggers when rule/ group are dropped on to the target rule/ group.
+     *
+     *
+     */
+    drop?: EmitType<DropEventArgs>;
+
+    /**
      * Specifies the showButtons settings of the query builder component.
      * The showButtons can be enable Enables or disables the ruleDelete, groupInsert, and groupDelete buttons.
      *
@@ -484,7 +504,6 @@ export interface QueryBuilderModel extends ComponentModel{
      * @remarks
      * If this property is true, the empty rule is inserted while inserting new group.
      * If set to false, the group is inserted without any rule.
-     *
      * @default true
      */
     addRuleToNewGroups?: boolean;
@@ -495,7 +514,6 @@ export interface QueryBuilderModel extends ComponentModel{
      * @remarks
      * If this property is true, the field dropdown list will render with the first value of the dropdown list.
      * If set to false, the dropdown list render with placeholder.
-     *
      * @default false
      */
     autoSelectField?: boolean;
@@ -506,7 +524,6 @@ export interface QueryBuilderModel extends ComponentModel{
      * @remarks
      * If this property is true, the operator dropdown list will render with the first value of the dropdown list.
      * If set to false, the dropdown list render with placeholder.
-     *
      * @default true
      */
     autoSelectOperator?: boolean;
@@ -519,11 +536,33 @@ export interface QueryBuilderModel extends ComponentModel{
     separator?: string;
 
     /**
+     * Specifies whether to enable separate connectors between rules/groups.
+     *
+     * @remarks
+     * When this property is set to true, each rule/group will have its own connector, allowing them to be connected independently with different connectors.
+     * When set to false, will result in connectors being shared between rules/groups, possibly connecting them with the same connector.
+     *
+     * @default false
+     *
+     */
+    enableSeparateConnector?: boolean;
+
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      *
      * @default {}
      */
     rule?: RuleModel;
+
+    /**
+     * Specifies a boolean value whether to enable / disable the drag and drop support to move the rules/ groups.
+     *
+     * @remarks
+     * If this property is true, the drag handle will be rendered in front of the rule/ group element to perform, drag and drop.
+     * If set to false, the drag handle element is not rendered.
+     * @default false
+     */
+    allowDragAndDrop?: boolean;
 
 }

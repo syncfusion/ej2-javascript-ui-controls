@@ -608,7 +608,7 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
             this.documentEditor.editorModule.toggleSuperscript();
-            this.documentEditor.focusIn();  
+            this.documentEditor.focusIn();
         }
     }
     private changeFontColor(arg: ColorPickerEventArgs): void {
@@ -628,7 +628,8 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.selectionModule && this.fontFamily.value !== '') {
             setTimeout((): void => {
-                this.documentEditor.selectionModule.characterFormat.fontFamily = SanitizeHtmlHelper.sanitize(this.fontFamily.value as string);
+                this.documentEditor.selectionModule.characterFormat.fontFamily =
+                SanitizeHtmlHelper.sanitize(this.fontFamily.value as string);
             }, 10);
             this.documentEditor.focusIn();
         }
@@ -650,7 +651,8 @@ export class Text {
             //#region character format
             if (this.documentEditor.selectionModule.characterFormat.fontFamily) {
                 let fontFamily: string;
-                if(!isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.renderedFontFamily) && !isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.fontFamily)){
+                if (!isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.renderedFontFamily)
+                    && !isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.fontFamily)){
                     fontFamily = this.documentEditor.selectionModule.characterFormat.renderedFontFamily;
                 } else {
                     fontFamily = this.documentEditor.selectionModule.characterFormat.fontFamily;

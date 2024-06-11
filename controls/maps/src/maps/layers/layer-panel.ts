@@ -63,24 +63,13 @@ export class LayerPanel {
             id: this.mapObject.element.id + '_Layer_Collections',
             'clip-path': 'url(#' + this.mapObject.element.id + '_MapArea_ClipRect)'
         }));
-        if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
-            const staticMapSize : number = 640;
-            this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(
-                this.mapObject.element.id + '_MapArea_ClipRect',
-                'transparent', { width: 1, color: 'Gray' }, 1,
-                {
-                    x: ((areaRect.width - staticMapSize) / 2), y: 0,
-                    width: staticMapSize, height: areaRect.height
-                }));
-        } else {
-            this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(
-                this.mapObject.element.id + '_MapArea_ClipRect',
-                'transparent', { width: 1, color: 'Gray' }, 1,
-                {
-                    x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
-                    width: areaRect.width, height: areaRect.height
-                }));
-        }
+        this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(
+            this.mapObject.element.id + '_MapArea_ClipRect',
+            'transparent', { width: 1, color: 'Gray' }, 1,
+            {
+                x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
+                width: areaRect.width, height: areaRect.height
+            }));
 
         this.layerGroup.appendChild(this.clipRectElement);
         this.mapObject.baseMapBounds = null;
@@ -209,8 +198,7 @@ export class LayerPanel {
         && this.mapObject.availableSize.height > 512) {
             this.mapObject.applyZoomReset = true;
             this.mapObject.initialZoomLevel = Math.floor(this.mapObject.availableSize.height / 512);
-            const padding : number = this.mapObject.layers[this.mapObject.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
-                20 : 0;
+            const padding : number = 20;
             const totalSize : number = Math.pow(2, this.mapObject.initialZoomLevel) * 256;
             if (!isNullOrUndefined(this.mapObject.initialTileTranslate)) {
                 this.mapObject.initialTileTranslate.x = (this.mapObject.availableSize.width / 2) - (totalSize / 2);
@@ -270,53 +258,12 @@ export class LayerPanel {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         this.mapObject.trigger('layerRendering', eventArgs, (observedArgs: ILayerRenderingEventArgs) => {
             if (!eventArgs.cancel && eventArgs.visible) {
-                if (layer.layerType === 'OSM') {
-                    layer.urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
-                }
-                if (layer.layerType === 'Google') {
-                    layer.urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
-                }
-                if (layer.layerType !== 'Geometry' || (isNullOrUndefined(layer.shapeData) && !isNullOrUndefined(layer.urlTemplate) && layer.urlTemplate !== '')) {
-                    if (layer.layerType !== 'Bing' || this.bing) {
-                        if (!isNullOrUndefined(layer.urlTemplate) && layer.urlTemplate.indexOf('quadkey') > -1) {
-                            const bing: BingMap = new BingMap(this.mapObject);
-                            this.bingMapCalculation(layer, layerIndex, this, bing);
-                        } else {
-                            this.renderTileLayer(this, layer, layerIndex);
-                        }
-                    } else if (layer.key && layer.key.length > 1) {
-                        // eslint-disable-next-line @typescript-eslint/no-this-alias
-                        const proxy: LayerPanel = this;
+                if ((isNullOrUndefined(layer.shapeData) && !isNullOrUndefined(layer.urlTemplate) && layer.urlTemplate !== '')) {
+                    if (!isNullOrUndefined(layer.urlTemplate) && layer.urlTemplate.indexOf('quadkey') > -1) {
                         const bing: BingMap = new BingMap(this.mapObject);
-                        const bingType: string = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
-                        const url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
-                        const ajax: Fetch = new Fetch({
-                            url: url + '?output=json&include=ImageryProviders&urischeme=https&key=' + layer.key
-                        });
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        ajax.onSuccess = (json: any) => {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const resource: any = json['resourceSets'][0]['resources'][0];
-                            const imageUrl: string = <string>resource['imageUrl'];
-                            const subDomains: string[] = <string[]>resource['imageUrlSubdomains'];
-                            const maxZoom: string = <string>resource['zoomMax'];
-                            if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
-                                bing.imageUrl = imageUrl;
-                            }
-                            if (subDomains !== null && subDomains !== undefined && subDomains !== bing.subDomains) {
-                                bing.subDomains = subDomains;
-                            }
-                            if (maxZoom !== null && maxZoom !== undefined && maxZoom !== bing.maxZoom) {
-                                bing.maxZoom = maxZoom;
-                            }
-                            proxy.mapObject['bingMap'] = bing;
-                            proxy.renderTileLayer(proxy, layer, layerIndex, bing);
-                            this.mapObject.arrangeTemplate();
-                            if (this.mapObject.zoomModule && (this.mapObject.previousScale !== this.mapObject.scale)) {
-                                this.mapObject.zoomModule.applyTransform(this.mapObject, true);
-                            }
-                        };
-                        ajax.send();
+                        this.bingMapCalculation(layer, layerIndex, this, bing);
+                    } else {
+                        this.renderTileLayer(this, layer, layerIndex);
                     }
                 } else {
                     if (!isNullOrUndefined(layer.shapeData) && (!isNullOrUndefined(layer.shapeData['geometries']) ||
@@ -424,7 +371,7 @@ export class LayerPanel {
             for (let i: number = 0; i < this.currentLayer.layerData.length; i++) {
                 let k: number;
                 const borderValue: BorderModel = {
-                    color: shapeSettings.border.color,
+                    color: shapeSettings.border.color || this.mapObject.themeStyle.shapeBorderColor,
                     width: shapeSettings.border.width,
                     opacity: shapeSettings.border.opacity
                 };
@@ -491,20 +438,19 @@ export class LayerPanel {
                     if (!eventArgs.cancel) {
                         eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill ||
                             this.mapObject.themeStyle.shapeFill : eventArgs.fill;
-                        eventArgs.border.color = eventArgs.border.color === '#000000' ?
+                        eventArgs.border.color = eventArgs.border.color === 'transparent' ?
                             eventArgs.shape.border.color : eventArgs.border.color;
                         eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
                         if (isNullOrUndefined(shapeSettings.borderColorValuePath)) {
-                            this.mapObject.layers[layerIndex as number].shapeSettings.border.color = eventArgs.border.color;
+                            borderValue.color = eventArgs.border.color;
                         }
                         if (isNullOrUndefined(shapeSettings.borderWidthValuePath)) {
-                            this.mapObject.layers[layerIndex as number].shapeSettings.border.width = eventArgs.border.width;
+                            borderValue.width = eventArgs.border.width;
                         }
                     } else {
                         eventArgs.fill = fill;
-                        eventArgs.border.color = shapeSettings.border.color;
+                        eventArgs.border.color = shapeSettings.border.color || this.mapObject.themeStyle.shapeBorderColor;
                         eventArgs.border.width = shapeSettings.border.width;
-                        this.mapObject.layers[layerIndex as number].shapeSettings.border = shapeSettings.border;
                     }
                     eventArgs.border.opacity = isNullOrUndefined(eventArgs.border.opacity) ? opacity : eventArgs.border.opacity;
                     if (this.groupElements.length < 1) {
@@ -711,11 +657,13 @@ export class LayerPanel {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const bubbleDataSource: any[] = bubble.dataSource as any[];
                 this.mapObject.bubbleModule.bubbleCollection = [];
-                bubbleDataSource.map((bubbleData: object, i: number) => {
-                    this.renderBubble(
-                        this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
-                });
-                this.groupElements.push(bubbleG);
+                if (!isNullOrUndefined(bubbleDataSource) && bubbleDataSource.length > 0) {
+                    bubbleDataSource.map((bubbleData: object, i: number) => {
+                        this.renderBubble(
+                            this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
+                    });
+                    this.groupElements.push(bubbleG);
+                }
             }
         }
         if ((this.mapObject.markerModule && !this.mapObject.isTileMap) && this.mapObject.zoomSettings.enable) {
@@ -739,9 +687,13 @@ export class LayerPanel {
                 this.mapObject.navigationLineModule.renderNavigation(this.currentLayer, this.currentFactor, layerIndex)
             );
         }
-        this.groupElements.map((element: Element) => {
-            this.layerObject.appendChild(element);
-        });
+        if (!isNullOrUndefined(this.groupElements) && !isNullOrUndefined(this.layerObject)) {
+            this.groupElements.map((element: Element) => {
+                if (!isNullOrUndefined(element)) {
+                    this.layerObject.appendChild(element);
+                }
+            });
+        }
         if (this.mapObject.markerModule) {
             this.mapObject.markerModule.markerRender(this.mapObject, this.layerObject, layerIndex,
                                                      (this.mapObject.isTileMap ? Math.floor(this.currentFactor) :
@@ -841,7 +793,7 @@ export class LayerPanel {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const index: number = checkShapeDataFields(<any[]>layer.dataSource, shape, layer.shapeDataPath, layer.shapePropertyPath, layer);
         const colorMapping: ColorMapping = new ColorMapping(this.mapObject);
-        if (isNullOrUndefined(layer.dataSource[index as number])) {
+        if (isNullOrUndefined(layer.dataSource) || isNullOrUndefined(layer.dataSource[index as number])) {
             return color;
         }
         return colorMapping.getShapeColorMapping(layer.shapeSettings, layer.dataSource[index as number], color);
@@ -1219,9 +1171,8 @@ export class LayerPanel {
                         const tile: Tile = new Tile(tileI % ycount, j);
                         tile.left = Math.round(x);
                         tile.top = Math.round(y);
-                        if (baseLayer.layerType === 'Bing' || (bing && !isNullOrUndefined(baseLayer.urlTemplate) && baseLayer.urlTemplate !== '')) {
-                            const key: string = baseLayer.key;
-                            tile.src = bing.getBingMap(tile, key, baseLayer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
+                        if ((bing && !isNullOrUndefined(baseLayer.urlTemplate) && baseLayer.urlTemplate !== '')) {
+                            tile.src = bing.getBingMap(tile, '', '', userLang, bing.imageUrl, bing.subDomains);
                         } else {
                             tile.src = this.urlTemplate.replace('level', zoomLevel.toString()).replace('tileX', tile.x.toString())
                                 .replace('tileY', tile.y.toString());
@@ -1245,13 +1196,12 @@ export class LayerPanel {
             if (!(layer.type === 'SubLayer' && layer.visible)) {
                 continue;
             }
-            if ((layer.layerType !== 'Geometry' && layer.layerType !== 'GoogleStaticMap') || (layer.layerType === 'Geometry' &&
-                isNullOrUndefined(layer.shapeData) && !isNullOrUndefined(layer.urlTemplate) && layer.urlTemplate !== '')) {
+            if (isNullOrUndefined(layer.shapeData) && !isNullOrUndefined(layer.urlTemplate) && layer.urlTemplate !== '') {
                 for (const baseTile of proxTiles) {
                     const subtile: Tile = extend({}, baseTile, {}, true) as Tile;
-                    if (layer.layerType === 'Bing') {
+                    if (layer.urlTemplate.indexOf('quadkey')) {
                         bing = new BingMap(this.mapObject);
-                        subtile.src = bing.getBingMap(subtile, layer.key, layer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
+                        subtile.src = bing.getBingMap(subtile, '', '', userLang, bing.imageUrl, bing.subDomains);
                     } else {
                         subtile.src = layer.urlTemplate.replace('level', zoomLevel.toString()).replace('tileX', baseTile.x.toString())
                             .replace('tileY', baseTile.y.toString());
@@ -1277,105 +1227,101 @@ export class LayerPanel {
         } else {
             timeOut = 0;
         }
-        if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
-            this.renderGoogleMap(this.mapObject.layers[0].key, this.mapObject.staticMapZoom);
-        } else {
-            setTimeout(() => {
-                if (element) {
-                    element.style.zIndex = '1';
-                }
-                if (element1) {
-                    element1.style.zIndex = '0';
-                }
-                let animateElement: HTMLElement;
-                if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
+        setTimeout(() => {
+            if (element) {
+                element.style.zIndex = '1';
+            }
+            if (element1) {
+                element1.style.zIndex = '0';
+            }
+            let animateElement: HTMLElement;
+            if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
+                animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
+                element.appendChild(animateElement);
+            } else {
+                if (type !== 'Pan' && element1 && element) {
+                    element1.appendChild(element.children[0]);
+                    if (!this.mapObject.isAddLayer && !isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
+                        document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
+                            this.mapObject.element.id + '_animated_tiles_old';
+                    }
                     animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 } else {
-                    if (type !== 'Pan' && element1 && element) {
-                        element1.appendChild(element.children[0]);
-                        if (!this.mapObject.isAddLayer && !isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
-                            document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
-                                this.mapObject.element.id + '_animated_tiles_old';
-                        }
-                        animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
-                        element.appendChild(animateElement);
-                    } else {
-                        animateElement = element ? element.children[0] as HTMLElement : null;
-                    }
+                    animateElement = element ? element.children[0] as HTMLElement : null;
                 }
-                for (let id: number = 0; id < this.tiles.length; id++) {
-                    const tile: Tile = this.tiles[id as number];
-                    let imgElement: HTMLImageElement = null;
-                    const mapId: string = this.mapObject.element.id;
-                    if (type === 'Pan') {
-                        let child: HTMLElement = document.getElementById(mapId + '_tile_' + id);
-                        let isNewTile: boolean = false;
-                        if (isNullOrUndefined(child)) {
-                            isNewTile = true;
-                            child = createElement('div', { id: mapId + '_tile_' + id });
-                            imgElement = createElement('img') as HTMLImageElement;
-                        } else {
-                            child.style.removeProperty('display');
-                            imgElement = <HTMLImageElement>child.children[0];
-                        }
-                        if (!isNewTile && imgElement && imgElement.src !== tile.src) {
-                            imgElement.src = tile.src;
-                        }
-                        child.style.position = 'absolute';
-                        child.style.left = tile.left + 'px';
-                        child.style.top = tile.top + 'px';
-                        child.style.height = tile.height + 'px';
-                        child.style.width = tile.width + 'px';
-                        if (isNewTile) {
-                            imgElement.setAttribute('height', '256px');
-                            imgElement.setAttribute('width', '256px');
-                            imgElement.setAttribute('src', tile.src);
-                            imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
-                            imgElement.style.setProperty('user-select', 'none');
-                            child.appendChild(imgElement);
-                            animateElement.appendChild(child);
-                        }
-                    } else {
+            }
+            for (let id: number = 0; id < this.tiles.length; id++) {
+                const tile: Tile = this.tiles[id as number];
+                let imgElement: HTMLImageElement = null;
+                const mapId: string = this.mapObject.element.id;
+                if (type === 'Pan') {
+                    let child: HTMLElement = document.getElementById(mapId + '_tile_' + id);
+                    let isNewTile: boolean = false;
+                    if (isNullOrUndefined(child)) {
+                        isNewTile = true;
+                        child = createElement('div', { id: mapId + '_tile_' + id });
                         imgElement = createElement('img') as HTMLImageElement;
+                    } else {
+                        child.style.removeProperty('display');
+                        imgElement = <HTMLImageElement>child.children[0];
+                    }
+                    if (!isNewTile && imgElement && imgElement.src !== tile.src) {
+                        imgElement.src = tile.src;
+                    }
+                    child.style.position = 'absolute';
+                    child.style.left = tile.left + 'px';
+                    child.style.top = tile.top + 'px';
+                    child.style.height = tile.height + 'px';
+                    child.style.width = tile.width + 'px';
+                    if (isNewTile) {
                         imgElement.setAttribute('height', '256px');
                         imgElement.setAttribute('width', '256px');
                         imgElement.setAttribute('src', tile.src);
-                        imgElement.style.setProperty('user-select', 'none');
                         imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
-                        const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
-                        child.style.position = 'absolute';
-                        child.style.left = tile.left + 'px';
-                        child.style.top = tile.top + 'px';
-                        child.style.height = tile.height + 'px';
-                        child.style.width = tile.width + 'px';
+                        imgElement.style.setProperty('user-select', 'none');
                         child.appendChild(imgElement);
-                        if (animateElement) {
-                            animateElement.appendChild(child);
-                        }
+                        animateElement.appendChild(child);
                     }
-                    if (id === (this.tiles.length - 1) && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
-                        removeElement(this.mapObject.element.id + '_animated_tiles_old');
-                    }
-                }
-                if (!isNullOrUndefined(this.mapObject.currentTiles)) {
-                    for (let l: number = this.tiles.length; l < animateElement.childElementCount; l++) {
-                        let isExistingElement: boolean = false;
-                        for (let a: number = 0; a < this.mapObject.currentTiles.childElementCount; a++) {
-                            if (!isExistingElement &&
-                                this.mapObject.currentTiles.children[a as number].id === animateElement.children[l as number].id) {
-                                isExistingElement = true;
-                            }
-                        }
-                        if (isExistingElement) {
-                            (animateElement.children[l as number] as HTMLElement).style.display = 'none';
-                        } else {
-                            animateElement.removeChild(animateElement.children[l as number]);
-                        }
+                } else {
+                    imgElement = createElement('img') as HTMLImageElement;
+                    imgElement.setAttribute('height', '256px');
+                    imgElement.setAttribute('width', '256px');
+                    imgElement.setAttribute('src', tile.src);
+                    imgElement.style.setProperty('user-select', 'none');
+                    imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                    const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
+                    child.style.position = 'absolute';
+                    child.style.left = tile.left + 'px';
+                    child.style.top = tile.top + 'px';
+                    child.style.height = tile.height + 'px';
+                    child.style.width = tile.width + 'px';
+                    child.appendChild(imgElement);
+                    if (animateElement) {
+                        animateElement.appendChild(child);
                     }
                 }
-            }, timeOut);
-        }
+                if (id === (this.tiles.length - 1) && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
+                    removeElement(this.mapObject.element.id + '_animated_tiles_old');
+                }
+            }
+            if (!isNullOrUndefined(this.mapObject.currentTiles)) {
+                for (let l: number = this.tiles.length; l < animateElement.childElementCount; l++) {
+                    let isExistingElement: boolean = false;
+                    for (let a: number = 0; a < this.mapObject.currentTiles.childElementCount; a++) {
+                        if (!isExistingElement &&
+                            this.mapObject.currentTiles.children[a as number].id === animateElement.children[l as number].id) {
+                            isExistingElement = true;
+                        }
+                    }
+                    if (isExistingElement) {
+                        (animateElement.children[l as number] as HTMLElement).style.display = 'none';
+                    } else {
+                        animateElement.removeChild(animateElement.children[l as number]);
+                    }
+                }
+            }
+        }, timeOut);
     }
 
     /**
@@ -1450,7 +1396,7 @@ export class LayerPanel {
         const eleWidth: number = mapWidth > 640 ? (mapWidth - 640) / 2 : 0;
         const eleHeight: number = mapHeight > 640 ? (mapHeight - 640) / 2 : 0;
         let center: string;
-        const mapType: string = (map.layers[map.layers.length - 1].staticMapType).toString().toLowerCase();
+        const mapType: string = 'roadmap';
         if (map.centerPosition.latitude && map.centerPosition.longitude) {
             center =  map.centerPosition.latitude.toString() + ',' + map.centerPosition.longitude.toString();
         } else {
@@ -1476,8 +1422,7 @@ export class LayerPanel {
             this.mapObject.tileZoomLevel = this.mapObject.tileZoomScale;
         }
         const level: number = this.mapObject.tileZoomLevel;
-        let padding: number = this.mapObject.layers[this.mapObject.layers.length - 1].layerType !== 'GoogleStaticMap' ?
-            20 : 0;
+        let padding: number = 20;
         let x: number; let y: number;
         const totalSize: number = Math.pow(2, level) * 256;
         x = (factorX / 2) - (totalSize / 2);

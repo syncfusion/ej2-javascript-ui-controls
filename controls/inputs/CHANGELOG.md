@@ -2,57 +2,7 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
-
-### TextBox
-
-#### Bug Fixes
-
-- `#I587808` - Fixed an accessibility issue in the Multi Line textbox caused by the role attribute.
-
-## 25.1.42 (2024-04-30)
-
-### NumericTextBox
-
-#### Bug Fixes
-
-- `#F52893` - Fixed issue with pasting number values with a "-" in the NumericTextBox.
-
-### Uploader
-
-#### Bug Fixes
-
-- `#I578934` - Resolved the issue where allowed extension was not properly working with preloaded files inside a form.
-
-## 25.1.38 (2024-04-02)
-
-### ColorPicker
-
-#### Bug Fixes
-
-- `#I571375` - Provided the original event arguments in the change and select events of the color picker.
-
-### NumericTextBox
-
-#### Bug Fixes
-
-- `#I567912` - Fixed issue with overflow style not being applied to the placeholder.
-
-## 25.1.37 (2024-03-26)
-
-### Signature
-
-#### Bug Fixes
-
-- `#F187147` - Issue with "Signature Clear method returns BaseAddress as null" has been resolved.
-
-### MaskedTextBox
-
-#### Bug Fixes
-
-- `#I561285` - Fixed an issue where focus was being added to the maskedtextbox when running in the Safari browser.
-
-## 25.1.35 (2024-03-15)
+## 26.1.35 (2024-06-11)
 
 ### Signature
 

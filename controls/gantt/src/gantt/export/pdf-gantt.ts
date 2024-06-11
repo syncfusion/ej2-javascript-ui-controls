@@ -11,7 +11,7 @@ import { pixelToPoint, pointToPixel } from '../base/utils';
 import { Timeline } from '../renderer/timeline';
 import { PdfGanttPredecessor } from './pdf-connector-line';
 import { TimelineViewMode } from '../base/enum';
-import {EventMarker} from "./pdf-event-marker"
+import {EventMarker} from './pdf-event-marker';
 
 /**
  *
@@ -41,7 +41,7 @@ export class PdfGantt extends PdfTreeGrid {
         super();
         this.parent = parent;
         this.chartHeader = new PdfTimeline(this);
-        this.eventMarker = new EventMarker(parent)
+        this.eventMarker = new EventMarker(parent);
         this.predecessor = new PdfGanttPredecessor(parent, this);
         this.headerDetails = [];
         this.pdfPageDetail = [];
@@ -98,10 +98,13 @@ export class PdfGantt extends PdfTreeGrid {
             }
             const detail: TimelineDetails = {};
             const range: number[] = [];
-            const convertedWidth: number = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? pixelToPoint(this.chartHeader.bottomTierCellWidth) : this.chartHeader.bottomTierCellWidth;
+            const convertedWidth: number = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ?
+                pixelToPoint(this.chartHeader.bottomTierCellWidth) : this.chartHeader.bottomTierCellWidth;
             let width: number = 0;
             if (this.chartHeader.bottomTierCellWidth !== 0) {
-                width = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? (Math.floor(pageWidth / convertedWidth) * convertedWidth) : (Math.floor(pageWidth / convertedWidth) * convertedWidth) + 5;
+                width = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ?
+                    (Math.floor(pageWidth / convertedWidth) * convertedWidth) :
+                    (Math.floor(pageWidth / convertedWidth) * convertedWidth) + 3;
             }
             range[0] = point;
             if (headerWidth - point <= width) {
@@ -215,7 +218,6 @@ export class PdfGantt extends PdfTreeGrid {
         let pageStartX: number = 0;
         let cumulativeWidth: number = 0;
         let cumulativeHeight: number = 0;
-        let totalHeight: number = 0;
         let pageData: PageDetail;
         this.headerDetails.forEach((detail: TimelineDetails, index: number): void => {
             const page: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
@@ -226,23 +228,26 @@ export class PdfGantt extends PdfTreeGrid {
             cumulativeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
             this.headerDetails[this.headerDetails.indexOf(detail)].startIndex = this.startPageIndex;
             this.headerDetails[this.headerDetails.indexOf(detail)].pageStartPoint = taskbarPoint;
-            this.parent.eventMarkerColloction.map((eventMarker:IEventMarkerInfo) => {
-                let timelimeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60)
+            this.parent.eventMarkerColloction.map((eventMarker: IEventMarkerInfo) => {
+                const timelimeHeight: number = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
                 const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight)
-            })
+                this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight);
+            });
             for (let i: number = 0; i < this.taskbarCollection.length; i++) {
                 const task: PdfGanttTaskbarCollection = this.taskbarCollection[i as number];
                 const rowHeight: number = this.rows.getRow(i + 1).height;
                 const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                const graphics = pdfPage.graphics;
-                const pen = new PdfPen(new PdfColor(206, 206, 206));
-                if (page['contentWidth'] && (this.parent.gridLines == "Both" || this.parent.gridLines == "Horizontal")) {
-                    var lineWidth = this.chartHeader.timelineWidth;
-                    graphics.drawRectangle(pen, pageStartX, taskbarPoint.y, (this.parent.pdfExportModule.gantt.taskbar.isAutoFit() &&this.parent.timelineModule.bottomTier !=="Day") ? page['contentWidth'] + 0.5 : lineWidth, rowHeight);
+                const graphics: PdfGraphics = pdfPage.graphics;
+                const pen: PdfPen = new PdfPen(new PdfColor(206, 206, 206));
+                let lineWidth: number;
+                if (page['contentWidth'] && (this.parent.gridLines === 'Both' || this.parent.gridLines === 'Horizontal')) {
+                    lineWidth = this.chartHeader.timelineWidth;
+                    graphics.drawRectangle(pen, pageStartX, taskbarPoint.y, (this.parent.pdfExportModule.gantt.taskbar.isAutoFit() &&
+                    this.parent.timelineModule.bottomTier !== 'Day') ? page['contentWidth'] + 0.5 : lineWidth, rowHeight);
                 }
-                /* eslint-disable-next-line */
-                const isNextPage: boolean = task.drawTaskbar(pdfPage, taskbarPoint, detail, cumulativeWidth, rowHeight, this.taskbarCollection[i],lineWidth);
+                const isNextPage: boolean = task.drawTaskbar(
+                    pdfPage, taskbarPoint, detail, cumulativeWidth, rowHeight,
+                    this.taskbarCollection[parseInt(i.toString(), 10)], lineWidth);
                 if (isNextPage) {
                     if (this.enableHeader) {
                         taskbarPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
@@ -271,16 +276,13 @@ export class PdfGantt extends PdfTreeGrid {
                 }
                 taskbarPoint.y += rowHeight;
                 cumulativeHeight += rowHeight;
-                // eslint-disable-next-line
-                totalHeight += rowHeight;
-                
-                this.parent.eventMarkerColloction.map((eventMarker:IEventMarkerInfo) => {
-                    let timelimeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60)
+                this.parent.eventMarkerColloction.map((eventMarker: IEventMarkerInfo) => {
+                    const timelimeHeight: number = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
                     const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                    this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight)
-                })
+                    this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight);
+                });
             }
-            
+
             this.headerDetails[index as number].endIndex = this.startPageIndex;
             cumulativeWidth += detail.totalWidth;
             pageData = {};

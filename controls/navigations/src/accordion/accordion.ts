@@ -267,9 +267,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private isNested: boolean;
     private isDestroy: boolean;
     private templateEle: string[];
-    private isAngular: boolean;
-    private isReact: boolean;
-    private isVue: boolean;
     private headerTemplateFn: Function;
     private itemTemplateFn: Function;
     private removeRippleEffect: () => void;
@@ -498,7 +495,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (isNOU(this.initExpand)) {
             this.initExpand = [];
         }
-        if (this.expandedIndices.length > 0) {
+        if (!isNOU(this.expandedIndices) && this.expandedIndices.length > 0) {
             this.initExpand = this.expandedIndices;
         }
     }
@@ -626,7 +623,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (!isNOU(this.trgtEle)) {
             this.ctrlTemplate();
         }
-        if (this.dataSource.length > 0) {
+        if (!isNOU(this.dataSource) && this.dataSource.length > 0) {
             this.dataSource.forEach((item: object, index: number) => {
                 innerDataSourceItem = this.renderInnerItem(item, index);
                 ele.appendChild(innerDataSourceItem);
@@ -957,7 +954,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         const itemcnt: HTEle = this.createElement('div', { className: CLS_CONTENT + ' ' + CLS_CTNHIDE, id: getUniqueID('acrdn_panel') });
         attributes(itemcnt, { 'aria-hidden': 'true' });
         const ctn: HTEle = this.createElement('div', { className: CLS_CTENT });
-        if (this.dataSource.length > 0) {
+        if (!isNOU(this.dataSource) && this.dataSource.length > 0) {
             if (this.isReact) {
                 this.renderReactTemplates();
             }
@@ -1552,7 +1549,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 setStyle(this.element, { 'width': formatUnit(newProp.width) });
                 break;
             case 'expandMode':
-                if (newProp.expandMode === 'Single' && this.expandedIndices.length > 1) {
+                if (newProp.expandMode === 'Single' && !isNOU(this.expandedIndices) && this.expandedIndices.length > 1) {
                     this.expandItem(false);
                 }
                 break;
@@ -1560,7 +1557,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
         if (isRefresh) {
             this.initExpand = [];
-            if (this.expandedIndices.length > 0) {
+            if (!isNOU(this.expandedIndices) && this.expandedIndices.length > 0) {
                 this.initExpand = this.expandedIndices;
             }
             this.destroyItems();

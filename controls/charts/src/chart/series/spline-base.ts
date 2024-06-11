@@ -1,9 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable max-len */
-/* eslint-disable no-case-declarations */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { ChartLocation, ControlPoints } from '../../common/utils/helper';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '../chart';
@@ -20,16 +14,20 @@ export class SplineBase extends LineBase {
 
     private splinePoints: number[] = [];
     private lowSplinePoints: number[] = [];
-    /** @private */
+    /**
+     * Initializes the spline rendering module.
+     *
+     * @param {Chart} [chartModule] - Specifies the chart instance.
+     */
     constructor(chartModule?: Chart) {
         super(chartModule);
     }
 
     /**
-     * To find the control points for spline.
+     * Finds the spline points for the series.
      *
+     * @param {Series} series - The series for which spline points need to be found.
      * @returns {void}
-     * @private
      */
     public findSplinePoint(series: Series): void {
         let value: ControlPoints;
@@ -37,7 +35,7 @@ export class SplineBase extends LineBase {
         let realPoints: Points[] = [];
         const points: Points[] = [];
         let point: Points;
-        let pointIndex: number = 0; let negativePoint: Boolean = false;
+        let pointIndex: number = 0; let negativePoint: boolean = false;
         realPoints = this.filterEmptyPoints(series);
         for (let i: number = 0; i < realPoints.length; i++) {
             point = realPoints[i as number];
@@ -63,7 +61,8 @@ export class SplineBase extends LineBase {
                 if (point.index !== 0) {
                     const previous: number = this.getPreviousIndex(points, point.index - 1, series);
                     if (series.type === 'SplineRangeArea') {
-                        points[previous as number].yValue = points[previous as number].high > points[previous as number].low ? (points[previous as number].high as number) : (points[previous as number].low as number);
+                        points[previous as number].yValue = points[previous as number].high > points[previous as number].low ?
+                            (points[previous as number].high as number) : (points[previous as number].low as number);
                         point.yValue = point.high > point.low ? (point.high as number) : (point.low as number);
                     }
                     value = this.getControlPoints(
@@ -72,7 +71,8 @@ export class SplineBase extends LineBase {
                     );
                     series.drawPoints.push(value);
                     if (series.type === 'SplineRangeArea'){
-                        points[previous as number].yValue = points[previous as number].low < points[previous as number].high ? (points[previous as number].low as number) : (points[previous as number].high as number);
+                        points[previous as number].yValue = points[previous as number].low < points[previous as number].high ?
+                            (points[previous as number].low as number) : (points[previous as number].high as number);
                         point.yValue = point.low < point.high ? (point.low as number) : (point.high as number);
                         lowPoints = this.getControlPoints(
                             points[previous as number], point, this.lowSplinePoints[previous as number],
@@ -89,7 +89,7 @@ export class SplineBase extends LineBase {
                     }
                 }
             }
-            if (!negativePoint && series.yMin < 0) { series.yMin = 0 }
+            if (!negativePoint && series.yMin < 0) { series.yMin = 0; }
             if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
                 value = this.getControlPoints(
                     { xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue } as Points,
@@ -134,9 +134,10 @@ export class SplineBase extends LineBase {
         return points;
     }
     /**
-     * To find points in the range
+     * Checks if the data points are within the range.
      *
-     * @private
+     * @param {Points[]} points - The data points to check.
+     * @returns {boolean} True if the data points are within the range, false otherwise.
      */
     public isPointInRange(points: Points[]): boolean {
         for (const point of points) {
@@ -147,23 +148,32 @@ export class SplineBase extends LineBase {
         return true;
     }
     /**
-     * To find the natural spline.
+     * Finds the spline coefficients based on the type of spline interpolation.
      *
-     * @returns {void}
+     * @param {Points[]} points - The data points for spline interpolation.
+     * @param {Series} series - The series associated with the data points.
+     * @param {boolean} [isLow] - Indicates whether to calculate the lower bound. Default is false.
+     * @returns {number[]} The calculated coefficients.
      * @private
      */
     public findSplineCoefficients(points: Points[], series: Series, isLow?: boolean): number[] {
         let ySpline: number[] = [];
         const ySplineDuplicate: number[] = [];
         let cardinalSplineTension: number = series.cardinalSplineTension ? series.cardinalSplineTension : 0.5;
-        cardinalSplineTension = cardinalSplineTension < 0 ? 0 : cardinalSplineTension > 1 ? 1 : cardinalSplineTension;
+        // cardinalSplineTension = cardinalSplineTension < 0 ? 0 : cardinalSplineTension > 1 ? 1 : cardinalSplineTension;
+        if (cardinalSplineTension < 0) {
+            cardinalSplineTension = 0;
+        }
+        else if (cardinalSplineTension > 1) {
+            cardinalSplineTension = 1;
+        }
         switch (series.splineType) {
         case 'Monotonic':
             ySpline = this.monotonicSplineCoefficients(points, series, isLow);
             break;
 
         case 'Cardinal':
-            ySpline = this.cardinalSplineCofficients(points, series, isLow);
+            ySpline = this.cardinalSplineCofficients(points, series);
             break;
         default:
             if (series.splineType === 'Clamped') {
@@ -179,7 +189,13 @@ export class SplineBase extends LineBase {
         return ySpline;
     }
     /**
-     *  To find Monotonic Spline Coefficients
+     * Calculates the coefficients for a monotonic spline interpolation.
+     *
+     * @param {Points[]} points - The data points for spline interpolation.
+     * @param {Series} series - The series associated with the data points.
+     * @param {boolean} isLow - Indicates whether to calculate the lower bound.
+     * @returns {number[]} The calculated coefficients.
+     * @private
      */
     private monotonicSplineCoefficients(points: Points[], series: Series, isLow: boolean): number[] {
         const count: number = points.length;
@@ -191,12 +207,16 @@ export class SplineBase extends LineBase {
         for (let i: number = 0; i < count - 1; i++) {
             if (series.type === 'SplineRangeArea') {
                 if (!isLow) {
-                    points[i + 1].yValue = points[i + 1].high > points[i + 1].low ? (points[i + 1].high as number) : (points[i + 1].low as number);
-                    points[i as number ].yValue = points[i as number].high > points[i as number].low ? (points[i as number].high as number) : (points[i as number].low as number);
+                    points[i + 1].yValue = points[i + 1].high > points[i + 1].low ?
+                        (points[i + 1].high as number) : (points[i + 1].low as number);
+                    points[i as number ].yValue = points[i as number].high > points[i as number].low ?
+                        (points[i as number].high as number) : (points[i as number].low as number);
                 }
                 if (isLow) {
-                    points[i + 1].yValue = points[i + 1].low < points[i + 1].high ? (points[i + 1].low as number) : (points[i + 1].high as number);
-                    points[i as number].yValue = points[i as number].low < points[i as number].high ? (points[i as number].low as number) : (points[i as number].high as number);
+                    points[i + 1].yValue = points[i + 1].low < points[i + 1].high ? (points[i + 1].low as number) :
+                        (points[i + 1].high as number);
+                    points[i as number].yValue = points[i as number].low < points[i as number].high ? (points[i as number].low as number) :
+                        (points[i as number].high as number);
                 }
             }
             dx[i as number] = points[i + 1].xValue - points[i as number].xValue;
@@ -215,7 +235,8 @@ export class SplineBase extends LineBase {
                     ySpline[j + 1] = 0;
                 } else {
                     interPoint = dx[j as number] + dx[j + 1];
-                    ySpline[j + 1] = 3 * interPoint / ((interPoint + dx[j + 1]) / slope[j as number] + (interPoint + dx[j as number]) / slope[j + 1]);
+                    ySpline[j + 1] = 3 * interPoint / ((interPoint + dx[j + 1]) / slope[j as number] +
+                    (interPoint + dx[j as number]) / slope[j + 1]);
                 }
             }
         }
@@ -223,9 +244,14 @@ export class SplineBase extends LineBase {
     }
 
     /**
-     * To find Cardinal Spline Coefficients
+     * Calculates the coefficients for a cardinal spline interpolation.
+     *
+     * @param {Points[]} points - The data points for spline interpolation.
+     * @param {Series} series - The series associated with the data points.
+     * @returns {number[]} The calculated coefficients.
+     * @private
      */
-    private cardinalSplineCofficients(points: Points[], series: Series, isLow: boolean): number[] {
+    private cardinalSplineCofficients(points: Points[], series: Series): number[] {
         const count: number = points.length;
         const ySpline: number[] = [];
         let cardinalSplineTension: number = series.cardinalSplineTension ? series.cardinalSplineTension : 0.5;
@@ -243,7 +269,13 @@ export class SplineBase extends LineBase {
     }
 
     /**
-     * To find Clamped Spline Coefficients
+     * Calculates the coefficients for a clamped spline interpolation.
+     *
+     * @param {Points[]} points - The data points for spline interpolation.
+     * @param {Series} series - The series associated with the data points.
+     * @param {boolean} isLow - Indicates whether to calculate the lower bound.
+     * @returns {number[]} The calculated coefficients.
+     * @private
      */
     private clampedSplineCofficients(points: Points[], series: Series, isLow: boolean): number[] {
         const count: number = points.length;
@@ -280,7 +312,13 @@ export class SplineBase extends LineBase {
     }
 
     /**
-     * To find Natural Spline Coefficients
+     * Calculates the coefficients for a natural spline interpolation.
+     *
+     * @param {Points[]} points - The data points for spline interpolation.
+     * @param {Series} series - The series associated with the data points.
+     * @param {boolean} isLow - Indicates whether to calculate the lower bound.
+     * @returns {number[]} The calculated coefficients.
+     * @private
      */
     private naturalSplineCoefficients(points: Points[], series: Series, isLow: boolean): number[] {
         const count: number = points.length;
@@ -296,14 +334,20 @@ export class SplineBase extends LineBase {
         for (let i: number = 1; i < count - 1; i++) {
             if (series.type === 'SplineRangeArea'){
                 if (!isLow){
-                    points[i + 1].yValue = points[i + 1].low > points[i + 1].high ? (points[i + 1].low as number) : (points[i + 1].high as number);
-                    points[i as number].yValue = points[i as number].low > points[i as number].high ? (points[i as number].low as number) : (points[i as number].high as number);
-                    points[i - 1].yValue = points[i - 1].low > points[i - 1].high ? (points[i - 1].low as number) : (points[i - 1].high as number);
+                    points[i + 1].yValue = points[i + 1].low > points[i + 1].high ? (points[i + 1].low as number) :
+                        (points[i + 1].high as number);
+                    points[i as number].yValue = points[i as number].low > points[i as number].high ? (points[i as number].low as number) :
+                        (points[i as number].high as number);
+                    points[i - 1].yValue = points[i - 1].low > points[i - 1].high ? (points[i - 1].low as number) :
+                        (points[i - 1].high as number);
                 }
                 if (isLow){
-                    points[i + 1].yValue = points[i + 1].high < points[i + 1].low ? (points[i + 1].high as number) : (points[i + 1].low as number);
-                    points[i as number].yValue = points[i as number].high < points[i as number].low ? (points[i as number].high as number) : (points[i as number].low as number);
-                    points[i - 1].yValue = points[i - 1].high < points[i - 1].low ? (points[i - 1].high as number) : (points[i - 1].low as number);
+                    points[i + 1].yValue = points[i + 1].high < points[i + 1].low ? (points[i + 1].high as number) :
+                        (points[i + 1].low as number);
+                    points[i as number].yValue = points[i as number].high < points[i as number].low ? (points[i as number].high as number) :
+                        (points[i as number].low as number);
+                    points[i - 1].yValue = points[i - 1].high < points[i - 1].low ? (points[i - 1].high as number) :
+                        (points[i - 1].low as number);
                 }
             }
             coefficient1 = points[i as number].xValue - points[i - 1].xValue;
@@ -318,7 +362,8 @@ export class SplineBase extends LineBase {
             } else {
                 const p: number = 1 / (coefficient1 * ySpline[i - 1] + 2 * coefficient2);
                 ySpline[i as number] = -p * coefficient3;
-                ySplineDuplicate[i as number] = p * (6 * (dy1 / coefficient3 - dy2 / coefficient1) - coefficient1 * ySplineDuplicate[i - 1]);
+                ySplineDuplicate[i as number] = p * (6 * (dy1 / coefficient3 - dy2 / coefficient1) - coefficient1 *
+                ySplineDuplicate[i - 1]);
             }
         }
         for (let k: number = count - 2; k >= 0; k--) {
@@ -327,10 +372,15 @@ export class SplineBase extends LineBase {
         return ySpline;
     }
     /**
-     * To find the control points for spline.
+     * Calculates the control points for a spline segment.
      *
-     * @returns {void}
-     * @private
+     * @param {Points} point1 - The first data point.
+     * @param {Points} point2 - The second data point.
+     * @param {number} ySpline1 - The Y-value of the first spline point.
+     * @param {number} ySpline2 - The Y-value of the second spline point.
+     * @param {Series} series - The series associated with the data points.
+     * @returns {ControlPoints} The calculated control points.
+     * @public
      */
     public getControlPoints(point1: Points, point2: Points, ySpline1: number, ySpline2: number, series: Series): ControlPoints {
         let controlPoint1: ChartLocation;
@@ -352,13 +402,14 @@ export class SplineBase extends LineBase {
             controlPoint2 = new ChartLocation(xValue2 - ySpline2 / 3, yValue2 - ySplineDuplicate2 / 3);
             point = new ControlPoints(controlPoint1, controlPoint2);
             break;
-        case 'Monotonic':
+        case 'Monotonic': {
             const value: number = (xValue2 - xValue1) / 3;
             controlPoint1 = new ChartLocation(xValue1 + value, yValue1 + ySpline1 * value);
             controlPoint2 = new ChartLocation(xValue2 - value, yValue2 - ySpline2 * value);
             point = new ControlPoints(controlPoint1, controlPoint2);
             break;
-        default:
+        }
+        default: {
             const one3: number = 1 / 3.0;
             let deltaX2: number = (xValue2 - xValue1);
             deltaX2 = deltaX2 * deltaX2;
@@ -369,10 +420,15 @@ export class SplineBase extends LineBase {
             point = new ControlPoints(controlPoint1, controlPoint2);
             break;
         }
+        }
         return point;
     }
     /**
-     * calculate datetime interval in hours
+     * Calculates the date-time interval.
+     *
+     * @param {Series} series - The series for which the date-time interval needs to be calculated.
+     * @returns {number} The calculated date-time interval.
+     * @protected
      */
     protected dateTimeInterval(series: Series): number {
         const interval: IntervalType = series.xAxis.actualIntervalType;

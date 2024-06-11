@@ -97,18 +97,24 @@ export interface TextAreaModel extends ComponentModel{
 
     /**
      * Specifies the maximum number of characters allowed in TextArea.
+     *
+     * @aspType int?
      */
     maxLength?: number;
 
     /**
      * specifies the visible width of the textarea, measured in average character widths.
+     *
+     * @aspType int?
      */
-    columnsCount?: number;
+    cols?: number;
 
     /**
      * specifies the visible height of the textarea, measured in lines
+     *
+     * @aspType int?
      */
-    rowsCount?: number;
+    rows?: number;
 
     /**
      * Triggers when the TextArea component is created.

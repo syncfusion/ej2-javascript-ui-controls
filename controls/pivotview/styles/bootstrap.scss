@@ -1,2 +1,8 @@
-@import 'pivotview/bootstrap.scss';
-@import 'pivotfieldlist/bootstrap.scss';
+@import 'ej2-base/styles/definition/bootstrap.scss';
+@import 'pivotfieldlist/bootstrap-definition.scss';
+@import 'pivotview/bootstrap-definition.scss';
+@import 'pivotview/icons/bootstrap.scss';
+@import 'pivotview/all.scss';
+
+@import 'pivotfieldlist/icons/bootstrap.scss';
+@import 'pivotfieldlist/all.scss';

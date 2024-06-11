@@ -22,11 +22,11 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
             expect(rteObj.fontSize.default === null).toBe(true);
         });
         it(' Test the default value of width ', () => {
-            expect(rteObj.fontSize.width === "35px").toBe(true);
+            expect(rteObj.fontSize.width === "60px").toBe(true);
         });
 
         it(' Test the default value of items ', () => {
-            expect(rteObj.fontSize.items.length === 7).toBe(true);
+            expect(rteObj.fontSize.items.length === 8).toBe(true);
         });
 
     });
@@ -369,27 +369,27 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
                     which: 188
                 } as EventInit);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "12pt").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "10pt").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
                 expect((node.childNodes[0] as HTMLElement).style.fontSize === "8pt").toBe(true);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "8pt").toBe(true);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "").toBe(true);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "24pt").toBe(true);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
                 expect((node.childNodes[0] as HTMLElement).style.fontSize === "36pt").toBe(true);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
                 expect((node.childNodes[0] as HTMLElement).style.fontSize === "40pt").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "50pt").toBe(true);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
                 rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "36pt").toBe(true);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "24pt").toBe(true);
         });
         afterAll(() => {
             destroy(rteObj);

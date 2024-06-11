@@ -33,11 +33,14 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
  * @param {string} text - Specifies the text.
  * @param {number} x - Specifies the x value.
  * @param {number} y - Specifies the y value.
+ * @param {CircularGauge} gauge - Specifies the circular gauge.
+ * @param {string} type - Specifies the type
  * @returns {void}
  * @private */
 export function showTooltip(text: string, x: number, y: number, gauge: CircularGauge, type: string): void {
-    let tooltipRect: Rect = new Rect(gauge.margin.left, gauge.margin.top + 10, gauge.availableSize.width - (gauge.margin.left + gauge.margin.right),
-        gauge.availableSize.height - (gauge.margin.top - gauge.margin.bottom));
+    const tooltipRect: Rect = new Rect(gauge.margin.left, gauge.margin.top + 10,
+                                       gauge.availableSize.width - (gauge.margin.left + gauge.margin.right),
+                                       gauge.availableSize.height - (gauge.margin.top - gauge.margin.bottom));
     let id: string;
     let tooltip: HTMLElement;
     if (type === 'Title') {
@@ -81,12 +84,19 @@ export function showTooltip(text: string, x: number, y: number, gauge: CircularG
     }
 }
 
-/** @private */
+/**
+ * @param {Event} event - Specifies the event.
+ * @param {number} x - Specifies the x value.
+ * @param {number} y - Specifies the y value.
+ * @param {CircularGauge} gauge - Specifies the gauge.
+ * @param {boolean} isTitleTouch - Specifies the title touch with boolean.
+ * @returns {void}
+ * @private */
 export function titleTooltip(event: Event, x: number, y: number, gauge: CircularGauge, isTitleTouch: boolean): void {
     const targetId: string = (<HTMLElement>event.target).id;
     const elementArray: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-CircularGauge-Tooltip');
     if ((targetId === (gauge.element.id + '_CircularGaugeTitle')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
-        showTooltip(gauge.title, x, y, gauge, "Title");
+        showTooltip(gauge.title, x, y, gauge, 'Title');
     } else if ((<HTMLElement>event.target).textContent.indexOf('...') > -1 && targetId.indexOf('_gauge_legend_') > -1 &&
                 gauge.legendSettings.visible) {
         const axisIndex: number = parseInt(targetId.split(gauge.element.id + '_gauge_legend_Axis_')[1].split('_text_')[0], 10);
@@ -97,9 +107,9 @@ export function titleTooltip(event: Event, x: number, y: number, gauge: Circular
                 text = legends.originalText;
             }
         }
-        showTooltip(text, x, y, gauge, "LegendText");
-    } else if (elementArray.length > 0 && (elementArray[0].id.indexOf("Title_Tooltip") > -1 ||
-        elementArray[0].id.indexOf("Legend_Tooltip") > -1)) {
+        showTooltip(text, x, y, gauge, 'LegendText');
+    } else if (elementArray.length > 0 && (elementArray[0].id.indexOf('Title_Tooltip') > -1 ||
+        elementArray[0].id.indexOf('Legend_Tooltip') > -1)) {
         removeTooltip();
     }
     if (isTitleTouch) {
@@ -108,7 +118,9 @@ export function titleTooltip(event: Event, x: number, y: number, gauge: Circular
     }
 }
 
-/** @private */
+/**
+ * @returns {void}
+ * @private */
 export function removeTooltip(): void {
     if (document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0) {
         document.getElementsByClassName('EJ2-CircularGauge-Tooltip')[0].remove();

@@ -102,12 +102,11 @@ export class MsWordPaste {
         }
     }
 
-    private addDoubleBr(elm: HTMLElement) {
+    private addDoubleBr(elm: HTMLElement): void {
         const newline: HTMLElement = elm.querySelector('.Apple-interchange-newline');
         if (!isNOU(newline) && Browser.userAgent.indexOf('Chrome') !== -1 && newline.parentElement.nodeName === 'P' && elm !== newline.parentElement) {
-            for (let i = 0; i < elm.childNodes.length; i++) {
-                // eslint-disable-next-line
-                const node: Node = elm.childNodes[i];
+            for (let i: number = 0; i < elm.childNodes.length; i++) {
+                const node: Node = elm.childNodes[i as number];
                 if (node.nodeType === Node.COMMENT_NODE && node.nodeValue.includes('StartFragment')) {
                     const newElement: HTMLElement = document.createElement('p');
                     newElement.innerHTML = '<br>';
@@ -312,10 +311,9 @@ export class MsWordPaste {
     }
 
     private hexConversion(rtfData: string): { [key: string]: string | boolean | number }[] {
-        // eslint-disable-next-line
-        const picHead: RegExp = /\{\\pict[\s\S]+?\\bliptag\-?\d+(\\blipupi\-?\d+)?(\{\\\*\\blipuid\s?[\da-fA-F]+)?[\s\}]*?/;
-        // eslint-disable-next-line security/detect-non-literal-regexp
-        const pic: RegExp = new RegExp('(?:(' + picHead.source + '))([\\da-fA-F\\s]+)\\}', 'g');
+        const regExp: RegExpConstructor = RegExp;
+        const picHead: RegExp = new regExp('\\{\\\\pict[\\s\\S]+?\\\\bliptag-?\\d+(\\\\blipupi-?\\d+)?(\\{\\\\\\*\\\\blipuid\\s?[\\da-fA-F]+)?[\\s\\}]*?');
+        const pic: RegExp = new regExp('(?:(' + picHead.source + '))([\\da-fA-F\\s]+)\\}', 'g');
         const fullImg: RegExpMatchArray = rtfData.match(pic);
         let imgType: string;
         const result: { [key: string]: string | boolean | number }[] = [];
@@ -371,8 +369,8 @@ export class MsWordPaste {
     }
 
     private extractCropValue(crop: string, rtfData: string): number {
-        // eslint-disable-next-line security/detect-non-literal-regexp
-        const result: string = new RegExp('\\\\pic' + crop + '(\\-?\\d+)\\\\').exec(rtfData.replace(/\r\n\\/g, '\\').replace(/\n/g, '\\'))[1];
+        const regExp: RegExpConstructor = RegExp;
+        const result: string = new regExp('\\\\pic' + crop + '(\\-?\\d+)\\\\').exec(rtfData.replace(/\r\n\\/g, '\\').replace(/\n/g, '\\'))[1];
         return parseInt(result, 10);
     }
 
@@ -421,10 +419,9 @@ export class MsWordPaste {
         }
         let innerElement: string = elm.innerHTML;
         for (let i: number = 0; i < this.removableElements.length; i++) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            const regExpStartElem: RegExp = new RegExp('<' + this.removableElements[i as number] + '\\s*[^>]*>', 'g');
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            const regExpEndElem: RegExp = new RegExp('</' + this.removableElements[i as number] + '>', 'g');
+            const regExp: RegExpConstructor = RegExp;
+            const regExpStartElem: RegExp = new regExp('<' + this.removableElements[i as number] + '\\s*[^>]*>', 'g');
+            const regExpEndElem: RegExp = new regExp('</' + this.removableElements[i as number] + '>', 'g');
             innerElement = innerElement.replace(regExpStartElem, '');
             innerElement = innerElement.replace(regExpEndElem, '');
         }
@@ -935,8 +932,7 @@ export class MsWordPaste {
                 while (elem.parentElement) {
                     elem = elem.parentElement;
                     if (elem.attributes.getNamedItem('level')) {
-                        // eslint-disable-next-line
-                        if (parseInt(elem.attributes.getNamedItem('level').textContent, null) === collection[index].nestedLevel &&
+                        if (parseInt(elem.attributes.getNamedItem('level').textContent, 10) === collection[index as number].nestedLevel &&
                         lfo === collection[index as number].listFormatOverride) {
                             prevList = createElement('li');
                             prevList.appendChild(pElement);

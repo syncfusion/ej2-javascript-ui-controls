@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 import { Sparkline, IAxisRenderingEventArgs, ISeriesRenderingEventArgs, SparklineValueType } from '../index';
 import { ISparklinePointEventArgs, IMarkerRenderingEventArgs, IDataLabelRenderingEventArgs } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -67,13 +64,17 @@ export class SparklineRenderer {
     public negativePointIndexes: number[];
 
     /**
-     * Sparkline data calculations
+     * Sparkline data calculations.
+     *
+     * @param {Sparkline} sparkline - The Sparkline control.
      */
     constructor(sparkline: Sparkline) {
         this.sparkline = sparkline;
     }
     /**
      * To process the sparkline data.
+     *
+     * @returns {void}
      */
     public processData(): void {
         let data: object[] = <object[]>this.sparkline.dataSource;
@@ -105,6 +106,11 @@ export class SparklineRenderer {
     }
     /**
      * To process sparkline category data.
+     *
+     * @param {Object[]} data - The data array to process.
+     * @param {string} x - The name of the x-field.
+     * @param {string} y - The name of the y-field.
+     * @returns {void}
      */
     private processCategory(
         data: Object[] = <object[]>this.sparkline.dataSource, x: string = this.sparkline.xName, y: string = this.sparkline.yName): void {
@@ -123,6 +129,11 @@ export class SparklineRenderer {
     }
     /**
      * To process sparkline DateTime data.
+     *
+     * @param {Object[]} data - The data array to process.
+     * @param {string} x - The name of the x-field.
+     * @param {string} y - The name of the y-field.
+     * @returns {void}
      */
     private processDateTime(
         data: Object[] = <object[]>this.sparkline.dataSource, x: string = this.sparkline.xName, y: string = this.sparkline.yName): void {
@@ -139,6 +150,7 @@ export class SparklineRenderer {
      * To render sparkline series.
      *
      * @private
+     * @returns {void}
      */
     public renderSeries(): void {
         const spark: Sparkline = this.sparkline;
@@ -174,7 +186,12 @@ export class SparklineRenderer {
         spark.trigger('seriesRendering', argsData, seriesRenderingSuccess);
     }
     /**
-     * To render a range band
+     * To render a range band.
+     *
+     * @param {RangeBandSettingsModel} rangeBandSettings - The settings for the range band.
+     * @param {Element} group - The group element to render the range band.
+     * @param {number} index - The index of the range band.
+     * @returns {void}
      */
     private rangeBand(rangeBandSettings: RangeBandSettingsModel, group: Element, index: number): void {
         const model: Sparkline = this.sparkline;
@@ -209,7 +226,11 @@ export class SparklineRenderer {
         drawPath(this.sparkline, pathOption, group);
     }
     /**
-     * To render line series
+     * To render line series.
+     *
+     * @param {SparkValues[]} points - The data points for the line series.
+     * @param {ISeriesRenderingEventArgs} args - The rendering event arguments.
+     * @returns {void}
      */
     private renderLine(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         const spark: Sparkline = this.sparkline;
@@ -235,7 +256,11 @@ export class SparklineRenderer {
         this.sparkline.svgObject.appendChild(g);
     }
     /**
-     * To render pie series
+     * To render pie series.
+     *
+     * @param {SparkValues[]} points - The data points for the pie series.
+     * @param {ISeriesRenderingEventArgs} args - The rendering event arguments.
+     * @returns {void}
      */
     private renderPie(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         const spark: Sparkline = this.sparkline;
@@ -308,6 +333,15 @@ export class SparklineRenderer {
     }
     /**
      * To get special point color and option for Pie series.
+     *
+     * @param {SparkValues} temp - The data point for the special point.
+     * @param {Sparkline} spark - The sparkline instance.
+     * @param {PathOption} option - The option for the special point.
+     * @param {number} i - The index of the special point.
+     * @param {number} high - The high value.
+     * @param {number} low - The low value.
+     * @param {number} length - The total number of data points.
+     * @returns {void}
      */
     private getPieSpecialPoint(
         temp: SparkValues, spark: Sparkline, option: PathOption, i: number, high: number, low: number, length: number
@@ -332,7 +366,11 @@ export class SparklineRenderer {
         }
     }
     /**
-     * To render area series
+     * To render area series.
+     *
+     * @param {SparkValues[]} points - The data points for the area series.
+     * @param {ISeriesRenderingEventArgs} args - The rendering event arguments.
+     * @returns {void}
      */
     private renderArea(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         const spark: Sparkline = this.sparkline;
@@ -365,7 +403,11 @@ export class SparklineRenderer {
         this.sparkline.svgObject.appendChild(group);
     }
     /**
-     * To render column series
+     * To render column series.
+     *
+     * @param {SparkValues[]} points - The data points for the column series.
+     * @param {ISeriesRenderingEventArgs} args - The rendering event arguments.
+     * @returns {void}
      */
     private renderColumn(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         const spark: Sparkline = this.sparkline;
@@ -422,7 +464,11 @@ export class SparklineRenderer {
         this.sparkline.svgObject.appendChild(group);
     }
     /**
-     * To render WinLoss series
+     * To render WinLoss series.
+     *
+     * @param {SparkValues[]} points - The data points for the winloss series.
+     * @param {ISeriesRenderingEventArgs} args - The rendering event arguments.
+     * @returns {void}
      */
     private renderWinLoss(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         const spark: Sparkline = this.sparkline;
@@ -440,7 +486,7 @@ export class SparklineRenderer {
             temp = points[i as number];
             options.id = id + i;
             options.fill = (paletteLength) ? spark.palette[i % paletteLength] : ((temp.yVal === this.axisValue) ?
-            (this.sparkline.tiePointColor || '#a216f3') : ((temp.yVal > this.axisValue) ? args.fill || colors[i % colors.length] :
+                (this.sparkline.tiePointColor || '#a216f3') : ((temp.yVal > this.axisValue) ? args.fill || colors[i % colors.length] :
                     (spark.negativePointColor || '#e20f07')));
             options.stroke = (args.border.color) ? (args.border.color) : options.fill;
             options.rect = new Rect(temp.x, temp.y, temp.width, temp.height);
@@ -521,6 +567,17 @@ export class SparklineRenderer {
     }
     /**
      * To get special point color and option.
+     *
+     * @param {boolean} render - Indicates whether to render the special point.
+     * @param {SparkValues} temp - The data point for the special point.
+     * @param {Sparkline} spark - The sparkline instance.
+     * @param {PathOption} option - The option for the special point.
+     * @param {number} i - The index of the special point.
+     * @param {number} highPos - The position of the high value.
+     * @param {number} lowPos - The position of the low value.
+     * @param {number} length - The total number of data points.
+     * @param {string} visible - The visibility state of the special point.
+     * @returns {boolean} - Indicates whether the special point is rendered.
      */
     private getSpecialPoint(
         render: boolean, temp: SparkValues, spark: Sparkline, option: PathOption, i: number, highPos: number,
@@ -556,6 +613,9 @@ export class SparklineRenderer {
     }
     /**
      * To render data label for sparkline.
+     *
+     * @param {SparkValues[]} points - The data points for the series datalabels.
+     * @returns {void}
      */
     private renderLabel(points: SparkValues[]): void {
         const spark: Sparkline = this.sparkline;
@@ -647,6 +707,15 @@ export class SparklineRenderer {
     }
     /**
      * To get special point color and option.
+     *
+     * @param {boolean} render - Indicates whether to render the special point.
+     * @param {SparkValues} temp - The data point for the special point.
+     * @param {number} i - The index of the sparkline instance.
+     * @param {SparklineDataLabelSettingsModel} label - The options for the special point.
+     * @param {number} length - The total number of data points.
+     * @param {number} highPos - The position of the high value.
+     * @param {number} lowPos - The position of the low value.
+     * @returns {boolean} - Indicates whether the special point is rendered.
      */
     private getLabelVisible(
         render: boolean, temp: SparkValues, i: number, label: SparklineDataLabelSettingsModel, length: number,
@@ -672,7 +741,11 @@ export class SparklineRenderer {
         return render;
     }
     /**
-     * To format text
+     * To format text.
+     *
+     * @param {string} format - The format string to apply.
+     * @param {object} data - The data object to format.
+     * @returns {string} - The formatted text.
      */
     private formatter(format: string, data: object): string {
         if (isNullOrUndefined(format)) {
@@ -685,13 +758,19 @@ export class SparklineRenderer {
         return format;
     }
     /**
-     * To calculate min max for x and y axis
+     * To calculate min and max for x and y axis.
+     *
+     * @returns {void}
      */
     private axisCalculation(): void {
         this.findRanges(<object[]>this.sparkline.sparklineData);
     }
     /**
      * To find x axis interval.
+     *
+     * @param {Object[]} data - The data points.
+     * @param {string} x - The x-axis field name.
+     * @returns {number} - The calculated interval.
      */
     private getInterval(data: Object[], x: string): number {
         let interval: number = 1;
@@ -717,7 +796,13 @@ export class SparklineRenderer {
         return interval;
     }
     /**
-     * To find x axis interval.
+     * To find x axis interval for padding.
+     *
+     * @param {Object[]} data - The data points.
+     * @param {string} x - The x-axis field name.
+     * @param {SparklineValueType} type - The type of sparkline value.
+     * @param {number} delta - The delta values.
+     * @returns {number} - The calculated x-axis interval for padding.
      */
     private getPaddingInterval(data: Object[], x: string, type: SparklineValueType, delta: number): number {
         const interval: number = 1;
@@ -736,6 +821,9 @@ export class SparklineRenderer {
     }
     /**
      * To calculate axis ranges internally.
+     *
+     * @param {Object[]} data - The data points.
+     * @returns {void}
      */
     private findRanges(data: Object[]): void {
         const model: Sparkline = this.sparkline;
@@ -899,7 +987,9 @@ export class SparklineRenderer {
         this.visiblePoints = visiblePoints;
     }
     /**
-     * To render the sparkline axis
+     * To render the sparkline axis.
+     *
+     * @returns {void}
      */
     private drawAxis(): void {
         const spark: Sparkline = this.sparkline;
@@ -919,7 +1009,13 @@ export class SparklineRenderer {
         }
     }
     /**
-     * To trigger point render event
+     * To trigger point render event.
+     *
+     * @param {string} name - The name of the data point.
+     * @param {number} i - The index of the data point.
+     * @param {string} fill - The fill color of the data point.
+     * @param {SparklineBorderModel} border - The border settings of the data point.
+     * @returns {ISparklinePointEventArgs} - The event arguments for the point render event.
      */
     private triggerPointRender(name: string, i: number, fill: string, border: SparklineBorderModel): ISparklinePointEventArgs {
         const args: ISparklinePointEventArgs = {

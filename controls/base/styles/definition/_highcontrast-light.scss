@@ -39,7 +39,6 @@ $theme-name: 'highcontrast-light' !default;
 
 $font-family: 'Segoe UI', 'GeezaPro', 'DejaVu Serif', sans-serif, '-apple-system', 'BlinkMacSystemFont' !default;
 
-//Message Default
 $msg-color: $bg-base-100 !default;
 $msg-bg-color: $bg-base-0 !default;
 $msg-border-color: $bg-base-100 !default;
@@ -58,7 +57,6 @@ $msg-close-icon-color: $bg-base-100 !default;
 $msg-close-icon-color-alt1: $selection-bg !default;
 $msg-close-icon-color-alt2: $bg-base-0 !default;
 
-//Message success
 $msg-success-color: #fd0000 !default;
 $msg-success-bg-color: $bg-base-0 !default;
 $msg-success-border-color: $msg-success-color !default;
@@ -77,7 +75,6 @@ $msg-success-close-icon-color: #fd0000 !default;
 $msg-success-close-icon-color-alt1: $content-font !default;
 $msg-success-close-icon-color-alt2: $bg-base-0 !default;
 
-//Message warning
 $msg-warning-color: #ff5b04 !default;
 $msg-warning-bg-color: $bg-base-0 !default;
 $msg-warning-border-color: $msg-warning-color !default;
@@ -96,7 +93,6 @@ $msg-warning-close-icon-color: #ff5b04 !default;
 $msg-warning-close-icon-color-alt1: $content-font !default;
 $msg-warning-close-icon-color-alt2: $bg-base-0 !default;
 
-//Message Danger
 $msg-danger-color: #fd0000 !default;
 $msg-danger-bg-color: $bg-base-0 !default;
 $msg-danger-border-color: $msg-danger-color !default;
@@ -115,7 +111,6 @@ $msg-danger-close-icon-color: #fd0000 !default;
 $msg-danger-close-icon-color-alt1: $content-font !default;
 $msg-danger-close-icon-color-alt2: $bg-base-0 !default;
 
-//Message Info
 $msg-info-color: #22f8ff !default;
 $msg-info-bg-color: $bg-base-0 !default;
 $msg-info-border-color: $msg-info-color !default;
@@ -134,24 +129,19 @@ $msg-info-close-icon-color: #22f8ff !default;
 $msg-info-close-icon-color-alt1: $content-font !default;
 $msg-info-close-icon-color-alt2: $bg-base-0 !default;
 
-//App bar
-//Light
 $appbar-bg-color-alt1: #fff !default;
 $appbar-color-alt1: #000 !default;
 $appbar-border-color-alt1: #000 !default;
 $appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
 
-//Dark
 $appbar-bg-color-alt2: #fff !default;
 $appbar-color-alt2: #000 !default;
 $appbar-border-color-alt2: #000 !default;
 $appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
 
-//shadow
 $appbar-bottom-shadow: none !default;
 $appbar-top-shadow: none !default;
 
-//definition
 $font-size: 12px !default;
 $font-weight: normal !default;
 $font-path: 'common-images' !default;

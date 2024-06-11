@@ -1,7 +1,7 @@
 /***
  * Hijri parser
  */
-// eslint-disable-next-line
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace HijriParser {
     const dateCorrection: number[] = [28607, 28636, 28665, 28695, 28724, 28754, 28783, 28813, 28843, 28872, 28901, 28931, 28960, 28990,
         29019, 29049, 29078, 29108, 29137, 29167, 29196, 29226, 29255, 29285, 29315, 29345, 29375, 29404, 29434, 29463, 29492, 29522,
@@ -117,7 +117,7 @@ export namespace HijriParser {
             tYear -= 1;
             tMonth += 12;
         }
-        let yPrefix: number = Math.floor(tYear / 100.);
+        let yPrefix: number = Math.floor(tYear / 100);
         let julilanOffset: number = yPrefix - Math.floor(yPrefix / 4.) - 2;
         const julianNumber: number = Math.floor(365.25 * (tYear + 4716)) + Math.floor(30.6001 * (tMonth + 1)) + day - julilanOffset - 1524;
         yPrefix = Math.floor((julianNumber - 1867216.25) / 36524.25);
@@ -136,7 +136,7 @@ export namespace HijriParser {
         year = c - 4716;
         const modifiedJulianDate: number = julianNumber - 2400000;
         // date calculation for year after 2077
-        const iyear: number = 10631. / 30.;
+        const iyear: number = 10631 / 30;
         let z: number = julianNumber - 1948084;
         const cyc: number = Math.floor(z / 10631.);
         z = z - 10631 * cyc;

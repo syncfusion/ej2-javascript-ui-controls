@@ -1,16 +1,11 @@
 @include export-module('excel-filter-bootstrap4-icons') {
 
-  /*! component icons */
-
   .e-icon-check::before {
     content: '\e718';
   }
 
   #{&}.e-excelfilter {
-    .e-icon-filter::before {
-      content: '\e714';
-    }
-
+    .e-icon-filter::before,
     .e-excl-filter-icon::before {
       content: '\e714';
     }
@@ -19,10 +14,7 @@
       content: '\e748';
     }
     
-    .e-search-icon::before {
-      content: '\e724';
-    }
-
+    .e-search-icon::before,
     .e-ccsearch-icon::before {
       content: '\e724';
     }

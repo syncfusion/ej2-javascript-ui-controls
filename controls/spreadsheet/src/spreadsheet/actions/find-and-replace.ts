@@ -75,7 +75,7 @@ export class FindAndReplace {
                     findBtn.disabled = disable;
                 }
             }
-        }
+        };
         let dialogDiv: HTMLElement = args.dialogEle || this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
         if (args.isPublic) {
             this.findValue = args.findValue;
@@ -271,7 +271,7 @@ export class FindAndReplace {
         }
     }
 
-    private refreshFindDlg(args: { refreshFindDlg?: boolean }): void {
+    private refreshFindDlg(): void {
         const findDialog: HTMLElement = this.findDialog && this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
         if (findDialog) {
             const findToolInput: HTMLInputElement = findDialog.querySelector('.e-text-findNext-short') as HTMLInputElement;

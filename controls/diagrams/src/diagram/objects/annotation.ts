@@ -4,7 +4,7 @@ import { Point } from '../primitives/point';
 import { TextStyleModel, MarginModel } from '../core/appearance-model';
 import { PointModel } from '../primitives/point-model';
 import { HyperlinkModel, AnnotationModel } from '../objects/annotation-model';
-import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration, AnnotationType, LinkTarget } from '../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration, AnnotationType, LinkTarget, RotationReference } from '../enum/enum';
 import { AnnotationConstraints } from '../enum/enum';
 import { randomId } from '../utility/base-util';
 
@@ -165,6 +165,14 @@ export class Annotation extends ChildProperty<Annotation> {
      */
     @Property(0)
     public rotateAngle: number;
+
+    /**
+     * Gets or sets the reference mode for annotation rotation.
+     *
+     * @default 'Parent'
+     */
+    @Property('Parent')
+    public rotationReference: RotationReference;
 
     /**
      * Defines the appearance of the text

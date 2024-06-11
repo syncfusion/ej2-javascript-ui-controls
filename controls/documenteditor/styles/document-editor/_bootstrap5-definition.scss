@@ -2,7 +2,6 @@ $de-padding-half: 6px;
 $de-padding-half-bigger: 8px;
 $de-padding-full: 12px;
 $de-padding-full-bigger: 16px;
-
 $de-cmt-author-nme-padding-left: 12px;
 $de-cmt-author-nme-padding-left-big: 16px;
 $de-cmt-textbox-top-margin: 12px;
@@ -38,11 +37,8 @@ $de-border-dlg-clr-padding-bottom: 6px;
 $de-td-table-border-left: 5px;
 $de-border-dlg-preview-padding-left: 72px;
 $de-tbl-dlg-align-padding-bottom: 3px;
-
-// Hyperlink dialog
 $de-hyperlink-dlg-margin-top: 0 !default;
 $de-bigger-padding: 16px !default;
-
 $search-result-item-padding-top: 12px !default;
 $search-result-item-padding-bottom: 12px !default;
 $de-spellcheck-container-height: 140px !default;
@@ -448,9 +444,6 @@ $de-rp-btn-enforce-prtct-margin: 0 65px;
 $de-rp-nav-lbl: 0 16px;
 $de-rp-nav-btn-mrgn: 0 24px;
 $de-para-dlg-right-sub-container-top-margin: 0;
-
-//New Implementation
-
 $de-par-dlg-hdr-weight: 500 !default;
 $de-para-dlg-hdr-margin-bottom: 0 !default;
 $de-para-dlg-hdr-margin-top: 12px !default;
@@ -465,8 +458,6 @@ $de-de-rtl-btn-div-e-de-rtl-margin-right: 24px !default;
 $de-de-rtl-btn-div-e-de-rtl-margin-left: 12px !default;
 $de-para-dlg-spacing-div-mrgn-left: 40px !default;
 $de-svg-border-stroke: $content-text-color !default;
-
-// Color variable
 $de-background: $content-bg-color-alt1 !default;
 $search-result-highlight-bg-color: $transparent !default;
 $search-result-hightlight-bdr-clr-hvr: $primary !default;
@@ -553,9 +544,5 @@ $de-style-btn-color: $icon-color;
 $de-style-btn-hover-color: $white;
 $de-style-dlg-btn-border-color: $border-light;
 $de-style-dlg-btn-bg-color: $content-bg-color;
-
-// Table properties
 $de-row-height-bottom-margin: 4px;
-
-//Columns Dialog
 $de-column-presets-font-size: $text-6xl !default;

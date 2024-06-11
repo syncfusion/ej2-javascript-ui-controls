@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { EventHandler, Browser, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DateFormatOptions  } from '@syncfusion/ej2-base';
 import { ScrollElements, createScrollSvg } from './scrollbar-elements';
@@ -50,7 +49,7 @@ export class ScrollBar {
     /** @private */
     public browserName: string;
     /** @private */
-    public isPointer: Boolean;
+    public isPointer: boolean;
     /** @private */
     public isScrollUI: boolean;
     /** @private */
@@ -115,7 +114,7 @@ export class ScrollBar {
      * @param e
      */
 
-    private getMouseXY(e: PointerEvent | MouseWheelEvent): void {
+    private getMouseXY(e: PointerEvent | MouseEvent): void {
 
         let pageX: number;
         let pageY: number;
@@ -194,7 +193,7 @@ export class ScrollBar {
             const currentX: number = this.moveLength(this.previousXY, this.previousRectX);
             elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
             this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
-            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth, false);
+            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
             this.axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
             if (this.isLazyLoad) {
                 const thumbMove: string = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
@@ -265,7 +264,7 @@ export class ScrollBar {
      * @param currentWidth
      */
 
-    private setZoomFactorPosition(currentX: number, currentWidth: number, isRequire: boolean = true): void {
+    private setZoomFactorPosition(currentX: number, currentWidth: number): void {
         this.isScrollUI = true;
         const axis: Axis = this.axis;
         const circleRadius: number = this.axis.scrollbarSettings.height / 2;
@@ -276,7 +275,8 @@ export class ScrollBar {
         this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / axisSize;
         this.zoomPosition = currentScrollWidth > axisSize ? (1 - axis.zoomFactor) : currentX < (circleRadius + circleWidth) ? 0 :
             (currentX - (currentX - currentZPWidth <= 0 ? currentZPWidth : 0)) / axisSize;
-        this.zoomPosition = (this.component.enableRtl && !this.isVertical && !axis.isInversed) || (axis.isInversed && !(this.component.enableRtl && !this.isVertical)) ? 1 - (this.zoomPosition + axis.zoomFactor) : this.zoomPosition;
+        this.zoomPosition = (this.component.enableRtl && !this.isVertical && !axis.isInversed) || (axis.isInversed &&
+            !(this.component.enableRtl && !this.isVertical)) ? 1 - (this.zoomPosition + axis.zoomFactor) : this.zoomPosition;
     }
     /**
      * Handles the mouse move on scrollbar.
@@ -324,7 +324,7 @@ export class ScrollBar {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
                 this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
                 this.previousXY = mouseXY;
-                this.setZoomFactorPosition(currentX, elem.thumbRectWidth, false);
+                this.setZoomFactorPosition(currentX, elem.thumbRectWidth);
                 this.axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
             }
             this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
@@ -541,10 +541,11 @@ export class ScrollBar {
             this.previousStart = start as number;
             this.previousEnd = end as number;
         } else if (isCurrentStartEnd) {
-            let currentStart: number = Math.round(start as number);
+            const currentStart: number = Math.round(start as number);
             let currentEnd: number = Math.ceil(end as number);
             if (this.axis.valueType === 'Category') {
-                currentEnd -= (!this.axis.scrollbarSettings.enableZoom && currentEnd - currentStart > this.previousEnd - this.previousStart) ? (currentEnd - currentStart) - (this.previousEnd - this.previousStart) : 0;
+                currentEnd -= (!this.axis.scrollbarSettings.enableZoom && currentEnd - currentStart >
+                    this.previousEnd - this.previousStart) ? (currentEnd - currentStart) - (this.previousEnd - this.previousStart) : 0;
             }
             this.previousStart = start = currentStart;
             this.previousEnd = end = currentEnd;
@@ -781,11 +782,14 @@ export class ScrollBar {
             this.getLazyDefaults(axis);
         }
         this.isVertical = axis.orientation === 'Vertical';
-        const isRtlEnabled: boolean = (this.component.enableRtl && !this.isVertical && !axis.isInversed) || (axis.isInversed && !(this.component.enableRtl && !this.isVertical));
+        const isRtlEnabled: boolean = (this.component.enableRtl && !this.isVertical && !axis.isInversed) ||
+            (axis.isInversed && !(this.component.enableRtl && !this.isVertical));
         this.zoomFactor = this.isLazyLoad ? this.zoomFactor : axis.zoomFactor;
-        this.zoomPosition = this.isLazyLoad ? isRtlEnabled ? 1 - (this.zoomPosition + this.zoomFactor) : this.zoomPosition : isRtlEnabled ? 1 - (axis.zoomPosition + axis.zoomFactor) : axis.zoomPosition;
+        this.zoomPosition = this.isLazyLoad ? isRtlEnabled ? 1 - (this.zoomPosition + this.zoomFactor) : this.zoomPosition : isRtlEnabled ?
+            1 - (axis.zoomPosition + axis.zoomFactor) : axis.zoomPosition;
         let currentWidth: number = this.zoomFactor * (this.isVertical ? axis.rect.height : axis.rect.width);
-        currentWidth = (this.isLazyLoad && !this.axis.scrollbarSettings.enableZoom) || currentWidth > minThumbWidth ? currentWidth : minThumbWidth;
+        currentWidth = (this.isLazyLoad && !this.axis.scrollbarSettings.enableZoom) ||
+            currentWidth > minThumbWidth ? currentWidth : minThumbWidth;
         this.scrollX = axis.rect.x;
         this.scrollY = axis.rect.y;
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;
@@ -793,8 +797,9 @@ export class ScrollBar {
         const currentX: number = this.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
         const minThumbX: number = (this.width - minThumbWidth - circleRadius);
         this.scrollElements.thumbRectX = currentX > minThumbX ? minThumbX : currentX < circleRadius ? circleRadius : currentX;
-        this.scrollElements.thumbRectWidth = this.isThumbDrag ? this.scrollElements.thumbRectWidth : ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
-            ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;
+        this.scrollElements.thumbRectWidth = this.isThumbDrag ? this.scrollElements.thumbRectWidth :
+            ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
+                ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;
     }
 
     /**

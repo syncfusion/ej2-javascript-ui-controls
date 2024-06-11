@@ -100,14 +100,28 @@
     color: $dialog-hover-icon-color;
   }
 
+  .e-dlg-header-content .e-dlg-closeicon-btn:not(:hover) {
+    @if $skin-name == 'fluent2' {
+      color: $dialog-icon-color;
+    }
+  }
+
   .e-dlg-header-content .e-dlg-closeicon-btn:hover {
-    background-color: $dialog-closeicon-btn-hover-color;
+    @if $skin-name != 'fluent2' {
+      background-color: $dialog-closeicon-btn-hover-color;
+    }
+    @else {
+      color: $dialog-hover-icon-color;
+    }
   }
 
   .e-dlg-header-content .e-dlg-closeicon-btn:active {
     background-color: $dialog-closeicon-btn-active-color;
     @if $skin-name == 'FluentUI' {
       outline: none;
+    }
+    @if $skin-name == 'fluent2' {
+      color: $dialog-active-icon-color;
     }
   }
 

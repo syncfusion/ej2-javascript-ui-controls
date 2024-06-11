@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
 /**
  * Numeric Range.
  *
@@ -11,11 +10,21 @@ export class DoubleRange {
     private mEnd: number;
 
     //private mIsEmpty: boolean;
-    /** @private */
+    /**
+     * Gets the start value.
+     *
+     * @returns {number} - The start value.
+     * @private
+     */
     get start(): number {
         return this.mStart;
     }
-    /** @private */
+    /**
+     * Gets the end value.
+     *
+     * @returns {number} - The end value.
+     * @private
+     */
     get end(): number {
         return this.mEnd;
     }
@@ -23,12 +32,22 @@ export class DoubleRange {
       get isEmpty(): boolean {
          return this.mIsEmpty;
      }*/
-    /** @private */
+    /**
+     * Gets the delta value.
+     *
+     * @returns {number} - The delta value.
+     * @private
+     */
     get delta(): number {
         return (this.mEnd - this.mStart);
     }
 
-    /** @private */
+    /**
+     * Gets the median value.
+     *
+     * @returns {number} - The median value.
+     * @private
+     */
     get median(): number {
         return this.mStart + (this.mEnd - this.mStart) / 2;
     }

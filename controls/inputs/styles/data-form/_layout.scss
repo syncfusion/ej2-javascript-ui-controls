@@ -143,6 +143,7 @@
       border: $form-group-border-none;
       padding: $form-padding-zero;
       margin: $form-margin-zero;
+      margin-top: $form-layout-margin-top;
 
       #{if(&, '&', '*')} .e-group-title {
         position: $form-group-title-position;
@@ -225,10 +226,6 @@
 
     > :first-child.e-form-layout {
       margin-top: 0;
-    }
-
-    #{if(&, '&', '*')} .e-form-group-layout {
-      display: grid;
     }
   }
 }

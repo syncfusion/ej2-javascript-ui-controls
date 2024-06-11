@@ -263,3 +263,19 @@ export interface CircularChart3DTooltipRenderEventArgs {
     /** Defines the tooltip template. */
     template: string | Function;
 }
+
+/**
+ * Interface representing attributes for a 3D circular chart polyline.
+ */
+export interface CircularChart3DPolyLineAttributes {
+    /**  Unique identifier for the polyline. */
+    id: string,
+    /** The dash pattern of the polyline. */
+    'stroke-dasharray': string,
+    /** The width of the polyline stroke. */
+    'stroke-width': number,
+    /** The color of the polyline stroke. */
+    stroke: string,
+    /** The data attribute for the polyline. */
+    d: string
+}

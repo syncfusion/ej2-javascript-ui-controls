@@ -122,9 +122,6 @@ export class HtmlExport {
         } else {
             blockStyle += this.endTag(this.getStyleName(paragraph[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]]));
         }
-        if (paragraph[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]]) {
-            blockStyle += '<p class="iscreatedusinghtmlspantag"><span>iscreatedusinghtmlspantag</span></p>';
-        }
         return blockStyle;
     }
     private closeList(): string {
@@ -227,7 +224,7 @@ export class HtmlExport {
         while (paragraph[inlinesProperty[this.keywordIndex]].length > i) {
             inline = paragraph[inlinesProperty[this.keywordIndex]][i];
             if (inline.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
-                blockStyle += this.serializeContentInlines(inline, blockStyle);
+                blockStyle = this.serializeContentInlines(inline, blockStyle);
                 i++;
                 continue;
             }
@@ -293,7 +290,7 @@ export class HtmlExport {
         return blockStyle;
     }
     private serializeContentInlines(inline: any, inlineStyle: string): string {
-        inlineStyle += this.serializeInlines(inline, inlineStyle);
+        inlineStyle = this.serializeInlines(inline, inlineStyle);
         return inlineStyle;
     }
     // Serialize Span

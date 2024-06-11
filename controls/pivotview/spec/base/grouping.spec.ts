@@ -8,13 +8,16 @@ import {
 import { Grid } from '@syncfusion/ej2-grids';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 import { DrillThrough } from '../../src/pivotview/actions';
+import { Grouping } from '../../src/common/popups/grouping';
+import { DataSourceSettingsModel } from '../../src/model/datasourcesettings-model';
+import { getMemoryProfile, inMB, profile } from '../common.spec';
 
 describe('Group By Date feature', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -346,7 +349,7 @@ describe('Group By Date feature', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
                 return;
             }
             if (document.getElementById(elem.id)) {
@@ -403,7 +406,7 @@ describe('Group By Date feature', () => {
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Asia');
                 done();
             }, 100);
-        });        
+        });
         it('Check group settings updated using an proptery', (done: Function) => {
             pivotGridObj.dataSourceSettings.groupSettings = [{
                 name: 'Region', type: 'Custom', customGroups: [{

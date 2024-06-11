@@ -1,13 +1,10 @@
 /*! Form material 3 theme wise override definitions and variables */
-// form field styles
 $field-label-color: $content-text-color-alt1 !default;
 $field-label-font-size: 12px !default;
 $field-label-margin-bottom: 4px !default;
 $field-label-font-weight: 400 !default;
 $form-layout-margin-top: 20px !default;
 $field-label-right-margin-top: 6px !default;
-
-// group title styles
 $group-title-color: $content-text-color-alt2 !default;
 $group-title-border-color: $border-light;
 $form-group-border-none: none !default;
@@ -24,13 +21,9 @@ $form-group-title-border-left: 0 !default;
 $form-group-title-border-width: 100% !default;
 $form-group-title-border-height: 1px !default;
 $form-group-title-border-bottom-style: 1px solid $group-title-border-color !default;
-
-//tooltip styles
 $form-tooltip-background-color: var(--danger-light, #f9dedc) !default;
 $form-tooltip-color: var(--danger, #b3261e) !default;
 $form-validation-message-font-size: 12px;
-
-// form common styles
 $form-display-flex: flex !default;
 $form-label-top-direction: column !default;
 $form-label-text-align: center !default;

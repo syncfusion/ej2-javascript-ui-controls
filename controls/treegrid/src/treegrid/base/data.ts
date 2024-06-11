@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined, setValue, getValue, Fetch, addClass, removeClass } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, setValue, getValue, addClass, removeClass } from '@syncfusion/ej2-base';
 import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption, ParamOption } from '@syncfusion/ej2-data';
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
@@ -97,7 +97,8 @@ export class DataManipulation {
      * @returns {void}
      */
     public convertToFlatData(data: Object): void {
-        this.parent.flatData = <Object[]>(Object.keys(data).length === 0 && !(this.parent.dataSource instanceof DataManager) ?
+        this.parent.flatData = <Object[]>(!isNullOrUndefined(data) && Object.keys(data).length === 0
+            && !(this.parent.dataSource instanceof DataManager) ?
             this.parent.dataSource : []);
         this.parent.parentData = [];
         if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager && !(data instanceof Array)) {

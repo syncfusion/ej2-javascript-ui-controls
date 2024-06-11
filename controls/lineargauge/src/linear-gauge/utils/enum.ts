@@ -62,6 +62,12 @@ export type LinearGaugeTheme =
     'Fluent' |
     /**  Render the linear gauge with Fluent dark theme. */
     'FluentDark'|
+    /** Renders the linear gauge with Fluent2 theme. */
+    'Fluent2' |
+    /**  Render the linear gauge with Fluent2 dark theme. */
+    'Fluent2Dark'|
+    /**  Render the linear gauge with Fluent2 high contrast theme. */
+    'Fluent2HighContrast'|
     /** Renders the linear gauge with Material3 theme. */
     'Material3' |
     /** Renders the linear gauge with Material3Dark theme. */

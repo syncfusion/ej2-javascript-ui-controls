@@ -376,7 +376,7 @@ describe('Chart Control Series', () => {
             loaded = (args: Object): void => {
 
                 let svg: HTMLElement = document.getElementById('container_Series_0');
-                expect(svg.getAttribute('d') == '').toBe(true); done();
+                expect(svg.getAttribute('d') !== '').toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.series[0].dataSource = [{
@@ -390,7 +390,7 @@ describe('Chart Control Series', () => {
         it('Single data point with range', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('container_Series_0');
-                expect(svg.getAttribute('d') == '').toBe(true);
+                expect(svg.getAttribute('d') !== '').toBe(true);
                 let xAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels0');
                 expect(xAxisLabelCollection.childNodes.length == 3).toBe(true);
                 let yAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels1');
@@ -870,7 +870,7 @@ describe('Chart Control Series', () => {
         it('With single data point', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('container_Series_0');
-                expect(svg.getAttribute('d') == '').toBe(true); done();
+                expect(svg.getAttribute('d') !== '').toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.series[0].dataSource = [{
@@ -884,7 +884,7 @@ describe('Chart Control Series', () => {
         it('Single data point with range', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg = document.getElementById('container_Series_0');
-                expect(svg.getAttribute('d') == '').toBe(true);
+                expect(svg.getAttribute('d') !== '').toBe(true);
                 let xAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels0');
                 expect(xAxisLabelCollection.childNodes.length == 3).toBe(true);
                 let yAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels1');

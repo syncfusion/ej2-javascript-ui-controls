@@ -235,13 +235,16 @@
     }
   }
 
+  .e-ddl.e-popup.e-popup-open .e-list-item.e-disabled {
+    opacity: .7;
+    pointer-events: none;
+  }
+
   ejs-autocomplete,
   ejs-combobox,
   ejs-dropdownlist {
     display: block;
   }
-
-  // Small Size
 
   .e-small .e-ddl#{&}.e-popup,
   .e-input-group.e-ddl.e-small {
@@ -269,7 +272,6 @@
     }
   }
 
-  //touch small
   .e-bigger.e-small .e-ddl#{&}.e-popup,
   .e-bigger .e-input-group.e-ddl.e-small {
     #{if(&, '&', '*')} .e-list-item {

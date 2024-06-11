@@ -17,34 +17,6 @@
             box-sizing: $panel-box-sizing;
           }
         }
-      }
-    }
-
-    & .e-panel.e-dragging {
-      &:active {
-        @if ($skin-name == 'tailwind') {
-          background: $content-bg-color;
-          box-shadow: $panel-active-drag-box-shadow;
-        }
-      }
-    }
-
-    & .e-panel {
-      background: $panel-background;
-      box-shadow: $panel-box-shadow;
-      box-sizing: $panel-box-sizing;
-      position: $panel-position;
-
-      &:active {
-        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
-          background: $panel-active-background;
-        }
-      }
-
-      & .e-panel-container {
-        & .e-panel-header {
-          color: $panel-header-color;
-        }
 
         & .e-resize.e-single {
           background: none;
@@ -117,11 +89,26 @@
           }
         }
       }
-    }
 
-    .e-panel.e-bigger {
-      & .e-panel-header {
-        color: $panel-bigger-header-color;
+      &:active {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+          background: $panel-active-background;
+        }
+      }
+
+      &.e-dragging {
+        &:active {
+          @if ($skin-name == 'tailwind') {
+            background: $content-bg-color;
+            box-shadow: $panel-active-drag-box-shadow;
+          }
+        }
+      }
+
+      &.e-bigger {
+        & .e-panel-header {
+          color: $panel-bigger-header-color;
+        }
       }
     }
   }

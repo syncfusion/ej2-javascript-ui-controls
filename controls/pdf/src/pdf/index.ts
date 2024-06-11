@@ -11,6 +11,7 @@ export * from './core/pdf-page';
 export * from './core/pdf-outline';
 export * from './core/pdf-parser';
 export * from './core/pdf-primitives';
+export * from './core/pdf-page-import-options';
 export * from './core/predictor-stream';
 export * from './core/utils';
 export * from './core/annotations/annotation-collection';

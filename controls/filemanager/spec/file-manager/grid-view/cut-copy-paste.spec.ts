@@ -2487,7 +2487,7 @@ describe('FileManager control Details view', () => {
             let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[4].querySelector('.e-fe-grid-name'), li[4].querySelector('.e-fe-grid-name'), rect[0].x + 10, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let cloneElementName=document.querySelector('.e-fe-clone').querySelector('.e-fe-name').innerHTML.split('.').slice(0, -1).join('.');
-            let selectedGridRow=feObj.detailsviewModule.gridObj.getSelectedRows()[0].querySelector('.e-fe-text').innerHTML;
+            let selectedGridRow=feObj.detailsviewModule.gridObj.getSelectedRows()[0].querySelector('.e-fe-grid-name').innerHTML;
             expect(cloneElementName === selectedGridRow).toBe(true);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[4].querySelector('.e-fe-grid-name'), li[4].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
             mouseup.type = 'mouseup'; mouseup.currentTarget = document;

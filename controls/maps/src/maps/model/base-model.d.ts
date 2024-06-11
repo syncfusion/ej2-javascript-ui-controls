@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Alignment, LegendPosition, LegendType, LegendMode, ShapeLayerType, Type, MarkerType, Orientation, MapAjax } from '../../index';import { SmartLabelMode, IntersectAction } from '../../index';import { Theme } from './theme';import { Point, GeoLocation, Coordinate } from '../utils/helper';import { BingMapType, LegendArrangement, LegendShape, BubbleType, StaticMapType, ToolbarItem } from '../utils/enum';import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Alignment, LegendPosition, LegendType, LegendMode, Type, MarkerType, Orientation, MapAjax } from '../../index';import { SmartLabelMode, IntersectAction } from '../../index';import { Theme } from './theme';import { Point, GeoLocation, Coordinate } from '../utils/helper';import { LegendArrangement, LegendShape, BubbleType, ToolbarItem } from '../utils/enum';import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
 
 /**
  * Interface for a class Annotation
@@ -174,7 +174,7 @@ export interface ZoomToolbarButtonSettingsModel {
     /**
      * Gets or sets the radius of the button. This property is used to modify the size of the button.
      *
-     * @default 30
+     * @default null
      */
     radius?: number;
 
@@ -1237,61 +1237,6 @@ export interface ZoomSettingsModel {
     enableSelectionZooming?: boolean;
 
     /**
-     * Gets or sets the orientation of the zoom toolbar.
-     *
-     * @default Horizontal
-     * @deprecated
-     */
-    toolBarOrientation?: Orientation;
-
-    /**
-     * Gets or sets the color for the toolbar in maps.
-     *
-     * @default null
-     * @deprecated
-     */
-    color?: string;
-
-    /**
-     * Gets or sets the color for the zoom toolbar when the mouse has hovered on toolbar element in maps.
-     *
-     * @default null
-     * @deprecated
-     */
-    highlightColor?: string;
-
-    /**
-     * Gets or sets the color for the zooming toolbar when clicking the zooming toolbar in maps.
-     *
-     * @default null
-     * @deprecated
-     */
-    selectionColor?: string;
-
-    /**
-     * Gets or sets the position type of toolbar when it is placed horizontally.
-     *
-     * @default Far
-     * @deprecated
-     */
-    horizontalAlignment?: Alignment;
-
-    /**
-     * Gets or sets the position type of toolbar when it is placed vertically.
-     *
-     * @default Near
-     * @deprecated
-     */
-    verticalAlignment?: Alignment;
-
-    /**
-     * Gets or sets the items that are to be shown in the zooming toolbar of the maps. Zoom-in, zoom-out and reset buttons are displayed by default.
-     *
-     * @deprecated
-     */
-    toolbars?: string[];
-
-    /**
      * Enables or disables the mouse wheel zooming in maps.
      *
      * @default true
@@ -2015,40 +1960,6 @@ export interface LayerSettingsModel {
      * @default Geographic
      */
     geometryType?: GeometryType;
-
-    /**
-     * Gets or sets the Bing map type for the layer. If you set GeoJSON data in the map and set the `BingMapType` value without setting the layer type as "Bing",
-     * then the map will be rendered based on the provided shape data since the default layer type will be set as "Geometry".
-     *
-     * @deprecated
-     * @default Aerial
-     */
-    bingMapType?: BingMapType;
-
-    /**
-     * Gets or sets the type of the static maps.
-     *
-     * @deprecated
-     * @default RoadMap
-     */
-    staticMapType?: StaticMapType;
-
-    /**
-     * Gets or sets the key for the online map provider to render in the layer of the maps.
-     *
-     * @deprecated
-     * @default ''
-     */
-    key?: string;
-
-    /**
-     * Gets or sets the type of the layer in maps. If we use layer type with shape data property in layer of the maps
-     * then map will render based on the provided layer type.
-     *
-     * @deprecated
-     * @default Geometry
-     */
-    layerType?: ShapeLayerType;
 
     /**
      * Gets or sets the URL of the online map providers.

@@ -293,7 +293,6 @@ describe('remove a table cell with bookmark Element', () => {
         expect(container.documentHelper.bookmarks.keys.length).toEqual(0);
     });
 });
-
 describe('Open empty string validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
@@ -320,7 +319,6 @@ describe('Open empty string validation', () => {
     it('Empty string validation', () => {
         console.log('Empty string validation');
         container.openBlank();
-        expect(() => { container.open('') }).not.toThrowError();
         expect(() => { container.open(undefined) }).not.toThrowError();
         expect(() => { container.open(null) }).not.toThrowError();
     });

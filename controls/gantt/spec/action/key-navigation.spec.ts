@@ -1,5 +1,5 @@
-import { Gantt, Selection, Edit, Toolbar,Filter } from '../../src/index';
-import { projectData1, splitTasksData,exportData, editingData} from '../base/data-source.spec';
+import { Gantt, Selection,UndoRedo, Edit, Toolbar,Filter, Sort } from '../../src/index';
+import { projectData1, splitTasksData,exportData, editingData, resourcesData, cellEditData} from '../base/data-source.spec';
 import { IKeyPressedEventArgs } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { Browser, getValue } from '@syncfusion/ej2-base';
@@ -662,5 +662,165 @@ describe('Gantt Selection support', () => {
           });
           
     });
+    describe('Gantt editing action', () => {
+        let ganttObj: Gantt;
+        let interval: number;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: cellEditData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        notes: 'Notes',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        resourceInfo: 'Resource',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    resourceIDMapping: 'resourceId',
+                    resourceNameMapping: 'resourceName',
+                    resources: resourcesData,
+                    allowSelection: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    selectionSettings: {
+                        mode: 'Cell',
+                        type: 'Multiple',
+                        enableToggle: false
+                    },
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    editDialogFields: [
+                        { type: 'General' },
+                        { type: 'Dependency' },
+                        { type: 'Resources' },
+                        { type: 'Notes' },
+                    ],
+                    splitterSettings: {
+                        columnIndex: 9
+                    },
+                    allowUnscheduledTasks: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    columns: [
+                        { field: 'TaskID', width: 60 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Duration', width: 100 },
+                        { field: 'Predecessor', width: 100 },
+                        { field: 'Progress', width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Resource', width: 100 },
+                        { field: 'Notes', width: 100 },
+                        { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                    ],
+                    
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Editing duration column', () => {
+            let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+            triggerMouseEvent(duration, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+            input.value = 5;
+            let args: any = { action: 'saveRequest', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(5);
+        });
+        it('home key testing', () => {
+            let args: any = { action: 'home', preventDefault: preventDefault };
+            ganttObj.selectedRowIndex = 0;
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.selectedRowIndex).toBe(0);
+        });
+        it('delete  record',()=>{
+            ganttObj.selectionModule.selectCell({ cellIndex: 1, rowIndex: 1 });
+            let args: any = { action: 'delete', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.currentViewData.length).toBe(6)
+        }); 
+        it('focus  record',()=>{
+            let args: any = { action: 'focusTask', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.currentViewData.length).toBe(6)
+        });
+    });
+    
+    describe('Gantt undo redo action for new record', () => {
+        Gantt.Inject(Sort,UndoRedo,Edit,Toolbar, Selection );
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings:{
+                        allowAdding: true,
+                        allowEditing:true,
+                        allowDeleting: true
+                    },
+                    enableUndoRedo: true,
+                    undoRedoActions:['Add','Edit','Delete'],
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    //sortSettings: { columns: [{ field: 'TaskID', direction: 'Ascending' }, { field: 'TaskName', direction: 'Ascending' }] },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    toolbar:['Undo','Redo'],
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
 
-
+        it('Undo action for Add new record', () => {
+            ganttObj.actionComplete = function (args: any): void {
+                if(args.requestType === 'delete') {
+                    expect(ganttObj.flatData.length).toBe(41);
+                }
+            };
+            ganttObj.addRecord();
+            let args: any = { action: 'undo', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+        });
+        it('Redo actin for add record', () => {
+            ganttObj.actionComplete = function (args: any): void {
+                if(args.requestType === 'add') {
+                    expect(ganttObj.flatData.length).toBe(42);
+                }
+            };
+            let args: any = { action: 'redo', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            
+        });
+    });

@@ -3,5 +3,9 @@
     & .e-collapse-rule::before {
       content: '\e907';
     }
+
+    & .e-drag-qb-rule::before {
+      content: '\e330';
+    }
   }
 }

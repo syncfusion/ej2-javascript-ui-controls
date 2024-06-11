@@ -125,7 +125,7 @@ export class Year extends ViewBase implements IRenderer {
             else {
                 tr.appendChild(createElement('th', { innerHTML: this.parent.getDayNames('narrow')[currentWeek.getDay()] }));
             }
-            let nextDay = new Date(currentWeek.getTime() + util.MS_PER_DAY);
+            const nextDay: Date = new Date(currentWeek.getTime() + util.MS_PER_DAY);
             currentWeek = nextDay.getDate() === currentWeek.getDate() ? util.addDays(nextDay, 1) : nextDay;
         }
         thead.appendChild(tr);

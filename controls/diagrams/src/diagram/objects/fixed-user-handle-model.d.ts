@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { Margin } from '../core/appearance';import { MarginModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { PointModel } from '../primitives/point-model';import { FixedUserHandleAlignment } from '../enum/enum';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { Margin } from '../core/appearance';import { MarginModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { PointModel } from '../primitives/point-model';import { FixedUserHandleAlignment } from '../enum/enum';import { DiagramTooltipModel } from '../objects/tooltip-model';import { DiagramTooltip } from '../objects/tooltip';
 
 /**
  * Interface for a class FixedUserHandle
@@ -89,6 +89,13 @@ export interface FixedUserHandleModel {
      * @default new Margin(0,0,0,0)
      */
     padding?: MarginModel;
+
+    /**
+     * Used to show tooltip for fixed user handle on mouse over.
+     *
+     * @default {}
+     */
+    tooltip?: DiagramTooltipModel;
 
 }
 

@@ -1,4 +1,3 @@
-//default
 $tbar-skin: 'highcontrast' !default;
 $tbar-zero-value: 0 !default;
 $tbar-icons-bgr-font-size: 14px !default;
@@ -71,12 +70,10 @@ $tbar-hover-border-color: $hover-border !default;
 $tbar-focus-border-color: $tbar-hover-border-color !default;
 $tbar-focus-bg: inherit !default;
 $tbar-press-font: $selection-font !default;
-
 $tbar-active-font-color: $tbar-press-font !default;
 $tbar-border-nav-type: solid !default;
 $tbar-border-nav-active-type: solid !default;
 $tbar-btn-border: 2px solid $bg-base-0 !default;
-
 $tbar-box-shadow: none !default;
 $tbar-border-type: solid !default;
 $tbar-separator-size: 1px !default;
@@ -90,7 +87,6 @@ $tbar-item-nrml-minwidth: 34px !default;
 $tbar-bgr-item-size: 49px !default;
 $tbar-btn-font-size: 16px !default;
 $tbar-btn-txt-font-size: 14px !default;
-
 $tbar-item-bgr-padding: 0  1.5px !default;
 $tbar-item-nrml-padding: 0 1px !default;
 $tbar-btn-nrml-padding: 0 !default;
@@ -108,7 +104,6 @@ $btn-txt-nrml-padding: 0 12px 0 8px !default;
 $btn-txt-bgr-padding: 0 15px 0 10px !default;
 $btn-rtl-txt-nrml-padding: 0 8px 0 12px !default;
 $btn-rtl-txt-bgr-padding: 0 10px 0 15px !default;
-
 $tbar-item-pop-nrml-padding: 0 !default;
 $tbar-item-pop-bgr-padding: 0 !default;
 $tbar-pop-btn-bgr-padding: 0 12.5px 0 0 !default;
@@ -117,7 +112,6 @@ $tbar-pop-icon-bgr-padding: 0 12.5px !default;
 $tbar-pop-icon-nrml-padding: 0 10px !default;
 $tbar-pop-btn-txt-nrml-pad: 0 10px !default;
 $tbar-pop-btn-txt-bgr-pad: 0 12.5px !default;
-
 $tbar-nav-press-border: 0 !default;
 $tbar-nav-hover-border: 1px solid $hover-border !default;
 $tbar-nav-focus-border: 0 !default;
@@ -152,15 +146,12 @@ $tbar-multirow-items-mrgn-bigger: 12.5px !default;
 $tbar-multirow-items-mrgn-small: 10px !default;
 $tbar-multirow-item-top-btm-mrgn-bigger: 1.5px 0 !default;
 $tbar-multirow-item-top-btm-mrgn-small: 1px 0 !default;
-
 $tbar-bgr-btn-text-font-size: 14px !default;
 $tbar-bgr-btn-icon-font-size: 16px !default;
 $tbar-bgr-btn-focus-padding: 0 !default;
-
 $tbar-nrml-btn-border-radius: 0 !default;
 $tbar-nrml-btn-focus-padding: 0 !default;
 $tbar-nrml-btn-focus-outline: none !default;
-
 $tbar-btn-icons-focus-color: $hover-font !default;
 $tbar-btn-text-focus-color: $hover-font !default;
 $tbar-btn-focus-border-color: $bg-base-0 !default;
@@ -176,14 +167,12 @@ $tbar-btn-pressed-text-color: $selection-font !default;
 $tbar-btn-pressed-focus-box-shadow: none !default;
 $tbar-btn-pressed-bg: $selection-bg !default;
 $tbar-flat-btn-active-box-shadow: none !default;
-
 $tbar-ext-btn-focus-padding: 0 !default;
 $tbar-ext-btn-icon-padding: 0 !default;
 $tbar-ext-btn-icon-font-size: 14px !default;
 $tbar-ext-btn-focus-box-shadow: none !default;
 $tbar-ext-btn-hover-border-color: $hover-border !default;
 $tbar-ext-btn-border: 2px solid $bg-base-0 !default;
-
 $tbar-popup-icon-font-size: 12px !default;
 $tbar-popup-text-btn-icon-padding: 0 !default;
 $tbar-popup-bgr-text-btn-icon-padding: 0 !default;
@@ -221,13 +210,9 @@ $tbar-popup-nav-pressed-border-size: 0 0 0 1px !default;
 $tbar-popup-nav-pressed-focus-border-color: $bg-base-0 !default;
 $tbar-popup-nav-pressed-focus-border-size: 2px !default;
 $tbar-popup-btn-hover-border-size: 2px !default;
-
 @mixin tbar-btn-animation {
   content: '';
 }
-
 @mixin tbar-btn-animation-after {
   content: '';
 }
-
-//enddefault

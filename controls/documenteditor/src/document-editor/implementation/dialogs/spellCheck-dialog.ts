@@ -161,8 +161,8 @@ export class SpellCheckDialog {
             this.parent.spellCheckerModule.checkForNextError();
             this.documentHelper.hideDialog();
             hideSpinner(this.documentHelper.dialog.element);
-            this.selectedText = undefined;
             this.parent.spellCheckerModule.isChangeAll = false;
+            this.selectedText = undefined;
         }
     };
     /**

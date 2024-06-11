@@ -7,7 +7,6 @@ import {
 import { isNullOrUndefined, AnimationOptions, Animation, animationMode } from '@syncfusion/ej2-base';
 import { FontModel, DataLabelSettingsModel, ILabelRenderingEventArgs, LayerSettings } from '../index';
 import { dataLabelRendering } from '../model/constants';
-import { Theme } from '../model/theme';
 
 /**
  * DataLabel Module used to render the maps datalabel
@@ -31,7 +30,7 @@ export class DataLabel {
     private getDataLabel(dataSource: any[], labelPath: string, shapeName: string, shapeDataPath: string): any {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let text: any; let shapeNameValue : string;
-        for (let i: number = 0; i < dataSource.length; i++) {
+        for (let i: number = 0; i < (isNullOrUndefined(dataSource) ? 0 : dataSource.length); i++) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data: any = dataSource[i as number];
             const dataShapePathValue: string = !isNullOrUndefined(data[shapeDataPath as string]) && isNaN(data[shapeDataPath as string]) &&
@@ -92,7 +91,8 @@ export class DataLabel {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const shapes: any = layerData[index as number]; let locationX: any; let locationY: any;
         style.fontFamily = this.maps.theme.toLowerCase() !== 'material' ? this.maps.themeStyle.labelFontFamily : style.fontFamily;
-        style.fontWeight =   style.fontWeight || this.maps.themeStyle.fontWeight || Theme.dataLabelFont.fontWeight;
+        style.fontWeight = style.fontWeight || this.maps.themeStyle.fontWeight;
+        style.size = style.size || this.maps.themeStyle.fontSize;
         shape = !isNullOrUndefined(shapes) ? shapes['property'] : null;
         const properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
@@ -149,7 +149,7 @@ export class DataLabel {
         text = (!isNullOrUndefined(datasrcObj)) ? !isNullOrUndefined(datasrcObj[labelpath as string]) ?
             datasrcObj[labelpath as string].toString() : datasrcObj[layer.shapeDataPath] : shapeData['properties'][labelpath as string];
         if ((Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]') &&
-            (isNullOrUndefined(text) && layer.dataSource['length'] === 0)) {
+            (isNullOrUndefined(text) && (!isNullOrUndefined(layer.dataSource) && layer.dataSource['length'] === 0))) {
             for (let l: number = 0; l < layer.shapePropertyPath.length; l++) {
                 if (shapeData['properties'][layer.shapePropertyPath[l as number]]) {
                     text = shapeData['properties'][layer.shapePropertyPath[l as number]];
@@ -160,7 +160,7 @@ export class DataLabel {
         if (isNullOrUndefined(text) && (layer.dataLabelSettings.template !== '' && layer.dataSource['length'] === 0)) {
             text = shapeData['properties'][layer.shapePropertyPath as string];
         }
-        if (isNullOrUndefined(text) && layer.dataSource['length'] > 0) {
+        if (isNullOrUndefined(text) && (!isNullOrUndefined(layer.dataSource) && layer.dataSource['length'] > 0)) {
             text = '';
         }
         const dataLabelText : string = text;

@@ -409,6 +409,17 @@ describe('Virtual scroll', () => {
             schObj.rowAutoHeight = false;
             schObj.dataBind();
         });
+        it('Left scroll negative case checking', () => {
+            expect(schObj.resourceBase.renderedResources.length).toEqual(13);
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            contentArea.scrollLeft = 20;
+            expect(contentArea.scrollLeft).toEqual(20);
+            schObj.virtualScrollModule.isHorizontalScroll = true;
+            contentArea.scrollLeft = 0;
+            (schObj.virtualScrollModule as any).itemSize = 2000;
+            (schObj.virtualScrollModule as any).leftScroll(contentArea);
+            expect(contentArea.scrollLeft).toEqual(0);
+        });
     });
 
     describe('vertical view', () => {
@@ -778,6 +789,43 @@ describe('Virtual scroll', () => {
         });
         it('dynamic events fetched in scroll stop event', () => {
             expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+        });
+    });
+
+    describe('885537- Checking resource length after calling the refreshLayout method once changed the height', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = generateEvents(new Date(2023, 3, 1), 300, 10);
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '700px', width: '100%', currentView: 'TimelineMonth',
+                views: [
+                    { option: 'TimelineMonth', allowVirtualScrolling: true, enableLazyLoading: true }
+                ],
+                group: { resources: ['Owners'] },
+                resources: [
+                    {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: generateResourceDatasource(1, 300, 'Resource'),
+                        textField: 'Text', idField: 'Id', colorField: 'Color'
+                    }
+                ],
+                selectedDate: new Date(2023, 3, 1)
+            };
+            schObj = createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking the resource length after calling the refreshLayout method', () => {
+            expect(schObj.resourceBase.renderedResources.length).toEqual(15);
+            schObj.height = '400px';
+            schObj.dataBind();
+            schObj.refreshLayout();
+            expect(schObj.resourceBase.renderedResources.length).toEqual(10);
+            expect(schObj.element.querySelector('.e-content-wrap').scrollTop).
+                toEqual(schObj.element.querySelector('.e-resource-column-wrap').scrollTop);
         });
     });
 

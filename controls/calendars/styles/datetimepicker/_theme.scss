@@ -36,10 +36,10 @@
       #{if(&, '&', '*')} .e-list-item.e-hover,
       #{if(&, '&', '*')} .e-list-item.e-navigation,
       #{if(&, '&', '*')} .e-list-item:focus {
-        @if $skin-name != 'Material3' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
           background-color: $datetime-list-hover-bg-color;
         }
-        @if $skin-name == 'Material3' {
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
           background: $datetime-list-hover-bg-color;
         }
         border: $datetime-list-hover-border-color;

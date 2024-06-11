@@ -73,7 +73,7 @@ export class AxisTableRenderer {
                 className: cls.AXIS_PROMPT_CLASS
             });
             axisPrompt.innerText = localePrompt;
-            let droppable: Droppable = new Droppable(axisContent, {});  /* eslint-disable-line */
+            new Droppable(axisContent, {});
             axis.appendChild(axisTitleWrapper);
             axis.appendChild(axisContent);
             axis.appendChild(axisPrompt);

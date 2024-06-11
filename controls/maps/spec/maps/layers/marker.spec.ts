@@ -6,10 +6,10 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usMap, India_Map, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { getElement, marker } from '../../../src/maps/utils/helper';
-import { Marker, ILoadEventArgs, BingMap, Zoom, MapsTooltip } from '../../../src/maps/index';
+import { Marker, ILoadEventArgs, BingMap, Zoom, MapsTooltip, NavigationLine } from '../../../src/maps/index';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { debug } from 'util';
-Maps.Inject(Marker, Zoom, MapsTooltip);
+Maps.Inject(Marker, Zoom, MapsTooltip, NavigationLine);
 
 let imageUrl: string = "http:\/\/ecn.{subdomain}.tiles.virtualearth.net\/tiles\/a{quadkey}.jpeg?g=6465";
 let subDomains: string[] = ["t0", "t1", "t2", "t3"];
@@ -965,8 +965,6 @@ describe('Map marker properties tesing', () => {
                 baseLayerIndex: 0,
                 layers: [
                     {
-                        layerType: 'Bing',
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
                     }
                 ]
             }, '#' + id);
@@ -976,6 +974,11 @@ describe('Map marker properties tesing', () => {
             map.destroy();
         });
         it('Marker checking with Bing map', () => {
+            map.load = (args: ILoadEventArgs) => {
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
+            };
             map.loaded = (args: ILoadedEventArgs) => {
                 setTimeout(() => {
                 let element: Element = document.getElementById(map.element.id + '_Markers_Group');
@@ -992,6 +995,7 @@ describe('Map marker properties tesing', () => {
                 { Name: "China", latitude: 35.0000, longitude: 103.0000 },
                 { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }]
             }];
+            map.layers[0].shapeData = null;
             map.layers[0].urlTemplate = 'https://{subdomain}.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/{quadkey}?mkt=en-US&it=G,L&shading=hill&og=1885&n=z';
             map.refresh();
         });
@@ -1011,7 +1015,8 @@ describe('Map marker properties tesing', () => {
                 { Name: "China", latitude: 35.0000, longitude: 103.0000 },
                 { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }]
             }];
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
         it('Marker template checking with OSM map and persistence', () => {
@@ -1053,7 +1058,8 @@ describe('Map marker properties tesing', () => {
                     ],
                     animationDuration: 0
                 },];
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
     });
@@ -1075,7 +1081,7 @@ describe('Map marker properties tesing', () => {
                 },
                 layers: [
                     {
-                        layerType:'OSM'
+                        urlTemplate:'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
                     },
                     {
                         
@@ -1103,7 +1109,8 @@ describe('Map marker properties tesing', () => {
                 { Name: "China", latitude: 35.0000, longitude: 103.0000 },
                 { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }]
             }];
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.enablePersistence = true;
             map.refresh();
         });
@@ -1146,7 +1153,30 @@ describe('Map marker properties tesing', () => {
                         ],
                         animationDuration: 0
                     },];
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
+            map.refresh();
+        });
+        it('Marker DataSource as null', () => {
+            map.loaded = (args: ILoadedEventArgs) => {                
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    dataSource: null
+                },
+                {
+                    visible: true,
+                    template: '<div id="marker1" class="markerTemplate">Asia' +
+                        '</div>',
+                    dataSource: [
+                        { latitude: 50.32087157990324, longitude: 90.015625 }
+                    ],
+                    animationDuration: 0
+                },];
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
     });
@@ -1361,7 +1391,8 @@ describe('Map marker properties tesing', () => {
                 triger.dragAndDropEvent(element, 250, 250, 250, 280, 'touch', map);
                 expect(tooltipEle['style'].visibility === '' || tooltipEle['style'].visibility === 'visible').toBe(true);
             };
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
         it('Checking marker template with zooming', () => {
@@ -1414,7 +1445,7 @@ describe('Map marker properties tesing', () => {
                 expect(map.scale === 2.0300000000000002).toBe(true);
             };
             map.zoomSettings.zoomOnClick = true;
-            map.layers[0].layerType = 'Geometry';
+            map.layers[0].shapeData = MapData;
             map.refresh();
         });
     });
@@ -1435,7 +1466,7 @@ describe('Map marker properties tesing', () => {
                 },
                 layers: [
                     {
-                        layerType:'OSM'
+                        urlTemplate:'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
                     },
                     {
                         
@@ -1463,7 +1494,8 @@ describe('Map marker properties tesing', () => {
                 { Name: "China", latitude: 35.0000, longitude: 103.0000 },
                 { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }]
             }];
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.enablePersistence = true;
             map.refresh();
         });
@@ -1506,7 +1538,8 @@ describe('Map marker properties tesing', () => {
                     ],
                     animationDuration: 0
                 },];
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
     });
@@ -1526,7 +1559,11 @@ describe('Map marker properties tesing', () => {
                 zoomSettings: {
                     enable: true,
                     shouldZoomInitially :true,
-                    toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                    toolbarSettings: {
+                        buttonSettings: {
+                            toolbarItems: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                        }
+                    }
                 },
                 layers: [
                     {
@@ -1720,6 +1757,182 @@ describe('Map marker properties tesing', () => {
             map.refresh();
         });
     });
+    describe('Render the multipoint sample', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                zoomSettings: {
+                    enable: true,
+                    shouldZoomInitially :true
+                   // toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                },
+                layers: [
+                    {
+                        shapeData:India_Map
+                    },
+                    {
+                        
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Multipoint with shapeData in map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MultiPoint_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(3);
+            };
+            map.layers[0].shapeData = {
+                "features": [ {
+                    "type": "MultiPoint",
+                    "coordinates": [
+                    [-122.4194, 37.7749],
+                    [-118.2437, 34.0522],
+                    [-87.6298, 41.8781]
+                    ]
+                }
+                ]
+              }
+            map.refresh();
+        });
+        it('Multipoint with shapeData in map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_0_dataIndex_4');
+                expect(element.getAttribute('fill')).toEqual('#462A6D');
+            };
+            map.layers = [
+                {
+                    shapeData: MapData,
+                    shapePropertyPath: 'continent',
+                    shapeDataPath: 'continent',
+                    dataSource: [    
+                        { "drillColor": '#C13664', "continent": "North America", "CategoryName": "Books", "Sales": 10882, 'color': '#71B081', "width": 0.7 },
+                            { "drillColor": '#9C3367',"continent": "South America", "CategoryName": "Books", "Sales": 13776, 'color': '#5A9A77', "width": 0.7 },
+                            { "drillColor": '#80306A',"continent": "Africa", "CategoryName": "Books", "Sales": 18718.0, 'color': '#498770', "width": 0.7 },
+                            { "drillColor": '#622D6C',"continent": "Europe", "CategoryName": "Books", "Sales": 3746, 'color': '#39776C', "width": 0.7 },    
+                            { "drillColor": '#462A6D',"continent": "Asia", "CategoryName": "Books", "Sales": 10688, 'color': '#266665', "width": 0.7 },    
+                            { "drillColor": '#2A2870', "continent": "Australia", "CategoryName": "Books", "Sales": 30716, 'color': '#124F5E', "width": 0.7 }
+                        ],
+                    shapeSettings: {
+                        colorValuePath: 'drillColor',
+                        borderColorValuePath: 'color',
+                        borderWidthValuePath: 'width'
+                    },
+                }                
+            ]
+            map.refresh();
+        });
+        it('OSM with NavigationLine in map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_NavigationIndex_0_Line0');
+                expect(element.getAttribute('stroke')).toEqual('black');
+            };
+            map.layers = [
+                {
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
+                    navigationLineSettings: [
+                        {
+                            visible: true,
+                            latitude: [20.267153, 20.756032197482973],
+                            longitude: [70.7430608, 90.36270141601562],
+                            angle: -0.7,
+                        }
+                    ]
+                }                
+            ]
+            map.refresh();
+        });
+        it('OSM with NavigationLine spec in map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_NavigationIndex_0_Line0');
+                expect(element == null).toBe(true);
+            };
+            map.layers = [
+                {
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
+                    navigationLineSettings: [
+                        {
+                            visible: null,
+                            latitude: [20.267153, 20.756032197482973],
+                            longitude: [70.7430608, 90.36270141601562],
+                            angle: null,
+                            width: null,
+                            arrowSettings: null
+                        },
+                        {
+                            visible: true,
+                            latitude: [20.267153, 20.756032197482973],
+                            longitude: [70.7430608, 90.36270141601562],
+                            angle: 0.7,
+                            width: 1,
+                            arrowSettings: {
+                                showArrow: true,
+                                offSet: null
+                            }
+                        }
+                    ]
+                }                
+            ]
+            map.refresh();
+        });
+        it('OSM with Marker zoom in map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0');
+                expect(element.getAttribute('fill')).toEqual('#FF471A');
+            };
+            map.layers = [
+                {
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
+                    markerSettings: [{
+                        visible: true,
+                        height: 30,
+                        width: 30,
+                        dataSource: [
+                            { Name: "Chennai", latitude: 13.018410, longitude: 80.223068 },
+                        { Name: "Mumbai", Latitude: 19.076090, Longitude: 72.877426 },
+                        { Name: "Kolakata" },
+                        { Name: "Gujarath" }
+                        ]
+                    }]
+                }                
+            ];
+            map.zoomSettings.shouldZoomInitially = true;
+            map.refresh();
+        });
+        it('shapeData with Marker zoom in map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_1');
+                expect(element.getAttribute('fill')).toEqual('#FF471A');
+            };
+            map.layers = [
+                {
+                    shapeData: MapData,
+                    markerSettings: [{
+                        visible: true,
+                        height: 30,
+                        width: 30,
+                        dataSource: [
+                            { Name: "Chennai", latitude: 13.018410, longitude: 80.223068 },
+                        { Name: "Mumbai", Latitude: 19.076090, Longitude: 72.877426 },
+                        { Name: "Kolakata" },
+                        { Name: "Gujarath" }
+                        ]
+                    }]
+                }                
+            ];
+            map.zoomSettings.shouldZoomInitially = true;
+            map.refresh();
+        });        
+    });
     describe('Zooming the map based on marker distance in static google map', () => {
         let id: string = 'container';
         let map: Maps;
@@ -1740,8 +1953,8 @@ describe('Map marker properties tesing', () => {
                 },
                 layers: [
                     {
-                        layerType:'GoogleStaticMap', 
-                        key:'AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw',
+                        //url:'GoogleStaticMap', 
+                        //key:'AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw',
                     },
                     {
                         
@@ -1769,8 +1982,10 @@ describe('Map marker properties tesing', () => {
                 { Name: "Gujarath", latitude: 22.140547, longitude: 73.184296 }
                 ]
             }];
-            map.layers[0].layerType = 'GoogleStaticMap';
-            map.layers[0].key='AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw';
+            //map.layers[0].layerType = 'GoogleStaticMap';
+            //map.layers[0].key='AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
             map.refresh();
         });
         it('Marker zooming in google map', () => {
@@ -1789,7 +2004,8 @@ describe('Map marker properties tesing', () => {
                 { Name: "Gujarath", latitude: 22.140547, longitude: 73.184296 }
                 ]
             }];
-            map.layers[0].layerType = 'Google';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
             map.refresh();
         });
         it('Marker Template is hidden when the template is placed outside of the map', () => {
@@ -1875,8 +2091,10 @@ describe('Map marker properties tesing', () => {
                 animationDuration: 0
             },
         ];
-            map.layers[0].layerType = 'GoogleStaticMap';
-            map.layers[0].key='AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw';
+            //map.layers[0].layerType = 'GoogleStaticMap';
+            //map.layers[0].key='AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
             map.refresh();
         });
         it('Enable Marker Drag', () => {
@@ -1896,7 +2114,8 @@ describe('Map marker properties tesing', () => {
                 { Name: "Gujarath", latitude: 22.140547, longitude: 73.184296 }
                 ]
             }];
-            map.layers[0].layerType = 'Google';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
             map.refresh();
         });
     });

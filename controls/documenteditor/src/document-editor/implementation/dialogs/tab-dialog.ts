@@ -59,13 +59,13 @@ export class TabDialog {
             this.documentHelper.defaultTabWidth = this.defaultTabStopIn.value;
         }
         if (this.removedItems.length > 0) {
-            let values: WTabStop[] = [];
-            for (let i = 0; i < this.removedItems.length; i++) {
+            const values: WTabStop[] = [];
+            for (let i: number = 0; i < this.removedItems.length; i++) {
                 values.push(this.removedItems[parseInt(i.toString(), 10)].value as WTabStop);
             }
             this.documentHelper.owner.editorModule.removeTabStops(this.documentHelper.selection.getParagraphsInSelection(), values);
         }
-        const tab: WTabStop = !isNullOrUndefined(this.selectedTabStop) ? this.selectedTabStop.value as WTabStop: new WTabStop();
+        const tab: WTabStop = !isNullOrUndefined(this.selectedTabStop) ? this.selectedTabStop.value as WTabStop : new WTabStop();
         tab.deletePosition = 0;
         tab.tabJustification = this.getTabAlignmentValue();
         tab.tabLeader = this.getTabLeaderValue();
@@ -74,7 +74,7 @@ export class TabDialog {
             values.push(this.tabStopList[parseInt(i.toString(), 10)].value as WTabStop);
         }
         if (isNullOrUndefined(this.selectedTabStop)) {
-            let value: number = HelperMethods.getNumberFromString(this.textBoxInput.value);
+            const value: number = HelperMethods.getNumberFromString(this.textBoxInput.value);
             if (value.toString() !== 'NaN') {
                 tab.position = value;
                 values.push(tab);
@@ -84,9 +84,9 @@ export class TabDialog {
         this.closeTabDialog();
     }
     private textBoxInputChange = (args: any) => {
-        let value: number = HelperMethods.getNumberFromString(this.textBoxInput.value);
+        const value: number = HelperMethods.getNumberFromString(this.textBoxInput.value);
         for (let i: number = 0; i < this.tabStopList.length; i++) {
-            let tabValue: number = HelperMethods.getNumberFromString(this.tabStopList[parseInt(i.toString(), 10)].displayText as string);
+            const tabValue: number = HelperMethods.getNumberFromString(this.tabStopList[parseInt(i.toString(), 10)].displayText as string);
             if (tabValue === value) {
                 this.selectedTabStop = this.tabStopList[parseInt(i.toString(), 10)];
                 break;
@@ -95,33 +95,34 @@ export class TabDialog {
             }
         }
         this.isAddUnits = false;
-        const index: number = (this.listviewInstance.dataSource as { [key: string]: Object }[]).indexOf(this.selectedTabStop as { [key: string]: Object });
-        const item: { [key: string]: Object } = index >= 0? this.listviewInstance.dataSource[parseInt(index.toString(), 10)]: undefined;
+        const index: number = (this.listviewInstance.dataSource as { [key: string]: Object }[]).indexOf(
+            this.selectedTabStop as { [key: string]: Object });
+        const item: { [key: string]: Object } = index >= 0 ? this.listviewInstance.dataSource[parseInt(index.toString(), 10)] : undefined;
         this.listviewInstance.selectItem(item);
         this.isAddUnits = true;
     }
 
     private setButtonClick = (args: any): void => {
         if (!isNullOrUndefined(this.selectedTabStop)) {
-            let value: WTabStop = this.selectedTabStop.value as WTabStop;
+            const value: WTabStop = this.selectedTabStop.value as WTabStop;
             value.tabJustification = this.getTabAlignmentValue();
             value.tabLeader = this.getTabLeaderValue();
         } else {
-            let value: number = parseFloat(HelperMethods.getNumberFromString(this.textBoxInput.value).toFixed(2));
+            const value: number = parseFloat(HelperMethods.getNumberFromString(this.textBoxInput.value).toFixed(2));
             if (value.toString() === 'NaN') {
                 return;
             }
-            let tabStop: WTabStop = new WTabStop();
+            const tabStop: WTabStop = new WTabStop();
             tabStop.position = value;
             tabStop.tabJustification = this.getTabAlignmentValue();
             tabStop.tabLeader = this.getTabLeaderValue();
             tabStop.deletePosition = 0;
-            let tempCollection: WTabStop[] = [];
-            for (let i = 0; i < this.tabStopList.length; i++) {
+            const tempCollection: WTabStop[] = [];
+            for (let i: number = 0; i < this.tabStopList.length; i++) {
                 tempCollection.push(this.tabStopList[parseInt(i.toString(), 10)].value as WTabStop);
             }
-            let index: number = this.documentHelper.owner.editorModule.addTabStopToCollection(tempCollection, tabStop, true);
-            let tabStopListObj: TabStopListInfo = { 'displayText': parseFloat(value.toFixed(2)) + ' pt', 'value': tabStop};
+            const index: number = this.documentHelper.owner.editorModule.addTabStopToCollection(tempCollection, tabStop, true);
+            const tabStopListObj: TabStopListInfo = { 'displayText': parseFloat(value.toFixed(2)) + ' pt', 'value': tabStop};
             this.tabStopList.splice(index, 0, tabStopListObj);
             this.selectedTabStop = tabStopListObj;
             this.listviewInstance.dataSource = this.tabStopList as { [key: string]: Object }[];
@@ -131,7 +132,7 @@ export class TabDialog {
     }
 
     private clearAllButtonClick = (args: any) => {
-        for (let i = 0; i < this.tabStopList.length; i++) {
+        for (let i: number = 0; i < this.tabStopList.length; i++) {
             this.removedItems.push(this.tabStopList[parseInt(i.toString(), 10)] as TabStopListInfo);
         }
         this.displayDiv.innerText = this.localeValue.getConstant('All');
@@ -151,8 +152,8 @@ export class TabDialog {
             }
             this.displayDiv.innerText += (this.selectedTabStop as TabStopListInfo).displayText;
         }
-        let index: number = (this.tabStopList as TabStopListInfo[]).indexOf(this.selectedTabStop as TabStopListInfo);
-        
+        const index: number = (this.tabStopList as TabStopListInfo[]).indexOf(this.selectedTabStop as TabStopListInfo);
+
         if (index === this.tabStopList.length - 1) {
             this.tabStopList.splice(index, 1);
             this.selectedTabStop = this.tabStopList[index - 1];

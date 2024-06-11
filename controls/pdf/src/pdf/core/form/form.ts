@@ -172,41 +172,48 @@ export class PdfForm {
                 dictionary = this._crossReference._fetch(ref);
             }
             if (dictionary) {
-                const key: _PdfName = _getInheritableProperty(dictionary, 'FT', false, true, 'Parent');
-                let fieldFlags: number = 0;
-                const flag: number = _getInheritableProperty(dictionary, 'Ff', false, true, 'Parent');
-                if (typeof flag !== 'undefined') {
-                    fieldFlags = flag;
-                }
-                if (key) {
-                    switch (key.name.toLowerCase()) {
-                    case 'tx':
-                        field = PdfTextBoxField._load(this, dictionary, this._crossReference, ref);
-                        break;
-                    case 'btn':
-                        if ((fieldFlags & _FieldFlag.pushButton) !== 0) {
-                            field = PdfButtonField._load(this, dictionary, this._crossReference, ref);
-                        } else if ((fieldFlags & _FieldFlag.radio) !== 0) {
-                            field = PdfRadioButtonListField._load(this, dictionary, this._crossReference, ref);
-                        } else {
-                            field = PdfCheckBoxField._load(this, dictionary, this._crossReference, ref);
-                        }
-                        break;
-                    case 'ch':
-                        if ((fieldFlags & _FieldFlag.combo) !== 0) {
-                            field = PdfComboBoxField._load(this, dictionary, this._crossReference, ref);
-                        } else {
-                            field = PdfListBoxField._load(this, dictionary, this._crossReference, ref);
-                        }
-                        break;
-                    case 'sig':
-                        field = PdfSignatureField._load(this, dictionary, this._crossReference, ref);
-                        break;
-                    }
-                }
+                field = this._parseFields(dictionary, ref);
                 this._parsedFields.set(index, field);
                 if (field && field instanceof PdfField) {
                     field._annotationIndex = index;
+                }
+            }
+        }
+        return field;
+    }
+    _parseFields(dictionary: _PdfDictionary, reference: _PdfReference): PdfField {
+        let field: PdfField;
+        if (dictionary) {
+            const key: _PdfName = _getInheritableProperty(dictionary, 'FT', false, true, 'Parent');
+            let fieldFlags: number = 0;
+            const flag: number = _getInheritableProperty(dictionary, 'Ff', false, true, 'Parent');
+            if (typeof flag !== 'undefined') {
+                fieldFlags = flag;
+            }
+            if (key) {
+                switch (key.name.toLowerCase()) {
+                case 'tx':
+                    field = PdfTextBoxField._load(this, dictionary, this._crossReference, reference);
+                    break;
+                case 'btn':
+                    if ((fieldFlags & _FieldFlag.pushButton) !== 0) {
+                        field = PdfButtonField._load(this, dictionary, this._crossReference, reference);
+                    } else if ((fieldFlags & _FieldFlag.radio) !== 0) {
+                        field = PdfRadioButtonListField._load(this, dictionary, this._crossReference, reference);
+                    } else {
+                        field = PdfCheckBoxField._load(this, dictionary, this._crossReference, reference);
+                    }
+                    break;
+                case 'ch':
+                    if ((fieldFlags & _FieldFlag.combo) !== 0) {
+                        field = PdfComboBoxField._load(this, dictionary, this._crossReference, reference);
+                    } else {
+                        field = PdfListBoxField._load(this, dictionary, this._crossReference, reference);
+                    }
+                    break;
+                case 'sig':
+                    field = PdfSignatureField._load(this, dictionary, this._crossReference, reference);
+                    break;
                 }
             }
         }
@@ -235,20 +242,6 @@ export class PdfForm {
         this._parsedFields.set(this._fields.length - 1, field);
         field._form = this;
         this._crossReference._root._updated = true;
-        if (field._kidsCount > 0) {
-            for (let i: number = 0; i < field._kidsCount; i++) {
-                const item: PdfWidgetAnnotation = field.itemAt(i);
-                const page: PdfPage = item._page;
-                page.annotations._annotations.push(item._ref);
-                page._pageDictionary.set('Annots', page.annotations._annotations);
-                page._pageDictionary._updated = true;
-            }
-        } else if (field._dictionary.has('Subtype') && field._dictionary.get('Subtype').name === 'Widget') {
-            const page: PdfPage = field._page;
-            page.annotations._annotations.push(field._ref);
-            field._page._pageDictionary.set('Annots', field.page.annotations._annotations);
-            field._page._pageDictionary._updated = true;
-        }
         if (field instanceof PdfSignatureField) {
             field._form._signatureFlag = _SignatureFlag.signatureExists | _SignatureFlag.appendOnly;
         }
@@ -314,10 +307,22 @@ export class PdfForm {
                 }
             }
             this._parsedFields.delete(index);
+            this._reorderParsedAnnotations(index);
         }
         this._fields.splice(index, 1);
         this._dictionary.set('Fields', this._fields);
         this._dictionary._updated = true;
+    }
+    _reorderParsedAnnotations(index: number): void {
+        const result: Map<number, PdfField> = new Map<number, PdfField>();
+        this._parsedFields.forEach((value: PdfField, key: number) => {
+            if (key > index) {
+                result.set(key - 1, value);
+            } else {
+                result.set(key, value);
+            }
+        });
+        this._parsedFields = result;
     }
     /**
      * Sets the flag to indicate the new appearance creation
@@ -593,10 +598,10 @@ export class PdfForm {
         }
         return this._widgetReferences;
     }
-    _doPostProcess(isFlatten: boolean): void {
+    _doPostProcess(isFlatten: boolean, pageToImport?: PdfPage): void {
         for (let i: number = this.count - 1; i >= 0; i--) {
             const field: PdfField = this.fieldAt(i);
-            if (field) {
+            if (field && ((pageToImport && field.page === pageToImport) || !pageToImport)) {
                 field._doPostProcess(isFlatten || field.flatten);
                 if (!isFlatten && field.flatten) {
                     this.removeFieldAt(i);

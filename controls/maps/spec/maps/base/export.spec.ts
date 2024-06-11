@@ -230,7 +230,7 @@ describe('Map layer testing', () => {
                     }
                 },
                 layers: [{
-                    layerType: 'OSM',
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
                     markerSettings: [
                         {
                             visible: true,

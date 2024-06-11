@@ -146,10 +146,10 @@ export interface UserHandleModel {
     disableConnectors?: boolean;
 
     /**
-    * Used to show tooltip for user handle on mouse over.
-    *
-    * @default {}
-    */
+     * Used to show tooltip for user handle on mouse over.
+     *
+     * @default {}
+     */
     tooltip?: DiagramTooltipModel;
 
     /**

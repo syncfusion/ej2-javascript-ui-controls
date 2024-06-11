@@ -1,5 +1,6 @@
 // layout variables
 $slider-height: 4px !default;
+$slider-radius: 2px !default;
 $slider-handle-height: 16px !default;
 $slider-handle-width: 16px !default;
 $rtl-slider-h-handle-margin: 0 -8px 0 0 !default;
@@ -21,6 +22,7 @@ $slider-scale-tick-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGV
 $slider-disabled-handle-show: none !default;
 $slider-button-horizon-padding: 0 32px !default;
 $slider-button-vertical-padding: 32px 0 !default;
+$slider-button-size: 16px !default;
 $largetick-before-left: -4px !default;
 $tick-before-left: 20px !default;
 $largetick-after-left: 20px !default;

@@ -116,21 +116,37 @@ export class DataBinding {
         if (data !== undefined) {
             for (let r: number = 0; r < data.length; r++) {
                 obj = data[parseInt(r.toString(), 10)];
+                //832886 - Rendering layout without case sensitivity
                 if (obj[mapper.parentId] === undefined || obj[mapper.parentId] === null ||
                     typeof obj[mapper.parentId] !== 'object') {
-                    if (rootNodes[obj[mapper.parentId]] !== undefined) {
-                        (rootNodes[obj[mapper.parentId]] as DataItems).items.push(obj);
-                    } else {
-                        rootNodes[obj[mapper.parentId]] = { items: [obj] };
+                    if (isNaN(obj[mapper.parentId]) && obj[mapper.parentId] !== undefined) {
+                        if (rootNodes[obj[mapper.parentId] ? obj[mapper.parentId].toLowerCase() : obj[mapper.parentId]] !== undefined) {
+                            (rootNodes[obj[mapper.parentId].toLowerCase()] as DataItems).items.push(obj);
+                        }
+                        else {
+                            rootNodes[obj[mapper.parentId] ? obj[mapper.parentId].toLowerCase() : obj[mapper.parentId]] = { items: [obj] };
+                        }
+                    }
+                    else {
+                        if (rootNodes[obj[mapper.parentId]] !== undefined) {
+                            (rootNodes[obj[mapper.parentId]] as DataItems).items.push(obj);
+                        } else {
+                            rootNodes[obj[mapper.parentId]] = { items: [obj] };
+                        }
                     }
                 } else {
                     rootNodes = this.updateMultipleRootNodes(obj, rootNodes, mapper, data);
                 }
-                if (mapper.root === obj[mapper.id]) {
-                    firstNode = { items: [obj] };
+                if (mapper.root && isNaN(mapper.root as any) && isNaN(obj[mapper.id])) {
+                    if ((mapper.root).toLowerCase() === obj[mapper.id].toLowerCase()) {
+                        firstNode = { items: [obj] };
+                    }
+                } else {
+                    if (mapper.root === obj[mapper.id]) {
+                        firstNode = { items: [obj] };
+                    }
                 }
             }
-
             if (firstNode) {
                 firstLevel.push(firstNode);
             } else {
@@ -145,8 +161,18 @@ export class DataBinding {
                     item = (firstLevel[parseInt(i.toString(), 10)] as DataItems).items[parseInt(j.toString(), 10)];
                     node = this.applyNodeTemplate(mapper, item, diagram);
                     (diagram.nodes as Node[]).push(node);
-                    this.dataTable[item[mapper.id]] = node;
-                    nextLevel = rootNodes[node.data[mapper.id]];
+                    if (isNaN(item[mapper.id]) && item[mapper.id] !== undefined) {
+                        this.dataTable[item[mapper.id].toLowerCase()] = node;
+                    }
+                    else {
+                        this.dataTable[item[mapper.id]] = node;
+                    }
+                    if (isNaN(node.data[mapper.id] as any) && node.data[mapper.id] !== undefined) {
+                        nextLevel = rootNodes[node.data[mapper.id].toLowerCase()];
+                    }
+                    else {
+                        nextLevel = rootNodes[node.data[mapper.id]];
+                    }
                     if (nextLevel !== undefined) {
                         this.renderChildNodes(mapper, nextLevel, node.id, rootNodes, diagram);
                     }
@@ -168,11 +194,18 @@ export class DataBinding {
     private updateMultipleRootNodes(obj: Object, rootNodes: Object[], mapper: DataSourceModel, data: Object[]): Object[] {
         const parents: string[] = obj[mapper.parentId]; let parent: string;
         for (let i: number = 0; i < parents.length; i++) {
-            parent = parents[parseInt(i.toString(), 10)];
-            if (rootNodes[`${parent}`]) {
-                rootNodes[`${parent}`].items.push(obj);
-            } else {
-                rootNodes[`${parent}`] = { items: [obj] };
+            if (parents[parseInt(i.toString(), 10)]) {
+                if (isNaN(parents[parseInt(i.toString(), 10)] as any)) {
+                    parent = (parents[parseInt(i.toString(), 10)]).toLowerCase();
+                }
+                else {
+                    parent = (parents[parseInt(i.toString(), 10)]);
+                }
+                if (rootNodes[`${parent}`]) {
+                    rootNodes[`${parent}`].items.push(obj);
+                } else {
+                    rootNodes[`${parent}`] = { items: [obj] };
+                }
             }
         }
         return rootNodes;
@@ -224,7 +257,8 @@ export class DataBinding {
                         }
                     } else {
                         if (innerProperty[2]) {
-                            obj[innerProperty[0]][innerProperty[1]][innerProperty[2]] = item[mapper.dataMapSettings[parseInt(i.toString(), 10)].field];
+                            obj[innerProperty[0]][innerProperty[1]][innerProperty[2]]
+                                = item[mapper.dataMapSettings[parseInt(i.toString(), 10)].field];
                         } else {
                             obj[innerProperty[0]][innerProperty[1]] = item[mapper.dataMapSettings[parseInt(i.toString(), 10)].field];
                         }
@@ -242,7 +276,12 @@ export class DataBinding {
         if (!this.collectionContains(obj, diagram, mapper.id, mapper.parentId)) {
             return obj;
         } else {
-            return this.dataTable[item[mapper.id]];
+            if (isNaN(item[mapper.id])) {
+                return this.dataTable[item[mapper.id].toLowerCase()];
+            }
+            else {
+                return this.dataTable[item[mapper.id]];
+            }
         }
     }
 
@@ -250,7 +289,8 @@ export class DataBinding {
         let temp: string[] = [];
         temp = property.split('.');
         for (let i: number = 0; i < temp.length; i++) {
-            temp[parseInt(i.toString(), 10)] = temp[parseInt(i.toString(), 10)].charAt(0).toLowerCase() + temp[parseInt(i.toString(), 10)].slice(1);
+            temp[parseInt(i.toString(), 10)] = temp[parseInt(i.toString(), 10)].charAt(0).toLowerCase()
+                + temp[parseInt(i.toString(), 10)].slice(1);
         }
         return temp;
     }
@@ -263,7 +303,12 @@ export class DataBinding {
             node = this.applyNodeTemplate(mapper, child, diagram);
             let canBreak: boolean = false;
             if (!this.collectionContains(node, diagram, mapper.id, mapper.parentId)) {
-                this.dataTable[child[mapper.id]] = node;
+                if (isNaN(child[mapper.id])) {
+                    this.dataTable[child[mapper.id].toLowerCase()] = node;
+                }
+                else {
+                    this.dataTable[child[mapper.id]] = node;
+                }
                 (diagram.nodes as Node[]).push(node);
             } else {
                 canBreak = true;
@@ -272,7 +317,12 @@ export class DataBinding {
                 diagram.connectors.push(this.applyConnectorTemplate(value, node.id, diagram));
             }
             if (!canBreak) {
-                nextLevel = rtNodes[node.data[mapper.id]];
+                if (isNaN(node.data[mapper.id])) {
+                    nextLevel = rtNodes[node.data[mapper.id].toLowerCase()];
+                }
+                else {
+                    nextLevel = rtNodes[node.data[mapper.id]];
+                }
                 if (nextLevel !== undefined) {
                     this.renderChildNodes(mapper, nextLevel, node.id, rtNodes, diagram);
                 }
@@ -284,12 +334,12 @@ export class DataBinding {
     // Replaced for loop with some() method to improve performance.
     private containsConnector(diagram: Diagram, sourceNode: string, targetNode: string): boolean {
         if (sourceNode === '' || targetNode === '') {
-          return false;
+            return false;
         }
         return diagram.connectors.some((connector: Connector) => {
-          return connector !== undefined && connector.sourceID === sourceNode && connector.targetID === targetNode;
+            return connector !== undefined && connector.sourceID === sourceNode && connector.targetID === targetNode;
         });
-      } 
+    }
 
     /**
      *  collectionContains method is used to  check wthear the node is already present in collection or not
@@ -301,7 +351,13 @@ export class DataBinding {
      */
 
     private collectionContains(node: Node, diagram: Diagram, id: string, parentId: string): boolean {
-        const obj: Node = this.dataTable[node.data[`${id}`]] as Node;
+        let obj: Node;
+            if (isNaN(node.data[`${id}`]) && node.data[`${id}`]) {
+                obj = this.dataTable[node.data[`${id}`].toLowerCase()] as Node;
+            }
+            else {
+                obj = this.dataTable[node.data[`${id}`]] as Node;
+            }
         if (obj !== undefined && obj.data[`${id}`] === node.data[`${id}`] && obj.data[`${parentId}`] === node.data[`${parentId}`]) {
             return true;
         } else {

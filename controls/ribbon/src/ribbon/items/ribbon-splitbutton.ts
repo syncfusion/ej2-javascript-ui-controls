@@ -9,7 +9,7 @@ import { RibbonSplitButtonSettingsModel, RibbonItemModel } from '../models/index
  * Defines the items of Ribbon.
  */
 export class RibbonSplitButton {
-    private parent: Ribbon
+    private parent: Ribbon;
 
     constructor(parent: Ribbon) {
         this.parent = parent;

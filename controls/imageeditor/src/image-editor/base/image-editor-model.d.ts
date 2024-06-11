@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, isNullOrUndefined, getUniqueID } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { Dialog, createSpinner } from '@syncfusion/ej2-popups';import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings, ShapeType } from './../index';import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs } from './../index';import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';import { Interaction, SelectionPoint, ImageFinetuneValue, Dimension, ActivePoint, ImageEditorClickEventArgs, FrameValue } from './../index';import { Direction, ZoomTrigger, Theme, ImageEditorCommand, ImageFilterOption, ImageFinetuneOption } from './../index';import { ItemModel as DropDownButtonItemModel } from '@syncfusion/ej2-splitbuttons';import { ChangeEventArgs, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, isNullOrUndefined, getUniqueID, setValue } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { Dialog, createSpinner } from '@syncfusion/ej2-popups';import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings, ShapeType } from './../index';import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs } from './../index';import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';import { Interaction, SelectionPoint, ImageFinetuneValue, Dimension, ActivePoint, ImageEditorClickEventArgs, FrameValue } from './../index';import { Direction, ZoomTrigger, Theme, ImageEditorCommand, ImageFilterOption, ImageFinetuneOption } from './../index';import { ItemModel as DropDownButtonItemModel } from '@syncfusion/ej2-splitbuttons';import { ChangeEventArgs, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -265,6 +265,7 @@ export interface ImageEditorModel extends ComponentModel{
      * - `MaterialDark`
      * - `FabricDark`
      * - `HighContrastDark`
+     * - `Fluent2`
      *
      * The default value is set to `Theme.Bootstrap5`.
      *
@@ -618,8 +619,9 @@ export interface ImageEditorModel extends ComponentModel{
     click?: EmitType<ImageEditorClickEventArgs>
 
     /**
-     * Event callback that is raised after shape changing action is performed in an image editor. 
-     * @remarks 
+     * Event callback that is raised after shape changing action is performed in an image editor.
+     *
+     * @remarks
      * This event is triggered after changing stroke color, fill Color, and stroke width property for the shapes and after the shape is applied to the canvas while clicking the OK button in toolbar.
      *
      * @event shapeChange
@@ -656,10 +658,10 @@ export interface ImageEditorModel extends ComponentModel{
     quickAccessToolbarOpen?: EmitType<QuickAccessToolbarEventArgs>
 
     /**
-     * Event callback that is raised while resizing an image. 
+     * Event callback that is raised while resizing an image.
      *
-     * @event resizing 
-     */ 
+     * @event resizing
+     */
     resizing?: EmitType<ResizeEventArgs>
 
     /**

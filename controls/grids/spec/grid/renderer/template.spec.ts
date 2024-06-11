@@ -19,7 +19,7 @@ describe('Template render module', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending; //Skips test (in Chai)
             }
             gridObj = createGrid(
                 {
@@ -136,7 +136,7 @@ describe('Template render module', () => {
                                 { field: 'ShipName', headerText: 'Ship Name', width: 150, }
                         ],
                         load: function() {
-                            expect(this.isReact).toBe(undefined);
+                            expect(this.isReact).toBe(false);
                             expect(this.requireTemplateRef).toBe(true);
                             this.isReact = true;
                         },

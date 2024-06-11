@@ -1,5 +1,5 @@
 import { ListBase, ListBaseOptions, ItemCreatedArgs } from '@syncfusion/ej2-lists';
-import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest, DragEventArgs, Draggable, append } from '@syncfusion/ej2-base';
+import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs, isVisible } from '@syncfusion/ej2-base';
 import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove } from '@syncfusion/ej2-base';
 import { IFileManager, FileOpenEventArgs, FileLoadEventArgs } from '../base/interface';
@@ -34,7 +34,6 @@ export class LargeIconsView {
     private isInteraction: boolean = true;
     public itemList: HTMLElement[];
     // specifies the current view items in large icon
-    // eslint-disable-next-line
     public items: Object[];
     public allItems: Object[];
     private clickObj: Touch;
@@ -138,7 +137,7 @@ export class LargeIconsView {
             };
             this.items = [];
             this.items = this.renderList(args);
-            if(this.parent.sortComparer && this.parent.sortBy !== 'None'){
+            if (this.parent.sortComparer && this.parent.sortBy !== 'None'){
                 this.items = this.allItems = DataUtil.sort(this.items, this.parent.sortBy, this.comparer.bind(this) as Function);
             } else { this.items = this.allItems = getSortedData(this.parent, this.items); }
             iconsView.classList.remove(CLS.DISPLAY_NONE);
@@ -146,11 +145,10 @@ export class LargeIconsView {
                 if (!this.element.style.height) { this.adjustHeight(); }
                 this.parent.virtualizationModule.setUIVirtualization();
             }
-            // eslint-disable-next-line
             this.listElements = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.listObj);
             this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, this.listElements));
             this.element.appendChild(this.listElements);
-            this.listElements.setAttribute("aria-label","listbox");
+            this.listElements.setAttribute('aria-label', 'listbox');
             this.preventImgDrag();
             this.createDragObj();
             if (this.itemList.length === 0) {
@@ -196,14 +194,14 @@ export class LargeIconsView {
         }
     }
 
-    private comparer (x: number | string, y: number | string, xObj?: Object, yObj?: Object) {
+    private comparer (x: number | string, y: number | string): number | string {
         if (this.parent.sortOrder === 'Descending') {
             const z: number | string = x;
             x = y;
             y = z;
         }
         return (this.parent.sortComparer as Function)(x, y);
-    };
+    }
 
     private preventImgDrag(): void {
         let i: number = 0;
@@ -252,8 +250,7 @@ export class LargeIconsView {
         this.parent.activeElements = [];
         this.parent.dragData = [];
         for (let i: number = 0; i < activeEle.length; i++) {
-            // eslint-disable-next-line
-            this.parent.dragData.push(<{ [key: string]: Object; }>this.getItemObject(activeEle[i]));
+            this.parent.dragData.push(<{ [key: string]: Object; }>this.getItemObject(activeEle[parseInt(i.toString(), 10)]));
             this.parent.activeElements.push(activeEle[i as number]);
         }
         getModule(this.parent, dragLi);
@@ -265,10 +262,8 @@ export class LargeIconsView {
     private onDropInit(args: DragEventArgs): void {
         if (this.parent.targetModule === this.getModuleName()) {
             const dropLi: Element = closest(args.target, '.e-list-item');
-            // eslint-disable-next-line
             const cwdData: Object = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (dropLi) {
-                // eslint-disable-next-line
                 const info: { [key: string]: Object; } = <{ [key: string]: Object; }>this.getItemObject(dropLi);
                 this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
                 this.parent.dropData = info.isFile ? cwdData : info;
@@ -361,10 +356,8 @@ export class LargeIconsView {
         }
     }
 
-    // eslint-disable-next-line
     private renderList(args?: ReadArgs): Object[] {
         let i: number = 0;
-        // eslint-disable-next-line
         const items: Object[] = JSON.parse(JSON.stringify(args.files));
         while (i < items.length) {
             const icon: string = fileType(items[i as number]);
@@ -447,7 +440,6 @@ export class LargeIconsView {
             if (this.parent.renamedItem) {
                 this.clearSelect();
                 this.addSelection(this.parent.renamedItem);
-                this.parent.renamedItem = null;
             }
         }
     }
@@ -598,7 +590,6 @@ export class LargeIconsView {
 
     private onActionFailure(): void { this.isInteraction = true; this.isInteracted = true; }
 
-    // eslint-disable-next-line
     private onMenuItemData(args: { [key: string]: Object; }): void {
         if (this.parent.activeModule === this.getModuleName()) {
             const ele: Element = closest(<Element>args.target, 'li');
@@ -748,37 +739,35 @@ export class LargeIconsView {
 
     private wireClickEvent(toBind: boolean): void {
         if (toBind) {
-            // eslint-disable-next-line
-            const proxy: LargeIconsView = this;
             this.clickObj = new Touch(this.element, {
                 tap: (eve: TapEventArgs) => {
                     eve.originalEvent.preventDefault();
-                    if (proxy.parent.isDevice) {
-                        proxy.tapCount = eve.tapCount;
-                        proxy.tapEvent = eve;
+                    if (this.parent.isDevice) {
+                        this.tapCount = eve.tapCount;
+                        this.tapEvent = eve;
                         setTimeout(
                             () => {
-                                if (proxy.tapCount > 0) {
-                                    proxy.doTapAction(proxy.tapEvent);
+                                if (this.tapCount > 0) {
+                                    this.doTapAction(this.tapEvent);
                                 }
-                                proxy.tapCount = 0;
+                                this.tapCount = 0;
                             },
                             350);
                     } else {
                         if (eve.tapCount === 2 && eve.originalEvent.which !== 3) {
-                            proxy.dblClickHandler(eve);
+                            this.dblClickHandler(eve);
                         } else {
-                            proxy.clickHandler(eve);
+                            this.clickHandler(eve);
                         }
                     }
                 },
                 tapHold: (e: TapEventArgs) => {
-                    if (proxy.parent.isDevice) {
-                        proxy.multiSelect = proxy.parent.allowMultiSelection ? true : false;
-                        if (proxy.parent.allowMultiSelection) {
-                            addClass([proxy.parent.element], CLS.MULTI_SELECT);
+                    if (this.parent.isDevice) {
+                        this.multiSelect = this.parent.allowMultiSelection ? true : false;
+                        if (this.parent.allowMultiSelection) {
+                            addClass([this.parent.element], CLS.MULTI_SELECT);
                         }
-                        proxy.clickHandler(e);
+                        this.clickHandler(e);
                     }
                 }
             });
@@ -834,7 +823,7 @@ export class LargeIconsView {
                 && (e.ctrlKey || target.classList.contains(CLS.CHECK))) {
                 action = 'unselect';
             }
-            if (e.ctrlKey && e.shiftKey) {   
+            if (e.ctrlKey && e.shiftKey) {
                 this.isSelectAllCalled = true;
             }
             const fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection(action, item);
@@ -877,7 +866,7 @@ export class LargeIconsView {
                 this.triggerSelect(action, item);
             }
         } else {
-            if (this.parent.selectedItems.length === this.itemList.length) {   
+            if (this.parent.selectedItems.length === this.itemList.length) {
                 this.isSelectAllCalled = true;
             }
             this.clearSelection();
@@ -911,7 +900,6 @@ export class LargeIconsView {
         this.parent.isFile = false;
         if (!isNOU(item)) {
             this.updateType(item);
-            // eslint-disable-next-line
             const details: Object = this.getItemObject(item);
             if (!hasReadAccess(details)) {
                 createDeniedDialog(this.parent, details, events.permissionRead);
@@ -955,7 +943,6 @@ export class LargeIconsView {
     }
 
     /* istanbul ignore next */
-    // eslint:disable-next-line
     private keydownActionHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         switch (e.action) {
@@ -1003,7 +990,6 @@ export class LargeIconsView {
     }
 
     /* istanbul ignore next */
-    // eslint:disable-next-line
     private keyActionHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         const fItem: Element = this.getFocusedItem();
@@ -1133,7 +1119,6 @@ export class LargeIconsView {
     private performDelete(): void {
         if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
             this.updateSelectedData();
-            // eslint-disable-next-line
             const data: Object[] = this.parent.itemData;
             for (let i: number = 0; i < data.length; i++) {
                 if (!hasEditAccess(data[i as number])) {
@@ -1154,7 +1139,6 @@ export class LargeIconsView {
 
     private updateRenameData(): void {
         const item: Element = select('.' + CLS.LIST_ITEM + '.' + CLS.ACTIVE, this.element);
-        // eslint-disable-next-line
         const data: Object = this.getItemObject(item);
         updateRenamingData(this.parent, data);
     }
@@ -1210,7 +1194,8 @@ export class LargeIconsView {
                 const marginValue: number = parseInt(window.getComputedStyle(this.itemList[0]).getPropertyValue('margin-top'), 10) +
                     parseInt(window.getComputedStyle(this.itemList[0]).getPropertyValue('margin-bottom'), 10);
                 const scrollHeight: number = this.itemList[0].getBoundingClientRect().height + marginValue ;
-                this.element.firstElementChild.scrollTo(this.element.firstElementChild.scrollTop, this.element.firstElementChild.scrollTop + scrollHeight);
+                this.element.firstElementChild.scrollTo(
+                    this.element.firstElementChild.scrollTop, this.element.firstElementChild.scrollTop + scrollHeight);
             }
             if (isNOU(nextItem)) {
                 return li;
@@ -1372,7 +1357,6 @@ export class LargeIconsView {
     }
 
     private getDataName(item: Element): string {
-        // eslint-disable-next-line
         const data: Object = this.getItemObject(item);
         return getItemName(this.parent, data);
     }
@@ -1445,17 +1429,17 @@ export class LargeIconsView {
         this.perRow = perRow;
     }
     private triggerSelection(action: string, item: Element): FileSelectionEventArgs {
-        // eslint-disable-next-line
         const data: object[] = [];
         if (this.isSelectAllCalled){
-            for (let i: number = 0, len: number =this.itemList.length; i< len; i++ ) {
+            for (let i: number = 0, len: number = this.itemList.length; i < len; i++ ) {
                 data[i as number] = this.getItemObject(this.itemList[i as number]);
             }
         }else{
-            data[0]=this.getItemObject(item);
+            data[0] = this.getItemObject(item);
         }
-        const eventArgs: FileSelectionEventArgs = {
-            action: action, fileDetails: data.length >1 ? data : data[0], isInteracted: this.isInteraction, cancel: false, target: this.isSelectAllCalled? null : item
+        const eventArgs: FileSelectionEventArgs = { action: action, fileDetails: data.length > 1
+            ? data : data[0], isInteracted: this.isInteraction, cancel: false, target: this.isSelectAllCalled ? null
+            : item
         };
         this.parent.trigger('fileSelection', eventArgs);
         this.isInteraction = true;
@@ -1463,18 +1447,19 @@ export class LargeIconsView {
     }
 
     private triggerSelect(action: string, item: Element): void {
-        // eslint-disable-next-line
         const data: object[] = [];
         if (this.isSelectAllCalled){
-            for (let i: number = 0, len: number =this.itemList.length; i< len; i++ ) {
+            for (let i: number = 0, len: number = this.itemList.length; i < len; i++ ) {
                 data[i as number] = this.getItemObject(this.itemList[i as number]);
             }
             this.isSelectAllCalled = false;
         }else{
-            data[0]=this.getItemObject(item);
+            data[0] = this.getItemObject(item);
         }
-        this.parent.visitedData = data.length >1 ? data[data.length-1] : data[0];
-        const eventArgs: FileSelectEventArgs = { action: action, fileDetails: data.length >1 ? data : data[0], isInteracted: this.isInteracted };
+        this.parent.visitedData = data.length > 1 ? data[data.length - 1] : data[0];
+        const eventArgs: FileSelectEventArgs = { action: action, fileDetails: data.length > 1
+            ? data
+            : data[0], isInteracted: this.isInteracted };
         this.parent.trigger('fileSelect', eventArgs);
         this.isInteracted = true;
     }
@@ -1498,21 +1483,17 @@ export class LargeIconsView {
         return indexes;
     }
 
-    // eslint-disable-next-line
     private getItemObject(item: Element): Object {
         const index: number = this.itemList.indexOf(<HTMLElement>item);
         return this.items[index as number];
     }
 
-    // eslint-disable-next-line
     private addSelection(data: Object): void {
-        // eslint-disable-next-line
         let resultData: Object[] = [];
         if (this.parent.hasId) {
             resultData = new DataManager(this.items).
                 executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
         } else {
-            // eslint-disable-next-line
             const newData: Object[] = new DataManager(this.items).
                 executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
             if (newData.length > 0) {
@@ -1528,7 +1509,6 @@ export class LargeIconsView {
     }
 
     private updateSelectedData(): void {
-        // eslint-disable-next-line
         const data: object[] = [];
         const items: Element[] = selectAll('.' + CLS.LIST_ITEM + '.' + CLS.ACTIVE, this.element);
         for (let i: number = 0; i < items.length; i++) {
@@ -1537,7 +1517,6 @@ export class LargeIconsView {
         this.parent.itemData = data;
     }
 
-    // eslint-disable-next-line
     private onMethodCall(args: Object): void {
         if (this.parent.view !== 'LargeIcons') { return; }
         const action: string = getValue('action', args);
@@ -1602,7 +1581,6 @@ export class LargeIconsView {
         }
         const indexes: number[] = this.getItemsIndex(ids);
         if (indexes.length === 0) { return; }
-        // eslint-disable-next-line
         const data: Object[] = [];
         const newIds: string[] = [];
         for (let i: number = 0; i < indexes.length; i++) {
@@ -1619,7 +1597,6 @@ export class LargeIconsView {
         }
         const index: number[] = this.getItemsIndex(ids);
         if (index.length === 0) { return; }
-        // eslint-disable-next-line
         const data: Object[] = [];
         const newIds: string[] = [];
         for (let i: number = 0; i < index.length; i++) {

@@ -1,4 +1,3 @@
-/*! calendar material3 theme variables */
 $calendar-title-hover-color: rgba($content-text-color) !default;
 $calendar-icon-hover-color: rgba($icon-color) !default;
 $calendar-default-border-color: none !default;
@@ -163,8 +162,6 @@ $calendar-week-number-font-weight: 500 !default;
 $calendar-bigger-year-decade-width: 69px !default;
 $calendar-normar-year-decade-width: 56px !default;
 $calendar-header-title-padding: 0 5px !default;
-
-// Focus related styles
 $calendar-title-focus-box-shadow: 0 0 0 1px rgba($primary) !default;
 $calendar-title-focus-background: none !default;
 $calendar-title-active-background: rgba($content-text-color, .12) !default;
@@ -172,8 +169,6 @@ $calendar-icon-focus-box-shadow: 0 0 0 1px rgba($primary) !default;
 $calendar-title-border-radius: 4px !default;
 $calendar-title-hover-bg-color: rgba($content-text-color, .08) !default;
 $calendar-focused-cell-box-shadow: 0 0 0 1px rgba($primary) !default;
-
-//today
 $calendar-footer-container-padding: 8px 12px 8px 12px !default;
 $calendar-footer-border: none !default;
 $calendar-footer-background: $calendar-bg-color !default;
@@ -183,11 +178,7 @@ $calendar-today-disabled-background-style: $transparent !default;
 $calendar-today-disabled-border-style: $transparent !default;
 $calendar-today-disabled-box-shadow: none !default;
 $calendar-today-disabled-color: $primary-text-disabled !default;
-
-//table related styles
 $calendar-rtl-text-indent: 4px !default;
-
-// small size
 $calendar-small-icon-size: 28px !default;
 $calendar-small-icon-font-size-style: 14px !default;
 $calendar-small-title-font-size: 12px !default;

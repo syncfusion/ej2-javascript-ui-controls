@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
 import { isNullOrUndefined, getValue, extend, isBlazor } from './util';
 /**
  * Observer is used to perform event handling based the object.
@@ -160,8 +161,6 @@ export class Observer {
             }
         }
     }
-
-    // eslint-disable-next-line
     public dateReviver(key: any, value: any): void | object {
         const dPattern: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
         if (isBlazor && typeof value === 'string' && value.match(dPattern) !== null) {
@@ -192,12 +191,10 @@ export class Observer {
      * @returns {void} ?
      */
     public offIntlEvents(): void {
-        // eslint-disable-next-line
         const eventsArr: any = this.boundedEvents['notifyExternalChange'];
         if (eventsArr) {
             for (let i: number = 0; i < eventsArr.length; i++) {
-                // eslint-disable-next-line
-                const curContext: any = eventsArr[`${i}`].context;
+                const curContext: any = eventsArr[parseInt(i.toString(), 10)].context;
                 if (curContext && curContext.detectFunction && curContext.randomId && !curContext.isRendered) {
                     this.off('notifyExternalChange', curContext.detectFunction, curContext.randomId);
                     i--;
@@ -215,8 +212,7 @@ export class Observer {
      * @returns {boolean} ?
      */
     private notExist(prop: string): boolean {
-        // eslint-disable-next-line
-        return this.boundedEvents.hasOwnProperty(prop) === false || this.boundedEvents[prop].length <= 0;
+        return Object.prototype.hasOwnProperty.call(this.boundedEvents, prop) === false || this.boundedEvents[`${prop}`].length <= 0;
     }
     /**
      * Returns if the handler is present.

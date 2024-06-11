@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
 /**
  * Template Engine Bridge
  */
@@ -34,11 +35,11 @@ export interface ITemplateEngine {
  * @returns {NodeList} ?
  * @private
  */
-// eslint-disable-next-line
-export function compile(templateString: string | Function, helper?: Object, ignorePrefix?:boolean): (data: Object | JSON, component?: any, propName?: any) => NodeList {
+export function compile(templateString: string | Function, helper?: Object, ignorePrefix?: boolean):
+(data: Object | JSON, component?: any, propName?: any) => NodeList {
     const compiler: Function = engineObj.compile(templateString, helper, ignorePrefix);
-    // eslint-disable-next-line
-    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number, element?: any, root?: any): NodeList => {
+    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean,
+            index?: number, element?: any, root?: any): NodeList => {
         const result: object = compiler(data, component, propName, element, root);
         const blazorTemplateId: string = 'BlazorTemplateId';
         if (isBlazor() && !isStringTemplate) {
@@ -61,9 +62,7 @@ export function compile(templateString: string | Function, helper?: Object, igno
                 data[`${blazorTemplateId}`] = blazorId;
                 blazorTemplates[`${templateId}`].push(data);
             }
-            // eslint-disable-next-line
             return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] as any :
-                // eslint-disable-next-line
                 [createElement('div', { id: blazorId, className: 'e-blazor-template' })] as any;
 
         }
@@ -112,7 +111,6 @@ export function updateBlazorTemplate(
 export function resetBlazorTemplate(templateId?: string, templateName?: string, index?: number): void {
     const templateDiv: HTMLElement = document.getElementById(templateId);
     if (templateDiv) {
-        // eslint-disable-next-line
         const innerTemplates: HTMLElement[] = templateDiv.getElementsByClassName('blazor-inner-template') as any;
         for (let i: number = 0; i < innerTemplates.length; i++) {
             let tempId: string = ' ';
@@ -167,7 +165,6 @@ export function getTemplateEngine(): (template: string, helper?: Object) => (dat
  * @returns {Function} ?
  * @private
  */
-// eslint-disable-next-line
 export function initializeCSPTemplate (template : Function, helper?: any): Function {
     let boundFunc : Function;
     template.prototype.CSPTemplate =  true;
@@ -182,8 +179,7 @@ export function initializeCSPTemplate (template : Function, helper?: any): Funct
 
 //Default Engine Class
 class Engine implements ITemplateEngine {
-    // eslint-disable-next-line
-    public compile(templateString: string, helper: Object = {}, ignorePrefix?:boolean): (data: Object | JSON) => string {
+    public compile(templateString: string, helper: Object = {}, ignorePrefix?: boolean): (data: Object | JSON) => string {
         return render(templateString, helper);
     }
 }

@@ -58,7 +58,7 @@ export class VerticalEvent extends EventBase {
                     addClass([appWrapper], cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS);
                 }
             }
-        }
+        };
         for (const wrapper of wrapperElements) {
             if (isDragging && !(wrapper.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) ||
                 wrapper.classList.contains(cls.ROW_COUNT_WRAPPER_CLASS))) {

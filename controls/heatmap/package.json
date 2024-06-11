@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-heatmap",
-	"version": "24.2.7",
+	"version": "18.14.11",
 	"description": "Feature rich data visulization control used to visualize the matrix data where the individual values are represented as colors",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -17,6 +17,7 @@
 		"@syncfusion/ej2-svg-base": "*"
 	},
 	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
 		"@types/chai": "^3.4.28",
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",

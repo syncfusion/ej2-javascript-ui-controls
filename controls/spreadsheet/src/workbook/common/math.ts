@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { isNullOrUndefined, Internationalization, IntlBase, cldrData } from '@syncfusion/ej2-base';
 import { CellModel } from '../base';
 
@@ -95,6 +94,7 @@ export function isNumber(val: string | number): boolean {
  * @param {string} locale - Specifies the locale.
  * @param {string} format - Specifies the string.
  * @param {CellModel} cell - Specify the cell.
+ * @param {boolean} isDateTime -Specify is DateTime value or not.
  * @returns {ToDateArgs} - Returns Date format.
  */
 export function toDate(

@@ -7,7 +7,7 @@ describe('Rating', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -433,6 +433,215 @@ describe('Rating', () => {
             expect(itemList.getAttribute('aria-valuemax')).toBe('6');
             expect(itemList.getAttribute('aria-valuemin')).toBe('2');
             expect(itemList.getAttribute('aria-valuenow')).toBe('3');
+        });
+
+    });
+
+    describe('Null or Undefined value', () => {
+        let rating: Rating;
+        let ratingElement: HTMLElement;
+
+        beforeEach(() => {
+            ratingElement = createElement('input', { id: 'rating', styles: 'display: none' });
+            document.body.appendChild(ratingElement);
+        });
+
+        afterEach(() => {
+            if (rating) {
+                rating.destroy();
+                rating = undefined;
+            }
+            remove(ratingElement);
+        });
+
+        it('in Allow reset', () => {
+            rating = new Rating({ allowReset: null });
+            rating.appendTo('#rating');
+            rating.destroy();
+            expect(rating.allowReset).toBe(null);
+            rating = new Rating({ allowReset: undefined });
+            rating.appendTo('#rating');
+            expect(rating.allowReset).toBe(false);
+        });
+
+        it('in CSS class', () => {
+            rating = new Rating({ cssClass: null });
+            rating.appendTo('#rating');
+            expect(rating.cssClass).toBe(null);
+            rating.destroy();
+            rating = new Rating({ cssClass: undefined });
+            rating.appendTo('#rating');
+            expect(rating.cssClass).toBe('');
+        });
+
+        it('in Disabled', () => {
+            rating = new Rating({ disabled: null });
+            rating.appendTo('#rating');
+            expect(rating.disabled).toBe(null);
+            rating.destroy();
+            rating = new Rating({ disabled: undefined });
+            rating.appendTo('#rating');
+            expect(rating.disabled).toBe(false);
+        });
+
+        it('in Empty Template', () => {
+            rating = new Rating({ emptyTemplate: null});
+            rating.appendTo('#rating');
+            expect(rating.emptyTemplate).toBe(null);
+            rating.destroy();
+            rating = new Rating({ emptyTemplate: undefined});
+            rating.appendTo('#rating');
+            expect(rating.emptyTemplate).toBe('');
+        });
+
+        it('in Enable animation', () => {
+            rating = new Rating({ enableAnimation: null });
+            rating.appendTo('#rating');
+            expect(rating.enableAnimation).toBe(null);
+            rating.destroy();
+            rating = new Rating({ enableAnimation: undefined });
+            rating.appendTo('#rating');
+            expect(rating.enableAnimation).toBe(true);
+        });
+
+        it('in Enable Persistence', () => {
+            rating = new Rating({ enablePersistence: null });
+            rating.appendTo('#rating');
+            expect(rating.enablePersistence).toBe(null);
+            rating.destroy();
+            rating = new Rating({ enablePersistence: undefined });
+            rating.appendTo('#rating');
+            expect(rating.enablePersistence).toBe(false);
+        });
+
+        it('in Enable RTL', () => {
+            rating = new Rating({ enableRtl: null });
+            rating.appendTo('#rating');
+            expect(rating.enableRtl).toBe(false);
+            rating.destroy();
+            rating = new Rating({ enableRtl: undefined });
+            rating.appendTo('#rating');
+            expect(rating.enableRtl).toBe(false);
+        });
+
+        it('in Enable Single Selection', () => {
+            rating = new Rating({ enableSingleSelection: null });
+            rating.appendTo('#rating');
+            expect(rating.enableSingleSelection).toBe(null);
+            rating.destroy();
+            rating = new Rating({ enableSingleSelection: undefined });
+            rating.appendTo('#rating');
+            expect(rating.enableSingleSelection).toBe(false);
+        });
+
+        it('in Full Template', () => {
+            rating = new Rating({ fullTemplate: null });
+            rating.appendTo('#rating');
+            expect(rating.fullTemplate).toBe(null);
+            rating.destroy();
+            rating = new Rating({ fullTemplate: undefined });
+            rating.appendTo('#rating');
+            expect(rating.fullTemplate).toBe('');
+        });
+
+        it('in Label position', () => {
+            rating = new Rating({ labelPosition: null });
+            rating.appendTo('#rating');
+            expect(rating.labelPosition).toBe(null);
+            rating.destroy();
+            rating = new Rating({ labelPosition: undefined });
+            rating.appendTo('#rating');
+            expect(rating.labelPosition).toBe(LabelPosition.Right);
+        });
+
+        it('in Label Template', () => {
+            rating = new Rating({ labelTemplate: null });
+            rating.appendTo('#rating');
+            expect(rating.labelTemplate).toBe(null);
+            rating.destroy();
+            rating = new Rating({ labelTemplate: undefined });
+            rating.appendTo('#rating');
+            expect(rating.labelTemplate).toBe('');
+        });
+
+        it('in Min', () => {
+            rating = new Rating({ min: null });
+            rating.appendTo('#rating');
+            expect(rating.min).toBe(0.0);
+            rating.destroy();
+            rating = new Rating({ min: undefined });
+            rating.appendTo('#rating');
+            expect(rating.min).toBe(0.0);
+        });
+
+        it('in Precision', () => {
+            rating = new Rating({ precision: null });
+            rating.appendTo('#rating');
+            expect(rating.precision).toBe(null);
+            rating.destroy();
+            rating = new Rating({ precision: undefined });
+            rating.appendTo('#rating');
+            expect(rating.precision).toBe(PrecisionType.Full);
+        });
+
+        it('in Show Label', () => {
+            rating = new Rating({ showLabel: null });
+            rating.appendTo('#rating');
+            expect(rating.showLabel).toBe(null);
+            rating.destroy();
+            rating = new Rating({ showLabel: undefined });
+            rating.appendTo('#rating');
+            expect(rating.showLabel).toBe(false);
+        });
+
+        it('in Read Only', () => {
+            rating = new Rating({ readOnly: null });
+            rating.appendTo('#rating');
+            expect(rating.readOnly).toBe(null);
+            rating.destroy();
+            rating = new Rating({ readOnly: undefined });
+            rating.appendTo('#rating');
+            expect(rating.readOnly).toBe(false);
+        });
+
+        it('in Show Tooltip', () => {
+            rating = new Rating({ showTooltip: null });
+            rating.appendTo('#rating');
+            expect(rating.showTooltip).toBe(null);
+            rating.destroy();
+            rating = new Rating({ showTooltip: undefined });
+            rating.appendTo('#rating');
+            expect(rating.showTooltip).toBe(true);
+        });
+
+        it('in Tooltip Template', () => {
+            rating = new Rating({ tooltipTemplate: null });
+            rating.appendTo('#rating');
+            expect(rating.tooltipTemplate).toBe(null);
+            rating.destroy();
+            rating = new Rating({ tooltipTemplate: undefined });
+            rating.appendTo('#rating');
+            expect(rating.tooltipTemplate).toBe('');
+        });
+
+        it('in Value', () => {
+            rating = new Rating({ value: null });
+            rating.appendTo('#rating');
+            expect(rating.value).toBe(0.0);
+            rating.destroy();
+            rating = new Rating({ value: undefined });
+            rating.appendTo('#rating');
+            expect(rating.value).toBe(0.0);
+        });
+
+        it('in Visible', () => {
+            rating = new Rating({ visible: null });
+            rating.appendTo('#rating');
+            expect(rating.visible).toBe(null);
+            rating.destroy();
+            rating = new Rating({ visible: undefined });
+            rating.appendTo('#rating');
+            expect(rating.visible).toBe(true);
         });
 
     });

@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { NodeModel, PathModel, UmlActivityShapeModel, FlowShapeModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, PathModel, UmlActivityShapeModel, FlowShapeModel, UmlClassifierShapeModel } from '../../../src/diagram/objects/node-model';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
@@ -593,6 +593,142 @@ describe('Diagram Control', () => {
 
         it('831806-Umlclass connector Mulitiplicity - Many to Many', (done: Function) => {
             expect(diagram.connectors[0].annotations[0].content == '50...67').toBe(true);
+            done();
+        });
+    });
+
+    
+     describe('Code coverage UML node', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+                    //Set the default values of nodes.
+                    function getNodeDefaults(obj: NodeModel): NodeModel {
+                        obj.style = { fill: '#26A0DA', strokeColor: 'white' };
+                        return obj;
+                    }
+                    
+                    //Set an annoation style at runtime.
+                    function setNodeTemplate(node: NodeModel): void {
+                        if (node.annotations.length > 0) {
+                        for (let i: number = 0; i < node.annotations.length; i++) {
+                            node.annotations[i].style.color = 'white';
+                        }
+                        }
+                    }
+                    
+                    //create class Property
+                    function createProperty(name: string, type: string): object {
+                        return { name: name, type: type };
+                    }
+                    
+                    //create class Methods
+                    function createMethods(name: string, type: string): object {
+                        return { name: name, type: type };
+                    }
+        
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'umlClassDiagram', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+            
+
+            
+            let nodes: NodeModel[] = [
+                {
+                  id: 'Patient',
+                  shape: {
+                    type: 'UmlClassifier',
+                    classShape: {
+                      name: 'Patient',
+                      attributes: [
+                        createProperty('accepted', 'Date'),
+                        createProperty('sickness', 'History'),
+                        createProperty('prescription', 'String[*]'),
+                        createProperty('allergies', 'String[*]'),
+                      ],
+                      methods: [createMethods('getHistory', 'History')],
+                    },
+                    classifier: 'Class',
+                  } as UmlClassifierShapeModel,
+                  offsetX: 200,
+                  offsetY: 250,
+                },
+                {
+                    id: 'Hospital',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Hospital',
+                            methods: [
+                                createMethods('getDepartment', 'String'),
+                            ]
+                        },
+                        classifier: 'Interface'
+                    } as UmlClassifierShapeModel,
+                    offsetX: 638,
+                    offsetY: 100,
+                },
+                {
+                    id: 'Enumerarion',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Enumerarion',
+                            methods: [
+                                createMethods('getDepartment', 'String'),
+                            ]
+                        },
+                        classifier: 'Enumeration'
+                    } as UmlClassifierShapeModel,
+                    offsetX: 338,
+                    offsetY: 400,
+                },
+              ];
+            let connectors: ConnectorModel[] = [];
+
+            diagram = new Diagram({
+            width: '100%',
+            height: '700px',
+            nodes: nodes,
+            connectors: connectors,
+            //Sets the default values of nodes
+            getNodeDefaults: getNodeDefaults,
+            //Customize the content of the node
+            setNodeTemplate: setNodeTemplate,
+            });
+            diagram.appendTo('#umlClassDiagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Adding uml node at runtime', (done: Function) => {
+            let node1 = diagram.nameTable['Patient'];
+            let node2 = diagram.nameTable['Hospital'];
+            let node3 = diagram.nameTable['Enumerarion'];
+            let child = createProperty('newchild', 'data');
+            diagram.addChildToUmlNode(node1, child, 'Attribute');
+            diagram.addChildToUmlNode(node1, child, 'Method');
+            diagram.addChildToUmlNode(node2, child, 'Attribute');
+            diagram.addChildToUmlNode(node2, child, 'Method');
+            diagram.addChildToUmlNode(node3, child, 'Attribute');
+            diagram.addChildToUmlNode(node3, child, 'Member');
+            expect(diagram.nodes.length === 21).toBe(true);
+            done();
+        });
+        it('Changing locale', (done: Function) => {
+            diagram.locale = 'de-DE'
+            diagram.dataBind();
+            expect(diagram.locale === 'de-DE').toBe(true);
             done();
         });
     });

@@ -1,4 +1,4 @@
-import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';import { removeClass , Browser, closest} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';import { maskInputBlurHandler } from '../base/mask-base';
+import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';import { removeClass , Browser, closest} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';
 import {MaskChangeEventArgs,MaskFocusEventArgs,MaskBlurEventArgs} from "./maskedtextbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -90,7 +90,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * For more information on mask, refer to
      * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
-     * 
+     *
      * {% codeBlock src='maskedtextbox/mask/index.md' %}{% endcodeBlock %}
      *
      * @default null

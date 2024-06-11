@@ -3,7 +3,6 @@ import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
 import { DocumentEditorContainerModel } from './document-editor-container-model';
 import { DocumentEditor, DocumentEditorSettings, DocumentSettings } from '../document-editor/document-editor';
-import { TextProperties } from './properties-pane/text-properties-pane';
 import { HeaderFooterProperties } from './properties-pane/header-footer-pane';
 import { ImageProperties } from './properties-pane/image-properties-pane';
 import { TocProperties } from './properties-pane/table-of-content-pane';
@@ -14,9 +13,9 @@ import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
-import { CustomToolbarItemModel, TrackChangeEventArgs, FormFieldFillEventArgs, AutoResizeEventArgs, ContentChangeEventArgs } from '../document-editor/base/events-helper';
+import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges } from '../document-editor/base/constants';
+import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -153,11 +152,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     /**
      * Gets or sets a value indicating whether to start automatic resize with the specified time interval and iteration count.
-     * 
+     *
      * > * Resize action triggers automatically for the specified number of iterations, or till the parent element's height and width is non-zero.
-     * 
+     *
      * > * If the parent element's height and width is zero even in the last iteration, then the default height and width (200) is allocated for the Document editor.
-     * 
+     *
      * @default false
      * @returns {boolean}
      */
@@ -380,9 +379,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Defines toolbar items for DocumentEditorContainer.
      *
-     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields']
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl']
      */
-    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'InsertFootnote', 'InsertEndnote', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
+    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'InsertFootnote', 'InsertEndnote', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields','ContentControl'])
     public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     /* eslint-enable max-len */
     /* eslint-disable */
@@ -393,7 +392,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property([])
     public headers: object[];
-     /* eslint-enable */
+    /* eslint-enable */
     /**
      * Gets the DocumentEditor instance.
      *
@@ -559,6 +558,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Add or edit the header': 'Add or edit the header.',
         'Add or edit the footer': 'Add or edit the footer.',
         'Open the page setup dialog': 'Open the page setup dialog.',
+        'Content Control': 'Content Control',
+        'Insert Content Control': 'Insert Content Control',
         'Add page numbers': 'Add page numbers.',
         'Find Text': 'Find text in the document (Ctrl+F).',
         'Toggle between the internal clipboard and system clipboard': 'Toggle between the internal clipboard and system clipboard.</br>' +
@@ -586,9 +587,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'AllCaps': 'AllCaps',
         'Change case Tooltip': 'Change case',
         'UPPERCASE': 'UPPERCASE',
-        'SentenceCase' : 'Sentence case',
-        'Lowercase' : 'Lowercase',
-        'CapitalizeEachWord' : 'Capitalize each word',
+        'SentenceCase': 'Sentence case',
+        'Lowercase': 'Lowercase',
+        'CapitalizeEachWord': 'Capitalize each word',
         'ToggleCase': 'tOGGLE cASE',
         'No color': 'No color',
         'Top margin': 'Top margin',
@@ -617,15 +618,20 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Link to Previous': 'Link to Previous',
         'Link to PreviousTooltip': 'Link this section with previous section header or footer',
         'Alternate Text': 'Alternate Text',
-	'The address of this site is not valid. Check the address and try again.' : 'The address of this site is not valid. Check the address and try again.',
-	'OK':'OK',
-	'Information':'Information'
+        'The address of this site is not valid. Check the address and try again.': 'The address of this site is not valid. Check the address and try again.',
+        'OK': 'OK',
+        'Information': 'Information',
+        'Rich Text Content Control' : 'Rich Text Content Control',
+        'Plain Text Content Control' : 'Plain Text Content Control',
+        'Picture Content Control': 'Picture Content Control',
+        'Combo Box Content Control' : 'Combo Box Content Control',
+        'Drop-Down List Content Control' : 'Drop-Down List Content Control',
+        'Date Picker Content Control': 'Date Picker Content Control',
+        'Check Box Content Control': 'Check Box Content Control'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
     /**
      * @private
-     * Gets the DocumentEditorContainer module name.
-     *
      * @returns {string} Returns the DocumentEditorContainer module name.
      */
     public getModuleName(): string {
@@ -645,9 +651,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
                     break;
                 case 'enableTrackChanges':
-                    if(this.documentEditor.documentHelper.isTrackedOnlyMode && !newModel.enableTrackChanges && newModel.enableTrackChanges !== this.enableTrackChanges){
+                    if (this.documentEditor.documentHelper.isTrackedOnlyMode && !newModel.enableTrackChanges && newModel.enableTrackChanges !== this.enableTrackChanges) {
                         this.enableTrackChanges = true;
-                     }
+                    }
                     if (this.documentEditor) {
                         this.documentEditor.enableTrackChanges = newModel.enableTrackChanges;
                         if (this.toolbarModule) {
@@ -765,14 +771,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     }
                     break;
                 case 'enableAutoFocus':
-                    if(this.documentEditor)
-                    {
+                    if (this.documentEditor) {
                         this.documentEditor.enableAutoFocus = newModel.enableAutoFocus;
                     }
                     break;
                 case 'autoResizeOnVisibilityChange':
-                    if(this.documentEditor)
-                    {
+                    if (this.documentEditor) {
                         this.documentEditor.autoResizeOnVisibilityChange = newModel.autoResizeOnVisibilityChange;
                     }
                     break;
@@ -861,7 +865,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.documentEditor.serverActionSettings.systemClipboard = HelperMethods.sanitizeString(this.serverActionSettings.systemClipboard);
         }
         if (this.headers) {
-            this.documentEditor.headers =  JSON.parse(HelperMethods.sanitizeString(JSON.stringify(this.headers)));
+            this.documentEditor.headers = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(this.headers)));
         }
     }
     private customizeDocumentEditorSettings(): void {
@@ -893,28 +897,28 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.documentEditorSettings.collaborativeEditingSettings) {
             this.documentEditor.documentEditorSettings.collaborativeEditingSettings = this.documentEditorSettings.collaborativeEditingSettings;
         }
-        if(this.documentEditorSettings.printDevicePixelRatio) {
+        if (this.documentEditorSettings.printDevicePixelRatio) {
             this.documentEditor.documentEditorSettings.printDevicePixelRatio = this.documentEditorSettings.printDevicePixelRatio;
         }
-        if(!isNullOrUndefined(this.documentEditorSettings.enableOptimizedTextMeasuring)) {
+        if (!isNullOrUndefined(this.documentEditorSettings.enableOptimizedTextMeasuring)) {
             this.documentEditor.documentEditorSettings.enableOptimizedTextMeasuring = this.documentEditorSettings.enableOptimizedTextMeasuring;
         }
-        if(!isNullOrUndefined(this.documentEditorSettings.maximumRows)) {
+        if (!isNullOrUndefined(this.documentEditorSettings.maximumRows)) {
             this.documentEditor.documentEditorSettings.maximumRows = this.documentEditorSettings.maximumRows;
         }
-        if(!isNullOrUndefined(this.documentEditorSettings.maximumColumns)) {
+        if (!isNullOrUndefined(this.documentEditorSettings.maximumColumns)) {
             this.documentEditor.documentEditorSettings.maximumColumns = this.documentEditorSettings.maximumColumns;
         }
-        if(!isNullOrUndefined(this.documentEditorSettings.showHiddenMarks)) {
+        if (!isNullOrUndefined(this.documentEditorSettings.showHiddenMarks)) {
             this.documentEditor.documentEditorSettings.showHiddenMarks = this.documentEditorSettings.showHiddenMarks;
         }
         if (!isNullOrUndefined(this.documentEditorSettings.showBookmarks)) {
             this.documentEditor.documentEditorSettings.showBookmarks = this.documentEditorSettings.showBookmarks;
         }
-        if(!isNullOrUndefined(this.documentEditorSettings.highlightEditableRanges)){
+        if (!isNullOrUndefined(this.documentEditorSettings.highlightEditableRanges)) {
             this.documentEditor.documentEditorSettings.highlightEditableRanges = this.documentEditorSettings.highlightEditableRanges;
         }
-        
+
         if (!isNullOrUndefined(this.documentEditorSettings.allowDragAndDrop)) {
             this.documentEditor.documentEditorSettings.allowDragAndDrop = this.documentEditorSettings.allowDragAndDrop;
         }
@@ -1046,6 +1050,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.resize();
     }
     private wireEvents(): void {
+        window.addEventListener('resize', this.onWindowResize.bind(this));
         this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
         this.documentEditor.on(internalviewChangeEvent, this.onViewChange, this);
         this.documentEditor.on(protectionTypeChangeEvent, this.showPropertiesPaneOnSelection, this);
@@ -1055,6 +1060,16 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.on(internalAutoResize, this.triggerAutoResize, this)
         this.documentEditor.on(beforeAutoResize, this.onBeforeAutoResize, this);
         this.documentEditor.on(trackChanges, this.onEnableTrackChanges, this);
+        this.documentEditor.on(internalOptionPaneChange, this.onOptionPaneChange, this);
+    }
+
+    private onWindowResize(): void {
+        this.documentEditor.isContainerResize = true;
+        this.resize();
+    }
+
+    private onOptionPaneChange(args: any): void {
+        //this.documentEditorSettings.showNavigationPane = args.show;
     }
 
     private onEnableTrackChanges(model: DocumentEditorModel): void {
@@ -1098,7 +1113,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.toolbarModule.enableDisableInsertComment(true && this.enableComment);
         }
     }
-    private beforeXmlHttpSend(args: XmlHttpRequestEventArgs): void{
+    private beforeXmlHttpSend(args: XmlHttpRequestEventArgs): void {
         this.trigger(beforeXmlHttpRequestSend, args);
     }
     private onCommentDelete(args: CommentDeleteEventArgs): void {
@@ -1172,7 +1187,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             if (this.toolbarModule) {
                 this.toolbarModule.toolbar.refreshOverflow();
             }
-            if (this.showPropertiesPane && this.tableProperties) {
+            if (this.showPropertiesPane) {
                 this.tableProperties.updateTabContainerHeight();
             }
         }
@@ -1225,6 +1240,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
+        if (this.documentEditor.documentHelper.contentControlCollection.length>0) {
+            this.documentEditor.selection.isHighlightContentControlEditRegion = true;
+            this.documentEditor.selection.onHighlightContentControl();
+        }
         let eventArgs: ContainerDocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
         this.updateStyleCollection();
@@ -1234,10 +1253,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public onSelectionChange(): void {
         setTimeout(() => {
-            this.showPropertiesPaneOnSelection();
-            let eventArgs: ContainerSelectionChangeEventArgs = { source: this , isCompleted: this.documentEditor.documentHelper.isSelectionCompleted};
-            this.trigger(selectionChangeEvent, eventArgs);
-            this.documentEditor.documentHelper.isSelectionCompleted = true;
+            if(!isNullOrUndefined(this.documentEditor)){
+                this.showPropertiesPaneOnSelection();
+                let eventArgs: ContainerSelectionChangeEventArgs = { source: this, isCompleted: this.documentEditor.documentHelper.isSelectionCompleted };
+                this.trigger(selectionChangeEvent, eventArgs);
+                this.documentEditor.documentHelper.isSelectionCompleted = true;
+            }
         });
     }
     /**
@@ -1267,13 +1288,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 || (navLink.substring(0, 8) === 'https://' && navLink.length > 8)
                 || (navLink.substring(0, 4) === 'www.' && navLink.length > 4)
                 || (navLink.substring(0, 7) === 'mailto:' && navLink.length > 7)) {
-                    window.open(link);
+                window.open(link);
             }
             else {
                 DialogUtility.alert({
                     title: this.localObj.getConstant("Information"),
                     content: this.localObj.getConstant("The address of this site is not valid. Check the address and try again."),
-                    okButton: {  text: this.localObj.getConstant("OK") },
+                    okButton: { text: this.localObj.getConstant("OK") },
                     closeOnEscape: true,
                 });
             }
@@ -1304,13 +1325,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showPropertiesPaneOnSelection(): void {
-        if (((this.restrictEditing) && !this.showPropertiesPane) || isNullOrUndefined(this.tableProperties) ) {
+        if (((this.restrictEditing) && !this.showPropertiesPane) || isNullOrUndefined(this.tableProperties)) {
             return;
         }
         let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType !== 'NoProtection';
         let allowFormatting: boolean = isProtectedDocument && this.documentEditor.documentHelper.restrictFormatting;
         let isSelectionInProtectecRegion: boolean = this.documentEditor.editorModule.restrictEditing;
-        
+
         if (isProtectedDocument) {
             if (this.toolbarModule) {
                 this.toolbarModule.enableDisableToolBarItem(!isSelectionInProtectecRegion, true);

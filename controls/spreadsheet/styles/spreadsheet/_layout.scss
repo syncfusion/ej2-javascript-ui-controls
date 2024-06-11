@@ -1,3 +1,30 @@
+@mixin cf-menu-iconsets($float, $height, $width) {
+  float: $float;
+  height: $height;
+  width: $width;
+}
+
+@mixin chart-menu-popup($min-width) {
+  min-width: $min-width;
+  overflow: visible;
+  padding: 0;
+}
+
+@mixin chart-menu-item {
+  height: auto;
+  line-height: 0;
+  padding: 0;
+}
+
+@mixin chart-type-styles($display, $font-size, $height, $margin, $padding, $width) {
+  display: $display;
+  font-size: $font-size;
+  height: $height;
+  margin: $margin;
+  padding: $padding;
+  width: $width;
+}
+
 @import '../spreadsheet-ribbon/mixin.scss';
 @include export-module('spreadsheet-layout') {
 
@@ -20,13 +47,12 @@
 
       & .e-sheet-password-content {
         font-size: $protect-sheet-dlg-password-header-font-size;
-
         @if $sheet-skin == 'Material3' {
           padding: 4px 0 16px;
         }
         & .e-header {
           @if $sheet-skin != 'Material3' {
-            line-height: 28px;
+            line-height: $protect-dlg-password-header-line-height;
             margin-bottom: 4px;
           }
         }
@@ -51,26 +77,21 @@
       }
     }
 
-    @if $sheet-skin == 'FluentUI' {
-      display: inline;
-    }
-
     & .e-unprotectworksheet-dlg.e-dialog {
       & .e-dlg-content {
         & .e-unprotectsheetpwd-alert-span {
           color: $dlg-error-color;
           font-size: $unprotectsheet-alert-span-font-size;
-          padding-top: 7px;
-          @if $sheet-skin == 'Material3' {
+          padding-top: $protect-unprotect-dlg-alert-span-padding-top;
+          @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
             display: block;
-            padding-top: 4px;
           }
         }
 
         & .e-unprotectsheetpwd-content {
           & .e-header {
             font-size: $unprotectsheet-content-header-font-size;
-            line-height: 16px;
+            line-height: $reenterpwd-dlg-content-header-line;
             @if $sheet-skin == 'Material3' {
               padding-top: 4px;
             }
@@ -78,7 +99,7 @@
 
           & .e-input {
             @if $sheet-skin != 'Material3' {
-              margin-top: 10px;
+              margin-top: $reenterpwd-dlg-content-input-margin-top;
             }
           }
         }
@@ -90,17 +111,16 @@
         & .e-reenterpwd-alert-span {
           color: $dlg-error-color;
           font-size: $reenterpwd-dlg-alert-span-font-size;
-          padding-top: 7px;
-          @if $sheet-skin == 'Material3' {
+          padding-top: $protect-unprotect-dlg-alert-span-padding-top;
+          @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
             display: block;
-            padding-top: 4px;
           }
         }
 
         & .e-reenterpwd-content {
           & .e-header {
             font-size: $reenterpwd-dlg-content-header-font-size;
-            line-height: 16px;
+            line-height: $reenterpwd-dlg-content-header-line;
             @if $sheet-skin == 'Material3' {
               padding-top: 4px;
             }
@@ -108,7 +128,7 @@
 
           & .e-input {
             @if $sheet-skin != 'Material3' {
-              margin-top: 10px;
+              margin-top: $reenterpwd-dlg-content-input-margin-top;
             }
           }
         }
@@ -118,14 +138,31 @@
     & .e-goto-dlg.e-dialog {
       height: auto;
 
+      & .e-dlg-content .e-header {
+        @if $skin-name == 'fluent2' {
+          margin: 0;
+          padding: 4px 0;
+        }
+      }
+
       & .e-dlg-content .e-goto-alert-span {
-        font-weight: bold;
-        padding-top: 7px;
+        @if $skin-name != 'fluent2' {
+          font-weight: bold;
+          padding-top: 7px;
+        }
+        @else {
+          color: $dlg-error-color;
+          display: block;
+          font-size: 12px;
+          padding-top: 4px;
+        }
       }
     }
 
     & .e-findnreplace-exactmatchcheckbox {
-      padding: 12px;
+      @if $skin-name != 'fluent2' {
+        padding: 12px;
+      }
     }
 
     &.e-filter-open {
@@ -134,10 +171,19 @@
 
     & .e-findtool-dlg {
       border: 1px solid;
-      @if $sheet-skin != 'Material3' {
+      @if $sheet-skin != 'Material3' and $skin-name != 'fluent2' {
         height: $find-tool-dlg-height;
       }
       width: $find-tool-dlg-width;
+      @if $skin-name == 'fluent2' {
+        & .e-find-toolbar {
+          border: none;
+
+          & .e-toolbar-item.e-separator {
+            margin: 8px 4px;
+          }
+        }
+      }
 
       &.e-rtl .e-find-toolbar {
         & .e-toolbar-items:not(.e-tbar-pos):not(.e-toolbar-multirow) .e-toolbar-item:first-child {
@@ -179,7 +225,6 @@
         @else if $sheet-skin == 'Material3' {
           border-radius: 8px;
         }
-
         @if $skin-name == 'FluentUI' {
           margin-bottom: $bigger-find-tool-margin-bottom;
         }
@@ -190,7 +235,7 @@
             background: $sheet-tab-active-bg-color;
           }
           & .e-input-group-icon {
-            @if $sheet-skin == 'Material3' {
+            @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
               font-size: $find-tool-dlg-icon-size;
             }
             width: 70px;
@@ -206,21 +251,16 @@
     & .e-protect-option-list {
       border: $dlg-list-border;
       cursor: default;
-      margin-top: 20px;
+      margin-top: $protect-option-list-margin-top;
       overflow-y: auto;
-
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        margin-top: 10px;
-      }
-      @if $sheet-skin == 'Material3' {
-        margin-top: 0;
-      }
     }
 
     & .e-protect-checkbox {
       @if $sheet-skin != 'Material3' {
-        height: 30px;
-        margin-top: 20px;
+        @if $skin-name != 'fluent2' {
+          height: 30px;
+        }
+        margin-top: $protect-dlg-protect-check-margin-top;
       }
 
       & .e-label {
@@ -233,28 +273,15 @@
     & .e-dlg-content .e-custom-dialog {
       & .e-input.e-dialog-input {
         float: left;
-        width: 80%;
-        @if $sheet-skin == 'bootstrap5' {
-          margin-right: 4.8%;
-        }
-        @else if $sheet-skin == 'FluentUI' {
-          margin-right: 6.8%;
-        }
-        @else if $sheet-skin == 'Material3' {
-          margin-right: 24px;
-          width: 74%;
-        }
-        @else {
-          margin-right: 2.8%;
-        }
+        width: $custom-format-dlg-input-width;
+        margin-right: $custom-format-dlg-input-margin-right;
       }
     }
 
     & .e-dlg-content .e-custom-dialog .e-custom-sample {
-      margin: 10px 10px 10px 0;
+      margin: $custom-format-dlg-sample-margin;
       @if $sheet-skin == 'Material3' {
         font-size: $find-dialog-header-font-size;
-        margin: 20px 0 4px;
       }
     }
 
@@ -268,12 +295,13 @@
 
     & .e-protect-content {
       font-size: $protect-content-font-size;
-      height: 37px;
-      padding-top: 20px;
+      height: $protect-content-height;
       width: 100%;
-      @if $sheet-skin == 'Material3' {
-        height: auto;
-        padding: 20px 0 4px;
+      @if $sheet-skin == 'Material3' or $skin-name == 'fluent2'{
+        padding: $protect-dlg-protect-content-padding;
+      }
+      @else {
+        padding-top: 20px;
       }
     }
 
@@ -331,7 +359,6 @@
             min-height: 15px;
             padding: $define-name-input-padding;
           }
-
           @if $skin-name != 'bootstrap4' {
             & .e-input-group-icon {
               font-size: $namebox-icon-size;
@@ -344,12 +371,10 @@
 
         &.e-input-group.e-control-wrapper.e-name-box .e-input-group-icon {
           border-left-width: 0;
-          min-height: 15px;
+          min-height: $namebox-icon-min-height;
           @if $skin-name == 'Material3' {
-            min-height: 14px;
             min-width: 14px;
           }
-
           @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
             font-size: $name-box-icon-font-size;
           }
@@ -367,10 +392,7 @@
         border: 0;
         font-size: $formula-bar-font-size;
         overflow: auto;
-        padding: 0 4px;
-        @if $skin-name == 'Material3' {
-          padding: 0 8px;
-        }
+        padding: $formula-bar-padding;
         resize: none;
       }
 
@@ -378,19 +400,13 @@
         align-self: flex-start;
         cursor: pointer;
         float: right;
-        line-height: 23px;
+        line-height: $expand-icon-line-height;
         margin-right: $expand-icon-margin;
         text-align: center;
         transition: transform 300ms ease;
         width: 18px;
-
         @if $skin-name != 'bootstrap4' {
           font-size: $formula-bar-drop-icon-font-size;
-        }
-
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          font-size: $formula-bar-drop-icon-font-size;
-          line-height: 25px;
         }
       }
     }
@@ -506,6 +522,16 @@
     }
 
     & .e-excelfilter {
+      & .e-checkboxlist.e-fields {
+        @if $skin-name == 'fluent2' {
+          margin-left: 0;
+        }
+        .e-treeview.e-checkboxtree {
+          @if $skin-name == 'fluent2' {
+            border: 0;
+          }
+        }
+      }
       & .e-spreadsheet-ftrchk {
         padding-left: $filter-selectall-padding;
 
@@ -876,9 +902,11 @@
           position: relative;
 
           &::after {
-            border-top: $spreadsheet-border;
             @if $skin-name == 'Material3' {
               border-top: $spreadsheet-hidden-row-column-border;
+            }
+            @else {
+              border-top: $spreadsheet-border;
             }
             bottom: .5px;
           }
@@ -921,9 +949,11 @@
           position: relative;
 
           &::after {
-            border-right: $spreadsheet-border;
             @if $skin-name == 'Material3' {
               border-right: $spreadsheet-hidden-row-column-border;
+            }
+            @else {
+              border-right: $spreadsheet-border;
             }
             right: .5px;
           }
@@ -934,9 +964,11 @@
           position: relative;
 
           &::before {
-            border-left: $spreadsheet-border;
             @if $skin-name == 'Material3' {
               border-left: $spreadsheet-hidden-row-column-border;
+            }
+            @else {
+              border-left: $spreadsheet-border;
             }
             left: .5px;
           }
@@ -991,10 +1023,7 @@
     & .e-frozen-column {
       height: 100%;
       top: 0;
-      width: 1px;
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        width: 3px;
-      }
+      width: $spreadsheet-frozen-column-width;
     }
 
     & .e-sheet-tab-panel {
@@ -1008,7 +1037,6 @@
     & .e-sheet-tab {
       display: inline-block;
       line-height: 0;
-
       @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
         background-color: $content-bg-color-alt2;
       }
@@ -1027,6 +1055,9 @@
 
         & .e-tab-header {
           @include tab-header-layout;
+          @if $skin-name == 'fluent2' {
+            border-bottom: 0;
+          }
 
           & .e-indicator {
             display: block;
@@ -1040,7 +1071,6 @@
               }
             }
           }
-
           @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
             &::before {
               border-bottom-width: 0;
@@ -1065,7 +1095,6 @@
           @else {
             & .e-toolbar-items .e-toolbar-item {
               border-right: $spreadsheet-border;
-
               @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
                 padding: 0;
               }
@@ -1098,7 +1127,6 @@
             & .e-tab-wrap {
               padding: 0 12px;
             }
-
             @if $skin-name == 'material' {
               &.e-active {
                 border-left-width: 0;
@@ -1109,7 +1137,6 @@
                 margin-bottom: 0;
               }
             }
-
             @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
               &.e-active .e-text-wrap::before {
                 border-width: 0;
@@ -1148,24 +1175,12 @@
       pointer-events: none;
       position: absolute;
       z-index: 1;
-
-      @if $skin-name == 'highcontrast' {
-        border-width: 2px;
-      }
-      @else {
-        border-width: 1px;
-      }
+      border-width: $selection-border-width;
     }
 
     .e-active-cell,
     .e-copy-indicator,
-    .e-range-indicator {
-      cursor: cell;
-      pointer-events: none;
-      position: absolute;
-      z-index: 1;
-    }
-
+    .e-range-indicator,
     .e-formularef-indicator {
       cursor: cell;
       pointer-events: none;
@@ -1187,7 +1202,6 @@
     .e-filloption {
       position: absolute;
       z-index: 3;
-
       @if $skin-name == 'material' {
         background-color: $cell-border-color;
       }
@@ -1256,20 +1270,17 @@
           text-align: left;
           text-overflow: ellipsis;
           white-space: nowrap;
-          @if $skin-name == 'Material3' {
-            width: 50px;
-          }
-          @else {
-            width: 80px;
-          }
+          width: $spreadsheet-ribbon-btn-text-width;
         }
 
         &.e-font-size-ddb {
-          align-items: center;
-          display: inline-flex;
-          justify-content: left;
-          @if $skin-name != 'Material3' {
-            width: $fontsize-btn-width;
+          @if $skin-name != 'fluent2' {
+            align-items: center;
+            display: inline-flex;
+            justify-content: left;
+            @if $skin-name != 'Material3' {
+              width: $fontsize-btn-width;
+            }
           }
 
           & .e-caret {
@@ -1281,12 +1292,13 @@
 
       & .e-toolbar .e-btn:not(.e-tbar-btn) {
         font-weight: normal;
-        padding-bottom: 0;
-        padding-top: 0;
+        @if $skin-name !='fluent2' {
+          padding-bottom: 0;
+          padding-top: 0;
+        }
         @if $skin-name =='Material3' {
           font-size: 14px;
         }
-
         @if $skin-name == 'highcontrast' {
           border-width: 2px;
         }
@@ -1296,7 +1308,9 @@
         }
 
         &:not(.e-split-colorpicker) {
-          line-height: $spreadsheet-ribbon-btn-height;
+          @if $skin-name !='fluent2' {
+            line-height: $spreadsheet-ribbon-btn-height;
+          }
         }
 
         &:not(.e-split-btn) {
@@ -1314,12 +1328,20 @@
           }
         }
 
-        & .e-btn-icon {
-          margin-top: 0;
+        @if $skin-name !='fluent2' {
+          & .e-btn-icon {
+            margin-top: 0;
+          }
+        }
+
+        @if $skin-name =='fluent2' {
+          & .e-btn-icon.e-icons.e-caret {
+            font-size: $spreadsheet-tbar-dropdown-btn-icon-font-size;
+          }
         }
 
         &:not(.e-split-colorpicker) .e-btn-icon {
-          @if $skin-name != 'bootstrap5'and $skin-name != 'Material3' {
+          @if $skin-name != 'bootstrap5'and $skin-name != 'Material3' and $skin-name != 'fluent2' {
             line-height: $spreadsheet-ribbon-btn-height;
             min-height: $spreadsheet-ribbon-btn-height;
             vertical-align: bottom;
@@ -1328,7 +1350,6 @@
           &:not(.e-caret) {
             font-size: $spreadsheet-tbar-btn-icon-font-size;
           }
-
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
             &.e-wrap-icon {
               font-size: $toolbar-wrap-icon-font-size;
@@ -1344,38 +1365,52 @@
           }
         }
 
+        &.e-dropdown-btn.e-chart-ddb,
+        &.e-dropdown-btn.e-chart-type-ddb {
+          @if $skin-name == 'fluent2' {
+            height: 32px;
+          }
+        }
+
         & .e-chart-icon,
         & .e-chart-type-icon {
           font-size: $spreadsheet-chart-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
-          margin-right: 5px;
           padding: 0 5px;
           width: 30px;
+          @if $skin-name == 'fluent2' {
+            line-height: 26px;
+            margin-right: 3px;
+            margin-top: -3px;
+          }
+          @else {
+            margin-right: 5px;
+          }
         }
 
         & .e-switch-row-column-icon {
-          @if $skin-name != 'Material3' {
+          @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
             font-size: $spreadsheet-switch-row-column-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
             margin-right: 5px;
           }
         }
 
         & .e-addchart-icon {
-          font-size: $spreadsheet-addchart-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
-          @if $skin-name != 'Material3' {
+          @if $skin-name != 'fluent2' {
+            font-size: $spreadsheet-addchart-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
+          }
+          @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
             margin-right: -5px;
           }
         }
 
         &.e-split-colorpicker {
-          line-height: $spreadsheet-ribbon-btn-height - 1;
-          padding-bottom: 1px;
+          line-height: $spreadsheet-ribbon-cpicker-line-height;
+          padding-bottom: $spreadsheet-ribbon-cpicker-padding-bottom;
           padding-left: 0;
           padding-right: 0;
           width: $cpicker-btn-width;
           @if $skin-name == 'Material3' {
             background: transparent;
-            line-height: $spreadsheet-ribbon-btn-height - 2;
-            padding-bottom: 0;
           }
           & .e-icons.e-btn-icon:not(.e-caret) {
             &.e-font-color {
@@ -1411,12 +1446,10 @@
 
         & .e-dropdown-btn {
           margin-left: 0;
-
           @if $skin-name == 'bootstrap4' {
             padding-left: 4px;
             padding-right: 4px;
           }
-
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
             padding-left: 3px;
             padding-right: 3px;
@@ -1433,7 +1466,6 @@
         &.e-toolbar .e-toolbar-items .e-toolbar-item:last-child {
           min-width: auto;
           padding: 0;
-
           @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
             min-height: $right-tbar-height;
           }
@@ -1516,7 +1548,6 @@
       & .e-toolbar-panel {
         border-top-width: 0;
         display: none;
-
         @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           & .e-toolbar {
             border-color: $spreadsheet-border-color;
@@ -1592,16 +1623,16 @@
       }
 
       & .e-column-header {
-
         & .e-table th {
-
           &.e-header-cell.e-hide-start {
             border-left-color: transparent;
 
             &::after {
-              border-left: $spreadsheet-border;
               @if $skin-name == 'Material3' {
                 border-left: $spreadsheet-hidden-row-column-border;
+              }
+              @else {
+                border-left: $spreadsheet-border;
               }
               border-right: none;
               left: .5px;
@@ -1609,12 +1640,13 @@
           }
 
           &.e-hide-end.e-header-cell {
-
             &::before {
               border-left: none;
-              border-right: $spreadsheet-border;
               @if $skin-name == 'Material3' {
                 border-right: $spreadsheet-hidden-row-column-border;
+              }
+              @else {
+                border-right: $spreadsheet-border;
               }
               right: .5px;
             }
@@ -1678,25 +1710,26 @@
       .e-input-group {
         border: 0;
         box-shadow: none !important; /* stylelint-disable-line declaration-no-important */
+        &.e-input-focus .e-input,
+        & .e-input {
+          @if $skin-name == 'fluent2' {
+            padding-left: 0;
+          }
+        }
       }
 
       & .e-ddl-icon {
-        bottom: 5px;
-
+        bottom: $validation-list-icon-bottom;
+        @if $skin-name == 'fluent2' {
+          font-size: $validation-dropdown-icon-size;
+        }
         @if $skin-name != 'material' {
-          height: 18px;
-          min-height: 0;
-          min-width: 0;
+          height: $validation-list-icon-height;
+          min-height: $validation-list-icon-min-height;
+          min-width: $validation-list-icon-min-height;
           width: 20px;
         }
-        @if $skin-name == 'Material3' {
-          bottom: 1px;
-          height: 20px;
-          min-height: 20px;
-          min-width: 20px;
-        }
-
-        @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'fluent2' {
           padding: 0;
         }
       }
@@ -1715,12 +1748,11 @@
       }
 
       & .e-dlg-content {
-        @if $skin-name != 'Material3' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
           padding-bottom: 0;
           padding-left: 0;
           padding-right: 0;
         }
-
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
           & .e-sort-dialog {
             padding-top: 15px;
@@ -1747,29 +1779,30 @@
     & .e-conditionalformatting-dlg {
       & .e-input,
       & .e-input-group {
-        @if $skin-name != 'Material3' {
-          height: 34px;
-          @if $skin-name == 'FlunetUI' {
-            height: 40px;
-          }
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+          height: $cf-dlg-input-height;
         }
       }
 
       & .e-cfmain {
         & .e-header {
-          font-size: $cfmain-header-font-size;
+          @if $skin-name != 'fluent2' {
+            font-size: $cfmain-header-font-size;
+          }
         }
         @if $skin-name == 'Material3' {
           margin: 6px 0 20px;
         }
         @else {
-          margin-bottom: 22px;
+          margin-bottom: $spreadsheet-cfmain-header-margin-bottom;
         }
       }
 
       & .e-cfsub {
         & .e-header {
-          font-size: $cfmain-header-font-size;
+          @if $skin-name != 'fluent2' {
+            font-size: $cfmain-header-font-size;
+          }
         }
         @if $skin-name == 'Material3' {
           margin-bottom: 12px;
@@ -1779,21 +1812,17 @@
       & .e-header {
         display: block;
         @if $skin-name != 'Material3' {
-          margin-bottom: 6px;
+          margin-bottom: $spreadsheet-cf-header-margin-bottom;
         }
       }
 
       & .e-header-2 {
-        margin-top: 10px;
-        @if $skin-name == 'Material3' {
-          margin-top: 16px;
-        }
+        margin-top: $cf-dlg-header-margin-top;
       }
 
       & .e-top-header {
         font-weight: $cf-dlg-content-font-weight;
       }
-
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
         & .e-cf-dlg {
           padding-top: 10px;
@@ -1816,26 +1845,28 @@
 
     & .e-datavalidation-dlg {
       & .e-validation-dlg {
-        @if $skin-name != 'Material3' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
           margin-top: 14px;
         }
 
         & .e-cellrange {
-          @if $skin-name != 'Material3' {
-            margin-bottom: 24px;
-          }
-
-          @if $skin-name == 'Material3' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             padding-top: 4px;
+          }
+          @else if $skin-name != 'Material3' {
+            margin-bottom: 24px;
           }
 
           & .e-header {
             font-size: $validation-dlg-content-header-font-size;
-            line-height: 16px;
+            line-height: $validation-dlg-content-header-line;
           }
 
           & .e-input {
-            @if $skin-name != 'Material3' {
+            @if $skin-name == 'fluent2' {
+              margin-top: 4px;
+            }
+            @else if $skin-name != 'Material3' {
               height: 32px;
               margin-top: 5px;
               font-size: $validation-dlg-content-input-font-size;
@@ -1844,8 +1875,8 @@
         }
 
         & .e-allowdata {
-          @if $skin-name == 'Material3' {
-            padding-top: 20px;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            padding-top: $validation-dlg-content-header-padding-top;
           }
           @else {
             margin-bottom: 24px;
@@ -1853,16 +1884,19 @@
 
           & .e-allow {
             display: inline-block;
-            padding-right: 12px;
+            padding-right: $validation-dlg-content-padding;
             width: 50%;
 
             & .e-header {
               font-size: $validation-dlg-content-header-font-size;
-              line-height: 16px;
+              line-height: $validation-dlg-content-header-line;
             }
 
             & .e-valid-input {
-              @if $skin-name != 'Material3' {
+              @if $skin-name == 'fluent2' {
+                margin-top: 4px;
+              }
+              @else if $skin-name != 'Material3' {
                 height: 34px;
                 margin-top: 5px;
               }
@@ -1871,16 +1905,19 @@
 
           & .e-data {
             display: inline-block;
-            padding-left: 12px;
+            padding-left: $validation-dlg-content-padding;
             width: 50%;
 
             & .e-header {
               font-size: $validation-dlg-content-header-font-size;
-              line-height: 16px;
+              line-height: $validation-dlg-content-header-line;
             }
 
             & .e-valid-input {
-              @if $skin-name != 'Material3' {
+              @if $skin-name == 'fluent2' {
+                margin-top: 4px;
+              }
+              @else if $skin-name != 'Material3' {
                 height: 34px;
                 margin-top: 5px;
               }
@@ -1889,8 +1926,8 @@
         }
 
         & .e-values {
-          @if $skin-name == 'Material3' {
-            padding-top: 20px;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            padding-top: $validation-dlg-content-header-padding-top;
           }
           @else {
             margin-bottom: 24px;
@@ -1898,16 +1935,19 @@
 
           & .e-minimum {
             display: inline-block;
-            padding-right: 12px;
+            padding-right: $validation-dlg-content-padding;
             width: 50%;
 
             & .e-header {
               font-size: $validation-dlg-content-header-font-size;
-              line-height: 16px;
+              line-height: $validation-dlg-content-header-line;
             }
 
             & .e-input {
-              @if $skin-name != 'Material3' {
+              @if $skin-name == 'fluent2' {
+                margin-top: 4px;
+              }
+              @else if $skin-name != 'Material3' {
                 font-size: $validation-dlg-content-input-font-size;
                 height: 32px;
                 margin-top: 5px;
@@ -1917,16 +1957,19 @@
 
           & .e-maximum {
             display: inline-block;
-            padding-left: 12px;
+            padding-left: $validation-dlg-content-padding;
             width: 50%;
 
             & .e-header {
               font-size: $validation-dlg-content-header-font-size;
-              line-height: 16px;
+              line-height: $validation-dlg-content-header-line;
             }
 
             & .e-input {
-              @if $skin-name != 'Material3' {
+              @if $skin-name == 'fluent2' {
+                margin-top: 4px;
+              }
+              @else if $skin-name != 'Material3' {
                 font-size: $validation-dlg-content-input-font-size;
                 height: 32px;
                 margin-top: 5px;
@@ -1936,21 +1979,19 @@
 
           & .e-dlg-error {
             font-size: $validation-dlg-error-font-size;
-            @if $skin-name == 'Material3' {
-              padding-top: 4px;
-            }
-            @else {
-              padding-top: 10px;
-            }
+            padding-top: $validation-dlg-error-padding-top;
           }
 
           & .e-header {
             font-size: $validation-dlg-content-header-font-size;
-            line-height: 16px;
+            line-height: $validation-dlg-content-header-line;
           }
 
           & .e-input {
-            @if $skin-name != 'Material3' {
+            @if $skin-name == 'fluent2' {
+              margin-top: 4px;
+            }
+            @else if $skin-name != 'Material3' {
               font-size: $validation-dlg-content-input-font-size;
               height: 32px;
             }
@@ -1959,8 +2000,8 @@
 
         & .e-ignoreblank {
           margin-bottom: 5px;
-          @if $skin-name == 'Material3' {
-            padding-top: 20px;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            padding-top: $validation-dlg-content-header-padding-top;
           }
         }
       }
@@ -1984,7 +2025,7 @@
         max-height: 640px !important; /* stylelint-disable-line declaration-no-important */
       }
       & .e-dlg-content {
-        @if $skin-name != 'Material3' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
           padding-bottom: 0;
           padding-left: 0;
           padding-right: 0;
@@ -1995,7 +2036,7 @@
             @if $skin-name == 'bootstrap5' {
               padding: 0 12px;
             }
-            @else if $skin-name != 'Material3' {
+            @else if $skin-name != 'Material3' and $skin-name != 'fluent2' {
               padding: 0 24px 0 25px;
             }
 
@@ -2012,37 +2053,18 @@
           }
 
           & .e-content {
-            @if $skin-name == 'bootstrap5' {
-              padding-top: 12px;
-            }
-            @else if $skin-name == 'Material3' {
-              padding-top: 20px;
-            }
-            @else {
-              padding-top: 24px;
-            }
+            padding-top: $hyperlink-dlg-content-padding-top;
 
             & .e-cont {
-              @if $skin-name == 'bootstrap5' {
-                margin: 12px 12px 15.5px;
-              }
-              @else if $skin-name == 'FluentUI' {
-                margin: 0 0 12px 24px;
-              }
-              @else if $skin-name == 'Material3' {
-                margin: 0 0 20px;
-              }
-              @else {
-                margin: 0 0 15.5px 24px;
-              }
+              margin: $hyperlink-dlg-content-margin;
 
               & .e-header {
                 font-size: $hyperlink-dlg-content-header-font-size;
-                line-height: 16px;
+                line-height: $hyperlink-dlg-content-header-line-height;
               }
 
               & .e-text {
-                @if $skin-name != 'Material3' {
+                @if $skin-name != 'Material3' and  $skin-name != 'fluent2' {
                   font-size: $hyperlink-dlg-content-text-font-size;
                   height: 32px;
                   line-height: 16px;
@@ -2051,7 +2073,9 @@
                     margin-top: 8px;
                   }
                 }
-                
+                @if $skin-name == 'fluent2' {
+                  margin-top: 4px;
+                }
                 @if $skin-name == 'FluentUI'  {
                   padding-bottom: 4px;
                 }
@@ -2062,14 +2086,12 @@
               }
 
               & .e-refcont {
-                border: 1px solid $hyper-doc-border-color;
+                border: $hyperlink-dlg-refcont-border;
                 height: 165px;
-                margin: 8px 24px 0 0;
+                margin: $hyperlink-dlg-refcont-margin;
                 overflow: auto;
-                width: 273px;
-                @if $skin-name == 'Material3'  {
-                  border: 0;
-                  margin: 0 16px 0 0;
+                @if $skin-name != 'fluent2' {
+                  width: 273px;
                 }
               }
             }
@@ -2092,10 +2114,9 @@
         & .e-file-alert-span {
           color: $dlg-error-color;
           font-size: $open-dlg-file-alert-span-font-size;
-          padding-top: 7px;
-          @if $skin-name == 'Material3' {
+          padding-top: $open-dlg-file-alert-span-padding-top;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             display: block;
-            padding-top: 4px;
           }
         }
       }
@@ -2112,15 +2133,7 @@
       }
 
       & .e-dlg-content {
-        & .e-find-alert-span {
-          color: $dlg-error-color;
-          font-size: $find-dlg-alert-span-font-size;
-          padding-top: 7px;
-          @if $skin-name == 'Material3' {
-            display: block;
-          }
-        }
-
+        & .e-find-alert-span,
         & .e-replace-alert-span {
           color: $dlg-error-color;
           font-size: $find-dlg-alert-span-font-size;
@@ -2130,29 +2143,44 @@
           }
         }
 
+        & .e-findCheck {
+          @if $skin-name == 'fluent2' {
+            padding: $find-dlg-exactmatchcheckbox-padding;
+          }
+        }
+
         & .e-findnreplace-casecheckbox {
-          padding-right: 12px;
           @if $skin-name == 'Material3' {
             padding-bottom: 8px;
             padding-top: 20px;
           }
+          @else if $skin-name == 'fluent2' {
+            margin-right: 8px;
+          }
+          @else if $skin-name != 'fluent2' {
+            padding-right: 12px;
+          }
         }
 
         & .e-findnreplace-exactmatchcheckbox {
-          padding: 12px 0;
-          @if $skin-name == 'Material3' {
-            padding: 20px 0 8px;
+          @if $skin-name != 'fluent2' {
+            padding: $find-dlg-exactmatchcheckbox-padding;
+          }
+          @if $skin-name == 'fluent2' {
+            margin-left: 8px;
           }
         }
       }
 
       & p.e-header {
         margin: 0;
-        padding-top: 12px;
+        padding-top: $find-dlg-header-padding-top;
         @if $skin-name == 'Material3' {
           font-size: $find-dialog-header-font-size;
           padding-bottom: 0;
-          padding-top: 16px;
+        }
+        @if $skin-name == 'fluent2' {
+          padding-bottom: 4px;
         }
         @else {
           padding-bottom: 8px;
@@ -2166,18 +2194,18 @@
 
     & .e-protectworkbook-dlg.e-dialog {
       & .e-dlg-content {
-        @if $skin-name == 'Material3' {
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
           & .e-password-content {
-            padding: 4px 0 0;
+            padding: $protectworkbook-dlg-password-content-padding1;
           }
           & .e-password-content + .e-password-content {
-            padding: 16px 0 0;
+            padding: $protectworkbook-dlg-password-content-padding2;
           }
         }
         & .e-pwd-alert-span {
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
-          @if $skin-name == 'Material3' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             display: block;
             padding-top: 4px;
           }
@@ -2187,17 +2215,14 @@
         }
 
         & .e-password-content {
-          @if $skin-name != 'Material3' {
+          @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
             padding-top: 12px;
           }
           & .e-header {
             font-size: $protectworkbook-dlg-content-header-font-size;
+            line-height: $protectworkbook-dlg-content-header-line;
             @if $skin-name != 'Material3' {
-              line-height: 24px;
               margin-bottom: 4px;
-            }
-            @else {
-              line-height: 16px;
             }
           }
         }
@@ -2209,24 +2234,21 @@
         & .e-unprotectpwd-alert-span {
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
-          @if $skin-name == 'Material3' {
+          padding-top: $protect-unprotect-dlg-alert-span-padding-top;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             display: block;
-            padding-top: 4px;
-          }
-          @else {
-            padding-top: 7px;
           }
         }
 
         & .e-unprotectpwd-content {
           & .e-header {
             font-size: $unprotectworkbook-dlg-content-header-font-size;
-            line-height: 16px;
+            line-height: $reenterpwd-dlg-content-header-line;
           }
 
           & .e-input {
             @if $skin-name != 'Material3' {
-              margin-top: 10px;
+              margin-top: $reenterpwd-dlg-content-input-margin-top;
             }
           }
         }
@@ -2238,32 +2260,50 @@
         & .e-importprotectpwd-alert-span {
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
-          padding-top: 7px;
-          @if $skin-name == 'Material3' {
+          padding-top: $protectworkbook-dlg-alert-span-padding-top;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             display: block;
-            padding-top: 6px;
           }
         }
 
         & .e-importprotectpwd-content {
           & .e-header {
             font-size: $importprotectworkbook-dlg-content-header-font-size;
-            line-height: 16px;
+            line-height: $reenterpwd-dlg-content-header-line;
           }
 
           & .e-input {
-            margin-top: 10px;
+            margin-top: $reenterpwd-dlg-content-input-margin-top;
           }
         }
       }
     }
+    
+    & .e-open-dlg.e-dialog {
+      & .e-open-dialog {
+        & .e-open-head .e-header {
+          @if $skin-name =='Material3' {
+            color: $spreadsheet-label-font-color;
+            font-size: $open-dialog-header-font-size;
+          }
+          @if $skin-name =='fluent2' {
+            line-height: 20px;
+            padding-bottom: 4px;
+          }
+        }
 
-    @if $skin-name =='Material3' {
+        & .e-input-group .e-input-group-icon {
+          @if $skin-name =='fluent2' {
+            font-size: $open-dialog-extension-font-size;
+          }
+        }
+      }
+    }
+    
+    @if $skin-name =='Material3' or $skin-name =='fluent2' {
       & .e-open-dlg.e-dialog {
         & .e-open-dialog {
           & .e-open-head .e-header {
-            color: $spreadsheet-label-font-color;
-            font-size: $open-dialog-header-font-size;
             margin-top: 0;
             margin-bottom: 0;
           }
@@ -2280,36 +2320,51 @@
       @if $skin-name == 'FluentUI' {
         margin-top: -9px;
       }
+      @if $skin-name == 'fluent2' {
+        margin-top: 2px;
+        width: 17px;
+      }
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark'or $sheet-skin == 'Material3' {
         font-size: $filter-icon-font-size;
       }
 
+      &:hover:not(:active) {
+        @if $skin-name == 'fluent2' {
+          background: $filter-icon-hover-bg-color;
+        }
+      }
+
+      &:active {
+        @if $skin-name == 'fluent2' {
+          background: $filter-icon-active-bg-color;
+        }
+      }
+
       &::before {
         font-size: $filter-icon-before-font-size;
-        @if $skin-name != 'Material3' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
           margin-left: -3px;
         }
       }
     }
 
     & .e-btn.e-icon-btn.e-filter-btn {
-      bottom: 0;
+      bottom: $spreadsheet-filter-btn-bottom;
       float: right;
       height: 18px;
       margin-right: -1px;
       padding: 0;
       position: relative;
       right: 0;
-      width: 20px;
+      width: $spreadsheet-filter-btn-width;
       z-index: 2;
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        bottom: 1px;
-      }
-      @if $sheet-skin == 'Material3' {
+      @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
         background-color: $cell-background;
         border-color: $cell-border-color;
         box-shadow: none;
-        width: 22px;
+      }
+      @if $skin-name == 'fluent2' {
+        border: 0;
       }
     }
   }
@@ -2319,8 +2374,8 @@
 
     & .e-container {
       box-shadow: none;
-      @if $skin-name == 'Material3' {
-        width: 330px !important; /* stylelint-disable-line declaration-no-important */
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        width: $spreadsheet-border-cpicker-width !important; /* stylelint-disable-line declaration-no-important */
       }
       @else {
         width: 270px !important; /* stylelint-disable-line declaration-no-important */
@@ -2328,6 +2383,16 @@
 
       & .e-selected-value {
         display: flex;
+      }
+    }
+  }
+
+  .e-bigger {
+    & .e-colorpicker-wrapper.e-border-colorpicker {
+      & .e-container {
+        @if $skin-name == 'fluent2' {
+          width: 340px !important; /* stylelint-disable-line declaration-no-important */
+        }
       }
     }
   }
@@ -2374,6 +2439,9 @@
         & .e-menu-icon {
           line-height: $align-ddb-item-height;
           margin-right: 0;
+          @if $skin-name == 'fluent2' {
+            padding: 0;
+          }
         }
       }
     }
@@ -2422,13 +2490,17 @@
     }
 
     &.e-popup.e-aggregate-list ul {
-      font-size: $aggregate-list-font-size;
+      @if $skin-name != 'fluent2' {
+        font-size: $aggregate-list-font-size;
+      }
     }
   }
 
   .e-menu-wrapper {
     &.e-file-menu ul .e-menu-item div {
-      display: flex;
+      @if $skin-name != 'fluent2' {
+        display: flex;
+      }
       width: 100%;
 
       & .e-extension {
@@ -2436,6 +2508,9 @@
         margin-left: auto;
         opacity: .7;
         padding-left: $menu-extension-padding;
+        @if $skin-name == 'fluent2' {
+          float: right;
+        }
       }
     }
 
@@ -2524,10 +2599,8 @@
             & .e-4arrows,
             & .e-5arrowsgray,
             & .e-5arrows {
-              float: left;
-              height: 25%;
+              @include cf-menu-iconsets(left, 25%, 50%);
               padding: 2px 12px;
-              width: 50%;
             }
           }
 
@@ -2539,10 +2612,8 @@
             & .e-3signs,
             & .e-4trafficlights,
             & .e-4redtoblack {
-              float: left;
-              height: 33%;
+              @include cf-menu-iconsets(left, 33%, 50%);
               padding: 2px 12px;
-              width: 50%;
             }
           }
 
@@ -2552,10 +2623,8 @@
             & .e-3symbols,
             & .e-3symbols2,
             & .e-3flags {
-              float: left;
-              height: 50%;
+              @include cf-menu-iconsets(left, 50%, 50%);
               padding: 2px 12px;
-              width: 50%;
             }
           }
 
@@ -2567,9 +2636,7 @@
             & .e-5quarters,
             & .e-5rating,
             & .e-5boxes {
-              float: left;
-              height: 33%;
-              width: 50%;
+              @include cf-menu-iconsets(left, 33%, 50%);
             }
           }
         }
@@ -2611,14 +2678,10 @@
 
     &.e-popup.e-menu-popup.e-chart-menu ul,
     &.e-popup.e-menu-popup.e-chart-type-menu ul {
-      min-width: 165px;
-      overflow: visible;
-      padding: 0;
+      @include chart-menu-popup(165px);
 
       & .e-menu-item {
-        height: auto;
-        line-height: 0;
-        padding: 0;
+        @include chart-menu-item;
 
         & .e-column-main,
         & .e-bar-main {
@@ -2646,12 +2709,13 @@
             & .e-clusteredbar3d,
             & .e-stackedbar3d,
             & .e-stackedbar1003d {
-              display: inline-block;
-              font-size: 40px;
-              height: 100%;
-              margin: 0;
-              padding: 10px;
-              width: 55px;
+              @if $skin-name != 'fluent2' {
+                @include chart-type-styles(inline-block, 40px, 100%, 0, 10px, 55px);
+              }
+              @else {
+                @include chart-type-styles(inline-block, 32px, 100%, 0, 10px, 56px);
+                line-height: 32px;
+              }
             }
           }
         }
@@ -2660,14 +2724,10 @@
 
     &.e-popup.e-menu-popup.e-chart-menu ul,
     &.e-popup.e-menu-popup.e-chart-type-menu ul {
-      min-width: 110px;
-      overflow: visible;
-      padding: 0;
+      @include chart-menu-popup(110px);
 
       & .e-menu-item {
-        height: auto;
-        line-height: 0;
-        padding: 0;
+        @include chart-menu-item;
 
         & .e-pie-main,
         & .e-radar-main {
@@ -2687,12 +2747,13 @@
             & .e-doughnut,
             & .e-radar,
             & .e-radar-markers {
-              display: inline-block;
-              font-size: 40px;
-              height: 60px;
-              margin: 0;
-              padding: 10px;
-              width: 55px;
+              @if $skin-name != 'fluent2' {
+                @include chart-type-styles(inline-block, 40px, 60px, 0, 10px, 55px);
+              }
+              @else {
+                @include chart-type-styles(inline-block, 32px, 56px, 0, 10px, 56px);
+                line-height: 38px;
+              }
             }
           }
         }
@@ -2701,14 +2762,10 @@
 
     &.e-popup.e-menu-popup.e-chart-menu ul,
     &.e-popup.e-menu-popup.e-chart-type-menu ul {
-      min-width: 165px;
-      overflow: visible;
-      padding: 0;
+      @include chart-menu-popup(165px);
 
       & .e-menu-item {
-        height: auto;
-        line-height: 0;
-        padding: 0;
+        @include chart-menu-item;
 
         & .e-line-main,
         & .e-area-main {
@@ -2733,12 +2790,13 @@
             & .e-line-marker,
             & .e-stackedline-marker,
             & .e-stackedline100-marker {
-              display: inline-block;
-              font-size: 40px;
-              height: 60px;
-              margin: 0;
-              padding: 10px;
-              width: 55px;
+              @if $skin-name != 'fluent2' {
+                @include chart-type-styles(inline-block, 40px, 60px, 0, 10px, 55px);
+              }
+              @else {
+                @include chart-type-styles(inline-block, 32px, 56px, 0, 10px, 56px);
+                line-height: 36px;
+              }
             }
           }
         }
@@ -2747,14 +2805,10 @@
 
     &.e-popup.e-menu-popup.e-chart-menu ul,
     &.e-popup.e-menu-popup.e-chart-type-menu ul {
-      min-width: 60px;
-      overflow: visible;
-      padding: 0;
+      @include chart-menu-popup(60px);
 
       & .e-menu-item {
-        height: auto;
-        line-height: 0;
-        padding: 0;
+        @include chart-menu-item;
 
         & .e-scatter-main {
           height: 90px;
@@ -2768,12 +2822,13 @@
             height: 60%;
 
             & .e-scatter {
-              display: inline-block;
-              font-size: 60px;
-              height: 60px;
-              margin: 0;
-              padding: 10px;
-              width: 100%;
+              @if $skin-name != 'fluent2' {
+                @include chart-type-styles(inline-block, 60px, 60px, 0, 10px, 100%);
+              }
+              @else {
+                @include chart-type-styles(inline-block, 60px, 56px, 0, 10px, 100%);
+                line-height: 36px;
+              }
             }
           }
         }
@@ -2785,7 +2840,7 @@
     min-height: $dlg-min-height;
     user-select: none;
     & .e-dlg-content {
-      @if $sheet-skin != 'Material3' {
+      @if $sheet-skin != 'Material3' and $skin-name != 'fluent2' {
         overflow: hidden;
         padding-left: $dlg-content-padding;
         padding-right: $dlg-content-padding;
@@ -2797,38 +2852,27 @@
           font-weight: $dlg-category-content-font-weight;
           margin-bottom: $dlg-category-margin-bottom;
         }
-
         @if $sheet-skin == 'Material3' {
           padding: 4px 0 0;
         }
-
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
           padding: 10px 0;
         }
       }
 
       & .e-formula-description {
-        @if $sheet-skin != 'Material3' {
+        @if $sheet-skin != 'Material3' and $skin-name != 'fluent2' {
           margin-left: -4px;
           margin-top: 5px;
-          padding: 4px;
         }
-
-        @if $sheet-skin == 'Material3' {
-          padding: 4px 0;
-        }
+        padding: $dlg-category-formula-description-padding;
       }
 
       & .e-description-content {
+        font-size: $dlg-description-content-font-size;
+        padding-top: $dlg-description-content-padding-top;
         @if $sheet-skin != 'Material3' {
-          font-size: $dlg-description-content-font-size;
           font-weight: $dlg-description-font-weight;
-          padding-top: 10px;
-        }
-
-        @if $sheet-skin == 'Material3' {
-          font-size: $dlg-description-content-font-size;
-          padding-top: 16px;
         }
       }
 
@@ -2869,29 +2913,21 @@
 
       & .e-btn.e-css.e-insert-function {
         border-left: $spreadsheet-border;
-        height: 23px;
+        height: $spreadsheet-formula-bar-height;
+
         @if $skin-name == 'Material3' {
           padding-left: 6px;
           padding-right: 6px;
         }
 
         & .e-btn-icon {
-          @if $skin-name == 'Material3' {
-            line-height: 23px;
-          }
-          @else {
-            line-height: 24px;
-          }
+          line-height: $formula-bar-btn-icon-line-height;
         }
       }
 
       & .e-formula-bar {
-        height: 23px;
-        line-height: 23px;
-        @if $skin-name == 'Material3' {
-          height: 22px;
-          line-height: 22px;
-        }
+        height: $spreadsheet-formula-bar-height;
+        line-height: $spreadsheet-formula-bar-height;
         width: $formula-textarea-width;
       }
 
@@ -2922,7 +2958,13 @@
       max-width: 60%;
 
       & .e-hscroll-bar {
-        margin-left: -40px;
+        @if $skin-name == 'fluent2' {
+          margin-left: -28px;
+        }
+
+        @else {
+          margin-left: -40px;
+        }
         margin-right: 40px;
       }
     }
@@ -2932,19 +2974,34 @@
       height: 32px;
       padding: 0;
       width: 32px;
+      @if $skin-name == 'fluent2' {
+        margin-left: 0;
+        margin-right: 8px;
+      }
+
+      & .e-btn-icon.e-icon-left {
+        @if $skin-name == 'fluent2' {
+          margin-left: 0;
+        }
+      }
 
       & .e-btn-icon {
-        line-height: 33px;
-        @if $skin-name == 'Material3' {
-          line-height: 32px;
+        line-height: $sheet-tab-btn-icon-line-height;
+        @if $skin-name != 'fluent2' {
+          margin-top: 0;
         }
-        margin-top: 0;
+        @if $skin-name == 'fluent2' {
+          font-size: $sheet-tab-btn-icon-font-size;
+        }
       }
     }
 
     & .e-aggregate-list {
       font-size: $aggregate-list-font-size;
       margin-left: auto;
+      @if $skin-name == 'fluent2' {
+        font-weight: $aggregate-list-font-weight;
+      }
     }
 
     & .e-ribbon {
@@ -2987,7 +3044,6 @@
         height: 515px !important; /* stylelint-disable-line declaration-no-important */
       }
     }
-
     @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
       & .e-validation-list .e-ddl-icon {
         min-height: 0;
@@ -3015,12 +3071,19 @@
     }
 
     & .e-ribbon {
-
       & .e-toolbar .e-btn:not(.e-tbar-btn) {
         &:not(.e-split-colorpicker) {
-          line-height: $bigger-spreadsheet-ribbon-btn-height;
+          @if $skin-name != 'fluent2' {
+            line-height: $bigger-spreadsheet-ribbon-btn-height;
+          }
           @if $sheet-skin == 'Material3' {
             font-size: $function-dlg-header-content-font-size;
+          }
+        }
+
+        & .e-btn-icon.e-icons.e-caret {
+          @if $skin-name == 'fluent2' {
+            font-size: $bigger-toolbar-dropdown-font-size;
           }
         }
 
@@ -3031,13 +3094,12 @@
         }
 
         &.e-split-colorpicker {
-          line-height: $bigger-spreadsheet-ribbon-btn-height - 2;
-          padding-bottom: 2px;
-          @if $sheet-skin == 'Material3' {
-            line-height: $bigger-spreadsheet-ribbon-btn-height - 4;
-            padding-bottom: 0;
-          }
+          line-height: $bigger-cpicker-btn-line-height;
+          padding-bottom: $bigger-cpicker-btn-padding-bottom;
           width: $bigger-cpicker-btn-width;
+          @if $skin-name == 'fluent2' {
+            padding-top: 0;
+          }
         }
 
         &:not(.e-dropdown-btn):not(.e-split-btn) {
@@ -3046,22 +3108,47 @@
         }
 
         &:not(.e-split-colorpicker) .e-btn-icon {
-          line-height: $bigger-spreadsheet-ribbon-btn-height;
-          min-height: $bigger-spreadsheet-ribbon-btn-height;
-
-          @if $sheet-skin == 'Material3' {
-            line-height: $bigger-spreadsheet-ribbon-btn-height - 4;
-            min-height: $bigger-spreadsheet-ribbon-btn-height - 4;
+          @if $skin-name != 'fluent2' {
+            line-height: $bigger-spreadsheet-ribbon-btn-line-height;
+            min-height: $bigger-spreadsheet-ribbon-btn-line-height;
           }
 
           &:not(.e-caret) {
             font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
           }
-
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
             &.e-wrap-icon {
               font-size: $bigger-toolbar-wrap-icon-font-size;
             }
+          }
+        }
+      }
+
+      & .e-toolbar .e-toolbar-items .e-toolbar-item {
+        & .e-dropdown-btn.e-datavalidation-ddb,
+        & .e-dropdown-btn.e-addchart-ddb,
+        & .e-dropdown-btn.e-charttheme-ddb,
+        & .e-dropdown-btn.e-chart-type-ddb,
+        & .e-dropdown-btn.e-chart-ddb,
+        & .e-dropdown-btn.e-numformat-ddb,
+        & .e-dropdown-btn.e-font-family {
+          @if $skin-name == 'fluent2' {
+            font-size: $bigger-data-validation-toolbar-font-size;
+          }
+        }
+        & .e-btn.e-dropdown-btn.e-chart-ddb,
+        & .e-btn.e-dropdown-btn.e-chart-type-ddb {
+          @if $skin-name == 'fluent2' {
+            height: 40px;
+          }
+        }
+
+        & .e-btn .e-chart-icon,
+        & .e-btn .e-chart-type-icon {
+          @if $skin-name == 'fluent2' {
+            font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
+            margin-right: 18px;
+            padding: 0 10px;
           }
         }
       }
@@ -3071,16 +3158,17 @@
           font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
         }
       }
-
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
         & .e-toolbar .e-toolbar-item .e-btn {
 
           & .e-chart-icon,
           & .e-chart-type-icon {
-            font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
-            margin-right: 0;
-            padding: 0;
-            width: 36px;
+            @if $skin-name == 'Material3' {
+              font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
+              margin-right: 0;
+              padding: 0;
+              width: 36px;
+            }
           }
 
           &.e-split-colorpicker {
@@ -3098,7 +3186,7 @@
       }
 
       & .e-dropdown-btn.e-font-size-ddb {
-        @if $skin-name != 'Material3' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
           width: $bigger-fontsize-btn-width;
         }
       }
@@ -3120,7 +3208,6 @@
         @if $skin-name != 'Material3' {
           margin: 0;
         }
-
         @if $skin-name == 'Material3' {
           margin: 10px;
         }
@@ -3135,10 +3222,10 @@
 
     & .e-add-sheet-tab.e-btn.e-icon-btn.e-css,
     & .e-sheets-list.e-dropdown-btn {
-      @if $skin-name == 'Material3' {
-        height: 48px;
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        height: $bigger-spreadsheet-sheet-tab-icon-height;
         padding: 0;
-        width: 48px;
+        width: $bigger-spreadsheet-sheet-tab-icon-height;
       }
       @else {
         height: 39px;
@@ -3147,14 +3234,17 @@
 
       & .e-btn-icon {
         @if $skin-name == 'Material3' {
-          line-height: 48px;
+          line-height: $bigger-spreadsheet-sheet-tab-icon-height;
+        }
+        @else if $skin-name == 'fluent2' {
+          font-size: $bigger-spreadsheet-sheet-tab-icon-font;
+          line-height: $bigger-spreadsheet-sheet-tab-sheetlist-icon-height;
         }
         @else {
           line-height: 39px;
         }
       }
     }
-
     @if $skin-name == 'Material3' {
       & .e-add-sheet-tab,
       & .e-sheets-list {
@@ -3171,7 +3261,6 @@
         padding: 0 16px;
       }
     }
-
     @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap4' {
       & .e-drop-icon {
         font-size: $spreadsheet-drop-icon-font-size;
@@ -3181,8 +3270,8 @@
 
     &:not(.e-mobile-view) .e-formula-bar-panel {
       & .e-btn.e-css.e-insert-function {
-        @if $skin-name == 'Material3' {
-          height: 31px;
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          height: $bigger-insert-function-icon-height;
         }
         @else {
           height: 29px;
@@ -3190,8 +3279,8 @@
 
         & .e-btn-icon {
           font-size: $bigger-insert-function-btn-icon-font-size;
-          @if $skin-name == 'Material3' {
-            line-height: 31px;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            line-height: $bigger-insert-function-icon-height;
           }
           @else {
             line-height: 30px;
@@ -3200,22 +3289,17 @@
       }
 
       & .e-input-group.e-control-wrapper.e-ddl.e-name-box input.e-input {
-        height: 29px;
+        height: $bigger-name-box-ddl-input-height;
         @if $skin-name == 'Material3' {
-          height: 22px;
           padding: 5px 0 5px 8px;
           font-size: $bigger-name-box-ddl-icon-font-size;
         }
       }
 
       & .e-drop-icon {
-        line-height: 29px;
-        @if $skin-name == 'Material3' {
-          line-height: 32px;
-        }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        line-height: $bigger-formula-bar-drop-icon-line-height;
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'fluent2' {
           font-size: $bigger-formula-bar-drop-icon-font-size;
-          line-height: 38px;
         }
       }
 
@@ -3225,9 +3309,9 @@
 
       & .e-formula-bar {
         font-size: $bigger-formula-bar-font-size;
-        @if $skin-name == 'Material3' {
-          height: 32px;
-          line-height: 32px;
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          height: $bigger-formula-bar-height;
+          line-height: $bigger-formula-bar-line-height;
         }
         @else {
           height: 29px;
@@ -3240,13 +3324,8 @@
           height: 89px;
         }
         & .e-btn.e-css.e-insert-function {
-          height: 89px;
-          line-height: 89px;
-
-          @if $skin-name == 'Material3' {
-            height: 87px;
-            line-height: 87px;
-          }
+          height: $bigger-insert-function-height;
+          line-height: $bigger-insert-function-height;
         }
 
         & .e-formula-bar {
@@ -3268,7 +3347,7 @@
       .e-custom-dialog {
         & .e-input.e-dialog-input {
           float: left;
-          @if $skin-name == 'Material3' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             margin-right: 16px;
             width: 74%;
           }
@@ -3276,7 +3355,6 @@
             margin-right: 2.8%;
             width: 77%;
           }
-          
           @if $skin-name == 'FluentUI' {
             height: 40px;
           }
@@ -3293,7 +3371,7 @@
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
         width: 630px !important; /* stylelint-disable-line declaration-no-important */
       }
-      @else if $sheet-skin == 'Material3' {
+      @else if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
         width: 625px !important; /* stylelint-disable-line declaration-no-important */
       }
       @else {
@@ -3303,7 +3381,9 @@
 
     .e-sort-dialog .e-sort-template .e-list-item {
       height: auto;
-      line-height: 1;
+      @if $skin-name != 'fluent2' {
+        line-height: 1;
+      }
     }
 
     & .e-filter-icon {
@@ -3318,8 +3398,10 @@
     }
 
     & .e-find-dlg .e-footer-content .e-btn {
-      font-size: $bigger-find-dlg-btn-font-size;
-      margin-top: 6px;
+      @if $skin-name != 'fluent2' {
+        font-size: $bigger-find-dlg-btn-font-size;
+        margin-top: 6px;
+      }
     }
 
     & .e-findtool-dlg {
@@ -3340,8 +3422,8 @@
     & .e-protectworkbook-dlg.e-dialog .e-dlg-content {
       & .e-pwd-alert-span {
         color: $dlg-error-color;
-        @if $skin-name == 'Material3' {
-          padding-top: 6px;
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
         }
         @else {
           font-size: $protectworkbook-dlg-pwd-alert-span-font-size;
@@ -3350,7 +3432,7 @@
       }
 
       & .e-password-content {
-        @if $sheet-skin != 'Material3'{
+        @if $sheet-skin != 'Material3' and $skin-name != 'fluent2'{
           padding-top: 16px;
           margin-bottom: 8px;
         }
@@ -3388,6 +3470,12 @@
     }
 
     & .e-excelfilter {
+      & .e-dlg-content {
+        @if $skin-name == 'fluent2' {
+          padding-right: 7px;
+        }
+      }
+
       & .e-spreadsheet-ftrchk {
         padding-left: $filter-selectall-bigger-padding;
       }
@@ -3400,26 +3488,27 @@
 
     & .e-checkboxtree {
       ul {
-        padding-left: 0;
+        @if $skin-name != 'fluent2' {
+          padding-left: 0;
+        }
       }
 
       &.e-rtl ul {
-        padding-right: 0;
+        @if $skin-name != 'fluent2' {
+          padding-right: 0;
+        }
       }
     }
 
     & .e-validation-list {
-
       @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
         width: $bigger-validation-list-width;
       }
 
       & .e-ddl-icon.e-search-icon {
-
         @if $skin-name == 'material' or $skin-name == 'material-dark' {
           bottom: $bigger-validation-list-icon-bottom;
         }
-
         @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' {
           min-height: $bigger-validation-list-icon-height-width;
           min-width: $bigger-validation-list-icon-height-width;
@@ -3433,7 +3522,6 @@
     &.e-font-size-ddb ul {
       min-width: 70px;
     }
-
     @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
       &.e-dragfill-ddb ul,
       &.e-numformat-ddb ul {
@@ -3458,7 +3546,6 @@
   .e-sort-dialog {
     height: 100%;
     position: relative;
-
     @if $skin-name == 'Material3' {
       & .e-sort-header {
         border-bottom: 1px solid $spreadsheet-customsrt-line-color;
@@ -3475,12 +3562,14 @@
     }
 
     & .e-sort-listwrapper {
-      padding-left: 2px;
+      @if $skin-name != 'fluent2' {
+        padding-left: 2px;
+      }
     }
 
     & .e-sort-listwrapper .text {
       font-size: $sort-dlg-listwrapper-text-font-size;
-      @if $skin-name != 'Material3' {
+      @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
         padding: 10px 0 5px;
       }
     }
@@ -3492,23 +3581,19 @@
     & .e-sort-row {
       align-items: center;
       display: flex;
-      padding: 5px 0 10px;
-      @if $skin-name == 'Material3' {
-        padding: 6px 0 10px;
-      }
+      padding: $sort-dlg-row-padding;
     }
 
     & .e-sort-error,
     & .e-sort-header,
     & .e-sort-casecheckbox,
     & .e-sort-listsection {
-      @if $skin-name != 'Material3' {
+      @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
         padding-left: $dlg-content-padding;
         padding-right: $dlg-content-padding;
         padding-bottom: $dlg-content-padding-bottom;
       }
     }
-
     @if $skin-name == 'Material3' {
       & .e-sort-header {
         padding-bottom: 20px;
@@ -3527,7 +3612,7 @@
     }
 
     & .e-sort-error {
-      bottom: 0;
+      bottom: $spreadsheet-sort-dlg-error-bottom;
       display: none;
       font-size: $sort-dlg-error-font-size;
       height: 20px;
@@ -3544,7 +3629,7 @@
         line-height: unset;
 
         &:not(:first-child) {
-          padding: 5px 0 0;
+          padding: $spreadsheet-sort-template-item-padding;
         }
 
         &:first-child {
@@ -3565,6 +3650,9 @@
     & .e-radio-wrapper {
       @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'Material3' {
         margin-left: 20px;
+      }
+      @else if $skin-name == 'fluent2' {
+        margin-left: 8px;
       }
       @else {
         margin-left: 16px;
@@ -3593,26 +3681,24 @@
     }
   }
 
-  @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
-    .e-spreadsheet .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
-      & .e-tab-wrap:focus .e-text-wrap {
+  .e-spreadsheet .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
+    & .e-tab-wrap:focus .e-text-wrap,
+    &:not(.e-separator) .e-text-wrap {
+      @if $skin-name =='bootstrap5' or $skin-name =='bootstrap5-dark' {
         height: 32px;
       }
-
-      &:not(.e-separator) .e-text-wrap {
-        height: 32px;
+    }
+    &:not(.e-separator) .e-tab-wrap {
+      @if $skin-name =='bootstrap5' or $skin-name =='bootstrap5-dark' or $skin-name =='fluent2' {
+        height: $spreadsheet-ribbon-toolbar-item-height;
       }
-
-      &:not(.e-separator) .e-tab-wrap {
-        height: 35px;
-      }
-
-      &.e-active {
+    }
+    &.e-active {
+      @if $skin-name =='bootstrap5' or $skin-name =='bootstrap5-dark' {
         margin: 0;
       }
     }
   }
-
   @if $skin-name == 'Material3' {
     .e-spreadsheet .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
       &.e-active {
@@ -3623,8 +3709,47 @@
 
   .e-bigger .e-spreadsheet,
   .e-bigger.e-spreadsheet {
-    @if $skin-name =='Material3' {
+    @if $skin-name =='fluent2' {
+      & .e-customsort-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-sort-listsection {
+            padding-top: $bigger-spreadsheet-sort-dlg-list-padding;
+          }
+        }
+        & .e-sort-dialog {
+          & .e-sort-row {
+            padding: $bigger-spreadsheet-sort-row-padding;
+          }
+        }
+      }
 
+      & .e-findtool-dlg {
+        & .e-find-toolbar {
+          & .e-toolbar-item:not(.e-separator):not(.e-spacer) {
+            min-width: 40px;
+            padding: 0 4px;
+          }
+        }
+      }
+
+      & .e-goto-dlg.e-dialog {
+        & .e-dlg-content .e-header {
+          @if $skin-name == 'fluent2' {
+            margin: 0;
+            padding: 4px 0;
+          }
+        }
+
+        & .e-dlg-content .e-goto-alert-span {
+          color: $dlg-error-color;
+          display: block;
+          font-size: 14px;
+          padding-top: 6px;
+        }
+      }
+    }
+
+    @if $skin-name =='Material3' or $skin-name =='fluent2' {
       & .e-sheet-tab {
         & .e-tab-header {
           & .e-toolbar-item {
@@ -3638,13 +3763,30 @@
       }
 
       & .e-validation-list {
+        .e-input-group {
+          &.e-input-focus .e-input,
+          & .e-input {
+            @if $skin-name == 'fluent2' {
+              padding-left: 0;
+            }
+          }
+        }
+
         & .e-ddl-icon {
           bottom: 0;
           font-size: $spreadsheet-drop-icon-font-size;
           height: 20px;
           min-height: 20px;
-          min-width: 20px;
+          @if $skin-name =='Material3'{
+            min-width: 20px;
+          }
+          @else {
+            min-width: 16px;
+          }
           width: 20px;
+          @if $skin-name =='fluent2'{
+            padding: 0;
+          }
         }
       }
 
@@ -3658,14 +3800,14 @@
         & .e-dlg-content {
           & .e-file-alert-span {
             font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: 6px;
+            padding-top: $bigger-spreadsheet-dlg-error-padding-top;
           }
         }
       }
 
       & .e-dlg-content .e-custom-dialog .e-custom-sample {
         font-size: $bigger-spreadsheet-dlg-label-font-size;
-        margin: 20px 0 4px;
+        margin: $bigger-spreadsheet-custom-sample-margin;
       }
 
       & .e-conditionalformatting-dlg {
@@ -3673,18 +3815,18 @@
           & .e-header {
             font-size: $bigger-spreadsheet-dlg-label-font-size;
           }
-          margin: 8px 0 20px;
+          margin: $bigger-spreadsheet-cf-main-margin;
         }
 
         & .e-cfsub {
           & .e-header {
             font-size: $bigger-spreadsheet-dlg-label-font-size;
           }
-          margin-bottom: 12px;
+          margin-bottom: $bigger-spreadsheet-cf-sub-margin;
         }
 
         & .e-header-2 {
-          margin-top: 20px;
+          margin-top: $bigger-spreadsheet-cf-header2-margin;
         }
       }
       & .e-sort-dialog {
@@ -3704,29 +3846,25 @@
           }
         }
         & .e-dlg-content {
-          & .e-find-alert-span {
-            font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: 7px;
-          }
-
+          & .e-find-alert-span,
           & .e-replace-alert-span {
             font-size: $bigger-spreadsheet-dlg-error-font-size;
             padding-top: 7px;
           }
 
           & .e-findnreplace-casecheckbox {
-            padding-bottom: 10px;
-            padding-top: 20px;
+            padding-bottom: $bigger-find-replace-casecheck-padding-bottom;
+            padding-top: $bigger-find-replace-casecheck-padding-top;
           }
 
           & .e-findnreplace-exactmatchcheckbox {
-            padding: 20px 0 10px;
+            padding: $bigger-find-replace-exactmatch-padding;
           }
         }
 
         & p.e-header {
           font-size: $bigger-spreadsheet-dlg-label-font-size;
-          padding-bottom: 0;
+          padding-bottom: $bigger-spreadsheet-dlg-label-padding-bottom;
           padding-top: 16px;
         }
       }
@@ -3734,23 +3872,23 @@
       & .e-hyperlink-dlg.e-dialog,
       .e-edithyperlink-dlg.e-dialog {
         & .e-dlg-content {
-
           & .e-link-dialog {
-
             & .e-content {
-              padding-top: 24px;
+              padding-top: $bigger-hyperlink-dlg-content-padding;
 
               & .e-cont {
-                margin: 0 0 24px;
+                margin: $bigger-hyperlink-dlg-content-margin;
 
                 & .e-header {
                   font-size: $bigger-spreadsheet-dlg-label-font-size;
-                  line-height: 20px;
+                  line-height: $bigger-hyperlink-dlg-header-line-height;
                 }
 
                 & .e-refcont {
-                  border: 0;
-                  margin: 0 16px 0 0;
+                  @if $skin-name != 'fluent2' {
+                    border: 0;
+                    margin: 0 16px 0 0;
+                  }
                 }
               }
             }
@@ -3770,24 +3908,24 @@
 
           & .e-description-content {
             font-size: $bigger-spreadsheet-dlg-label-font-size;
-            padding-top: 20px;
+            padding-top: $bigger-function-dlg-description-padding-top;
           }
         }
       }
       & .e-protect-dlg.e-dialog {
         & .e-sheet-password-content {
           font-size: $bigger-spreadsheet-dlg-label-font-size;
-          padding: 4px 0 20px;
+          padding: $bigger-protect-sheet-password-content-padding;
 
           & .e-header {
-            line-height: 20px;
+            line-height: $bigger-protect-sheet-password-header-line;
           }
         }
 
         & .e-protect-content {
           font-size: $bigger-spreadsheet-dlg-label-font-size;
-          line-height: 20px;
-          padding: 20px 0 4px;
+          line-height: $bigger-protect-sheet-password-header-line;
+          padding: $bigger-protect-content-padding;
         }
       }
 
@@ -3795,13 +3933,13 @@
         & .e-dlg-content {
           & .e-reenterpwd-alert-span {
             font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: 6px;
+            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
           }
 
           & .e-reenterpwd-content {
             & .e-header {
               font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: 20px;
+              line-height: $bigger-protect-sheet-password-header-line;
             }
           }
         }
@@ -3811,13 +3949,13 @@
         & .e-dlg-content {
           & .e-unprotectsheetpwd-alert-span {
             font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: 6px;
+            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
           }
 
           & .e-unprotectsheetpwd-content {
             & .e-header {
               font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: 20px;
+              line-height: $bigger-protect-sheet-password-header-line;
             }
           }
         }
@@ -3831,15 +3969,15 @@
           }
 
           & .e-password-content + .e-password-content {
-            padding: 20px 0 0;
+            padding: $bigger-protect-password-content-padding2;
           }
 
           & .e-password-content {
-            padding: 4px 0 0;
+            padding: $bigger-protect-password-content-padding;
 
             & .e-header {
               font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: 20px;
+              line-height: $bigger-protect-sheet-password-header-line;
             }
           }
         }
@@ -3849,13 +3987,13 @@
         & .e-dlg-content {
           & .e-unprotectpwd-alert-span {
             font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: 6px;
+            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
           }
 
           & .e-unprotectpwd-content {
             & .e-header {
               font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: 20px;
+              line-height: $bigger-protect-sheet-password-header-line;
             }
           }
         }
@@ -3865,7 +4003,7 @@
         & .e-validation-dlg {
           & .e-header {
             font-size: $bigger-spreadsheet-dlg-label-font-size;
-            line-height: 20px;
+            line-height: $bigger-protect-sheet-password-header-line;
           }
 
           & .e-cellrange {
@@ -3873,63 +4011,59 @@
 
             & .e-header {
               font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: 20px;
+              line-height: $bigger-protect-sheet-password-header-line;
             }
           }
 
           & .e-allowdata {
-            padding-top: 20px;
+            padding-top: $bigger-data-validation-content-padding-top;
 
             & .e-allow {
-
               & .e-header {
                 font-size: $bigger-spreadsheet-dlg-label-font-size;
-                line-height: 20px;
+                line-height: $bigger-protect-sheet-password-header-line;
               }
             }
 
             & .e-data {
-
               & .e-header {
                 font-size: $bigger-spreadsheet-dlg-label-font-size;
-                line-height: 20px;
+                line-height: $bigger-protect-sheet-password-header-line;
               }
             }
           }
 
           & .e-values {
-            padding-top: 20px;
+            padding-top: $bigger-data-validation-content-padding-top;
 
             & .e-minimum {
-
               & .e-header {
                 font-size: $bigger-spreadsheet-dlg-label-font-size;
-                line-height: 20px;
+                line-height: $bigger-protect-sheet-password-header-line;
               }
             }
 
             & .e-maximum {
-
               & .e-header {
                 font-size: $bigger-spreadsheet-dlg-label-font-size;
-                line-height: 20px;
+                line-height: $bigger-protect-sheet-password-header-line;
               }
             }
 
             & .e-dlg-error {
               font-size: $bigger-spreadsheet-dlg-error-font-size;
-              padding-top: 6px;
+              padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
             }
 
             & .e-header {
               font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: 20px;
+              line-height: $bigger-protect-sheet-password-header-line;
             }
           }
 
           & .e-ignoreblank {
             margin-bottom: 8px;
-            padding-top: 20px;
+            padding-top: $bigger-data-validation-content-padding-top;
           }
         }
       }

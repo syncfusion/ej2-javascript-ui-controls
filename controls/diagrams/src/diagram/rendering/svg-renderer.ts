@@ -18,6 +18,8 @@ import { removeGradient, checkBrowserInfo } from '../utility/diagram-util';
 import { Container } from '../core/containers/container';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { UserHandleModel } from '../interaction/selector-model';
+import { DiagramAction } from '../enum/enum';
+import { Diagram } from '../diagram';
 
 /**
  * SVG Renderer
@@ -159,7 +161,7 @@ export class SvgRenderer implements IRenderer {
             attr['role'] = 'img';
             attr['aria-label'] = ariaLabel;
         }
-        let classval = options.class || '';
+        let classval: string = options.class || '';
         if (!enableSelector) {
             if (classval.includes('e-diagram-resize-handle') || classval.includes('e-diagram-endpoint-handle') || classval.includes('e-diagram-bezier-control-handle')){
                 classval += ' e-disabled';
@@ -374,7 +376,8 @@ export class SvgRenderer implements IRenderer {
         const segments: Object[] = collection;
         let d: string = '';
         for (x = 0, y = 0, i = 0, length = segments.length; i < length; ++i) {
-            const obj: Object = segments[parseInt(i.toString(), 10)]; const segment: PathSegment = obj; const char: string = segment.command;
+            const obj: Object = segments[parseInt(i.toString(), 10)]; const segment: PathSegment = obj;
+            const char: string = segment.command;
             if ('x1' in segment) { x1 = segment.x1; }
             if ('x2' in segment) { x2 = segment.x2; }
             if ('y1' in segment) { y1 = segment.y1; }
@@ -489,9 +492,9 @@ export class SvgRenderer implements IRenderer {
                     textNode = document.createTextNode(childNodes[parseInt(i.toString(), 10)].text);
                     child = childNodes[parseInt(i.toString(), 10)];
                     child.x = setChildPosition(child, childNodes, i, options);
-                    if(options.textAlign === 'justify' || options.textAlign === 'left'){
+                    if (options.textAlign === 'justify' || options.textAlign === 'left') {
                         offsetX = 0;
-                    }else{
+                    } else {
                         offsetX = position.x + child.x - wrapBounds.x;
                     }
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
@@ -509,14 +512,14 @@ export class SvgRenderer implements IRenderer {
                                 }
                             }
                             //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
-                           this.alignText(text, tspanElement, child, textNode, offsetX, offsetY,i,options,childNodes);
+                            this.alignText(text, tspanElement, child, textNode, offsetX, offsetY, i, options, childNodes);
                             childNodesHeight += child.dy;
                         } else {
                             break;
                         }
                     } else {
                         //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
-                        this.alignText(text, tspanElement, child, textNode, offsetX, offsetY,i,options,childNodes);
+                        this.alignText(text, tspanElement, child, textNode, offsetX, offsetY, i, options, childNodes);
                     }
 
                 }
@@ -545,29 +548,30 @@ export class SvgRenderer implements IRenderer {
     }
 
     private alignText(text: SVGTextElement, tspanElement: SVGElement, child: SubTextElement,
-        textNode: Text, offsetX: number, offsetY: number,i:number,options: TextAttributes,childNodes: SubTextElement[]){
+                      textNode: Text, offsetX: number, offsetY: number, i: number,
+                      options: TextAttributes, childNodes: SubTextElement[]): void {
         //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
-        if(options.textAlign !=='justify'){
-            this.setText(text, tspanElement, child, textNode, offsetX, offsetY,options);
+        if (options.textAlign !== 'justify') {
+            this.setText(text, tspanElement, child, textNode, offsetX, offsetY, options);
         }
-        else{
-            if (i != childNodes.length - 1) {
-                let textlength:number=options.width; 
-                let adjustlen:string = "spacing"
-                this.setText(text, tspanElement, child, textNode, offsetX, offsetY,options,textlength,adjustlen);
+        else {
+            if (i !== childNodes.length - 1) {
+                const textlength: number = options.width;
+                const adjustlen: string = 'spacing';
+                this.setText(text, tspanElement, child, textNode, offsetX, offsetY, options, textlength, adjustlen);
             }
-            else{
-                this.setText(text, tspanElement, child, textNode, offsetX, offsetY,options);
+            else {
+                this.setText(text, tspanElement, child, textNode, offsetX, offsetY, options);
             }
         }
-    } 
+    }
     private setText(
         text: SVGTextElement, tspanElement: SVGElement, child: SubTextElement,
-        textNode: Text, offsetX: number, offsetY: number,options?:TextAttributes,textlength?:number,adjustlen?:string): void {
-        if(options.textAlign !=='justify'){
-            setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString()});
-        }else{
-            setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString(), 'textLength': textlength?textlength:0, 'lengthAdjust': adjustlen ? adjustlen:'spacing'});
+        textNode: Text, offsetX: number, offsetY: number, options?: TextAttributes, textlength?: number, adjustlen?: string): void {
+        if (options.textAlign !== 'justify') {
+            setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString() });
+        } else {
+            setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString(), 'textLength': textlength ? textlength : 0, 'lengthAdjust': adjustlen ? adjustlen : 'spacing' });
         }
         text.setAttribute('fill', child.text);
         tspanElement.appendChild(textNode);
@@ -600,9 +604,7 @@ export class SvgRenderer implements IRenderer {
         const imageObj: HTMLImageElement = new Image();
         imageObj.src = obj.source;
         let scale: string = obj.scale !== 'None' ? obj.scale : '';
-        if (isBlazor() && obj.alignment === 'None' && scale === 'Stretch') {
-            scale = '';
-        }
+        //Removed isBlazor code
         const imgAlign: string = obj.alignment;
         let aspectRatio: string = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
         if (scale !== 'Stretch') {
@@ -612,7 +614,7 @@ export class SvgRenderer implements IRenderer {
             'id': obj.id + 'image', 'x': obj.x.toString(), 'y': obj.y.toString(), 'transform': 'rotate(' + obj.angle + ','
                 + (obj.x + obj.width * obj.pivotX) + ',' + (obj.y + obj.height * obj.pivotY) + ')',
             'width': obj.width.toString(), 'visibility': obj.visible ? 'visible' : 'hidden',
-            'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio, 
+            'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio,
             //832073 - Opacity when set to Zero for image node is not working - opacity value of 1 is already set as default
             'opacity': obj.opacity.toString()
         };
@@ -662,12 +664,12 @@ export class SvgRenderer implements IRenderer {
             } else {
                 //Bug 852259: User handle template not working properly after saving and loading the diagram.
                 // After serialization the template will be in string format, so we need to convert it to element.
-                if(typeof element.template === 'string'){
-                    var temp = document.createElement('div');
+                if (typeof element.template === 'string') {
+                    const temp: HTMLDivElement = document.createElement('div');
                     temp.innerHTML = element.template;
                     element.template = temp;
-                    var diagram = (document.getElementById(element.diagramId) as any).ej2_instances[0];
-                    let handle: UserHandleModel[] = diagram.selectedItems.userHandles.filter((x: UserHandleModel) => {
+                    const diagram: Diagram = (document.getElementById(element.diagramId) as any).ej2_instances[0];
+                    const handle: UserHandleModel[] = diagram.selectedItems.userHandles.filter((x: UserHandleModel) => {
                         return x.name === (element.id.split('_shape')[0]) && (x.template as any) !== '';
                     });
                     handle[0].template = element.template;
@@ -815,8 +817,10 @@ export class SvgRenderer implements IRenderer {
         removeGradient(svg.id);
         if (options.gradient.type !== 'None') {
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
-                max = !max ? options.gradient.stops[parseInt(i.toString(), 10)].offset : Math.max(max, options.gradient.stops[parseInt(i.toString(), 10)].offset);
-                min = !min ? options.gradient.stops[parseInt(i.toString(), 10)].offset : Math.min(min, options.gradient.stops[parseInt(i.toString(), 10)].offset);
+                max = !max ? options.gradient.stops[parseInt(i.toString(), 10)].offset
+                    : Math.max(max, options.gradient.stops[parseInt(i.toString(), 10)].offset);
+                min = !min ? options.gradient.stops[parseInt(i.toString(), 10)].offset
+                    : Math.min(min, options.gradient.stops[parseInt(i.toString(), 10)].offset);
             }
             if (options.gradient.type === 'Linear') {
                 linear = options.gradient;
@@ -951,14 +955,9 @@ export class SvgRenderer implements IRenderer {
         } else if (text.textAlign === 'right') {
             pointX = (text.width * 1);
         }
-        else if(text.textAlign === 'justify'){
-            pointX = 0;
-        }
         pos.x = x + pointX + (wrapBound ? wrapBound.x : 0);
         pos.y = y + pointY - bounds.height / 2;
         return pos;
     }
     //end region
 }
-
-

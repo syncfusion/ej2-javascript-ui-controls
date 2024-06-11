@@ -2,7 +2,7 @@
 import { SvgRenderer, LinearGradient as Linear, RadialGradient as Radial, GradientColor } from '@syncfusion/ej2-svg-base';
 import { Pointer, Range } from '../axes/axis';
 import { LinearGauge } from '../../linear-gauge';
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorStopModel, GradientPositionModel} from '../axes/gradient-model';
 /**
  * Specifies the color information for the gradient in the linear gauge.
@@ -164,19 +164,20 @@ export class Gradient {
         const name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
         const gradientPosition: Radial = {
             id: name,
-            r: (element.radialGradient.radius.indexOf('%') === -1 ?
+            r: !isNullOrUndefined(element.radialGradient.radius) ? 
+                (element.radialGradient.radius.indexOf('%') === -1 ?
                 element.radialGradient.radius :
-                parseFloat(element.radialGradient.radius).toString()) + '%',
-            cx: (element.radialGradient.outerPosition.x.indexOf('%') === -1 ?
+                parseFloat(element.radialGradient.radius).toString()) + '%' : '0%',
+            cx: element.radialGradient.outerPosition == null ? "0%" : (element.radialGradient.outerPosition.x.indexOf('%') === -1 ?
                 element.radialGradient.outerPosition.x :
                 parseFloat(element.radialGradient.outerPosition.x).toString()) + '%',
-            cy: (element.radialGradient.outerPosition.y.indexOf('%') === -1 ?
+            cy: element.radialGradient.outerPosition == null ? "0%" : (element.radialGradient.outerPosition.y.indexOf('%') === -1 ?
                 element.radialGradient.outerPosition.y :
                 parseFloat(element.radialGradient.outerPosition.y).toString()) + '%',
-            fx: (element.radialGradient.innerPosition.x.indexOf('%') === -1 ?
+            fx: element.radialGradient.innerPosition == null ? "0%" : (element.radialGradient.innerPosition.x.indexOf('%') === -1 ?
                 element.radialGradient.innerPosition.y :
                 parseFloat(element.radialGradient.innerPosition.x).toString()) + '%',
-            fy: (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
+            fy: element.radialGradient.innerPosition == null ? "0%" : (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
                 element.radialGradient.innerPosition.y :
                 parseFloat(element.radialGradient.innerPosition.y).toString()) + '%'
         };
@@ -193,7 +194,7 @@ export class Gradient {
 
     private getGradientColor(colorStop: ColorStopModel[]): GradientColor[] {
         const colors: GradientColor[] = [];
-        const length: number = colorStop.length;
+        const length: number = !isNullOrUndefined(colorStop) ? colorStop.length : 0;
         for (let j: number = 0; j < length; j++) {
             const gradientColorStop: ColorStopModel = colorStop[j as number];
             const color: GradientColor = {

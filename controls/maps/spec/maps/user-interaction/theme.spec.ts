@@ -630,6 +630,206 @@ describe('Map layer testing', () => {
             expect(tooltipElement.getAttribute('fill')).toBe('#000000');
             expect(tooltipElement.getAttribute('opacity')).toBe('1');
         });
+
+
+        it('checking with Fluent2Background  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_MapAreaBorder');
+                expect(element.getAttribute('fill')).toBe('transparent');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+
+        it('checking with Fluent2 Title  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Map_title');
+                expect(element.getAttribute('fill')).toBe('#242424');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('checking with Fluent2 Title font family  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Map_title');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-weight')).toBe('600');
+                expect(element.getAttribute('font-size')).toBe('14px');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('checking with Fluent2 SubTitle  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Map_subtitle');
+                expect(element.getAttribute('fill')).toBe('#242424');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('checking with Fluent2 SubTitle font family  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Map_subtitle');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-weight')).toBe('600');
+                expect(element.getAttribute('font-size')).toBe('12px');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('checking with Fluent2 Legend text  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Legend_Text_Index_0');
+                expect(element.getAttribute('fill')).toBe('#242424');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('checking with Fluent2 Legend text font family  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Legend_Text_Index_0');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-weight')).toBe('400');
+                expect(element.getAttribute('font-size')).toBe('12px');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('maps Legend title  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LegendTitle');
+                expect(element.getAttribute('fill')).toBe('#242424');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('checking with Fluent2 Legend title font family  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LegendTitle');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-weight')).toBe('600');
+                expect(element.getAttribute('font-size')).toBe('12px');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('checking with Fluent2 DataLabel  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LayerIndex_0_shapeIndex_0_LabelIndex_0');
+                expect(element.getAttribute('fill')).toBe('#242424');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+        it('checking with Fluent2 DataLabel font family ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LayerIndex_0_shapeIndex_0_LabelIndex_0');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-size')).toBe('12px');
+            };
+            maps.theme ='Fluent2';
+            maps.refresh();
+        });
+
+
+        it('checking with Fluent2DarkBackground  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_MapAreaBorder');
+                expect(element.getAttribute('fill')).toBe('transparent');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+
+        it('checking with Fluent2Dark Title  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Map_title');
+                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('checking with Fluent2Dark Title font family  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Map_title');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-weight')).toBe('600');
+                expect(element.getAttribute('font-size')).toBe('14px');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('checking with Fluent2Dark SubTitle  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Map_subtitle');
+                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('checking with Fluent2Dark SubTitle font family  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Map_subtitle');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-weight')).toBe('600');
+                expect(element.getAttribute('font-size')).toBe('12px');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('checking with Fluent2Dark Legend text  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Legend_Text_Index_0');
+                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('checking with Fluent2Dark Legend text font family  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Legend_Text_Index_0');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-weight')).toBe('400');
+                expect(element.getAttribute('font-size')).toBe('12px');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('maps Legend title  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LegendTitle');
+                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('checking with Fluent2Dark Legend title font family  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LegendTitle');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-weight')).toBe('600');
+                expect(element.getAttribute('font-size')).toBe('12px');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('checking with Fluent2Dark DataLabel  ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LayerIndex_0_shapeIndex_0_LabelIndex_0');
+                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
+        it('checking with Fluent2Dark DataLabel font family ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LayerIndex_0_shapeIndex_0_LabelIndex_0');
+                expect(element.getAttribute('font-family')).toBe('Segoe UI');
+                expect(element.getAttribute('font-size')).toBe('12px');
+            };
+            maps.theme ='Fluent2Dark';
+            maps.refresh();
+        });
     });
     
 });

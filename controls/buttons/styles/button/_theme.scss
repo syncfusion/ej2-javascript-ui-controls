@@ -1,7 +1,6 @@
 @import 'mixin.scss';
 @include export-module('button-theme') {
 
-  /*! button theme */
   /* stylelint-disable property-no-vendor-prefix */
   .e-btn,
   .e-css.e-btn {
@@ -36,9 +35,7 @@
       }
 
       &:focus:not(:focus-visible) { //mouse click
-        @if $skin-name == 'FluentUI' {
-          outline: none !important; /* stylelint-disable-line declaration-no-important */
-        }
+        @include fluent-focus-visible;
       }
 
       &:focus-visible { // only for keybord
@@ -47,6 +44,10 @@
         }
         @if $skin-name == 'Material3' {
           background: $btn-active-bgcolor;
+          box-shadow: $btn-keyboard-focus-box-shadow;
+        }
+        @if $skin-name == 'fluent2' {
+          border-color: $btn-keyboard-focus-border-color;
           box-shadow: $btn-keyboard-focus-box-shadow;
         }
       }
@@ -116,9 +117,7 @@
         }
 
         &:focus:not(:focus-visible) { //mouse click
-          @if $skin-name == 'FluentUI' {
-            outline: none !important; /* stylelint-disable-line declaration-no-important */
-          }
+          @include fluent-focus-visible;
         }
 
         &:focus-visible { // only for keybord
@@ -127,6 +126,10 @@
           }
           @if $skin-name == 'Material3' {
             background: $btn-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            border-color: $btn-keyboard-focus-border-color;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -168,9 +171,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -180,6 +181,10 @@
             @if $skin-name == 'Material3' {
               background: $btn-primary-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-primary-focus-box-shadow;
             }
           }
         }
@@ -194,9 +199,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI'{
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -206,6 +209,10 @@
             @if $skin-name == 'Material3' {
               background: $btn-success-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-success-focus-box-shadow;
             }
           }
         }
@@ -220,9 +227,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -232,6 +237,10 @@
             @if $skin-name == 'Material3' {
               background: $btn-info-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-info-focus-box-shadow;
             }
           }
         }
@@ -246,9 +255,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -258,6 +265,10 @@
             @if $skin-name == 'Material3' {
               background: $btn-warning-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-warning-focus-box-shadow;
             }
           }
         }
@@ -272,9 +283,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -284,6 +293,10 @@
             @if $skin-name == 'Material3' {
               background: $btn-danger-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-danger-focus-box-shadow;
             }
           }
         }
@@ -316,9 +329,7 @@
         }
 
         &:focus:not(:focus-visible) { //mouse click
-          @if $skin-name == 'FluentUI' {
-            outline: none !important; /* stylelint-disable-line declaration-no-important */
-          }
+          @include fluent-focus-visible;
         }
 
         &:focus-visible { // only for keybord
@@ -328,6 +339,10 @@
           @if $skin-name == 'Material3' {
             background: $btn-primary-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            box-shadow: $btn-primary-focus-box-shadow;
+            border-color: $btn-keyboard-focus-border-color;
           }
         }
 
@@ -385,9 +400,7 @@
         }
 
         &:focus:not(:focus-visible) { //mouse click
-          @if $skin-name == 'FluentUI' {
-            outline: none !important; /* stylelint-disable-line declaration-no-important */
-          }
+          @include fluent-focus-visible;
         }
 
         &:focus-visible { // only for keybord
@@ -397,6 +410,10 @@
           @if $skin-name == 'Material3' {
             background: $btn-success-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            border-color: $btn-keyboard-focus-border-color;
+            box-shadow: $btn-success-focus-box-shadow;
           }
         }
 
@@ -442,9 +459,7 @@
         }
 
         &:focus:not(:focus-visible) { //mouse click
-          @if $skin-name == 'FluentUI' {
-            outline: none !important; /* stylelint-disable-line declaration-no-important */
-          }
+          @include fluent-focus-visible;
         }
 
         &:focus-visible { // only for keybord
@@ -454,6 +469,10 @@
           @if $skin-name == 'Material3' {
             background: $btn-info-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            border-color: $btn-keyboard-focus-border-color;
+            box-shadow: $btn-info-focus-box-shadow;
           }
         }
 
@@ -499,9 +518,7 @@
         }
 
         &:focus:not(:focus-visible) { //mouse click
-          @if $skin-name == 'FluentUI' {
-            outline: none !important; /* stylelint-disable-line declaration-no-important */
-          }
+          @include fluent-focus-visible;
         }
 
         &:focus-visible { // only for keybord
@@ -511,6 +528,10 @@
           @if $skin-name == 'Material3' {
             background: $btn-warning-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            border-color: $btn-keyboard-focus-border-color;
+            box-shadow: $btn-warning-focus-box-shadow;
           }
         }
 
@@ -556,9 +577,7 @@
         }
 
         &:focus:not(:focus-visible) { //mouse click
-          @if $skin-name == 'FluentUI' {
-            outline: none !important; /* stylelint-disable-line declaration-no-important */
-          }
+          @include fluent-focus-visible;
         }
 
         &:focus-visible { // only for keybord
@@ -568,6 +587,10 @@
           @if $skin-name == 'Material3' {
             background: $btn-danger-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            border-color: $btn-keyboard-focus-border-color;
+            box-shadow: $btn-danger-focus-box-shadow;
           }
         }
 
@@ -628,14 +651,16 @@
         }
 
         &:focus:not(:focus-visible) { //mouse click
-          @if $skin-name == 'FluentUI' {
-            outline: none !important; /* stylelint-disable-line declaration-no-important */
-          }
+          @include fluent-focus-visible;
         }
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'Material3' {
             background: $btn-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            border-color: $btn-keyboard-focus-border-color;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -694,9 +719,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -704,6 +727,10 @@
               background: $btn-primary-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-primary-color;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-primary-focus-box-shadow;
             }
           }
 
@@ -763,9 +790,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -773,6 +798,10 @@
               background: $btn-success-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-success-color;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-success-focus-box-shadow;
             }
           }
 
@@ -834,9 +863,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -844,6 +871,10 @@
               background: $btn-info-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-info-color;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-info-focus-box-shadow;
             }
           }
 
@@ -905,9 +936,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -915,6 +944,10 @@
               background: $btn-warning-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-warning-color;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-warning-focus-box-shadow;
             }
           }
 
@@ -976,9 +1009,7 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
-            }
+            @include fluent-focus-visible;
           }
 
           &:focus-visible { // only for keybord
@@ -986,6 +1017,10 @@
               background: $btn-danger-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-danger-color;
+            }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-danger-focus-box-shadow;
             }
           }
 
@@ -1042,8 +1077,11 @@
         }
 
         &:focus:not(:focus-visible) { //mouse click
-          @if $skin-name == 'FluentUI' {
-            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          @include fluent-focus-visible;
+          @if $skin-name == 'fluent2' {
+            background: transparent;
+            border-color: $secondary-border-color-hover;
+            color: $secondary-text-color-hover;
           }
 
           @if $skin-name == 'bootstrap5' {
@@ -1065,11 +1103,21 @@
             background: $btn-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
+          @if $skin-name == 'fluent2' {
+            border-color: $btn-keyboard-focus-border-color;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
         }
 
         &:active,
         &.e-active {
           @include outline-active;
+          @if $skin-name == 'fluent2' {
+            background: transparent;
+            color: $secondary-text-color-selected;
+            outline: 2px solid;
+            outline-offset: -2px;
+          }
         }
 
         &:disabled {
@@ -1096,6 +1144,11 @@
               border: 1px solid $btn-outline-border-color;
               color: rgba($btn-outline-primary-color);
             }
+            @else if $skin-name == 'fluent2' {
+              background: $btn-outline-success-hover-bgcolor;
+              border-color: $btn-outline-primary-hover-border-color;
+              color: $btn-primary-hover-bgcolor;
+            }
             @else {
               background: $btn-primary-hover-bgcolor;
               border-color: $btn-outline-primary-hover-border-color;
@@ -1108,8 +1161,11 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            @include fluent-focus-visible;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              border-color: $primary-border-color-hover;
+              color: $primary-border-color-hover;
             }
 
             @if $skin-name == 'bootstrap5' {
@@ -1132,11 +1188,19 @@
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-primary-color;
             }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-primary-focus-box-shadow;
+            }
           }
 
           &:active,
           &.e-active {
             @include outline-primary-active;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              color: $primary-border-color-selected;
+            }
           }
 
           &:disabled,
@@ -1169,6 +1233,11 @@
               border: 1px solid $btn-outline-border-color;
               color: rgba($btn-outline-success-color);
             }
+            @else if $skin-name == 'fluent2' {
+              background: $btn-outline-success-hover-bgcolor;
+              border-color: $btn-success-hover-border-color;
+              color: $btn-success-hover-bgcolor;
+            }
             @else {
               background: $btn-success-hover-bgcolor;
               border-color: $btn-success-hover-border-color;
@@ -1181,8 +1250,11 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            @include fluent-focus-visible;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              border-color: $success-border-color-hover;
+              color: $success-border-color-hover;
             }
 
             @if $skin-name == 'bootstrap5' {
@@ -1203,11 +1275,19 @@
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-success-color;
             }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-success-focus-box-shadow;
+            }
           }
 
           &:active,
           &.e-active {
             @include outline-success-active;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              color: $success-border-color-selected;
+            }
           }
 
           &:disabled,
@@ -1240,6 +1320,11 @@
               border: 1px solid $btn-outline-border-color;
               color: rgba($btn-outline-info-color);
             }
+            @else if $skin-name == 'fluent2' {
+              background: $btn-outline-info-hover-bgcolor;
+              border-color: $btn-info-hover-border-color;
+              color: $btn-info-hover-bgcolor;
+            }
             @else {
               background: $btn-info-hover-bgcolor;
               border-color: $btn-info-hover-border-color;
@@ -1252,8 +1337,11 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            @include fluent-focus-visible;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              border-color: $info-bg-color-hover;
+              color: $info-bg-color-hover;
             }
 
             @if $skin-name == 'bootstrap5' {
@@ -1274,11 +1362,19 @@
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-info-color;
             }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-info-focus-box-shadow;
+            }
           }
 
           &:active,
           &.e-active {
             @include outline-info-active;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              color: $info-border-color-selected;
+            }
           }
 
           &:disabled,
@@ -1311,6 +1407,11 @@
               border: 1px solid $btn-outline-border-color;
               color: rgba($btn-outline-warning-color);
             }
+            @else if $skin-name == 'fluent2' {
+              background: $btn-outline-warning-hover-bgcolor;
+              border-color: $btn-warning-hover-border-color;
+              color: $btn-warning-hover-bgcolor;
+            }
             @else {
               background: $btn-warning-hover-bgcolor;
               border-color: $btn-warning-hover-border-color;
@@ -1323,8 +1424,11 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            @include fluent-focus-visible;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              border-color: $warning-border-color-hover;
+              color: $warning-border-color-hover;
             }
 
             @if $skin-name == 'bootstrap5' {
@@ -1345,11 +1449,19 @@
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-warning-color;
             }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-warning-focus-box-shadow;
+            }
           }
 
           &:active,
           &.e-active {
             @include outline-warning-active;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              color: $warning-bg-color-selected;
+            }
           }
 
           &:disabled,
@@ -1382,6 +1494,11 @@
               border: 1px solid $btn-outline-border-color;
               color: rgba($btn-outline-danger-color);
             }
+            @if $skin-name == 'fluent2' {
+              background: $btn-outline-danger-hover-bgcolor;
+              border-color: $btn-danger-hover-border-color;
+              color: $btn-danger-hover-bgcolor;
+            }
             @else {
               background: $btn-danger-hover-bgcolor;
               border-color: $btn-danger-hover-border-color;
@@ -1394,8 +1511,11 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            @include fluent-focus-visible;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              border-color: $danger-border-color-hover;
+              color: $danger-border-color-hover;
             }
 
             @if $skin-name == 'bootstrap5' {
@@ -1416,11 +1536,19 @@
               box-shadow: $btn-keyboard-focus-box-shadow;
               color: $btn-danger-color;
             }
+            @if $skin-name == 'fluent2' {
+              border-color: $btn-keyboard-focus-border-color;
+              box-shadow: $btn-danger-focus-box-shadow;
+            }
           }
 
           &:active,
           &.e-active {
             @include outline-danger-active;
+            @if $skin-name == 'fluent2' {
+              background: transparent;
+              color: $danger-bg-color-selected;
+            }
           }
 
           &:disabled,
@@ -1452,6 +1580,11 @@
         &:focus-visible { // only for keybord
           @if $skin-name == 'Material3' {
             box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+          @if $skin-name == 'fluent2' {
+            text-decoration-color: $btn-link-focus-underline-color !important; /* stylelint-disable-line declaration-no-important */
+            text-decoration: underline;
+            text-decoration-style: double;
           }
         }
 

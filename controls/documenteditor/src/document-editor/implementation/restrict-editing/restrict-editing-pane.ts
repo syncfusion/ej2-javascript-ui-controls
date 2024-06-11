@@ -10,6 +10,8 @@ import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Key } from 'selenium-webdriver';
 /**
  * @private
+ * @param {any} args - Specifies the args
+ * @returns {void}
  */
 export class RestrictEditing {
     private documentHelper: DocumentHelper;
@@ -21,7 +23,7 @@ export class RestrictEditing {
     private allowCopy: CheckBox;
     /**
      * @private
-    */
+     */
     public addUserDialog: AddUserDialog;
     public enforceProtectionDialog: EnforceProtectionDialog;
     public stopProtection: HTMLButtonElement;
@@ -30,7 +32,7 @@ export class RestrictEditing {
     private userWholeDiv: HTMLElement;
     /**
      * @private
-    */
+     */
     public unProtectDialog: UnProtectDocumentDialog;
     public stopProtectionDiv: HTMLElement;
     public contentDiv1: HTMLElement;

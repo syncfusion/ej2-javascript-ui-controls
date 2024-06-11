@@ -44,8 +44,7 @@ export class ClearFormat {
         const keys: string[] = Object.keys(data);
         for (let num: number = 0; num < keys.length; num++ ) {
             const key: string = keys[num as number];
-            // eslint-disable-next-line
-            if (data.hasOwnProperty(key) && data[key] !== '') {
+            if (Object.prototype.hasOwnProperty.call(data, key) && data[`${key}`] !== '') {
                 const expString: string = this.replaceRegex(data[`${key}`]);
                 let regExp: RegExp;
                 const startExp: number = data[`${key}`].length;
@@ -57,8 +56,8 @@ export class ClearFormat {
                     // eslint-disable-next-line
                     regExp = new RegExp('<sub>(.*?)<\/sub>', 'ig');
                 } else {
-                    // eslint-disable-next-line
-                    regExp = new RegExp(expString + '(.*?)' + expString, 'ig');
+                    const regExpr: RegExpConstructor = RegExp;
+                    regExp = new regExpr(expString + '(.*?)' + expString, 'ig');
                 }
                 const val: RegExpMatchArray = text.match(regExp);
                 for (let index: number = 0; val && index < val.length && val[index as number] !== ''; index++) {
@@ -84,8 +83,7 @@ export class ClearFormat {
                 const keys: string[] = Object.keys(data);
                 for (let index: number = 0; index < keys.length; index++ ) {
                     const key: string = keys[index as number];
-                    // eslint-disable-next-line
-                    if (data.hasOwnProperty(key) && data[key] !== '') {
+                    if (Object.prototype.hasOwnProperty.call(data, key) && data[`${key}`] !== '') {
                         if (lines[len as number].indexOf(data[`${key}`]) === 0) {
                             lines[len as number] = lines[len as number].replace(data[`${key}`], '');
                             lines[len as number] = this.clearFormatLines([lines[len as number]]);

@@ -95,18 +95,18 @@ export class StylesDialog {
     public show(): void {
         const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
-        let paraStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter(obj => (obj as any).Type == "Paragraph");
-        let linkedStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter(obj => (obj as any).Type == "Linked");
-        let charStyles: {[key: string]: string}[] = this.updateStyleNames('Character').filter(obj => (obj as any).Type == "Character");
+        const paraStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter((obj: any) => (obj as any).Type === 'Paragraph');
+        const linkedStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter((obj: any) => (obj as any).Type === 'Linked');
+        const charStyles: {[key: string]: string}[] = this.updateStyleNames('Character').filter((obj: any) => (obj as any).Type === 'Character');
         for (const linkedStyle of linkedStyles) {
             for (const charStyle of charStyles) {
-                if (linkedStyle["StyleName"] + " Char" === charStyle["StyleName"]) {
+                if (linkedStyle['StyleName'] + ' Char' === charStyle['StyleName']) {
                     charStyles.splice(charStyles.indexOf(charStyle), 1);
                     break;
                 }
             }
         }
-        let styles: {[key: string]: string}[] = paraStyles.concat(linkedStyles, charStyles);
+        const styles: {[key: string]: string}[] = paraStyles.concat(linkedStyles, charStyles);
         this.localValue = localValue;
         this.initStylesDialog(localValue, styles, this.documentHelper.owner.enableRtl);
         this.documentHelper.dialog.content = this.target;
@@ -129,15 +129,15 @@ export class StylesDialog {
         const paraIcon: string = 'e-de-listview-icon e-de-e-paragraph-style-mark e-icons';
         const charIcon: string = 'e-de-listview-icon e-de-e-character-style-mark e-icons';
         const linkedIcon: string = 'e-de-listview-icon e-de-e-linked-style-mark e-icons';
-        let finalList: {[key: string]: string}[] = [];
+        const finalList: {[key: string]: string}[] = [];
         for (let i: number = 0; i < collection.length; i++) {
             let styleName : string = localValue.getConstant((collection[parseInt(i.toString(), 10)] as any).name);
-            if(styleName === '') {
+            if (styleName === '') {
                 styleName = (collection[parseInt(i.toString(), 10)] as any).name;
             }
-            if ((collection[parseInt(i.toString(), 10)] as any).type == 'Paragraph') {
+            if ((collection[parseInt(i.toString(), 10)] as any).type === 'Paragraph') {
                 finalList.push({ StyleName: styleName, IconClass: paraIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
-            } else if ((collection[parseInt(i.toString(), 10)] as any).type == 'Character'){
+            } else if ((collection[parseInt(i.toString(), 10)] as any).type === 'Character'){
                 finalList.push({ StyleName: styleName, IconClass: charIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
             } else {
                 finalList.push({ StyleName: styleName, IconClass: linkedIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
@@ -168,7 +168,9 @@ export class StylesDialog {
         this.styleName = this.getStyleName(args.text);
     };
     /**
+     * @param {string} styleName - Specifies the style name.
      * @private
+     * @returns {string} - Returns the style name.
      */
     public getStyleName(styleName: string): string {
         const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);

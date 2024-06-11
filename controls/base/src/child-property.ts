@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getValue, setValue, merge, isBlazor } from './util';
 import { Base } from './base';
 /**
  * To detect the changes for inner properties.
  *
  * @private
+ * @returns {void} ?
  */
 export class ChildProperty<T> {
-    // eslint-disable-next-line
     private parentObj: any;
     private controlParent: ParentObject;
     private propName: string;
@@ -16,8 +17,7 @@ export class ChildProperty<T> {
     protected changedProperties: { [key: string]: Object } = {};
     protected childChangedProperties: { [key: string]: Object } = {};
     protected oldProperties: { [key: string]: Object } = {};
-    // eslint-disable-next-line
-    protected finalUpdate: Function = (): void => { };
+    protected finalUpdate: Function = (): void => { /**/ };
     private callChildDataBind: Function = getValue('callChildDataBind', Base);
     constructor(parent: T, propName: string, defaultValue: Object, isArray?: boolean) {
         this.parentObj = <T & ParentObject>parent;
@@ -153,7 +153,6 @@ export class ChildProperty<T> {
         }
     }
     protected getParentKey(isSaveChanges?: boolean): string {
-        // eslint-disable-next-line
         let index: any = '';
         let propName: string = this.propName;
         /* istanbul ignore next */
@@ -187,6 +186,5 @@ interface ParentObject {
     isProtectedOnChange: boolean;
     controlParent: ParentObject;
     isRendered: boolean;
-    // eslint-disable-next-line
     serverDataBind: (newChanges?: { [key: string]: any }) => void;
 }

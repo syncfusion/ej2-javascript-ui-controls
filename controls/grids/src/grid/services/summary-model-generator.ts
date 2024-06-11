@@ -185,7 +185,10 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         }
         for (let i: number = 0; i < types.length; i++) {
             const key: string = column.field + ' - ' + types[parseInt(i.toString(), 10)].toLowerCase(); const disp: string = column.columnName;
-            const val: Object = types[parseInt(i.toString(), 10)] !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[`${key}`] :
+            const disablePageWiseAggregatesGroup: boolean = this.parent.groupSettings.disablePageWiseAggregates
+                && this.parent.groupSettings.columns.length && group.items ? true : false;
+            const val: Object = (types[parseInt(i.toString(), 10)] !== 'Custom' || disablePageWiseAggregatesGroup) && group.aggregates
+                && key in group.aggregates ? group.aggregates[`${key}`] :
                 calculateAggregate(types[parseInt(i.toString(), 10)], group.aggregates ? group : <Object[]>data, column, this.parent);
             single[`${disp}`] = single[`${disp}`] || {}; single[`${disp}`][`${key}`] = val;
             single[`${disp}`][types[parseInt(i.toString(), 10)]] = !isNullOrUndefined(val) ? formatFn(val) : ' ';

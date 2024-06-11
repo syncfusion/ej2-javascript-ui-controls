@@ -1,4 +1,4 @@
-import { ChildProperty, Event, EmitType, Property, Collection } from '@syncfusion/ej2-base';
+import { ChildProperty, Property, Collection } from '@syncfusion/ej2-base';
 import { RibbonTab } from './ribbon-tab';
 import { RibbonTabModel } from './ribbon-tab-model';
 

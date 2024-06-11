@@ -71,7 +71,6 @@ export type SignatureItem = 'Signature' | 'Initial';
 /**
  * Enum AnnotationType for specifying Annotations
  */
-// eslint-disable-next-line max-len
 export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText' | 'HandWrittenSignature' | 'Initial' | 'Ink' | 'Stamp' | 'Image' | 'StickyNotes';
 
 /**
@@ -297,16 +296,15 @@ export enum FormFieldDataFormat {
 
 /**
  * Specifies a combination of key modifiers, on recognition of which the command will be executed.They are
- * * None - no modifiers are pressed
- * * Control - ctrl key
- * * Meta - meta key im mac
- * * Alt - alt key
- * * Shift - shift key
+ * None - no modifiers are pressed
+ * Control - ctrl key
+ * Meta - meta key im mac
+ * Alt - alt key
+ * Shift - shift key
  *
  * @aspNumberEnum
  * @IgnoreSingular
  */
-
 export enum ModifierKeys {
     /** Specifies when no modifiers are pressed. */
     None = 0,
@@ -322,16 +320,16 @@ export enum ModifierKeys {
 
 /**
  * Defines a collection of keys commonly used in Pdf-related operations. They are
- * * none - no key
- * * N0 = The 0 key
- * * N1 = The 1 key
- * * N2 = The 2 key
- * * N3 = The 3 key
- * * N4 = The 4 key
- * * N5 = The 5 key
- * * N6 = The 6 key
- * * N7 = The 7 key
- * * N8 = The 8 key
+ * none - no key
+ * N0 = The 0 key
+ * N1 = The 1 key
+ * N2 = The 2 key
+ * N3 = The 3 key
+ * N4 = The 4 key
+ * N5 = The 5 key
+ * N6 = The 6 key
+ * N7 = The 7 key
+ * N8 = The 8 key
  * * N9 = The 9 key
  * * Number0 = The 0 in number pad key
  * * Number1 = The 1 in number pad key

@@ -142,7 +142,7 @@ describe("Accordion Testing", () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -3691,6 +3691,171 @@ describe("Accordion Testing", () => {
         });
         afterAll((): void => {
             ele.remove();
+        });
+    });
+
+    describe('Accordion public property null or undefined testing', () => {
+        let accordion: Accordion;
+        beforeEach((): void => {
+            const ele: HTMLElement = document.createElement('div');
+            ele.id = 'accordion';
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('animation property Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.animation.expand.duration = null;
+            accordion.animation.collapse.duration = null;
+            accordion.animation.expand.easing = null;
+            accordion.animation.expand.effect = null;
+            accordion.animation.collapse.easing = null;
+            accordion.animation.collapse.effect = null;
+            accordion.dataBind();
+            expect(accordion.animation.expand.duration).toBe(null);
+            expect(accordion.animation.collapse.duration).toBe(null);
+            expect(accordion.animation.expand.easing).toBe(null);
+            expect(accordion.animation.expand.effect).toBe(null);
+            expect(accordion.animation.collapse.easing).toBe(null);
+            expect(accordion.animation.collapse.effect).toBe(null);
+            accordion.animation.collapse.duration = undefined;
+            accordion.animation.collapse.easing = undefined;
+            accordion.animation.collapse.effect = undefined;
+            accordion.animation.expand.duration = undefined;
+            accordion.animation.expand.easing = undefined;
+            accordion.animation.expand.effect = undefined;
+            accordion.dataBind();
+            expect(accordion.animation.expand.duration).toBe(undefined);
+            expect(accordion.animation.collapse.duration).toBe(undefined);
+            expect(accordion.animation.expand.easing).toBe(undefined);
+            expect(accordion.animation.expand.effect).toBe(undefined);
+            expect(accordion.animation.collapse.easing).toBe(undefined);
+            expect(accordion.animation.collapse.effect).toBe(undefined);
+        });
+        it('datasource property  Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({  }, ele);
+            accordion.dataSource = null;
+            accordion.dataBind();
+            expect(accordion.dataSource).toBe(null);
+            accordion.dataSource = undefined;
+            accordion.dataBind();
+            expect(accordion.dataSource).toBe(undefined);
+        });
+        it('enableHtmlSanitizer Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.enableHtmlSanitizer = null;
+            accordion.dataBind();
+            expect(accordion.enableHtmlSanitizer).toBe(null);
+            accordion.enableHtmlSanitizer = undefined;
+            accordion.dataBind();
+            expect(accordion.enableHtmlSanitizer).toBe(undefined);
+        });
+        it('enablePersistence Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.enablePersistence = null;
+            accordion.dataBind();
+            expect(accordion.enablePersistence).toBe(null);
+            accordion.enablePersistence = undefined;
+            accordion.dataBind();
+            expect(accordion.enablePersistence).toBe(undefined);
+        });
+        it('enableRtl Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.enableRtl = null;
+            accordion.dataBind();
+            expect(accordion.enableRtl).toBe(null);
+            accordion.enableRtl = undefined;
+            accordion.dataBind();
+            expect(accordion.enableRtl).toBe(undefined);
+        });
+        it('expandedIndices Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.expandedIndices = null;
+            accordion.dataBind();
+            expect(accordion.expandedIndices.length).toBe(0);
+            accordion.expandedIndices = undefined;
+            accordion.dataBind();
+            expect(accordion.expandedIndices).toBe(undefined);
+        });
+        it('expandMode Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.expandMode = null;
+            accordion.dataBind();
+            expect(accordion.expandMode).toBe(null);
+            accordion.expandMode = undefined;
+            accordion.dataBind();
+            expect(accordion.expandMode).toBe(undefined);
+        });
+        it('headerTemplate Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.headerTemplate = null;
+            accordion.dataBind();
+            expect(accordion.headerTemplate).toBe(null);
+            accordion.headerTemplate = undefined;
+            accordion.dataBind();
+            expect(accordion.headerTemplate).toBe(undefined);
+        });
+        it('height Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.height = null;
+            accordion.dataBind();
+            expect(accordion.height).toBe(null);
+            accordion.height = undefined;
+            accordion.dataBind();
+            expect(accordion.height).toBe(undefined);
+        });
+        it('itemTemplate Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.itemTemplate = null;
+            accordion.dataBind();
+            expect(accordion.itemTemplate).toBe(null);
+            accordion.itemTemplate = undefined;
+            accordion.dataBind();
+            expect(accordion.itemTemplate).toBe(undefined);
+        });
+        it('items Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.items = null;
+            accordion.dataBind();
+            expect(accordion.items.length).toBe(0);
+            accordion.items = undefined;
+            accordion.dataBind();
+            expect(accordion.items.length).toBe(0);
+        });
+        it('locale Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.locale = null;
+            accordion.dataBind();
+            expect(accordion.locale).toBe(null);
+            accordion.locale = undefined;
+            accordion.dataBind();
+            expect(accordion.locale).toBe(undefined);
+        });
+        it('width Testing', () => {
+            const ele: HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion({}, ele);
+            accordion.width = null;
+            accordion.dataBind();
+            expect(accordion.width).toBe(null);
+            accordion.width = undefined;
+            accordion.dataBind();
+            expect(accordion.width).toBe(undefined);
         });
     });
 

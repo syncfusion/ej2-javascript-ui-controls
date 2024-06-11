@@ -205,10 +205,41 @@ export class Legend {
      * @private
      */
 
-    public destroy(): void {
-        /**
-         * destory code
-         */
+    protected destroy(): void {
+        if (!isNullOrUndefined(this.tooltipObject)) {
+            this.tooltipObject.destroy();
+        }
+        this.tooltipObject = null;
+        this.drawSvgCanvas = null;
+        this.format = null;
+        this.gradientPointer = null;
+        this.labelCollection = null;
+        this.labelCollections = null;
+        this.lastList = null;
+        this.legend = null;
+        this.legendGroup = null;
+        this.legendRect = null;
+        this.legendRectPositionCollection = null;
+        this.legendRectScale = null;
+        this.legendScale = null;
+        this.legendXCollections = null;
+        this.legendYCollections = null;
+        this.maxLegendLabelSize = null;
+        this.navigationCollections = null;
+        this.pagingRect = null;
+        this.paginggroup = null;
+        this.segmentCollections = null;
+        this.segmentCollectionsLabels = null;
+        this.textWrapCollections = null;
+        this.translategroup = null;
+        this.visibilityCollections = null;
+        this.fillRect = null;
+        this.legendLabelTooltip = null;
+        this.legendRange = [];
+        this.legendTextRange = [];
+        this.legendTitleTooltip = null;
+        this.previousOptions = null;
+        this.heatMap = null;
     }
     /**
      * @private
@@ -436,7 +467,7 @@ export class Legend {
                         new Rect(rect.x, yValue, maxWidth, titleSize.height)));
                 }
                 titleSize.width = rect.width < titleSize.width ? rect.width : titleSize.width;
-                let rectValue = rect.x;
+                let rectValue: number = rect.x;
                 if (text.indexOf('...') !== -1 && textAlignment === 'Far') {
                     rectValue = (rectValue + (rect.width / 2) - (titleSize.width / 2));
                 } else {
@@ -695,12 +726,14 @@ export class Legend {
                 this.removeGradientPointer();
                 let canvasTranslate: Int32Array;
                 heatMap.canvasRenderer.drawPath(options, canvasTranslate);
-                this.previousOptions.pathX1 = pathX1;
-                this.previousOptions.pathY1 = pathY1;
-                this.previousOptions.pathX2 = pathX2;
-                this.previousOptions.pathY2 = pathY2;
-                this.previousOptions.pathX3 = pathX3;
-                this.previousOptions.pathY3 = pathY3;
+                if (!isNullOrUndefined(this.previousOptions)) {
+                    this.previousOptions.pathX1 = pathX1;
+                    this.previousOptions.pathY1 = pathY1;
+                    this.previousOptions.pathX2 = pathX2;
+                    this.previousOptions.pathY2 = pathY2;
+                    this.previousOptions.pathX3 = pathX3;
+                    this.previousOptions.pathY3 = pathY3;
+                }
             }
         } else {
             this.removeGradientPointer();
@@ -712,24 +745,29 @@ export class Legend {
 
     public removeGradientPointer(): void {
         const heatMap: HeatMap = this.heatMap;
-        if (this.gradientPointer && !heatMap.enableCanvasRendering) {
-            (<HTMLElement>this.gradientPointer).style.visibility = 'hidden';
-        } else if (heatMap.enableCanvasRendering) {
-            if (Object.keys(this.previousOptions).length !== 0) {
-                if (heatMap.horizontalGradient) {
-                    this.fillRect.x = this.previousOptions.pathX2 - 1;
-                    this.fillRect.y = this.previousOptions.pathY1;
-                    this.fillRect.width = this.previousOptions.pathX3 - this.previousOptions.pathX2 + 2;
-                    this.fillRect.height = this.previousOptions.pathY2 + 1 - this.previousOptions.pathY1;
-                } else {
-                    this.fillRect.x = this.previousOptions.pathX2 - 1;
-                    this.fillRect.y = this.previousOptions.pathY2 - 1;
-                    this.fillRect.width = this.previousOptions.pathX1 - this.previousOptions.pathX2 + 1;
-                    this.fillRect.height = this.previousOptions.pathY3 - this.previousOptions.pathY2 + 2;
+        if (!isNullOrUndefined(heatMap)) {
+            if (this.gradientPointer && !heatMap.enableCanvasRendering) {
+                (<HTMLElement>this.gradientPointer).style.visibility = 'hidden';
+            } else if (heatMap.enableCanvasRendering) {
+                if (!isNullOrUndefined(this.fillRect) && !isNullOrUndefined(this.previousOptions) &&
+                Object.keys(this.previousOptions).length !== 0) {
+                    if (heatMap.horizontalGradient) {
+                        this.fillRect.x = this.previousOptions.pathX2 - 1;
+                        this.fillRect.y = this.previousOptions.pathY1;
+                        this.fillRect.width = this.previousOptions.pathX3 - this.previousOptions.pathX2 + 2;
+                        this.fillRect.height = this.previousOptions.pathY2 + 1 - this.previousOptions.pathY1;
+                    } else {
+                        this.fillRect.x = this.previousOptions.pathX2 - 1;
+                        this.fillRect.y = this.previousOptions.pathY2 - 1;
+                        this.fillRect.width = this.previousOptions.pathX1 - this.previousOptions.pathX2 + 1;
+                        this.fillRect.height = this.previousOptions.pathY3 - this.previousOptions.pathY2 + 2;
+                    }
+                }
+                heatMap.canvasRenderer.ctx.fillStyle = heatMap.themeStyle.background;
+                if (!isNullOrUndefined(this.fillRect)) {
+                    heatMap.canvasRenderer.ctx.clearRect(this.fillRect.x, this.fillRect.y, this.fillRect.width, this.fillRect.height);
                 }
             }
-            heatMap.canvasRenderer.ctx.fillStyle = heatMap.themeStyle.background;
-            heatMap.canvasRenderer.ctx.clearRect(this.fillRect.x, this.fillRect.y, this.fillRect.width, this.fillRect.height);
         }
     }
     /**
@@ -1483,7 +1521,7 @@ export class Legend {
         const element: Element = <HTMLElement>createElement('div', {
             id: this.heatMap.element.id + 'legendLabelTooltipContainer'
         });
-        (element as HTMLElement).style.cssText = 'position: absolute; pointer-events: none;'
+        (element as HTMLElement).style.cssText = 'position: absolute; pointer-events: none;';
         this.heatMap.element.appendChild(element);
     }
 

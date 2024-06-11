@@ -1,9 +1,6 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
 import { ProgressBar } from '../../progressbar';
 import { ProgressAnimation } from '../utils/progress-animation';
-import { TextOption, ColorValue, colorNameToHex, convertHexToColor, setAttributes } from '../utils/helper';
+import { TextOption, setAttributes } from '../utils/helper';
 import { PathOption, getElement, Size, measureText } from '@syncfusion/ej2-svg-base';
 import { ITextRenderEventArgs, LinearGradient, StopElement } from '../model/progress-interface';
 import { Segment } from './segment-progress';
@@ -27,7 +24,11 @@ export class Linear {
     constructor(progress: ProgressBar) {
         this.progress = progress;
     }
-    /** To render the linear track  */
+    /**
+     * To render the linear track.
+     *
+     * @returns {void}
+     */
     public renderLinearTrack(): void {
         const progress: ProgressBar = this.progress;
         const linearTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearTrackGroup' });
@@ -66,8 +67,13 @@ export class Linear {
         progress.svgObject.appendChild(linearTrackGroup);
     }
 
-    /** To render the linear progress  */
-    // tslint:disable-next-line:max-func-body-length
+    /**
+     * Renders linear progress, optionally refreshing progress and specifying previous width.
+     *
+     * @param {boolean} refresh - Indicates whether to refresh the progress.
+     * @param {number} previousWidth - The previous width of the progress. Defaults to 0.
+     * @returns {void}
+     */
     public renderLinearProgress(refresh?: boolean, previousWidth: number = 0): void {
         const progress: ProgressBar = this.progress; let option: PathOption;
         let linearProgress: Element;
@@ -152,7 +158,7 @@ export class Linear {
             if (progress.isActive && !progress.isIndeterminate && !progress.isStriped) {
                 this.renderActiveState(linearProgressGroup, progressWidth, this.linearProgressWidth, thickness, refresh);
             }
-            if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate && !progress.isActive && !progress.isStriped) {
+            if (((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate && !progress.isActive && !progress.isStriped) {
                 if ((progress.secondaryProgress !== null)) {
                     animationdelay = progress.animation.delay + (this.bufferWidth - this.linearProgressWidth);
                 } else {
@@ -184,7 +190,12 @@ export class Linear {
         }
     }
 
-    /** To render the linear buffer */
+    /**
+     * To render the linear buffer.
+     *
+     * @param {ProgressBar} progress - The progress bar control.
+     * @returns {void}
+     */
     private renderLinearBuffer(progress: ProgressBar): void {
         let linearBuffer: Element;
         let clipPathBuffer: Element;
@@ -239,7 +250,7 @@ export class Linear {
             }
         }
         linearBufferGroup.appendChild(linearBuffer);
-        if ((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') {
+        if ((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') {
             clipPathBuffer = progress.createClipPath(
                 progress.bufferClipPath, secondaryProgressWidth, null, false, thickness, false,
                 (progress.cornerRadius === 'Round4px' && ismaximum)
@@ -251,8 +262,12 @@ export class Linear {
         progress.svgObject.appendChild(linearBufferGroup);
     }
 
-    /** Render the Linear Label */
-    //tslint:disable-next-line:max-func-body-length
+    /**
+     * Render the Linear Label.
+     *
+     * @param {boolean} isProgressRefresh - Indicates whether the progress should be refreshed. Defaults to false.
+     * @returns {void}
+     */
     public renderLinearLabel(isProgressRefresh: boolean = false): void {
         let linearlabel: Element;
         let posX: number;
@@ -270,7 +285,6 @@ export class Linear {
         const progress: ProgressBar = this.progress;
         const textAlignment: TextAlignmentType = progress.labelStyle.textAlignment;
         const labelText: string = progress.labelStyle.text;
-        const fontBackground: string = this.checkingLinearProgressColor();
         const progressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value > progress.maximum ?
             progress.maximum : progress.value);
         const linearLabelGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearLabelGroup' });
@@ -279,9 +293,6 @@ export class Linear {
         }
         const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
         const linearValue: number = (progress.value < progress.minimum) ? 0 : Math.round(labelValue);
-        // Checking the font color
-        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(fontBackground));
-        const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         const argsData: ITextRenderEventArgs = {
             cancel: false, text: labelText ? labelText : String(linearValue) + '%', color: progress.labelStyle.color || this.progress.themeStyle.linearLabelFont.color
         };
@@ -337,7 +348,7 @@ export class Linear {
             );
             linearlabel = progress.renderer.createText(option, argsData.text);
             linearLabelGroup.appendChild(linearlabel);
-            if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate) {
+            if (((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate) {
                 clipPath = progress.renderer.createClipPath({ 'id': progress.element.id + '_clippathLabel' });
                 progress.createClipPath(
                     clipPath, 1, null, false, (progress.progressThickness || progress.themeStyle.linearProgressThickness), true
@@ -353,7 +364,17 @@ export class Linear {
         }
     }
 
-    /** To render a progressbar active state */
+    /**
+     * Renders the active state of the linear progress.
+     *
+     * @param {Element} progressGroup - The group element containing the progress.
+     * @param {number} progressWidth - The width of the progress.
+     * @param {number} linearProgressWidth - The width of the linear progress.
+     * @param {number} thickness - The thickness of the progress.
+     * @param {boolean} refresh - Indicates whether the progress should be refreshed.
+     * @returns {void}
+     * @private
+     */
     private renderActiveState(
         progressGroup: Element, progressWidth: number, linearProgressWidth: number,
         thickness: number, refresh: boolean
@@ -403,7 +424,15 @@ export class Linear {
         this.animation.doLinearAnimation(activeClip, progress, 0, 0, linearActive);
     }
 
-    /** To render a striped stroke */
+    /**
+     * Renders the linear progress with stripes.
+     *
+     * @param {string} color - The color of the progress stripes.
+     * @param {Element} group - The group element containing the progress.
+     * @param {ProgressBar} progress - The progress bar control.
+     * @returns {void}
+     * @private
+     */
     private renderLinearStriped(color: string, group: Element, progress: ProgressBar): void {
         const defs: Element = progress.renderer.createDefs();
         let linearGradient: Element = document.createElementNS(svgLink, gradientType);
@@ -425,12 +454,17 @@ export class Linear {
         }
         defs.appendChild(linearGradient);
         group.appendChild(defs);
-        if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable')) {
+        if (((progress.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable')) {
             this.animation.doStripedAnimation(linearGradient, progress, 0);
         }
     }
 
-    /** checking progress color */
+    /**
+     * Checks and retrieves the color for the linear progress.
+     *
+     * @returns {string} - The color for the linear progress.
+     * @private
+     */
     private checkingLinearProgressColor(): string {
         let linearColor: string;
         const progress: ProgressBar = this.progress;
@@ -454,7 +488,18 @@ export class Linear {
         return linearColor;
     }
 
-    /** Bootstrap 3 & Bootstrap 4 corner path */
+    /**
+     * Generates the SVG path string with rounded corners.
+     *
+     * @param {number} x - The x-coordinate of the starting point.
+     * @param {number} y - The y-coordinate of the starting point.
+     * @param {number} width - The width of the rectangle.
+     * @param {number} height - The height of the rectangle.
+     * @param {number} radius - The radius of the rounded corners.
+     * @param {string} pathtype - The type of SVG path ('M' for move to, 'L' for line to).
+     * @returns {string} - The SVG path string with rounded corners.
+     * @private
+     */
     private cornerRadius(x: number, y: number, width: number, height: number, radius: number, pathtype: string): string {
         let path: string = '';
         const endWidth: number = width;
@@ -503,7 +548,18 @@ export class Linear {
         return path;
     }
 
-    /** Bootstrap 3 & Bootstrap 4 corner segment */
+    /**
+     * Creates a round-corner segment element for the progress bar.
+     *
+     * @param {string} id - The id of the segment element.
+     * @param {string} stroke - The stroke color of the segment.
+     * @param {number} thickness - The thickness of the segment.
+     * @param {boolean} isTrack - Indicates whether the segment is a track.
+     * @param {number} progressWidth - The width of the progress.
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {number} opacity - The opacity of the segment.
+     * @returns {Element} - The created round-corner segment element.
+     */
     public createRoundCornerSegment(
         id: string, stroke: string, thickness: number, isTrack: boolean,
         progressWidth: number, progress: ProgressBar, opacity?: number

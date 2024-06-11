@@ -148,7 +148,7 @@ export class PageSetupDialog {
         }) as HTMLInputElement;
 
         const bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' },
+            attrs: { 'type': 'text' }
         });
         const topContainer: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
         topContainer.appendChild(topTextBox);
@@ -162,7 +162,7 @@ export class PageSetupDialog {
         });
 
         const rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' },
+            attrs: { 'type': 'text' }
         });
 
         const leftContainer: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
@@ -173,13 +173,13 @@ export class PageSetupDialog {
         rightMarginDiv.appendChild(rightContainer);
         element.appendChild(marginDiv);
 
-        this.topMarginBox = new NumericTextBox({ value: 71, max: 1584, min: -1584, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Top') });
+        this.topMarginBox = new NumericTextBox({ value: 71, max: 1584, min: -1584, width: 170, decimals: 2, floatLabelType: 'Always', placeholder: locale.getConstant('Top') });
         this.topMarginBox.appendTo(topTextBox);
-        this.leftMarginBox = new NumericTextBox({ value: 73, max: 1584, min: 0, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Left') });
+        this.leftMarginBox = new NumericTextBox({ value: 73, max: 1584, min: 0, width: 170, decimals: 2, floatLabelType: 'Always', placeholder: locale.getConstant('Left') });
         this.leftMarginBox.appendTo(leftTextBox);
-        this.bottomMarginBox = new NumericTextBox({ value: 72, max: 1584, min: -1584, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Bottom') });
+        this.bottomMarginBox = new NumericTextBox({ value: 72, max: 1584, min: -1584, width: 170, decimals: 2, floatLabelType: 'Always', placeholder: locale.getConstant('Bottom') });
         this.bottomMarginBox.appendTo(bottomTextBox);
-        this.rightMarginBox = new NumericTextBox({ value: 74, max: 1584, min: 0, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Right') });
+        this.rightMarginBox = new NumericTextBox({ value: 74, max: 1584, min: 0, width: 170, decimals: 2, floatLabelType: 'Always', placeholder: locale.getConstant('Right') });
         this.rightMarginBox.appendTo(rightTextBox);
 
         const orientationDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
@@ -312,7 +312,7 @@ export class PageSetupDialog {
         element.appendChild(layoutDiv);
 
         const textLabelDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const textLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', { className: 'e-de-para-dlg-heading',innerHTML: locale.getConstant('From edge')
+        const textLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('From edge')
         });
         textLabelDiv.appendChild(textLabel);
         element.appendChild(textLabelDiv);
@@ -473,7 +473,7 @@ export class PageSetupDialog {
         const sectionFormat: WSectionFormat = new WSectionFormat();
         const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
-        let currentSectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
+        const currentSectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
         sectionFormat.bottomMargin = this.bottomMarginBox.value;
         sectionFormat.topMargin = this.topMarginBox.value;
         sectionFormat.leftMargin = this.leftMarginBox.value;
@@ -499,13 +499,14 @@ export class PageSetupDialog {
         sectionFormat.numberOfColumns = currentSectionFormat.numberOfColumns;
         sectionFormat.equalWidth = currentSectionFormat.equalWidth;
         sectionFormat.lineBetweenColumns = currentSectionFormat.lineBetweenColumns;
-        let cols: WColumnFormat[] = [];
-        let pageWidth: number = HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
+        const cols: WColumnFormat[] = [];
+        const pageWidth: number = HelperMethods.convertPointToPixel(
+            sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
         for (let i: number = 0; i < currentSectionFormat.columns.length; i++) {
-            let colFormat: WColumnFormat = new WColumnFormat();
+            const colFormat: WColumnFormat = new WColumnFormat();
             let width: number = HelperMethods.convertPointToPixel(currentSectionFormat.columns[parseInt(i.toString(), 10)].width);
-            let space: number = HelperMethods.convertPointToPixel(currentSectionFormat.columns[parseInt(i.toString(), 10)].space);
-            let totalSpace: number = (currentSectionFormat.numberOfColumns - 1) * space;
+            const space: number = HelperMethods.convertPointToPixel(currentSectionFormat.columns[parseInt(i.toString(), 10)].space);
+            const totalSpace: number = (currentSectionFormat.numberOfColumns - 1) * space;
             if ((currentSectionFormat.equalWidth || width === 0) && !isNullOrUndefined(pageWidth)) {
                 width = (pageWidth - totalSpace) / currentSectionFormat.numberOfColumns;
             }

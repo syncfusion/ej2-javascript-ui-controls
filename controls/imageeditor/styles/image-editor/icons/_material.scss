@@ -66,12 +66,6 @@
       }
     }
 
-    & .e-custom {
-      &::before {
-        content: '\e964';
-      }
-    }
-
     & .e-close {
       &::before {
         content: '\eb36';
@@ -105,159 +99,10 @@
         }
       }
     }
-
-    & .e-custom {
-      &::before {
-        content: '\e964';
-      }
-    }
-    
-    & .e-circle {
-      &::before {
-        content: '\e671';
-      }
-    }
-    
-    & .e-square{
-      &::before {
-        content: '\e965';
-      }
-    }
-    
-    & .e-custom-a {
-      &::before {
-        content: '\e966';
-      }
-    }
-    
-    & .e-custom-b {
-      &::before {
-        content: '\e967';
-      }
-    }
-    
-    & .e-custom-c {
-      &::before {
-        content: '\e968';
-      }
-    }
-    
-    & .e-custom-d {
-      &::before {
-        content: '\e96a';
-      }
-    }
-    
-    & .e-custom-e {
-      &::before {
-        content: '\e96b';
-      }
-    }
-
-    & .e-custom-f {
-      &::before {
-        content: '\e9a1';
-      }
-    }
-    
-    & .e-custom-g {
-      &::before {
-        content: '\e9a2';
-      }
-    }
-    
-    & .e-custom-h {
-      &::before {
-        content: '\e9a3';
-      }
-    }
-    
-    & .e-custom-i {
-      &::before {
-        content: '\e9a4';
-      }
-    }
-    
-    & .e-custom-j {
-      &::before {
-        content: '\e9a5';
-      }
-    }
-  
-    & .e-horizontal-flip {
-      &::before {
-        content: '\e95c';
-      }
-    }
-    
-    & .e-vertical-flip {
-      &::before {
-        content: '\e95d';
-      }
-    }
-  
-    & .e-clock-wise {
-      &::before {
-        content: '\e960';
-      }
-    }
-    
-    & .e-anti-clock-wise {
-      &::before {
-        content: '\e95f';
-      }
-    }
-  
-    & .e-rectangle {
-      &::before {
-        content: '\e670';
-      }
-    }
-    
-    & .e-circle {
-      &::before {
-        content: '\e671';
-      }
-    }
-    
-    & .e-triangle {
-      &::before {
-        content: '\e954';
-      }
-    }
-    
-    & .e-line {
-      &::before {
-        content: '\e668';
-      }
-    }
-    
-    & .e-add-text {
-      &::before {
-        content: '\e35b';
-      }
-    }
-    
-    & .e-free-pen {
-      &::before {
-        content: '\e737';
-      }
-    }
-
-    & .e-arrow {
-      &::before {
-        content: '\e669';
-      }
-    }
-    
-    & .e-path {
-      &::before {
-        content: '\e931';
-      }
-    }
   }
 }
 
+.e-image-editor,
 .e-dropdown-popup.e-image-popup {
   & .e-custom {
     &::before {
@@ -340,12 +185,6 @@
   & .e-rectangle {
     &::before {
       content: '\e670';
-    }
-  }
-  
-  & .e-circle {
-    &::before {
-      content: '\e671';
     }
   }
   

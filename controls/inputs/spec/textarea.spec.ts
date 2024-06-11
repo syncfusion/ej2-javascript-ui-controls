@@ -9,7 +9,7 @@ describe('TextArea Component', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -125,14 +125,19 @@ describe('TextArea Component', () => {
         beforeAll((): void => {
             L10n.load({
                 'fr-BE': {
-                   'textarea' : {
-                    'placeholder' : 'Feuilleter',
-                     }
-                 }
+                    'textarea': {
+                        'placeholder': 'Entrez la valeur',
+                    }
+                },
+                'de-DE': {
+                    'textarea': {
+                        'placeholder': 'Wert eingeben',
+                    },
+                }
             });
             let element: HTMLElement = createElement('textarea', {id: 'textarea'});            
             document.body.appendChild(element);
-            textarea = new TextArea();
+            textarea = new TextArea({locale: 'fr-BE'});
             textarea.appendTo(document.getElementById('textarea'));
         })
         afterAll((): void => {
@@ -140,9 +145,10 @@ describe('TextArea Component', () => {
             textarea.destroy();
         });
         it('Placeholder Text', () => {
-            textarea.locale = 'fr-BE';
+            expect(textarea.placeholder).toBe('Entrez la valeur');
+            textarea.locale = 'de-DE';
             textarea.dataBind();
-            expect(textarea.placeholder).toBe('Feuilleter');
+            expect(textarea.placeholder).toBe('Wert eingeben');
         });
     });
     describe('Checking previous value - ', () => {
@@ -221,6 +227,41 @@ describe('TextArea Component', () => {
         });
         it('Initial rendering with dynamic width', () => {
             textareaObj = new TextArea({value: "Syncfusion", resizeMode: "None"});
+            textareaObj.appendTo('#textarea');
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('');
+            textareaObj.width = 500;
+            textareaObj.dataBind();
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('500px');
+            textareaObj.width = '200px';
+            textareaObj.dataBind();
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('200px');
+            textareaObj.width = '20%';
+            textareaObj.dataBind();
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('20%');
+            
+        });
+        it('Initial rendering with dynamic width with resize mode as both', () => {
+            textareaObj = new TextArea({value: "Syncfusion", resizeMode: "Both"});
+            textareaObj.appendTo('#textarea');
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('');
+            textareaObj.width = 500;
+            textareaObj.dataBind();
+            expect(textareaObj.element.style.width).toBe('500px');
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('');
+            textareaObj.width = '200px';
+            textareaObj.dataBind();
+            expect(textareaObj.element.style.width).toBe('200px');
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('');
+            textareaObj.width = '20%';
+            textareaObj.dataBind();
+            expect(textareaObj.element.style.width).toBe('20%');
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('');
+            textareaObj.width = '500';
+            textareaObj.dataBind();
+            expect(textareaObj.textareaWrapper.container.style.width).toBe('');
+        });
+        it('Initial rendering with dynamic width with resize mode as vertical', () => {
+            textareaObj = new TextArea({value: "Syncfusion", resizeMode: "Vertical"});
             textareaObj.appendTo('#textarea');
             expect(textareaObj.textareaWrapper.container.style.width).toBe('');
             textareaObj.width = 500;
@@ -1010,16 +1051,16 @@ describe('TextArea Component', () => {
             expect(textareaObj.element.hasAttribute('maxlength')).toBe(true);
             expect(textareaObj.element.getAttribute('maxlength')).toBe('10');
         });
-        it('rowsCount api', () => {
+        it('rows api', () => {
             expect(textareaObj.element.hasAttribute('rows')).toBe(false);
-            textareaObj.rowsCount = 5;
+            textareaObj.rows = 5;
             textareaObj.dataBind();
             expect(textareaObj.element.hasAttribute('rows')).toBe(true);
             expect(textareaObj.element.getAttribute('rows')).toBe('5');
         });
-        it('columnsCount api', () => {
+        it('cols api', () => {
             expect(textareaObj.element.hasAttribute('cols')).toBe(false);
-            textareaObj.columnsCount = 30;
+            textareaObj.cols = 30;
             textareaObj.dataBind();
             expect(textareaObj.element.hasAttribute('cols')).toBe(true);
             expect(textareaObj.element.getAttribute('cols')).toBe('30');
@@ -1150,6 +1191,11 @@ describe('TextArea Component', () => {
             expect(textareaObj.textareaWrapper.container.getAttribute('title')).toBe('sample');
             expect(textareaObj.textareaWrapper.container.classList.contains('test')).toBe(true);
             expect(textareaObj.element.getAttribute('placeholder')).toBe('Number of states');
+            textareaObj.htmlAttributes = null;
+            textareaObj.dataBind();
+            textareaObj.updateHTMLAttributesToElement();
+            textareaObj.updateHTMLAttributesToWrapper();
+            expect(textareaObj.htmlAttributes).toBe(null);
         });
     });
     describe('HTML attribute API dynamic testing', () => {
@@ -1499,6 +1545,131 @@ describe('TextArea Component', () => {
             textareaObj.resizeMode = 'None';
             textareaObj.dataBind();
             expect(textareaObj.element.classList.contains('e-resize-none')).toBe(true);
+        });
+    });
+    describe('Testing outlined textarea', () => {
+        let textareaObj: any;
+        let onFocus: EmitType<Object> = jasmine.createSpy('focus');
+        let onBlur: EmitType<Object> = jasmine.createSpy('blur');
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('textarea', {id: 'textarea'});
+            document.body.appendChild(element);
+            textareaObj = new TextArea({cssClass:'e-outline', focus: onFocus, blur: onBlur});
+            textareaObj.appendTo(document.getElementById('textarea'));
+        })
+        afterAll((): void => {
+            textareaObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('with focusIn method', () => {
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-outline')).toBe(true);
+            textareaObj.focusIn();
+            expect(onFocus).toHaveBeenCalled();
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-input-focus')).toBe(true);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-outline')).toBe(true);
+        });
+        it('with focusOut method', () => {
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-outline')).toBe(true);
+            textareaObj.focusOut();
+            expect(onBlur).toHaveBeenCalled();
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-input-focus')).toBe(false);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-outline')).toBe(true);
+        });
+        it('with focusIn method - without e-input-group class', function () {
+            textareaObj.textareaWrapper.container.classList.remove('e-input-group');
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-outline')).toBe(true);
+            textareaObj.focusIn();
+            expect(onFocus).toHaveBeenCalled();
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-input-focus')).toBe(true);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-outline')).toBe(true);
+        });
+        it('with focusOut method - without e-input-group class', function () {
+            textareaObj.textareaWrapper.container.classList.remove('e-input-group');
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-outline')).toBe(true);
+            textareaObj.focusOut();
+            expect(onBlur).toHaveBeenCalled();
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-input-focus')).toBe(false);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-outline')).toBe(true);
+        });
+    });
+    describe('Testing filled textarea', () => {
+        let textareaObj: any;
+        let onFocus: EmitType<Object> = jasmine.createSpy('focus');
+        let onBlur: EmitType<Object> = jasmine.createSpy('blur');
+        let originalTimeout: number;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('textarea', {id: 'textarea'});
+            document.body.appendChild(element);
+            textareaObj = new TextArea({cssClass:'e-filled', focus: onFocus, blur: onBlur});
+            textareaObj.appendTo(document.getElementById('textarea'));
+        })
+        afterAll((): void => {
+            textareaObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('with focusIn method', () => {
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-filled')).toBe(true);
+            textareaObj.focusIn();
+            expect(onFocus).toHaveBeenCalled();
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-input-focus')).toBe(true);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-filled')).toBe(true);
+        });
+        it('with focusOut method', () => {
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-filled')).toBe(true);
+            textareaObj.focusOut();
+            expect(onBlur).toHaveBeenCalled();
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-input-focus')).toBe(false);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-filled')).toBe(true);
+        });
+        it('with focusIn method - without e-input-group class', function () {
+            textareaObj.textareaWrapper.container.classList.remove('e-input-group');
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-filled')).toBe(true);
+            textareaObj.focusIn();
+            expect(onFocus).toHaveBeenCalled();
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-input-focus')).toBe(true);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-filled')).toBe(true);
+        });
+        it('with focusOut method - without e-input-group class', function () {
+            textareaObj.textareaWrapper.container.classList.remove('e-input-group');
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-filled')).toBe(true);
+            textareaObj.focusOut();
+            expect(onBlur).toHaveBeenCalled();
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-input-focus')).toBe(false);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-filled')).toBe(true);
+        });
+    });
+
+    describe('Configuring rows and columns', () => {
+        let textareaObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('textarea', {id: 'textarea'});
+            document.body.appendChild(element);
+            textareaObj = new TextArea({rows: 5, cols: 10});
+            textareaObj.appendTo(document.getElementById('textarea'));
+        })
+        afterAll((): void => {
+            textareaObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('dynamically changing rows', () => {
+            debugger;
+            expect(textareaObj.element.getAttribute('rows')).toBe('5');
+            textareaObj.rows = 10;
+            textareaObj.dataBind();
+            expect(textareaObj.element.getAttribute('rows')).toBe('10');
+            textareaObj.rows = 5;
+            textareaObj.dataBind();
+            expect(textareaObj.element.getAttribute('rows')).toBe('5');
+        });
+        it('dynamically changing columns', () => {
+            debugger;
+            expect(textareaObj.element.getAttribute('cols')).toBe('10');
+            textareaObj.cols = 20;
+            textareaObj.dataBind();
+            expect(textareaObj.element.getAttribute('cols')).toBe('20');
+            textareaObj.cols = 10;
+            textareaObj.dataBind();
+            expect(textareaObj.element.getAttribute('cols')).toBe('10');
         });
     });
 });

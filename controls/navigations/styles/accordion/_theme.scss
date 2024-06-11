@@ -1,7 +1,4 @@
 @include export-module('accordion-theme') {
-
-  /*! accordion theme */
-  /* stylelint-disable property-no-vendor-prefix */
   .e-accordion {
     -webkit-tap-highlight-color: $acrdn-tab-highlight-color;
     background: $acrdn-default-bg-color;

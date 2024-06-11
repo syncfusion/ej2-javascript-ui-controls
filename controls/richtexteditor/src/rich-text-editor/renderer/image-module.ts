@@ -1,4 +1,4 @@
-import { addClass, detach, EventHandler, L10n, KeyboardEventArgs, select, Ajax, formatUnit, MouseEventArgs } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, KeyboardEventArgs, select, Ajax, formatUnit } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
@@ -214,7 +214,9 @@ export class Image {
 
     private resizeEnd(e: PointerEvent | TouchEvent): void {
         this.resizeBtnInit();
-        this.imgEle.parentElement.style.cursor = 'auto';
+        if (this.imgEle.parentElement) {
+            this.imgEle.parentElement.style.cursor = 'auto';
+        }
         if (Browser.isDevice) {
             removeClass([(e.target as HTMLElement).parentElement], 'e-mob-span');
         }
@@ -881,7 +883,6 @@ export class Image {
     }
 
     private imageWithLinkQTBarItemUpdate(): void {
-        let separator: HTMLElement;
         const items: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll('.e-toolbar-item');
         for (let i: number = 0; i < items.length; i++) {
             if (items[i as number].getAttribute('title') === this.i10n.getConstant('openLink') ||
@@ -892,8 +893,6 @@ export class Image {
             } else if (items[i as number].getAttribute('title') === 'Insert Link') {
                 (items[i as number] as HTMLElement).style.display = '';
             } else if (items[i as number].classList.contains('e-rte-horizontal-separator')) {
-                // eslint-disable-next-line
-                separator = items[i] as HTMLElement;
                 detach(items[i as number]);
             }
         }
@@ -1183,8 +1182,8 @@ export class Image {
         proxy.dialogObj.hide({ returnValue: false } as Event);
     }
     private isUrl(url: string): boolean {
-        // eslint-disable-next-line
-        const regexp: RegExp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gi;
+        const regExp: RegExpConstructor = RegExp;
+        const regexp: RegExp = new regExp('(ftp|http|https)://(\\w+:{0,1}\\w*@)?(\\S+)(:[0-9]+)?(/|/([\\w#!:.?+=&%@\\-\\/]))?', 'gi');
         return regexp.test(url);
     }
     private deleteImg(e: IImageNotifyArgs, keyCode?: number): void {
@@ -1198,7 +1197,7 @@ export class Image {
         }
         let restoreStartElement: Node = e.selection.range.startContainer;
         if (e.selection.range.startContainer.nodeName === 'SPAN' &&
-            (restoreStartElement as HTMLElement).classList.contains('e-img-wrap') && 
+            (restoreStartElement as HTMLElement).classList.contains('e-img-wrap') &&
             (restoreStartElement as HTMLElement).parentElement.classList.contains('e-img-caption') ) {
             restoreStartElement = (restoreStartElement as HTMLElement).parentElement;
             if (!isNOU(restoreStartElement.previousSibling)) {
@@ -1405,7 +1404,7 @@ export class Image {
             return;
         }
         const imgDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-img-dialog' + this.parent.getCssClass(true), id: this.rteID + '_image' });
-        this.parent.element.appendChild(imgDialog);
+        this.parent.rootContainer.appendChild(imgDialog);
         const imgInsert: string = this.i10n.getConstant('dialogInsert');
         const imglinkCancel: string = this.i10n.getConstant('dialogCancel');
         const imgHeader: string = this.i10n.getConstant('imageHeader');
@@ -1585,7 +1584,7 @@ export class Image {
             }
         });
         if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
-            const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+            const regex: RegExp = new RegExp(/([^\S]|^)(((https?:\/\/)|(www\.))(\S+))/gi);
             (this.inputUrl as HTMLInputElement).value = (e.selectNode[0] as HTMLImageElement).src.match(regex) ? (e.selectNode[0] as HTMLImageElement).src : '';
         }
         imgUrl.appendChild(this.inputUrl);
@@ -2054,7 +2053,7 @@ export class Image {
         const proxy: Image = this;
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         const parentElement: HTMLElement = this.parent.createElement('ul', { className: classes.CLS_UPLOAD_FILES });
-        this.parent.element.appendChild(parentElement);
+        this.parent.rootContainer.appendChild(parentElement);
         const validFiles: FileInfo = {
             name: '',
             size: 0,
@@ -2099,7 +2098,7 @@ export class Image {
         // eslint-disable-next-line
         const proxy: Image = this;
         const popupEle: HTMLElement = this.parent.createElement('div');
-        this.parent.element.appendChild(popupEle);
+        this.parent.rootContainer.appendChild(popupEle);
         const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
             id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
@@ -2129,7 +2128,7 @@ export class Image {
         addClass([this.popupObj.element], classes.CLS_POPUP_OPEN);
         addClass([this.popupObj.element], classes.CLS_RTE_UPLOAD_POPUP);
         if (!isNOU(this.parent.cssClass)) {
-            addClass([this.popupObj.element], this.parent.cssClass);
+            addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         const timeOut: number = dragEvent.dataTransfer.files[0].size > 1000000 ? 300 : 100;

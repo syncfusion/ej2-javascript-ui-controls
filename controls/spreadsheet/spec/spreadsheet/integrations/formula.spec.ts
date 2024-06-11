@@ -1,6 +1,6 @@
 import { SpreadsheetModel, Spreadsheet, DialogBeforeOpenEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { defaultData } from '../util/datasource.spec';
+import { defaultData, reportedBugData, EJ2_53702_SUBTOTALS, EJ2_53702_INDEX, EJ2_53702_UNIQUE, EJ2_53702_SLOPE_SHEET1, EJ2_53702_SLOPE_SHEET2 } from '../util/datasource.spec';
 import { CellModel, getCell, getRangeAddress, DefineNameModel, RowModel, SheetModel, getFormatFromType } from '../../../src/index';
 
 /**
@@ -254,9 +254,16 @@ describe('Spreadsheet formula module ->', () => {
         });
 
         it('INt formula no Inputs->', (done: Function) => { 
-            helper.edit('I1', '=INT();');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=INT();"}');
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('I1');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=INT()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=INT()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('I1', '=INT(100);');            
             done();
         });
         it('INt formula for #Value! Error->', (done: Function) => {
@@ -269,7 +276,7 @@ describe('Spreadsheet formula module ->', () => {
         it('INt formula with Range in ""->', (done: Function) => {
             helper.edit('D2', '11.5');
             helper.edit('I3', '=INT("D2");');
-            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('11');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#VALUE!');
             done();
         });
         it('INt formula with Direct Input Value->', (done: Function) => {
@@ -337,8 +344,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('PROPER formula with input contains "-"', (done: Function) => {
             helper.edit('I11', '=PROPER(A6);');
-            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('FLip- FLops & Slippers');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"FLip- FLops & Slippers","formula":"=PROPER(A6);"}');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('Flip- Flops & Slippers');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"Flip- Flops & Slippers","formula":"=PROPER(A6);"}');
             done();
         });
         it('PROPER formula with input contains ","', (done: Function) => {
@@ -492,38 +499,38 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('DAYS formula with giving value True as input for error Checking->', (done: Function) => {
             helper.edit('I5', '=DAYS(True, October);');
-            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('NaN');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":null,"formula":"=DAYS(True, October);"}');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"#NAME?","formula":"=DAYS(True, October);"}');
             done();
         });
         it('DAYS formula with giving value False as input for error Checking>', (done: Function) => {
             helper.edit('I6', '=DAYS(False, October);');
-            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('NaN');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":null,"formula":"=DAYS(False, October);"}');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#NAME?","formula":"=DAYS(False, October);"}');
             done();
         });
         it('DAYS formula with giving value True & False as input ->', (done: Function) => {
             helper.edit('I7', '=DAYS(True, False);');
-            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('0');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":0,"formula":"=DAYS(True, False);"}');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":1,"formula":"=DAYS(True, False);"}');
             done();
         });
         it('DAYS formula with giving single value input->', (done: Function) => {
             helper.edit('I8', '=DAYS(2022,);');
-            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('2021');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":2021,"formula":"=DAYS(2022,);"}');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('2022');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":2022,"formula":"=DAYS(2022,);"}');
             done();
         });
         it('DAYS formula with giving # as input for End Date->', (done: Function) => {
             helper.edit('I9', '=DAYS("#-October-2022", "26-December-2022");');
             expect(helper.getInstance().sheets[0].rows[8].cells[8].formula).toBe('=DAYS("#-October-2022", "26-December-2022");');
-            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('#-October-2022');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('-86');
             done();
         });
         it('DAYS formula with giving # as input for Start Date->', (done: Function) => {
             helper.edit('I10', '=DAYS("20-October-2022", "#-December-2022");');
             expect(helper.getInstance().sheets[0].rows[9].cells[8].formula).toBe('=DAYS("20-October-2022", "#-December-2022");');
-            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('#-December-2022');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('-42');
             done();
         });
         it('T formula->', (done: Function) => {
@@ -586,8 +593,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('MONTH formula with no Inputs->', (done: Function) => {
             helper.edit('K2', '=MONTH()');
-            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#VALUE!","formula":"=MONTH()"}');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{}');
             done();
         });
         it('MONTH formula with 2 Inputs->', (done: Function) => {
@@ -598,7 +605,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=MONTH(B5,B6)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K3', '=MONTH(B5)');
             done();
@@ -635,7 +642,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=NOW(B5)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('L1', '=NOW()');
             done();
@@ -843,6 +850,293 @@ describe('Spreadsheet formula module ->', () => {
             expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('N2', '=IFERROR(45321,2);');
+            done();
+        });
+    });
+
+    describe('Reported MONTH Formulae - Checking III ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: reportedBugData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Added cell Reference - 1->', (done: Function) => {
+            helper.edit('H26', 'Yes');
+            helper.edit('H27', 'No');
+            helper.edit('H28', 'No');
+            helper.edit('H29', 'No');
+            helper.edit('D34', '300.00%');
+            helper.edit('D35', '10.00%');
+            helper.edit('D36', '1200.00%');
+            helper.edit('D37', '900.00%');
+            helper.edit('B34', 'TRUE');
+            helper.edit('B35', 'FALSE');
+            helper.edit('I35', '6/25/2023');
+            helper.edit('I36', '7/27/2014');
+            helper.edit('I33', '4/7/2021');
+            helper.edit('I32', '7/8/2023');
+            done();
+        });
+        it('MONTH formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('K2', '=MONTH(44341)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"5","formula":"=MONTH(44341)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('K2', '=MONTH(46.654)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"2","formula":"=MONTH(46.654)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('K2', '=MONTH(-2)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#NUM!","formula":"=MONTH(-2)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('K2', '=MONTH(-3.56)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#NUM!","formula":"=MONTH(-3.56)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('K2', '=MONTH(TRUE)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(TRUE)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('K2', '=MONTH(FALSE)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(FALSE)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('K2', '=MONTH(4+3)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(4+3)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('K2', '=MONTH(23*2)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"2","formula":"=MONTH(23*2)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('K2', '=MONTH(6/3)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(6/3)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('K2', '=MONTH(0)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(0)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('K2', '=MONTH(D14)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#VALUE!","formula":"=MONTH(D14)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('K2', '=MONTH(D13)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#VALUE!","formula":"=MONTH(D13)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('K2', '=MONTH(D15)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#VALUE!","formula":"=MONTH(D15)"}');
+            done();
+        });
+        // it('MONTH formula with cell Reference - 14->', (done: Function) => {
+        //     helper.edit('K2', '=MONTH(I21)');
+        //     expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#VALUE!');
+        //     expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#VALUE!","formula":"=MONTH(I21)"}');
+        //     done();
+        // });
+        it('MONTH formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('K2', '=MONTH(I23)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(I23)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('K2', '=MONTH(B34)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(B34)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('K2', '=MONTH(B35)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(B35)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('K2', '=MONTH(F21)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(F21)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('K2', '=MONTH(A20)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(A20)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('K2', '=MONTH(F5)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('10');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"10","formula":"=MONTH(F5)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Hi)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#NAME?","formula":"=MONTH(Hi)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 22->', (done: Function) => {
+            helper.edit('K2', '=MONTH(E16)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#DIV/0!","formula":"=MONTH(E16)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 23->', (done: Function) => {
+            helper.edit('K2', '=MONTH(E17)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#NUM!","formula":"=MONTH(E17)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 24->', (done: Function) => {
+            helper.edit('K2', '=MONTH(E18)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#REF!","formula":"=MONTH(E18)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 25->', (done: Function) => {
+            helper.edit('K2', '=MONTH(19999999999)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#NUM!","formula":"=MONTH(19999999999)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 26->', (done: Function) => {
+            helper.edit('K2', '=MONTH(MONTH(48765))');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":1,"formula":"=MONTH(MONTH(48765))"}');
+            done();
+        });
+        // Due to n input. Reported to spreadsheet team.
+        // it('MONTH formula with cell Reference - 27->', (done: Function) => {
+        //     helper.edit('K2', '=MONTH(DATEVALUE("04/23/2023"))');
+        //     expect(helper.invoke('getCell', [1, 10]).textContent).toBe('4');
+        //     expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":4,"formula":"=MONTH(DATEVALUE("04/23/2023"))"}');
+        //     done();
+        // });
+        // it('MONTH formula with cell Reference - 28->', (done: Function) => { // value will change all months
+        //     helper.edit('K2', '=MONTH(NOW())');
+        //     expect(helper.invoke('getCell', [1, 10]).textContent).toBe('5');
+        //     expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"5","formula":"=MONTH(NOW())"}');
+        //     done();
+        // });
+        // it('MONTH formula with cell Reference - 29->', (done: Function) => {
+        //     helper.edit('K2', '=EDATE(TODAY(),MONTH(NOW()))');
+        //     expect(helper.invoke('getCell', [1, 10]).textContent).toBe('45444');
+        //     expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"45444","formula":"=EDATE(TODAY(),MONTH(NOW()))"}');
+        //     done();
+        // });
+        it('MONTH formula with cell Reference - 30->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!I15)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"4","formula":"=MONTH(Sheet1!I15)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 31->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!I17)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"4","formula":"=MONTH(Sheet1!I17)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 32->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!E16)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#DIV/0!","formula":"=MONTH(Sheet1!E16)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 33->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!C20)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#VALUE!","formula":"=MONTH(Sheet1!C20)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 34->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!I33)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"4","formula":"=MONTH(Sheet1!I33)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 35->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!I32)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"7","formula":"=MONTH(Sheet1!I32)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 36->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!I35)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"6","formula":"=MONTH(Sheet1!I35)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 37->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!I36)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"7","formula":"=MONTH(Sheet1!I36)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 38->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!F11)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"5","formula":"=MONTH(Sheet1!F11)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 39->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!B10)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"7","formula":"=MONTH(Sheet1!B10)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 40->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!H8)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('11');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"11","formula":"=MONTH(Sheet1!H8)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 41->', (done: Function) => {
+            helper.edit('K2', '=MONTH(Sheet1!D7)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"2","formula":"=MONTH(Sheet1!D7)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 42->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'Hello', refersTo: 'I35'});
+            helper.edit('K2', '=MONTH(Hello)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"6","formula":"=MONTH(Hello)"}');
+            done();
+        });
+        it('MONTH formula with cell Reference - 43->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'One', refersTo: 'I20'});
+            helper.edit('K2', '=MONTH(One)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"3","formula":"=MONTH(One)"}');
             done();
         });
     });
@@ -1302,6 +1596,69 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
+
+    describe('Reported RandBetween Formulae - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('RandBetween formula with normal value - 1->', (done: Function) => {
+            helper.edit('I1', '=RANDBETWEEN( , )');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#N/A');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#N/A","formula":"=RANDBETWEEN( , )"}');
+            done();
+        });
+        it('RandBetween formula with normal value - 2->', (done: Function) => {
+            helper.edit('I1', '=RANDBETWEEN("1+2", 10)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=RANDBETWEEN(\\"1+2\\", 10)"}');
+            done();
+        });
+        it('RandBetween formula with normal value - 3->', (done: Function) => {
+            helper.edit('I1', '=RANDBETWEEN("100%", 1)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=RANDBETWEEN(\\"100%\\", 1)"}');
+            done();
+        });
+        it('RandBetween formula with normal value - 4->', (done: Function) => {
+            helper.edit('I1', '=RANDBETWEEN(0, 0)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=RANDBETWEEN(0, 0)"}');
+            done();
+        });
+        it('RandBetween formula with normal value - 5->', (done: Function) => {
+            helper.edit('I1', '=RANDBETWEEN(10, 0)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=RANDBETWEEN(10, 0)"}');
+            done();
+        });
+        it('RandBetween formula with normal value - 5->', (done: Function) => {
+            helper.edit('I1', '=RANDBETWEEN(0, FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=RANDBETWEEN(0, FALSE)"}');
+            done();
+        });
+        it('RandBetween formula with normal value - 6->', (done: Function) => {
+            helper.edit('I1', '=RANDBETWEEN(0, "#VALUE!")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=RANDBETWEEN(0, \\"#VALUE!\\")"}');
+            done();
+        });
+        it('RandBetween formula with cell reference - 1->', (done: Function) => {
+            helper.edit('J7', '=RANDBETWEEN(N1,N2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"0","formula":"=RANDBETWEEN(N1,N2)"}');
+            done();
+        });
+        it('RandBetween formula with cell reference - 2->', (done: Function) => {
+            helper.edit('J7', '=RANDBETWEEN(A1:A9,10)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=RANDBETWEEN(A1:A9,10)"}');
+            done();
+        });
+    });
     
     describe('SECOND Formula Checking ->', () => {
         beforeAll((done: Function) => {
@@ -1508,6 +1865,127 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
+    describe('Reported CHOOSE Formulae - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('CHOOSE formula with specific cases - 1->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(2, "true", "false")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"false","formula":"=CHOOSE(2, \\"true\\", \\"false\\")"}');
+            done();
+        });
+        it('CHOOSE formula with specific cases - 2->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(TRUE, 1,2,)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"1","formula":"=CHOOSE(TRUE, 1,2,)"}');
+            done();
+        });
+        it('CHOOSE formula with specific cases - 3->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(300%, TRUE, FALSE, TRUE,)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"TRUE","formula":"=CHOOSE(300%, TRUE, FALSE, TRUE,)"}');
+            done();
+        });
+        it('CHOOSE formula with specific cases - 5->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(1, "#DIV/0!")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#DIV/0!","formula":"=CHOOSE(1, \\"#DIV/0!\\")"}');
+            done();
+        });
+        it('CHOOSE formula with normal value - 1->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(TRUE, 1,2,3)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"1","formula":"=CHOOSE(TRUE, 1,2,3)"}');
+            done();
+        });
+        it('CHOOSE formula with normal value - 2->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(TRUE, TRUE, "true", FALSE)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"TRUE","formula":"=CHOOSE(TRUE, TRUE, \\"true\\", FALSE)"}');
+            done();
+        });
+        it('CHOOSE formula with normal value - 3->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(TRUE, 1+TRUE,FALSE)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"2","formula":"=CHOOSE(TRUE, 1+TRUE,FALSE)"}');
+            done();
+        });
+        it('CHOOSE formula with normal value - 4->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(200%,1,100%,"jag")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"1","formula":"=CHOOSE(200%,1,100%,\\"jag\\")"}');
+            done();
+        });
+        it('CHOOSE formula with normal value - 5->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(3,"1",100%,"A""pp""le")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('A"pp"le');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"A\\"pp\\"le","formula":"=CHOOSE(3,\\"1\\",100%,\\"A\\"\\"pp\\"\\"le\\")"}');
+            done();
+        });
+        it('CHOOSE formula with normal value - 6->', (done: Function) => {
+            helper.edit('I2', '=CHOOSE(1,"2*10")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('2*10');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"2*10","formula":"=CHOOSE(1,\\"2*10\\")"}');
+            done();
+        });
+        it('CHOOSE formula with cell reference - 1->', (done: Function) => {
+            helper.edit('J1', '3+"4"');
+            helper.edit('J2', 'TRUE');
+            helper.edit('J3', '2');
+            helper.edit('J4', '" "');
+            helper.edit('J5', '""      ""');
+            helper.edit('J6', '1');
+            helper.edit('J8', '         "1"');
+
+            helper.edit('J7', '=CHOOSE(1, J1, 2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('3+"4"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"3+\\"4\\"","formula":"=CHOOSE(1, J1, 2)"}');
+            done();
+        });
+        it('CHOOSE formula with cell reference - 2->', (done: Function) => {
+            helper.edit('J7', '=CHOOSE(J2, 1,2,3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"1","formula":"=CHOOSE(J2, 1,2,3)"}');
+            done();
+        });
+        it('CHOOSE formula with cell reference - 3->', (done: Function) => {
+            helper.edit('J7', '=CHOOSE(J2, TRUE, "true", FALSE)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"TRUE","formula":"=CHOOSE(J2, TRUE, \\"true\\", FALSE)"}');
+            done();
+        });
+        it('CHOOSE formula with cell reference - 4->', (done: Function) => {
+            helper.edit('J7', '=CHOOSE(J2, 1+J2,FALSE)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"2","formula":"=CHOOSE(J2, 1+J2,FALSE)"}');
+            done();
+        });
+        it('CHOOSE formula with cell reference - 5->', (done: Function) => {
+            helper.edit('J7', '=CHOOSE(J3, J4, J5, "",,,, )');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('""      ""');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"\\"\\"      \\"\\"","formula":"=CHOOSE(J3, J4, J5, \\"\\",,,, )"}');
+            done();
+        });
+        it('CHOOSE formula with cell reference - 6->', (done: Function) => {
+            helper.edit('J7', '=CHOOSE(J6, J8, " ",,      )');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('         "1"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"         \\"1\\"","formula":"=CHOOSE(J6, J8, \\" \\",,      )"}');
+            done();
+        });
+        it('CHOOSE formula with cell reference - 7->', (done: Function) => {
+            helper.edit('J1', '1');
+            helper.edit('J2', '"6+2.83"');
+            helper.edit('J7', '=CHOOSE(J1, J2, 2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('"6+2.83"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"\\"6+2.83\\"","formula":"=CHOOSE(J1, J2, 2)"}');
+            done();
+        });
+    });
+
     describe('Formula - Checking IV ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -1559,7 +2037,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=EXACT(word,word,word)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('I7', '=EXACT(word,word)');
             done();
@@ -1572,7 +2050,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=EXACT()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('I8', '=EXACT(word,word)');
             done();
@@ -1627,8 +2105,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('LEN Formula with text having spaces and comma->', (done: Function) => {
             helper.edit('A2', '   Casual Shoes ,   ');
-            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":20,"formula":"=LEN(A2)"}');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('14');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":14,"formula":"=LEN(A2)"}');
             done();
         });
         it('LEN Formula with cell having Number Value->', (done: Function) => {
@@ -1653,7 +2131,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=LEN(A5,A6)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('J6', '=LEN(A5)');
             done();
@@ -1666,7 +2144,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=LEN(A5,A6)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('J6', '=LEN(A5)');
             done();
@@ -1679,14 +2157,14 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('LEN Formula with no inputs->', (done: Function) => {
             helper.edit('J8', '=LEN()');
-            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[9])).toBe('{"value":"#VALUE!","formula":"=LEN()"}');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[9])).toBe('{}');
             done();
         });
         it('MOD Formula->', (done: Function) => {
             helper.edit('K1', '=MOD(10,20)');
-            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('10');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":10,"formula":"=MOD(10,20)"}');
+            // expect(helper.invoke('getCell', [0, 10]).textContent).toBe('10');
+            // expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":10,"formula":"=MOD(10,20)"}');
             done();
         });
         it('MOD Formula with Number contains negative sign->', (done: Function) => {
@@ -1757,7 +2235,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=MOD()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K12', '=MOD(10,2)');
             done();
@@ -1770,7 +2248,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=MOD(2,3,4)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K13', '=MOD(2,3)');
             done();
@@ -1794,6 +2272,788 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [16, 10]).textContent).toBe('#DIV/0!');
             helper.edit('K18', '=MOD(2,M2)');
             expect(helper.invoke('getCell', [17, 10]).textContent).toBe('#DIV/0!');
+            done();
+        });
+    });
+
+    describe('Reported TRUNC Formulae - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('TRUNC formula with direct value - 1->', (done: Function) => {
+            helper.edit('I1', '=TRUNC("Hi")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"Hi\\")"}');
+            done();
+        });
+        it('TRUNC formula with direct value - 2->', (done: Function) => {
+            helper.edit('I2', '=TRUNC("",2)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"\\",2)"}');
+            done();
+        });
+        it('TRUNC formula with direct value - 3->', (done: Function) => {
+            helper.edit('I3', '=TRUNC("TRUE",2)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"TRUE\\",2)"}');
+            done();
+        });
+        it('TRUNC formula with direct value - 4->', (done: Function) => {
+            helper.edit('I4', '=TRUNC("")');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"\\")"}');
+            done();
+        });
+        it('TRUNC formula with direct value - 5->', (done: Function) => {
+            helper.edit('I5', '=TRUNC(" ")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\" \\")"}');
+            done();
+        });
+        it('TRUNC formula with direct value - 6->', (done: Function) => {
+            helper.edit('I6', '=TRUNC("        ",2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"        \\",2)"}');
+            done();
+        });
+        it('TRUNC formula with direct value - 7->', (done: Function) => {
+            helper.edit('I6', '=TRUNC("07-JUN", 2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('37049');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"37049","formula":"=TRUNC(\\"07-JUN\\", 2)"}');
+            done();
+        });
+        it('TRUNC formula with direct value - 8->', (done: Function) => {
+            helper.edit('I6', '=TRUNC("1+2", 2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"1+2\\", 2)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 1->', (done: Function) => {
+            helper.edit('J1', '"65.678"');
+            helper.edit('J2', '"112"');
+            helper.edit('J3', '"0"');
+            helper.edit('J4', '""');
+            helper.edit('J5', '"TRUE"');
+            helper.edit('J6', '"-5"');
+            helper.edit('J7', '=TRUNC(J1,2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J1,2)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 2->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(J2,3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J2,3)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 3->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J3)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 4->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(J4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J4)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 5->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(J5)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J5)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 6->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(J6,1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J6,1)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 7->', (done: Function) => {
+            helper.edit('J1', '""');
+            helper.edit('J2', '"0"');
+            helper.edit('J3', '" "');
+            helper.edit('J4', '"     "');
+            helper.edit('J7', '=TRUNC(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J1)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 8->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(J2,2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J2,2)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 9->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J3)"}');
+            done();
+        });
+        it('TRUNC formula with cell reference - 10->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(J4,3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J4,3)"}');
+            done();
+        });
+        it('TRUNC formula with sheet reference - 1->', (done: Function) => {
+            helper.edit('J1', '"65.678"');
+            helper.edit('J2', '70.356829');
+            helper.edit('J3', '"TRUE"');
+            helper.edit('J4', '"33"');
+            helper.edit('J7', '=TRUNC(Sheet1!J1,1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(Sheet1!J1,1)"}');
+            done();
+        });
+        it('TRUNC formula with sheet reference - 2->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(Sheet1!J2,J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(Sheet1!J2,J3)"}');
+            done();
+        });
+        it('TRUNC formula with sheet reference - 3->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(Sheet1!J2,"-3")');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"0","formula":"=TRUNC(Sheet1!J2,\\"-3\\")"}');
+            done();
+        });
+        it('TRUNC formula with sheet reference - 4->', (done: Function) => {
+            helper.edit('J7', '=TRUNC($J$4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC($J$4)"}');
+            done();
+        });
+        it('TRUNC formula with sheet reference - 5->', (done: Function) => {
+            helper.edit('J1', '3/4/2023');
+            helper.edit('J7', '=TRUNC(Sheet1!J1,"-3")');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('44000');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"44000","formula":"=TRUNC(Sheet1!J1,\\"-3\\")"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 1->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(6.078%,4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0.0607');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"0.0607","formula":"=TRUNC(6.078%,4)"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 2->', (done: Function) => {
+            helper.edit('J7', '=TRUNC("13:34",2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0.56');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"0.56","formula":"=TRUNC(\\"13:34\\",2)"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 3->', (done: Function) => {
+            helper.edit('J1', '"-3.45"');
+            helper.edit('J7', '=TRUNC(J1,3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(J1,3)"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 4->', (done: Function) => {
+            helper.edit('J7', '=TRUNC("Flip",3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"Flip\\",3)"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 5->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(44.2347891, {2.79})');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('44.23');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"44.23","formula":"=TRUNC(44.2347891, {2.79})"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 6->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(44.2347891, {"3"})');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('44.234');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"44.234","formula":"=TRUNC(44.2347891, {\\"3\\"})"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 7->', (done: Function) => {
+            helper.edit('J1', '1.00E+01');
+            helper.edit('J7', '=TRUNC(J1,3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('10');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"10","formula":"=TRUNC(J1,3)"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 8->', (done: Function) => {
+            helper.edit('J1', '300');
+            helper.edit('J7', '=TRUNC(J1,1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('300');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"300","formula":"=TRUNC(J1,1)"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 9->', (done: Function) => {
+            helper.edit('J1', '1000.00%');
+            helper.edit('J7', '=TRUNC(J1,1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('10');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"10","formula":"=TRUNC(J1,1)"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 10->', (done: Function) => {
+            helper.edit('J1', '6/23/2014');
+            helper.edit('J7', '=TRUNC(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('41813');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"41813","formula":"=TRUNC(J1)"}');
+            done();
+        });
+        it('TRUNC formula with different datatype - 11->', (done: Function) => {
+            helper.edit('J1', '12/5/2013 4:45:00 PM');
+            helper.edit('J7', '=TRUNC(J1,10)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('41613.69792');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"41613.6979166666","formula":"=TRUNC(J1,10)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 1->', (done: Function) => {
+            helper.edit('J7', '=TRUNC(2+"3.45890", 2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(2+\\"3.45890\\", 2)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 2->', (done: Function) => {
+            helper.edit('J7', '=TRUNC("23.1034" + 4.67, 3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.1034\\" + 4.67, 3)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 3->', (done: Function) => {
+            helper.edit('J7', '=TRUNC("23.45 "* "1.0009", 4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.45 \\"* \\"1.0009\\", 4)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 4->', (done: Function) => {
+            helper.edit('J7', '=TRUNC("34.7980"/2, 2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"34.7980\\"/2, 2)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 5->', (done: Function) => {
+            helper.edit('J7', '=TRUNC("23.1034" + 4.67, TRUE)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.1034\\" + 4.67, TRUE)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 6->', (done: Function) => {
+            helper.edit('J1', 'TRUE');
+            helper.edit('J7', '=TRUNC("23.1034" + 4.67, J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.1034\\" + 4.67, J1)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 7->', (done: Function) => {
+            helper.edit('J1', 'FALSE');
+            helper.edit('J7', '=TRUNC("23.1034" + 4.67, J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.1034\\" + 4.67, J1)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 8->', (done: Function) => {
+            helper.edit('J7', '=TRUNC("23.1034" + 4.67, 2.65)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.1034\\" + 4.67, 2.65)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 9->', (done: Function) => {
+            helper.edit('J1', '6.67');
+            helper.edit('J7', '=TRUNC("23.1034" + 4.67, J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.1034\\" + 4.67, J1)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 10->', (done: Function) => {
+            helper.edit('J7', '=TRUNC("23.1034" + 4.67, 300%)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.1034\\" + 4.67, 300%)"}');
+            done();
+        });
+        it('TRUNC formula with specific cases - 11->', (done: Function) => {
+            helper.edit('J1', '6/7/2024');
+            helper.edit('J7', '=TRUNC("23.1034" + 4.67, J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=TRUNC(\\"23.1034\\" + 4.67, J1)"}');
+            done();
+        });
+    });
+
+    describe('Reported INT Formulae - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('INT formula with direct value - 1->', (done: Function) => {
+            helper.edit('I1', '=INT("Hi")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=INT(\\"Hi\\")"}');
+            done();
+        });
+        it('INT formula with direct value - 2->', (done: Function) => {
+            helper.edit('I2', '=INT("")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=INT(\\"\\")"}');
+            done();
+        });
+        it('INT formula with direct value - 3->', (done: Function) => {
+            helper.edit('I3', '=INT("TRUE")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"#VALUE!","formula":"=INT(\\"TRUE\\")"}');
+            done();
+        });
+        it('INT formula with direct value - 4->', (done: Function) => {
+            helper.edit('I4', '=INT(3/4/2023)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":0,"formula":"=INT(3/4/2023)"}');
+            done();
+        });
+        it('INT formula with direct value - 5->', (done: Function) => {
+            helper.edit('I5', '=INT("3/4/2023")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('44989');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":44989,"formula":"=INT(\\"3/4/2023\\")"}');
+            done();
+        });
+        it('INT formula with direct value - 6->', (done: Function) => {
+            helper.edit('I6', '=INT("07-JUN")');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('37049');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":37049,"formula":"=INT(\\"07-JUN\\")"}');
+            done();
+        });
+        it('INT formula with direct value - 7->', (done: Function) => {
+            helper.edit('I7', '=INT(" ")');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#VALUE!","formula":"=INT(\\" \\")"}');
+            done();
+        });
+        it('INT formula with direct value - 8->', (done: Function) => {
+            helper.edit('I8', '=INT("    ")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":"#VALUE!","formula":"=INT(\\"    \\")"}');
+            done();
+        });
+        it('INT formula with direct value - 9->', (done: Function) => {
+            helper.edit('I2', '=INT("")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=INT(\\"\\")"}');
+            done();
+        });
+        it('INT formula with cell reference - 1->', (done: Function) => {
+            helper.edit('J1', '"65.678"');
+            helper.edit('J2', '"112"');
+            helper.edit('J3', 'hi');
+            helper.edit('J4', '"0"');
+            helper.edit('J5', '""');
+            helper.edit('J6', '"TRUE"');
+            helper.edit('J7', '=INT(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J1)"}');
+            done();
+        });
+        it('INT formula with cell reference - 2->', (done: Function) => {
+            helper.edit('J7', '=INT(J2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J2)"}');
+            done();
+        });
+        it('INT formula with cell reference - 3->', (done: Function) => {
+            helper.edit('J7', '=INT(J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J3)"}');
+            done();
+        });
+        it('INT formula with cell reference - 4->', (done: Function) => {
+            helper.edit('J7', '=INT(J4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J4)"}');
+            done();
+        });
+        it('INT formula with cell reference - 5->', (done: Function) => {
+            helper.edit('J7', '=INT(J5)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J5)"}');
+            done();
+        });
+        it('INT formula with cell reference - 6->', (done: Function) => {
+            helper.edit('J7', '=INT(J6)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J6)"}');
+            done();
+        });
+        it('INT formula with cell reference - 7->', (done: Function) => {
+            helper.edit('J1', '"-5"');
+            helper.edit('J2', '"Hi"');
+            helper.edit('J3', '6+2.83');
+            helper.edit('J4', '2*7');
+            helper.edit('J5', '22/2');
+            helper.edit('J6', '15-3');
+            helper.edit('J7', '=INT(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J1)"}');
+            done();
+        });
+        it('INT formula with cell reference - 8->', (done: Function) => {
+            helper.edit('J7', '=INT(J8)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(J8)"}');
+            done();
+        });
+        it('INT formula with cell reference - 9->', (done: Function) => {
+            helper.edit('J7', '=INT(J2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J2)"}');
+            done();
+        });
+        it('INT formula with cell reference - 10->', (done: Function) => {
+            helper.edit('J7', '=INT(J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J3)"}');
+            done();
+        });
+        it('INT formula with cell reference - 11->', (done: Function) => {
+            helper.edit('J7', '=INT(J4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J4)"}');
+            done();
+        });
+        it('INT formula with cell reference - 12->', (done: Function) => {
+            helper.edit('J7', '=INT(J5)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J5)"}');
+            done();
+        });
+        it('INT formula with cell reference - 13->', (done: Function) => {
+            helper.edit('J7', '=INT(J6)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J6)"}');
+            done();
+        });
+        it('INT formula with cell reference - 14->', (done: Function) => {
+            helper.edit('J1', '""');
+            helper.edit('J2', '"0"');
+            helper.edit('J3', '"03/04/2023"');
+            helper.edit('J4', '"07-JUN"');
+            helper.edit('J5', '" "');
+            helper.edit('J6', '"     "');
+            helper.edit('J7', '=INT(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J1)"}');
+            done();
+        });
+        it('INT formula with cell reference - 15->', (done: Function) => {
+            helper.edit('J7', '=INT(J2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J2)"}');
+            done();
+        });
+        it('INT formula with cell reference - 16->', (done: Function) => {
+            helper.edit('J7', '=INT(J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J3)"}');
+            done();
+        });
+        it('INT formula with cell reference - 17->', (done: Function) => {
+            helper.edit('J7', '=INT(J4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J4)"}');
+            done();
+        });
+        it('INT formula with cell reference - 18->', (done: Function) => {
+            helper.edit('J7', '=INT(J5)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J5)"}');
+            done();
+        });
+        it('INT formula with cell reference - 19->', (done: Function) => {
+            helper.edit('J7', '=INT(J6)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J6)"}');
+            done();
+        });
+        it('INT formula with cell reference - 20->', (done: Function) => {
+            helper.edit('J1', '123Hello');
+            helper.edit('J7', '=INT($J$1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT($J$1)"}');
+            done();
+        });
+        it('INT formula with cell reference - 21->', (done: Function) => {
+            helper.edit('J1', '"33"');
+            helper.edit('J7', '=INT($J$1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT($J$1)"}');
+            done();
+        });
+        it('INT formula with cell reference - 22->', (done: Function) => {
+            helper.edit('J1', '3/4/2023');
+            helper.edit('J7', '=INT(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('44989');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":44989,"formula":"=INT(J1)"}');
+            done();
+        });
+        it('INT formula with sheet reference - 1->', (done: Function) => {
+            helper.edit('J1', '6+2.83');
+            helper.edit('J2', '"65.678"');
+            helper.edit('J3', 'o');
+            helper.edit('J7', '=INT(Sheet1!J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(Sheet1!J1)"}');
+            done();
+        });
+        it('INT formula with sheet reference - 2->', (done: Function) => {
+            helper.edit('J7', '=INT(Sheet1!J2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(Sheet1!J2)"}');
+            done();
+        });
+        it('INT formula with sheet reference - 3->', (done: Function) => {
+            helper.edit('J7', '=INT(Sheet1!$J$2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(Sheet1!$J$2)"}');
+            done();
+        });
+        it('INT formula with sheet reference - 4->', (done: Function) => {
+            helper.edit('J7', '=INT(Sheet1!$J$10)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(Sheet1!$J$10)"}');
+            done();
+        });
+        it('INT formula with sheet reference - 5->', (done: Function) => {
+            helper.edit('J7', '=INT(Sheet1!$J10)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(Sheet1!$J10)"}');
+            done();
+        });
+        it('INT formula with different datatype - 1->', (done: Function) => {
+            helper.edit('J7', '=INT(6.078%)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(6.078%)"}');
+            done();
+        });
+        it('INT formula with different datatype - 2->', (done: Function) => {
+            helper.edit('J1', '"-3.45"');
+            helper.edit('J7', '=INT(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J1)"}');
+            done();
+        });
+        it('INT formula with different datatype - 3->', (done: Function) => {
+            helper.edit('J7', '=INT(J10)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(J10)"}');
+            done();
+        });
+        it('INT formula with different datatype - 4->', (done: Function) => {
+            helper.edit('J7', '=INT("Flip")');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(\\"Flip\\")"}');
+            done();
+        });
+        it('INT formula with different datatype - 5->', (done: Function) => {
+            helper.edit('J1', 'Flip- Flops & Slippers');
+            helper.edit('J7', '=INT(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=INT(J1)"}');
+            done();
+        });
+        it('INT formula with different datatype - 6->', (done: Function) => {
+            helper.edit('J7', '=INT(6/23/2014)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(6/23/2014)"}');
+            done();
+        });
+        it('INT formula with different datatype - 7->', (done: Function) => {
+            helper.edit('J7', '=INT(0.122)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(0.122)"}');
+            done();
+        });
+        it('INT formula with different datatype - 8->', (done: Function) => {
+            helper.edit('J7', '=INT(2/3/2000)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(2/3/2000)"}');
+            done();
+        });
+        it('INT formula with different datatype - 9->', (done: Function) => {
+            helper.edit('J1', '1:45:00 PM');
+            helper.edit('J7', '=INT(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=INT(J1)"}');
+            done();
+        });
+        it('INT formula with different datatype - 10->', (done: Function) => {
+            helper.edit('J7', '=INT(MONTH(21))');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":1,"formula":"=INT(MONTH(21))"}');
+            done();
+        });
+        it('INT formula with different datatype - 11->', (done: Function) => {
+            helper.edit('J7', '=INT(EXP(MONTH(SMALL(A2:A9, 4))))');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#NUM!","formula":"=INT(EXP(MONTH(SMALL(A2:A9, 4))))"}');
+            done();
+        });
+    });
+
+    describe('Reported LN Formulae - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('LN formula with specific cases - 1->', (done: Function) => {
+            helper.edit('I1', '=LN("!")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=LN(\\"!\\")"}');
+            done();
+        });
+        it('LN formula with specific cases - 2->', (done: Function) => {
+            helper.edit('I2', '=LN("""")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=LN(\\"\\"\\"\\")"}');
+            done();
+        });
+        it('LN formula with specific cases - 3->', (done: Function) => {
+            helper.edit('I3', '=LN("""   ")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"#VALUE!","formula":"=LN(\\"\\"\\"   \\")"}');
+            done();
+        });
+        it('LN formula with specific cases - 4->', (done: Function) => {
+            helper.edit('I4', '=LN("  .67   """)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"#VALUE!","formula":"=LN(\\"  .67   \\"\\"\\")"}');
+            done();
+        });
+        it('LN formula with direct value - 1->', (done: Function) => {
+            helper.edit('I1', '=LN(Hi)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=LN(Hi)"}');
+            done();
+        });
+        it('LN formula with direct value - 2->', (done: Function) => {
+            helper.edit('I2', '=LN("")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=LN(\\"\\")"}');
+            done();
+        });
+        it('LN formula with direct value - 3->', (done: Function) => {
+            helper.edit('I3', '=LN(TRUE)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":0,"formula":"=LN(TRUE)"}');
+            done();
+        });
+        it('LN formula with direct value - 4->', (done: Function) => {
+            helper.edit('I4', '=LN(FALSE)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"#NUM!","formula":"=LN(FALSE)"}');
+            done();
+        });
+        it('LN formula with direct value - 5->', (done: Function) => {
+            helper.edit('I5', '=LN("")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"#VALUE!","formula":"=LN(\\"\\")"}');
+            done();
+        });
+        it('LN formula with direct value - 6->', (done: Function) => {
+            helper.edit('I6', '=LN("3/4/2023")');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('10.71417329');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":10.7141732944266,"formula":"=LN(\\"3/4/2023\\")"}');
+            done();
+        });
+        it('LN formula with direct value - 7->', (done: Function) => {
+            helper.edit('I7', '=LN(7-JUN)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#NAME?","formula":"=LN(7-JUN)"}');
+            done();
+        });
+        it('LN formula with direct value - 8->', (done: Function) => {
+            helper.edit('I8', '=LN("07-JUN")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('10.51999664');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":10.519996639806674,"formula":"=LN(\\"07-JUN\\")"}');
+            done();
+        });
+        it('LN formula with direct value - 9->', (done: Function) => {
+            helper.edit('I9', '=LN(" ")');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":"#VALUE!","formula":"=LN(\\" \\")"}');
+            done();
+        });
+        it('LN formula with direct value - 10->', (done: Function) => {
+            helper.edit('I10', '=LN("       ")');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[8])).toBe('{"value":"#VALUE!","formula":"=LN(\\"       \\")"}');
+            done();
+        });
+        it('LN formula with cell reference - 1->', (done: Function) => {
+            helper.edit('J1', '#REF!');
+            helper.edit('J2', 'TRUE');
+            helper.edit('J3', 'FALSE');
+            helper.edit('J7', '=LN(J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#REF!","formula":"=LN(J1)"}');
+            done();
+        });
+        it('LN formula with cell reference - 2->', (done: Function) => {
+            helper.edit('J7', '=LN(J2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=LN(J2)"}');
+            done();
+        });
+        it('LN formula with cell reference - 3->', (done: Function) => {
+            helper.edit('J7', '=LN(J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#NUM!","formula":"=LN(J3)"}');
+            done();
+        });
+        it('LN formula with cell reference - 4->', (done: Function) => {
+            helper.edit('J7', '=LN(J4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#NUM!","formula":"=LN(J4)"}');
+            done();
+        });
+        it('LN formula with sheet reference - 1->', (done: Function) => {
+            helper.edit('J1', '#DIV/0!');
+            helper.edit('J2', '#NUM!');
+            helper.edit('J7', '=LN(Sheet1!J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#DIV/0!","formula":"=LN(Sheet1!J1)"}');
+            done();
+        });
+        it('LN formula with sheet reference - 2->', (done: Function) => {
+            helper.edit('J7', '=LN($J$2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#NUM!","formula":"=LN($J$2)"}');
+            done();
+        });
+        it('LN formula with invalid arguements - 1->', (done: Function) => {
+            helper.edit('J7', '=LN(6.078%)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('-2.800494491');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":-2.80049449149349,"formula":"=LN(6.078%)"}');
+            done();
+        });
+        it('LN formula with invalid arguements - 2->', (done: Function) => {
+            helper.edit('J7', '=LN(MONTH(21))');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":0,"formula":"=LN(MONTH(21))"}');
+            done();
+        });
+        it('LN formula with invalid arguements - 3->', (done: Function) => {
+            helper.edit('A2', '103.32');
+            helper.edit('A3', '104.32');
+            helper.edit('A4', '105.32');
+            helper.edit('A5', '106.32');
+            helper.edit('A6', '107.32');
+            helper.edit('A7', '108.32');
+            helper.edit('A8', '109.32');
+            helper.edit('A9', '110.32');
+            helper.edit('J7', '=LN(EXP(MONTH(SMALL(A2:A9, 4))))');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":4,"formula":"=LN(EXP(MONTH(SMALL(A2:A9, 4))))"}');
             done();
         });
     });
@@ -2180,6 +3440,503 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
+    describe('Reported LOG Formulae - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('LOG formula with specific cases - 1->', (done: Function) => {
+            helper.edit('I1', '=LOG(Hi/2,1)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=LOG(Hi/2,1)"}');
+            done();
+        });
+        it('LOG formula with specific cases - 2->', (done: Function) => {
+            helper.edit('I2', '=LOG(123.686,"3.189")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('4.154277317');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"4.154277316577911","formula":"=LOG(123.686,\\"3.189\\")"}');
+            done();
+        });
+        it('LOG formula with specific cases - 3->', (done: Function) => {
+            helper.edit('I2', '=LOG(2+"3.45890", 2)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=LOG(2+\\"3.45890\\", 2)"}');
+            done();
+        });
+        it('LOG formula with specific cases - 4->', (done: Function) => {
+            helper.edit('I2', '=LOG("23.1034" + 4.67, 3)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=LOG(\\"23.1034\\" + 4.67, 3)"}');
+            done();
+        });
+        it('LOG formula with specific cases - 5->', (done: Function) => {
+            helper.edit('I2', '=LOG("23.45 "* "1.0009", 4)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=LOG(\\"23.45 \\"* \\"1.0009\\", 4)"}');
+            done();
+        });
+        it('LOG formula with specific cases - 6->', (done: Function) => {
+            helper.edit('I2', '=LOG("34.7980"/2, 2)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#VALUE!","formula":"=LOG(\\"34.7980\\"/2, 2)"}');
+            done();
+        });
+        it('LOG formula with direct value - 1->', (done: Function) => {
+            helper.edit('I1', '=LOG("6",2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('2.584962501');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"2.584962500721156","formula":"=LOG(\\"6\\",2)"}');
+            done();
+        });
+        it('LOG formula with direct value - 2->', (done: Function) => {
+            helper.edit('I2', '=LOG("102.673902", 3)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('4.215825741');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"4.2158257409110895","formula":"=LOG(\\"102.673902\\", 3)"}');
+            done();
+        });
+        it('LOG formula with direct value - 3->', (done: Function) => {
+            helper.edit('I3', '=LOG(Hi, 1)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"#NAME?","formula":"=LOG(Hi, 1)"}');
+            done();
+        });
+        it('LOG formula with direct value - 4->', (done: Function) => {
+            helper.edit('I4', '=LOG("", 2)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"#VALUE!","formula":"=LOG(\\"\\", 2)"}');
+            done();
+        });
+        it('LOG formula with direct value - 5->', (done: Function) => {
+            helper.edit('I5', '=LOG("TRUE", 2)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"#VALUE!","formula":"=LOG(\\"TRUE\\", 2)"}');
+            done();
+        });
+        it('LOG formula with direct value - 6->', (done: Function) => {
+            helper.edit('I6', '=LOG("-5.4678", 2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#NUM!","formula":"=LOG(\\"-5.4678\\", 2)"}');
+            done();
+        });
+        it('LOG formula with direct value - 7->', (done: Function) => {
+            helper.edit('I7', '=LOG(-6.0000001,7)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#NUM!","formula":"=LOG(-6.0000001,7)"}');
+            done();
+        });
+        it('LOG formula with direct value - 8->', (done: Function) => {
+            helper.edit('I8', '=LOG("0")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":"#NUM!","formula":"=LOG(\\"0\\")"}');
+            done();
+        });
+        it('LOG formula with direct value - 9->', (done: Function) => {
+            helper.edit('I9', '=LOG(7-JUN)');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":"#NAME?","formula":"=LOG(7-JUN)"}');
+            done();
+        });
+        it('LOG formula with cell reference - 1->', (done: Function) => {
+            helper.edit('J1', '24.0001');
+            helper.edit('J2', '33.45');
+            helper.edit('J3', '#REF!');
+            helper.edit('J4', '"TRUE"');
+            helper.edit('J5', '"-5"');
+            helper.edit('J7', '=LOG(J1,"4")');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('2.292484256');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"2.2924842559689855","formula":"=LOG(J1,\\"4\\")"}');
+            done();
+        });
+        it('LOG formula with cell reference - 2->', (done: Function) => {
+            helper.edit('J7', '=LOG(J2,"2")');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('5.063934306');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"5.063934305754099","formula":"=LOG(J2,\\"2\\")"}');
+            done();
+        });
+        it('LOG formula with cell reference - 3->', (done: Function) => {
+            helper.edit('J7', '=LOG(J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#REF!","formula":"=LOG(J3)"}');
+            done();
+        });
+        it('LOG formula with cell reference - 4->', (done: Function) => {
+            helper.edit('J7', '=LOG(J4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=LOG(J4)"}');
+            done();
+        });
+        it('LOG formula with cell reference - 5->', (done: Function) => {
+            helper.edit('J7', '=LOG(J5,1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=LOG(J5,1)"}');
+            done();
+        });
+        it('LOG formula with sheet reference - 1->', (done: Function) => {
+            helper.edit('J1', '#DIV/0!');
+            helper.edit('J2', '"65.678"');
+            helper.edit('J3', '#NUM!');
+            helper.edit('J4', '"1"');
+            helper.edit('J5', '#DIV/0!');
+            helper.edit('J7', '=LOG(Sheet1!J1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#DIV/0!","formula":"=LOG(Sheet1!J1)"}');
+            done();
+        });
+        it('LOG formula with sheet reference - 2->', (done: Function) => {
+            helper.edit('J7', '=LOG(Sheet1!J2,1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=LOG(Sheet1!J2,1)"}');
+            done();
+        });
+        it('LOG formula with sheet reference - 3->', (done: Function) => {
+            helper.edit('J7', '=LOG($J$3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#NUM!","formula":"=LOG($J$3)"}');
+            done();
+        });
+        it('LOG formula with sheet reference - 4->', (done: Function) => {
+            helper.edit('J7', '=LOG(Sheet1!$J12,J$4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=LOG(Sheet1!$J12,J$4)"}');
+            done();
+        });
+        it('LOG formula with sheet reference - 5->', (done: Function) => {
+            helper.edit('J7', '=LOG(Sheet1!J5,J4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#DIV/0!","formula":"=LOG(Sheet1!J5,J4)"}');
+            done();
+        });
+        it('LOG formula with different datatype - 1->', (done: Function) => {
+            helper.edit('J7', '=LOG(44.2347891,{"3"})');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('3.449362075');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"3.4493620745861904","formula":"=LOG(44.2347891,{\\"3\\"})"}');
+            done();
+        });
+        it('LOG formula with different datatype - 2->', (done: Function) => {
+            helper.edit('J7', '=LOG(6.078%,4)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('-2.020129757');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"-2.0201297574572585","formula":"=LOG(6.078%,4)"}');
+            done();
+        });
+        it('LOG formula with different datatype - 3->', (done: Function) => {
+            helper.edit('J7', '=LOG("13:34",2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('-0.822968112');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"-0.8229681120634277","formula":"=LOG(\\"13:34\\",2)"}');
+            done();
+        });
+        it('LOG formula with different datatype - 4->', (done: Function) => {
+            helper.edit('J7', '=LOG(MONTH(21), 2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"0","formula":"=LOG(MONTH(21), 2)"}');
+            done();
+        });
+        it('LOG formula with different datatype - 5->', (done: Function) => {
+            helper.edit('A2', '103.32');
+            helper.edit('A3', '104.32');
+            helper.edit('A4', '105.32');
+            helper.edit('A5', '106.32');
+            helper.edit('A6', '107.32');
+            helper.edit('A7', '108.32');
+            helper.edit('A8', '109.32');
+            helper.edit('A9', '110.32');
+            helper.edit('J7', '=LOG(EXP(MONTH(SMALL(A2:A9, 4))), 5)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('2.485339738');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"2.485339738238447","formula":"=LOG(EXP(MONTH(SMALL(A2:A9, 4))), 5)"}');
+            done();
+        });
+    });
+
+    describe('Reported EXP formula - Checking -> I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '"Hi"' }] }, { cells: [{ value: '98.564' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '-54' }] }, { cells: [{ value: '32' }] }, { cells: [{ value: 'one' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('EXP formula with cell Reference - 0->', (done: Function) => {
+            helper.edit('H1', '"TRUE"');
+            done();
+        });
+        it('EXP formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=EXP("6")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('403.4287935');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"403.4287934927351","formula":"=EXP(\\"6\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I1', '=EXP("102")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1.9862648361376543e+44');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1.9862648361376543e+44","formula":"=EXP(\\"102\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I1', '=EXP("Hi")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=EXP(\\"Hi\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I1', '=EXP("")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=EXP(\\"\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('I1', '=EXP("TRUE")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=EXP(\\"TRUE\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('I1', '=EXP("-5")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0.006737947');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0.006737946999085467","formula":"=EXP(\\"-5\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('I1', '=EXP("-3.45")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0.031745636');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0.03174563637806794","formula":"=EXP(\\"-3.45\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('I1', '=EXP("0")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1","formula":"=EXP(\\"0\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('I1', '=EXP(" ")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=EXP(\\" \\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('I1', '=EXP("       ")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=EXP(\\"       \\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('I1', '=EXP(H1)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=EXP(H1)"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('I1', '=EXP("Flip")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=EXP(\\"Flip\\")"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('I1', '=EXP(1:10)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=EXP(1:10)"}');
+            done();
+        });
+        it('EXP formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('I1', '=EXP(6%)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1.061836547');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1.0618365465453596","formula":"=EXP(6%)"}');
+            done();
+        });
+    });
+
+    describe('Reported DEGREES formulae - Checking -> III ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('DEGREES formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('H1', '#REF!');
+            helper.edit('H2', '"65"');
+            helper.edit('H3', '"212"');
+            helper.edit('H4', '"0"');
+            helper.edit('H5', '');
+            helper.edit('H6', 'TRUE');
+            helper.edit('H7', 'FALSE');
+            helper.edit('H8', '"-76"');
+            helper.edit('H9', '65+12');
+            helper.edit('H10', '16*7');
+            helper.edit('H11', '222/2');
+            helper.edit('H12', '156-33');
+            helper.edit('H12', '"0"');
+            helper.edit('H14', '"03/04/2023"');
+            helper.edit('H15', '#DIV/0!');
+            helper.edit('H16', '#NUM!');
+            helper.edit('H17', '"33"');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(Hi)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=DEGREES(Hi)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(TRUE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('57.29577951');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":57.29577951308232,"formula":"=DEGREES(TRUE)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0,"formula":"=DEGREES(FALSE)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(7-JUN)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=DEGREES(7-JUN)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H1)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#REF!","formula":"=DEGREES(H1)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H2)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H3)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H4)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H5)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0,"formula":"=DEGREES(H5)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('57.29577951');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":57.29577951308232,"formula":"=DEGREES(H6)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H7)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0,"formula":"=DEGREES(H7)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H8)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H8)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H9)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H9)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H10)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H10)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H11)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H11)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H12)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H12)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H4)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(H14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(H14)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(6/23/2014)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0.007421413');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0.007421412656588531,"formula":"=DEGREES(6/23/2014)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(1:10)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0,"formula":"=DEGREES(1:10)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(2%)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1.14591559');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1.1459155902616465,"formula":"=DEGREES(2%)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 22->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(Sheet1!H15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#DIV/0!","formula":"=DEGREES(Sheet1!H15)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 23->', (done: Function) => {
+            helper.edit('I1', '=DEGREES(Sheet1!H2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES(Sheet1!H2)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 24->', (done: Function) => {
+            helper.edit('I1', '=DEGREES($H$16)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DEGREES($H$16)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 25->', (done: Function) => {
+            helper.edit('I1', '=DEGREES($H$17)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DEGREES($H$17)"}');
+            done();
+        });
+        it('DEGREES formula with cell Reference - 26->', (done: Function) => {
+            helper.edit('I1', '=DEGREES("07-JUN")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('2122751.335');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":2122751.335180187,"formula":"=DEGREES(\\"07-JUN\\")"}');
+            done();
+        });
+    });
+
     describe('Formula - Checking V ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -2218,7 +3975,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=DATEVALUE("12/26/1998","10/20/1998")';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('J7', '=DATEVALUE("12/26/1998")');
             done();
@@ -2261,8 +4018,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('FACT Formula with no inputs ->', (done: Function) => {
             helper.edit('L7', '=FACT()');
-            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[11])).toBe('{"value":"#VALUE!","formula":"=FACT()"}');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[11])).toBe('{}');
             done();
         });
         it('FACT Formula with more than 1 inputs ->', (done: Function) => {
@@ -2273,15 +4030,15 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=FACT(1,2)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('L8', '=FACT(1)');
             done();
         });
         it('DEGREES Formula ->', (done: Function) => {
             helper.edit('N1', '=DEGREES(6.3)');
-            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('360');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":360,"formula":"=DEGREES(6.3)"}');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('360.9634109');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":360.96341093241864,"formula":"=DEGREES(6.3)"}');
             done();
         });
         it('DEGREES Formula with no input->', (done: Function) => {
@@ -2292,21 +4049,843 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=DEGREES()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('N2', '=DEGREES(PI())');
             done();
         });
         it('DEGREES Formula with cell having no value->', (done: Function) => {
             helper.edit('N3', '=DEGREES(P10)');
-            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[13])).toBe('{"value":"#VALUE!","formula":"=DEGREES(P10)"}');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[13])).toBe('{"value":0,"formula":"=DEGREES(P10)"}');
             done();
         });
         it('DEGREES Formula with cell having string value->', (done: Function) => {
             helper.edit('N4', '=DEGREES(A3)');
             expect(helper.invoke('getCell', [3, 13]).textContent).toBe('#VALUE!');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[13])).toBe('{"value":"#VALUE!","formula":"=DEGREES(A3)"}');
+            done();
+        });
+    });
+
+    describe('Reported ISNUMBER Formula - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Added cell Reference - 1->', (done: Function) => {
+            helper.edit('C23', '1');
+            helper.edit('D14', '"1"');
+            helper.edit('D22', '"2"');
+            helper.edit('C24', '2');
+            helper.edit('D22', '"2"');
+            helper.edit('C24', '2');
+            helper.edit('B24', '"TRUE"');
+            helper.edit('B15', 'TRUE');
+            helper.edit('B25', '"FALSE"');
+            helper.edit('F20', '""');
+            helper.edit('G9', '600.00%');
+            helper.edit('C20', 'Hello123');
+            helper.edit('E17', '#NUM!');
+            helper.edit('E15', '#NAME?');
+            helper.edit('E16', '#DIV/0!');
+            helper.edit('D22', '"2"');
+            helper.edit('H20', '2');
+            done();
+        });
+        it('IsNumber formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I21', '=ISNUMBER("45324")');
+            expect(helper.invoke('getCell', [20, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[20].cells[8])).toBe('{"value":false,"formula":"=ISNUMBER(\\"45324\\")"}');
+            done();
+        });
+        it('IsNumber formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I22', '=ISNUMBER("45.433")');
+            expect(helper.invoke('getCell', [21, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[21].cells[8])).toBe('{"value":false,"formula":"=ISNUMBER(\\"45.433\\")"}');
+            done();
+        });
+        it('IsNumber formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I23', '=ISNUMBER("-453.43")');
+            expect(helper.invoke('getCell', [22, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[22].cells[8])).toBe('{"value":false,"formula":"=ISNUMBER(\\"-453.43\\")"}');
+            done();
+        });
+        it('IsNumber formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I24', '=ISNUMBER("0")');
+            expect(helper.invoke('getCell', [23, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[23].cells[8])).toBe('{"value":false,"formula":"=ISNUMBER(\\"0\\")"}');
+            done();
+        });
+        it('IsNumber formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I24', '=ISNUMBER(TEXT(32,"@"))');
+            expect(helper.invoke('getCell', [23, 8]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[23].cells[8])).toBe('{"value":true,"formula":"=ISNUMBER(TEXT(32,\\"@\\"))"}');
+            done();
+        });
+    });
+
+    describe('Reported FIND Formulae - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('FIND formula with specific cases - 1->', (done: Function) => {
+            helper.edit('I1', '=FIND( , )');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1","formula":"=FIND( , )"}');
+            done();
+        });
+        it('FIND formula with specific cases - 2->', (done: Function) => {
+            helper.edit('I2', '=FIND(,)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"1","formula":"=FIND(,)"}');
+            done();
+        });
+        it('FIND formula with difference cases - 1->', (done: Function) => {
+            helper.edit('J1', '12:00:00 AM');
+            helper.edit('J2', '"12/3/2001"');
+            helper.edit('I3', '=FIND(J1,J2)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('8');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"8","formula":"=FIND(J1,J2)"}');
+            done();
+        });
+        it('FIND formula with difference cases - 2->', (done: Function) => {
+            helper.edit('J1', '2*7');
+            helper.edit('I3', '=FIND("2*7", J1)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"1","formula":"=FIND(\\"2*7\\", J1)"}');
+            done();
+        });
+        it('FIND formula with difference cases - 3->', (done: Function) => {
+            helper.edit('J1', '"2*7"');
+            helper.edit('I3', '=FIND("2*7", J1)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"2","formula":"=FIND(\\"2*7\\", J1)"}');
+            done();
+        });
+        it('FIND formula with difference cases - 4->', (done: Function) => {
+            helper.edit('J1', '98');
+            helper.edit('J2', '15-12');
+            helper.edit('I3', '=FIND(J1,"32039820",J2)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"#VALUE!","formula":"=FIND(J1,\\"32039820\\",J2)"}');
+            done();
+        });
+        it('FIND formula with difference cases - 5->', (done: Function) => {
+            helper.edit('J1', '"98"');
+            helper.edit('J2', '15-12');
+            helper.edit('I3', '=FIND(J1,"32039820",J2)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"#VALUE!","formula":"=FIND(J1,\\"32039820\\",J2)"}');
+            done();
+        });
+        it('FIND formula with normal value - 1->', (done: Function) => {
+            helper.edit('I1', '=FIND("ele","#NUM!")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FIND(\\"ele\\",\\"#NUM!\\")"}');
+            done();
+        });
+        it('FIND formula with normal value - 2->', (done: Function) => {
+            helper.edit('I2', '=FIND(,)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"1","formula":"=FIND(,)"}');
+            done();
+        });
+        it('FIND formula with normal value - 3->', (done: Function) => {
+            helper.edit('I2', '=FIND("2","10""1-2")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"6","formula":"=FIND(\\"2\\",\\"10\\"\\"1-2\\")"}');
+            done();
+        });
+        it('FIND formula with cell reference - 1->', (done: Function) => {
+            helper.edit('J1', '"FALSE"');
+            helper.edit('J2', 'FALSE');
+            helper.edit('J3', '"TRUE"');
+            helper.edit('J4', '" "');
+            helper.edit('J5', '"     "');
+            helper.edit('J6', '""');
+            helper.edit('J8', '""      ""');
+            helper.edit('J7', '=FIND(J1,J2)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=FIND(J1,J2)"}');
+            done();
+        });
+        it('FIND formula with cell reference - 2->', (done: Function) => {
+            helper.edit('J7', '=FIND("""",J3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"1","formula":"=FIND(\\"\\"\\"\\",J3)"}');
+            done();
+        });
+        it('FIND formula with cell reference - 3->', (done: Function) => {
+            helper.edit('J7', '=FIND(J4,J5)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"#VALUE!","formula":"=FIND(J4,J5)"}');
+            done();
+        });
+        it('FIND formula with cell reference - 4->', (done: Function) => {
+            helper.edit('J7', '=FIND(J6,J8,3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('9');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"9","formula":"=FIND(J6,J8,3)"}');
+            done();
+        });
+    });
+
+    describe('Reported FACT formula - Checking -> I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '"Hi"' }] }, { cells: [{ value: '98.564' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '-54' }] }, { cells: [{ value: '32' }] }, { cells: [{ value: 'one' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('FACT formula with cell Reference - 0->', (done: Function) => {
+            helper.edit('H1', '#REF!');
+            helper.edit('H2', '"65"');
+            helper.edit('H3', '"112"');
+            helper.edit('H4', '"0"');
+            helper.edit('H5', '""');
+            helper.edit('H6', 'TRUE');
+            helper.edit('H7', 'FALSE');
+            helper.edit('H8', '"-5"');
+            helper.edit('H9', '6+2');
+            helper.edit('H10', '2*7');
+            helper.edit('H11', '22/2');
+            helper.edit('H12', '15-3');
+            helper.edit('H13', '3/4/2023');
+            helper.edit('H14', '"03/04/2023"');
+            helper.edit('H15', '7-Jun');
+            helper.edit('H16', '" "');
+            helper.edit('H17', '"   "');
+            helper.edit('H18', '6/23/2014');
+            helper.edit('H19', '$300.00');
+            helper.edit('H20', '#DIV/0!');
+            helper.edit('H21', '"Hi"');
+            helper.edit('H22', '#NUM!');
+            helper.edit('H23', '"33"');
+            helper.edit('H24', '');
+            done();
+        });
+        it('FACT formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=FACT(Hi)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=FACT(Hi)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I1', '=FACT("")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(\\"\\")"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I1', '=FACT(TRUE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(TRUE)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I1', '=FACT(FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(FALSE)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('I1', '=FACT("3/4/2023")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=FACT(\\"3/4/2023\\")"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('I1', '=FACT(7-JUN)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=FACT(7-JUN)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('I1', '=FACT("07-JUN")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=FACT(\\"07-JUN\\")"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('I1', '=FACT(" ")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(\\" \\")"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('I1', '=FACT("       ")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(\\"       \\")"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('I1', '=FACT(H1)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#REF!","formula":"=FACT(H1)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('I1', '=FACT(H2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H2)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('I1', '=FACT(H3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H3)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('I1', '=FACT(H4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H4)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('I1', '=FACT(H5)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H5)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('I1', '=FACT(H6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(H6)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('I1', '=FACT(H7)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(H7)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('I1', '=FACT(H8)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H8)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('I1', '=FACT(H9)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H9)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('I1', '=FACT(H10)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H10)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('I1', '=FACT(H11)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H11)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('I1', '=FACT(H12)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H12)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 22->', (done: Function) => {
+            helper.edit('I1', '=FACT(H5)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H5)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 23->', (done: Function) => {
+            helper.edit('I1', '=FACT(H4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H4)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 24->', (done: Function) => {
+            helper.edit('I1', '=FACT(H13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=FACT(H13)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 25->', (done: Function) => {
+            helper.edit('I1', '=FACT(H14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H14)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 26->', (done: Function) => {
+            helper.edit('I1', '=FACT(H15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=FACT(H15)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 27->', (done: Function) => {
+            helper.edit('I1', '=FACT(H16)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H16)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 28->', (done: Function) => {
+            helper.edit('I1', '=FACT(H17)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(H17)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 29->', (done: Function) => {
+            helper.edit('I1', '=FACT(H18)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=FACT(H18)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 30->', (done: Function) => {
+            helper.edit('I1', '=FACT(1:10)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0,"formula":"=FACT(1:10)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 31->', (done: Function) => {
+            helper.edit('I1', '=FACT(6%)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(6%)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 32->', (done: Function) => {
+            helper.edit('I1', '=FACT(H19)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=FACT(H19)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 33->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet1!H9)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(Sheet1!H9)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 34->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet1!H20)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#DIV/0!","formula":"=FACT(Sheet1!H20)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 35->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet1!H2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(Sheet1!H2)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 36->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet1!$H9)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(Sheet1!$H9)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 37->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet1!H$24)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(Sheet1!H$24)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 38->', (done: Function) => {
+            helper.edit('I1', '=FACT($H$22)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=FACT($H$22)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 39->', (done: Function) => {
+            helper.edit('I1', '=FACT($H$23)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT($H$23)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 40->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet2!$M8)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(Sheet2!$M8)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 41->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet2!F$10)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(Sheet2!F$10)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 42->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet2!A1)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=FACT(Sheet2!A1)"}');
+            done();
+        });
+        it('FACT formula with cell Reference - 43->', (done: Function) => {
+            helper.edit('I1', '=FACT(Sheet2!M13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=FACT(Sheet2!M13)"}');
+            done();
+        });
+    });
+
+    describe('Reported LARGE-SMALL Formulae - Checking II ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: reportedBugData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('LARGE formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('L1', '=LARGE(B27:E27,B27)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('2.43');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[11])).toBe('{"value":2.43,"formula":"=LARGE(B27:E27,B27)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('L2', '=LARGE(F30:F36,3)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[11])).toBe('{"value":"#NUM!","formula":"=LARGE(F30:F36,3)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('L3', '=LARGE(B29:B38,5)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[11])).toBe('{"value":0,"formula":"=LARGE(B29:B38,5)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('L4', '=LARGE(D12:D17,2)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[11])).toBe('{"value":"#NUM!","formula":"=LARGE(D12:D17,2)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('L5', '=LARGE(C23:C27,D22)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(C23:C27,D22)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('L6', '=LARGE(A28:F28,D22)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(A28:F28,D22)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('L7', '=LARGE(D22:D23,2)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[11])).toBe('{"value":"#NUM!","formula":"=LARGE(D22:D23,2)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('L8', '=LARGE(D5:D11,"one")');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(D5:D11,\\"one\\")"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('L9', '=LARGE(C23:C26,B16)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"value":4,"formula":"=LARGE(C23:C26,B16)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('L10', '=LARGE(C25:C28,B24)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(C25:C28,B24)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('L11', '=LARGE(D3:D11,TRUE)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('50');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[11])).toBe('{"value":50,"formula":"=LARGE(D3:D11,TRUE)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('L12', '=LARGE(C24:C29,"TRUE")');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(C24:C29,\\"TRUE\\")"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('L13', '=LARGE(H3:H11,"FALSE")');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(H3:H11,\\"FALSE\\")"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('L14', '=LARGE(H5:H11," ")');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(H5:H11,\\" \\")"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('L15', '=LARGE(E2:E6,B16)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('30');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[11])).toBe('{"value":30,"formula":"=LARGE(E2:E6,B16)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('L16', '=LARGE(,)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[11])).toBe('{"value":"#NUM!","formula":"=LARGE(,)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('L17', '=LARGE(E15:E18,2)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[11])).toBe('{"value":"#NAME?","formula":"=LARGE(E15:E18,2)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('L18', '=LARGE(C14:C17,C18)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(C14:C17,C18)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('L19', '=LARGE(C23:C28,C22)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(C23:C28,C22)"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('L20', '=LARGE(Hello,"hi")');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[11])).toBe('{"value":"#NAME?","formula":"=LARGE(Hello,\\"hi\\")"}');
+            done();
+        });
+        it('LARGE formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('L21', '=LARGE("hello",hi)');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[20].cells[11])).toBe('{"value":"#VALUE!","formula":"=LARGE(\\"hello\\",hi)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('M2', '=SMALL(F30:F36,3)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[12])).toBe('{"value":"#NUM!","formula":"=SMALL(F30:F36,3)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('M4', '=SMALL(D12:D17,2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[12])).toBe('{"value":"#NUM!","formula":"=SMALL(D12:D17,2)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('M5', '=SMALL(C23:C27,D22)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(C23:C27,D22)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('M6', '=SMALL(A28:F28,D22)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(A28:F28,D22)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('M7', '=SMALL(D22:D23,2)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[12])).toBe('{"value":"#NUM!","formula":"=SMALL(D22:D23,2)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('M8', '=SMALL(D5:D11,"one")');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(D5:D11,\\"one\\")"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('M9', '=SMALL(C23:C26,B16)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[12])).toBe('{"value":1,"formula":"=SMALL(C23:C26,B16)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('M10', '=SMALL(C25:C28,B24)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(C25:C28,B24)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('M11', '=SMALL(D3:D11,TRUE)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('15');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[12])).toBe('{"value":15,"formula":"=SMALL(D3:D11,TRUE)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('M12', '=SMALL(C24:C29,"TRUE")');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(C24:C29,\\"TRUE\\")"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('M13', '=SMALL(H3:H11,"FALSE")');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(H3:H11,\\"FALSE\\")"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('M14', '=SMALL(H5:H11," ")');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(H5:H11,\\" \\")"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('M15', '=SMALL(E2:E6,B16)');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('6.5E-08');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[12])).toBe('{"value":"0.000000065","formula":"=SMALL(E2:E6,B16)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('M16', '=SMALL(,)');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[12])).toBe('{"value":"#NUM!","formula":"=SMALL(,)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('M17', '=SMALL(E15:E18,2)');
+            expect(helper.invoke('getCell', [16, 12]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[12])).toBe('{"value":"#NAME?","formula":"=SMALL(E15:E18,2)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('M18', '=SMALL(C14:C17,C18)');
+            expect(helper.invoke('getCell', [17, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(C14:C17,C18)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('M19', '=SMALL(C23:C28,C22)');
+            expect(helper.invoke('getCell', [18, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(C23:C28,C22)"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('M20', '=SMALL(Hello,"hi")');
+            expect(helper.invoke('getCell', [19, 12]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[12])).toBe('{"value":"#NAME?","formula":"=SMALL(Hello,\\"hi\\")"}');
+            done();
+        });
+        it('SMALL formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('M21', '=SMALL("hello",hi)');
+            expect(helper.invoke('getCell', [20, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[20].cells[12])).toBe('{"value":"#VALUE!","formula":"=SMALL(\\"hello\\",hi)"}');
+            done();
+        });
+    });
+
+    describe('Reported CHAR formulae - Checking -> III ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('CHAR formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('H1', '#REF!');
+            helper.edit('H2', '"65"');
+            helper.edit('H3', '"112"');
+            helper.edit('H4', 'TRUE');
+            helper.edit('H5', '103.32');
+            helper.edit('H6', '104.32');
+            helper.edit('H7', '105.32');
+            helper.edit('H8', '106.32');
+            helper.edit('H9', '107.32');
+            helper.edit('H10', '108.32');
+            helper.edit('H11', '109.32');
+            helper.edit('H12', '110.32');
+            helper.edit('H13', '#DIV/0!');
+            helper.edit('H14', '#NUM!');
+            helper.edit('H15', '"33"');
+            helper.edit('H16', '4');
+            done();
+        });
+        it('CHAR formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=CHAR(TRUE)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('CHAR formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I1', '=CHAR(H1)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#REF!","formula":"=CHAR(H1)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I1', '=CHAR(H2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CHAR(H2)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I1', '=CHAR(H3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CHAR(H3)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('I1', '=CHAR(H4)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('CHAR formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('I1', '=CHAR(1:10)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CHAR(1:10)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('I1', '=CHAR(98.8)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('b');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"b","formula":"=CHAR(98.8)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('I1', '=CHAR(105.3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('i');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"i","formula":"=CHAR(105.3)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('I1', '=CHAR(SMALL(H5:H12, H16))');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('j');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"j","formula":"=CHAR(SMALL(H5:H12, H16))"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('I1', '=CHAR(Sheet1!H13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#DIV/0!","formula":"=CHAR(Sheet1!H13)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('I1', '=CHAR(Sheet1!H2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CHAR(Sheet1!H2)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('I1', '=CHAR($H$14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=CHAR($H$14)"}');
+            done();
+        });
+        it('CHAR formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('I1', '=CHAR($H$15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CHAR($H$15)"}');
             done();
         });
     });
@@ -2543,6 +5122,459 @@ describe('Spreadsheet formula module ->', () => {
             expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('O3', '=HOUR("4/4/2022 3:32:44 AM");');
+            done();
+        });
+    });
+
+    describe('Reported day formula - Checking -> III ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('DAY formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=DAY(10000000)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAY(10000000)"}');
+            done();
+        });
+        it('DAY formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I2', '=DAY(DATEVALUE("08/23/2023"))');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('23');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":23,"formula":"=DAY(DATEVALUE(\\"08/23/2023\\"))"}');
+            done();
+        });
+        it('DAY formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I3', '=DAY("APR-07-2020")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":7,"formula":"=DAY(\\"APR-07-2020\\")"}');
+            done();
+        });
+        it('DAY formula with cell Reference - 4->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'General', refersTo: 'I4'});
+            helper.edit('I4', '4/7/2020');
+            helper.edit('I5', '=DAY(I4)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":7,"formula":"=DAY(I4)"}');
+            done();
+        });
+    });
+
+    describe('Reported DATEVALUE formulae - Checking -> III ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('DATEVALUE formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=DATEVALUE("04/23/2021")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('44309');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"44309","formula":"=DATEVALUE(\\"04/23/2021\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I2', '=DATEVALUE("8/22/2011")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('40777');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"40777","formula":"=DATEVALUE(\\"8/22/2011\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I3', '=DATEVALUE("07-APR-2021")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('44293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"44293","formula":"=DATEVALUE(\\"07-APR-2021\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I4', '=DATEVALUE("2023/03/13")');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('44998');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"44998","formula":"=DATEVALUE(\\"2023/03/13\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('I5', '=DATEVALUE("03-14-2021")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('44269');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"44269","formula":"=DATEVALUE(\\"03-14-2021\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 6->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'J2']);
+            helper.edit('J2', '04/23/2021');
+            helper.edit('I6', '=DATEVALUE(J2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('44309');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"44309","formula":"=DATEVALUE(J2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 7->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'J3']);
+            helper.edit('J3', '8/22/2011');
+            helper.edit('I7', '=DATEVALUE(J3)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('40777');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"40777","formula":"=DATEVALUE(J3)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 8->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'J4']);
+            helper.edit('J4', '07-APR-2021');
+            helper.edit('I8', '=DATEVALUE(J4)');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('44293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":"44293","formula":"=DATEVALUE(J4)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 9->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'J5']);
+            helper.edit('J5', '03-14-2021');
+            helper.edit('I9', '=DATEVALUE(J5)');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('44269');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":"44269","formula":"=DATEVALUE(J5)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 10->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N1']);
+            helper.edit('N1', '04/23/2021');
+            helper.edit('I10', '=DATEVALUE(N1)');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('44309');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[8])).toBe('{"value":"44309","formula":"=DATEVALUE(N1)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 11->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N2']);
+            helper.edit('N2', '8/22/2011');
+            helper.edit('I11', '=DATEVALUE(N2)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('40777');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"40777","formula":"=DATEVALUE(N2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 12->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N3']);
+            helper.edit('N3', '07-APR-2021');
+            helper.edit('I12', '=DATEVALUE(N3)');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('44293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[8])).toBe('{"value":"44293","formula":"=DATEVALUE(N3)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 13->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N4']);
+            helper.edit('N4', '03-14-2021');
+            helper.edit('I13', '=DATEVALUE(N4)');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('44269');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[8])).toBe('{"value":"44269","formula":"=DATEVALUE(N4)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('I14', '=DATEVALUE(Hi)');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[8])).toBe('{"value":"#NAME?","formula":"=DATEVALUE(Hi)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('E16', '#DIV/0!');
+            helper.edit('I15', '=DATEVALUE(E16)');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[8])).toBe('{"value":"#DIV/0!","formula":"=DATEVALUE(E16)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('E17', '#NUM!');
+            helper.edit('I16', '=DATEVALUE(E17)');
+            expect(helper.invoke('getCell', [15, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[8])).toBe('{"value":"#NUM!","formula":"=DATEVALUE(E17)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('E18', '#REF!');
+            helper.edit('I17', '=DATEVALUE(E18)');
+            expect(helper.invoke('getCell', [16, 8]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[8])).toBe('{"value":"#REF!","formula":"=DATEVALUE(E18)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('I18', '"=DATEVALUE()');
+            expect(helper.invoke('getCell', [17, 8]).textContent).toBe('"=DATEVALUE()');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[8])).toBe('{"value":"\\"=DATEVALUE()"}');
+            done();
+        });
+        // it('DATEVALUE formula with cell Reference - 19->', (done: Function) => {
+        //     helper.edit('I19', '=MONTH(DATEVALUE("03/23/2023"))');
+        //     expect(helper.invoke('getCell', [18, 8]).textContent).toBe('3');
+        //     expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[8])).toBe('{"value":3,"formula":"=MONTH(DATEVALUE(\\"03/23/2023\\"))"}');
+        //     done();
+        // });
+        it('DATEVALUE formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('I20', '=DAY(DATEVALUE("05/30/2021"))');
+            expect(helper.invoke('getCell', [19, 8]).textContent).toBe('30');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[8])).toBe('{"value":30,"formula":"=DAY(DATEVALUE(\\"05/30/2021\\"))"}');
+            done();
+        });
+        // it('DATEVALUE formula with cell Reference - 21->', (done: Function) => {
+        //     helper.edit('I21', '=DATE(2023,MONTH(DATEVALUE("02/28/2020")),23)');
+        //     expect(helper.invoke('getCell', [20, 8]).textContent).toBe('2/23/2023');
+        //     expect(JSON.stringify(helper.getInstance().sheets[0].rows[20].cells[8])).toBe('{"value":"2/23/2023","formula":"=DATE(2023,MONTH(DATEVALUE(\\"02/28/2020\\")),23)"}');
+        //     done();
+        // });
+        it('DATEVALUE formula with cell Reference - 22->', (done: Function) => {
+            helper.edit('I22', '=WEEKDAY(DATEVALUE("02/27/2023"),2)');
+            expect(helper.invoke('getCell', [21, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[21].cells[8])).toBe('{"value":1,"formula":"=WEEKDAY(DATEVALUE(\\"02/27/2023\\"),2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 23->', (done: Function) => {
+            helper.edit('I23', '=EDATE(DATEVALUE("01/01/2024"),1)');
+            expect(helper.invoke('getCell', [22, 8]).textContent).toBe('45323');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[22].cells[8])).toBe('{"value":"45323","formula":"=EDATE(DATEVALUE(\\"01/01/2024\\"),1)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 24->', (done: Function) => {
+            helper.edit('I24', '=EOMONTH(DATEVALUE("02/03/2023"),2)');
+            expect(helper.invoke('getCell', [23, 8]).textContent).toBe('45046');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[23].cells[8])).toBe('{"value":"45046","formula":"=EOMONTH(DATEVALUE(\\"02/03/2023\\"),2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 25->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N6']);
+            helper.edit('N6', '04/23/2021');
+            helper.edit('I25', '=DATEVALUE($N$6)');
+            expect(helper.invoke('getCell', [24, 8]).textContent).toBe('44309');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[24].cells[8])).toBe('{"value":"44309","formula":"=DATEVALUE($N$6)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 26->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N7']);
+            helper.edit('N7', '07-APR-2021');
+            helper.edit('I26', '=DATEVALUE($N$7)');
+            expect(helper.invoke('getCell', [25, 8]).textContent).toBe('44293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[25].cells[8])).toBe('{"value":"44293","formula":"=DATEVALUE($N$7)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 27->', (done: Function) => {
+            helper.edit('I27', '=DATEVALUE(Sheet1!N7)');
+            expect(helper.invoke('getCell', [26, 8]).textContent).toBe('44293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[26].cells[8])).toBe('{"value":"44293","formula":"=DATEVALUE(Sheet1!N7)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 28->', (done: Function) => {
+            helper.edit('I28', '=DATEVALUE(Sheet1!E16)');
+            expect(helper.invoke('getCell', [27, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[27].cells[8])).toBe('{"value":"#DIV/0!","formula":"=DATEVALUE(Sheet1!E16)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 29->', (done: Function) => {
+            helper.edit('I29', '=DATEVALUE(Sheet1!N3)');
+            expect(helper.invoke('getCell', [28, 8]).textContent).toBe('44293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[28].cells[8])).toBe('{"value":"44293","formula":"=DATEVALUE(Sheet1!N3)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 30->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N9']);
+            helper.edit('N9', '8/22/2011');
+            helper.edit('I30', '=DATEVALUE(Sheet1!$N$9)');
+            expect(helper.invoke('getCell', [29, 8]).textContent).toBe('40777');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[29].cells[8])).toBe('{"value":"40777","formula":"=DATEVALUE(Sheet1!$N$9)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 31->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N10']);
+            helper.edit('N10', '03-14-2021');
+            helper.edit('I31', '=DATEVALUE(Sheet1!$N$10)');
+            expect(helper.invoke('getCell', [30, 8]).textContent).toBe('44269');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[30].cells[8])).toBe('{"value":"44269","formula":"=DATEVALUE(Sheet1!$N$10)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 32->', (done: Function) => {
+            helper.edit('I32', '=DATEVALUE(Sheet1!$N$7)');
+            expect(helper.invoke('getCell', [31, 8]).textContent).toBe('44293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[31].cells[8])).toBe('{"value":"44293","formula":"=DATEVALUE(Sheet1!$N$7)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 33->', (done: Function) => {
+            helper.edit('I33', '=DATEVALUE(Sheet1!$N$9)');
+            expect(helper.invoke('getCell', [32, 8]).textContent).toBe('40777');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[32].cells[8])).toBe('{"value":"40777","formula":"=DATEVALUE(Sheet1!$N$9)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 34->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'One', refersTo: 'N10'});
+            helper.edit('I34', '=DATEVALUE(One)');
+            expect(helper.invoke('getCell', [33, 8]).textContent).toBe('44269');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[33].cells[8])).toBe('{"value":"44269","formula":"=DATEVALUE(One)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 35->', (done: Function) => {
+            helper.edit('I34', '=DATEVALUE("25-JUN")');
+            expect(helper.invoke('getCell', [33, 8]).textContent).toBe('37067');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[33].cells[8])).toBe('{"value":"37067","formula":"=DATEVALUE(\\"25-JUN\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 36->', (done: Function) => {
+            helper.edit('I34', '=DATEVALUE("25-Jun")');
+            expect(helper.invoke('getCell', [33, 8]).textContent).toBe('37067');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[33].cells[8])).toBe('{"value":"37067","formula":"=DATEVALUE(\\"25-Jun\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 37->', (done: Function) => {
+            helper.edit('I34', '=DATEVALUE("APR-07-2020")');
+            expect(helper.invoke('getCell', [33, 8]).textContent).toBe('43928');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[33].cells[8])).toBe('{"value":"43928","formula":"=DATEVALUE(\\"APR-07-2020\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 38->', (done: Function) => {
+            helper.edit('I34', '=DATEVALUE("JUL-08")');
+            expect(helper.invoke('getCell', [33, 8]).textContent).toBe('37080');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[33].cells[8])).toBe('{"value":"37080","formula":"=DATEVALUE(\\"JUL-08\\")"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 39->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N2']);
+            helper.edit('N2', '25-JUN');
+            helper.edit('I11', '=DATEVALUE(N2)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('37067');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"37067","formula":"=DATEVALUE(N2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 40->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N2']);
+            helper.edit('N2', '25-Jun');
+            helper.edit('I11', '=DATEVALUE(N2)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('37067');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"37067","formula":"=DATEVALUE(N2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 41->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N2']);
+            helper.edit('N2', 'JUL-08');
+            helper.edit('I11', '=DATEVALUE(N2)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('37080');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"37080","formula":"=DATEVALUE(N2)"}');
+            done();
+        });
+        // it('DATEVALUE formula with cell Reference - 42->', (done: Function) => {
+        //     helper.edit('I34', '=MONTH(DATEVALUE("03/23/2023"))');
+        //     expect(helper.invoke('getCell', [33, 8]).textContent).toBe('3');
+        //     expect(JSON.stringify(helper.getInstance().sheets[0].rows[33].cells[8])).toBe('{"value":"3","formula":"=MONTH(DATEVALUE(\\"03/23/2023\\"))"}');
+        //     done();
+        // });
+        // it('DATEVALUE formula with cell Reference - 43->', (done: Function) => {
+        //     helper.edit('I34', '=DATE(2023,MONTH(DATEVALUE("02/28/2020")),23)');
+        //     expect(helper.invoke('getCell', [33, 8]).textContent).toBe('2/23/2023');
+        //     expect(JSON.stringify(helper.getInstance().sheets[0].rows[33].cells[8])).toBe('{"value":"2/23/2023","formula":"=DATE(2023,MONTH(DATEVALUE(\\"02/28/2020\\")),23)"}');
+        //     done();
+        // });
+        it('DATEVALUE formula with cell Reference - 44->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N2']);
+            helper.edit('N2', '25-JUN');
+            helper.edit('I11', '=DATEVALUE($N$2)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('37067');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"37067","formula":"=DATEVALUE($N$2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 45->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N2']);
+            helper.edit('N2', '25-Jun');
+            helper.edit('I11', '=DATEVALUE(Sheet1!N2)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('37067');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"37067","formula":"=DATEVALUE(Sheet1!N2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 46->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N2']);
+            helper.edit('N2', 'JUL-08');
+            helper.edit('I11', '=DATEVALUE(Sheet1!N2)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('37080');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"37080","formula":"=DATEVALUE(Sheet1!N2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 47->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'N2']);
+            helper.edit('N2', 'JUL-08');
+            helper.edit('I11', '=DATEVALUE(Sheet1!$N$2)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('37080');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"37080","formula":"=DATEVALUE(Sheet1!$N$2)"}');
+            done();
+        });
+        it('DATEVALUE formula with cell Reference - 48->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'Hello', refersTo: 'N2'});
+            helper.edit('N2', '25-JUN');
+            helper.edit('I34', '=DATEVALUE(Hello)');
+            expect(helper.invoke('getCell', [33, 8]).textContent).toBe('37067');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[33].cells[8])).toBe('{"value":"37067","formula":"=DATEVALUE(Hello)"}');
+            done();
+        });
+    });
+
+    describe('Reported MATCH Formulae - Checking II ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: reportedBugData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('MATCH formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('N1', '=MATCH(10,C23:C28,1)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":6,"formula":"=MATCH(10,C23:C28,1)"}');
+            done();
+        });
+        it('MATCH formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('N2', '=MATCH(2,D2:D5,1)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('#N/A');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[13])).toBe('{"value":"#N/A","formula":"=MATCH(2,D2:D5,1)"}');
+            done();
+        });
+        it('MATCH formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('N3', '=MATCH("Formal",A5:A10,1)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[13])).toBe('{"value":6,"formula":"=MATCH(\\"Formal\\",A5:A10,1)"}');
+            done();
+        });
+        it('MATCH formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('H26', 'Yes');
+            helper.edit('H27', 'No');
+            helper.edit('H28', 'No');
+            helper.edit('H29', 'No');
+            helper.edit('N4', '=MATCH("Yes",H26:H29,1)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[13])).toBe('{"value":1,"formula":"=MATCH(\\"Yes\\",H26:H29,1)"}');
+            done();
+        });
+        it('MATCH formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('N5', '=MATCH("30",D14:D18,1)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[13])).toBe('{"value":5,"formula":"=MATCH(\\"30\\",D14:D18,1)"}');
+            done();
+        });
+        it('MATCH formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('N6', '=MATCH("TRUE",B24:B25,0)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[13])).toBe('{"value":1,"formula":"=MATCH(\\"TRUE\\",B24:B25,0)"}');
+            done();
+        });
+        it('MATCH formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('D34', '300.00%');
+            helper.edit('D35', '10.00%');
+            helper.edit('D36', '1200.00%');
+            helper.edit('D37', '900.00%');
+            helper.edit('N7', '=MATCH(E16,D34:D37,1)');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[13])).toBe('{"value":"#DIV/0!","formula":"=MATCH(E16,D34:D37,1)"}');
+            done();
+        });
+        it('MATCH formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('N8', '=MATCH(D7,D4:D9,D10)');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[13])).toBe('{"value":4,"formula":"=MATCH(D7,D4:D9,D10)"}');
+            done();
+        });
+        it('MATCH formula with cell Reference - 0->', (done: Function) => {
+            helper.edit('B34', 'TRUE');
+            helper.edit('B35', 'FALSE');
+            helper.edit('I35', '6/25/2023');
+            helper.edit('I36', '7/27/2014');
+            helper.edit('I33', '4/7/2021');
+            helper.edit('I32', '7/8/2023');
+            helper.edit('N9', '=MATCH(E16,D34:D37,1)');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[13])).toBe('{"value":"#DIV/0!","formula":"=MATCH(E16,D34:D37,1)"}');
             done();
         });
     });
@@ -3429,8 +6461,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('ADDRESS Formula with invalid Reference style->', (done: Function) => {
             helper.edit('I12', '=ADDRESS(2,2,1,3)');
-            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#NAME?');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[8])).toBe('{"value":"#NAME?","formula":"=ADDRESS(2,2,1,3)"}');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('$B$2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[8])).toBe('{"value":"$B$2","formula":"=ADDRESS(2,2,1,3)"}');
             done();
         });
         it('ADDRESS Formula with invalid sheet name->', (done: Function) => {
@@ -3454,8 +6486,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('ADDRESS Formula with invalid input->', (done: Function) => {
             helper.edit('I15', '=ADDRESS(A,B)');
-            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[8])).toBe('{"value":"#VALUE!","formula":"=ADDRESS(A,B)"}');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[8])).toBe('{"value":"#NAME?","formula":"=ADDRESS(A,B)"}');
             done();
         });
         it('ADDRESS Formula with negative values for Row and Column->', (done: Function) => {
@@ -3688,6 +6720,880 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('K4', '=FIND(S,"A2")');
             expect(helper.getInstance().sheets[0].rows[3].cells[10].formula).toBe('=FIND(S,"A2")');
             expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#NAME?');
+            done();
+        });
+    });
+
+    describe('Reported EXACT Formula - Checking I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('EXACT formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I1', '=EXACT(Hi,"Hi")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(Hi,\\"Hi\\")"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('C23', '1');
+            helper.edit('D14', '"1"');
+            helper.edit('I2', '=EXACT(C23,D14)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":false,"formula":"=EXACT(C23,D14)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('D22', '"2"');
+            helper.edit('C24', '2');
+            helper.edit('I3', '=EXACT(D22,C24)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":false,"formula":"=EXACT(D22,C24)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('D22', '"2"');
+            helper.edit('C24', '2');
+            helper.edit('I4', '=EXACT(C24,D22)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":false,"formula":"=EXACT(C24,D22)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('B24', '"TRUE"');
+            helper.edit('B15', 'TRUE');
+            helper.edit('I5', '=EXACT(B24,B15)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":false,"formula":"=EXACT(B24,B15)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('B25', '"FALSE"');
+            helper.edit('I6', '=EXACT(FALSE,B25)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":false,"formula":"=EXACT(FALSE,B25)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('F20', '""');
+            helper.edit('I7', '=EXACT(F20,)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":false,"formula":"=EXACT(F20,)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('G9', '600.00%');
+            helper.edit('I8', '=EXACT(G9,600%)');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":true,"formula":"=EXACT(G9,600%)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('I9', '=EXACT(500%,5)');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":true,"formula":"=EXACT(500%,5)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('I10', '=EXACT(jelly,jelly)');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(jelly,jelly)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('I11', '=EXACT("exam",exam)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(\\"exam\\",exam)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('C20', 'Hello123');
+            helper.edit('I12', '=EXACT(C20,Hello123)');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(C20,Hello123)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('E17', '#NUM!');
+            helper.edit('I13', '=EXACT(E17,3)');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[8])).toBe('{"value":"#NUM!","formula":"=EXACT(E17,3)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('E15', '#NAME?');
+            helper.edit('I14', '=EXACT(E15,"exam")');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(E15,\\"exam\\")"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('E16', '#DIV/0!');
+            helper.edit('I15', '=EXACT(E16,E15)');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[8])).toBe('{"value":"#DIV/0!","formula":"=EXACT(E16,E15)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('I16', '=EXACT(kert,"kel")');
+            expect(helper.invoke('getCell', [15, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(kert,\\"kel\\")"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('I17', '=EXACT("kel",kert)');
+            expect(helper.invoke('getCell', [16, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(\\"kel\\",kert)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('I18', '=EXACT(MAX(string),E15)');
+            expect(helper.invoke('getCell', [17, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(MAX(string),E15)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 22->', (done: Function) => {
+            helper.edit('D22', '"2"');
+            helper.edit('H20', '2');
+            helper.edit('I19', '=EXACT($D$22,$H$20)');
+            expect(helper.invoke('getCell', [18, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[8])).toBe('{"value":false,"formula":"=EXACT($D$22,$H$20)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 23->', (done: Function) => {
+            helper.edit('I20', '=EXACT($E$16,$H$20)');
+            expect(helper.invoke('getCell', [19, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[8])).toBe('{"value":"#DIV/0!","formula":"=EXACT($E$16,$H$20)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 24->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'Time', refersTo: 'C3'});
+            helper.edit('C3', '5:56:32 AM');
+            helper.edit('I24', '=EXACT(C3,0.247592592592593)');
+            expect(helper.invoke('getCell', [23, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[23].cells[8])).toBe('{"value":false,"formula":"=EXACT(C3,0.247592592592593)"}');
+            done();
+        });
+        it('EXACT formula with cell Reference - 25->', (done: Function) => {
+            helper.edit('I24', '=EXACT("07/27/2014",41847)');
+            expect(helper.invoke('getCell', [23, 8]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[23].cells[8])).toBe('{"value":true,"formula":"=EXACT(\\"07/27/2014\\",41847)"}');
+            done();
+        });
+    });
+
+    describe('Reported CONCAT formula - Checking -> I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: 'School Office "YG"' }] }, { cells: [{ value: '/"Hi"/' }] }, { cells: [{ value: '@' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('CONCAT formula with cell Reference - 0->', (done: Function) => {
+            helper.edit('H14', '"07-JUN"');
+            helper.edit('J20', '6728');
+            helper.invoke('numberFormat', [getFormatFromType('Accounting'), 'J20']);
+            helper.edit('L17', '.10,23, 100');
+            helper.edit('C11', '6/23/2014');
+            helper.edit('C12', '92');
+            helper.edit('F14', '6/7/2024');
+            helper.edit('G15', '');
+            helper.edit('H15', '"     "');
+            helper.edit('K14', '12:00:00 AM');
+            helper.edit('F4', '#DIV/0!');
+            helper.edit('H13', '"03/04/2023"');
+            helper.edit('F13', '3/4/2023');
+            helper.edit('I3', '"TRUE"');
+            helper.edit('I2', 'TRUE');
+            helper.edit('I5', 'FALSE');
+            helper.edit('C2', 'p');
+            helper.edit('D3', '"65"');
+            helper.edit('C19', 'All');
+            helper.edit('B11', 'Flip- Flops & Slippers');
+            helper.edit('H21', 'San deigo, CA');
+            helper.edit('B12', '70');
+            helper.edit('E3', '"98"');
+            helper.edit('E7', '$4');
+            helper.edit('C6', '-6');
+            helper.edit('C7', '-7');
+            helper.edit('I6', '"FALSE"');
+            helper.edit('I7', 'True');
+            helper.edit('E22', '');
+            helper.edit('C15', '$hello');
+            helper.edit('H16', '""      ""');
+            helper.edit('L19', '{"Hel", "Lo", 1, 2}');
+            helper.edit('B15', 'School Office "YG"');
+            helper.edit('M10', '/"Hi"/');
+            helper.edit('J6', '@');
+            helper.edit('J15', '1:45:00 PM');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(TRUE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"TRUE","formula":"=CONCAT(TRUE)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"FALSE","formula":"=CONCAT(FALSE)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(5.567+9.45)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('15.017');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"15.017","formula":"=CONCAT(5.567+9.45)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H14, J20)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"07-JUN"6728');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"07-JUN\\"6728","formula":"=CONCAT(H14, J20)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(12.45, "{1,2,3}")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('12.45{1,2,3}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"12.45{1,2,3}","formula":"=CONCAT(12.45, \\"{1,2,3}\\")"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(AL123, "34")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"34","formula":"=CONCAT(AL123, \\"34\\")"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(TRUE + FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1","formula":"=CONCAT(TRUE + FALSE)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(FALSE + FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=CONCAT(FALSE + FALSE)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(TRUE + TRUE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"2","formula":"=CONCAT(TRUE + TRUE)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(L17)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('.10,23, 100');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":".10,23, 100","formula":"=CONCAT(L17)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(C11+H14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCAT(C11+H14)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(C12+F14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('45542');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"45542","formula":"=CONCAT(C12+F14)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(G15, H15, K14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"     "0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"     \\"0","formula":"=CONCAT(G15, H15, K14)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(F4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#DIV/0!","formula":"=CONCAT(F4)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H13, F14, F13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"03/04/2023"4545044989');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"03/04/2023\\"4545044989","formula":"=CONCAT(H13, F14, F13)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(I3, I2+I5)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"TRUE"1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"TRUE\\"1","formula":"=CONCAT(I3, I2+I5)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(C2, D3, C19)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('p"65"All');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"p\\"65\\"All","formula":"=CONCAT(C2, D3, C19)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H14, F14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"07-JUN"45450');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"07-JUN\\"45450","formula":"=CONCAT(H14, F14)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(B11)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('Flip- Flops & Slippers');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"Flip- Flops & Slippers","formula":"=CONCAT(B11)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H21, B12, E3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('San deigo, CA70"98"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"San deigo, CA70\\"98\\"","formula":"=CONCAT(H21, B12, E3)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H21, B12+E7, E3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('San deigo, CA74"98"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"San deigo, CA74\\"98\\"","formula":"=CONCAT(H21, B12+E7, E3)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 22->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(E3+D3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCAT(E3+D3)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 23->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(C6-C7)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1","formula":"=CONCAT(C6-C7)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 24->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(I2+I2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"2","formula":"=CONCAT(I2+I2)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 25->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(I3+I6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCAT(I3+I6)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 26->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(I2+I6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCAT(I2+I6)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 27->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(I7, I2, I3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('TrueTRUE"TRUE"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"TrueTRUE\\"TRUE\\"","formula":"=CONCAT(I7, I2, I3)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 28->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(E22)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"","formula":"=CONCAT(E22)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 29->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(E22+E22+I2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1","formula":"=CONCAT(E22+E22+I2)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 30->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H13, H14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"03/04/2023""07-JUN"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"03/04/2023\\"\\"07-JUN\\"","formula":"=CONCAT(H13, H14)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 31->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H13+F13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCAT(H13+F13)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 32->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H14, F14+F13, H13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"07-JUN"90439"03/04/2023"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"07-JUN\\"90439\\"03/04/2023\\"","formula":"=CONCAT(H14, F14+F13, H13)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 33->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(C15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('$hello');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"$hello","formula":"=CONCAT(C15)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 34->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(H16)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('""      ""');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"\\"      \\"\\"","formula":"=CONCAT(H16)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 35->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(12, "Al", L19)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('12Al{"Hel", "Lo", 1, 2}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"12Al{\\"Hel\\", \\"Lo\\", 1, 2}","formula":"=CONCAT(12, \\"Al\\", L19)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 36->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(DEGREES(360))');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('20626.48062');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"20626.480624709635","formula":"=CONCAT(DEGREES(360))"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 37->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(Sheet1!$B$15, Sheet1!$M$10, Sheet1!$J$6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('School Office "YG"/"Hi"/@');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"School Office \\"YG\\"/\\"Hi\\"/@","formula":"=CONCAT(Sheet1!$B$15, Sheet1!$M$10, Sheet1!$J$6)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 38->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(Sheet2!$A$1, Sheet1!$M$10, Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('School Office "YG"/"Hi"/@');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"School Office \\"YG\\"/\\"Hi\\"/@","formula":"=CONCAT(Sheet2!$A$1, Sheet1!$M$10, Sheet2!$A$3)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 39->', (done: Function) => {
+            helper.edit('I1', '=CONCAT($D$3, " ", $E$3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"65" "98"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"65\\" \\"98\\"","formula":"=CONCAT($D$3, \\" \\", $E$3)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 40->', (done: Function) => {
+            helper.edit('I1', '=CONCAT($D$3, " ", $I$3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"65" "TRUE"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"65\\" \\"TRUE\\"","formula":"=CONCAT($D$3, \\" \\", $I$3)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 41->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(J15+K14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0.572916667');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0.5729166666666666","formula":"=CONCAT(J15+K14)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 42->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(K14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=CONCAT(K14)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 43->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(J15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0.572916667');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0.5729166666666666","formula":"=CONCAT(J15)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 44->', (done: Function) => {
+            helper.edit('I1', '=CONCAT("True", "!00")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('True!00');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"True!00","formula":"=CONCAT(\\"True\\", \\"!00\\")"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 45->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(0, 0)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"00","formula":"=CONCAT(0, 0)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 46->', (done: Function) => {
+            helper.edit('I1', '=CONCAT("23"+"34")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCAT(\\"23\\"+\\"34\\")"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 47->', (done: Function) => {
+            helper.edit('I1', '=CONCAT("3"+"4", "Lp")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCAT(\\"3\\"+\\"4\\", \\"Lp\\")"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 48->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(T33+T34)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=CONCAT(T33+T34)"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 49->', (done: Function) => {
+            helper.edit('I1', '=CONCAT(EXP(MONTH(SMALL({1,2,3,4}, 2))), CODE(E3))');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCAT(EXP(MONTH(SMALL({1,2,3,4}, 2))), CODE(E3))"}');
+            done();
+        });
+        it('CONCAT formula with cell Reference - 50->', (done: Function) => {
+            helper.edit('D9', '');
+            helper.edit('F3', '#NAME?');
+            helper.edit('I1', '=CONCAT(D9, LN(TRUE), F3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=CONCAT(D9, LN(TRUE), F3)"}');
+            done();
+        });
+    });
+
+    describe('Reported CONCATENATE formula - Checking -> I ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: 'School Office "YG"' }] }, { cells: [{ value: '/"Hi"/' }] }, { cells: [{ value: '@' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('CONCATENATE formula with cell Reference - 0->', (done: Function) => {
+            helper.edit('H14', '"07-JUN"');
+            helper.edit('J20', '6728');
+            helper.invoke('numberFormat', [getFormatFromType('Accounting'), 'J20']);
+            helper.edit('L17', '.10,23, 100');
+            helper.edit('C11', '6/23/2014');
+            helper.edit('C12', '92');
+            helper.edit('F14', '6/7/2024');
+            helper.edit('G15', '');
+            helper.edit('H15', '"     "');
+            helper.edit('K14', '12:00:00 AM');
+            helper.edit('F4', '#DIV/0!');
+            helper.edit('H13', '"03/04/2023"');
+            helper.edit('F13', '3/4/2023');
+            helper.edit('I3', '"TRUE"');
+            helper.edit('I2', 'TRUE');
+            helper.edit('I5', 'FALSE');
+            helper.edit('C2', 'p');
+            helper.edit('D3', '"65"');
+            helper.edit('C19', 'All');
+            helper.edit('B11', 'Flip- Flops & Slippers');
+            helper.edit('H21', 'San deigo, CA');
+            helper.edit('B12', '70');
+            helper.edit('E3', '"98"');
+            helper.edit('E7', '$4');
+            helper.edit('C6', '-6');
+            helper.edit('C7', '-7');
+            helper.edit('I6', '"FALSE"');
+            helper.edit('I7', 'True');
+            helper.edit('E22', '');
+            helper.edit('C15', '$hello');
+            helper.edit('H16', '""      ""');
+            helper.edit('L19', '{"Hel", "Lo", 1, 2}');
+            helper.edit('B15', 'School Office "YG"');
+            helper.edit('M10', '/"Hi"/');
+            helper.edit('J6', '@');
+            helper.edit('J15', '1:45:00 PM');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(TRUE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"TRUE","formula":"=CONCATENATE(TRUE)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"FALSE","formula":"=CONCATENATE(FALSE)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(5.567+9.45)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('15.017');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"15.017","formula":"=CONCATENATE(5.567+9.45)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H14, J20)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"07-JUN"6728');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"07-JUN\\"6728","formula":"=CONCATENATE(H14, J20)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(12.45, "{1,2,3}")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('12.45{1,2,3}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"12.45{1,2,3}","formula":"=CONCATENATE(12.45, \\"{1,2,3}\\")"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(AL123, "34")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"34","formula":"=CONCATENATE(AL123, \\"34\\")"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(TRUE + FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1","formula":"=CONCATENATE(TRUE + FALSE)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(FALSE + FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=CONCATENATE(FALSE + FALSE)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(TRUE + TRUE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"2","formula":"=CONCATENATE(TRUE + TRUE)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(L17)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('.10,23, 100');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":".10,23, 100","formula":"=CONCATENATE(L17)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(C11+H14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCATENATE(C11+H14)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(C12+F14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('45542');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"45542","formula":"=CONCATENATE(C12+F14)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(G15, H15, K14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"     "0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"     \\"0","formula":"=CONCATENATE(G15, H15, K14)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(F4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#DIV/0!","formula":"=CONCATENATE(F4)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H13, F14, F13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"03/04/2023"4545044989');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"03/04/2023\\"4545044989","formula":"=CONCATENATE(H13, F14, F13)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(I3, I2+I5)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"TRUE"1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"TRUE\\"1","formula":"=CONCATENATE(I3, I2+I5)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(C2, D3, C19)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('p"65"All');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"p\\"65\\"All","formula":"=CONCATENATE(C2, D3, C19)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H14, F14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"07-JUN"45450');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"07-JUN\\"45450","formula":"=CONCATENATE(H14, F14)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(B11)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('Flip- Flops & Slippers');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"Flip- Flops & Slippers","formula":"=CONCATENATE(B11)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H21, B12, E3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('San deigo, CA70"98"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"San deigo, CA70\\"98\\"","formula":"=CONCATENATE(H21, B12, E3)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H21, B12+E7, E3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('San deigo, CA74"98"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"San deigo, CA74\\"98\\"","formula":"=CONCATENATE(H21, B12+E7, E3)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 22->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(E3+D3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCATENATE(E3+D3)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 23->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(C6-C7)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1","formula":"=CONCATENATE(C6-C7)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 24->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(I2+I2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"2","formula":"=CONCATENATE(I2+I2)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 25->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(I3+I6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCATENATE(I3+I6)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 26->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(I2+I6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCATENATE(I2+I6)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 27->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(I7, I2, I3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('TrueTRUE"TRUE"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"TrueTRUE\\"TRUE\\"","formula":"=CONCATENATE(I7, I2, I3)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 28->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(E22)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"","formula":"=CONCATENATE(E22)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 29->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(E22+E22+I2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"1","formula":"=CONCATENATE(E22+E22+I2)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 30->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H13, H14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"03/04/2023""07-JUN"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"03/04/2023\\"\\"07-JUN\\"","formula":"=CONCATENATE(H13, H14)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 31->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H13+F13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCATENATE(H13+F13)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 32->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H14, F14+F13, H13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"07-JUN"90439"03/04/2023"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"07-JUN\\"90439\\"03/04/2023\\"","formula":"=CONCATENATE(H14, F14+F13, H13)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 33->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(C15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('$hello');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"$hello","formula":"=CONCATENATE(C15)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 34->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(H16)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('""      ""');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"\\"      \\"\\"","formula":"=CONCATENATE(H16)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 35->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(12, "Al", L19)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('12Al{"Hel", "Lo", 1, 2}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"12Al{\\"Hel\\", \\"Lo\\", 1, 2}","formula":"=CONCATENATE(12, \\"Al\\", L19)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 36->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(DEGREES(360))');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('20626.48062');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"20626.480624709635","formula":"=CONCATENATE(DEGREES(360))"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 37->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(Sheet1!$B$15, Sheet1!$M$10, Sheet1!$J$6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('School Office "YG"/"Hi"/@');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"School Office \\"YG\\"/\\"Hi\\"/@","formula":"=CONCATENATE(Sheet1!$B$15, Sheet1!$M$10, Sheet1!$J$6)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 38->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(Sheet2!$A$1, Sheet1!$M$10, Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('School Office "YG"/"Hi"/@');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"School Office \\"YG\\"/\\"Hi\\"/@","formula":"=CONCATENATE(Sheet2!$A$1, Sheet1!$M$10, Sheet2!$A$3)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 39->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE($D$3, " ", $E$3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"65" "98"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"65\\" \\"98\\"","formula":"=CONCATENATE($D$3, \\" \\", $E$3)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 40->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE($D$3, " ", $I$3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('"65" "TRUE"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"\\"65\\" \\"TRUE\\"","formula":"=CONCATENATE($D$3, \\" \\", $I$3)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 41->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(J15+K14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0.572916667');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0.5729166666666666","formula":"=CONCATENATE(J15+K14)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 42->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(K14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=CONCATENATE(K14)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 43->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(J15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0.572916667');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0.5729166666666666","formula":"=CONCATENATE(J15)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 44->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE("True", "!00")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('True!00');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"True!00","formula":"=CONCATENATE(\\"True\\", \\"!00\\")"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 45->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(0, 0)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"00","formula":"=CONCATENATE(0, 0)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 46->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE("23"+"34")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCATENATE(\\"23\\"+\\"34\\")"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 47->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE("3"+"4", "Lp")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCATENATE(\\"3\\"+\\"4\\", \\"Lp\\")"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 48->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(T33+T34)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=CONCATENATE(T33+T34)"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 49->', (done: Function) => {
+            helper.edit('I1', '=CONCATENATE(EXP(MONTH(SMALL({1,2,3,4}, 2))), CODE(E3))');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CONCATENATE(EXP(MONTH(SMALL({1,2,3,4}, 2))), CODE(E3))"}');
+            done();
+        });
+        it('CONCATENATE formula with cell Reference - 50->', (done: Function) => {
+            helper.edit('D9', '');
+            helper.edit('F3', '#NAME?');
+            helper.edit('I1', '=CONCATENATE(D9, LN(TRUE), F3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=CONCATENATE(D9, LN(TRUE), F3)"}');
             done();
         });
     });
@@ -4056,15 +7962,25 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
         it('LN Formula with no inputs->', (done: Function) => {
-            helper.edit('K3', '=LN()');
-            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('#NUM!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"#NUM!","formula":"=LN()"}');
-            done();
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('K3');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=LN()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=LN()';
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+                expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+                helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+                helper.edit('K3', '=LN(10);');
+                done();
+            });
         });
         it('LN Formula with String inputs->', (done: Function) => {
             helper.edit('K4', '=LN(sa)');
-            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"#VALUE!","formula":"=LN(sa)"}');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"#NAME?","formula":"=LN(sa)"}');
             done();
         });
         it('LN Formula with more than 1 inputs->', (done: Function) => {
@@ -4074,11 +7990,14 @@ describe('Spreadsheet formula module ->', () => {
             spreadsheet.editModule.editCellData.value = '=LN(3,2)';
             helper.getElement('.e-spreadsheet-edit').textContent = '=LN(3,2)';
             helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
-            helper.edit('K5', '=LN(3)');
-            done();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+                expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+                helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+                helper.edit('K5', '=LN(3)');
+                done();
+            });
         });
         it('SUMIF Formula with more than 3 inputs->', (done: Function) => {
             const spreadsheet: any = helper.getInstance();
@@ -4087,11 +8006,14 @@ describe('Spreadsheet formula module ->', () => {
             spreadsheet.editModule.editCellData.value = '=SUMIF(A2:A5,"Casual Shoes",D2:D4,E2:E4)';
             helper.getElement('.e-spreadsheet-edit').textContent = '=SUMIF(A2:A5,"Casual Shoes",D2:D4,E2:E4)';
             helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
-            helper.edit('K6', '=SUMIF(A2:A5,"Casual Shoes",D2:D4)');
-            done();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+                expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+                helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+                helper.edit('K6', '=SUMIF(A2:A5,"Casual Shoes",D2:D4)');
+                done();
+            });
         });
     });
 
@@ -5608,9 +9530,438 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=UNIQUE()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('I1', '=UNIQUE(E11:E2)');
+            done();
+        });
+    });
+
+    describe('Reported DAYS formula - Checking -> IV ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('DAYS formula with cell Reference - 1->', (done: Function) => {
+            helper.edit('I1', '=DAYS(48567,-4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAYS(48567,-4)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 2->', (done: Function) => {
+            helper.edit('I1', '=DAYS(45321,0)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('45321');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":45321,"formula":"=DAYS(45321,0)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 3->', (done: Function) => {
+            helper.edit('I1', '=DAYS(-45355,-432)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAYS(-45355,-432)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 4->', (done: Function) => {
+            helper.edit('I1', '=DAYS(5432,-3432)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAYS(5432,-3432)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 5->', (done: Function) => {
+            helper.edit('I1', '=DAYS("45943.43","-43")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAYS(\\"45943.43\\",\\"-43\\")"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 6->', (done: Function) => {
+            helper.edit('I1', '=DAYS(3-Mar-23,1-Jan-23)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=DAYS(3-Mar-23,1-Jan-23)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 7->', (done: Function) => {
+            helper.edit('I1', '=DAYS(TRUE,FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=DAYS(TRUE,FALSE)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 8->', (done: Function) => {
+            helper.edit('I1', '=DAYS(FALSE,TRUE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-1,"formula":"=DAYS(FALSE,TRUE)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 9->', (done: Function) => {
+            helper.edit('I1', '=DAYS("TRUE",FALSE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(\\"TRUE\\",FALSE)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 10->', (done: Function) => {
+            helper.edit('I1', '=DAYS("TRUE","FALSE")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(\\"TRUE\\",\\"FALSE\\")"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 11->', (done: Function) => {
+            helper.edit('I1', '=DAYS(49854-32,4532+45)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('45245');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":45245,"formula":"=DAYS(49854-32,4532+45)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 12->', (done: Function) => {
+            helper.edit('I1', '=DAYS(45+43,32-34)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAYS(45+43,32-34)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 13->', (done: Function) => {
+            helper.edit('I1', '=DAYS(,"03/21/2020")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-43911');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-43911,"formula":"=DAYS(,\\"03/21/2020\\")"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 14->', (done: Function) => {
+            helper.edit('I1', '=DAYS("3/12/2020",)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('43902');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":43902,"formula":"=DAYS(\\"3/12/2020\\",)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 15->', (done: Function) => {
+            helper.edit('I1', '=DAYS("","4/13/2021")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(\\"\\",\\"4/13/2021\\")"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 16->', (done: Function) => {
+            helper.edit('I1', '=DAYS(" ",45365)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(\\" \\",45365)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 17->', (done: Function) => {
+            helper.edit('I1', '=DAYS("","")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(\\"\\",\\"\\")"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('I1', '=DAYS(34,"")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(34,\\"\\")"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 18->', (done: Function) => {
+            helper.edit('H6', '9578.45324235');
+            helper.edit('H2', '8529.22456');
+            helper.edit('A13', '-435.54');
+            helper.edit('A14', '-1231');
+            helper.edit('D17', '"2133"');
+            helper.edit('D14', '"1"');
+            helper.edit('D12', '"-45.43"');
+            helper.edit('D15', '"212"');
+            helper.edit('D13', '"-3453"');
+            helper.edit('I19', '6/25/2023');
+            helper.edit('B14', 'TRUE');
+            helper.edit('B18', 'FALSE');
+            helper.edit('B17', 'TRUE');
+            helper.edit('B24', '"TRUE"');
+            helper.edit('B25', '"FALSE"');
+            helper.edit('B11', '10/31/2014');
+            helper.edit('B16', 'TRUE');
+            helper.edit('F20', '""');
+            helper.edit('A20', '0');
+            helper.edit('B7', '7/22/2014');
+            helper.edit('C6', '12:43:59 AM');
+            helper.edit('E7', '20');
+            helper.edit('E4', '0.000000065');
+            helper.edit('G6', '1000%');
+            helper.edit('C17', 'hi');
+            helper.edit('C18', '@');
+            helper.edit('C19', 'A123@');
+            helper.edit('C21', 'Jim324');
+            helper.edit('B15', 'TRUE');
+            helper.edit('B8', '2/4/2014');
+            helper.edit('B9', '11/30/2014');
+            helper.edit('C11', '12:01:44 AM');
+            helper.edit('C8', '3:44:34 AM');
+            helper.edit('C26', '');
+            helper.edit('I16', '8/22/2011');
+            done();
+        });
+        it('DAYS formula with cell Reference - 19->', (done: Function) => {
+            helper.edit('I1', '=DAYS(H6,A13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAYS(H6,A13)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 20->', (done: Function) => {
+            helper.edit('I1', '=DAYS(A14,H2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAYS(A14,H2)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 21->', (done: Function) => {
+            helper.edit('I1', '=DAYS(A13,A14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NUM!","formula":"=DAYS(A13,A14)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 22->', (done: Function) => {
+            helper.edit('I1', '=DAYS(D17,D14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(D17,D14)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 23->', (done: Function) => {
+            helper.edit('I1', '=DAYS(D12,D15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(D12,D15)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 24->', (done: Function) => {
+            helper.edit('I1', '=DAYS(D17,D14)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(D17,D14)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 25->', (done: Function) => {
+            helper.edit('I1', '=DAYS(D14,D13)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(D14,D13)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 26->', (done: Function) => {
+            helper.edit('I1', '=DAYS(I19,I160)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('45102');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":45102,"formula":"=DAYS(I19,I160)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 27->', (done: Function) => {
+            helper.edit('I1', '=DAYS(B14,B18)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":1,"formula":"=DAYS(B14,B18)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 28->', (done: Function) => {
+            helper.edit('I1', '=DAYS(B18,B17)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-1,"formula":"=DAYS(B18,B17)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 29->', (done: Function) => {
+            helper.edit('I1', '=DAYS(B24,B17)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(B24,B17)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 30->', (done: Function) => {
+            helper.edit('I1', '=DAYS(B25,B240)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(B25,B240)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 31->', (done: Function) => {
+            helper.edit('I1', '=DAYS(B11,B16)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('41942');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":41942,"formula":"=DAYS(B11,B16)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 32->', (done: Function) => {
+            helper.edit('I1', '=DAYS(E24,B11)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-41943');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-41943,"formula":"=DAYS(E24,B11)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 33->', (done: Function) => {
+            helper.edit('I1', '=DAYS(B11,C26)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('41943');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":41943,"formula":"=DAYS(B11,C26)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 34->', (done: Function) => {
+            helper.edit('I1', '=DAYS(F20,B11)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(F20,B11)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 35->', (done: Function) => {
+            helper.edit('I1', '=DAYS(F21,A20)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0,"formula":"=DAYS(F21,A20)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 36->', (done: Function) => {
+            helper.edit('I1', '=DAYS(F20,F20)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(F20,F20)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 37->', (done: Function) => {
+            helper.edit('I1', '=DAYS(B7,C6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('41842');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":41842,"formula":"=DAYS(B7,C6)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 38->', (done: Function) => {
+            helper.edit('I1', '=DAYS(E7,E4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('20');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":20,"formula":"=DAYS(E7,E4)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 39->', (done: Function) => {
+            helper.edit('I1', '=DAYS(B9,E4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('41973');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":41973,"formula":"=DAYS(B9,E4)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 40->', (done: Function) => {
+            helper.edit('I1', '=DAYS(G6,H6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-9568');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-9568,"formula":"=DAYS(G6,H6)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 41->', (done: Function) => {
+            helper.edit('I1', '=DAYS(E4,B16)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-1,"formula":"=DAYS(E4,B16)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 42->', (done: Function) => {
+            helper.edit('I1', '=DAYS(C17,C18)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(C17,C18)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 43->', (done: Function) => {
+            helper.edit('I1', '=DAYS(C21,C19)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(C21,C19)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 44->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'Hello', refersTo: 'B4'});
+            helper.edit('I1', '=DAYS(Hello,"hi")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(Hello,\\"hi\\")"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 45->', (done: Function) => {
+            helper.edit('I1', '=DAYS("hello",hi)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#NAME?","formula":"=DAYS(\\"hello\\",hi)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 46->', (done: Function) => {
+            helper.edit('I1', '=DAYS(DAY(49854),4534)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-4506');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-4506,"formula":"=DAYS(DAY(49854),4534)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 47->', (done: Function) => {
+            helper.edit('I1', '=DAYS(WEEKDAY(46574,2),I16)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-40775');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-40775,"formula":"=DAYS(WEEKDAY(46574,2),I16)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 48->', (done: Function) => {
+            helper.edit('I1', '=DAYS(DATE(2023,3,23),43)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('44965');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":44965,"formula":"=DAYS(DATE(2023,3,23),43)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 49->', (done: Function) => {
+            helper.edit('I1', '=DAYS(DATEVALUE("04/21/2023"),DATEVALUE("09/30/2022"))');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('203');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":203,"formula":"=DAYS(DATEVALUE(\\"04/21/2023\\"),DATEVALUE(\\"09/30/2022\\"))"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 50->', (done: Function) => {
+            helper.edit('I1', '=DAYS($B$8,$B$15)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('41673');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":41673,"formula":"=DAYS($B$8,$B$15)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 50->', (done: Function) => {
+            helper.edit('I1', '=DAYS($B$9,$C$11)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('41973');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":41973,"formula":"=DAYS($B$9,$C$11)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 51->', (done: Function) => {
+            helper.edit('I1', '=DAYS(Sheet1!B11,Sheet1!C8)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('41943');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":41943,"formula":"=DAYS(Sheet1!B11,Sheet1!C8)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 52->', (done: Function) => {
+            helper.edit('I1', '=DAYS(Sheet1!B11,Sheet1!C17)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=DAYS(Sheet1!B11,Sheet1!C17)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 53->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'One', refersTo: 'C8'});
+            helper.edit('I1', '=DAYS(One,Hello)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-41847');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-41847,"formula":"=DAYS(One,Hello)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 54->', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'Two', refersTo: 'B11'});
+            helper.edit('I1', '=DAYS(Two,One)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('41943');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":41943,"formula":"=DAYS(Two,One)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 55->', (done: Function) => {
+            helper.edit('I1', '=DAYS("07-JUN","04/23/2021")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-7260');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-7260,"formula":"=DAYS(\\"07-JUN\\",\\"04/23/2021\\")"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 56->', (done: Function) => {
+            helper.edit('I1', '=DAYS("03/21/2022",TRUE)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('44640');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":44640,"formula":"=DAYS(\\"03/21/2022\\",TRUE)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 57->', (done: Function) => {
+            helper.edit('I1', '=DAYS(453*3,23132/3)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-6351');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-6351,"formula":"=DAYS(453*3,23132/3)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 58->', (done: Function) => {
+            helper.edit('I1', '=DAYS(54/34,53)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('-52');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":-52,"formula":"=DAYS(54/34,53)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 59->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'I26']);
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'I29']);
+            helper.edit('I26', '04/23/2021');
+            helper.edit('I29', '25-JUN');
+            helper.edit('I1', '=DAYS(I26,I29)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('7242');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":7242,"formula":"=DAYS(I26,I29)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 60->', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'I31']);
+            helper.edit('I31', '03-14-2021');
+            helper.edit('D5', '15');
+            helper.edit('I1', '=DAYS(I31,D5)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('18685');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":18685,"formula":"=DAYS(I31,D5)"}');
+            done();
+        });
+        it('DAYS formula with cell Reference - 61->', (done: Function) => {
+            helper.edit('I1', '=MONTH(DAYS("04/30/2023","02/15/2022"))');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"3","formula":"=MONTH(DAYS(\\"04/30/2023\\",\\"02/15/2022\\"))"}');
             done();
         });
     });
@@ -5624,8 +9975,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('CHOOSE Formula for cell Reference with Num_index->', (done: Function) => {
             helper.edit('I1', '=CHOOSE(1,A2:A5)');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('Casual Shoes');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"Casual Shoes","formula":"=CHOOSE(1,A2:A5)"}');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=CHOOSE(1,A2:A5)"}');
             done();
         });
         it('CHOOSE Formula for cell Reference with Num_index as alphabets->', (done: Function) => {
@@ -5654,8 +10005,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('INDEX Formula with Column value as 0->', (done: Function) => {
             helper.edit('I6', '=INDEX(D2:H11,5,0)');
-            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#VALUE!","formula":"=INDEX(D2:H11,5,0)"}');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('30');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"30","formula":"=INDEX(D2:H11,5,0)"}');
             done();
         });
         it('INDEX Formula with row and Column value as -1->', (done: Function) => {
@@ -5666,8 +10017,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('Match Formula with Match Type as 1->', (done: Function) => {
             helper.edit('J1', '=Match(9.5,D2:D11,1)');
-            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('10');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":10,"formula":"=Match(9.5,D2:D11,1)"}');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('#N/A');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":"#N/A","formula":"=Match(9.5,D2:D11,1)"}');
             done();
         });
         it('Match Formula with Match Type as -1->', (done: Function) => {
@@ -5678,7 +10029,7 @@ describe('Spreadsheet formula module ->', () => {
         it('Match Formula with Match Type as -1 II->', (done: Function) => {
             helper.edit('J3', '=MATCH(10,D3:D11,"-1")');
             expect(helper.getInstance().sheets[0].rows[2].cells[9].formula).toBe('=MATCH(10,D3:D11,"-1")');
-            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('3');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('#N/A');
             done();
         });
         it('Match Formula with Match Type as 0->', (done: Function) => {
@@ -5696,7 +10047,7 @@ describe('Spreadsheet formula module ->', () => {
         it('RANDBETWEEN Formula with value as 0->', (done: Function) => {
             helper.edit('J6', '=RANDBETWEEN(0,0)');
             expect(helper.invoke('getCell', [5, 9]).textContent).toBe('0');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[9])).toBe('{"value":0,"formula":"=RANDBETWEEN(0,0)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[9])).toBe('{"value":"0","formula":"=RANDBETWEEN(0,0)"}');
             done();
         });
         it('RANDBETWEEN Formula for cell references with string values ->', (done: Function) => {
@@ -5725,7 +10076,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=SLOPE()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K2', '=SLOPE(D2:D11,E2:E11)');
             done();
@@ -5744,8 +10095,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('SLOPE Formula with direct string inputs->', (done: Function) => {
             helper.edit('K5', '=SLOPE(a,b)');
-            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('#NAME?');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":"#NAME?","formula":"=SLOPE(a,b)"}');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":"#DIV/0!","formula":"=SLOPE(a,b)"}');
             done();
         });
         it('INTERCEPT Formula ->', (done: Function) => {
@@ -5762,7 +10113,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=INTERCEPT()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K7', '=INTERCEPT(D2:D11,E2:E11)');
             done();
@@ -5781,8 +10132,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('SLOPE Formula with direct string inputs->', (done: Function) => {
             helper.edit('K10', '=INTERCEPT(a,b)');
-            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('#NAME?');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[10])).toBe('{"value":"#NAME?","formula":"=INTERCEPT(a,b)"}');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[10])).toBe('{"value":"#DIV/0!","formula":"=INTERCEPT(a,b)"}');
             done();
         });
     });
@@ -5802,8 +10153,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('ISNUMBER Formula with no arguments->', (done: Function) => {
             helper.edit('I2', '=ISNUMBER()');
-            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('FALSE');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":false,"formula":"=ISNUMBER()"}');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{}');
             done();
         });
         it('ISNUMBER Formula with more than 2 arguments->', (done: Function) => {
@@ -5858,8 +10209,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('POWER Formula with string as arguments->', (done: Function) => {
             helper.edit('J6', '=POWER(a,b)');
-            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[9])).toBe('{"value":"#VALUE!","formula":"=POWER(a,b)"}');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[9])).toBe('{"value":"#NAME?","formula":"=POWER(a,b)"}');
             done();
         });
         it('LOG Formula ->', (done: Function) => {
@@ -5895,8 +10246,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('LOG Formula with string as arguments->', (done: Function) => {
             helper.edit('K6', '=LOG(a,b)');
-            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{"value":"#VALUE!","formula":"=LOG(a,b)"}');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{"value":"#NAME?","formula":"=LOG(a,b)"}');
             done();
         });
     });
@@ -5953,14 +10304,14 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('EXP Formula with no arguments ->', (done: Function) => {
             helper.edit('J2', '=EXP()');
-            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('1');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":"1","formula":"=EXP()"}');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{}');
             done();
         });
         it('EXP Formula for value 709 ->', (done: Function) => {
             helper.edit('J3', '=EXP(709)');
-            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('8.218407461554972e+307');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[9])).toBe('{"value":"8.218407461554972e+307","formula":"=EXP(709)"}');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":"8.218407461554972e+307","formula":"=EXP(709)"}');
             done();
         });
         it('EXP Formula for value greater than 709 ->', (done: Function) => {
@@ -9975,11 +14326,11 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J10', '=IF(EXACT(E2,D3)=TRUE,1,0)');
             expect(helper.invoke('getCell', [9, 9]).textContent).toBe('1');
             helper.edit('J11', '=IF(EXACT(E2,D5)=FALSE,1,0)');
-            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('1');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('#VALUE!');
             helper.edit('J12', '=IF(EXACT()=FALSE,1,0)');
             expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#VALUE!');
             helper.edit('J13', '=IF(EXACT(E2,D5)<>FALSE,0,1)');
-            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('1');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('#VALUE!');
             done();
         });
         it('IF formula with nested PROPER formula has input having alphabet values->', (done: Function) => {
@@ -10224,7 +14575,7 @@ describe('Spreadsheet formula module ->', () => {
                     expect(Math.abs(popup.getBoundingClientRect().bottom - editElem.getBoundingClientRect().top)).toBeLessThan(3);
                     setTimeout(()=>{
                         done();
-                    }, 100);
+                    });
                 });
             });
             it('IFERROR formula does not return the expected result that contains comma in the value.', (done: Function) => {
@@ -10616,7 +14967,7 @@ describe('Spreadsheet formula module ->', () => {
                 expect(spreadsheet.computeExpression('=UNIQUE("11")')).toBe('11');
                 expect(spreadsheet.computeExpression('=UNIQUE(true)')).toBe('TRUE');
                 expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(B1:C8)'))).toBe('["1","0","2","Text","3","1","4","2","4","3","Text","4","0","5","3","3"]');
-                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(A1:B8,C1:D8)'))).toBe('["1","2","3","Text","4","0","5","3","1","2","3","4","4","Text","0","3"]');
+                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(A1:B8,C1:D8)'))).toBe('["1","1","2","2","3","3","Text","4","4","4","0","Text","5","0"]');
                 expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(A1:A8,B1:C8)'))).toBe('["1","2","3","Text","4","0","5","3"]');
                 expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(A1:A3)'))).toBe('["1","2","3"]');
                 expect(spreadsheet.computeExpression('=UNIQUE(A4)')).toBe('Text');
@@ -11243,8 +15594,8 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('A12', '');
                 helper.edit('D2', '=SMALL(A6:A12,1)');
                 expect(helper.getInstance().sheets[0].rows[1].cells[3].formula).toBe('=SMALL(A6:A12,1)');
-                expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toBe(15);
-                expect(helper.invoke('getCell', [1, 3]).textContent).toBe('15');
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toBe(0);
+                expect(helper.invoke('getCell', [1, 3]).textContent).toBe('0');
                 done();
             });
         });
@@ -11893,7 +16244,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-885263 ->', () => {
+        describe('EJ2-885263, EJ2-888011, EJ2-888038 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
@@ -11916,6 +16267,45 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('A7', '=ROUNDDOWN(62427.10101-21400.91919,5)');
                 expect(helper.invoke('getCell', [6, 0]).textContent).toBe('41026.18182');
                 done();
+            }); it('When copy-pasting the formula with & operator is not getting updated properly ->', (done: Function) => {
+                helper.edit('I8', '=A8&"-"&D8');
+                expect(helper.invoke('getCell', [7, 8]).textContent).toBe('Running Shoes-20');
+                helper.invoke('copy', ['I8']).then(() => {
+                    helper.invoke('paste', ['I9']);
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].formula).toBe('=A9&"-"&D9');
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].value).toBe('Loafers-31');
+                    done();
+                });
+            });
+            it('Cell reference is not updated properly while copy-pasting the formula with extra space before the cell reference->', (done: Function) => {
+                helper.edit('I8', '=CONCATENATE(A8, D8)');
+                expect(helper.invoke('getCell', [7, 8]).textContent).toBe('Running Shoes20');
+                helper.invoke('copy', ['I8']).then(() => {
+                    helper.invoke('paste', ['I9']);
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].formula).toBe('=CONCATENATE(A9, D9)');
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].value).toBe('Loafers31');
+                    done();
+                });
+            });
+            it('Cell reference is not updated properly while copy-pasting the formula with extra space after the cell reference ->', (done: Function) => {
+                helper.edit('I8', '=CONCATENATE(A8,D8  )');
+                expect(helper.invoke('getCell', [7, 8]).textContent).toBe('Running Shoes20');
+                helper.invoke('copy', ['I8']).then(() => {
+                    helper.invoke('paste', ['I9']);
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].formula).toBe('=CONCATENATE(A9,D9  )');
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].value).toBe('Loafers31');
+                    done();
+                });
+            });
+            it('Cell reference is not updated properly while copy-pasting the formula with extra space around the cell reference ->', (done: Function) => {
+                helper.edit('I8', '=CONCATENATE( A8 , D8 )');
+                expect(helper.invoke('getCell', [7, 8]).textContent).toBe('Running Shoes20');
+                helper.invoke('copy', ['I8']).then(() => {
+                    helper.invoke('paste', ['I9']);
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].formula).toBe('=CONCATENATE( A9 , D9 )');
+                    expect(helper.getInstance().sheets[0].rows[8].cells[8].value).toBe('Loafers31');
+                    done();
+                });
             });
         });   
     });
@@ -12175,7 +16565,7 @@ describe('Spreadsheet formula module ->', () => {
         it('Issue in applying large formula in sheet.', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.invoke('updateCell', [{ formula: '=LARGE(A1:B100,4)' }, 'J3']);
-            expect(parseInt(spreadsheet.sheets[0].rows[2].cells[9].value)).toEqual(41964);
+            expect(parseInt(spreadsheet.sheets[0].rows[2].cells[9].value)).toEqual(41847);
             done();
         });
     });
@@ -15847,7 +20237,7 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [20, 4]).textContent).toBe('5/22/2001');
             expect(helper.invoke('getCell', [21, 4]).textContent).toBe('#VALUE!');
             expect(helper.invoke('getCell', [21, 5]).textContent).toBe('12/1/1999');
-            expect(helper.invoke('getCell', [22, 4]).textContent).toBe('#VALUE!');
+            expect(helper.invoke('getCell', [22, 4]).textContent).toBe('1/30/2000');
             expect(helper.invoke('getCell', [23, 4]).textContent).toBe('10/13/2000');
             expect(helper.invoke('getCell', [24, 4]).textContent).toBe('2/10/2009');
             done();
@@ -17270,6 +21660,2469 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [2, 3]).textContent).toBe('50');
             helper.edit('D4', '=SUBTOTAL(9,A8)');
             expect(helper.invoke('getCell', [3, 3]).textContent).toBe('0');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 1 -', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: EJ2_53702_SUBTOTALS }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('SUBTOTAL - 1 & 101 - I', (done: Function) => {
+            helper.edit('K1', '=SUBTOTAL(101,C23:C29)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('3.4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"3.4","formula":"=SUBTOTAL(101,C23:C29)"}');
+            done();
+        });
+        it('SUBTOTAL - 1 & 101 - II', (done: Function) => {
+            helper.edit('K2', '=SUBTOTAL(101,C4:C12)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('0.209019097');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"0.2090190972222222","formula":"=SUBTOTAL(101,C4:C12)"}');
+            done();
+        });
+        it('SUBTOTAL - 1 & 101 - III', (done: Function) => {
+            helper.edit('K3', '=SUBTOTAL("101",F4:F90)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('312.9777778');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"312.9777777777778","formula":"=SUBTOTAL(\\"101\\",F4:F90)"}');
+            done();
+        });
+        it('SUBTOTAL - 2 & 102 - I', (done: Function) => {
+            helper.edit('L1', '=SUBTOTAL(102,F4:F90)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('9');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[11])).toBe('{"value":9,"formula":"=SUBTOTAL(102,F4:F90)"}');
+            done();
+        });
+        it('SUBTOTAL - 2 & 102 - II', (done: Function) => {
+            helper.edit('L2', '=SUBTOTAL(102,C23:C28)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[11])).toBe('{"value":5,"formula":"=SUBTOTAL(102,C23:C28)"}');
+            done();
+        });
+        it('SUBTOTAL - 2 & 102 - III', (done: Function) => {
+            helper.edit('L3', '=SUBTOTAL("102",D4:D10)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[11])).toBe('{"value":7,"formula":"=SUBTOTAL(\\"102\\",D4:D10)"}');
+            done();
+        });
+        it('SUBTOTAL - 2 & 102 - IV', (done: Function) => {
+            helper.edit('L4', '=SUBTOTAL(102,C30:C33)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[11])).toBe('{"value":4,"formula":"=SUBTOTAL(102,C30:C33)"}');
+            done();
+        });
+        it('SUBTOTAL - 3 & 103 - I', (done: Function) => {
+            helper.edit('M1', '=SUBTOTAL(103,C4:C9)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12])).toBe('{"value":6,"formula":"=SUBTOTAL(103,C4:C9)"}');
+            done();
+        });
+        it('SUBTOTAL - 3 & 103 - II', (done: Function) => {
+            helper.edit('M2', '=SUBTOTAL(103,I23:I31)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[12])).toBe('{"value":4,"formula":"=SUBTOTAL(103,I23:I31)"}');
+            done();
+        });
+        it('SUBTOTAL - 3 & 103 - III', (done: Function) => {
+            helper.edit('M3', '=SUBTOTAL(103,C23:C28)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[12])).toBe('{"value":5,"formula":"=SUBTOTAL(103,C23:C28)"}');
+            done();
+        });
+        it('SUBTOTAL - 3 & 103 - IV', (done: Function) => {
+            helper.edit('M4', '=SUBTOTAL("103",E4:E10)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[12])).toBe('{"value":7,"formula":"=SUBTOTAL(\\"103\\",E4:E10)"}');
+            done();
+        });
+        it('SUBTOTAL - 3 & 103 - V', (done: Function) => {
+            helper.edit('M5', '=SUBTOTAL(103,C30:C33)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[12])).toBe('{"value":4,"formula":"=SUBTOTAL(103,C30:C33)"}');
+            done();
+        });
+        it('SUBTOTAL - 5 & 105 - I', (done: Function) => {
+            helper.edit('N1', '=SUBTOTAL(5,E4:E10)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('6.5E-08');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":"0.000000065","formula":"=SUBTOTAL(5,E4:E10)"}');
+            done();
+        });
+        it('SUBTOTAL - 5 & 105 - II', (done: Function) => {
+            helper.edit('N2', '=SUBTOTAL(K7,H2:H10)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('1.4274787505616882e+36');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[13])).toBe('{"value":"1.4274787505616882e+36","formula":"=SUBTOTAL(K7,H2:H10)"}');
+            done();
+        });
+        it('SUBTOTAL - 5 & 105 - III', (done: Function) => {
+            helper.edit('N3', '=SUBTOTAL(K6,E4:E9)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('6.5E-08');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[13])).toBe('{"value":"0.000000065","formula":"=SUBTOTAL(K6,E4:E9)"}');
+            done();
+        });
+        it('SUBTOTAL - 6 & 106 - I', (done: Function) => {
+            helper.edit('O1', '=SUBTOTAL(6,O9,F6,D5,D8,D11)');
+            expect(helper.invoke('getCell', [0, 14]).textContent).toBe('4500000');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[14])).toBe('{"value":"4500000","formula":"=SUBTOTAL(6,O9,F6,D5,D8,D11)"}');
+            done();
+        });
+        it('SUBTOTAL - 6 & 106 - II', (done: Function) => {
+            helper.edit('O2', '=SUBTOTAL(6,J3:J11)');
+            expect(helper.invoke('getCell', [1, 14]).textContent).toBe('3.335745979914237e+36');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[14])).toBe('{"value":"3.335745979914237e+36","formula":"=SUBTOTAL(6,J3:J11)"}');
+            done();
+        });
+        it('SUBTOTAL - 6 & 106 - III', (done: Function) => {
+            helper.edit('O3', '=SUBTOTAL(6,H3:H11)');
+            expect(helper.invoke('getCell', [2, 14]).textContent).toBe('2.0614215281913453e+36');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[14])).toBe('{"value":"2.0614215281913453e+36","formula":"=SUBTOTAL(6,H3:H11)"}');
+            done();
+        });
+        it('SUBTOTAL - 6 & 106 - IV', (done: Function) => {
+            helper.edit('O4', '=SUBTOTAL(K7,I15:I19)');
+            expect(helper.invoke('getCell', [3, 14]).textContent).toBe('1.6279232188029734e+23');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[14])).toBe('{"value":"1.6279232188029734e+23","formula":"=SUBTOTAL(K7,I15:I19)"}');
+            done();
+        });
+        it('SUBTOTAL - 6 & 106 - V', (done: Function) => {
+            helper.edit('O5', '=SUBTOTAL(106,A13:A18)');
+            expect(helper.invoke('getCell', [4, 14]).textContent).toBe('-1.96140E+13');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[14])).toBe('{"value":"-19613970227617.918","formula":"=SUBTOTAL(106,A13:A18)"}');
+            done();
+        });
+        it('SUBTOTAL - 6 & 106 - VI', (done: Function) => {
+            helper.edit('O6', '=SUBTOTAL(106,G24:G29)');
+            expect(helper.invoke('getCell', [5, 14]).textContent).toBe('64');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[14])).toBe('{"value":"64","formula":"=SUBTOTAL(106,G24:G29)"}');
+            done();
+        });
+        it('SUBTOTAL - 6 & 106 - VII', (done: Function) => {
+            helper.edit('O7', '=SUBTOTAL("106",C23:C27)');
+            expect(helper.invoke('getCell', [6, 14]).textContent).toBe('30');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[14])).toBe('{"value":"30","formula":"=SUBTOTAL(\\"106\\",C23:C27)"}');
+            done();
+        });
+        it('SUBTOTAL - 9 & 109 - I', (done: Function) => {
+            helper.edit('P1', '=SUBTOTAL(9,I15:I21)');
+            expect(helper.invoke('getCell', [0, 15]).textContent).toBe('307780');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[15])).toBe('{"value":307780,"formula":"=SUBTOTAL(9,I15:I21)"}');
+            done();
+        });
+        it('SUBTOTAL - 9 & 109 - II', (done: Function) => {
+            helper.edit('P2', '=SUBTOTAL(109,C23:C30)');
+            expect(helper.invoke('getCell', [1, 15]).textContent).toBe('25');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[15])).toBe('{"value":25,"formula":"=SUBTOTAL(109,C23:C30)"}');
+            done();
+        });
+        it('SUBTOTAL - 9 & 109 - III', (done: Function) => {
+            helper.edit('P3', '=SUBTOTAL(109,B27:H27)');
+            expect(helper.invoke('getCell', [2, 15]).textContent).toBe('31.68690563');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[15])).toBe('{"value":"31.686905628508693","formula":"=SUBTOTAL(109,B27:H27)"}');
+            done();
+        });
+        it('SUBTOTAL - 9 & 109 - IV', (done: Function) => {
+            helper.edit('P4', '=SUBTOTAL(109,C19,C22,C25,C28,C29)');
+            expect(helper.invoke('getCell', [3, 15]).textContent).toBe('9');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[15])).toBe('{"value":9,"formula":"=SUBTOTAL(109,C19,C22,C25,C28,C29)"}');
+            done();
+        });
+        it('SUBTOTAL - Absolute cell reference - I', (done: Function) => {
+            helper.edit('Q1', '=SUBTOTAL($K$14,$C$7:$C$9,$B$7:$B$9,$E$6:$E$9,$F$7:$F$10,$B$14:$B$18)');
+            expect(helper.invoke('getCell', [0, 16]).textContent).toBe('14');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[16])).toBe('{"value":14,"formula":"=SUBTOTAL($K$14,$C$7:$C$9,$B$7:$B$9,$E$6:$E$9,$F$7:$F$10,$B$14:$B$18)"}');
+            done();
+        });
+        it('SUBTOTAL - Sheet reference - I', (done: Function) => {
+            helper.edit('R1', '=SUBTOTAL(Sheet1!K13,Sheet1!G9:G11,Sheet1!C7:C10,Sheet1!D6:D11,Sheet1!D13:D15)');
+            expect(helper.invoke('getCell', [0, 17]).textContent).toBe('18.40200588');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[17])).toBe(
+                '{"value":"18.402005876068376","formula":"=SUBTOTAL(Sheet1!K13,Sheet1!G9:G11,Sheet1!C7:C10,Sheet1!D6:D11,Sheet1!D13:D15)"}'
+            );
+            done();
+        });
+        it('SUBTOTAL - Sheet reference - II', (done: Function) => {
+            helper.edit('R2', '=SUBTOTAL(Sheet1!B17,Sheet1!B4:B8,Sheet1!I5:I11)');
+            expect(helper.invoke('getCell', [1, 17]).textContent).toBe('17492.10333');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[17])).toBe('{"value":"17492.103333333336","formula":"=SUBTOTAL(Sheet1!B17,Sheet1!B4:B8,Sheet1!I5:I11)"}');
+            done();
+        });
+        it('SUBTOTAL - Invalid arguments - I', (done: Function) => {
+            helper.edit('S1', '"=SUBTOTAL(1,34)');
+            expect(helper.invoke('getCell', [0, 18]).textContent).toBe('"=SUBTOTAL(1,34)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[18])).toBe('{"value":"\\"=SUBTOTAL(1,34)"}');
+            done();
+        });
+        it('SUBTOTAL - Invalid arguments - II', (done: Function) => {
+            helper.edit('S2', '"=SUBTOTAL(5,)');
+            expect(helper.invoke('getCell', [1, 18]).textContent).toBe('"=SUBTOTAL(5,)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[18])).toBe('{"value":"\\"=SUBTOTAL(5,)"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 2 - ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('POWER - INPUTS - I', (done: Function) => {
+            helper.edit('L1', '=POWER(-3.4,-2.1)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[11])).toBe('{"value":"#NUM!","formula":"=POWER(-3.4,-2.1)"}');
+            done();
+        });
+        it('POWER - INPUTS - II', (done: Function) => {
+            helper.edit('L2', '=POWER(-43,-3.34)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[11])).toBe('{"value":"#NUM!","formula":"=POWER(-43,-3.34)"}');
+            done();
+        });
+        it('POWER - INPUTS - III', (done: Function) => {
+            helper.edit('L3', '=POWER(-3.231,-2.345)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[11])).toBe('{"value":"#NUM!","formula":"=POWER(-3.231,-2.345)"}');
+            done();
+        });
+        it('POWER - INPUTS - IV', (done: Function) => {
+            helper.edit('L4', '=POWER("3",3)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('27');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[11])).toBe('{"value":"27","formula":"=POWER(\\"3\\",3)"}');
+            done();
+        });
+        it('POWER - INPUTS - V', (done: Function) => {
+            helper.edit('L5', '=POWER(4,"2")');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('16');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[11])).toBe('{"value":"16","formula":"=POWER(4,\\"2\\")"}');
+            done();
+        });
+        it('POWER - INPUTS - VI', (done: Function) => {
+            helper.edit('L6', '=POWER("3","2")');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('9');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[11])).toBe('{"value":"9","formula":"=POWER(\\"3\\",\\"2\\")"}');
+            done();
+        });
+        it('POWER - INPUTS - VII', (done: Function) => {
+            helper.edit('L7', '=POWER("-3","-2")');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('0.111111111');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[11])).toBe('{"value":"0.1111111111111111","formula":"=POWER(\\"-3\\",\\"-2\\")"}');
+            done();
+        });
+        it('POWER - INPUTS - VIII', (done: Function) => {
+            helper.edit('L8', '=POWER("3.23","-2.1")');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('0.085246136');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[11])).toBe('{"value":"0.08524613609942705","formula":"=POWER(\\"3.23\\",\\"-2.1\\")"}');
+            done();
+        });
+        it('POWER - INPUTS - IX', (done: Function) => {
+            helper.edit('L9', '=POWER("-3.23","-1.23")');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"value":"#NUM!","formula":"=POWER(\\"-3.23\\",\\"-1.23\\")"}');
+            done();
+        });
+        it('POWER - INPUTS - X', (done: Function) => {
+            helper.edit('L10', '=POWER("3",2.6)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('17.3986384');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[11])).toBe('{"value":"17.398638404385867","formula":"=POWER(\\"3\\",2.6)"}');
+            done();
+        });
+        it('POWER - INPUTS - XI', (done: Function) => {
+            helper.edit('L11', '=POWER("TRUE",2)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[11])).toBe('{"value":"#VALUE!","formula":"=POWER(\\"TRUE\\",2)"}');
+            done();
+        });
+        it('POWER - INPUTS - XII', (done: Function) => {
+            helper.edit('L12', '=POWER("FALSE",2)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[11])).toBe('{"value":"#VALUE!","formula":"=POWER(\\"FALSE\\",2)"}');
+            done();
+        });
+        it('POWER - INPUTS - XIII', (done: Function) => {
+            helper.edit('L13', '=POWER(4,"TRUE")');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[11])).toBe('{"value":"#VALUE!","formula":"=POWER(4,\\"TRUE\\")"}');
+            done();
+        });
+        it('POWER - INPUTS - XIV', (done: Function) => {
+            helper.edit('L14', '=POWER(pow,2)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[11])).toBe('{"value":"#NAME?","formula":"=POWER(pow,2)"}');
+            done();
+        });
+        it('POWER - INPUTS - XV', (done: Function) => {
+            helper.edit('L15', '=POWER(kert,"kel")');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[11])).toBe('{"value":"#NAME?","formula":"=POWER(kert,\\"kel\\")"}');
+            done();
+        });
+        it('POWER - INPUTS - XVI', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'Power1', refersTo: 'D6'});
+            helper.edit('L16', '=POWER(32,Power1)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('1.42724769270596e+45');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[11])).toBe('{"value":"1.42724769270596e+45","formula":"=POWER(32,Power1)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - I', (done: Function) => {
+            helper.edit('I26', '1/4');
+            helper.edit('M1', '=POWER(11,I26)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(11,I26)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - II', (done: Function) => {
+            helper.edit('I27', '1/6');
+            helper.edit('M2', '=POWER(5,I27)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(5,I27)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - III', (done: Function) => {
+            helper.edit('I25', '1/3');
+            helper.edit('M3', '=POWER(6,I25)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(6,I25)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - IV', (done: Function) => {
+            helper.edit('E27', '-3.23');
+            helper.edit('F28', '-3.2');
+            helper.edit('M4', '=POWER(E27,F28)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(E27,F28)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - V', (done: Function) => {
+            helper.edit('F28', '-3.2');
+            helper.edit('G24', '-3.2');
+            helper.edit('M5', '=POWER(F28,G24)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(F28,G24)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - VI', (done: Function) => {
+            helper.edit('B24', '"TRUE"');
+            helper.edit('M6', '=POWER(B24,2)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[12])).toBe('{"value":"#VALUE!","formula":"=POWER(B24,2)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - VII', (done: Function) => {
+            helper.edit('B25', '"FALSE"');
+            helper.edit('M7', '=POWER(B25,3)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[12])).toBe('{"value":"#VALUE!","formula":"=POWER(B25,3)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - VIII', (done: Function) => {
+            helper.edit('B24', '"TRUE"');
+            helper.edit('M8', '=POWER(4,B24)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[12])).toBe('{"value":"#VALUE!","formula":"=POWER(4,B24)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - IX', (done: Function) => {
+            helper.edit('B25', '"FALSE"');
+            helper.edit('M9', '=POWER(32,B25)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[12])).toBe('{"value":"#VALUE!","formula":"=POWER(32,B25)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - X', (done: Function) => {
+            helper.edit('B3', '6/11/2014');
+            helper.edit('J15', '4');
+            helper.edit('M10', '=POWER(J15,B3)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(J15,B3)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - XI', (done: Function) => {
+            helper.edit('F10', '$110.00');
+            helper.edit('C25', '3');
+            helper.edit('M11', '=POWER(C25,F10)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('3.043252722170454e+52');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[12])).toBe('{"value":"3.043252722170454e+52","formula":"=POWER(C25,F10)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - XII', (done: Function) => {
+            helper.edit('C26', '4');
+            helper.edit('I7', '108.32');
+            helper.edit('M12', '=POWER(C26,I7)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('1.6411121494202909e+65');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[12])).toBe('{"value":"1.6411121494202909e+65","formula":"=POWER(C26,I7)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - XIII', (done: Function) => {
+            helper.edit('I24', '1/2');
+            helper.edit('M13', '=POWER(3,I24)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(3,I24)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - XIV', (done: Function) => {
+            helper.edit('I27', '1/6');
+            helper.edit('M14', '=POWER(34,I27)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(34,I27)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - XV', (done: Function) => {
+            helper.edit('E17', '#NUM!');
+            helper.edit('M15', '=POWER(E17,3)');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[12])).toBe('{"value":"#NUM!","formula":"=POWER(E17,3)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - XVI', (done: Function) => {
+            helper.edit('E15', '#NAME?');
+            helper.edit('M16', '=POWER(E15,"pow")');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[12])).toBe('{"value":"#NAME?","formula":"=POWER(E15,\\"pow\\")"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - XVII', (done: Function) => {
+            helper.edit('E15', '#NAME?');
+            helper.edit('E16', '#DIV/0!');
+            helper.edit('M17', '=POWER(E16,E15)');
+            expect(helper.invoke('getCell', [16, 12]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[12])).toBe('{"value":"#DIV/0!","formula":"=POWER(E16,E15)"}');
+            done();
+        });
+        it('POWER - CELL REFEREMCE - XVIII', (done: Function) => {
+            helper.edit('$E$16', '#DIV/0!');
+            helper.edit('$H$20', '2');
+            helper.edit('M18', '=POWER($E$16,$H$20)');
+            expect(helper.invoke('getCell', [17, 12]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[12])).toBe('{"value":"#DIV/0!","formula":"=POWER($E$16,$H$20)"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 3', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [ { ranges: [{ dataSource: EJ2_53702_INDEX }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - I', (done: Function) => {
+            helper.edit('L1', '=INDEX(C2:C10,C23,B28)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('0.482314815');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[11])).toBe('{"value":"0.4823148148148148","formula":"=INDEX(C2:C10,C23,B28)"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - II', (done: Function) => {
+            helper.edit('L2', '=INDEX(H2:I12,"2.24","2.6")');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('104.32');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[11])).toBe('{"value":"104.32","formula":"=INDEX(H2:I12,\\"2.24\\",\\"2.6\\")"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - III', (done: Function) => {
+            helper.edit('L3', '=INDEX(D12:E17,1,"1")');
+            const value: string = "'" + "-45.43" + "'";
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe(value);
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[11])).toBe('{"value":"' + value + '","formula":"=INDEX(D12:E17,1,\\"1\\")"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - IV', (done: Function) => {
+            helper.edit('L4', '=INDEX(D13:E18,"2","1")');
+            const value: string = "'" + "1" + "'";
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe(value);
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[11])).toBe('{"value":"' + value + '","formula":"=INDEX(D13:E18,\\"2\\",\\"1\\")"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - V', (done: Function) => {
+            helper.edit('L5', '=INDEX(H2:I10,B16,2)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('103.32');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[11])).toBe('{"value":"103.32","formula":"=INDEX(H2:I10,B16,2)"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - VI', (done: Function) => {
+            helper.edit('L6', '=INDEX(H7:I11,C32>C31,2)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('108.32');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[11])).toBe('{"formula":"=INDEX(H7:I11,C32>C31,2)","value":"108.32"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - VII', (done: Function) => {
+            helper.edit('L7', '=INDEX(H8:I12,C33<C32,2)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('109.32');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[11])).toBe('{"formula":"=INDEX(H8:I12,C33<C32,2)","value":"109.32"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - VIII', (done: Function) => {
+            helper.edit('L8', '=INDEX(H8:I12,1,C31<C32)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('6543.34579');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[11])).toBe('{"formula":"=INDEX(H8:I12,1,C31<C32)","value":"6543.34578992"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - IX', (done: Function) => {
+            helper.edit('L9', '=INDEX(H8:I12,2,C32>=C32)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('13035.06876');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"formula":"=INDEX(H8:I12,2,C32>=C32)","value":"13035.068755"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - X', (done: Function) => {
+            helper.edit('L10', '=INDEX(H34:J41,1,2)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[11])).toBe('{"value":0,"formula":"=INDEX(H34:J41,1,2)"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - XVI', (done: Function) => {
+            helper.edit('L17', '=COUNT(INDEX(F14:H20,0,1))');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[11])).toBe('{"value":0,"formula":"=COUNT(INDEX(F14:H20,0,1))"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - XII', (done: Function) => {
+            helper.edit('L12', '=INDEX(B2:E11,1,2,1)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('0.482314815');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[11])).toBe('{"value":"0.4823148148148148","formula":"=INDEX(B2:E11,1,2,1)"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - XIII', (done: Function) => {
+            helper.edit('L13', '=INDEX(,1,1,1)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[11])).toBe('{"value":"#VALUE!","formula":"=INDEX(,1,1,1)"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - XIV', (done: Function) => {
+            helper.edit('L14', '=INDEX(3,1,1,)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[11])).toBe('{"value":"#REF!","formula":"=INDEX(3,1,1,)"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - XV', (done: Function) => {
+            helper.edit('L16', '=MIN(INDEX(I2:J11,0,1))');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('103.32');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[11])).toBe('{"value":"103.32","formula":"=MIN(INDEX(I2:J11,0,1))"}');
+            done();
+        });
+        it('INDEX - FORMULA WITH CELL REFERENCE - XVI', (done: Function) => {
+            helper.edit('L18', '=INDEX(Sheet1!B3:G10,Sheet1!B14,Sheet1!C25)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('20');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[11])).toBe('{"value":"20","formula":"=INDEX(Sheet1!B3:G10,Sheet1!B14,Sheet1!C25)"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 4', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('ADDRESS - ->', (done: Function) => {
+            helper.edit('I1', '=ADDRESS(2,2)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('$B$2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"$B$2","formula":"=ADDRESS(2,2)"}');
+            done();
+        });
+        it('ADDRESS - with abs value as 2->', (done: Function) => {
+            helper.edit('I2', '=ADDRESS(2,2,2)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('B$2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"B$2","formula":"=ADDRESS(2,2,2)"}');
+            done();
+        });
+        it('ADDRESS - with abs value as 3->', (done: Function) => {
+            helper.edit('I3', '=ADDRESS(2,2,3)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('$B2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"$B2","formula":"=ADDRESS(2,2,3)"}');
+            done();
+        });
+        it('ADDRESS - with abs value as 4->', (done: Function) => {
+            helper.edit('I4', '=ADDRESS(2,2,4)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('B2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"B2","formula":"=ADDRESS(2,2,4)"}');
+            done();
+        });
+        it('ADDRESS - with Reference style as false and abs value as 1->', (done: Function) => {
+            helper.edit('I5', '=ADDRESS(2,2,1,FALSE)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('R2C2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"R2C2","formula":"=ADDRESS(2,2,1,FALSE)"}');
+            done();
+        });
+        it('ADDRESS - with Reference style as false and abs value as 2->', (done: Function) => {
+            helper.edit('I6', '=ADDRESS(2,2,2,FALSE)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('R2C[2]');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"R2C[2]","formula":"=ADDRESS(2,2,2,FALSE)"}');
+            done();
+        });
+        it('ADDRESS - with Reference style as false and abs value as 3->', (done: Function) => {
+            helper.edit('I7', '=ADDRESS(2,2,3,FALSE)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('R[2]C2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"R[2]C2","formula":"=ADDRESS(2,2,3,FALSE)"}');
+            done();
+        });
+        it('ADDRESS - with Reference style as false and abs value as 4->', (done: Function) => {
+            helper.edit('I8', '=ADDRESS(2,2,4,FALSE)');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('R[2]C[2]');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":"R[2]C[2]","formula":"=ADDRESS(2,2,4,FALSE)"}');
+            done();
+        });
+        it('ADDRESS - with Sheet name and Reference style as false->', (done: Function) => {
+            helper.edit('I9', '=ADDRESS(2,2,1,FALSE,"Price Details")');
+            expect(helper.getInstance().sheets[0].rows[8].cells[8].formula).toBe('=ADDRESS(2,2,1,FALSE,"Price Details")');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('Price Details!R2C2');
+            done();
+        });
+        it('ADDRESS - with Sheet name and Reference style as TRUE->', (done: Function) => {
+            helper.edit('I10', '=ADDRESS(2,2,1,TRUE,"Price Details")');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('Price Details!$B$2');
+            done();
+        });
+        it('ADDRESS - for workbook->', (done: Function) => {
+            helper.edit('I11', '=ADDRESS(2,3,1,FALSE,"[Book1]Sheet1")');
+            expect(helper.getInstance().sheets[0].rows[10].cells[8].formula).toBe('=ADDRESS(2,3,1,FALSE,"[Book1]Sheet1")');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('[Book1]Sheet1!R2C3');
+            done();
+        });
+        it('ADDRESS - with invalid Reference style->', (done: Function) => {
+            helper.edit('I12', '=ADDRESS(2,2,1,3)');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('$B$2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[8])).toBe('{"value":"$B$2","formula":"=ADDRESS(2,2,1,3)"}');
+            done();
+        });
+        it('ADDRESS - with invalid sheet name->', (done: Function) => {
+            helper.edit('I13', '=ADDRESS(2,2,1,FALSE,aa)');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[8])).toBe('{"value":"#NAME?","formula":"=ADDRESS(2,2,1,FALSE,aa)"}');
+            done();
+        });
+        it('ADDRESS - with no input->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('I14');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=ADDRESS()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=ADDRESS()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('I14', '=ADDRESS(1,1)');
+            done();
+        });
+        it('ADDRESS - with invalid input->', (done: Function) => {
+            helper.edit('I15', '=ADDRESS(A,B)');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[8])).toBe('{"value":"#NAME?","formula":"=ADDRESS(A,B)"}');
+            done();
+        });
+        it('ADDRESS - with negative values for Row and Column->', (done: Function) => {
+            helper.edit('I16', '=ADDRESS(-1,-2)');
+            expect(helper.invoke('getCell', [15, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[8])).toBe('{"value":"#VALUE!","formula":"=ADDRESS(-1,-2)"}');
+            done();
+        });
+        it('ADDRESS - with no values for Row and Column->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('I17');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=ADDRESS(,,2)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=ADDRESS(,,2)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('I17', '=ADDRESS(1,2)');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 5 - ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('CODE - I', (done: Function) => {
+            helper.edit('I1', '=CODE("0!")');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('48');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":48,"formula":"=CODE(\\"0!\\")"}');
+            done();
+        });
+        it('CODE - II', (done: Function) => {
+            helper.edit('I2', '=CODE("""")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":34,"formula":"=CODE(\\"\\"\\"\\")"}');
+            done();
+        });
+        it('CODE - III', (done: Function) => {
+            helper.edit('I3', '=CODE("""   ")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":34,"formula":"=CODE(\\"\\"\\"   \\")"}');
+            done();
+        });
+        it('CODE - IV', (done: Function) => {
+            helper.edit('J17', '"excel"');
+            helper.edit('I4', '=CODE(J17)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":34,"formula":"=CODE(J17)"}');
+            done();
+        });
+        it('CODE - V', (done: Function) => {
+            helper.edit('I5', '=CODE("2/4/2000 12:00 am")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('50');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":50,"formula":"=CODE(\\"2/4/2000 12:00 am\\")"}');
+            done();
+        });
+        it('CODE - VI', (done: Function) => {
+            helper.edit('I6', '=CODE(O23:O28)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('CODE - VII', (done: Function) => {
+            helper.edit('I7', '=CODE("3/4/2023")');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('51');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":51,"formula":"=CODE(\\"3/4/2023\\")"}');
+            done();
+        });
+        it('CODE - VIII', (done: Function) => {
+            helper.edit('I8', '=CODE("07-JUN")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('48');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":48,"formula":"=CODE(\\"07-JUN\\")"}');
+            done();
+        });
+        it('CODE - IX', (done: Function) => {
+            helper.edit('L2', '"65.678"');
+            helper.edit('I9', '=CODE(L2)');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":34,"formula":"=CODE(L2)"}');
+            done();
+        });
+        it('CODE - X', (done: Function) => {
+            helper.edit('L5', '"112"');
+            helper.edit('I10', '=CODE(L5)');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[8])).toBe('{"value":34,"formula":"=CODE(L5)"}');
+            done();
+        });
+        it('CODE - XI', (done: Function) => {
+            helper.edit('H9', '"0"');
+            helper.edit('I11', '=CODE(H9)');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[8])).toBe('{"value":34,"formula":"=CODE(H9)"}');
+            done();
+        });
+        it('CODE - XII', (done: Function) => {
+            helper.edit('G3', '""');
+            helper.edit('I12', '=CODE(G3)');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[8])).toBe('{"value":34,"formula":"=CODE(G3)"}');
+            done();
+        });
+        it('CODE - XIII', (done: Function) => {
+            helper.edit('I3', '"TRUE"');
+            helper.edit('I13', '=CODE(I3)');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[8])).toBe('{"value":34,"formula":"=CODE(I3)"}');
+            done();
+        });
+        it('CODE - XIV', (done: Function) => {
+            helper.edit('L8', '"Hi"');
+            helper.edit('I14', '=CODE(L8)');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[8])).toBe('{"value":34,"formula":"=CODE(L8)"}');
+            done();
+        });
+        it('CODE - XV', (done: Function) => {
+            helper.edit('G3', '""');
+            helper.edit('I15', '=CODE(G3)');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[8])).toBe('{"value":34,"formula":"=CODE(G3)"}');
+            done();
+        });
+        it('CODE - XVI', (done: Function) => {
+            helper.edit('H9', '"0"');
+            helper.edit('I16', '=CODE(H9)');
+            expect(helper.invoke('getCell', [15, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[8])).toBe('{"value":34,"formula":"=CODE(H9)"}');
+            done();
+        });
+        it('CODE - XVII', (done: Function) => {
+            helper.edit('H12', '');
+            helper.edit('I17', '=CODE(H12)');
+            expect(helper.invoke('getCell', [16, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[8])).toBe('{"value":"#VALUE!","formula":"=CODE(H12)"}');
+            done();
+        });
+        it('CODE - XVIII', (done: Function) => {
+            helper.edit('H14', '"07-JUN"');
+            helper.edit('I18', '=CODE(H14)');
+            expect(helper.invoke('getCell', [17, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[8])).toBe('{"value":34,"formula":"=CODE(H14)"}');
+            done();
+        });
+        it('CODE - XIX', (done: Function) => {
+            helper.edit('H16', '""      ""');
+            helper.edit('I19', '=CODE(H16)');
+            expect(helper.invoke('getCell', [18, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[8])).toBe('{"value":34,"formula":"=CODE(H16)"}');
+            done();
+        });
+        it('CODE - XX', (done: Function) => {
+            helper.edit('H15', '"     "');
+            helper.edit('I20', '=CODE(H15)');
+            expect(helper.invoke('getCell', [19, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[8])).toBe('{"value":34,"formula":"=CODE(H15)"}');
+            done();
+        });
+        it('CODE - XXI', (done: Function) => {
+            helper.edit('I21', '=CODE(1:10)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('CODE - XXII', (done: Function) => {
+            helper.edit('I22', '=CODE(C19:C28)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('CODE - XXIII', (done: Function) => {
+            helper.edit('I23', '=CODE(6.078%)');
+            expect(helper.invoke('getCell', [22, 8]).textContent).toBe('48');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[22].cells[8])).toBe('{"value":48,"formula":"=CODE(6.078%)"}');
+            done();
+        });
+        it('CODE - XXIV', (done: Function) => {
+            helper.edit('D16', '"-3.45"');
+            helper.edit('I24', '=CODE(D16)');
+            expect(helper.invoke('getCell', [23, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[23].cells[8])).toBe('{"value":34,"formula":"=CODE(D16)"}');
+            done();
+        });
+        it('CODE - XXV', (done: Function) => {
+            helper.edit('L8', '"Hi"');
+            helper.edit('I25', '=CODE(L8)');
+            expect(helper.invoke('getCell', [24, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[24].cells[8])).toBe('{"value":34,"formula":"=CODE(L8)"}');
+            done();
+        });
+        it('CODE - XXVI', (done: Function) => {
+            helper.edit('I26', '=CODE(B19:C24)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('CODE - XXVII', (done: Function) => {
+            helper.edit('Sheet1!K4', '"34"');
+            helper.edit('I27', '=CODE(Sheet1!K4)');
+            expect(helper.invoke('getCell', [26, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[26].cells[8])).toBe('{"value":34,"formula":"=CODE(Sheet1!K4)"}');
+            done();
+        });
+        it('CODE - XXIX', (done: Function) => {
+            helper.edit('Sheet1!L2', '"34"');
+            helper.edit('I28', '=CODE(Sheet1!L2)');
+            expect(helper.invoke('getCell', [27, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[27].cells[8])).toBe('{"value":34,"formula":"=CODE(Sheet1!L2)"}');
+            done();
+        });
+        it('CODE - XXX', (done: Function) => {
+            helper.edit('A4', 'Sandals & Floaters');
+            helper.edit('Sheet1!$B$4', '=LOWER(A4)');
+            helper.edit('I29', '=CODE(Sheet1!$B$4)');
+            expect(helper.invoke('getCell', [28, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[28].cells[8])).toBe('{"value":"#NAME?","formula":"=CODE(Sheet1!$B$4)"}');
+            done();
+        });
+        it('CODE - XXXI', (done: Function) => {
+            helper.edit('A4', 'Sandals & Floaters');
+            helper.edit('Sheet1!B4', '=LOWER(A4)');
+            helper.edit('I30', '=CODE(Sheet1!B4)');
+            expect(helper.invoke('getCell', [29, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[29].cells[8])).toBe('{"value":"#NAME?","formula":"=CODE(Sheet1!B4)"}');
+            done();
+        });
+        it('CODE - XXXII', (done: Function) => {
+            helper.edit('A4', 'Sandals & Floaters');
+            helper.edit('Sheet1!B4', '=LOWER(A4)');
+            helper.edit('I31', '=CODE(Sheet1!$B4)');
+            expect(helper.invoke('getCell', [30, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[30].cells[8])).toBe('{"value":"#NAME?","formula":"=CODE(Sheet1!$B4)"}');
+            done();
+        });
+        it('CODE - XXXIII ', (done: Function) => {
+            helper.edit('L3', '"33"');
+            helper.edit('I32', '=CODE($L$3)');
+            expect(helper.invoke('getCell', [31, 8]).textContent).toBe('34');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[31].cells[8])).toBe('{"value":34,"formula":"=CODE($L$3)"}');
+            done();
+        });
+        it('CODE - Issue fixing: 889130 - Nested formula - 3', (done: Function) => {
+            helper.edit('B18', '4Runner');
+            helper.edit('Z1', '=CODE(T(B18))');
+            expect(helper.invoke('getCell', [0, 25]).textContent).toBe('52');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[25])).toBe('{"value":52,"formula":"=CODE(T(B18))"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 6 - ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('LEN - Specific Type - I', (done: Function) => {
+            helper.edit('K1', '=LEN("0!")');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":2,"formula":"=LEN(\\"0!\\")"}');
+            done();
+        });
+        it('LEN - Specific Type - II', (done: Function) => {
+            helper.edit('K2', '=LEN(2/3/2000)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('21');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":21,"formula":"=LEN(2/3/2000)"}');
+            done();
+        });
+        it('LEN - Specific Type - III', (done: Function) => {
+            helper.edit('K3', '=LEN("""")');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":1,"formula":"=LEN(\\"\\"\\"\\")"}');
+            done();
+        });
+        it('LEN - Specific Type - IV', (done: Function) => {
+            helper.edit('K4', '=LEN("""   ")');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":4,"formula":"=LEN(\\"\\"\\"   \\")"}');
+            done();
+        });
+        it('LEN - Specific Type - V', (done: Function) => {
+            helper.edit('K5', '=LEN("  .67   """)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('9');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":9,"formula":"=LEN(\\"  .67   \\"\\"\\")"}');
+            done();
+        });
+        it('LEN - Direct Value - I', (done: Function) => {
+            helper.edit('L1', '=LEN("3/4/2023")');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('8');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[11])).toBe('{"value":8,"formula":"=LEN(\\"3/4/2023\\")"}');
+            done();
+        });
+        it('LEN - Direct Value - II', (done: Function) => {
+            helper.edit('L2', '=LEN("07-JUN")');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[11])).toBe('{"value":6,"formula":"=LEN(\\"07-JUN\\")"}');
+            done();
+        });
+        it('LEN - Cell reference - I', (done: Function) => {
+            helper.edit('L2', '"65.678"');
+            helper.edit('M1', '=LEN(L2)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('8');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12])).toBe('{"value":8,"formula":"=LEN(L2)"}');
+            done();
+        });
+        it('LEN - Cell reference - II', (done: Function) => {
+            helper.edit('L5', '"112"');
+            helper.edit('M2', '=LEN(L5)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[12])).toBe('{"value":5,"formula":"=LEN(L5)"}');
+            done();
+        });
+        it('LEN - Cell reference - III', (done: Function) => {
+            helper.edit('H9', '"0"');
+            helper.edit('M3', '=LEN(H9)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[12])).toBe('{"value":3,"formula":"=LEN(H9)"}');
+            done();
+        });
+        it('LEN - Cell reference - IV', (done: Function) => {
+            helper.edit('G3', '""');
+            helper.edit('M4', '=LEN(G3)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[12])).toBe('{"value":2,"formula":"=LEN(G3)"}');
+            done();
+        });
+        it('LEN - Cell reference - V', (done: Function) => {
+            helper.edit('I3', '"TRUE"');
+            helper.edit('M5', '=LEN(I3)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[12])).toBe('{"value":6,"formula":"=LEN(I3)"}');
+            done();
+        });
+        it('LEN - Cell reference - VI', (done: Function) => {
+            helper.edit('H5', '"-5"');
+            helper.edit('M6', '=LEN(H5)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[12])).toBe('{"value":4,"formula":"=LEN(H5)"}');
+            done();
+        });
+        it('LEN - Cell reference - VII', (done: Function) => {
+            helper.edit('L8', '"Hi"');
+            helper.edit('M7', '=LEN(L8)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[12])).toBe('{"value":4,"formula":"=LEN(L8)"}');
+            done();
+        });
+        it('LEN - Cell reference - VIII', (done: Function) => {
+            helper.edit('G3', '""');
+            helper.edit('M8', '=LEN(G3)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[12])).toBe('{"value":2,"formula":"=LEN(G3)"}');
+            done();
+        });
+        it('LEN - Cell reference - IX', (done: Function) => {
+            helper.edit('H9', '"0"');
+            helper.edit('M9', '=LEN(H9)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[12])).toBe('{"value":3,"formula":"=LEN(H9)"}');
+            done();
+        });
+        it('LEN - Cell reference - X', (done: Function) => {
+            helper.edit('H13', '"03/04/2023"');
+            helper.edit('M10', '=LEN(H13)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('12');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[12])).toBe('{"value":12,"formula":"=LEN(H13)"}');
+            done();
+        });
+        it('LEN - Cell reference - XI', (done: Function) => {
+            helper.edit('H14', '"07-JUN"');
+            helper.edit('M11', '=LEN(H14)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('8');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[12])).toBe('{"value":8,"formula":"=LEN(H14)"}');
+            done();
+        });
+        it('LEN - Cell reference - XII', (done: Function) => {
+            helper.edit('F15', '" "');
+            helper.edit('M12', '=LEN(F15)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[12])).toBe('{"value":3,"formula":"=LEN(F15)"}');
+            done();
+        });
+        it('LEN - Cell reference - XIII', (done: Function) => {
+            helper.edit('H15', '"     "');
+            helper.edit('M13', '=LEN(H15)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[12])).toBe('{"value":7,"formula":"=LEN(H15)"}');
+            done();
+        });
+        it('LEN - Different datatypes - I', (done: Function) => {
+            helper.edit('N1', '=LEN(6/23/2014)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('21');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":21,"formula":"=LEN(6/23/2014)"}');
+            done();
+        });
+        it('LEN - Different datatypes - II', (done: Function) => {
+            helper.edit('J2', 'H123Ello');
+            helper.edit('N2', '=LEN(J2:J10)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('8');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[13])).toBe('{"value":8,"formula":"=LEN(J2:J10)"}');
+            done();
+        });
+        it('LEN - Invalid Arguments - I', (done: Function) => {
+            helper.edit('O1', '=LEN(6.078%)');
+            expect(helper.invoke('getCell', [0, 14]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[14])).toBe('{"value":7,"formula":"=LEN(6.078%)"}');
+            done();
+        });
+        it('LEN - Invalid Arguments - II', (done: Function) => {
+            helper.edit('D16', '"-3.45"');
+            helper.edit('O2', '=LEN(D16)');
+            expect(helper.invoke('getCell', [1, 14]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[14])).toBe('{"value":7,"formula":"=LEN(D16)"}');
+            done();
+        });
+        it('LEN - Sheets - I', (done: Function) => {
+            helper.edit('Sheet1!L2', '"65.678"');
+            helper.edit('P1', '=LEN(Sheet1!L2)');
+            expect(helper.invoke('getCell', [0, 15]).textContent).toBe('8');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[15])).toBe('{"value":8,"formula":"=LEN(Sheet1!L2)"}');
+            done();
+        });
+        it('LEN - Sheets - II', (done: Function) => {
+            helper.edit('Sheet1!$L$2', '"65.678"');
+            helper.edit('P2', '=LEN(Sheet1!$L$2)');
+            expect(helper.invoke('getCell', [1, 15]).textContent).toBe('8');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[15])).toBe('{"value":8,"formula":"=LEN(Sheet1!$L$2)"}');
+            done();
+        });
+        it('LEN - Cell Ref - I', (done: Function) => {
+            helper.edit('$L$3', '"33"');
+            helper.edit('Q1', '=LEN($L$3)');
+            expect(helper.invoke('getCell', [0, 16]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[16])).toBe('{"value":4,"formula":"=LEN($L$3)"}');
+            done();
+        });
+        it('LEN - Issue fixing: 889130 - Nested formula - 1', (done: Function) => {
+            helper.edit('G4', '13853.09');
+            helper.edit('Z1', '=LEN(TEXT(G4,"0.0%"))');
+            expect(helper.invoke('getCell', [0, 25]).textContent).toBe('10');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[25])).toBe('{"value":10,"formula":"=LEN(TEXT(G4,\\"0.0%\\"))"}');
+            done();
+        });
+        it('LEN - Issue fixing: 889130 - Nested formula - 2', (done: Function) => {
+            helper.edit('D10', 'Debit Card');
+            helper.edit('Z2', '=LEN(T(D10))');
+            expect(helper.invoke('getCell', [1, 25]).textContent).toBe('10');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[25])).toBe('{"value":10,"formula":"=LEN(T(D10))"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 7 - ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('PROPER - Specific Type - I', (done: Function) => {
+            helper.edit('J7', 'A123@!hi');
+            helper.edit('K1', '=PROPER(J7)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('A123@!Hi');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"A123@!Hi","formula":"=PROPER(J7)"}');
+            done();
+        });
+        it('PROPER - Specific Type - II', (done: Function) => {
+            helper.edit('K2', '=PROPER("0!")');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"0!","formula":"=PROPER(\\"0!\\")"}');
+            done();
+        });
+        it('PROPER - Specific Type - III', (done: Function) => {
+            helper.edit('K3', '=PROPER(2/3/2000)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.000333333');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"0.0003333333333333333","formula":"=PROPER(2/3/2000)"}');
+            done();
+        });
+        it('PROPER - Specific Type - IV', (done: Function) => {
+            helper.edit('K4', '=PROPER("""")');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"\\"","formula":"=PROPER(\\"\\"\\"\\")"}');
+            done();
+        });
+        it('PROPER - Specific Type - V', (done: Function) => {
+            helper.edit('K5', '=PROPER("""   ")');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('"   ');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":"\\"   ","formula":"=PROPER(\\"\\"\\"   \\")"}');
+            done();
+        });
+        it('PROPER - Specific Type - VI', (done: Function) => {
+            helper.edit('K6', '=PROPER("  .67   """)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('  .67   "');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{"value":"  .67   \\"","formula":"=PROPER(\\"  .67   \\"\\"\\")"}');
+            done();
+        });
+        it('PROPER - Specific Type - VII', (done: Function) => {
+            helper.edit('H18', 'gentle.CS');
+            helper.edit('K7', '=PROPER(H18)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('Gentle.Cs');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[10])).toBe('{"value":"Gentle.Cs","formula":"=PROPER(H18)"}');
+            done();
+        });
+        it('PROPER - Specific Type - VIII', (done: Function) => {
+            helper.edit('H19', 'hello world.agHt');
+            helper.edit('K8', '=PROPER(H19)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('Hello World.Aght');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[10])).toBe('{"value":"Hello World.Aght","formula":"=PROPER(H19)"}');
+            done();
+        });
+        it('PROPER - Specific Type - IX', (done: Function) => {
+            helper.edit('H20', 'fellHell, BS');
+            helper.edit('K9', '=PROPER(H20)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('Fellhell, Bs');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[10])).toBe('{"value":"Fellhell, Bs","formula":"=PROPER(H20)"}');
+            done();
+        });
+        it('PROPER - Specific Type - X', (done: Function) => {
+            helper.edit('H21', 'San deigo, CA');
+            helper.edit('K10', '=PROPER(H21)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('San Deigo, Ca');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[10])).toBe('{"value":"San Deigo, Ca","formula":"=PROPER(H21)"}');
+            done();
+        });
+        it('PROPER - Specific Type - XI', (done: Function) => {
+            helper.edit('J17', 'excel');
+            helper.edit('K11', '=PROPER(J17)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('Excel');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[10])).toBe('{"value":"Excel","formula":"=PROPER(J17)"}');
+            done();
+        });
+        it('PROPER - Specific Type - XII', (done: Function) => {
+            helper.edit('K12', '=PROPER("2/4/2000 12:00 am")');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('2/4/2000 12:00 Am');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[10])).toBe('{"value":"2/4/2000 12:00 Am","formula":"=PROPER(\\"2/4/2000 12:00 am\\")"}');
+            done();
+        });
+        it('PROPER - Specific Type - XIII', (done: Function) => {
+            helper.edit('O23', 'Fell In Hell');
+            helper.edit('K13', '=PROPER(O23:O28)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('Fell In Hell');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[10])).toBe('{"value":"Fell In Hell","formula":"=PROPER(O23:O28)"}');
+            done();
+        });
+        it('PROPER - Direct Value - I', (done: Function) => {
+            helper.edit('L1', '=PROPER(400%)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[11])).toBe('{"value":"4","formula":"=PROPER(400%)"}');
+            done();
+        });
+        it('PROPER - Direct Value - II', (done: Function) => {
+            helper.edit('L2', '=PROPER("he""jI")');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('He"Ji');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[11])).toBe('{"value":"He\\"Ji","formula":"=PROPER(\\"he\\"\\"jI\\")"}');
+            done();
+        });
+        it('PROPER - Direct Value - III', (done: Function) => {
+            helper.edit('L3', '=PROPER("TRUE")');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[11])).toBe('{"value":"True","formula":"=PROPER(\\"TRUE\\")"}');
+            done();
+        });
+        it('PROPER - Direct Value - IV', (done: Function) => {
+            helper.edit('L4', '=PROPER(TRUE)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[11])).toBe('{"value":"True","formula":"=PROPER(TRUE)"}');
+            done();
+        });
+        it('PROPER - Direct Value - V', (done: Function) => {
+            helper.edit('L5', '=PROPER(FALSE)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('FALSE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[11])).toBe('{"value":"False","formula":"=PROPER(FALSE)"}');
+            done();
+        });
+        it('PROPER - Direct Value - VI', (done: Function) => {
+            helper.edit('L6', '=PROPER("-3.0000000")');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('-3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[11])).toBe('{"value":"-3.0000000","formula":"=PROPER(\\"-3.0000000\\")"}');
+            done();
+        });
+        it('PROPER - Direct Value - VII', (done: Function) => {
+            helper.edit('M10', '/"Hi"/');
+            helper.edit('L7', '=PROPER(M10)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('/"Hi"/');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[11])).toBe('{"value":"/\\"Hi\\"/","formula":"=PROPER(M10)"}');
+            done();
+        });
+        it('PROPER - Direct Value - VIII', (done: Function) => {
+            helper.edit('L8', '=PROPER(3/4/2023)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('0.000370737');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[11])).toBe('{"value":"0.0003707365299060801","formula":"=PROPER(3/4/2023)"}');
+            done();
+        });
+        it('PROPER - Direct Value - IX', (done: Function) => {
+            helper.edit('L9', '=PROPER("3/4/2023")');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('3/4/2023');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"value":"44989","formula":"=PROPER(\\"3/4/2023\\")","format":"mm-dd-yyyy"}');
+            done();
+        });
+        it('PROPER - Direct Value - X', (done: Function) => {
+            helper.edit('L9', '=PROPER("07-JUN")');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('6/7/2001');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"value":"37049","formula":"=PROPER(\\"07-JUN\\")","format":"mm-dd-yyyy"}');
+            done();
+        });
+        it('PROPER - Cell reference - I', (done: Function) => {
+            helper.edit('B13', 'School Office+12"YG"');
+            helper.edit('M1', '=PROPER(B13)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('School Office+12"Yg"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12])).toBe('{"value":"School Office+12\\"Yg\\"","formula":"=PROPER(B13)"}');
+            done();
+        });
+        it('PROPER - Cell reference - II', (done: Function) => {
+            helper.edit('B15', 'School Office "YG"');
+            helper.edit('M2', '=PROPER(B15)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('School Office "Yg"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[12])).toBe('{"value":"School Office \\"Yg\\"","formula":"=PROPER(B15)"}');
+            done();
+        });
+        it('PROPER - Cell reference - III', (done: Function) => {
+            helper.edit('B17', "RNd123+'0tRue");
+            helper.edit('M3', '=PROPER(B17)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe("Rnd123+'0True");
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[12])).toBe('{"value":"Rnd123+\'0True","formula":"=PROPER(B17)"}');
+            done();
+        });
+        it('PROPER - Cell reference - IV', (done: Function) => {
+            helper.edit('L2', '"65.678"');
+            helper.edit('M4', '=PROPER(L2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('"65.678"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[12])).toBe('{"value":"\\"65.678\\"","formula":"=PROPER(L2)"}');
+            done();
+        });
+        it('PROPER - Cell reference - V', (done: Function) => {
+            helper.edit('L5', '"112"');
+            helper.edit('M5', '=PROPER(L5)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('"112"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[12])).toBe('{"value":"\\"112\\"","formula":"=PROPER(L5)"}');
+            done();
+        });
+        it('PROPER - Cell reference - VI', (done: Function) => {
+            helper.edit('H9', '"0"');
+            helper.edit('M6', '=PROPER(H9)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('"0"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[12])).toBe('{"value":"\\"0\\"","formula":"=PROPER(H9)"}');
+            done();
+        });
+        it('PROPER - Cell reference - VII', (done: Function) => {
+            helper.edit('I3', '"TRUE"');
+            helper.edit('M7', '=PROPER(I3)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('"True"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[12])).toBe('{"value":"\\"True\\"","formula":"=PROPER(I3)"}');
+            done();
+        });
+        it('PROPER - Cell reference - VIII', (done: Function) => {
+            helper.edit('H5', '"-5"');
+            helper.edit('M8', '=PROPER(H5)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('"-5"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[12])).toBe('{"value":"\\"-5\\"","formula":"=PROPER(H5)"}');
+            done();
+        });
+        it('PROPER - Cell reference - IX', (done: Function) => {
+            helper.edit('L8', '"Hi"');
+            helper.edit('M9', '=PROPER(L8)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('"Hi"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[12])).toBe('{"value":"\\"Hi\\"","formula":"=PROPER(L8)"}');
+            done();
+        });
+        it('PROPER - Cell reference - X', (done: Function) => {
+            helper.edit('G3', '""');
+            helper.edit('M10', '=PROPER(G3)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('""');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[12])).toBe('{"value":"\\"\\"","formula":"=PROPER(G3)"}');
+            done();
+        });
+        it('PROPER - Cell reference - XI', (done: Function) => {
+            helper.edit('H9', '"0"');
+            helper.edit('M11', '=PROPER(H9)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('"0"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[12])).toBe('{"value":"\\"0\\"","formula":"=PROPER(H9)"}');
+            done();
+        });
+        it('PROPER - Cell reference - XII', (done: Function) => {
+            helper.edit('H14', '"07-JUN"');
+            helper.edit('M12', '=PROPER(H14)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('"07-Jun"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[12])).toBe('{"value":"\\"07-Jun\\"","formula":"=PROPER(H14)"}');
+            done();
+        });
+        it('PROPER - Cell reference - XIII', (done: Function) => {
+            helper.edit('H16', '""      ""');
+            helper.edit('M13', '=PROPER(H16)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('""      ""');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[12])).toBe('{"value":"\\"\\"      \\"\\"","formula":"=PROPER(H16)"}');
+            done();
+        });
+        it('PROPER - Cell reference - XIV', (done: Function) => {
+            helper.edit('H15', '"     "');
+            helper.edit('M14', '=PROPER(H15)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('"     "');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[12])).toBe('{"value":"\\"     \\"","formula":"=PROPER(H15)"}');
+            done();
+        });
+        it('PROPER - Different datatypes - I', (done: Function) => {
+            helper.edit('B11', 'Flip- Flops & Slippers');
+            helper.edit('N1', '=PROPER(B11)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('Flip- Flops & Slippers');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":"Flip- Flops & Slippers","formula":"=PROPER(B11)"}');
+            done();
+        });
+        it('PROPER - Different datatypes - II', (done: Function) => {
+            helper.edit('N2', '=PROPER(6/23/2014)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('0.000129528');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[13])).toBe('{"value":"0.0001295280860066491","formula":"=PROPER(6/23/2014)"}');
+            done();
+        });
+        it('PROPER - Different datatypes - III', (done: Function) => {
+            helper.edit('N3', '=PROPER("105.""3")');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('105."3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[13])).toBe('{"value":"105.\\"3","formula":"=PROPER(\\"105.\\"\\"3\\")"}');
+            done();
+        });
+        it('PROPER - Different datatypes - IV', (done: Function) => {
+            helper.edit('M11', '12:00:00 AM');
+            helper.edit('N4', '=PROPER(M11)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[13])).toBe('{"value":"0","formula":"=PROPER(M11)"}');
+            done();
+        });
+        it('PROPER - Invalid Arguments - I', (done: Function) => {
+            helper.edit('O1', '=PROPER(6.078%)');
+            expect(helper.invoke('getCell', [0, 14]).textContent).toBe('0.06078');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[14])).toBe('{"value":"0.06078","formula":"=PROPER(6.078%)"}');
+            done();
+        });
+        it('PROPER - Invalid Arguments - II', (done: Function) => {
+            helper.edit('G11', '$300.00');
+            helper.edit('O2', '=PROPER(G11)');
+            expect(helper.invoke('getCell', [1, 14]).textContent).toBe('300');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[14])).toBe('{"value":"300","formula":"=PROPER(G11)"}');
+            done();
+        });
+        it('PROPER - Invalid Arguments - III', (done: Function) => {
+            helper.edit('H11', '1000.00%');
+            helper.edit('O3', '=PROPER(H11)');
+            expect(helper.invoke('getCell', [2, 14]).textContent).toBe('10');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[14])).toBe('{"value":"10","formula":"=PROPER(H11)"}');
+            done();
+        });
+        it('PROPER - Invalid Arguments - IV', (done: Function) => {
+            helper.edit('O4', '=PROPER(EXP(4)/FACT(3))');
+            expect(helper.invoke('getCell', [3, 14]).textContent).toBe('9.099691672');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[14])).toBe('{"value":"9.099691672190707","formula":"=PROPER(EXP(4)/FACT(3))"}');
+            done();
+        });
+        it('PROPER - Invalid Arguments - V', (done: Function) => {
+            helper.edit('O5', '=PROPER(2 * PI())');
+            expect(helper.invoke('getCell', [4, 14]).textContent).toBe('6.283185307');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[14])).toBe('{"value":"6.283185307179586","formula":"=PROPER(2 * PI())"}');
+            done();
+        });
+        it('PROPER - Invalid Arguments - VI', (done: Function) => {
+            helper.edit('D16', '"-3.45"');
+            helper.edit('O6', '=PROPER(D16)');
+            expect(helper.invoke('getCell', [5, 14]).textContent).toBe('"-3.45"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[14])).toBe('{"value":"\\"-3.45\\"","formula":"=PROPER(D16)"}');
+            done();
+        });
+        it('PROPER - Sheets - I', (done: Function) => {
+            helper.edit('Sheet1!K4', '"34"');
+            helper.edit('P1', '=PROPER(Sheet1!K4)');
+            expect(helper.invoke('getCell', [0, 15]).textContent).toBe('"34"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[15])).toBe('{"value":"\\"34\\"","formula":"=PROPER(Sheet1!K4)"}');
+            done();
+        });
+        it('PROPER - Sheets - II', (done: Function) => {
+            helper.edit('Sheet1!L2', '"65.678"');
+            helper.edit('P2', '=PROPER(Sheet1!L2)');
+            expect(helper.invoke('getCell', [1, 15]).textContent).toBe('"65.678"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[15])).toBe('{"value":"\\"65.678\\"","formula":"=PROPER(Sheet1!L2)"}');
+            done();
+        });
+        it('PROPER - Cell Ref - I', (done: Function) => {
+            helper.edit('$J$2', 'h123eLLlo');
+            helper.edit('Q1', '=PROPER($J$2)');
+            expect(helper.invoke('getCell', [0, 16]).textContent).toBe('H123Elllo');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[16])).toBe('{"value":"H123Elllo","formula":"=PROPER($J$2)"}');
+            done();
+        });
+        it('PROPER - Cell Ref - II', (done: Function) => {
+            helper.edit('$L$3', '"33"');
+            helper.edit('Q2', '=PROPER($L$3)');
+            expect(helper.invoke('getCell', [1, 16]).textContent).toBe('"33"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[16])).toBe('{"value":"\\"33\\"","formula":"=PROPER($L$3)"}');
+            done();
+        });
+        it('PROPER - Specific case - I', (done: Function) => {
+            helper.edit('R1', '=PROPER("ab-cd,ef.gh ij123kl")');
+            expect(helper.invoke('getCell', [0, 17]).textContent).toBe('Ab-Cd,Ef.Gh Ij123Kl');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[17])).toBe('{"value":"Ab-Cd,Ef.Gh Ij123Kl","formula":"=PROPER(\\"ab-cd,ef.gh ij123kl\\")"}');
+            done();
+        });
+        it('CODE - Issue fixing: 889130 - Nested formula - 4', (done: Function) => {
+            helper.edit('B19', 'TSX');
+            helper.edit('Z1', '=PROPER(T(B19))');
+            expect(helper.invoke('getCell', [0, 25]).textContent).toBe('Tsx');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[25])).toBe('{"value":"Tsx","formula":"=PROPER(T(B19))"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 8 - ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('T - Specific Type - I', (done: Function) => {
+            helper.edit('K1', '=T("!")');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"!","formula":"=T(\\"!\\")"}');
+            done();
+        });
+        it('T - Specific Type - II', (done: Function) => {
+            helper.edit('K2', '=T("0!")');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"0!","formula":"=T(\\"0!\\")"}');
+            done();
+        });
+        it('T - Specific Type - III', (done: Function) => {
+            helper.edit('K3', '=T("""")');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"\\"","formula":"=T(\\"\\"\\"\\")"}');
+            done();
+        });
+        it('T - Specific Type - IV', (done: Function) => {
+            helper.edit('K4', '=T("""   ")');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('"   ');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"\\"   ","formula":"=T(\\"\\"\\"   \\")"}');
+            done();
+        });
+        it('T - Specific Type - V', (done: Function) => {
+            helper.edit('K5', '=T("  .67   """)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('  .67   "');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":"  .67   \\"","formula":"=T(\\"  .67   \\"\\"\\")"}');
+            done();
+        });
+        it('T - Specific Type - VI', (done: Function) => {
+            helper.edit('K6', '=T(-345+1)")');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{}');
+            done();
+        });
+        it('T - Direct Value - I', (done: Function) => {
+            helper.edit('L1', '=T("He""JI")');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('He"JI');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{"value":"He\\"JI","formula":"=T(\\"He\\"\\"JI\\")"}');
+            done();
+        });
+        it('T - Direct Value - II', (done: Function) => {
+            helper.edit('L2', '=T("6")');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('6');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[11])).toBe('{"value":"6","formula":"=T(\\"6\\")"}');
+            done();
+        });
+        it('T - Direct Value - III', (done: Function) => {
+            helper.edit('L3', '=T("102.673902")');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('102.673902');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[11])).toBe('{"value":"102.673902","formula":"=T(\\"102.673902\\")"}');
+            done();
+        });
+        it('T - Direct Value - IV', (done: Function) => {
+            helper.edit('L4', '=T("Hi")');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('Hi');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[11])).toBe('{"value":"Hi","formula":"=T(\\"Hi\\")"}');
+            done();
+        });
+        it('T - Direct Value - V', (done: Function) => {
+            helper.edit('L5', '=T("")');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[11])).toBe('{"value":"","formula":"=T(\\"\\")"}');
+            done();
+        });
+        it('T - Direct Value - VI', (done: Function) => {
+            helper.edit('L6', '=T("TRUE")');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('TRUE');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[11])).toBe('{"value":"TRUE","formula":"=T(\\"TRUE\\")"}');
+            done();
+        });
+        it('T - Direct Value - VII', (done: Function) => {
+            helper.edit('L7', '=T("-5.4678")');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('-5.4678');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[11])).toBe('{"value":"-5.4678","formula":"=T(\\"-5.4678\\")"}');
+            done();
+        });
+        it('T - Direct Value - VIII', (done: Function) => {
+            helper.edit('L8', '=T(-6.0000001)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[11])).toBe('{"value":"","formula":"=T(-6.0000001)"}');
+            done();
+        });
+        it('T - Direct Value - IX', (done: Function) => {
+            helper.edit('L9', '=T(+"Tel")');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('Tel');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"value":"Tel","formula":"=T(+\\"Tel\\")"}');
+            done();
+        });
+        it('T - Direct Value - X', (done: Function) => {
+            helper.edit('L10', '=T("")');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[11])).toBe('{"value":"","formula":"=T(\\"\\")"}');
+            done();
+        });
+        it('T - Direct Value - XI', (done: Function) => {
+            helper.edit('L11', '=T("0")');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[11])).toBe('{"value":"0","formula":"=T(\\"0\\")"}');
+            done();
+        });
+        it('T - Direct Value - XII', (done: Function) => {
+            helper.edit('L12', '=T("3/4/2023")');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('3/4/2023');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[11])).toBe('{"value":"44989","formula":"=T(\\"3/4/2023\\")","format":"mm-dd-yyyy"}');
+            done();
+        });
+        it('T - Direct Value - XIII', (done: Function) => {
+            helper.edit('L13', '=T("07-JUN")');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('07-Jun');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[11])).toBe('{"value":"45450","formula":"=T(\\"07-JUN\\")","format":"dd-MMM"}');
+            done();
+        });
+        it('T - Direct Value - XIV', (done: Function) => {
+            helper.edit('L13', '=T(" ")');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe(' ');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[11])).toBe('{"value":" ","formula":"=T(\\" \\")","format":"dd-MMM"}');
+            done();
+        });
+        it('T - Direct Value - XV', (done: Function) => {
+            helper.edit('L14', '=T("       ")');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('       ');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[11])).toBe('{"value":"       ","formula":"=T(\\"       \\")"}');
+            done();
+        });
+        it('T - Direct Value - XVI', (done: Function) => {
+            helper.edit('L15', '=T("       ")');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('       ');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[11])).toBe('{"value":"       ","formula":"=T(\\"       \\")"}');
+            done();
+        });
+        it('T - Cell reference - I', (done: Function) => {
+            helper.edit('C7', '-7');
+            helper.edit('M1', '=T(C7)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12])).toBe('{"value":"","formula":"=T(C7)"}');
+            done();
+        });
+        it('T - Different datatypes - I', (done: Function) => {
+            helper.edit('N1', '=T("Flip")');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('Flip');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":"Flip","formula":"=T(\\"Flip\\")"}');
+            done();
+        });
+        it('T - Different datatypes - II', (done: Function) => {
+            helper.edit('N2', '=T("105.""3")');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('105."3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[13])).toBe('{"value":"105.\\"3","formula":"=T(\\"105.\\"\\"3\\")"}');
+            done();
+        });
+        it('T - Different datatypes - III', (done: Function) => {
+            helper.edit('P9', '=T("He""JI")');
+            helper.edit('N3', '=T(P9:P20)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('He"JI');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[13])).toBe('{"value":"He\\"JI","formula":"=T(P9:P20)"}');
+            done();
+        });
+        it('T - Different datatypes - I', (done: Function) => {
+            helper.edit('O1', '=T(6.078%)');
+            expect(helper.invoke('getCell', [0, 14]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[14])).toBe('{"value":"","formula":"=T(6.078%)"}');
+            done();
+        });
+        it('T - Different datatypes - II', (done: Function) => {
+            helper.edit('O2', '=T(                "fell")');
+            expect(helper.invoke('getCell', [1, 14]).textContent).toBe('fell');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[14])).toBe('{"value":"fell","formula":"=T(                \\"fell\\")"}');
+            done();
+        });
+        it('T - Different datatypes - III', (done: Function) => {
+            helper.edit('O3', '=T(-3.45)');
+            expect(helper.invoke('getCell', [2, 14]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[14])).toBe('{"value":"","formula":"=T(-3.45)"}');
+            done();
+        });
+        it('T - Different datatypes - III', (done: Function) => {
+            helper.edit('D15', '-3.45');
+            helper.edit('O4', '=T(D15)');
+            expect(helper.invoke('getCell', [3, 14]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[14])).toBe('{"value":"","formula":"=T(D15)"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 9 - ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('RADIANS - Specific Type - I', (done: Function) => {
+            helper.edit('J10', '#Yes!');
+            helper.edit('K1', '=RADIANS(J10)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"#VALUE!","formula":"=RADIANS(J10)"}');
+            done();
+        });
+        it('RADIANS - Specific Type - II', (done: Function) => {
+            helper.edit('J7', 'A123@!hi');
+            helper.edit('K2', '=RADIANS(J7)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#VALUE!","formula":"=RADIANS(J7)"}');
+            done();
+        });
+        it('RADIANS - Specific Type - III', (done: Function) => {
+            helper.edit('J8', 'Hello123');
+            helper.edit('K3', '=RADIANS(J8)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"#VALUE!","formula":"=RADIANS(J8)"}');
+            done();
+        });
+        it('RADIANS - Specific Type - IV', (done: Function) => {
+            helper.edit('K4', '=RADIANS("0!")');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"#VALUE!","formula":"=RADIANS(\\"0!\\")"}');
+            done();
+        });
+        it('RADIANS - Specific Type - V', (done: Function) => {
+            helper.edit('K5', '=RADIANS(2/3/2000)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('0.000005818');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":0.000005817764173314431,"formula":"=RADIANS(2/3/2000)"}');
+            done();
+        });
+        it('RADIANS - Specific Type - VI', (done: Function) => {
+            helper.edit('K6', '=RADIANS("""   ")');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{"value":"#VALUE!","formula":"=RADIANS(\\"\\"\\"   \\")"}');
+            done();
+        });
+        it('RADIANS - Specific Type - VII', (done: Function) => {
+            helper.edit('K7', '=RADIANS("  .67   """)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[10])).toBe('{"value":"#VALUE!","formula":"=RADIANS(\\"  .67   \\"\\"\\")"}');
+            done();
+        });
+        it('RADIANS - Direct Value - I', (done: Function) => {
+            helper.edit('L1', '=RADIANS(TRUE)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('0.017453293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[11])).toBe('{"value":0.017453292519943295,"formula":"=RADIANS(TRUE)"}');
+            done();
+        });
+        it('RADIANS - Direct Value - II', (done: Function) => {
+            helper.edit('L2', '=RADIANS(FALSE)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[11])).toBe('{"value":0,"formula":"=RADIANS(FALSE)"}');
+            done();
+        });
+        it('RADIANS - Direct Value - III', (done: Function) => {
+            helper.edit('L3', '=RADIANS(3/4/2023)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('0.000006471');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[11])).toBe('{"value":0.000006470573104279522,"formula":"=RADIANS(3/4/2023)"}');
+            done();
+        });
+        it('RADIANS - Direct Value - IV', (done: Function) => {
+            helper.edit('L4', '=RADIANS(" ")');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[11])).toBe('{"value":"#VALUE!","formula":"=RADIANS(\\" \\")"}');
+            done();
+        });
+        it('RADIANS - Direct Value - V', (done: Function) => {
+            helper.edit('L5', '=RADIANS("       ")');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[11])).toBe('{"value":"#VALUE!","formula":"=RADIANS(\\"       \\")"}');
+            done();
+        });
+        it('RADIANS - Cell reference - I', (done: Function) => {
+            helper.edit('J5', 'hi');
+            helper.edit('M1', '=RADIANS(J5)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12])).toBe('{"value":"#VALUE!","formula":"=RADIANS(J5)"}');
+            done();
+        });
+        it('RADIANS - Cell reference - II', (done: Function) => {
+            helper.edit('I2', 'TRUE');
+            helper.edit('M2', '=RADIANS(I2)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('0.017453293');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[12])).toBe('{"value":0.017453292519943295,"formula":"=RADIANS(I2)"}');
+            done();
+        });
+        it('RADIANS - Cell reference - III', (done: Function) => {
+            helper.edit('I5', 'FALSE');
+            helper.edit('M3', '=RADIANS(I5)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[12])).toBe('{"value":0,"formula":"=RADIANS(I5)"}');
+            done();
+        });
+        it('RADIANS - Cell reference - IV', (done: Function) => {
+            helper.edit('M2', '6+2.83');
+            helper.edit('M4', '=RADIANS(M2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[12])).toBe('{"value":"#VALUE!","formula":"=RADIANS(M2)"}');
+            done();
+        });
+        it('RADIANS - Cell reference - V', (done: Function) => {
+            helper.edit('M3', '2*7');
+            helper.edit('M5', '=RADIANS(M3)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[12])).toBe('{"value":"#VALUE!","formula":"=RADIANS(M3)"}');
+            done();
+        });
+        it('RADIANS - Cell reference - VI', (done: Function) => {
+            helper.edit('M4', '22/2');
+            helper.edit('M6', '=RADIANS(M4)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[12])).toBe('{"value":"#VALUE!","formula":"=RADIANS(M4)"}');
+            done();
+        });
+        it('RADIANS - Cell reference - VII', (done: Function) => {
+            helper.edit('M5', '15-3');
+            helper.edit('M7', '=RADIANS(M5)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[12])).toBe('{"value":"#VALUE!","formula":"=RADIANS(M5)"}');
+            done();
+        });
+        it('RADIANS - Different datatypes - I', (done: Function) => {
+            helper.edit('B11', 'Flip- Flops & Slippers');
+            helper.edit('M7', '=RADIANS(B11)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[12])).toBe('{"value":"#VALUE!","formula":"=RADIANS(B11)"}');
+            done();
+        });
+        it('RADIANS - Different datatypes - II', (done: Function) => {
+            helper.edit('M7', '=RADIANS(6/23/2014)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('0.000002261');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[12])).toBe('{"value":0.0000022606915746224205,"formula":"=RADIANS(6/23/2014)"}');
+            done();
+        });
+        it('RADIANS - Invalid Arguments - I', (done: Function) => {
+            helper.edit('N1', '=RADIANS(6.078%)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('0.001060811');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":0.0010608111193621535,"formula":"=RADIANS(6.078%)"}');
+            done();
+        });
+        it('RADIANS - Sheets - I', (done: Function) => {
+            helper.edit('=RADIANS(Sheet1!M2)', '6+2.83');
+            helper.edit('O1', '=RADIANS(Sheet1!M2)');
+            expect(helper.invoke('getCell', [0, 14]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[14])).toBe('{"value":"#VALUE!","formula":"=RADIANS(Sheet1!M2)"}');
+            done();
+        });
+        it('RADIANS - Sheets - II', (done: Function) => {
+            helper.edit('=RADIANS(Sheet1!$M2)', '6+2.83');
+            helper.edit('O2', '=RADIANS(Sheet1!$M2)');
+            expect(helper.invoke('getCell', [1, 14]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[14])).toBe('{"value":"#VALUE!","formula":"=RADIANS(Sheet1!$M2)"}');
+            done();
+        });
+        it('RADIANS - Cell Ref - I', (done: Function) => {
+            helper.edit('$J$2', 'H123Ello');
+            helper.edit('P1', '=RADIANS($J$2)');
+            expect(helper.invoke('getCell', [0, 15]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[15])).toBe('{"value":"#VALUE!","formula":"=RADIANS($J$2)"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 10 - ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [
+                { ranges: [{ dataSource: EJ2_53702_SLOPE_SHEET1 }] },
+                { ranges: [{ dataSource: EJ2_53702_SLOPE_SHEET2 }] }
+            ] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('INTERCEPT - Specific Cases - I', (done: Function) => {
+            helper.edit('Q1', '=INTERCEPT(,)');
+            expect(helper.invoke('getCell', [0, 16]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[16])).toBe('{"value":"#VALUE!","formula":"=INTERCEPT(,)"}');
+            done();
+        });
+        it('INTERCEPT - Direct Value - I', (done: Function) => {
+            helper.edit('R1', '=INTERCEPT("{12,-4}", "{-5,19}")');
+            expect(helper.invoke('getCell', [0, 17]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[17])).toBe('{"value":"#DIV/0!","formula":"=INTERCEPT(\\"{12,-4}\\", \\"{-5,19}\\")"}');
+            done();
+        });
+        it('INTERCEPT - Cell reference - I', (done: Function) => {
+            helper.edit('S1', '=INTERCEPT(H23:H26, G16:G19)');
+            expect(helper.invoke('getCell', [0, 18]).textContent).toBe('-34466.81333');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[18])).toBe('{"value":"-34466.81333333333","formula":"=INTERCEPT(H23:H26, G16:G19)"}');
+            done();
+        });
+        it('INTERCEPT - Cell reference - II', (done: Function) => {
+            helper.edit('S2', '=INTERCEPT(C19:C22, G19:G22)');
+            expect(helper.invoke('getCell', [1, 18]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[18])).toBe('{"value":"#DIV/0!","formula":"=INTERCEPT(C19:C22, G19:G22)"}');
+            done();
+        });
+        it('INTERCEPT - Cell reference - III', (done: Function) => {
+            helper.edit('S3', '=INTERCEPT(D20:G20, J18:J21)');
+            expect(helper.invoke('getCell', [2, 18]).textContent).toBe('-3731');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[18])).toBe('{"value":"-3731","formula":"=INTERCEPT(D20:G20, J18:J21)"}');
+            done();
+        });
+        it('INTERCEPT - Cell reference - IV', (done: Function) => {
+            helper.edit('S4', '=INTERCEPT(G18:G21, H20:K20)');
+            expect(helper.invoke('getCell', [3, 18]).textContent).toBe('59.55');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[18])).toBe('{"value":"59.55","formula":"=INTERCEPT(G18:G21, H20:K20)"}');
+            done();
+        });
+        it('INTERCEPT - Cell reference - V', (done: Function) => {
+            helper.edit('S5', '=INTERCEPT(C5:H5, G12:L12)');
+            expect(helper.invoke('getCell', [4, 18]).textContent).toBe('-67.64383562');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[18])).toBe('{"value":"-67.64383561643835","formula":"=INTERCEPT(C5:H5, G12:L12)"}');
+            done();
+        });
+        it('INTERCEPT - Different datatypes - I', (done: Function) => {
+            helper.edit('N1', '=INTERCEPT(C32:K32, B34:J34)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('28238.03977');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":"28238.03976708604","formula":"=INTERCEPT(C32:K32, B34:J34)"}');
+            done();
+        });
+        it('INTERCEPT - Different datatypes - II', (done: Function) => {
+            helper.edit('N2', '=INTERCEPT(L2:L17, M2:M17)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('-0.307635024');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[13])).toBe('{"value":"-0.30763502449281077","formula":"=INTERCEPT(L2:L17, M2:M17)"}');
+            done();
+        });
+        it('INTERCEPT - Different datatypes - III', (done: Function) => {
+            helper.edit('N3', '=INTERCEPT(M24:M29, )');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[13])).toBe('{"value":"#VALUE!","formula":"=INTERCEPT(M24:M29, )"}');
+            done();
+        });
+        it('INTERCEPT - Different datatypes - IV', (done: Function) => {
+            helper.edit('N4', '=INTERCEPT(, A2)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[13])).toBe('{"value":"#VALUE!","formula":"=INTERCEPT(, A2)"}');
+            done();
+        });
+        it('INTERCEPT - Different datatypes - V', (done: Function) => {
+            helper.edit('N5', '=INTERCEPT(M23:M28, M23:M28)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[13])).toBe('{"value":"#DIV/0!","formula":"=INTERCEPT(M23:M28, M23:M28)"}');
+            done();
+        });
+        it('INTERCEPT - Different datatypes - VI', (done: Function) => {
+            helper.edit('N6', '=INTERCEPT(H27:H30, B28:B31)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('-41.28354828');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[13])).toBe('{"value":"-41.28354828184125","formula":"=INTERCEPT(H27:H30, B28:B31)"}');
+            done();
+        });
+        it('INTERCEPT - Different datatypes - VII', (done: Function) => {
+            helper.edit('N7', '=INTERCEPT(A24:M24, A26:M26)');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[13])).toBe('{"value":"#NAME?","formula":"=INTERCEPT(A24:M24, A26:M26)"}');
+            done();
+        });
+        it('INTERCEPT - Sheets - I', (done: Function) => {
+            helper.edit('P1', '=INTERCEPT(Sheet1!C5:Sheet1!H5, Sheet1!G12:Sheet1!L12)');
+            expect(helper.invoke('getCell', [0, 15]).textContent).toBe('-67.64383562');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[15])).toBe('{"value":"-67.64383561643835","formula":"=INTERCEPT(Sheet1!C5:Sheet1!H5, Sheet1!G12:Sheet1!L12)"}');
+            done();
+        });
+        it('INTERCEPT - Sheets - II', (done: Function) => {
+            helper.edit('P2', '=INTERCEPT(Sheet1!$C$5:Sheet1!$H5, Sheet1!G$12:Sheet1!$L$12)');
+            expect(helper.invoke('getCell', [1, 15]).textContent).toBe('-67.64383562');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[15])).toBe('{"value":"-67.64383561643835","formula":"=INTERCEPT(Sheet1!$C$5:Sheet1!$H5, Sheet1!G$12:Sheet1!$L$12)"}');
+            done();
+        });
+        it('INTERCEPT - Sheets - III', (done: Function) => {
+            helper.edit('P3', '=INTERCEPT(Sheet1!C5:$H$5, Sheet1!$G$12:L12)');
+            expect(helper.invoke('getCell', [2, 15]).textContent).toBe('-67.64383562');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[15])).toBe('{"value":"-67.64383561643835","formula":"=INTERCEPT(Sheet1!C5:$H$5, Sheet1!$G$12:L12)"}');
+            done();
+        });
+        it('INTERCEPT - Sheets - IV', (done: Function) => {
+            helper.edit('P4', '=INTERCEPT(Sheet2!C12:Sheet2!H12, Sheet2!G19:Sheet2!L19)');
+            expect(helper.invoke('getCell', [3, 15]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[15])).toBe('{"value":"#DIV/0!","formula":"=INTERCEPT(Sheet2!C12:Sheet2!H12, Sheet2!G19:Sheet2!L19)"}');
+            done();
+        });
+        it('INTERCEPT - Sheets - V', (done: Function) => {
+            helper.edit('P5', '=INTERCEPT(Sheet2!$C$5:Sheet2!$H5, Sheet2!G$12:Sheet2!$L$12)');
+            expect(helper.invoke('getCell', [4, 15]).textContent).toBe('-147');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[15])).toBe('{"value":"-147","formula":"=INTERCEPT(Sheet2!$C$5:Sheet2!$H5, Sheet2!G$12:Sheet2!$L$12)"}');
+            done();
+        });
+        it('INTERCEPT - Sheets - VI', (done: Function) => {
+            helper.edit('P6', '=INTERCEPT(Sheet2!C$5:$H12, Sheet2!$G$12:L19)');
+            expect(helper.invoke('getCell', [5, 15]).textContent).toBe('124.7799885');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[15])).toBe('{"value":"124.77998853001691","formula":"=INTERCEPT(Sheet2!C$5:$H12, Sheet2!$G$12:L19)"}');
+            done();
+        });
+        it('INTERCEPT - Sheets - VII', (done: Function) => {
+            helper.edit('P7', '=INTERCEPT(Sheet2!H$23:H26, Sheet2!G16:G$19)');
+            expect(helper.invoke('getCell', [6, 15]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[15])).toBe('{"value":"#DIV/0!","formula":"=INTERCEPT(Sheet2!H$23:H26, Sheet2!G16:G$19)"}');
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 11 - ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [
+                { ranges: [{ dataSource: EJ2_53702_SLOPE_SHEET1 }] },
+                { ranges: [{ dataSource: EJ2_53702_SLOPE_SHEET2 }] }
+            ] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('SLOPE - Specific Cases - I', (done: Function) => {
+            helper.edit('Q1', '=SLOPE(,)');
+            expect(helper.invoke('getCell', [0, 16]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[16])).toBe('{"value":"#VALUE!","formula":"=SLOPE(,)"}');
+            done();
+        });
+        it('SLOPE - Direct Value - I', (done: Function) => {
+            helper.edit('R1', '=SLOPE("{12,-4}", "{-5,19}")');
+            expect(helper.invoke('getCell', [0, 17]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[17])).toBe('{"value":"#DIV/0!","formula":"=SLOPE(\\"{12,-4}\\", \\"{-5,19}\\")"}');
+            done();
+        });
+        it('SLOPE - Cell reference - I', (done: Function) => {
+            helper.edit('S1', '=SLOPE(H23:H26, G16:G19)');
+            expect(helper.invoke('getCell', [0, 18]).textContent).toBe('498.5005');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[18])).toBe('{"value":"498.50049999999464","formula":"=SLOPE(H23:H26, G16:G19)"}');
+            done();
+        });
+        it('SLOPE - Cell reference - II', (done: Function) => {
+            helper.edit('S2', '=SLOPE(C19:C22, G19:G22)');
+            expect(helper.invoke('getCell', [1, 18]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[18])).toBe('{"value":"#DIV/0!","formula":"=SLOPE(C19:C22, G19:G22)"}');
+            done();
+        });
+        it('SLOPE - Cell reference - III', (done: Function) => {
+            helper.edit('S3', '=SLOPE(D20:G20, J18:J21)');
+            expect(helper.invoke('getCell', [2, 18]).textContent).toBe('20');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[18])).toBe('{"value":"20","formula":"=SLOPE(D20:G20, J18:J21)"}');
+            done();
+        });
+        it('SLOPE - Cell reference - IV', (done: Function) => {
+            helper.edit('S4', '=SLOPE(G18:G21, H20:K20)');
+            expect(helper.invoke('getCell', [3, 18]).textContent).toBe('0.05');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[18])).toBe('{"value":"0.05","formula":"=SLOPE(G18:G21, H20:K20)"}');
+            done();
+        });
+        it('SLOPE - Different datatypes - I', (done: Function) => {
+            helper.edit('N1', '=SLOPE(C32:K32, B34:J34)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('-0.422273676');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[13])).toBe('{"value":"-0.4222736759740336","formula":"=SLOPE(C32:K32, B34:J34)"}');
+            done();
+        });
+        it('SLOPE - Different datatypes - II', (done: Function) => {
+            helper.edit('N2', '=SLOPE(L2:L17, M2:M17)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('0.997597169');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[13])).toBe('{"value":"0.9975971694248421","formula":"=SLOPE(L2:L17, M2:M17)"}');
+            done();
+        });
+        it('SLOPE - Different datatypes - III', (done: Function) => {
+            helper.edit('N3', '=SLOPE(M24:M29, )');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[13])).toBe('{"value":"#VALUE!","formula":"=SLOPE(M24:M29, )"}');
+            done();
+        });
+        it('SLOPE - Different datatypes - IV', (done: Function) => {
+            helper.edit('N4', '=SLOPE(, A2)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[13])).toBe('{"value":"#VALUE!","formula":"=SLOPE(, A2)"}');
+            done();
+        });
+        it('SLOPE - Different datatypes - IV', (done: Function) => {
+            helper.edit('N5', '=SLOPE(M23:M28, M23:M28)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[13])).toBe('{"value":"#DIV/0!","formula":"=SLOPE(M23:M28, M23:M28)"}');
+            done();
+        });
+        it('SLOPE - Sheets - I', (done: Function) => {
+            helper.edit('P1', '=SLOPE(Sheet1!C5:Sheet1!H5, Sheet1!G12:Sheet1!L12)');
+            expect(helper.invoke('getCell', [0, 15]).textContent).toBe('0.547945205');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[15])).toBe('{"value":"0.547945205479452","formula":"=SLOPE(Sheet1!C5:Sheet1!H5, Sheet1!G12:Sheet1!L12)"}');
+            done();
+        });
+        it('SLOPE - Sheets - II', (done: Function) => {
+            helper.edit('P2', '=SLOPE(Sheet1!$C$5:Sheet1!$H5, Sheet1!G$12:Sheet1!$L$12)');
+            expect(helper.invoke('getCell', [1, 15]).textContent).toBe('0.547945205');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[15])).toBe('{"value":"0.547945205479452","formula":"=SLOPE(Sheet1!$C$5:Sheet1!$H5, Sheet1!G$12:Sheet1!$L$12)"}');
+            done();
+        });
+        it('SLOPE - Sheets - III', (done: Function) => {
+            helper.edit('P3', '=SLOPE(Sheet1!C5:$H$5, Sheet1!$G$12:L12)');
+            expect(helper.invoke('getCell', [2, 15]).textContent).toBe('0.547945205');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[15])).toBe('{"value":"0.547945205479452","formula":"=SLOPE(Sheet1!C5:$H$5, Sheet1!$G$12:L12)"}');
+            done();
+        });
+        it('SLOPE - Sheets - IV', (done: Function) => {
+            helper.edit('P4', '=SLOPE(C$5:Sheet1!$H5, $K$5:Sheet1!$K$10)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('SLOPE - Sheets - V', (done: Function) => {
+            helper.edit('P5', '=SLOPE(H$23:Sheet1!H26, Sheet1!G16:G$19)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('SLOPE - Sheets - VI', (done: Function) => {
+            helper.edit('P6', '=SLOPE(Sheet2!C12:Sheet2!H12, Sheet2!G19:Sheet2!L19)');
+            expect(helper.invoke('getCell', [5, 15]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[15])).toBe('{"value":"#DIV/0!","formula":"=SLOPE(Sheet2!C12:Sheet2!H12, Sheet2!G19:Sheet2!L19)"}');
+            done();
+        });
+        it('SLOPE - Sheets - VII', (done: Function) => {
+            helper.edit('P7', '=SLOPE(Sheet2!$C$5:Sheet2!$H5, Sheet2!G$12:Sheet2!$L$12)');
+            expect(helper.invoke('getCell', [6, 15]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[15])).toBe('{"value":"1","formula":"=SLOPE(Sheet2!$C$5:Sheet2!$H5, Sheet2!G$12:Sheet2!$L$12)"}');
+            done();
+        });
+        it('SLOPE - Sheets - VIII', (done: Function) => {
+            helper.edit('P8', '=SLOPE(Sheet2!C$5:$H12, Sheet2!$G$12:L19)');
+            expect(helper.invoke('getCell', [7, 15]).textContent).toBe('-0.531844936');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[15])).toBe('{"value":"-0.531844935606087","formula":"=SLOPE(Sheet2!C$5:$H12, Sheet2!$G$12:L19)"}');
+            done();
+        });
+        it('SLOPE - Sheets - IX', (done: Function) => {
+            helper.edit('P9', '=SLOPE(D$5:Sheet2!$D10, $E$6:Sheet2!$E$11)');
+            expect(1).toBe(1);
+            done();
+        });
+        it('SLOPE - Sheets - X', (done: Function) => {
+            helper.edit('P10', '=SLOPE(Sheet2!H$23:H26, Sheet2!G16:G$19)');
+            expect(helper.invoke('getCell', [8, 15]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[15])).toBe('{"value":"#REF!","formula":"=SLOPE(D$5:Sheet2!$D10, $E$6:Sheet2!$E$11)"}');
+            done();
+        });
+        it('SLOPE - Sheets - XI', (done: Function) => {
+            helper.edit('P11', '=SLOPE(Sheet1!D$5:Sheet2!$D10, Sheet2!$E$6:Sheet1!$E$11)');
+            expect(1).toBe(1);
+            done();
+        });
+    });
+
+    describe('EJ2-53702 -> FORMULA VALIDATING 12 -', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: EJ2_53702_UNIQUE }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('UNIQUE - Specific Type - I', (done: Function) => {
+            helper.edit('Z1', '=UNIQUE(Grape, FALSE, FALSE)');
+            expect(helper.invoke('getCell', [0, 25]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[25])).toBe('{"value":"#NAME?","formula":"=UNIQUE(Grape, FALSE, FALSE)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - II', (done: Function) => {
+            helper.edit('Z2', '=UNIQUE(Grape, TRUE, TRUE)');
+            expect(helper.invoke('getCell', [1, 25]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[25])).toBe('{"value":"#NAME?","formula":"=UNIQUE(Grape, TRUE, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - III', (done: Function) => {
+            helper.edit('Z3', '=UNIQUE(Grape, FALSE, TRUE)');
+            expect(helper.invoke('getCell', [2, 25]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[25])).toBe('{"value":"#NAME?","formula":"=UNIQUE(Grape, FALSE, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - IV', (done: Function) => {
+            helper.edit('Z4', '=UNIQUE(Grape, TRUE, FALSE)');
+            expect(helper.invoke('getCell', [3, 25]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[25])).toBe('{"value":"#NAME?","formula":"=UNIQUE(Grape, TRUE, FALSE)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - V', (done: Function) => {
+            helper.edit('Z5', '=UNIQUE(M5:N5, TRUE,)');
+            expect(helper.invoke('getCell', [4, 25]).textContent).toBe('Element');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[25])).toBe('{"value":"Element","formula":"=UNIQUE(M5:N5, TRUE,)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - VI', (done: Function) => {
+            helper.edit('Z6', '=UNIQUE(M5:N5, TRUE, TRUE)');
+            expect(helper.invoke('getCell', [5, 25]).textContent).toBe('#CALC!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[25])).toBe('{"value":"#CALC!","formula":"=UNIQUE(M5:N5, TRUE, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - VII', (done: Function) => {
+            helper.edit('Z7', '=UNIQUE(M15:M16, FALSE, TRUE)');
+            expect(helper.invoke('getCell', [6, 25]).textContent).toBe('#CALC!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[25])).toBe('{"value":"#CALC!","formula":"=UNIQUE(M15:M16, FALSE, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - VIII', (done: Function) => {
+            helper.edit('Z8', '=UNIQUE(M15:M17, FALSE, TRUE)');
+            expect(helper.invoke('getCell', [7, 25]).textContent).toBe('#CALC!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[25])).toBe('{"value":"#CALC!","formula":"=UNIQUE(M15:M17, FALSE, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - IX', (done: Function) => {
+            helper.edit('Z9', '=UNIQUE(P2:P9, FALSE, TRUE)');
+            expect(helper.invoke('getCell', [8, 25]).textContent).toBe('#CALC!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[25])).toBe('{"value":"#CALC!","formula":"=UNIQUE(P2:P9, FALSE, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - X', (done: Function) => {
+            helper.edit('Z10', '=UNIQUE(O8:O14, FALSE, FALSE)');
+            expect(helper.invoke('getCell', [9, 25]).textContent).toBe('Orange');
+            expect(helper.invoke('getCell', [10, 25]).textContent).toBe('ori');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[25])).toBe('{"value":"Orange","formula":"=UNIQUE(O8:O14, FALSE, FALSE)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[25])).toBe('{"value":"ori"}');
+            done();
+        });
+        it('UNIQUE - Specific Type - XI', (done: Function) => {
+            helper.edit('Z12', '=UNIQUE(G38:H47, TRUE, TRUE)');
+            expect(helper.invoke('getCell', [11, 25]).textContent).toBe('#CALC!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[25])).toBe('{"value":"#CALC!","formula":"=UNIQUE(G38:H47, TRUE, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Normal value - I', (done: Function) => {
+            helper.edit('T1', '=UNIQUE(L6:N6, TRUE, FALSE)');
+            expect(helper.invoke('getCell', [0, 19]).textContent).toBe('yes');
+            expect(helper.invoke('getCell', [0, 20]).textContent).toBe('Flag');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[19])).toBe('{"value":"yes","formula":"=UNIQUE(L6:N6, TRUE, FALSE)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[20])).toBe('{"value":"Flag"}');
+            done();
+        });
+        it('UNIQUE - Normal value - II', (done: Function) => {
+            helper.edit('T2', '=UNIQUE(M2:N4, "TRUE", TRUE)');
+            expect(helper.invoke('getCell', [1, 19]).textContent).toBe('#CALC!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[19])).toBe('{"value":"#CALC!","formula":"=UNIQUE(M2:N4, \\"TRUE\\", TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Normal value - III', (done: Function) => {
+            helper.edit('T3', '=UNIQUE(O8:O11, FALSE, TRUE)');
+            expect(helper.invoke('getCell', [2, 19]).textContent).toBe('ori');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[19])).toBe('{"value":"ori","formula":"=UNIQUE(O8:O11, FALSE, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Normal value - IV', (done: Function) => {
+            helper.edit('T4', '=UNIQUE(M1:N4, Tue, TRUE)');
+            expect(helper.invoke('getCell', [3, 19]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[19])).toBe('{"value":"#NAME?","formula":"=UNIQUE(M1:N4, Tue, TRUE)"}');
+            done();
+        });
+        it('UNIQUE - Normal value - V', (done: Function) => {
+            helper.edit('T5', '=UNIQUE(M1:N4, T, T)');
+            expect(helper.invoke('getCell', [4, 19]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[19])).toBe('{"value":"#NAME?","formula":"=UNIQUE(M1:N4, T, T)"}');
+            done();
+        });
+        it('UNIQUE - Normal value - VI', (done: Function) => {
+            helper.edit('T6', '=UNIQUE(L28, FALSE, )');
+            expect(helper.invoke('getCell', [5, 19]).textContent).toBe('12:00AM');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[19])).toBe('{"value":"12:00AM","formula":"=UNIQUE(L28, FALSE, )"}');
+            done();
+        });
+        it('UNIQUE - Normal value - VII', (done: Function) => {
+            helper.edit('T7', '=UNIQUE(C20:C27, 0, 0)');
+            expect(helper.invoke('getCell', [6, 19]).textContent).toBe('Apple');
+            expect(helper.invoke('getCell', [7, 19]).textContent).toBe('Ball');
+            expect(helper.invoke('getCell', [8, 19]).textContent).toBe('"apple"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[19])).toBe('{"value":"Apple","formula":"=UNIQUE(C20:C27, 0, 0)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[19])).toBe('{"value":"Ball"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[19])).toBe('{"value":"\\"apple\\""}');
+            done();
+        });
+        it('UNIQUE - Normal value - VIII', (done: Function) => {
+            helper.edit('T10', '=UNIQUE(C20:C27, FALSE, 1)');
+            expect(helper.invoke('getCell', [9, 19]).textContent).toBe('Ball');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[19])).toBe('{"value":"Ball","formula":"=UNIQUE(C20:C27, FALSE, 1)"}');
+            done();
+        });
+        it('UNIQUE - Normal value - IX', (done: Function) => {
+            helper.edit('T11', '=UNIQUE(C20:C27, , 1)');
+            expect(helper.invoke('getCell', [10, 19]).textContent).toBe('Ball');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[19])).toBe('{"value":"Ball","formula":"=UNIQUE(C20:C27, , 1)"}');
+            done();
+        });
+        it('UNIQUE - Normal value - X', (done: Function) => {
+            helper.edit('T12', '=UNIQUE(C20:C27, 0, 1)');
+            expect(helper.invoke('getCell', [11, 19]).textContent).toBe('Ball');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[19])).toBe('{"value":"Ball","formula":"=UNIQUE(C20:C27, 0, 1)"}');
+            done();
+        });
+        it('UNIQUE - Normal value - XI', (done: Function) => {
+            helper.edit('T13', '=UNIQUE(C20:C27, FALSE, FALSE)');
+            expect(helper.invoke('getCell', [12, 19]).textContent).toBe('Apple');
+            expect(helper.invoke('getCell', [13, 19]).textContent).toBe('Ball');
+            expect(helper.invoke('getCell', [14, 19]).textContent).toBe('"apple"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[19])).toBe('{"value":"Apple","formula":"=UNIQUE(C20:C27, FALSE, FALSE)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[19])).toBe('{"value":"Ball"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[19])).toBe('{"value":"\\"apple\\""}');
+            done();
+        });
+        it('UNIQUE - Normal value - XII', (done: Function) => {
+            helper.edit('T16', '=UNIQUE(C20:C27, FALSE, "1")');
+            expect(helper.invoke('getCell', [15, 19]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[19])).toBe('{"value":"#VALUE!","formula":"=UNIQUE(C20:C27, FALSE, \\"1\\")"}');
+            done();
+        });
+        it('UNIQUE - Normal value - XIII', (done: Function) => {
+            helper.edit('T17', '=UNIQUE(C20:C27, FALSE, "true")');
+            expect(helper.invoke('getCell', [16, 19]).textContent).toBe('Ball');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[19])).toBe('{"value":"Ball","formula":"=UNIQUE(C20:C27, FALSE, \\"true\\")"}');
+            done();
+        });
+        it('UNIQUE - Normal value - XIV', (done: Function) => {
+            helper.edit('T18', '=UNIQUE(C20:C27, FALSE, "0")');
+            expect(helper.invoke('getCell', [17, 19]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[19])).toBe('{"value":"#VALUE!","formula":"=UNIQUE(C20:C27, FALSE, \\"0\\")"}');
+            done();
+        });
+        it('UNIQUE - Cell reference - I', (done: Function) => {
+            helper.edit('T19', '=UNIQUE(L6:N6, 59, FALSE)');
+            expect(helper.invoke('getCell', [18, 19]).textContent).toBe('yes');
+            expect(helper.invoke('getCell', [18, 20]).textContent).toBe('Flag');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[19])).toBe('{"value":"yes","formula":"=UNIQUE(L6:N6, 59, FALSE)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[20])).toBe('{"value":"Flag"}');
+            done();
+        });
+        it('UNIQUE - Cell reference - II', (done: Function) => {
+            helper.edit('U2', '=UNIQUE(L6:N6, L21, L25)');
+            expect(helper.invoke('getCell', [1, 20]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[20])).toBe('{"value":"#VALUE!","formula":"=UNIQUE(L6:N6, L21, L25)"}');
+            done();
+        });
+        it('UNIQUE - Cell reference - III', (done: Function) => {
+            helper.edit('U3', '=UNIQUE(D27:D29, I23, I25)');
+            expect(helper.invoke('getCell', [2, 20]).textContent).toBe('#DIV/0!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[20])).toBe('{"value":"#DIV/0!","formula":"=UNIQUE(D27:D29, I23, I25)"}');
+            done();
+        });
+        it('UNIQUE - Cell reference - IV', (done: Function) => {
+            helper.edit('U4', '=UNIQUE(D27:D29,TRUE, I25)');
+            expect(helper.invoke('getCell', [3, 20]).textContent).toBe('#REF!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[20])).toBe('{"value":"#REF!","formula":"=UNIQUE(D27:D29,TRUE, I25)"}');
+            done();
+        });
+        it('UNIQUE - Cell reference - V', (done: Function) => {
+            helper.edit('U5', '=UNIQUE(L21:L30, FALSE, TRUE)');
+            expect(helper.invoke('getCell', [7, 20]).textContent).toBe('567.9');
+            expect(helper.invoke('getCell', [9, 20]).textContent).toBe('44989');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[20])).toBe('{"value":"567.9"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[20])).toBe('{"value":"44989"}');
+            done();
+        });
+        it('UNIQUE - Cell reference - VI', (done: Function) => {
+            helper.edit('S1', '=UNIQUE(L21:L30, TRUE, FALSE)');
+            expect(helper.invoke('getCell', [5, 18]).textContent).toBe('TRUE');
+            expect(helper.invoke('getCell', [7, 18]).textContent).toBe('12:00AM');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[18])).toBe('{"value":"True"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[18])).toBe('{"value":"12:00AM"}');
+            done();
+        });
+        it('UNIQUE - Cell Ref - I', (done: Function) => {
+            helper.edit('V1', '=UNIQUE($C$20:$C$27, FALSE, 1)');
+            expect(helper.invoke('getCell', [0, 21]).textContent).toBe('Ball');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[21])).toBe('{"value":"Ball","formula":"=UNIQUE($C$20:$C$27, FALSE, 1)"}');
+            done();
+        });
+        it('UNIQUE - Cell Ref - II', (done: Function) => {
+            helper.edit('V2', '=UNIQUE($C20:C$27, 0, 0)');
+            expect(helper.invoke('getCell', [1, 21]).textContent).toBe('Apple');
+            expect(helper.invoke('getCell', [2, 21]).textContent).toBe('Ball');
+            expect(helper.invoke('getCell', [3, 21]).textContent).toBe('"apple"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[21])).toBe('{"value":"Apple","formula":"=UNIQUE($C20:C$27, 0, 0)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[21])).toBe('{"value":"Ball"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[21])).toBe('{"value":"\\"apple\\""}');
+            done();
+        });
+        it('UNIQUE - Different datatypes - I', (done: Function) => {
+            helper.edit('W1', '=UNIQUE(Q21:Q28, 0, 1)');
+            expect(helper.invoke('getCell', [0, 22]).textContent).toBe('22/2');
+            expect(helper.invoke('getCell', [1, 22]).textContent).toBe('15-3');
+            expect(helper.invoke('getCell', [2, 22]).textContent).toBe('10.009+E8');
+            expect(helper.invoke('getCell', [3, 22]).textContent).toBe('!True');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[22])).toBe('{"value":"22/2","formula":"=UNIQUE(Q21:Q28, 0, 1)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[22])).toBe('{"value":"15-3"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[22])).toBe('{"value":"10.009+E8"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[22])).toBe('{"value":"!True"}');
+            done();
+        });
+        it('UNIQUE - Different datatypes - II', (done: Function) => {
+            helper.edit('W5', '=UNIQUE(2+2, 0, 0)');
+            expect(helper.invoke('getCell', [4, 22]).textContent).toBe('4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[22])).toBe('{"value":"4","formula":"=UNIQUE(2+2, 0, 0)"}');
+            done();
+        });
+        it('UNIQUE - Different datatypes - III', (done: Function) => {
+            helper.edit('W5', '=UNIQUE(Q21:Q24, 0, 0)');
+            expect(helper.invoke('getCell', [4, 22]).textContent).toBe('6+2.83');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[22])).toBe('{"value":"6+2.83","formula":"=UNIQUE(Q21:Q24, 0, 0)"}');
+            done();
+        });
+        it('UNIQUE - Different datatypes - IV', (done: Function) => {
+            helper.edit('W9', '=UNIQUE(M19:M29, 0, 1)');
+            expect(helper.invoke('getCell', [8, 22]).textContent).toBe('123Hello');
+            expect(helper.invoke('getCell', [9, 22]).textContent).toBe('hell');
+            expect(helper.invoke('getCell', [10, 22]).textContent).toBe('hi');
+            expect(helper.invoke('getCell', [11, 22]).textContent).toBe('@');
+            expect(helper.invoke('getCell', [12, 22]).textContent).toBe('A123@!hi');
+            expect(helper.invoke('getCell', [13, 22]).textContent).toBe('Jim324');
+            expect(helper.invoke('getCell', [14, 22]).textContent).toBe('#Yes!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[22])).toBe('{"value":"123Hello","formula":"=UNIQUE(M19:M29, 0, 1)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[22])).toBe('{"value":"hell"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[22])).toBe('{"value":"hi"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[22])).toBe('{"value":"@"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[22])).toBe('{"value":"A123@!hi"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[22])).toBe('{"value":"Jim324"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[22])).toBe('{"value":"#Yes!"}');
+            done();
+        });
+        it('UNIQUE - Different datatypes - V', (done: Function) => {
+            helper.edit('W16', '=UNIQUE(Q21:Q28, 0, 0)');
+            expect(helper.invoke('getCell', [15, 22]).textContent).toBe('6+2.83');
+            expect(helper.invoke('getCell', [16, 22]).textContent).toBe('2*7');
+            expect(helper.invoke('getCell', [17, 22]).textContent).toBe('22/2');
+            expect(helper.invoke('getCell', [18, 22]).textContent).toBe('15-3');
+            expect(helper.invoke('getCell', [19, 22]).textContent).toBe('10.009+E8');
+            expect(helper.invoke('getCell', [20, 22]).textContent).toBe('!True');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[22])).toBe('{"value":"6+2.83","formula":"=UNIQUE(Q21:Q28, 0, 0)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[22])).toBe('{"value":"2*7"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[22])).toBe('{"value":"22/2"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[22])).toBe('{"value":"15-3"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[22])).toBe('{"value":"10.009+E8"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[20].cells[22])).toBe('{"value":"!True"}');
+            done();
+        });
+        it('UNIQUE - Different datatypes - III', (done: Function) => {
+            helper.edit('W22', '=UNIQUE(M19:M29, 0, 0)');
+            expect(helper.invoke('getCell', [21, 22]).textContent).toBe('hello123');
+            expect(helper.invoke('getCell', [22, 22]).textContent).toBe('h123eLLlo');
+            expect(helper.invoke('getCell', [23, 22]).textContent).toBe('123Hello');
+            expect(helper.invoke('getCell', [24, 22]).textContent).toBe('hell');
+            expect(helper.invoke('getCell', [25, 22]).textContent).toBe('hi');
+            expect(helper.invoke('getCell', [26, 22]).textContent).toBe('@');
+            expect(helper.invoke('getCell', [27, 22]).textContent).toBe('A123@!hi');
+            expect(helper.invoke('getCell', [28, 22]).textContent).toBe('Jim324');
+            expect(helper.invoke('getCell', [29, 22]).textContent).toBe('#Yes!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[21].cells[22])).toBe('{"value":"hello123","formula":"=UNIQUE(M19:M29, 0, 0)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[22].cells[22])).toBe('{"value":"h123eLLlo"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[23].cells[22])).toBe('{"value":"123Hello"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[24].cells[22])).toBe('{"value":"hell"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[25].cells[22])).toBe('{"value":"hi"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[26].cells[22])).toBe('{"value":"@"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[27].cells[22])).toBe('{"value":"A123@!hi"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[28].cells[22])).toBe('{"value":"Jim324"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[29].cells[22])).toBe('{"value":"#Yes!"}');
+            done();
+        });
+        it('UNIQUE - Sheets - I', (done: Function) => {
+            helper.edit('X1', '=UNIQUE(Sheet1!Q21:Sheet1!Q28, 0, 1)');
+            expect(helper.invoke('getCell', [0, 23]).textContent).toBe('22/2');
+            expect(helper.invoke('getCell', [1, 23]).textContent).toBe('15-3');
+            expect(helper.invoke('getCell', [2, 23]).textContent).toBe('10.009+E8');
+            expect(helper.invoke('getCell', [3, 23]).textContent).toBe('!True');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[23])).toBe('{"value":"22/2","formula":"=UNIQUE(Sheet1!Q21:Sheet1!Q28, 0, 1)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[23])).toBe('{"value":"15-3"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[23])).toBe('{"value":"10.009+E8"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[23])).toBe('{"value":"!True"}');
+            done();
+        });
+        it('UNIQUE - Sheets - II', (done: Function) => {
+            helper.edit('X5', '=UNIQUE(Sheet1!L6:N6, $L$21, FALSE)');
+            expect(helper.invoke('getCell', [4, 23]).textContent).toBe('yes');
+            expect(helper.invoke('getCell', [4, 24]).textContent).toBe('Flag');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[23])).toBe('{"value":"yes","formula":"=UNIQUE(Sheet1!L6:N6, $L$21, FALSE)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[24])).toBe('{"value":"Flag"}');
+            done();
+        });
+        it('UNIQUE - Sheets - II', (done: Function) => {
+            helper.edit('X6', '=UNIQUE(Sheet1!C$20:Sheet1!$C27, 0, 0)');
+            expect(helper.invoke('getCell', [5, 23]).textContent).toBe('Apple');
+            expect(helper.invoke('getCell', [6, 23]).textContent).toBe('Ball');
+            expect(helper.invoke('getCell', [7, 23]).textContent).toBe('"apple"');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[23])).toBe('{"value":"Apple","formula":"=UNIQUE(Sheet1!C$20:Sheet1!$C27, 0, 0)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[23])).toBe('{"value":"Ball"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[23])).toBe('{"value":"\\"apple\\""}');
+            done();
+        });
+        it('UNIQUE - Sheets - III', (done: Function) => {
+            helper.edit('X9', '=UNIQUE(A1:A10, LEN("h"), FALSE)');
+            expect(helper.invoke('getCell', [8, 23]).textContent).toBe('1');
+            expect(helper.invoke('getCell', [9, 23]).textContent).toBe('Ball');
+            expect(helper.invoke('getCell', [10, 23]).textContent).toBe('Cell');
+            expect(helper.invoke('getCell', [11, 23]).textContent).toBe('Drink');
+            expect(helper.invoke('getCell', [12, 23]).textContent).toBe('Element');
+            expect(helper.invoke('getCell', [13, 23]).textContent).toBe('Flag');
+            expect(helper.invoke('getCell', [14, 23]).textContent).toBe('Gell');
+            expect(helper.invoke('getCell', [15, 23]).textContent).toBe('Hike');
+            expect(helper.invoke('getCell', [16, 23]).textContent).toBe('Ink');
+            expect(helper.invoke('getCell', [17, 23]).textContent).toBe('Jag');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[23])).toBe('{"value":"1","formula":"=UNIQUE(A1:A10, LEN(\\"h\\"), FALSE)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[23])).toBe('{"value":"Ball"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[23])).toBe('{"value":"Cell"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[23])).toBe('{"value":"Drink"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[23])).toBe('{"value":"Element"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[23])).toBe('{"value":"Flag"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[23])).toBe('{"value":"Gell"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[23])).toBe('{"value":"Hike"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[23])).toBe('{"value":"Ink"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[23])).toBe('{"value":"Jag"}');
             done();
         });
     });

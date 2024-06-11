@@ -1,11 +1,9 @@
-/* eslint-disable */
 import { createElement, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-buttons';
 import { MenuEventArgs, Toolbar as Tool } from '@syncfusion/ej2-navigations';
 import { PdfViewer, PdfViewerBase, Toolbar } from '../index';
-import { DropDownButton, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, ItemModel, DropDownButtonModel } from '@syncfusion/ej2-splitbuttons';
+import { DropDownButton, ItemModel, DropDownButtonModel } from '@syncfusion/ej2-splitbuttons';
 
-/* eslint-disable */
 /**
  * @hidden
  */
@@ -14,7 +12,7 @@ export class FormDesignerToolbar {
     private pdfViewerBase: PdfViewerBase;
     /**
      * @private
-    */
+     */
     public primaryToolbar: Toolbar;
     public toolbarElement: HTMLElement;
     private textboxItem: HTMLElement;
@@ -33,9 +31,8 @@ export class FormDesignerToolbar {
 
     /**
      * @private
-    */
+     */
     public isToolbarHidden: boolean = false;
-
     private isTextboxBtnVisible: boolean = true;
     private isPasswordBtnVisible: boolean = true;
     private isCheckboxBtnVisible: boolean = true;
@@ -47,10 +44,8 @@ export class FormDesignerToolbar {
     private toolbarBorderHeight: number = 1;
     /**
      * @private
-    */
+     */
     public handWrittenSignatureItem: HTMLElement;
-
-
     constructor(viewer: PdfViewer, viewerBase: PdfViewerBase, toolbar: Toolbar) {
         this.pdfViewer = viewer;
         this.pdfViewerBase = viewerBase;
@@ -58,35 +53,32 @@ export class FormDesignerToolbar {
     }
 
     public initializeFormDesignerToolbar(): void {
-         // eslint-disable-next-line max-len
-         this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_formdesigner_toolbar', className: 'e-pv-formdesigner-toolbar' });
-         this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
-         this.toolbar = new Tool({
-             width: '', height: '', overflowMode: 'Popup',
-             items: this.createToolbarItems(), clicked: this.onToolbarClicked.bind(this),
-             created: () => {
-                 this.createDropDowns();
-             }
-         });
-         //this.toolbar.isStringTemplate = true;
-         if (this.pdfViewer.enableRtl) {
-             this.toolbar.enableRtl = true;
-         }
-         this.toolbar.appendTo(this.toolbarElement);
-         this.afterToolbarCreation(); 
-         this.createSignContainer();
-         this.applyFormDesignerToolbarSettings();
-         //this.updateToolbarItems();
-         this.showFormDesignerToolbar(null, true);
+        this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_formdesigner_toolbar', className: 'e-pv-formdesigner-toolbar' });
+        this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
+        this.toolbar = new Tool({
+            width: '', height: '', overflowMode: 'Popup',
+            items: this.createToolbarItems(), clicked: this.onToolbarClicked.bind(this)
+        });
+        //this.toolbar.isStringTemplate = true;
+        if (this.pdfViewer.enableRtl) {
+            this.toolbar.enableRtl = true;
+        }
+        this.toolbar.appendTo(this.toolbarElement);
+        this.afterToolbarCreation();
+        this.createSignContainer();
+        this.applyFormDesignerToolbarSettings();
+        //this.updateToolbarItems();
+        this.showFormDesignerToolbar(null, true);
     }
 
     /**
      * @private
+     * @returns {void}
      */
     public resetFormDesignerToolbar(): void {
         if (this.pdfViewer.isFormDesignerToolbarVisible) {
             this.pdfViewer.designerMode = true;
-            this.pdfViewer.formDesignerModule.setMode("designer");
+            this.pdfViewer.formDesignerModule.setMode('designer');
             this.adjustViewer(false);
             this.toolbarElement.style.display = '';
             this.isToolbarHidden = false;
@@ -97,7 +89,7 @@ export class FormDesignerToolbar {
         else {
             this.toolbarElement.style.display = 'none';
             this.isToolbarHidden = true;
-            if(!this.pdfViewer.isAnnotationToolbarVisible) {
+            if (!this.pdfViewer.isAnnotationToolbarVisible) {
                 this.adjustViewer(true);
             }
             this.primaryToolbar.deSelectItem(this.primaryToolbar.formDesignerItem);
@@ -105,167 +97,158 @@ export class FormDesignerToolbar {
         }
     }
     /**
-     * @param element
-     * @param isInitialLoading
-     * @param element
-     * @param isInitialLoading
+     * @param {HTMLElement} element - It describes about the element value
+     * @param {boolean} isInitialLoading - It describes about the isInitialLoading boolean value
      * @private
+     * @returns {void}
      */
     public showFormDesignerToolbar(element?: HTMLElement, isInitialLoading?: boolean): void {
         if (!this.isToolbarHidden) {
-                // eslint-disable-next-line
-                let formDesignerModule: any = this.pdfViewer.formDesignerModule;
-                if (element) {
-                    this.primaryToolbar.deSelectItem(element);
-                } else {
-                    if (this.pdfViewer.enableToolbar) {
-                        this.primaryToolbar.deSelectItem(this.primaryToolbar.formDesignerItem);
-                    }
-                }
-                this.adjustViewer(false);
-                // eslint-disable-next-line max-len
-                
-                //this.deselectAllItems();
-                if (this.pdfViewer.formFieldCollection) {
-                    let filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
-                        return field.formFieldAnnotationType === 'Textbox' && field.isMultiline;
-                    });
-                    filteredFields.forEach((field: any) => {
-                        const resize = document.getElementById(field.id);
-                        if (resize) {
-                            (resize as HTMLElement).style.pointerEvents = 'none';
-                            (resize as HTMLElement).style.resize = 'none';
-                        }
-                    });
-                }
-                this.toolbarElement.style.display = 'none';
-                this.pdfViewer.formDesignerModule.setMode("edit");
-                this.pdfViewer.designerMode = false;
-                if (!isInitialLoading) {
-                    this.pdfViewer.isFormDesignerToolbarVisible = false;
-                }
+            if (element) {
+                this.primaryToolbar.deSelectItem(element);
             } else {
-                const toolBarInitialStatus: string = this.toolbarElement.style.display;
-                this.toolbarElement.style.display = 'block';
-                this.pdfViewer.designerMode =true;
-                this.pdfViewer.formDesignerModule.setMode("designer");
-                if (!isInitialLoading) {
-                    this.pdfViewer.isFormDesignerToolbarVisible = true;
+                if (this.pdfViewer.enableToolbar) {
+                    this.primaryToolbar.deSelectItem(this.primaryToolbar.formDesignerItem);
                 }
-                if (element) {
-                    this.primaryToolbar.selectItem(element);
-                } else {
-                    if (this.pdfViewer.enableToolbar) {
-                        this.primaryToolbar.selectItem(this.primaryToolbar.formDesignerItem);
+            }
+            this.adjustViewer(false);
+            //this.deselectAllItems();
+            if (this.pdfViewer.formFieldCollection) {
+                const filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
+                    return field.formFieldAnnotationType === 'Textbox' && field.isMultiline;
+                });
+                filteredFields.forEach((field: any) => {
+                    const resize: HTMLElement = document.getElementById(field.id);
+                    if (resize) {
+                        (resize as HTMLElement).style.pointerEvents = 'none';
+                        (resize as HTMLElement).style.resize = 'none';
                     }
-                }
-                if (toolBarInitialStatus === 'none') {
-                    this.adjustViewer(true);
-                }
-                if (this.pdfViewer.formFieldCollection) {
-                    let filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
-                        return field.formFieldAnnotationType === 'Textbox' && field.isMultiline;
-                    });
-                    filteredFields.forEach((field: any) => {
-                        const resize = document.getElementById(field.id);
-                        if (resize) {
-                            (resize as HTMLElement).style.pointerEvents = 'auto';
-                            (resize as HTMLElement).style.resize = 'auto';
-                        }
-                    });
+                });
+            }
+            this.toolbarElement.style.display = 'none';
+            this.pdfViewer.formDesignerModule.setMode('edit');
+            this.pdfViewer.designerMode = false;
+            if (!isInitialLoading) {
+                this.pdfViewer.isFormDesignerToolbarVisible = false;
+            }
+        } else {
+            const toolBarInitialStatus: string = this.toolbarElement.style.display;
+            this.toolbarElement.style.display = 'block';
+            this.pdfViewer.designerMode = true;
+            this.pdfViewer.formDesignerModule.setMode('designer');
+            if (!isInitialLoading) {
+                this.pdfViewer.isFormDesignerToolbarVisible = true;
+            }
+            if (element) {
+                this.primaryToolbar.selectItem(element);
+            } else {
+                if (this.pdfViewer.enableToolbar) {
+                    this.primaryToolbar.selectItem(this.primaryToolbar.formDesignerItem);
                 }
             }
-            // eslint-disable-next-line max-len
-            if (this.pdfViewer.magnification && this.pdfViewer.magnification.fitType === 'fitToPage') {
-                this.pdfViewer.magnification.fitToPage();
+            if (toolBarInitialStatus === 'none') {
+                this.adjustViewer(true);
             }
-            //this.enableAnnotationAddTools(true);
-            this.isToolbarHidden = !this.isToolbarHidden;
+            if (this.pdfViewer.formFieldCollection) {
+                const filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
+                    return field.formFieldAnnotationType === 'Textbox' && field.isMultiline;
+                });
+                filteredFields.forEach((field: any) => {
+                    const resize: HTMLElement = document.getElementById(field.id);
+                    if (resize) {
+                        (resize as HTMLElement).style.pointerEvents = 'auto';
+                        (resize as HTMLElement).style.resize = 'auto';
+                    }
+                });
+            }
+        }
+        if (this.pdfViewer.magnification && this.pdfViewer.magnification.fitType === 'fitToPage') {
+            this.pdfViewer.magnification.fitToPage();
+        }
+        //this.enableAnnotationAddTools(true);
+        this.isToolbarHidden = !this.isToolbarHidden;
     }
 
     /**
-     * @param isAdjust
+     * @param {boolean} isAdjust - It describes about the isAdjust boolean value
      * @private
-    */
+     * @returns {void}
+     */
     public adjustViewer(isAdjust: boolean): void {
-            let splitterElement: HTMLElement;
-            let toolbarContainer: HTMLElement;
-            let formDesignerToolbarHeight: number;
-            if (isBlazor()) {
-                splitterElement = this.pdfViewer.element.querySelector('.e-pv-sidebar-toolbar-splitter');
-                toolbarContainer = this.pdfViewer.element.querySelector('.e-pv-toolbar');
-                const formDesignerToolbarContainer: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-formDesigner-toolbar');
-                formDesignerToolbarHeight = this.getToolbarHeight(formDesignerToolbarContainer);
+        let splitterElement: HTMLElement;
+        let toolbarContainer: HTMLElement;
+        let formDesignerToolbarHeight: number;
+        if (isBlazor()) {
+            splitterElement = this.pdfViewer.element.querySelector('.e-pv-sidebar-toolbar-splitter');
+            toolbarContainer = this.pdfViewer.element.querySelector('.e-pv-toolbar');
+            const formDesignerToolbarContainer: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-formDesigner-toolbar');
+            formDesignerToolbarHeight = this.getToolbarHeight(formDesignerToolbarContainer);
+        } else {
+            splitterElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
+            toolbarContainer = this.pdfViewerBase.getElement('_toolbarContainer');
+            formDesignerToolbarHeight = this.getToolbarHeight(this.toolbarElement);
+        }
+        let toolbarHeight: number = this.getToolbarHeight(toolbarContainer);
+        const sideBarToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
+        const sideBarContentContainer: HTMLElement = this.pdfViewerBase.navigationPane.sideBarContentContainer;
+        const commentsContainer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelContainer;
+        const commentPanelResizer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelResizer;
+        let newToolbarHeight: string = '';
+        if (isAdjust) {
+            if (this.pdfViewer.enableToolbar) {
+                sideBarToolbar.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
+                sideBarContentContainer.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
+                splitterElement.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
+                commentsContainer.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
+                commentPanelResizer.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
             } else {
-                splitterElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
-                toolbarContainer = this.pdfViewerBase.getElement('_toolbarContainer');
-                formDesignerToolbarHeight = this.getToolbarHeight(this.toolbarElement);
+                sideBarToolbar.style.top = (formDesignerToolbarHeight) + 'px';
+                sideBarContentContainer.style.top = (formDesignerToolbarHeight) + 'px';
+                splitterElement.style.top = (formDesignerToolbarHeight) + 'px';
+                commentsContainer.style.top = (formDesignerToolbarHeight) + 'px';
+                commentPanelResizer.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
             }
-            let toolbarHeight: number = this.getToolbarHeight(toolbarContainer);
-            const sideBarToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
-            const sideBarContentContainer: HTMLElement = this.pdfViewerBase.navigationPane.sideBarContentContainer;
-            const commentsContainer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelContainer;
-            const commentPanelResizer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelResizer;
-            let newToolbarHeight: string = '';
-            if (isAdjust) {
-                if (this.pdfViewer.enableToolbar) {
-                    sideBarToolbar.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
-                    sideBarContentContainer.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
-                    splitterElement.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
-                    commentsContainer.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
-                    commentPanelResizer.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
-                } else {
-                    sideBarToolbar.style.top = (formDesignerToolbarHeight) + 'px';
-                    sideBarContentContainer.style.top = (formDesignerToolbarHeight) + 'px';
-                    splitterElement.style.top = (formDesignerToolbarHeight) + 'px';
-                    commentsContainer.style.top = (formDesignerToolbarHeight) + 'px';
-                    commentPanelResizer.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
-                }
-                if (!this.pdfViewer.enableToolbar) {
-                    toolbarHeight = 0;
-                }
-                // eslint-disable-next-line max-len
-                this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (formDesignerToolbarHeight + toolbarHeight)) + 'px';
-                newToolbarHeight= this.getNavigationToolbarHeight(formDesignerToolbarHeight + toolbarHeight);
-                sideBarToolbar.style.height = newToolbarHeight;
-                splitterElement.style.height = newToolbarHeight;
-                commentPanelResizer.style.height = newToolbarHeight;
-                sideBarContentContainer.style.height = newToolbarHeight;
+            if (!this.pdfViewer.enableToolbar) {
+                toolbarHeight = 0;
+            }
+            this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (formDesignerToolbarHeight + toolbarHeight)) + 'px';
+            newToolbarHeight = this.getNavigationToolbarHeight(formDesignerToolbarHeight + toolbarHeight);
+            sideBarToolbar.style.height = newToolbarHeight;
+            splitterElement.style.height = newToolbarHeight;
+            commentPanelResizer.style.height = newToolbarHeight;
+            sideBarContentContainer.style.height = newToolbarHeight;
+        } else {
+            if (this.pdfViewer.enableToolbar) {
+                sideBarToolbar.style.top = toolbarHeight + 'px';
+                sideBarContentContainer.style.top = toolbarHeight + 'px';
+                splitterElement.style.top = toolbarHeight + 'px';
+                commentsContainer.style.top = toolbarHeight + 'px';
+                commentPanelResizer.style.top = toolbarHeight + 'px';
             } else {
-                if (this.pdfViewer.enableToolbar) {
-                    // eslint-disable-next-line max-len
-                    sideBarToolbar.style.top = toolbarHeight + 'px';
-                    sideBarContentContainer.style.top = toolbarHeight + 'px';
-                    splitterElement.style.top = toolbarHeight + 'px';
-                    commentsContainer.style.top = toolbarHeight + 'px';
-                    commentPanelResizer.style.top = toolbarHeight + 'px';
-                } else {
-                    sideBarToolbar.style.top = 1 + 'px';
-                    sideBarToolbar.style.height = '100%';
-                    sideBarContentContainer.style.top = 1 + 'px';
-                    sideBarContentContainer.style.height = '100%';
-                    splitterElement.style.top = 1 + 'px';
-                    splitterElement.style.height = '100%';
-                    commentsContainer.style.top = 1 + 'px';
-                    commentsContainer.style.height = '100%';
-                    commentPanelResizer.style.top = 1 + 'px';
-                    commentPanelResizer.style.height = '100%';
-                }
-                if (!this.pdfViewer.enableToolbar) {
-                    toolbarHeight = 0;
-                }
-                // eslint-disable-next-line max-len
-                this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), formDesignerToolbarHeight) + 'px';
-                newToolbarHeight= this.getNavigationToolbarHeight(toolbarHeight);
-                sideBarToolbar.style.height = newToolbarHeight;
-                splitterElement.style.height = newToolbarHeight;
-                commentPanelResizer.style.height = newToolbarHeight;
-                sideBarContentContainer.style.height = newToolbarHeight;
-                if (this.pdfViewerBase.viewerContainer.style.height === '0px') {
-                    // eslint-disable-next-line
-                    this.pdfViewerBase.viewerContainer.style.height = (parseInt(this.pdfViewer.element.style.height) - parseInt(sideBarToolbar.style.top)) + 'px';
-                }
+                sideBarToolbar.style.top = 1 + 'px';
+                sideBarToolbar.style.height = '100%';
+                sideBarContentContainer.style.top = 1 + 'px';
+                sideBarContentContainer.style.height = '100%';
+                splitterElement.style.top = 1 + 'px';
+                splitterElement.style.height = '100%';
+                commentsContainer.style.top = 1 + 'px';
+                commentsContainer.style.height = '100%';
+                commentPanelResizer.style.top = 1 + 'px';
+                commentPanelResizer.style.height = '100%';
             }
+            if (!this.pdfViewer.enableToolbar) {
+                toolbarHeight = 0;
+            }
+            this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), formDesignerToolbarHeight) + 'px';
+            newToolbarHeight = this.getNavigationToolbarHeight(toolbarHeight);
+            sideBarToolbar.style.height = newToolbarHeight;
+            splitterElement.style.height = newToolbarHeight;
+            commentPanelResizer.style.height = newToolbarHeight;
+            sideBarContentContainer.style.height = newToolbarHeight;
+            if (this.pdfViewerBase.viewerContainer.style.height === '0px') {
+                this.pdfViewerBase.viewerContainer.style.height = (parseInt(this.pdfViewer.element.style.height, 10) - parseInt(sideBarToolbar.style.top, 10)) + 'px';
+            }
+        }
     }
 
     private getElementHeight(element: HTMLElement): number {
@@ -300,10 +283,8 @@ export class FormDesignerToolbar {
         const sideBarClientRect: ClientRect = this.pdfViewerBase.navigationPane.sideBarContentContainer.getBoundingClientRect();
         if (sideBarClientRect.height !== 0) {
             if (isAdjust) {
-                // eslint-disable-next-line max-len
                 this.pdfViewerBase.navigationPane.sideBarContentContainer.style.height = sideBarClientRect.height - formDesignerToolbarHeight + 'px';
             } else {
-                // eslint-disable-next-line max-len
                 this.pdfViewerBase.navigationPane.sideBarContentContainer.style.height = sideBarClientRect.height + formDesignerToolbarHeight + 'px';
             }
         }
@@ -313,30 +294,24 @@ export class FormDesignerToolbar {
         let toolbarHeight: number = element.getBoundingClientRect().height;
         if (toolbarHeight === 0 && element === this.pdfViewerBase.getElement('_toolbarContainer')) {
             // getComputedStyle gets the value from style and toolbar border height is added to it.
-            // eslint-disable-next-line
             toolbarHeight = parseFloat(window.getComputedStyle(element)['height']) + this.toolbarBorderHeight;
         }
         return toolbarHeight;
     }
 
-    // eslint-disable-next-line
     private createToolbarItems(): any[] {
         const signTemplate: string = this.getTemplate('button', '_formfield_signature', 'e-pv-annotation-handwritten-container');
-        // eslint-disable-next-line
-        let items: any[] = [];
-        // eslint-disable-next-line max-len
-        items.push({ prefixIcon: 'e-pv-textbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_textbox', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-        items.push({ prefixIcon: 'e-pv-password-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_passwordfield', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-        items.push({ prefixIcon: 'e-pv-checkbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_checkbox', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-        items.push({ prefixIcon: 'e-pv-radiobutton-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_radiobutton', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-        items.push({ prefixIcon: 'e-pv-dropdown-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_dropdown', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-        items.push({ prefixIcon: 'e-pv-listbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_listbox', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-        items.push({ template: signTemplate, align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-        items.push({ type: 'Separator', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-        // eslint-disable-next-line max-len
-        items.push({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_formdesigner_delete', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
-     
-        items.push({ prefixIcon: 'e-pv-annotation-tools-close-icon e-pv-icon', className: 'e-pv-annotation-tools-close-container', id: this.pdfViewer.element.id + '_formdesigner_close', align: 'Right', attr:{'tabindex': 0, 'data-tabindex': 0} });
+        const items: any[] = [];
+        items.push({ prefixIcon: 'e-pv-textbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_textbox', align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-password-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_passwordfield', align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-checkbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_checkbox', align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-radiobutton-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_radiobutton', align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-dropdown-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_dropdown', align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-listbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_listbox', align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ template: signTemplate, align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ type: 'Separator', align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_formdesigner_delete', align: 'Left', attr: {'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-annotation-tools-close-icon e-pv-icon', className: 'e-pv-annotation-tools-close-container', id: this.pdfViewer.element.id + '_formdesigner_close', align: 'Right', attr: {'tabindex': 0, 'data-tabindex': 0} });
         return items;
     }
 
@@ -344,12 +319,9 @@ export class FormDesignerToolbar {
         this.handWrittenSignatureItem = this.pdfViewerBase.getElement('_formfield_signature');
         this.handWrittenSignatureItem.setAttribute('tabindex', '0');
         this.handWrittenSignatureItem.setAttribute('data-tabindex', '0');
-        // eslint-disable-next-line max-len
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_formfield_signature'), this.pdfViewer.localeObj.getConstant('HandwrittenSignatureDialogHeaderText'));
-        // eslint-disable-next-line
-        let proxy: any = this;
-        let items: ItemModel[] =[]; 
-        items=[
+        let items: ItemModel[] = [];
+        items = [
             {
                 text: 'ADD SIGNATURE'
             },
@@ -358,26 +330,29 @@ export class FormDesignerToolbar {
             },
             {
                 text: 'ADD INITIAL'
-            }];  
-        
+            }];
         const saveOptions: DropDownButtonModel = {
             items: items,
             iconCss: 'e-pv-handwritten-icon e-pv-icon',
             cssClass: 'e-pv-handwritten-popup',
             beforeItemRender: (args: MenuEventArgs): void => {
                 this.pdfViewer.clearSelection(this.pdfViewerBase.currentPageNumber - 1);
-                if(args.element && args.element.className.indexOf("e-separator")!==-1) {
-                    args.element.style.margin = "8px 0";
-                    args.element.setAttribute('role','menuitem');
-                    args.element.setAttribute('aria-label','separator')
+                if (args.element && args.element.className.indexOf('e-separator') !== -1) {
+                    args.element.style.margin = '8px 0';
+                    args.element.setAttribute('role', 'menuitem');
+                    args.element.setAttribute('aria-label', 'separator');
                 }
                 if (args.item.text === 'ADD SIGNATURE') {
                     args.element.innerHTML = '';
-                    let addInitialSpan: HTMLElement = createElement('button');
-                    addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
+                    const addInitialSpan: HTMLElement = createElement('button');
+                    addInitialSpan.classList.add('e-control', 'e-btn', 'e-lib', 'e-outline', 'e-primary');
                     addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('SignatureFieldDialogHeaderText');
-                    this.pdfViewer.locale === 'en-US' ? addInitialSpan.style.width = "130px" : addInitialSpan.style.width = "auto";
-                    addInitialSpan.style.height = "36px";
+                    if (this.pdfViewer.locale === 'en-US') {
+                        addInitialSpan.style.width = '130px';
+                    } else {
+                        addInitialSpan.style.width = 'auto';
+                    }
+                    addInitialSpan.style.height = '36px';
                     addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
                     args.element.appendChild(addInitialSpan);
                     args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
@@ -386,16 +361,19 @@ export class FormDesignerToolbar {
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
                     args.element.style.alignItems = 'center';
-                    args.element.setAttribute('role','menuitem');
+                    args.element.setAttribute('role', 'menuitem');
                 }
-
-                if (args.item.text === 'ADD INITIAL') { 
-                    args.element.innerHTML = ''; 
-                    let addInitialSpan: HTMLElement = createElement('button');
-                    addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
+                if (args.item.text === 'ADD INITIAL') {
+                    args.element.innerHTML = '';
+                    const addInitialSpan: HTMLElement = createElement('button');
+                    addInitialSpan.classList.add('e-control', 'e-btn', 'e-lib', 'e-outline', 'e-primary');
                     addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('InitialFieldDialogHeaderText');
-                    this.pdfViewer.locale === 'en-US' ? addInitialSpan.style.width = "130px" : addInitialSpan.style.width = "auto";
-                    addInitialSpan.style.height = "36px";
+                    if (this.pdfViewer.locale === 'en-US') {
+                        addInitialSpan.style.width = '130px';
+                    } else {
+                        addInitialSpan.style.width = 'auto';
+                    }
+                    addInitialSpan.style.height = '36px';
                     addInitialSpan.addEventListener('click', this.clickInitial.bind(this));
                     args.element.appendChild(addInitialSpan);
                     args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
@@ -404,33 +382,33 @@ export class FormDesignerToolbar {
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
                     args.element.style.alignItems = 'center';
-                    args.element.setAttribute('role','menuitem');
+                    args.element.setAttribute('role', 'menuitem');
                 }
-            },
+            }
         };
-        const drpDownBtn: DropDownButton = new DropDownButton(saveOptions); 
+        const drpDownBtn: DropDownButton = new DropDownButton(saveOptions);
         if (this.pdfViewer.enableRtl) {
             drpDownBtn.enableRtl = this.pdfViewer.enableRtl;
         }
-        drpDownBtn.appendTo(this.handWrittenSignatureItem); 
+        drpDownBtn.appendTo(this.handWrittenSignatureItem);
     }
 
-    private hoverInitialBtn(event:any): void {
+    private hoverInitialBtn(event: any): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
-        let currentFieldID: string = isNullOrUndefined(event.path) ? event.composedPath()[0].id : event.path[0].id;
-        if(currentFieldID!=='sign_'+currentFieldID.split("_")[1] && currentFieldID!=='delete_'+currentFieldID.split("_")[1]){
-        let liElement: HTMLElement = document.getElementById(eventTarget.id);
-        if (isNullOrUndefined(liElement)) {
-            liElement = document.getElementById(eventTarget.parentElement.id);
+        const currentFieldID: string = isNullOrUndefined(event.path) ? event.composedPath()[0].id : event.path[0].id;
+        if (currentFieldID !== 'sign_' + currentFieldID.split('_')[1] && currentFieldID !== 'delete_' + currentFieldID.split('_')[1]){
+            let liElement: HTMLElement = document.getElementById(eventTarget.id);
+            if (isNullOrUndefined(liElement)) {
+                liElement = document.getElementById(eventTarget.parentElement.id);
+            }
+            if ((liElement as HTMLLIElement) != null && (eventTarget.id !== 'sign_' + eventTarget.id.split('_')[1] || eventTarget.id !== 'sign_border_' + eventTarget.id.split('_')[2])) {
+                liElement.style.background = 'transparent';
+                liElement.style.cursor = 'default';
+            } else if ((liElement.parentElement as HTMLLIElement) != null && (eventTarget.id !== 'sign_' + eventTarget.id.split('_')[1] || eventTarget.id !== 'sign_border_' + eventTarget.id.split('_')[2])) {
+                liElement.parentElement.style.background = 'transparent';
+                liElement.parentElement.style.cursor = 'default';
+            }
         }
-        if ((liElement as HTMLLIElement) != null && (eventTarget.id !== 'sign_' + eventTarget.id.split('_')[1] || eventTarget.id !== 'sign_border_' + eventTarget.id.split('_')[2])) {
-            liElement.style.background = 'transparent';
-            liElement.style.cursor = 'default';
-        } else if ((liElement.parentElement as HTMLLIElement) != null && (eventTarget.id !== 'sign_' + eventTarget.id.split('_')[1] || eventTarget.id !== 'sign_border_' + eventTarget.id.split('_')[2])) {
-            liElement.parentElement.style.background = 'transparent';
-            liElement.parentElement.style.cursor='default';
-        }
-    }
     }
     private getTemplate(elementName: string, id: string, className: string): string {
         const element: HTMLElement = createElement(elementName, { id: this.pdfViewer.element.id + id });
@@ -441,32 +419,32 @@ export class FormDesignerToolbar {
     }
 
     private onToolbarClicked(args: ClickEventArgs): void {
-         // eslint-disable-next-line
-         if(args && (args as IToolbarClick).item) {
-              if((args as IToolbarClick).item.id.indexOf("textbox")!==-1) {
-                  this.pdfViewer.formDesignerModule.setFormFieldMode('Textbox');
-              } else if((args as IToolbarClick).item.id.indexOf("passwordfield")!==-1) {
-                  this.pdfViewer.formDesignerModule.setFormFieldMode('Password');
-              } else if((args as IToolbarClick).item.id.indexOf("checkbox")!==-1) {
+        if (args && (args as IToolbarClick).item) {
+            if ((args as IToolbarClick).item.id.indexOf('textbox') !== -1) {
+                this.pdfViewer.formDesignerModule.setFormFieldMode('Textbox');
+            } else if ((args as IToolbarClick).item.id.indexOf('passwordfield') !== -1) {
+                this.pdfViewer.formDesignerModule.setFormFieldMode('Password');
+            } else if ((args as IToolbarClick).item.id.indexOf('checkbox') !== -1) {
                 this.pdfViewer.formDesignerModule.setFormFieldMode('CheckBox');
-              } else if((args as IToolbarClick).item.id.indexOf("radiobutton")!==-1) {
+            } else if ((args as IToolbarClick).item.id.indexOf('radiobutton') !== -1) {
                 this.pdfViewer.formDesignerModule.setFormFieldMode('RadioButton');
-              } else if((args as IToolbarClick).item.id.indexOf("dropdown")!==-1) {
+            } else if ((args as IToolbarClick).item.id.indexOf('dropdown') !== -1) {
                 this.pdfViewer.formDesignerModule.setFormFieldMode('DropDown');
-              } else if((args as IToolbarClick).item.id.indexOf("listbox")!==-1) {
+            } else if ((args as IToolbarClick).item.id.indexOf('listbox') !== -1) {
                 this.pdfViewer.formDesignerModule.setFormFieldMode('ListBox');
-              } else if((args as IToolbarClick).item.id.indexOf("signature")!==-1) {
+            } else if ((args as IToolbarClick).item.id.indexOf('signature') !== -1) {
                 this.pdfViewer.formDesignerModule.setFormFieldMode('SignatureField');
-            } else if((args as IToolbarClick).item.id.indexOf("close")!==-1) {
-                this.pdfViewer.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar(this.pdfViewer.toolbarModule.formDesignerItem);
-            } else if((args as IToolbarClick).item.id.indexOf("delete")!==-1) {
+            } else if ((args as IToolbarClick).item.id.indexOf('close') !== -1) {
+                this.pdfViewer.toolbarModule.formDesignerToolbarModule.
+                    showFormDesignerToolbar(this.pdfViewer.toolbarModule.formDesignerItem);
+            } else if ((args as IToolbarClick).item.id.indexOf('delete') !== -1) {
                 this.pdfViewer.formDesignerModule.deleteFormField(this.pdfViewer.selectedItems.formFields[0]);
                 this.showHideDeleteIcon(false);
             }
             if (this.pdfViewer.selectedItems.formFields.length > 0) {
                 this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.formFields[0].pageIndex);
             }
-         }
+        }
     }
 
     private clickSignature(args: any): void {
@@ -480,7 +458,6 @@ export class FormDesignerToolbar {
     }
 
     private afterToolbarCreation(): void {
-        // eslint-disable-next-line max-len
         this.textboxItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_textbox', 'e-pv-formdesigner-textbox', this.pdfViewer.localeObj.getConstant('Textbox'));
         this.textboxItem.setAttribute('tabindex', '0');
         this.textboxItem.setAttribute('data-tabindex', '0');
@@ -501,12 +478,11 @@ export class FormDesignerToolbar {
         this.listboxItem.setAttribute('data-tabindex', '0');
         //this.signatureItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_signature', 'e-pv-formdesigner-signature', this.pdfViewer.localeObj.getConstant('Signature'));
         this.deleteItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_delete', 'e-pv-formdesigner-delete', this.pdfViewer.localeObj.getConstant('Delete FormField'));
-        
         this.closeItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_close', 'e-pv-annotation-tools-close', null);
         this.closeItem.setAttribute('tabindex', '0');
         this.closeItem.setAttribute('data-tabindex', '0');
         this.showHideDeleteIcon(false);
-        //this.enableTextMarkupAnnotationPropertiesTools(false); 
+        //this.enableTextMarkupAnnotationPropertiesTools(false);
     }
 
     public showHideDeleteIcon(isEnable: boolean): void {
@@ -516,8 +492,10 @@ export class FormDesignerToolbar {
             this.deleteItem.setAttribute('data-tabindex', isEnable ? '0' : '-1');
         }
     }
+
     /**
      * @private
+     * @returns {void}
      */
     public applyFormDesignerToolbarSettings(): void {
         if (this.pdfViewer.toolbarSettings.formDesignerToolbarItems) {
@@ -606,10 +584,10 @@ export class FormDesignerToolbar {
     }
 
     private showSeparator(): void {
-        if(!this.isSignatureBtnVisible && !this.isDeleteBtnVisible)
-          this.applyHideToToolbar(false, 7, 7);
+        if (!this.isSignatureBtnVisible && !this.isDeleteBtnVisible)
+        {this.applyHideToToolbar(false, 7, 7); }
     }
-    
+
     private applyHideToToolbar(show: boolean, startIndex: number, endIndex: number): void {
         const isHide: boolean = !show;
         for (let index: number = startIndex; index <= endIndex; index++) {
@@ -617,27 +595,24 @@ export class FormDesignerToolbar {
         }
     }
 
-    private createDropDowns(): void {
-
-    }
-
     /**
      * @private
+     * @returns {void}
      */
-    public destroy(): void { 
-        let componentElement: any = [this.textboxItem, this.passwordItem, this.checkboxItem, this.radioButtonItem,
-        this.listboxItem, this.dropdownItem, this.handWrittenSignatureItem, this.deleteItem]; 
+    public destroy(): void {
+        const componentElement: HTMLElement[] = [this.textboxItem, this.passwordItem, this.checkboxItem, this.radioButtonItem,
+            this.listboxItem, this.dropdownItem, this.handWrittenSignatureItem, this.deleteItem];
         for (let i: number = 0; i < componentElement.length; i++) {
-            if (componentElement[i]) {
-                this.destroyDependentComponent(componentElement[i]);
+            if (componentElement[parseInt(i.toString(), 10)]) {
+                this.destroyDependentComponent(componentElement[parseInt(i.toString(), 10)]);
             }
-        } 
+        }
     }
 
     private destroyDependentComponent(component: any): void {
         if (component.ej2_instances) {
-           for (let i: number = component.ej2_instances.length - 1; i >=0; i--) {
-                 component.ej2_instances[i].destroy();
+            for (let i: number = component.ej2_instances.length - 1; i >= 0; i--) {
+                component.ej2_instances[parseInt(i.toString(), 10)].destroy();
             }
         }
     }

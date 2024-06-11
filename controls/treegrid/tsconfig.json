@@ -18,7 +18,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "suppressImplicitAnyIndexErrors": true,
-    "lib": ["es2015.collection","es2015.core","es2015.promise","es5", "dom"],
+    "lib": ["es2015.collection","es2015.core","es2015.promise","es5", "es2015", "dom"],
     "types": ["jasmine","jasmine-ajax","requirejs","chai"]
   },
   "exclude": [

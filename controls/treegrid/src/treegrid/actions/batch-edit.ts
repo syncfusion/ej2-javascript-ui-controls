@@ -1,5 +1,5 @@
 import { ITreeData } from '../base/interface';
-import { isNullOrUndefined, extend, setValue, getValue, merge } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, setValue, getValue } from '@syncfusion/ej2-base';
 import { TreeGrid } from '../base';
 import * as events from '../base/constant';
 import { DataManager } from '@syncfusion/ej2-data';

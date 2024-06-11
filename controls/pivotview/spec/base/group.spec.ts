@@ -26,7 +26,7 @@ describe('Group By Date feature', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -694,12 +694,14 @@ describe('Group By Date feature', () => {
         it('Filter testing5', () => {
             expect((document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value === 'k').toBeTruthy();
             (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click();
-                expect(1).toBe(1);
-        });
-        it('Filter testing6', () => {
             pivotGridObj.maxNodeLimitInMemberEditor = 1000;
             pivotGridObj.refreshData();
-            expect(document.querySelectorAll('.e-btn-filter').length > 10).toBeTruthy();
+        });
+        it('Filter testing6', function (done) {
+            setTimeout(function () {
+                expect(document.querySelectorAll('.e-btn-filter').length > 10).toBeTruthy();
+                done();
+            }, 1000);
         });
         it('Filter testing7', () => {
             (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
@@ -712,6 +714,82 @@ describe('Group By Date feature', () => {
         it('Filter testing9', () => {
             expect((document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value === 'k').toBeTruthy();
             (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click();
+        });
+    });
+
+    describe('- Dynamically updating the data source with group settings', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Grouping);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivotDatas as IDataSet[],
+                    rows: [{ name: 'date', caption: 'Date' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    expandAll: false,
+                    groupSettings: [
+                        { name: 'date', type: 'Date', groupInterval: ['Years', 'Months'] }
+                    ]
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                enableVirtualization: true,
+                showGroupingBar: true,
+                allowGrouping: true
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 500);
+        });
+        it('- Updating entire data source setting', (done: Function) => {
+            pivotGridObj.dataSourceSettings = { ...pivotGridObj.dataSourceSettings, dataSource: pivotData };
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rowsheader')[0].textContent).toBe('1991');
+                done();
+            }, 1000);
+        });
+        it('- Updating group settings', (done: Function) => {
+            pivotGridObj.dataSourceSettings.groupSettings = [
+                { name: 'date', type: 'Date', groupInterval: ['Months'] }
+            ];
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rowsheader')[0].textContent).toBe('Feb');
+                done();
+            }, 1000);
+        });
+        it('- Updating data source alone', (done: Function) => {
+            pivotGridObj.dataSourceSettings.dataSource = [];
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rowsheader')[0].textContent).toBe('Grand Total');
+                done();
+            }, 1000);
         });
     });
 
@@ -894,3 +972,46 @@ let pivotDatas: IDataSet[] = [
         pno: "ERTS4512",
     },
 ];
+
+let pivotData: IDataSet[] = [
+    {
+        _id: "5a940692c2d185d9fde50e5e",
+        index: 0,
+        guid: "810a1191-81bd-4c18-ac73-d16ad3fc80eb",
+        isActive: "false",
+        balance: 2430.87,
+        advance: 7658,
+        quantity: 11,
+        age: 21,
+        eyeColor: "blue",
+        name: "Skinner Ward",
+        gender: "male",
+        company: "GROK",
+        email: "skinnerward@grok.com",
+        phone: "+1 (931) 600-3042",
+        date: "Wed Feb 16 2000 15:01:01 GMT+0530 (India Standard Time)",
+        product: "Flight",
+        state: "New Jercy",
+        pno: "FEDD2340",
+    },
+    {
+        _id: "5a940692c5752f1ed81bbb3d",
+        index: 1,
+        guid: "41c9986b-ccef-459e-a22d-5458bbdca9c7",
+        isActive: "true",
+        balance: 3192.7,
+        advance: 6124,
+        quantity: 15,
+        age: 27,
+        eyeColor: "brown",
+        name: "Gwen Dixon",
+        gender: "female",
+        company: "ICOLOGY",
+        email: "gwendixon@icology.com",
+        phone: "+1 (951) 589-2187",
+        date: "Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)",
+        product: "Jet",
+        state: "Vetaikan",
+        pno: "ERTS4512",
+    },
+]

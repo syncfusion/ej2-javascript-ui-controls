@@ -210,19 +210,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public allowSwiping: boolean;
 
     /**
-    * To render the custom toolbar items, the `toolbarItems` property can be used. It contains built-in and custom toolbar items.
-    * To avail the built-in toolbar items, the below string values are assigned to the `name` property of the `ToolbarItemModel`.
-    * * `Previous`: Schedule component navigates to the previous date from the current date.
-    * * `Next`: Schedule component navigates to the next date from the current date.
-    * * `Today`: Schedule component navigates to the current date from any date.
-    * * `Views`: Schedule component render the defined view options in the toolbar. If view option is not defined, then it will render default view options in the Schedule.
-    * * `DateRangeText`: Schedule component displays the current date text range.
-    * * `NewEvent`: Schedule component render the icon to add a new event.
-    *
-    * @default []
-    */
-        @Collection<ToolbarItemModel>([], ToolbarItem)
-        public toolbarItems: ToolbarItemModel[]
+     * To render the custom toolbar items, the `toolbarItems` property can be used. It contains built-in and custom toolbar items.
+     * To avail the built-in toolbar items, the below string values are assigned to the `name` property of the `ToolbarItemModel`.
+     * * `Previous`: Schedule component navigates to the previous date from the current date.
+     * * `Next`: Schedule component navigates to the next date from the current date.
+     * * `Today`: Schedule component navigates to the current date from any date.
+     * * `Views`: Schedule component render the defined view options in the toolbar. If view option is not defined, then it will render default view options in the Schedule.
+     * * `DateRangeText`: Schedule component displays the current date text range.
+     * * `NewEvent`: Schedule component render the icon to add a new event.
+     *
+     * @default []
+     */
+    @Collection<ToolbarItemModel>([], ToolbarItem)
+    public toolbarItems: ToolbarItemModel[]
 
     /**
      * To set the active view on scheduler, the `currentView` property can be used and it usually accepts either of the following available
@@ -1271,8 +1271,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     private validateDate(selectedDate: Date = this.selectedDate): void {
         // persist the selected date value
         let date: Date = selectedDate instanceof Date ? new Date(selectedDate.getTime()) : new Date(selectedDate);
-        const minDate: Date = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
-        const maxDate: Date = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
+        const minDate: Date = isNullOrUndefined(this.minDate) ? new Date(1900, 0, 1) :
+            this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
+        const maxDate: Date = isNullOrUndefined(this.maxDate) ? new Date(2099, 11, 31) :
+            this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
         if (minDate <= maxDate) {
             if (date < minDate) {
                 date = minDate;
@@ -1300,6 +1302,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setViewOptions(isModuleLoad: boolean = false): void {
+        if (isNullOrUndefined(this.views) || this.views.length === 0) {
+            return;
+        }
         this.viewOptions = {};
         this.viewCollections = [];
         let viewName: string;
@@ -1370,7 +1375,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             byDate: isYearView ? false : this.group.byDate,
             byGroupID: this.group.byGroupID,
             allowGroupEdit: this.group.allowGroupEdit,
-            resources: this.group.resources,
+            resources: isNullOrUndefined(this.group.resources) ? [] : this.group.resources,
             headerTooltipTemplate: this.group.headerTooltipTemplate,
             enableCompactView: this.group.enableCompactView,
             hideNonWorkingDays: ['Day', 'Week', 'WorkWeek', 'Month'].indexOf(this.currentView)  > -1 ? this.group.hideNonWorkingDays : false
@@ -1512,7 +1517,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         const culShortNames: string[] = [];
         let cldrObj: string[];
         let nameSpace: string = '';
-        if (this.locale === 'en' || this.locale === 'en-US') {
+        if (isNullOrUndefined(this.locale) || this.locale === 'en' || this.locale === 'en-US') {
             nameSpace = 'days.stand-alone.';
             cldrObj = <string[]>(getValue(nameSpace + type, getDefaultDateObject(this.getCalendarMode())));
         } else {
@@ -1530,7 +1535,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.internalTimeFormat = this.timeFormat;
             return;
         }
-        if (this.locale === 'en' || this.locale === 'en-US') {
+        if (isNullOrUndefined(this.locale) || this.locale === 'en' || this.locale === 'en-US') {
             this.internalTimeFormat = <string>(getValue('timeFormats.short', getDefaultDateObject(this.getCalendarMode())));
         } else {
             this.internalTimeFormat = <string>
@@ -1545,7 +1550,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public getCalendarMode(): string {
-        return this.calendarMode.toLowerCase();
+        return !isNullOrUndefined(this.calendarMode) ? this.calendarMode.toLowerCase() : 'gregorian';
     }
 
     /**
@@ -1675,7 +1680,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public isMinMaxDate(date: Date = this.selectedDate): boolean {
-        return ((date.getTime() >= this.minDate.getTime()) && (date.getTime() <= this.maxDate.getTime()));
+        const maxDate: Date = isNullOrUndefined(this.maxDate) ? new Date(2099, 11, 31) : this.maxDate;
+        const minDate: Date = isNullOrUndefined(this.minDate) ? new Date(1900, 0, 1) : this.minDate;
+        return ((date.getTime() >= minDate.getTime()) && (date.getTime() <= maxDate.getTime()));
     }
 
     /**
@@ -1761,7 +1768,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this && isNullOrUndefined(this.uiStateValues) || !(this.enablePersistence)) {
             this.uiStateValues = {
                 expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
-                isIgnoreOccurrence: false, groupIndex: this.adaptiveGroupIndex, action: false, isBlock: false, isCustomMonth: true, isPreventTimezone: false
+                isIgnoreOccurrence: false, groupIndex: this.adaptiveGroupIndex, action: false,
+                isBlock: false, isCustomMonth: true, isPreventTimezone: false
             };
         }
         this.currentTimezoneDate = this.getCurrentTime();
@@ -2622,7 +2630,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'timezone':
                 this.eventBase.timezonePropertyChange(oldProp.timezone);
-                this.headerModule.setCalendarTimezone();
+                if (this.headerModule) {
+                    this.headerModule.setCalendarTimezone();
+                }
                 break;
             case 'enableRtl':
                 this.setRtlClass();
@@ -2644,6 +2654,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         } else if (state.isView) {
             this.changeView(this.currentView, null, true);
         } else if (state.isDate) {
+            if (isNullOrUndefined(this.selectedDate)) {
+                this.setProperties({ selectedDate: this.getCurrentTime() }, true);
+            }
             this.changeDate(this.selectedDate);
         } else if (state.isLayout) {
             this.activeCellsData = null;

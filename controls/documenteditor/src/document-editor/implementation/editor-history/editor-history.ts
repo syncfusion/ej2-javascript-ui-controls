@@ -183,7 +183,7 @@ export class EditorHistory {
      * @returns {void}
      */
     public initializeHistory(action: Action): void {
-        if(!isNullOrUndefined(this.currentBaseHistoryInfo)) {
+        if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
             this.currentBaseHistoryInfo.destroy();
         }
         this.currentBaseHistoryInfo = new BaseHistoryInfo(this.owner);
@@ -204,14 +204,14 @@ export class EditorHistory {
         this.currentHistoryInfo = new HistoryInfo(selection.owner, !isNullOrUndefined(this.currentHistoryInfo));
         this.currentHistoryInfo.action = action;
         switch (action) {
-            case 'PageBreak':
-                this.currentHistoryInfo.insertedText = CONTROL_CHARACTERS.PageBreak;
-                this.currentHistoryInfo.insertPosition = selection.startOffset;
-                break;
-            case 'ColumnBreak':
-                this.currentHistoryInfo.insertedText = CONTROL_CHARACTERS.ColumnBreak;
-                this.currentHistoryInfo.insertPosition = selection.startOffset;
-                break;
+        case 'PageBreak':
+            this.currentHistoryInfo.insertedText = CONTROL_CHARACTERS.PageBreak;
+            this.currentHistoryInfo.insertPosition = selection.startOffset;
+            break;
+        case 'ColumnBreak':
+            this.currentHistoryInfo.insertedText = CONTROL_CHARACTERS.ColumnBreak;
+            this.currentHistoryInfo.insertPosition = selection.startOffset;
+            break;
         }
         this.currentHistoryInfo.updateSelection();
     }
@@ -227,7 +227,9 @@ export class EditorHistory {
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
                 /* eslint-disable-next-line max-len */
                 tableResize.currentResizingTable = tableResize.currentResizingTable.combineWidget(this.viewer) as TableWidget;
-                this.currentBaseHistoryInfo.modifiedProperties.push(new RowHistoryFormat(tableResize.currentResizingTable, startingPoint, (tableResize.currentResizingTable.childWidgets[tableResize.resizerPosition] as TableRowWidget).rowFormat, this.owner));
+                this.currentBaseHistoryInfo.modifiedProperties.push(new RowHistoryFormat(
+                    tableResize.currentResizingTable, startingPoint,
+                    (tableResize.currentResizingTable.childWidgets[tableResize.resizerPosition] as TableRowWidget).rowFormat, this.owner));
                 this.documentHelper.layout.reLayoutTable(tableResize.currentResizingTable);
             }
         } else {
@@ -244,6 +246,8 @@ export class EditorHistory {
     /**
      * Starts a new undo able action.
      * > All editing and formatting changes made between `beginUndoAction` and `endUndoAction` will be grouped together as a single undo able action.
+     *
+     * @returns {void}
      */
     public beginUndoAction(): void {
         if (this.isUndoGroupingEnded) {
@@ -255,6 +259,8 @@ export class EditorHistory {
     /**
      * Ends the current undo able action.
      * > All editing and formatting changes made between `beginUndoAction` and `endUndoAction` will be grouped together as a single undo able action.
+     *
+     * @returns {void}
      */
     public endUndoAction(): void {
         if (!this.isUndoGroupingEnded) {
@@ -365,18 +371,21 @@ export class EditorHistory {
     public isHandledComplexHistory(): boolean {
         let isHandledComplexHistory: boolean = false;
         if (!(this.isUndoing || this.isRedoing)) {
-            if (this.owner.editorModule.removedBookmarkElements.length > 0 && this.owner.editorModule.insertRemoveBookMarkElements(isHandledComplexHistory)) {
+            if (this.owner.editorModule.removedBookmarkElements.length > 0
+                && this.owner.editorModule.insertRemoveBookMarkElements(isHandledComplexHistory)) {
                 isHandledComplexHistory = true;
             }
-            if (this.owner.editorModule.removedEditRangeEndElements.length > 0 && this.owner.editorModule.insertRemovedEditRangeEndElements(isHandledComplexHistory)) {
+            if (this.owner.editorModule.removedEditRangeEndElements.length > 0
+                && this.owner.editorModule.insertRemovedEditRangeEndElements(isHandledComplexHistory)) {
                 isHandledComplexHistory = true;
             }
-            if (this.owner.editorModule.removedEditRangeStartElements.length > 0 && this.owner.editorModule.insertRemovedEditRangeStartElements(isHandledComplexHistory)) {
+            if (this.owner.editorModule.removedEditRangeStartElements.length > 0
+                && this.owner.editorModule.insertRemovedEditRangeStartElements(isHandledComplexHistory)) {
                 isHandledComplexHistory = true;
             }
         }
         if (this.documentHelper.owner.enableHistoryMode && !isNullOrUndefined(this.currentHistoryInfo)) {
-            if (this.currentHistoryInfo.action != "Grouping") {
+            if (this.currentHistoryInfo.action !== 'Grouping') {
                 this.updateHistory();
                 isHandledComplexHistory = true;
             }
@@ -449,11 +458,11 @@ export class EditorHistory {
         this.viewer.updateScrollBars();
         selection.fireSelectionChanged(true);
         this.documentHelper.isScrollHandler = false;
-        if(this.owner.enableAutoFocus)
+        if (this.owner.enableAutoFocus)
         {
             this.documentHelper.updateFocus();
         }
-        
+
         this.updateComplexHistoryInternal();
         if (!this.owner.editorModule.isInsertingTOC) {
             this.owner.editorModule.fireContentChange();
@@ -498,7 +507,8 @@ export class EditorHistory {
             this.currentBaseHistoryInfo.addModifiedPropertiesForList(levels);
             const modifiedLevel: ModifiedLevel = new ModifiedLevel(levels, currentAbstractList.levels[parseInt(i.toString(), 10)]);
             if (!isNullOrUndefined(levels)) {
-                this.documentHelper.owner.editorModule.copyListLevel(levels, (currentAbstractList.levels[parseInt(i.toString(), 10)] as WListLevel));
+                this.documentHelper.owner.editorModule.copyListLevel(
+                    levels, (currentAbstractList.levels[parseInt(i.toString(), 10)] as WListLevel));
             }
             collection.add(i, modifiedLevel);
         }

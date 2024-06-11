@@ -11,6 +11,7 @@ export class WLevelOverride {
 
     /**
      * @private
+     * @returns {void}
      */
     public clear(): void {
         if (!isNullOrUndefined(this.overrideListLevel)) {
@@ -22,6 +23,7 @@ export class WLevelOverride {
     /**
      * Disposes the internal objects which are maintained.
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.overrideListLevel)) {

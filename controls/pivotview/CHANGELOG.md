@@ -2,76 +2,14 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I586835` - When measures have no values, the OLAP pivot table will now be rendered with the correct cell values when drilling down.
-- `#I585932` - Date grouping will now work properly when using remote data in a pivot table.
-
-## 25.2.5 (2024-05-21)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#F187958` - After disabling the defer layout update via check box option, defer layout update elements will be properly rendered when refreshing the pivot table component.
-- `#F188052` - Empty string members will now be properly filtered when virtualization is enabled in the pivot table.
-
-## 25.2.4 (2024-05-14)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I583180` - The member editor dialog will now be properly closed without any script errors when the cancel button is clicked.
-- `#F187973` - The pivot table will now be properly rendered while dynamically updating the data source with the grouping bar enabled.
-- `#I588151` - Value sorting will now work properly after disabling the "enableSorting" property with an OLAP data source.
-
-## 25.1.42 (2024-04-30)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I579456` - When the load report option is not displayed in the toolbar UI, report manipulation operations will now work properly.
-
-## 25.1.41 (2024-04-23)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I496624` - Value sorting will now work properly in an OLAP pivot table with a single measure.
-- `#I547664` - Excel exporting will now work properly in the pivot table using the server-side engine.
-
-## 25.1.39 (2024-04-09)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I572220` - The issue with persistence not working properly in the Pivot Table with remote data has been fixed.
-
-## 25.1.38 (2024-04-02)
+## 26.1.35 (2024-06-11)
 
 ### PivotTable
 
 #### Bug fixes
 
-- `#I572223` - The drill through popup will now open properly when double-clicking a value cell in the pivot table, with no console errors.
-
-## 25.1.37 (2024-03-26)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I562279`,`#I565475`,`#I566747` - The pivot table will now be properly displayed after engine export.
-- `#I566095` - The filter text will now be properly displayed in the OLAP Pivot Table's filter field button.
-- When you click the space key, the pivot field list node selection will work properly.
+- `#I581252` - Pivot Table will now be rendered properly within the parent container in Angular.
+- `#I591197` - Column header text will now be visible when using value sorting with autofit in the pivot table.
 
 ## 25.1.35 (2024-03-15)
 
@@ -581,9 +519,9 @@ type | `ExportType` | Defines the export type.
 
 ## 19.2.55 (2021-08-11)
 
-### Pivot Table
+### Pivot Table
 
-#### Bug Fixes
+#### Bug Fixes
 
 - `#I337487` - Now the field's caption can be changed dynamically using the value field settings pop-up.
 - `#F167449` - Now the fields panel has been refreshed properly with toolbar UI.

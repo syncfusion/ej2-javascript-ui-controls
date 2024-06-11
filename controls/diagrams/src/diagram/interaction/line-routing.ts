@@ -199,11 +199,12 @@ export class LineRouting {
      * @param {Diagram} diagram - provide the diagram value.
      * @param {Connector} connector - provide the connector value.
      * @param {boolean} isUpdate - provide the diagram value.
+     * @param {boolean} isEnableRouting - provide enableRouting value.
      *
      * @private
      */
     public refreshConnectorSegments(
-        diagram: Diagram, connector: Connector, isUpdate: boolean,isEnableRouting?: boolean): void {
+        diagram: Diagram, connector: Connector, isUpdate: boolean, isEnableRouting?: boolean): void {
         const sourceId: string = connector.sourceID; const targetId: string = connector.targetID;
         const sourcePortID: string = connector.sourcePortID; const targetPortID: string = connector.targetPortID;
         let startPoint: PointModel; let targetPoint: PointModel; let sourcePortDirection: string; let targetPortDirection: string;
@@ -216,8 +217,10 @@ export class LineRouting {
             this.startGrid = undefined; this.targetGrid = undefined;
             for (let i: number = 0; i < this.noOfCols; i++) {
                 for (let j: number = 0; j < this.noOfRows; j++) {
-                    this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].tested = this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].parent = undefined;
-                    this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].previousDistance = this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].afterDistance = undefined;
+                    this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].tested
+                        = this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].parent = undefined;
+                    this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].previousDistance
+                        = this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].afterDistance = undefined;
                     this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].totalDistance = undefined;
                 }
             }
@@ -544,10 +547,12 @@ export class LineRouting {
         for (let j: number = 0; j < points.length - 1; j++) {
             if (points[parseInt(j.toString(), 10)].x !== points[j + 1].x) {
                 if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
-                    sourcePoint = (points[parseInt(j.toString(), 10)].x > points[j + 1].x) ? sourceWrapper.bounds.middleLeft : sourceWrapper.bounds.middleRight;
+                    sourcePoint = (points[parseInt(j.toString(), 10)].x > points[j + 1].x)
+                        ? sourceWrapper.bounds.middleLeft : sourceWrapper.bounds.middleRight;
                 }
                 if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {
-                    targetPoint = (points[parseInt(j.toString(), 10)].x > points[j + 1].x) ? targetWrapper.bounds.middleRight : targetWrapper.bounds.middleLeft;
+                    targetPoint = (points[parseInt(j.toString(), 10)].x > points[j + 1].x)
+                        ? targetWrapper.bounds.middleRight : targetWrapper.bounds.middleLeft;
                 }
                 if (j === 0 && sourcePoint) {
                     points[parseInt(j.toString(), 10)].x = sourcePoint.x;
@@ -566,12 +571,14 @@ export class LineRouting {
                     points[parseInt(j.toString(), 10)].y = points[j + 1].y = targetPoint.y;
                 }
             } else {
-                //EJ2-855805 - Connector target decorator is not proper in complexhierarchical layout when we call doLayout with line-routing 
+                //EJ2-855805 - Connector target decorator is not proper in complexhierarchical layout when we call doLayout with line-routing
                 if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
-                    sourcePoint = (points[parseInt(j.toString(), 10)].y > points[j + 1].y) ? sourceWrapper.bounds.topCenter : sourceWrapper.bounds.bottomCenter;
+                    sourcePoint = (points[parseInt(j.toString(), 10)].y > points[j + 1].y)
+                        ? sourceWrapper.bounds.topCenter : sourceWrapper.bounds.bottomCenter;
                 }
                 if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {
-                    targetPoint = (points[parseInt(j.toString(), 10)].y > points[j + 1].y) ? targetWrapper.bounds.bottomCenter : targetWrapper.bounds.topCenter;
+                    targetPoint = (points[parseInt(j.toString(), 10)].y > points[j + 1].y)
+                        ? targetWrapper.bounds.bottomCenter : targetWrapper.bounds.topCenter;
                 }
                 if (j === 0 && sourcePoint) {
                     points[parseInt(j.toString(), 10)].y = sourcePoint.y;
@@ -632,7 +639,8 @@ export class LineRouting {
         const neigbours: VirtualBoundaries[] = this.findNearestNeigbours(startGrid, this.gridCollection, true);
         for (let i: number = 0; i < neigbours.length; i++) {
             intermediatePoint = this.findIntermediatePoints(
-                neigbours[parseInt(i.toString(), 10)].gridX, neigbours[parseInt(i.toString(), 10)].gridY, startGrid.gridX, startGrid.gridY, this.targetGrid.gridX, this.targetGrid.gridY);
+                neigbours[parseInt(i.toString(), 10)].gridX, neigbours[parseInt(i.toString(), 10)].gridY,
+                startGrid.gridX, startGrid.gridY, this.targetGrid.gridX, this.targetGrid.gridY);
             if (intermediatePoint !== null) {
                 const grid: VirtualBoundaries = this.gridCollection[intermediatePoint.x][intermediatePoint.y];
                 const h: number = this.octile(
@@ -652,7 +660,8 @@ export class LineRouting {
         }
         if (collection.length > 0) {
             for (let i: number = 0; i < collection.length; i++) {
-                const grid: VirtualBoundaries = this.gridCollection[collection[parseInt(i.toString(), 10)].x][collection[parseInt(i.toString(), 10)].y];
+                const grid: VirtualBoundaries
+                    = this.gridCollection[collection[parseInt(i.toString(), 10)].x][collection[parseInt(i.toString(), 10)].y];
                 if (this.startArray.indexOf(grid) === -1) {
                     this.startArray.push(grid);
                 }
@@ -785,7 +794,8 @@ export class LineRouting {
     private isWalkable(x: number, y: number, isparent?: boolean): boolean {
         if (x >= 0 && x < this.noOfRows && y >= 0 && y < this.noOfCols) {
             const grid: VirtualBoundaries = this.gridCollection[parseInt(x.toString(), 10)][parseInt(y.toString(), 10)];
-            if (grid && (grid.walkable || ((grid.nodeId.length === 1 || (grid.nodeId.length === 2 && grid.parentNodeId || (this.considerWalkable.indexOf(grid) !== -1))) &&
+            if (grid && (grid.walkable || ((grid.nodeId.length === 1 || (grid.nodeId.length === 2 && grid.parentNodeId
+                || (this.considerWalkable.indexOf(grid) !== -1))) &&
                 (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1 ||
                     this.considerWalkable.indexOf(grid) !== -1)))) {
                 if ((isparent && !grid.parent) || !isparent) {
@@ -804,7 +814,8 @@ export class LineRouting {
         const gridX: number = neigbourGridX; const gridY: number = neigbourGridY;
 
         for (let i: number = 0; i < this.targetGridCollection.length; i++) {
-            if (neigbourGridX === this.targetGridCollection[parseInt(i.toString(), 10)].gridX && neigbourGridY === this.targetGridCollection[parseInt(i.toString(), 10)].gridY) {
+            if (neigbourGridX === this.targetGridCollection[parseInt(i.toString(), 10)].gridX
+                && neigbourGridY === this.targetGridCollection[parseInt(i.toString(), 10)].gridY) {
                 return { x: neigbourGridX, y: neigbourGridY };
             }
         }
@@ -813,7 +824,8 @@ export class LineRouting {
             return null;
         }
 
-        const neigbourGrid: VirtualBoundaries = this.gridCollection[parseInt(neigbourGridX.toString(), 10)][parseInt(neigbourGridY.toString(), 10)];
+        const neigbourGrid: VirtualBoundaries
+            = this.gridCollection[parseInt(neigbourGridX.toString(), 10)][parseInt(neigbourGridY.toString(), 10)];
 
         if (neigbourGrid.tested) {
             return { x: neigbourGridX, y: neigbourGridY };

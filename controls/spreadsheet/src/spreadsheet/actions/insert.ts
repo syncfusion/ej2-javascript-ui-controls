@@ -50,8 +50,11 @@ export class Insert {
                             }
                             const prevColIdx: number = this.parent.viewport.leftIndex;
                             this.parent.renderModule.refreshUI(
-                                { rowIndex: this.parent.viewport.topIndex, colIndex: colIndex, refresh: 'Row', frozenIndexes: frozenIndexes,
-                                skipUpdateOnFirst: this.parent.viewport.topIndex + frozenRow === skipHiddenIdx(sheet, frozenRow, true) });
+                                {
+                                    rowIndex: this.parent.viewport.topIndex, colIndex: colIndex, refresh: 'Row',
+                                    frozenIndexes: frozenIndexes, skipUpdateOnFirst: this.parent.viewport.topIndex +
+                                        frozenRow === skipHiddenIdx(sheet, frozenRow, true)
+                                });
                             if (frozenCol) {
                                 this.parent.viewport.leftIndex = prevColIdx;
                             }
@@ -69,7 +72,7 @@ export class Insert {
                     }
                 } else if (this.parent.scrollSettings.isFinite && (this.parent.viewport.topIndex + frozenRow ===
                     skipHiddenIdx(sheet, 0, true) || this.parent.viewport.bottomIndex === skipHiddenIdx(
-                        sheet, sheet.rowCount - args.model.length - 1, false))) {
+                    sheet, sheet.rowCount - args.model.length - 1, false))) {
                     this.parent.renderModule.refreshSheet(false, false, true);
                 }
             }
@@ -92,7 +95,7 @@ export class Insert {
                             this.parent.renderModule.refreshUI(
                                 { skipUpdateOnFirst: this.parent.viewport.leftIndex + frozenCol === skipHiddenIdx(
                                     sheet, frozenCol, true, 'columns'), rowIndex: rowIndex, colIndex: this.parent.viewport.leftIndex,
-                                    refresh: 'Column', frozenIndexes: frozenIndexes });
+                                refresh: 'Column', frozenIndexes: frozenIndexes });
                             if (frozenRow) {
                                 this.parent.viewport.topIndex = prevRowIdx;
                             }
@@ -110,7 +113,7 @@ export class Insert {
                     }
                 } else if (this.parent.scrollSettings.isFinite && (this.parent.viewport.leftIndex + frozenCol ===
                     skipHiddenIdx(sheet, 0, true, 'columns') || this.parent.viewport.rightIndex === skipHiddenIdx(
-                        sheet, sheet.colCount - args.model.length - 1, false, 'columns'))) {
+                    sheet, sheet.colCount - args.model.length - 1, false, 'columns'))) {
                     this.parent.renderModule.refreshSheet(false, false, true);
                 }
             }

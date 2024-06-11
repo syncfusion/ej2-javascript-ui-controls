@@ -630,7 +630,7 @@ export class MarkerSettings extends ChildProperty<ChartModel> {
 
     /**
      * Options for customizing the border of a marker.
-     * 
+     *
      * @default {}
      */
     @Complex<BorderModel>({}, Border)

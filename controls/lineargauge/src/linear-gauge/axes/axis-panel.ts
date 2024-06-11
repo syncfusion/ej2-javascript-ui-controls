@@ -430,7 +430,8 @@ export class AxisLayoutPanel {
                 position = range.position;
                 startWidth = range.startWidth;
                 endWidth = range.endWidth;
-                colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette(this.gauge.theme);
+                colors = (!isNullOrUndefined(this.gauge.rangePalettes) && this.gauge.rangePalettes.length > 0) ? this.gauge.rangePalettes :
+                    getRangePalette(this.gauge.theme);
                 range.interior = (gradientRangeColor) ? gradientRangeColor :
                     (range.color) ? range.color : colors[i % colors.length];
                 if (this.gauge.orientation === 'Vertical') {

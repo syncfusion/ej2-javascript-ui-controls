@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, ConnectorConstraints, PortConstraints, PortVisibility, NodeConstraints } from '../../../src/diagram/enum/enum';
+import { Segments, ConnectorConstraints, PortConstraints, PortVisibility, NodeConstraints, DiagramTools } from '../../../src/diagram/enum/enum';
 import { Connector, OrthogonalSegment } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
@@ -1499,6 +1499,42 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Targer decorator for free hand connector is not rendered', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+ 
+        beforeAll(():void=>{
+            ele = createElement('div', { id: 'TargetDecoratorRenderIssue' }); 
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                width: "1200px", height: "500px",
+                 });
+             diagram.appendTo('#TargetDecoratorRenderIssue');
+            
+        });
+        afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('Checks whether the freehand connector is convert into bezier and the rendering of target decorator', (done: Function) => {
+                diagram.tool |= DiagramTools.DrawOnce;
+                diagram.drawingObject = {
+                    type: 'Freehand',
+                    sourceDecorator:{shape :'Diamond'},
+                     targetDecorator:{shape:'Circle'},
+                    };
+                let mouseEvents: MouseEvents = new MouseEvents();
+                let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+                mouseEvents.mouseDownEvent(diagramCanvas, 150, 150);
+                mouseEvents.mouseMoveEvent(diagramCanvas, 250, 400);
+                mouseEvents.mouseUpEvent(diagramCanvas, 250, 400);
+                expect(diagram.connectors[0].targetDecorator.shape == 'Circle').toBe(true);
+                done();
+                
+            });
+    });
+
     describe('Target decorator is not connected properly', () => {
 
         let diagram: Diagram;
@@ -1719,7 +1755,7 @@ describe('Diagram Control', () => {
 			console.log("Target decorator is not connected properly");
             console.log("connector.segments:"+connector.segments.length);
             console.log("(connector.segments[6] as OrthogonalSegment).length:"+(connector.segments[6] as OrthogonalSegment).length);
-            expect(connector.segments.length == 8 && (connector.segments[6] as OrthogonalSegment).length != 72.453125).toBe(true);
+            expect(connector.segments.length == 8 && (connector.segments[6] as OrthogonalSegment).length == 72.453125).toBe(true);
             done();
         });
     });

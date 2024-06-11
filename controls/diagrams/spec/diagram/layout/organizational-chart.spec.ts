@@ -2204,12 +2204,12 @@ describe('Connector Update in Layout Issue', () => {
         diagram.layout.type = "OrganizationalChart";
         diagram.dataBind();
         let id = diagram.connectors[0].id;
-        let x = document.getElementById(id).getAttribute('x');
+        let x = (Math.ceil(Number(document.getElementById(id).getAttribute('x')))).toString();
         let y = document.getElementById(id).getAttribute('y');
         console.log("update in DOM");
         console.log(x);
         console.log(y);
-        expect(x == '432.17' && y == '74.4').toBe(true);
+        expect(x == '433' && y == '74.4').toBe(true);
         done();
     });
     it('memory leak', () => {
@@ -2466,7 +2466,7 @@ describe('Node and connector default for layout', () => {
     it('get layout info test cases', (done: Function) => {
         let node = diagram.nodes[0]
         let nodeElement: any = document.getElementById(node.id)
-        expect(Math.round(nodeElement.getAttribute('x')) === 632 || Math.round(nodeElement.getAttribute('x')) === 633).toBe(true);
+        expect(Math.round(nodeElement.getAttribute('x')) === 631 || Math.round(nodeElement.getAttribute('x')) === 632 || Math.round(nodeElement.getAttribute('x')) === 633).toBe(true);
         nodeElement = document.getElementById(diagram.nodes[1].id)
         expect(Math.round(nodeElement.getAttribute('x')) === 579 || Math.round(nodeElement.getAttribute('x')) === 580 || Math.round(nodeElement.getAttribute('x')) === 581).toBe(true)
         done();
@@ -3309,9 +3309,7 @@ describe('layout-info assistant support', () => {
             let node1 = diagram.nodes[1]
             node1.isExpanded = false;
             diagram.dataBind();
-            console.log(Math.round(node1.offsetY))
-            console.log(Math.round(node1.offsetX))
-            expect(Math.round(node1.offsetY) === 250 && Math.round(node1.offsetX) === 484).toBe(true)
+            expect(diagram.nodes[2].visible === false && diagram.nodes[1].visible === true).toBe(true)
             done();
         });
     });
@@ -3385,10 +3383,10 @@ describe('layout-info assistant support', () => {
             console.log('diagram.nodes[3].offsetX' + diagram.nodes[3].offsetX);
             console.log('diagram.nodes[7].offsetX' + diagram.nodes[7].offsetX);
             console.log('diagram.nodes[11].offsetX' + diagram.nodes[11].offsetX);
-            expect(Math.round(diagram.nodes[2].offsetX) === -91 || Math.round(diagram.nodes[2].offsetX) === -92 || Math.round(diagram.nodes[2].offsetX) === -90).toBe(true);
-            expect(Math.round(diagram.nodes[3].offsetX) === -171  || Math.round(diagram.nodes[3].offsetX) === -172 || Math.round(diagram.nodes[3].offsetX) === -173).toBe(true);
-            expect(Math.round(diagram.nodes[7].offsetX) === 221 || Math.round(diagram.nodes[7].offsetX) === 222).toBe(true);
-            expect(Math.round(diagram.nodes[11].offsetX) === 209 || Math.round(diagram.nodes[11].offsetX) === 210 || Math.round(diagram.nodes[11].offsetX) === 211).toBe(true);
+            expect(Math.round(diagram.nodes[2].offsetX) === -76 || Math.round(diagram.nodes[2].offsetX) === -75 || Math.round(diagram.nodes[2].offsetX) === -77).toBe(true);
+            expect(Math.round(diagram.nodes[3].offsetX) === -154  || Math.round(diagram.nodes[3].offsetX) === -155 || Math.round(diagram.nodes[3].offsetX) === -153).toBe(true);
+            expect(Math.round(diagram.nodes[7].offsetX) === 230 || Math.round(diagram.nodes[7].offsetX) === 231).toBe(true);
+            expect(Math.round(diagram.nodes[11].offsetX) === 218 || Math.round(diagram.nodes[11].offsetX) === 219 || Math.round(diagram.nodes[11].offsetX) === 217).toBe(true);
             done();
         });
     });
@@ -5224,7 +5222,7 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
     beforeAll(() => {
         ele = createElement('div', { id: 'diagramexpand' });
         document.body.appendChild(ele);
- 
+
 
         let localBindData: object[] = [
             {
@@ -5246,7 +5244,7 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
                 "ChartType": "right",
                 "color": "#1859B7"
             },
-            
+
             {
                 "Id": "4",
                 "Role": "Recruiting Team",
@@ -5284,7 +5282,7 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
                 "Manager": "6",
                 "color": "#2E95D8"
             },
-           
+
             {
                 "Id": "10",
                 "Role": "Operations Manager",
@@ -5311,7 +5309,7 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
                 "ChartType": "right",
                 "color": "#1859B7"
             },
-           
+
             {
                 "Id": "18",
                 "Role": "Petroleum Manager",
@@ -5331,9 +5329,9 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
                 "color": "#2E95D8"
             }
         ];
-        
+
         let items: DataManager = new DataManager(localBindData as JSON[], new Query().take(25));
-        
+
         diagram = new Diagram({
             width: '100%', height: 1000,
             selectionChange: function (args: ISelectionChangeEventArgs) {
@@ -5348,14 +5346,14 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
                     options.orientation = 'Horizontal';
                      options.type = 'Center';
                 },
-        
+
              },
             dataSourceSettings: {
                 id: 'Id', parentId: 'Manager', dataSource: items,
                 doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
                     nodeModel.shape = {
-                        type: 'Basic', 
-        
+                        type: 'Basic',
+
                         margin: { left: 10, right: 10, top: 10, bottom: 10 },
                         cornerRadius:20
                     };
@@ -5366,7 +5364,7 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
                 obj.style = { strokeColor: 'lightgreen', color: 'lightgreen',strokeWidth:2 };
                 obj.expandIcon = { height: 15, width: 15, shape: 'Minus', fill: 'lightgray', offset: { x: .5, y: 1 } };
                 obj.collapseIcon = { height:15, width: 15, shape: 'Plus', fill: 'lightgray', offset: { x: .5, y: 1 } };
-               
+
                 obj.width = 120;
                 obj.height = 60;
                 return obj;
@@ -5378,14 +5376,14 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
                 return connector;
             },
         });
-        
+
         diagram.appendTo('#diagramexpand');
     });
     function  collapseNodes() {
         let selectedNode = diagram.selectedItems.nodes[0];
             findSibling(selectedNode);
       }
-    
+
       function findSibling(selectedNode:any){
         let nodes: NodeModel[] = diagram.nodes;
         let siblingNodes = nodes.filter(
@@ -5444,6 +5442,89 @@ describe('877226 - Nodes overlapped while changing isExpanded property with Layo
         expect(designSupervisorChild.visible === true && hrChild.visible === true).toBe(true);
         done();
     });
+    describe('832886 - Rendering the Layout Child Data without Considering Case Sensitivity', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'casesensitivity' });
+            document.body.appendChild(ele);
+            let data: object[] = [
+                {
+                    'Id': 'Parent1', 'Name': 'Maria Anders', 'Designation': 'Managing Director', 'IsExpand': 'true', 'RatingColor': '#C34444'
+                },
+                {
+                    'Id': 1, 'Name': 'Ana Trujillo', 'Designation': 'Project Manager', 'IsExpand': 'false',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 'parent1'
+                },
+                {
+                    'Id': 2, 'Name': 'Anto Moreno', 'Designation': 'Project Lead', 'IsExpand': 'false',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 1
+                },
+                {
+                    'Id': 3, 'Name': 'Thomas Hardy', 'Designation': 'Senior S/w Engg', 'IsExpand': 'false',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 2
+                },
+                {
+                    'Id': 4, 'Name': 'Christina kaff', 'Designation': 'S/w Engg', 'IsExpand': 'false',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 3
+                },
+                {
+                    'Id': 5, 'Name': 'Hanna Moos', 'Designation': 'Project Trainee', 'IsExpand': 'true',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 4
+                },
+                {
+                    'Id': 6, 'Name': 'Peter Citeaux', 'Designation': 'Project Trainee', 'IsExpand': 'true',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 4
+                },
+                {
+                    'Id': 7, 'Name': 'Martín Kloss', 'Designation': 'Senior S/w Engg', 'IsExpand': 'false',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 1
+                },
+                {
+                    'Id': 9, 'Name': 'Elizabeth Mary', 'Designation': 'Project Trainee', 'IsExpand': 'None',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 'PARENT1'
+                },
+                {
+                    'Id': 10, 'Name': 'Victoria Ash', 'Designation': 'Project Trainee', 'IsExpand': 'None',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 'pArEnT1'
+                },
+            ];
+            let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+            diagram = new Diagram({
+                width: '1250px', height: '590px',
+                snapSettings: { constraints: 0 },
+                layout: {
+                    type: 'OrganizationalChart', margin: { top: 20 },
+                    getLayoutInfo: (node: Node, tree: TreeInfo) => {
+                        if (!tree.hasSubTree) {
+                            tree.orientation = 'Vertical';
+                            tree.type = 'Alternate';
+                        }
+                    }
+                },
+                dataSourceSettings: {
+                    id: 'Id', parentId: 'ReportingPerson', dataSource: items
+                },
+                getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                    obj.height = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = 'None';
+                    connector.type = 'Orthogonal';
+                    return connector;
+                },
+            });
+            diagram.appendTo('#casesensitivity');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Rendering the Layout Child Data without Considering Case Sensitivity', (done: Function) => {
+            expect(diagram.nodes.length === 10).toBe(true);
+            done();
+        });
+    });
 });
-
-

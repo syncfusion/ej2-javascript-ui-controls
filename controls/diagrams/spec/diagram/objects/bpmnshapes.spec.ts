@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { Node } from '../../../src/diagram/objects/node';
-import { NodeModel, BpmnShapeModel, BpmnGatewayModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, BpmnShapeModel, BpmnGatewayModel, BpmnSubProcessModel } from '../../../src/diagram/objects/node-model';
 import { ShapeStyleModel, ShadowModel } from '../../../src/diagram/core/appearance-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
@@ -9,7 +9,7 @@ import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { ConnectorModel } from '../../../src';
 import { BpmnFlowModel, HierarchicalTree, } from '../../../src/diagram/index';
-
+import { MouseEvents } from '../interaction/mouseevents.spec';
 Diagram.Inject(BpmnDiagrams,HierarchicalTree);
 
 /**
@@ -1052,6 +1052,18 @@ describe('BPMN Flow connectors not changed properly at runtime ', () => {
         preMessageColor === 'white' && currMessageColor === 'lightgrey').toBe(true);
         done();
     });
+    it('Changing flow connectors at runtime for coverage', (done: Function) => { 
+        (diagram.connectors[0].shape as BpmnFlowModel).association = 'Default';
+        diagram.dataBind();
+        (diagram.connectors[0].shape as BpmnFlowModel).association = 'Directional';
+        diagram.dataBind();
+        (diagram.connectors[1].shape as BpmnFlowModel).sequence = 'Default';
+        diagram.dataBind();
+        (diagram.connectors[2].shape as BpmnFlowModel).message = 'InitiatingMessage';
+        diagram.dataBind();
+        expect((diagram.connectors[0].shape as BpmnFlowModel).association === 'Directional' && (diagram.connectors[1].shape as BpmnFlowModel).sequence === 'Default').toBe(true);
+        done();
+    });
     it('Checking Bpmn flow type after changing it at runtime', (done: Function) => { 
         let preFlow = (diagram.connectors[0].shape as BpmnFlowModel).flow;
         (diagram.connectors[0].shape as BpmnFlowModel).flow = 'Sequence';
@@ -1148,9 +1160,74 @@ describe('BPMN Shapes strokecolor changing', () => {
     });
   
 });
+describe('BPMN sub process Shape render highlighter', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let events: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        ele = createElement('div', { id: 'diagramSubProcess' });
+        document.body.appendChild(ele);
+        let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
+        let nodes: NodeModel[] = [{
+            id: 'processesStart', width: 30, height: 30, shape: {
+                type: 'Bpmn', shape: 'Event',
+                event: { event: 'Start' }
+            }, margin: { left: 40, top: 80 }
+        }, {
+            id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+            offsetX: 200, offsetY: 200,
+            shape: {
+                type: 'Bpmn', shape: 'Activity', activity: {
+                    activity: 'SubProcess',
+                    subProcess: {
+                        collapsed: false, type: 'Transaction',
+                        processes: ['processesStart']
+                    } as BpmnSubProcessModel
+                },
+            },
+        }]
+        diagram = new Diagram({
+            width: 1000, height: 500, nodes: nodes, connectors:[{id:'connector1', sourcePoint:{x:400,y:200}, targetPoint:{x:600,y:200}}]
+        });
+        diagram.appendTo('#diagramSubProcess');
+    });
 
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
 
-
-
-
+    it('check highlighter for sub process when connetor dock', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        let decorator = document.getElementById('connectorSourceThumb');
+        let bounds: any = decorator.getBoundingClientRect();
+        events.mouseDownEvent(diagramCanvas, bounds.x, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x - 50, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x - 100, bounds.y, false, false);
+        events.mouseUpEvent(diagramCanvas, bounds.x - 100, bounds.y, false, false);
+        done();
+    });
+    it('select child Select BPMN subprocess', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let node=diagram.getObject('processesStart');
+        diagram.select([node]);
+        let resizeHandle= document.getElementById('resizeSouth');
+        let resizeBounds: any = resizeHandle.getBoundingClientRect();
+        events.mouseDownEvent(diagramCanvas, resizeBounds.x, resizeBounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, resizeBounds.x, resizeBounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, resizeBounds.x, resizeBounds.y+10, false, false);
+        events.mouseMoveEvent(diagramCanvas, resizeBounds.x, resizeBounds.y+10, false, false);
+        events.mouseUpEvent(diagramCanvas, resizeBounds.x, resizeBounds.y+10, false, false);
+        done();
+    });
+});
 

@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, ChildProperty, Collection, removeClass, Event, EmitType } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, ChildProperty, Collection, Event, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
 import {StepStatus,StepperOrientation} from "./stepper-base";
 import {ComponentModel} from '@syncfusion/ej2-base';
 

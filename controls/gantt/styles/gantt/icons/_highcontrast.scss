@@ -1,5 +1,6 @@
 @include export-module('gantt-material-icons') {
-  #{&}.e-gantt {
+  #{&}.e-gantt,
+  .e-gantt-menu {
     .e-add::before {
       content: '\e7d5';
     }
@@ -16,7 +17,8 @@
       content: '\e965';
     }
 
-    .e-cancel::before {
+    .e-cancel-icon::before,
+    .e-toolbar-item .e-cancel::before {
       content: '\e953';
     }
 
@@ -32,10 +34,6 @@
       content: '\ebe6';
     }
 
-    .e-cancel-icon::before {
-      content: '\e953';
-    }
-
     .e-notes-info::before {
       content: '\e607';
     }
@@ -48,10 +46,12 @@
       content: '\e558';
     }
 
+    .e-gantt-tooltip-arrow-left::before,
     .e-prevtimespan::before {
       content: '\e85b';
     }
 
+    .e-gantt-tooltip-arrow-right::before,
     .e-nexttimespan::before {
       content: '\e85f';
     }
@@ -116,13 +116,5 @@
 
   .e-icon-rowselect::before {
     content: '\e930';
-  }
-  
-  .e-gantt-tooltip-arrow-left::before {
-    content: '\e85b';
-  }
-
-  .e-gantt-tooltip-arrow-right::before {
-    content: '\e85f';
   }
 }

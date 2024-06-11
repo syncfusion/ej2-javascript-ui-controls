@@ -1,6 +1,8 @@
+/* eslint-disable no-constant-condition */
+/* eslint-disable radix */
 import { extend, isNullOrUndefined, Browser, getComponent } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension } from '@syncfusion/ej2-inputs';
-import { ImageEditor, Point, SelectionPoint, OpenEventArgs, Direction, CurrentObject, ShapeSettings, FileType, StrokeSettings, Transition, TextSettings, CropSelectionSettings, SelectionChangeEventArgs, FrameValue, FrameChangeEventArgs, FrameSettings, FrameType, FrameLineStyle, ImageDimension } from '../index';
+import { ImageEditor, Point, SelectionPoint, OpenEventArgs, Direction, CurrentObject, ShapeSettings, FileType, StrokeSettings, Transition, TextSettings, CropSelectionSettings, SelectionChangeEventArgs, FrameValue, FrameChangeEventArgs, FrameSettings, FrameType, FrameLineStyle, ImageDimension, ShapeType } from '../index';
 import { Dialog, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 export class Draw {
     private parent: ImageEditor;
@@ -16,7 +18,7 @@ export class Draw {
     private isRotateZoom: boolean = false; // To restore zoomed image on selection crop selection
     private tempStrokeSettings: StrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null}; // restore stroke settings on cancel
     private tempTextSettings: TextSettings =
-        {text: 'Enter Text', fontFamily: '', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false}; // restore text settings on cancel
+    {text: 'Enter Text', fontFamily: '', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false}; // restore text settings on cancel
     private tempAdjValue: string = ''; // for temp internal slider value
     private tempFilter: string = ''; // restore filter style on cancel
     private tempUndoRedoStep: number = 0;
@@ -56,6 +58,9 @@ export class Draw {
     private isDownScale: boolean = false;
     private tempStraightenDestPoints: ImageDimension;
     private preventStraightening: boolean = false;
+    private tempObjColl: SelectionPoint[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private tempPointColl: any = {};
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -115,7 +120,7 @@ export class Draw {
             this.updateCanvas();
             break;
         case 'performCancel':
-            this.performCancel(args.value['isContextualToolbar'], args.value['isUndoRedo']);
+            this.performCancel(args.value['isContextualToolbar'], args.value['isUndoRedo'], args.value['isFinalCancel']);
             break;
         case 'updateFlipPan':
             this.updateFlipPan(args.value['tempSelectionObj']);
@@ -221,12 +226,6 @@ export class Draw {
         case 'reset':
             this.reset();
             break;
-        case 'dlgBtnClick':
-            this.dlgBtnClick();
-            break;
-        case 'dlgCloseBtnClick':
-            this.dlgCloseBtnClick();
-            break;
         case 'setNewPath':
             this.isNewPath = args.value['bool'];
             break;
@@ -330,6 +329,18 @@ export class Draw {
                                                                     args.value['obj']['x3'], args.value['obj']['y3'], args.value['obj']['x4'],
                                                                     args.value['obj']['y4']);
             break;
+        case 'updateTempObjColl':
+            this.tempObjColl = extend([], this.parent.objColl, [], true) as SelectionPoint[];
+            break;
+        case 'resetTempObjColl':
+            this.tempObjColl = null;
+            break;
+        case 'updateTempPointColl':
+            this.tempPointColl = extend({}, this.parent.pointColl, {}, true);
+            break;
+        case 'resetTempPointColl':
+            this.tempPointColl = {};
+            break;
         }
     }
 
@@ -363,6 +374,7 @@ export class Draw {
             arrow: {width: 24, height: 24, ratioX: null, ratioY: null}, arrowSolid: {width: 32, height: 32, ratioX: null, ratioY: null},
             circle: {width: 10, height: 10, ratioX: null, ratioY: null}, square: {width: 20, height: 20, ratioX: null, ratioY: null }};
         this.straightenActObj = null; this.imgCanvasPoints = []; this.straightenInitZoom = null;
+        this.tempObjColl = []; this.tempPointColl = {};
         this.straightenDestPoints = null; this.isCropSelect = this.isDownScale = this.preventStraightening = false;
     }
 
@@ -383,7 +395,7 @@ export class Draw {
     private updateFinetune(): void {
         const parent: ImageEditor = this.parent;
         if (parent.transform.zoomFactor && parent.transform.zoomFactor < 0) {
-            const filter = this.lowerContext.filter;
+            const filter: string = this.lowerContext.filter;
             this.lowerContext.filter = 'none';
             parent.notify('draw', { prop: 'redrawDownScale' });
             const inMemoryContext: CanvasRenderingContext2D = parent.inMemoryCanvas.getContext('2d');
@@ -427,7 +439,7 @@ export class Draw {
         if (obj) {
             parent.activeObj = extend({}, obj, {}, true) as SelectionPoint;
         }
-        if (points) {
+        if (points && points.startX && points.startY && points.endX && points.endY && points.width && points.height) {
             actPoint.startX = points.startX; actPoint.startY = points.startY;
             actPoint.endX = points.endX; actPoint.endY = points.endY;
             actPoint.width = points.width; actPoint.height = points.height;
@@ -450,7 +462,7 @@ export class Draw {
                 if (splitWords[0] === 'crop') {isCrop = true; }
             }
             if (isCrop) {
-                if (points) {
+                if (points && points.startX && points.startY && points.endX && points.endY && points.width && points.height) {
                     actPoint.startX = points.startX; actPoint.startY = points.startY;
                     actPoint.endX = points.endX; actPoint.endY = points.endY;
                     actPoint.width = points.width; actPoint.height = points.height;
@@ -621,6 +633,10 @@ export class Draw {
             break;
         case 'crop-9:16':
             x = 9; y = 16;
+            break;
+        default:
+            x = parseInt(parent.currObjType.shape.toLowerCase().split('crop-')[1].split(':')[0]);
+            y = parseInt(parent.currObjType.shape.toLowerCase().split('crop-')[1].split(':')[1]);
             break;
         }
         if (x !== undefined && y !== undefined) {
@@ -1069,16 +1085,16 @@ export class Draw {
             canvasDraw.lineWidth *= 2; canvasDraw.beginPath();
             canvasDraw.moveTo(tempObj.topLeftCircle.startX, tempObj.topLeftCircle.startY);
             canvasDraw.arc(tempObj.topLeftCircle.startX, tempObj.topLeftCircle.startY,
-                            tempObj.topLeftCircle.radius, 0, 2 * Math.PI);
+                           tempObj.topLeftCircle.radius, 0, 2 * Math.PI);
             canvasDraw.moveTo(tempObj.topRightCircle.startX, tempObj.topRightCircle.startY);
             canvasDraw.arc(tempObj.topRightCircle.startX, tempObj.topRightCircle.startY,
-                            tempObj.topRightCircle.radius, 0, 2 * Math.PI);
+                           tempObj.topRightCircle.radius, 0, 2 * Math.PI);
             canvasDraw.moveTo(tempObj.bottomLeftCircle.startX, tempObj.bottomLeftCircle.startY);
             canvasDraw.arc(tempObj.bottomLeftCircle.startX, tempObj.bottomLeftCircle.startY,
-                            tempObj.bottomLeftCircle.radius, 0, 2 * Math.PI);
+                           tempObj.bottomLeftCircle.radius, 0, 2 * Math.PI);
             canvasDraw.moveTo(tempObj.bottomRightCircle.startX, tempObj.bottomRightCircle.startY);
             canvasDraw.arc(tempObj.bottomRightCircle.startX, tempObj.bottomRightCircle.startY,
-                            tempObj.bottomRightCircle.radius, 0, 2 * Math.PI);
+                           tempObj.bottomRightCircle.radius, 0, 2 * Math.PI);
             canvasDraw.stroke(); canvasDraw.fill(); canvasDraw.closePath();
             canvasDraw.lineWidth /= 2;
             canvasDraw.strokeStyle = strokeColor; canvasDraw.fillStyle = fillColor;
@@ -1530,6 +1546,8 @@ export class Draw {
                 const intersectionY1: number = startY + this.dy * t2;
                 if (start) {
                     this.startCircleIntersectX1 = intersectionX1; this.startCircleIntersectY1 = intersectionY1;
+                    this.endCircleIntersectX1 = endX - this.dx * t2;
+                    this.endCircleIntersectY1 = endY - this.dy * t2;
                     canvasDraw.beginPath(); canvasDraw.fill(); canvasDraw.beginPath();
                     if (actObj.start === 'circle' && actObj.end === 'circle') {
                         this.shapeLine(canvasDraw, this.startCircleIntersectX1, this.startCircleIntersectY1,
@@ -1574,6 +1592,8 @@ export class Draw {
                 const intersectionY1: number = endY + this.dy * t2;
                 if (start) {
                     this.startCircleIntersectX1 = intersectionX1; this.startCircleIntersectY1 = intersectionY1;
+                    this.endCircleIntersectX1 = startX - this.dx * t2;
+                    this.endCircleIntersectY1 = startY - this.dy * t2;
                     if (actObj.start === 'circle' && actObj.end === 'circle') {
                         this.shapeLine(canvasDraw, this.endCircleIntersectX1, this.endCircleIntersectY1,
                                        this.startCircleIntersectX1, this.startCircleIntersectY1);
@@ -1721,9 +1741,9 @@ export class Draw {
     }
 
     private shapeText(canvasDraw: CanvasRenderingContext2D): void {
-        const parent: ImageEditor = this.parent; 
+        const parent: ImageEditor = this.parent;
         const filter: string = canvasDraw.filter; const actObj: SelectionPoint = parent.activeObj;
-        let { startX, startY, width, height } = actObj.activePoint;
+        const { startX, startY, width, height } = actObj.activePoint;
         const rows: string[] = actObj.keyHistory.split('\n');
         const { fontFamily, bold, italic } = actObj.textSettings;
         let { fontSize } = actObj.textSettings;
@@ -1811,8 +1831,8 @@ export class Draw {
         imgPoint.startY = actObj.activePoint.startY;
         let startX: number = imgPoint.startX;
         let startY: number = imgPoint.startY;
-         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        let tempDegree: number; const tempColl: any= [];
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        let tempDegree: number; const tempColl: any = [];
         canvasDraw.save();
         for (let i: number = 0, len: number = actObj.rotateFlipColl.length; i < len; i++) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -1888,8 +1908,8 @@ export class Draw {
         imgPoint.startY = actPoint.startY;
         let startX: number = imgPoint.startX;
         let startY: number = imgPoint.startY;
-         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        let tempDegree: number; const tempColl: any= [];
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        let tempDegree: number; const tempColl: any = [];
         canvasDraw.save();
         for (let i: number = 0, len: number = actObj.rotateFlipColl.length; i < len; i++) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -2137,7 +2157,6 @@ export class Draw {
 
     private renderImage(isMouseWheel?: boolean, isPreventClearRect?: boolean, isFrame?: boolean, isStraighten?: boolean): void {
         const parent: ImageEditor = this.parent;
-        const temp: string = this.lowerContext.filter;
         parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: null}});
         if (isNullOrUndefined(isPreventClearRect)) {
             this.upperContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
@@ -2156,12 +2175,11 @@ export class Draw {
             this.updateCurrTransState('reverse', null, null, isStraighten); this.isRotateZoom = false;
         }
         if (isFrame) {
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: { isPreventApply: null }});
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: { isPreventApply: null }});
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         } else {
-            parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-            parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-                value: {context: this.lowerContext, points: null} });
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
         }
         this.clearOuterCanvas(this.lowerContext);
         if (parent.isCircleCrop || (parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle')) {
@@ -2176,6 +2194,7 @@ export class Draw {
         const proxy: Draw = this;
         parent.baseImg.src = src;
         parent.baseImg.onload = () => {
+            parent.imgSrc = src;
             parent.notify('filter', { prop: 'update-finetunes', onPropertyChange: false });
             proxy.lowerContext.drawImage(parent.baseImg, 0, 0, proxy.parent.lowerCanvas.width, proxy.parent.lowerCanvas.height);
             hideSpinner(parent.element); parent.element.style.opacity = '1'; proxy.updateBaseImgCanvas();
@@ -2239,8 +2258,8 @@ export class Draw {
         parent.notify('crop', { prop: 'setCropDestPoints', onPropertyChange: false, value: {point: point }});
         const temp: string = this.lowerContext.filter;
         this.lowerContext.filter = 'none';
-        parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'iterate', pen: 'zoom', isPreventApply: null }});
         this.lowerContext.filter = temp;
         if (parent.img.destWidth > 0 && parent.img.destHeight > 0) {parent.isImageLoaded = true; }
         if (parent.isUndoRedo) {
@@ -2276,8 +2295,11 @@ export class Draw {
         }
     }
 
-    private performCancel(isContextualToolbar?: boolean, isUndoRedo?: boolean): void {
+    private performCancel(isContextualToolbar?: boolean, isUndoRedo?: boolean, isFinalCancel?: boolean): void {
         const parent: ImageEditor = this.parent;
+        if (isFinalCancel) {
+            parent.noPushUndo = false;
+        }
         const straightenObj: Object = {bool: parent.isStraightening };
         isContextualToolbar = isContextualToolbar ? isContextualToolbar : false;
         const obj: Object = {bool: false };
@@ -2291,7 +2313,7 @@ export class Draw {
         if (obj['bool']) {
             parent.notify('freehand-draw', {prop: 'cancelFhd', onPropertyChange: false});
             parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-            parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'cancel' }});
+            parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
         } else if (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') {
             parent.textArea.style.display = 'none'; parent.textArea.value = ''; parent.textArea.style.transform = '';
             if (this.prevActObj) {
@@ -2306,6 +2328,9 @@ export class Draw {
             parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: true}});
             parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
             parent.notify('selection', { prop: 'setTempActObj', onPropertyChange: false, value: {obj: parent.activeObj }});
+            if (parent.drawingShape) {
+                parent.enableShapeDrawing(parent.toPascalCase(parent.drawingShape) as ShapeType, true);
+            }
         } else if (((!Browser.isDevice || (Browser.isDevice && !straightenObj['bool'])) &&
             document.querySelector('#' + parent.element.id + '_sliderWrapper')) || parent.currObjType.isFiltered) {
             this.lowerContext.filter = this.tempAdjValue; parent.canvasFilter = this.tempAdjValue;
@@ -2359,6 +2384,12 @@ export class Draw {
         this.isNewPath = false;
         parent.notify('toolbar', {prop: 'refresh-dropdown-btn', value: {isDisabled: false}});
         parent.notify('toolbar', {prop: 'setCurrentToolbar', value: {type: 'main' }});
+        if (isFinalCancel) {
+            parent.noPushUndo = false;
+        }
+        parent.drawingShape = null;
+        parent.notify('draw', { prop: 'resetTempObjColl'});
+        parent.notify('draw', { prop: 'resetTempPointColl'});
     }
 
     private cancelItems(): void {
@@ -2405,8 +2436,8 @@ export class Draw {
                     parent.pointColl = obj2['prevObj']['pointColl'];
                     parent.freehandCounter = parent.pointColl.length;
                     parent.transform.straighten = 0;
-                    parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-                    parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+                    parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                        value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
                     const currObj: SelectionPoint = parent.currSelectionPoint ?
                         extend({}, parent.currSelectionPoint, {}, true) as SelectionPoint : null;
                     parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
@@ -2431,7 +2462,7 @@ export class Draw {
             this.cancelPen();
             break;
         case parent.activeObj.shape === 'text':
-            this.cancelText(isCropSelection);
+            this.cancelText();
             break;
         case shapes.indexOf(parent.activeObj.shape) !== -1:
             this.cancelShape();
@@ -2470,9 +2501,15 @@ export class Draw {
             value: {strokeSettings: parent.activeObj.strokeSettings, strokeColor: null, fillColor: null, strokeWidth: null }});
         parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'cancel'}});
         parent.notify('selection', {prop: 'setFreehandDrawCustomized', value: {isFreehandDrawCustomized: false }});
+        parent.objColl = extend([], this.tempObjColl, [], true) as SelectionPoint[];
+        parent.pointColl = extend([], this.tempPointColl, [], true) as Point[];
+        parent.freehandCounter = parent.pointColl.length;
+        this.tempPointColl = {};
+        this.renderImage();
+        parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok', isCancel: true}});
     }
 
-    private cancelText(isCropSelection: boolean): void {
+    private cancelText(): void {
         const parent: ImageEditor = this.parent;
         parent.notify('shape', { prop: 'setTextSettings', onPropertyChange: false,
             value: {textSettings: this.tempTextSettings, fontFamily: null, fontSize: null }});
@@ -2494,24 +2531,15 @@ export class Draw {
                 parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
                 this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
             }
-            if (parent.activeObj.shape && parent.activeObj.keyHistory === 'Enter Text') {
-                parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
-                this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
-                parent.notify('shape', { prop: 'draw-shape-text' });
-                parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'cancel' }});
-                parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: true}});
-            } else if (parent.activeObj.shape) {
-                parent.notify('shape', { prop: 'redraw-text' });
-                parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false, value: {obj: parent.activeObj}});
-                if (!isCropSelection && parent.activeObj.topLeftCircle !== undefined) {
-                    parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: true}});
-                }
-                parent.clearSelection();
-            }
         }
         parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
         this.tempTextSettings = {text: 'Enter Text', fontFamily: parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false,
             italic: false, underline: false};
+        parent.objColl = extend([], this.tempObjColl, [], true) as SelectionPoint[];
+        parent.pointColl = extend([], this.tempPointColl, [], true) as Point[];
+        this.renderImage();
+        this.tempObjColl = [];
+        parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok', isCancel: true}});
     }
 
     private cancelShape(): void {
@@ -2549,9 +2577,23 @@ export class Draw {
                 parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
                 this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
             }
+            const undoRedoObj: Object = {undoRedoStep: null };
+            parent.notify('undo-redo', {prop: 'getUndoRedoStep', value: {obj: undoRedoObj }});
+            if (object['appliedUndoRedoColl'][(undoRedoObj['undoRedoStep'] - 1) as number]) {
+                parent.objColl =
+                    extend([], object['appliedUndoRedoColl'][(undoRedoObj['undoRedoStep'] - 1) as number].currentObjColl, [], true) as SelectionPoint[];
+            } else {
+                parent.objColl = [];
+            }
+            this.renderImage();
         }
         parent.currObjType.isDragging = false;
         parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
+        parent.objColl = extend([], this.tempObjColl, [], true) as SelectionPoint[];
+        parent.pointColl = extend([], this.tempPointColl, [], true) as Point[];
+        this.renderImage();
+        this.tempObjColl = [];
+        parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok', isCancel: true}});
     }
 
     private cancelSelection(): void {
@@ -2565,6 +2607,7 @@ export class Draw {
             parent.notify('draw', { prop: 'setStraightenActObj', value: {activeObj: parent.activeObj }});
             parent.notify('crop', {prop: 'resizeWrapper'});
             this.updateCropSelObj();
+            // eslint-disable-next-line max-len
             if (this.tempStraightenDestPoints && JSON.stringify(this.tempStraightenDestPoints) !== JSON.stringify(this.straightenDestPoints)) {
                 this.straightenDestPoints = extend({}, this.tempStraightenDestPoints, {}, true) as ImageDimension;
             }
@@ -2763,6 +2806,11 @@ export class Draw {
             actPoint.startX = startX; actPoint.startY = startY;
             actPoint.endX = startX + width; actPoint.endY = startY + height;
             actPoint.width = width; actPoint.height = height;
+        } else if (width && height) {
+            const { destLeft, destTop, destWidth, destHeight } = parent.img;
+            actPoint.width = width; actPoint.height = height;
+            actPoint.startX = destLeft + ((destWidth / 2) - (width / 2));
+            actPoint.startY = destTop + ((destHeight / 2) - (height / 2));
         } else {
             if (isNullOrUndefined(parent.transform.zoomFactor) || parent.transform.zoomFactor === 0) {
                 const { destLeft, destTop, destWidth, destHeight } = parent.img;
@@ -2899,10 +2947,9 @@ export class Draw {
         }
         this.isRotateZoom = false; parent.objColl = tempObjColl; const tempTogglePen: boolean = parent.togglePen;
         parent.togglePen = false; this.lowerContext.filter = 'none';
-        parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
         parent.img.destLeft += parent.panPoint.totalPannedInternalPoint.x; parent.img.destTop += parent.panPoint.totalPannedInternalPoint.y;
-        parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-            value: {context: this.lowerContext, points: null} });
         parent.img.destLeft -= parent.panPoint.totalPannedInternalPoint.x; parent.img.destTop -= parent.panPoint.totalPannedInternalPoint.y;
         parent.togglePen = tempTogglePen; this.lowerContext.filter = temp; parent.activeObj = tempActiveObj;
     }
@@ -3049,7 +3096,8 @@ export class Draw {
         parent.afterCropActions = afterCropActions;
         if (!this.isCancelAction && !isAfterCropAction) {
             parent.notify('freehand-draw', { prop: 'updateFHDColl', onPropertyChange: false});
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
             parent.img.destLeft = obj.destPoints.startX; parent.img.destTop = obj.destPoints.startY;
         }
         parent.activeObj = activeObj; parent.isCircleCrop = isCircleCrop;
@@ -3076,23 +3124,18 @@ export class Draw {
         parent.img.destTop = parent.cropObj.destPoints.startY;
         const activeObj: SelectionPoint = extend({}, obj.activeObj, {}, true) as SelectionPoint;
         this.lowerContext.filter = 'none';
-        if (this.isCancelAction) {
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
-        } else {
-            parent.img = { destLeft: obj.destPoints.startX, destTop: obj.destPoints.startY, destWidth: obj.destPoints.width,
-                destHeight: obj.destPoints.height, srcLeft: obj.srcPoints.startX, srcTop: obj.srcPoints.startY,
-                srcWidth: obj.srcPoints.width, srcHeight: obj.srcPoints.height };
-            if (obj.activeObj.activePoint.width !== 0 && obj.activeObj.activePoint.height !== 0) {
-                const destPoints: ActivePoint = {startX: parent.img.destLeft, startY: parent.img.destTop, width: parent.img.destWidth,
-                    height: parent.img.destHeight};
-                parent.img.destLeft = obj.activeObj.activePoint.startX; parent.img.destTop = obj.activeObj.activePoint.startY;
-                parent.img.destWidth = obj.activeObj.activePoint.width; parent.img.destHeight = obj.activeObj.activePoint.height;
-                parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-                parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
-                parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
-                parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
-            }
+        parent.img = { destLeft: obj.destPoints.startX, destTop: obj.destPoints.startY, destWidth: obj.destPoints.width,
+            destHeight: obj.destPoints.height, srcLeft: obj.srcPoints.startX, srcTop: obj.srcPoints.startY,
+            srcWidth: obj.srcPoints.width, srcHeight: obj.srcPoints.height };
+        if (obj.activeObj.activePoint.width !== 0 && obj.activeObj.activePoint.height !== 0) {
+            const destPoints: ActivePoint = {startX: parent.img.destLeft, startY: parent.img.destTop, width: parent.img.destWidth,
+                height: parent.img.destHeight};
+            parent.img.destLeft = obj.activeObj.activePoint.startX; parent.img.destTop = obj.activeObj.activePoint.startY;
+            parent.img.destWidth = obj.activeObj.activePoint.width; parent.img.destHeight = obj.activeObj.activePoint.height;
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
+            parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
+            parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
         }
         parent.activeObj = activeObj; this.lowerContext.filter = temp;
     }
@@ -3149,10 +3192,9 @@ export class Draw {
                 }
                 parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false,
                     value: {obj: {selPointColl: cropSelPointColl } }});
-                parent.notify('shape', { prop: 'panObjColl', onPropertyChange: false,
-                    value: {xDiff: parent.panPoint.currentPannedPoint.x, yDiff: parent.panPoint.currentPannedPoint.y, panRegion: ''}});
-                parent.notify('freehand-draw', { prop: 'panFHDColl', onPropertyChange: false,
-                    value: {xDiff: parent.panPoint.currentPannedPoint.x, yDiff: parent.panPoint.currentPannedPoint.y, panRegion: ''}});
+                parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                    value: {ctx: this.lowerContext, shape: 'pan', pen: 'pan', x: parent.panPoint.currentPannedPoint.x,
+                        y: parent.panPoint.currentPannedPoint.y, panRegion: '' }});
             }
             this.adjustPanning(activeObj); parent.activeObj = activeObj;
             if (parent.activeObj.activePoint.width !== 0 && parent.activeObj.activePoint.height !== 0) {
@@ -3199,10 +3241,9 @@ export class Draw {
                 parent.objColl = objColl; parent.pointColl = pointColl; parent.freehandCounter = parent.pointColl.length;
                 parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false,
                     value: {obj: {selPointColl: cropSelPointColl } }});
-                parent.notify('shape', { prop: 'panObjColl', onPropertyChange: false,
-                    value: {xDiff: parent.panPoint.currentPannedPoint.x, yDiff: parent.panPoint.currentPannedPoint.y, panRegion: ''}});
-                parent.notify('freehand-draw', { prop: 'panFHDColl', onPropertyChange: false,
-                    value: {xDiff: parent.panPoint.currentPannedPoint.x, yDiff: parent.panPoint.currentPannedPoint.y, panRegion: ''}});
+                parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                    value: {ctx: this.lowerContext, shape: 'pan', pen: 'pan', x: parent.panPoint.currentPannedPoint.x,
+                        y: parent.panPoint.currentPannedPoint.y, panRegion: '' }});
             }
         }
     }
@@ -3210,7 +3251,6 @@ export class Draw {
     private panToSel(): void {
         const parent: ImageEditor = this.parent;
         const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
-        const img: ImageDimension = parent.img;
         const { startX, startY, width, height } = activeObj.activePoint;
         const straightenObj: Object = {straightenPoint: null };
         parent.notify('freehand-draw', { prop: 'getStraightenPoint', onPropertyChange: false,
@@ -3230,7 +3270,8 @@ export class Draw {
             parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: activeObj }});
             const { destLeft, destTop, destWidth, destHeight } = parent.img;
             const points: Point[] = this.imgCanvasPoints;
-            points.forEach((point) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            points.forEach((point: any) => {
                 point.x = (point.ratioX * destWidth) + destLeft;
                 point.y = (point.ratioY * destHeight) + destTop;
             });
@@ -3248,8 +3289,8 @@ export class Draw {
             while (this.isLinesIntersect() && parent.transform.straighten !== 0  && parent.transform.straighten !== 360 && count < 100) {
                 count++;
                 this.performPointZoom(parent.activeObj.activePoint.startX + (parent.activeObj.activePoint.width / 2),
-                    parent.activeObj.activePoint.startY + (parent.activeObj.activePoint.height / 2),
-                    'zoomIn', false, 0.025);
+                                      parent.activeObj.activePoint.startY + (parent.activeObj.activePoint.height / 2),
+                                      'zoomIn', false, 0.025);
                 this.updateImgCanvasPoints();
             }
         }
@@ -3257,8 +3298,8 @@ export class Draw {
 
     private drawZoomPanImage(x: number, y: number): void {
         const parent: ImageEditor = this.parent;
-        parent.notify('shape', { prop: 'panObjColl', onPropertyChange: false, value: {xDiff: x, yDiff: y, panRegion: ''}});
-        parent.notify('freehand-draw', { prop: 'panFHDColl', onPropertyChange: false, value: {xDiff: x, yDiff: y, panRegion: ''}});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'pan', pen: 'pan', x: x, y: y, panRegion: '' }});
         this.renderImage(true);
         const obj: Object = {width: 0, height: 0 };
         parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
@@ -3307,6 +3348,13 @@ export class Draw {
                 }
             }
             this.imageOnLoad(this.openURL as string);
+            if (typeof(this.openURL) !== 'string' || this.openURL.indexOf('localhost') === -1) {
+                this.getImageSizeFromURL(this.openURL.toString(), (imageSizeMB: number | null) => {
+                    if (imageSizeMB !== null) {
+                        this.parent.notify('toolbar', { prop: 'setInitialSize', value: {value: +imageSizeMB }});
+                    }
+                });
+            }
         } else {
             this.fileName = 'ImageEditor'; this.fileType = null;
             parent.lowerCanvas = document.querySelector('#' + id + '_lowerCanvas');
@@ -3317,6 +3365,18 @@ export class Draw {
             parent.inMemoryCanvas.height = (this.openURL as ImageData).height;
             inMemoryContext.putImageData((this.openURL as ImageData), 0, 0);
             parent.baseImg.src = parent.inMemoryCanvas.toDataURL();
+        }
+    }
+
+    private async getImageSizeFromURL(imageUrl: string, callback: (imageSizeMB: number | null) => void): Promise<void> {
+        let response: Response;
+        try {
+            response = await fetch(imageUrl, { method: 'HEAD' });
+            const contentLength: number = parseInt(response.headers.get('content-length') || '0', 10);
+            const imageSizeMB: number | null = contentLength;
+            callback(imageSizeMB);
+        } catch(ex) {
+            console.log(ex.message);
         }
     }
 
@@ -3441,6 +3501,7 @@ export class Draw {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             const URL: any = window.URL; const url: URL = URL.createObjectURL(filesData);
             this.openURL = url;
+            // eslint-disable-next-line max-len
             if (parent.isImageLoaded && !parent.isChangesSaved && (this.isImageEdited || parent.pointColl.length > 0 || parent.objColl.length > 0)) {
                 this.isFileChanged = true;
                 this.showDialogPopup();
@@ -3652,7 +3713,7 @@ export class Draw {
                 ctx.restore();
             } else {
                 ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height,
-                    parent.img.destLeft, parent.img.destTop, tempCanvas.width, tempCanvas.height);
+                              parent.img.destLeft, parent.img.destTop, tempCanvas.width, tempCanvas.height);
             }
         } else {
             if ((isNullOrUndefined(isImgAnnotation) || !isImgAnnotation) && parent.baseImgCanvas.width !== 0 &&
@@ -3861,9 +3922,8 @@ export class Draw {
                         this.drawImgToCtx(ctx, preventImg);
                         this.updateCurrTransState('reverse'); this.isRotateZoom = false;
                         parent.frameObj.type = 'none'; ctx.filter = 'none';
-                        parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false });
-                        parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-                            value: {context: ctx, points: null} });
+                        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                            value: {ctx: ctx, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
                         parent.frameObj.type = 'bevel'; ctx.filter = filter === 'none' ? parent.canvasFilter : filter;
                     } else {
                         parent.notify('filter', { prop: 'getBevelFilter', onPropertyChange: false, value: {obj: bevelObj} });
@@ -4255,13 +4315,13 @@ export class Draw {
         const center: Point = {x: centerX, y: centerY};
         const radians: number = parent.transform.straighten * (Math.PI / 180);
         const p1: Point = { x: Math.cos(radians) * (startX - center.x) - Math.sin(radians) * (startY - center.y) + center.x,
-        y: Math.sin(radians) * (startX - center.x) + Math.cos(radians) * (startY - center.y) + center.y };
+            y: Math.sin(radians) * (startX - center.x) + Math.cos(radians) * (startY - center.y) + center.y };
         const p2: Point = { x: Math.cos(radians) * (endX - center.x) - Math.sin(radians) * (startY - center.y) + center.x,
-        y: Math.sin(radians) * (endX - center.x) + Math.cos(radians) * (startY - center.y) + center.y };
+            y: Math.sin(radians) * (endX - center.x) + Math.cos(radians) * (startY - center.y) + center.y };
         const p3: Point = { x: Math.cos(radians) * (endX - center.x) - Math.sin(radians) * (endY - center.y) + center.x,
-        y: Math.sin(radians) * (endX - center.x) + Math.cos(radians) * (endY - center.y) + center.y };
+            y: Math.sin(radians) * (endX - center.x) + Math.cos(radians) * (endY - center.y) + center.y };
         const p4: Point = { x: Math.cos(radians) * (startX - center.x) - Math.sin(radians) * (endY - center.y) + center.x,
-        y: Math.sin(radians) * (startX - center.x) + Math.cos(radians) * (endY - center.y) + center.y };
+            y: Math.sin(radians) * (startX - center.x) + Math.cos(radians) * (endY - center.y) + center.y };
         point.push(p1); point.push(p2); point.push(p3); point.push(p4);
         return point;
     }

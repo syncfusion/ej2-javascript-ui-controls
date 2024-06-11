@@ -85,7 +85,6 @@ export class DatePicker extends Calendar implements IInput {
     private datepickerOptions: DatePickerModel;
     protected defaultKeyConfigs: { [key: string]: string };
     protected mobilePopupWrapper: HTMLElement;
-    protected isAngular: boolean = false;
     protected preventChange: boolean = false;
     protected isIconClicked : boolean = false;
     protected isDynamicValueChanged: boolean = false;
@@ -556,8 +555,8 @@ export class DatePicker extends Calendar implements IInput {
             this.l10n = new L10n('datepicker', l10nLocale, this.locale);
             this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         }
-        if(this.fullScreenMode && Browser.isDevice){
-            this.cssClass += ' ' + "e-popup-expand";
+        if (this.fullScreenMode && Browser.isDevice){
+            this.cssClass += ' ' + 'e-popup-expand';
         }
         let updatedCssClassValues: string = this.cssClass;
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
@@ -1206,11 +1205,11 @@ export class DatePicker extends Calendar implements IInput {
                 this.inputElement.selectionStart = start ;
                 this.inputElement.selectionEnd = end;
             }
-            if(e.action === 'tab' && e.target === this.inputElement && this.isCalendar() && document.activeElement === this.inputElement) {
+            if (e.action === 'tab' && e.target === this.inputElement && this.isCalendar() && document.activeElement === this.inputElement) {
                 e.preventDefault();
                 this.headerTitleElement.focus();
             }
-            if(e.action === 'shiftTab' && e.target === this.inputElement && this.isCalendar() && document.activeElement === this.inputElement) {
+            if (e.action === 'shiftTab' && e.target === this.inputElement && this.isCalendar() && document.activeElement === this.inputElement) {
                 this.hide(e);
             }
             break;
@@ -1252,8 +1251,8 @@ export class DatePicker extends Calendar implements IInput {
     }
     protected strictModeUpdate(): void {
         let format: string;
-        let pattern = /^y/ ;
-        let charPattern = /[^a-zA-Z]/;
+        const pattern: RegExp = /^y/ ;
+        const charPattern: RegExp = /[^a-zA-Z]/;
         let formatOptions: DateFormatOptions;
         if (this.getModuleName() === 'datetimepicker') {
             format = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
@@ -1297,7 +1296,7 @@ export class DatePicker extends Calendar implements IInput {
         }
         if ((this.getModuleName() === 'datetimepicker')) {
             if (this.checkDateValue(this.globalize.parseDate(this.inputElement.value, dateOptions))) {
-                const modifiedValue: string = this.inputElement.value.replace(/(am|pm|Am|aM|pM|Pm)/g, (match) => match.toLocaleUpperCase());
+                const modifiedValue: string = this.inputElement.value.replace(/(am|pm|Am|aM|pM|Pm)/g, (match: string) => match.toLocaleUpperCase());
                 date = this.globalize.parseDate(modifiedValue, dateOptions);
             } else {
                 if (this.calendarMode === 'Gregorian') {
@@ -1369,11 +1368,11 @@ export class DatePicker extends Calendar implements IInput {
             collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : (this.enableRtl ? { X: 'fit', Y: 'flip' } : { X: 'flip', Y: 'flip' }),
             open: () => {
                 if (Browser.isDevice && this.fullScreenMode) {
-                    this.iconRight = parseInt(window.getComputedStyle(this.calendarElement.querySelector('.e-header.e-month .e-prev')).marginRight, 10) > 16 ? true: false;
-                    this.touchModule = new Touch(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), {
+                    this.iconRight = parseInt(window.getComputedStyle(this.calendarElement.querySelector('.e-header.e-month .e-prev')).marginRight, 10) > 16 ? true : false;
+                    this.touchModule = new Touch(<HTMLElement>this.calendarElement.querySelector('.e-content.e-month'), {
                         swipe: this.CalendarSwipeHandler.bind(this)
                     });
-                    EventHandler.add(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), "touchstart", this.TouchStartHandler, this)
+                    EventHandler.add(<HTMLElement>this.calendarElement.querySelector('.e-content.e-month'), 'touchstart', this.TouchStartHandler, this);
                 }
                 if (this.getModuleName() !== 'datetimepicker') {
                     if (document.activeElement !== this.inputElement) {
@@ -1425,25 +1424,25 @@ export class DatePicker extends Calendar implements IInput {
         let direction: number = 0;
         if (this.iconRight) {
             switch (e.swipeDirection) {
-                case "Left":
-                    direction = 1;
-                    break;
-                case "Right":
-                    direction = -1;
-                    break;
-                default:
-                    break;
+            case 'Left':
+                direction = 1;
+                break;
+            case 'Right':
+                direction = -1;
+                break;
+            default:
+                break;
             }
         } else {
             switch (e.swipeDirection) {
-                case "Up":
-                    direction = 1;
-                    break;
-                case "Down":
-                    direction = -1;
-                    break;
-                default:
-                    break;
+            case 'Up':
+                direction = 1;
+                break;
+            case 'Down':
+                direction = -1;
+                break;
+            default:
+                break;
             }
         }
         if (this.touchStart) {
@@ -1456,7 +1455,7 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
 
-    private TouchStartHandler(e: MouseEvent) {
+    private TouchStartHandler(e: MouseEvent): void {
         this.touchStart = true;
     }
 
@@ -1495,16 +1494,16 @@ export class DatePicker extends Calendar implements IInput {
         }
         monthSpan.textContent = '' + this.globalize.formatDate(this.value || new Date(), dateOptions);
         if (this.fullScreenMode) {
-            const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+            const modelCloseIcon: any = this.createElement('span', { className: 'e-popup-close' });
             EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.modelCloseHandler, this);
-            const modelTodayButton = this.calendarElement.querySelector("button.e-today");
-            h2.classList.add("e-day-wrapper");
-            modelTodayButton.classList.add("e-outline");
+            const modelTodayButton: Element = this.calendarElement.querySelector('button.e-today');
+            h2.classList.add('e-day-wrapper');
+            modelTodayButton.classList.add('e-outline');
             modelHeader.appendChild(modelCloseIcon);
             modelHeader.appendChild(modelTodayButton);
         }
-        if(!this.fullScreenMode)
-            modelHeader.appendChild(yearHeading);
+        if (!this.fullScreenMode)
+        {modelHeader.appendChild(yearHeading); }
         h2.appendChild(daySpan);
         h2.appendChild(monthSpan);
         modelHeader.appendChild(h2);
@@ -1707,7 +1706,7 @@ export class DatePicker extends Calendar implements IInput {
                 EventHandler.add(document, 'mousedown touchstart', this.documentHandler, this);
             });
             if (Browser.isDevice) {
-                var dlgOverlay = this.createElement('div', { className: 'e-dlg-overlay'});
+                const dlgOverlay: any = this.createElement('div', { className: 'e-dlg-overlay'});
                 dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
                 this.mobilePopupWrapper.appendChild(dlgOverlay);
             }
@@ -1763,7 +1762,8 @@ export class DatePicker extends Calendar implements IInput {
             this.modal = null;
         }
         if (Browser.isDevice) {
-            if (!isNullOrUndefined(this.mobilePopupWrapper) && (prevent && (isNullOrUndefined(this.preventArgs) || !this.preventArgs.cancel))) {
+            if (!isNullOrUndefined(this.mobilePopupWrapper) &&
+               (prevent && (isNullOrUndefined(this.preventArgs) || !this.preventArgs.cancel))) {
                 this.mobilePopupWrapper.remove();
                 this.mobilePopupWrapper = null;
             }
@@ -2194,10 +2194,8 @@ export class DatePicker extends Calendar implements IInput {
             this.calendarElement.querySelectorAll(dateIdString)[0] &&
             this.calendarElement.querySelectorAll(dateIdString)[0].classList.contains('e-disabled');
         if ((!isNullOrUndefined(this.value) && !isNullOrUndefined(this.min) &&
-         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-         !isNullOrUndefined(this.max) && !(new Date(this.value as any).setMilliseconds(0) >= new Date(this.min as any).setMilliseconds(0)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            && new Date(this.value as any).setMilliseconds(0) <= new Date(this.max as any).setMilliseconds(0)))
+         !isNullOrUndefined(this.max) && !(new Date(this.value as Date).setMilliseconds(0) >= new Date(this.min as Date).setMilliseconds(0)
+            && new Date(this.value as any).setMilliseconds(0) <= new Date(this.max as Date).setMilliseconds(0)))
             || (!this.strictMode && this.inputElement.value !== '' && this.inputElement.value !== this.maskedDateValue && isNullOrUndefined(this.value) || isDisabledDate)) {
             addClass([this.inputWrapper.container], ERROR);
             attributes(this.inputElement, { 'aria-invalid': 'true' });
@@ -2280,7 +2278,7 @@ export class DatePicker extends Calendar implements IInput {
             case 'locale':
                 this.globalize = new Internationalization(this.locale);
                 this.l10n.setLocale(this.locale);
-                if(this.datepickerOptions && this.datepickerOptions.placeholder == null) {
+                if (this.datepickerOptions && this.datepickerOptions.placeholder == null) {
                     this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
                     Input.setPlaceholder(this.placeholder, this.inputElement);
                 }

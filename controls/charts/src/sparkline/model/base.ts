@@ -108,7 +108,7 @@ export class SparklineTooltipSettings extends ChildProperty<SparklineTooltipSett
     public fill: string;
     /**
      * To customize the tooltip template.
-     * 
+     *
      * @aspType string
      */
     @Property('')
@@ -392,7 +392,7 @@ export class SparklineDataLabelSettings extends ChildProperty<SparklineDataLabel
     /**
      * To configure Sparkline dataLabel text styles.
      */
-    @Complex<SparklineFontModel>({ size: '12px', fontWeight: '400', fontStyle: 'Medium', fontFamily: null }, SparklineFont)
+    @Complex<SparklineFontModel>({ size: null, fontWeight: null, fontStyle: null, fontFamily: null }, SparklineFont)
     public textStyle: SparklineFontModel;
     /**
      * To configure Sparkline dataLabel offset.

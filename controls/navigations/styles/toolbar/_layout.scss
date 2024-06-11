@@ -1,6 +1,4 @@
 @include export-module('toolbar-layout') {
-
-  /*! toolbar layout */
   /* stylelint-disable property-no-vendor-prefix */
   .e-bigger .e-toolbar,
   .e-toolbar.e-bigger {
@@ -281,17 +279,14 @@
             margin-right: initial;
           }
 
-          .e-toolbar-center .e-toolbar-item {
+          .e-toolbar-center .e-toolbar-item,
+          .e-toolbar-right .e-toolbar-item {
             margin: 0;
           }
 
-          .e-toolbar-right .e-toolbar-item {
-            margin: 0;
-
-            &:last-child {
-              margin-left: $tbar-item-bgr-mrgn;
-              margin-right: 0;
-            }
+          .e-toolbar-right .e-toolbar-item:last-child {
+            margin-left: $tbar-item-bgr-mrgn;
+            margin-right: 0;
           }
         }
 
@@ -459,16 +454,13 @@
           margin-right: $tbar-item-nrml-mrgn;
         }
 
-        .e-toolbar-center .e-toolbar-item {
+        .e-toolbar-center .e-toolbar-item,
+        .e-toolbar-right .e-toolbar-item {
           margin: 0;
         }
 
-        .e-toolbar-right .e-toolbar-item {
-          margin: 0;
-
-          &:last-child {
-            margin-right: $tbar-item-nrml-mrgn;
-          }
+        .e-toolbar-right .e-toolbar-item:last-child {
+          margin-right: $tbar-item-nrml-mrgn;
         }
       }
     }
@@ -796,7 +788,7 @@
         padding-right: $tbar-item-nrml-mrgn;
         padding-top: 0;
         margin-left: -1px;
-        box-shadow: none;
+        box-shadow: $tbar-box-shadow;
         display: inline;
         white-space: normal;
 
@@ -955,16 +947,13 @@
           margin-right: initial;
         }
 
-        .e-toolbar-center .e-toolbar-item {
+        .e-toolbar-center .e-toolbar-item,
+        .e-toolbar-right .e-toolbar-item {
           margin: 0;
         }
 
-        .e-toolbar-right .e-toolbar-item {
-          margin: 0;
-
-          &:last-child {
-            margin-right: $tbar-item-nrml-mrgn;
-          }
+        .e-toolbar-right .e-toolbar-item:last-child {
+          margin-right: $tbar-item-nrml-mrgn;
         }
       }
 
@@ -1030,17 +1019,14 @@
 
       .e-toolbar-items:not(.e-tbar-pos) {
 
-        .e-toolbar-center .e-toolbar-item {
+        .e-toolbar-center .e-toolbar-item,
+        .e-toolbar-right .e-toolbar-item {
           margin: 0;
         }
 
-        .e-toolbar-right .e-toolbar-item {
+        .e-toolbar-right .e-toolbar-item:last-child {
           margin: 0;
-
-          &:last-child {
-            margin: 0;
-            margin-left: $tbar-item-nrml-mrgn;
-          }
+          margin-left: $tbar-item-nrml-mrgn;
         }
       }
     }

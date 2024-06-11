@@ -41,9 +41,9 @@ export class VirtualScroll {
         let top: string;
         if (translates.length > 1) {
             top = translates[1].trim().split(')')[0];
-        } else { 
-            let transformString: string = virtualTable.style.transform;
-            top = transformString.substring(transformString.lastIndexOf("(") + 1, transformString.lastIndexOf(")"))
+        } else {
+            const transformString: string = virtualTable.style.transform;
+            top = transformString.substring(transformString.lastIndexOf('(') + 1, transformString.lastIndexOf(')'));
         }
         return parseFloat(top);
     }

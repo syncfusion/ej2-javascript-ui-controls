@@ -43,7 +43,7 @@ export class EditTooltip {
             const argsData: BeforeTooltipRenderEventArgs = {
                 data: this.taskbarEdit.taskBarEditRecord,
                 args: args,
-                content: this.toolTipObj.content as any
+                content: this.toolTipObj.content
             };
             this.parent.trigger('beforeTooltipRender', argsData);
         };
@@ -62,7 +62,7 @@ export class EditTooltip {
      */
     private updateTooltipPosition(args: TooltipEventArgs): void {
         args.element.style.visibility = 'visible';
-        const parentWithZoomStyle = this.parent.element.closest('[style*="zoom"]') as HTMLElement;
+        const parentWithZoomStyle: HTMLElement = this.parent.element.closest('[style*="zoom"]') as HTMLElement;
         if (isNullOrUndefined(parentWithZoomStyle)) {
             const containerPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.chartPane);
             const leftEnd: number = containerPosition.left + this.parent.chartPane.offsetWidth;
@@ -139,12 +139,12 @@ export class EditTooltip {
                     }
                 } else if (this.taskbarEdit.taskBarEditAction === 'RightResizing' ||
                     this.taskbarEdit.taskBarEditAction === 'ParentResizing') {
-                        if (this.parent.enableRtl) {
-                            this.toolTipObj.offsetX = -taskWidth;
-                        }
-                        else {
-                            this.toolTipObj.offsetX = 0;
-                        }
+                    if (this.parent.enableRtl) {
+                        this.toolTipObj.offsetX = -taskWidth;
+                    }
+                    else {
+                        this.toolTipObj.offsetX = 0;
+                    }
                 } else if (this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
                     if (this.parent.enableRtl) {
                         this.toolTipObj.offsetX = -(progressWidth);
@@ -204,25 +204,31 @@ export class EditTooltip {
             }
             switch (this.taskbarEdit.taskBarEditAction) {
             case 'ProgressResizing':
+            {
                 const progress: string = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('progress') +
                     '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' + (editRecord as ITaskData).progress + '</td></tr>';
-                tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' +
+                tooltipString = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     progress + '</tbody></table>';
-
                 break;
+            }
             case 'LeftResizing':
-                tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' +
-                startDate + duration + '</tbody></table>';
+            {
+                tooltipString = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    startDate + duration + '</tbody></table>';
                 break;
+            }
             case 'RightResizing':
             case 'ParentResizing':
+            {
                 tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' +
                     endDate + duration + '</tbody></table>';
                 break;
+            }
             case 'ChildDrag':
             case 'ParentDrag':
             case 'MilestoneDrag':
             case 'ManualParentDrag':
+            {
                 let sDate: string = ''; let eDate: string = '';
                 if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.startDate)) {
                     sDate = startDate;
@@ -232,17 +238,20 @@ export class EditTooltip {
                 }
                 tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' + sDate + eDate + '</tbody></table>';
                 break;
+            }
             case 'ConnectorPointLeftDrag':
             case 'ConnectorPointRightDrag':
+            {
                 tooltipString = this.parent.connectorLineModule.tooltipTable;
                 if (isNullOrUndefined(this.toolTipObj)) {
                     this.parent.connectorLineModule.tooltipTable.innerHTML =
-                            this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
-                                this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.taskName,
-                                this.parent.editModule.taskbarEditModule.fromPredecessorText, '', ''
-                            );
+                        this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
+                            this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.taskName,
+                            this.parent.editModule.taskbarEditModule.fromPredecessorText, '', ''
+                        );
                 }
                 break;
+            }
             }
         }
         return tooltipString;

@@ -1,5 +1,5 @@
 import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
-import { createElement, remove, isNullOrUndefined, EmitType, closest } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined, EmitType, closest, getInstance } from '@syncfusion/ej2-base';
 import { pivot_dataset } from '../base/datasource.spec';
 import { IDataSet } from '../../src/base/engine';
 import { PivotCommon } from '../../src/common/base/pivot-common';
@@ -8,6 +8,9 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import * as util from '../utils.spec';
 import { FieldDragStartEventArgs, FieldDropEventArgs, FieldDroppedEventArgs, FieldRemoveEventArgs, CalculatedFieldCreateEventArgs } from '../../src/common/base/interface';
 import { DataManager, ODataV4Adaptor, Query, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { TextBox } from '@syncfusion/ej2-inputs';
+import { PivotView } from '../../src/pivotview/base/pivotview';
+import { FieldList } from '../../src/common/actions/field-list';
 
 describe('PivotFieldList spec', () => {
     /**
@@ -18,7 +21,7 @@ describe('PivotFieldList spec', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -599,7 +602,151 @@ describe('PivotFieldList spec', () => {
                 done();
             }, 1000);
         });
+    });
 
+    describe('Field list - Field searching', () => {
+        let fieldListObj: PivotFieldList;
+        let pivotCommon: PivotCommon;
+        let searchField: TextBox;
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            fieldListObj = new PivotFieldList({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    rows: [{ name: 'product' }],
+                    columns: [{ name: 'gender' }],
+                    values: [{ name: 'balance' }, { name: 'price', type: 'CalculatedField' },
+                    { name: 'quantity' }],
+                },
+                enableFieldSearching: true,
+                renderMode: 'Fixed'
+            });
+            fieldListObj.appendTo('#PivotFieldList');
+            pivotCommon = fieldListObj.pivotCommon;
+        });
+        it('checking search - 1 && validating - field list', (done: Function) => {
+            searchField = getInstance(document.querySelectorAll('.e-textbox.e-input')[0] as HTMLElement, TextBox) as TextBox;
+            searchField.value = 'p';
+            searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
+            setTimeout(() => {
+                expect(fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('pno');
+                searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
+                done();
+            }, 1000);
+        });
+        it('validating search - 1 && checking search - 2', (done: Function) => {
+            setTimeout(() => {
+                expect(fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('pno');
+                searchField.value = 'pr';
+                searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
+                done();
+            }, 1000);
+        });
+        it('validating search - 2', (done: Function) => {
+            searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
+            setTimeout(() => {
+                expect(fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('product');
+                done();
+            }, 1000);
+        });
+        it('Ensuring the searched node - on node clicking', (done: Function) => {
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable) .e-checkbox-wrapper');
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
+            setTimeout(() => {
+                expect(fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('product');
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('Field searching - popup', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        let searchField: TextBox;
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    rows: [{ name: 'eyeColor' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                },
+                height: 500,
+                width: 1000,
+                showFieldList: true,
+                enableFieldSearching: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Initial rendering', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-select-table').length).toBe(1);
+                (pivotGridObj.element.querySelector('.e-select-table') as HTMLElement).click();
+                done();
+            }, 2000);
+        });
+        it('Searching field - 1', (done: Function) => {
+            searchField = getInstance(document.querySelectorAll('.e-textbox.e-input')[0] as HTMLElement, TextBox) as TextBox;
+            searchField.value = 'p';
+            searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('pno');
+                searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
+                done();
+            }, 2000);
+        });
+        it('validating searching - 1', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('pno');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)');
+                checkEle[0].dispatchEvent(down);
+                checkEle[0].dispatchEvent(up);
+                done();
+            }, 1000);
+        });
     });
 
     it('memory leak', () => {

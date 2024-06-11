@@ -57,9 +57,9 @@ describe('ValueFormatter Service', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending(); //Skips test (in Chai)
             }
-            this.grid = createGrid({
+            grid = createGrid({
                 columns: [
                     {
                         field: 'OrderID', headerText: '<i>Order ID</i>', headerTextAlign: 'Right',
@@ -73,16 +73,16 @@ describe('ValueFormatter Service', () => {
             }, done);
         });
         it('Number format check', () => {
-            rows = ((this.grid.getContentTable() as any).tBodies[0]).rows[0] as HTMLTableRowElement;
+            rows = ((grid.getContentTable() as any).tBodies[0]).rows[0] as HTMLTableRowElement;
             expect(rows.cells[2].innerHTML).toBe('$32.4');
         });
         it('Date format check', () => {
-            rows = ((this.grid.getContentTable() as any).tBodies[0]).rows[0] as HTMLTableRowElement;
+            rows = ((grid.getContentTable() as any).tBodies[0]).rows[0] as HTMLTableRowElement;
             let intl: Internationalization = new Internationalization();
             expect(rows.cells[3].innerHTML).toBe(intl.formatDate(new Date(8364186e5), { type: 'date', skeleton: 'yMd' }));
         });
         afterAll(() => {
-            destroy(this.grid);
+            destroy(grid);
         });
     });
 

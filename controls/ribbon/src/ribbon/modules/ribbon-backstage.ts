@@ -17,7 +17,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
     private menuCtrl: Menu;
     private footerMenuCtrl: Menu;
     private backstageButtonEle: HTMLButtonElement;
-    private closeBtn: Button
+    private closeBtn: Button;
     private popupHTMLElement: HTMLElement;
     private backstageContentEle: HTMLElement;
     private ulMenuElem: HTMLUListElement;
@@ -26,6 +26,8 @@ export class RibbonBackstage extends Component<HTMLElement> {
     private contentItem: BackstageItemModel;
     private backstageTempEle: HTMLElement;
     private itemsWrapperEle: HTMLElement;
+    private menuIndex: number;
+    private isCloseBtn: boolean;
 
     constructor(parent: Ribbon) {
         super();
@@ -33,9 +35,9 @@ export class RibbonBackstage extends Component<HTMLElement> {
     }
 
     /**
-    * @private
-    * @returns {void}
-    */
+     * @private
+     * @returns {void}
+     */
     protected render(): void {
         // render code
     }
@@ -114,7 +116,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
             if (this.menuCtrl) { this.checkMenuItems(this.menuCtrl.items); }
             if (this.footerMenuCtrl) { this.checkMenuItems(this.footerMenuCtrl.items); }
         }
-        this.backstageButtonEle.onclick = (e): void => {
+        this.backstageButtonEle.onclick = (e: MouseEvent): void => {
             e.stopPropagation();
             this.showBackstage();
             this.popupHTMLElement.classList.add(constants.RIBBON_BACKSTAGE_OPEN);
@@ -127,6 +129,8 @@ export class RibbonBackstage extends Component<HTMLElement> {
                     if (firstMenuEle) {
                         firstMenuEle.classList.add('e-selected');
                         firstMenuEle.focus();
+                        this.menuIndex = 0;
+                        this.isCloseBtn = false;
                     }
                     this.createBackStageContent(this.menuCtrl.items[0].id, item.content);
                     break;
@@ -166,7 +170,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
             }
             for (let i: number = 0; i < backStageOptions.items.length; i++) {
                 if (backStageOptions.items[parseInt(i.toString(), 10)].keyTip) {
-                    ((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] as object[]).push({ id: backStageOptions.items[parseInt(i.toString(), 10)].id, type: 'backstageMenu', keyTip: backStageOptions.items[parseInt(i.toString(), 10)].keyTip})
+                    ((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] as object[]).push({ id: backStageOptions.items[parseInt(i.toString(), 10)].id, type: 'backstageMenu', keyTip: backStageOptions.items[parseInt(i.toString(), 10)].keyTip});
                 }
             }
         }
@@ -189,7 +193,8 @@ export class RibbonBackstage extends Component<HTMLElement> {
         });
         let targetEle: HTMLElement;
         if (backStageOptions.target) {
-            targetEle = backStageOptions.target instanceof HTMLElement ? backStageOptions.target : document.querySelector(backStageOptions.target);
+            targetEle = backStageOptions.target instanceof HTMLElement ? backStageOptions.target :
+                document.querySelector(backStageOptions.target);
             targetEle.appendChild(this.popupHTMLElement);
         }
         else {
@@ -201,20 +206,55 @@ export class RibbonBackstage extends Component<HTMLElement> {
             relateTo: backStageOptions.target || this.parent.element,
             enableRtl: this.parent.enableRtl
         });
-        if(this.parent.enableRtl) { this.updatePopupPositionOnRtl(this.parent.enableRtl); }
-        this.popupHTMLElement.onkeydown = (e: KeyboardEventArgs) => { if (e.code === 'Escape') { this.hideBackstage(); } };
+        if (this.parent.enableRtl) { this.updatePopupPositionOnRtl(this.parent.enableRtl); }
         this.hideBackstage();
+        EventHandler.add(this.popupHTMLElement, 'keyup', (e: KeyboardEventArgs) => {
+            if (e.code === 'Escape') { this.hideBackstage(); }
+            this.handleNavigation(e);
+        }, this);
+    }
+
+    private handleNavigation(e: KeyboardEventArgs): void {
+        const closeBtnEle: HTMLElement = this.popupHTMLElement.querySelector('.e-ribbon-close-btn');
+        const menuItems: NodeListOf<Element> = this.popupHTMLElement.querySelectorAll('.e-menu-item');
+        const arrowUp: boolean = e.key === 'ArrowUp';
+        const arrowDown: boolean = e.key === 'ArrowDown';
+        if (arrowUp || arrowDown) {
+            if ((arrowUp && this.menuIndex > 0) || (arrowDown && this.menuIndex < menuItems.length - 1 && !this.isCloseBtn)) {
+                this.menuIndex = arrowUp ? this.menuIndex - 1 : this.menuIndex + 1;
+            } else {
+                if (closeBtnEle && !this.isCloseBtn) {
+                    closeBtnEle.focus();
+                    this.isCloseBtn = true;
+                } else {
+                    this.menuIndex = arrowUp ? menuItems.length - 1 : 0;
+                    this.isCloseBtn = false;
+                }
+            }
+            for (let i: number = 0; i < menuItems.length; i++) {
+                menuItems[parseInt(i.toString(), 10)].classList.remove('e-focused');
+            }
+            if (!this.isCloseBtn) {
+                if (arrowUp && menuItems[this.menuIndex].classList.contains('e-separator')) {
+                    this.menuIndex--;
+                } else if (arrowDown && menuItems[this.menuIndex].classList.contains('e-separator')) {
+                    this.menuIndex++;
+                }
+                menuItems[this.menuIndex].classList.add('e-focused');
+                (menuItems[this.menuIndex] as HTMLElement).focus();
+            }
+        }
     }
 
     private updatePopupPositionOnRtl (enableRtl: boolean): void {
-        const popupStyle = this.popupHTMLElement.style;
+        const popupStyle: CSSStyleDeclaration = this.popupHTMLElement.style;
         if (enableRtl) {
             popupStyle.right = popupStyle.left;
-            popupStyle.left = 'unset'
+            popupStyle.left = 'unset';
         }
         else {
             popupStyle.left = popupStyle.right;
-            popupStyle.right = 'unset'
+            popupStyle.right = 'unset';
         }
     }
 
@@ -234,7 +274,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
             });
             this.closeBtn = new Button({
                 content: menuOptions.backButton.text,
-                iconCss: menuOptions.backButton.iconCss ? menuOptions.backButton.iconCss: constants.BACKSTAGE_CLOSE_ICON,
+                iconCss: menuOptions.backButton.iconCss ? menuOptions.backButton.iconCss : constants.BACKSTAGE_CLOSE_ICON,
                 enableRtl: this.parent.enableRtl
             }, closeBtnEle);
             this.menuWrapper.append(closeBtnEle);
@@ -360,11 +400,13 @@ export class RibbonBackstage extends Component<HTMLElement> {
             const item: BackstageItemModel = menuOptions.items[parseInt(i.toString(), 10)];
             if (item.text === args.item.text) {
                 this.contentItem = item;
+                this.menuIndex = i;
                 break;
             }
         }
         this.createBackStageContent(args.item.id, this.contentItem.content);
-        const eventArgs: BackstageItemClickArgs = { cancel: false, target: args.element, item: this.contentItem, isBackButton: this.isBackButtonClicked };
+        const eventArgs: BackstageItemClickArgs = { cancel: false, target: args.element,
+            item: this.contentItem, isBackButton: this.isBackButtonClicked };
         if (this.contentItem.backStageItemClick) { this.contentItem.backStageItemClick.call(this, eventArgs); }
         if (eventArgs.cancel) { return; }
     }
@@ -381,7 +423,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
             this.backstageButton.setProperties(commonProp);
             if (this.popupEle) {
                 this.popupEle.setProperties(commonProp);
-                if (this.popupHTMLElement) this.updatePopupPositionOnRtl(commonProp.enableRtl);
+                if (this.popupHTMLElement) { this.updatePopupPositionOnRtl(commonProp.enableRtl); }
                 if (this.menuCtrl) {
                     this.menuCtrl.setProperties(commonProp);
                     if (this.closeBtn) {
@@ -415,7 +457,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
                     this.popupEle.setProperties({
                         height: backStageOptions.height,
                         width: backStageOptions.width,
-                        target: backStageOptions.target || this.parent.element,
+                        target: backStageOptions.target || this.parent.element
                     });
                 }
                 if (backStageOptions.template) {
@@ -492,7 +534,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
     }
     private removeBackstageMenuKeyTip(): void {
         if ((this.parent.keyTipElements as {[key: string]: object})['backstage'] && ((this.parent.keyTipElements as {[key: string]: object})['backstage'] as object[]).length) {
-            const index: number = getIndex((this.parent.keyTipElements as {[key: string]: object})['backstage'] as object[], (e: object) => { return (e as any).id === this.backstageButtonEle.id; });
+            const index: number = getIndex((this.parent.keyTipElements as {[key: string]: object})['backstage'] as {id : string}[], (e: {id: string }) => { return e.id === this.backstageButtonEle.id; });
             if (index !== -1) {
                 ((this.parent.keyTipElements as {[key: string]: object})['backstage'] as object[]).splice(index, 1);
             }
@@ -518,13 +560,15 @@ export class RibbonBackstage extends Component<HTMLElement> {
         for (let i: number = 0; i < items.length; i++) {
             const item: BackstageItemModel = items[parseInt(i.toString(), 10)];
             if (item.isFooter) {
-                isAfter ? this.footerMenuCtrl.insertAfter(items, target, isUniqueId) : this.footerMenuCtrl.insertBefore(items, target, isUniqueId);
+                if (isAfter) { this.footerMenuCtrl.insertAfter(items, target, isUniqueId); }
+                else { this.footerMenuCtrl.insertBefore(items, target, isUniqueId); }
             }
             else {
-                isAfter ? this.menuCtrl.insertAfter(items, target, isUniqueId) : this.menuCtrl.insertBefore(items, target, isUniqueId);
+                if (isAfter) { this.menuCtrl.insertAfter(items, target, isUniqueId); }
+                else { this.menuCtrl.insertBefore(items, target, isUniqueId); }
             }
         }
-        const backstageItems = ([] as BackStageMenuModel[]).concat(this.menuCtrl.items, this.footerMenuCtrl.items);
+        const backstageItems: BackStageMenuModel[] = ([] as BackStageMenuModel[]).concat(this.menuCtrl.items, this.footerMenuCtrl.items);
         const backStageOptions: BackStageMenuModel = this.parent.backStageMenu;
         for (let i: number = 0; i < backStageOptions.items.length; i++) {
             const item: BackstageItemModel = backStageOptions.items[parseInt(i.toString(), 10)];
@@ -549,7 +593,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
     public removeBackstageItems(items: string[], isUniqueId?: boolean): void {
         this.menuCtrl.removeItems(items, isUniqueId);
         this.footerMenuCtrl.removeItems(items, isUniqueId);
-        const backstageItems = ([] as BackStageMenuModel[]).concat(this.menuCtrl.items, this.footerMenuCtrl.items);
+        const backstageItems: BackStageMenuModel[] = ([] as BackStageMenuModel[]).concat(this.menuCtrl.items, this.footerMenuCtrl.items);
         (this.parent.backStageMenu as BackStageMenu).setProperties({ items: backstageItems }, true);
     }
 

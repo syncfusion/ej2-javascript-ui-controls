@@ -3,6 +3,45 @@
   transition: transform 300ms ease;
 }
 
+@mixin position($position, $right){
+  position: $position;
+  right: $right;
+}
+
+@mixin close-style($font-size, $height, $width) {
+  font-size: $font-size;
+  height: $height;
+  width: $width;
+}
+
+@mixin min-style($min-height, $min-width, $font-size, $line-height) {
+  min-height: $min-height;
+  min-width: $min-width;
+  line-height: $line-height;
+  &::before {
+    font-size: $font-size;
+  }
+}
+
+@mixin icon-style($bottom, $right) {
+  bottom: $bottom;
+  right: $right;
+}
+
+@mixin chip-last($margin-right, $max-width) {
+  .e-chips-wrapper .e-chips:last-child {
+    margin-right: $margin-right;
+    max-width: $max-width;
+  }
+}
+
+@mixin chip-last-margin($margin-right, $margin-left) {
+  .e-chips-wrapper .e-chips:last-child {
+    margin-right: $margin-right;
+    margin-left: $margin-left;
+  }
+}
+
 @include export-module('dropdowntree-layout') {
 
   .e-ddt {
@@ -46,6 +85,15 @@
         @if $ddt-skin-name == 'FluentUI' {
           min-height: $ddt-dd-icon-width;
         }
+        @if $ddt-skin-name == 'fluent2' {
+          min-width: $ddt-close-icon-min-height;
+          margin: 5px 3px 5px 6px;
+          align-items: center;
+          &::before {
+            font-size: 14px;
+            padding: 3px;
+          }
+        }
       }
 
       .e-input-group-icon.e-ddt-icon {
@@ -54,8 +102,15 @@
         @if $ddt-skin-name == 'bootstrap4' {
           font-size: 8px;
         }
-        @if $ddt-skin-name == 'bootstrap5' {
+        @else if $ddt-skin-name == 'bootstrap5' {
           font-size: 20px;
+        }
+        @else if $ddt-skin-name == 'fluent2' {
+          font-size: 14px;
+          margin: 5px 9px 5px 3px;
+          padding: 0;
+          min-height: 20px;
+          min-width: 20px;
         }
 
         @if $ddt-skin-name == 'Material3' {
@@ -73,8 +128,7 @@
       &.e-show-text  {
         .e-clear-icon {
           bottom: $ddt-close-icon-bottom;
-          position: absolute;
-          right: 0;
+          @include position(absolute, 0);
           @if $ddt-skin-name == 'Material3' {
             margin: 0;
           }
@@ -87,7 +141,7 @@
           @else {
             right: $ddt-dd-icon-width;
           }
-          @if $ddt-skin-name == 'FluentUI' {
+          @if $ddt-skin-name == 'FluentUI' or $ddt-skin-name == 'fluent2' {
             bottom: 0;
           }
         }
@@ -96,8 +150,7 @@
           @if $ddt-skin-name != 'FluentUI' {
             bottom: $ddt-dd-icon-bottom;
           }
-          position: absolute;
-          right: 0;
+          @include position(absolute, 0);
         }
 
         &.e-input-focus input.e-dropdowntree.e-chip-input,
@@ -106,11 +159,10 @@
           padding-right: 0;
         }
       }
-    }
 
-    &.e-input-group.e-control-wrapper.e-valid-input:hover:not(.e-disabled) .e-clear-icon,
-    &.e-float-input.e-control-wrapper.e-valid-input:hover:not(.e-disabled) .e-clear-icon {
-      display: flex;
+      &.e-valid-input:hover:not(.e-disabled) .e-clear-icon {
+        display: flex;
+      }
     }
 
     .e-chips-wrapper {
@@ -121,14 +173,14 @@
 
       .e-chips-close {
         @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
-          line-height: $ddt-chip-icon-line-height;
+          @include min-style($ddt-chip-close-height, $ddt-chip-close-width, $ddt-chip-close-font, $ddt-chip-icon-line-height);
         }
-        min-height: $ddt-chip-close-height;
-        min-width: $ddt-chip-close-width;
+        @else {
+          @include min-style($ddt-chip-close-height, $ddt-chip-close-width, $ddt-chip-close-font, null);
+        }
         text-align: center;
 
         &::before {
-          font-size: $ddt-chip-close-font;
           @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and $ddt-skin-name != 'material-dark' and $ddt-skin-name != 'Material3' {
             vertical-align: middle;
           }
@@ -169,6 +221,7 @@
         }
       }
     }
+
     @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
       &.e-outline {
         .e-overflow {
@@ -186,23 +239,19 @@
           &.e-show-dd-icon .e-clear-icon {
             right: 30px;
           }
-        }
 
-        &.e-input-group.e-control-wrapper:not(.e-show-chip),
-        &.e-float-input.e-control-wrapper:not(.e-show-chip) {
-          &.e-show-dd-icon.e-input-focus .e-clear-icon  {
-            min-height: 20px;
+          &:not(.e-show-chip) {
+            &.e-show-dd-icon.e-input-focus .e-clear-icon  {
+              min-height: 20px;
+            }
           }
         }
-      }
 
-      &.e-outline.e-show-chip {
-        .e-overflow {
-          padding: $ddt-outline-chip-padding;
-        }
-
-        .e-chips-wrapper {
-          padding: $ddt-outline-chip-padding;
+        &.e-show-chip {
+          .e-overflow,
+          .e-chips-wrapper {
+            padding: $ddt-outline-chip-padding;
+          }
         }
       }
 
@@ -220,30 +269,47 @@
               }
             }
           }
-        }
 
-        &.e-float-input.e-control-wrapper:not(.e-show-chip) {
-          .e-ddt-icon,
-          &.e-show-dd-icon .e-clear-icon {
-            padding-top: 8px;
-          }
-        }
-
-        &.e-float-input.e-control-wrapper.e-show-chip,
-        &.e-float-input.e-control-wrapper.e-show-text {
-          .e-ddt-icon {
-            bottom: 6px;
-            right: 10px;
+          &:not(.e-show-chip) {
+            .e-ddt-icon,
+            &.e-show-dd-icon .e-clear-icon {
+              padding-top: 8px;
+            }
           }
 
-          .e-clear-icon {
-            bottom: 5px;
-            right: 38px;
+          &.e-show-chip,
+          &.e-show-text {
+            .e-ddt-icon {
+              @include icon-style(6px, 10px);
+            }
+  
+            .e-clear-icon {
+              @include icon-style(5px, 38px);
+            }
+  
+            &:not(.e-show-dd-icon) .e-clear-icon {
+              @include icon-style(9px, 10px);
+            }
           }
 
-          &:not(.e-show-dd-icon) .e-clear-icon {
-            bottom: 9px;
-            right: 10px;
+          &.e-show-chip {
+            .e-chips-wrapper,
+            .e-overflow {
+              padding-top: 8px;
+  
+              .e-chips {
+                height: 18px;
+
+                > .e-chipcontent {
+                  font-size: 12px;
+                  padding: 0 4px 0 0;
+                }
+              }
+
+              .e-chips-close::before  {
+                @include close-style(12px, 12px, 12px);
+              }
+            }
           }
         }
 
@@ -252,28 +318,6 @@
           .e-chips {
             margin-top: 8px;
             padding: 0 8px;
-          }
-        }
-
-        &.e-float-input.e-control-wrapper.e-show-chip {
-          .e-chips-wrapper,
-          .e-overflow {
-            padding-top: 8px;
-
-            .e-chips {
-              height: 18px;
-            }
-
-            .e-chips > .e-chipcontent {
-              font-size: 12px;
-              padding: 0 4px 0 0;
-            }
-
-            .e-chips-close::before  {
-              font-size: 12px;
-              height: 12px;
-              width: 12px;
-            }
           }
         }
 
@@ -299,17 +343,15 @@
                 height: 28px;
                 margin-top: 8px;
                 padding: 0 8px;
-              }
 
-              .e-chips > .e-chipcontent {
-                font-size: 13px;
-                padding: 0 8px 0 0;
+                > .e-chipcontent {
+                  font-size: 13px;
+                  padding: 0 8px 0 0;
+                }
               }
 
               .e-chips-close::before  {
-                font-size: 14px;
-                height: 14px;
-                width: 14px;
+                @include close-style(14px, 12px, 12px);
               }
             }
           }
@@ -317,19 +359,16 @@
           &.e-show-dd-icon.e-show-text,
           &.e-show-dd-icon.e-show-chip {
             .e-ddt-icon {
-              bottom: 10px;
-              right: 10px;
+              @include icon-style(10px, 10px);
             }
           }
 
           .e-clear-icon {
-            bottom: 9px;
-            right: 38px;
+            @include icon-style(9px, 38px);
           }
 
           &:not(.e-show-dd-icon) .e-clear-icon {
-            bottom: 9px;
-            right: 10px;
+            @include icon-style(9px, 10px);
           }
         }
       }
@@ -379,18 +418,19 @@
         display: inline-block;
         font-size: $ddt-chip-font-size;
         padding: $ddt-remains-padding;
+        @if $ddt-skin-name == 'fluent2' {
+          line-height: $ddt-remains-line-height;
+        }
 
         &.e-wrap-count {
           @if $ddt-skin-name == 'bootstrap5' {
             padding: $ddt-overflow-count-padding;
           }
+          @else if $ddt-skin-name == 'FluentUI' {
+            line-height: 30px;
+          }
           @else {
-            @if $ddt-skin-name == 'FluentUI' {
-              line-height: 30px;
-            }
-            @else {
-              padding-top: $ddt-overflow-count-padding-top;
-            }
+            padding-top: $ddt-overflow-count-padding-top;
           }
         }
       }
@@ -411,29 +451,16 @@
       }
     }
 
-    &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-      @if $ddt-skin-name == 'tailwind' {
-        margin-right: 18px;
-      }
-      @else {
-        margin-right: $ddt-dd-icon-width;
-      }
-      max-width: $ddt-chip-ddi-width;
+    &.e-show-dd-icon {
+      @include chip-last($ddt-dd-icon-width, $ddt-chip-ddi-width);
     }
 
-    &.e-show-clear .e-chips-wrapper .e-chips:last-child {
-      @if $ddt-skin-name == 'tailwind' {
-        margin-right: 18px;
-      }
-      @else {
-        margin-right: $ddt-close-icon-width;
-      }
-      max-width: $ddt-chip-ci-width;
+    &.e-show-clear {
+      @include chip-last($ddt-close-icon-width, $ddt-chip-ci-width);
     }
 
-    &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-      margin-right: $ddt-last-chip-right-margin;
-      max-width: $ddt-chip-ddi-ci-width;
+    &.e-show-clear.e-show-dd-icon {
+      @include chip-last($ddt-last-chip-right-margin, $ddt-chip-ddi-ci-width);
     }
 
     input[readonly],
@@ -450,29 +477,24 @@
       @if $skin-name != 'material' and $skin-name != 'FluentUI' and $skin-name != 'Material3' {
         border: 1px solid $ddt-popup-border-color;
       }
-
       @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
-        border-radius: 4px;
         margin-top: 4px;
       }
-
-      @if $skin-name == 'bootstrap4' or $skin-name == 'Material3' {
-        border-radius: $ddt-chip-radius;
-      }
-
-      @if $skin-name == 'Material3' {
+      @else if $skin-name == 'Material3' {
         margin-top: 2px;
       }
-
-      @if $skin-name == 'FluentUI' {
-        border-radius: 2px;
+      @else if $skin-name == 'fluent2' {
+        margin-top: 1px;
+      }
+      @if $skin-name == 'bootstrap4' or $skin-name == 'Material3' or $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
+        border-radius: $ddt-popup-radius;
       }
       box-shadow: $ddt-box-shadow;
       position: absolute;
       
       .e-active .e-checkbox-wrapper {
         .e-frame:not(.e-check):not(.e-stop) {
-          @if$ddt-skin-name == 'bootstrap5' {
+          @if $ddt-skin-name == 'bootstrap5' {
             background-color: $ddt-readonly-input-bg-color;
           }
         }
@@ -480,7 +502,7 @@
 
       .e-checkbox-wrapper {
         .e-frame:not(.e-check):not(.e-stop) {
-          @if$ddt-skin-name == 'bootstrap5' {
+          @if $ddt-skin-name == 'bootstrap5' {
             background-color: transparent;
           }
         }
@@ -498,13 +520,7 @@
         text-indent: $ddt-select-all-text-indent;
         white-space: nowrap;
         width: 100%;
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'FluentUI' {
-          padding: 8px 12px;
-        }
-        @else if $ddt-skin-name == 'bootstrap5' {
-          padding: 0 8px;
-        }
-        @else if $ddt-skin-name == 'Material3' {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' or $ddt-skin-name == 'fluent2' or $ddt-skin-name == 'Material3' {
           padding: $ddt-select-all-padding;
         }
 
@@ -533,68 +549,64 @@
         }
       }
 
-      & .e-filter-wrap .e-input,
-      & .e-filter-wrap .e-input:focus {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
-          padding: $ddt-list-filter-text-indent;
-        }
-      }
-
       .e-filter-wrap {
+        border-top-width: $ddt-filter-top-border;
+        display: block;
+        padding: $ddt-filter-padding;
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'FluentUI' {
           border-bottom: $ddt-filter-border;
         }
         @else {
           border: $ddt-filter-border;
         }
-        border-top-width: $ddt-filter-top-border;
-        display: block;
-        padding: $ddt-filter-padding;
-      }
 
-      .e-filter-wrap {
         @if $ddt-skin-name == 'fabric' or $ddt-skin-name == 'fabric-dark' or $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
           border-left-width: 0;
           border-right-width: 0;
         }
-
         @if $ddt-skin-name == 'bootstrap-dark' or $ddt-skin-name == 'bootstrap' {
           border-bottom: $ddt-filter-border-bottom-color;
         }
-
         @if $ddt-skin-name == 'bootstrap4' {
           background: $ddt-filter-bg;
         }
 
-        .e-input-group:not(.e-disabled):not(.e-float-icon-left)::before,
-        .e-input-group:not(.e-disabled):not(.e-float-icon-left)::after,
-        .e-input-group.e-control-wrapper:not(.e-disabled):not(.e-float-icon-left)::before,
-        .e-input-group.e-control-wrapper:not(.e-disabled):not(.e-float-icon-left)::after {
-          @if $ddt-skin-name == 'material' {
-            bottom: -1px;
-            height: 1px;
+        .e-input,
+        .e-input:focus {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
+            padding: $ddt-list-filter-text-indent;
           }
         }
-      }
 
-      .e-filter-wrap .e-input-group {
-        margin-bottom: 0;
+        .e-input-group {
+          margin-bottom: 0;
+  
+          @if $ddt-skin-name == 'tailwind' {
+            border: 1px solid $border;
+            border-radius: 4px;
+          }
+  
+          @if $ddt-skin-name == 'bootstrap4' {
+            background: $ddt-filter-bg;
+          }
+  
+          .e-clear-icon {
+            @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+              margin: 6px 6px 5px;
+              min-height: 12px;
+              min-width: 12px;
+              padding: 6px;
+            }
+          }
 
-        @if $ddt-skin-name == 'tailwind' {
-          border: 1px solid $border;
-          border-radius: 4px;
-        }
-
-        @if $ddt-skin-name == 'bootstrap4' {
-          background: $ddt-filter-bg;
-        }
-
-        .e-clear-icon {
-          @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
-            margin: 6px 6px 5px;
-            min-height: 12px;
-            min-width: 12px;
-            padding: 6px;
+          &:not(.e-disabled):not(.e-float-icon-left)::before,
+          &:not(.e-disabled):not(.e-float-icon-left)::after,
+          &.e-control-wrapper:not(.e-disabled):not(.e-float-icon-left)::before,
+          &.e-control-wrapper:not(.e-disabled):not(.e-float-icon-left)::after {
+            @if $ddt-skin-name == 'material' {
+              bottom: -1px;
+              height: 1px;
+            }
           }
         }
       }
@@ -611,6 +623,7 @@
           cursor: default;
           font-family: inherit;
           font-size: 14px;
+          text-align: center;
           @if $ddt-skin-name == 'tailwind' {
             padding: 8px 16px;
           }
@@ -620,7 +633,6 @@
           @else {
             padding: 14px 16px;
           }
-          text-align: center;
 
           .e-treeview {
             display: none;
@@ -640,11 +652,13 @@
         width: 100%;
 
         .e-list-item {
-          padding: 0;
+          @if $ddt-skin-name != 'fluent2' {
+            padding: 0;
 
-          .e-ul {
-            margin: 0;
-            padding: 0 0 0 14px;
+            .e-ul {
+              margin: 0;
+              padding: 0 0 0 14px;
+            }
           }
         }
 
@@ -652,20 +666,20 @@
           @if $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
             border-width: 2px;
           }
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'fluent2' {
             height: $ddt-treeview-fullrow-height;
           }
         }
 
         & > .e-ul {
           overflow: hidden;
-          @if $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3'  {
+          @if $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'fluent2' {
             padding: $ddt-treeview-padding;
           }
         }
 
         &.e-fullrow-wrap .e-text-content {
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'fluent2' {
             padding-bottom: $ddt-treeview-content-padding-top;
             padding-top: $ddt-treeview-content-padding-bottom;
           }
@@ -707,8 +721,7 @@
           }
 
           &.e-wrap-count {
-            position: absolute;
-            right: auto;
+            @include position(absolute, auto);
           }
         }
       }
@@ -824,35 +837,30 @@
         }
       }
 
-      &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+      &.e-show-dd-icon {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          margin-left: 18px;
-          margin-right: 4px;
+          @include chip-last-margin(4px, 18px);
         }
         @else {
-          margin-left: $ddt-dd-icon-width;
-          margin-right: 1px;
+          @include chip-last-margin(1px, $ddt-dd-icon-width);
         }
       }
 
-      &.e-show-clear .e-chips-wrapper .e-chips:last-child {
+      &.e-show-clear {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          margin-left: 18px;
-          margin-right: 4px;
+          @include chip-last-margin(4px, 18px);
         }
         @else {
-          margin-left: $ddt-close-icon-width;
-          margin-right: 1px;
+          @include chip-last-margin(1px, $ddt-close-icon-width);
         }
       }
 
-      &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-        margin-left: $ddt-last-chip-right-margin;
+      &.e-show-clear.e-show-dd-icon {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          margin-right: 4px;
+          @include chip-last-margin(4px, $ddt-last-chip-right-margin);
         }
         @else {
-          margin-right: 1px;
+          @include chip-last-margin(1px, $ddt-last-chip-right-margin);
         }
       }
 
@@ -880,7 +888,6 @@
       }
 
       &.e-popup {
-
         .e-treeview .e-list-item .e-ul {
           padding: 0 14px 0 0;
         }
@@ -917,15 +924,13 @@
       &.e-show-text  {
         &.e-show-dd-icon .e-clear-icon {
           @if $ddt-skin-name == 'tailwind' {
-            bottom: 3px;
-            right: 32px;
+            @include icon-style(3px, 32px);
           }
           @else if $ddt-skin-name == 'bootstrap4' {
             right: 33px;
           }
           @else if $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-            bottom: auto;
-            right: 36px;
+            @include icon-style(auto, 36px);
           }
           @else if $ddt-skin-name != 'Material3' {
             right: $ddt-dd-icon-bigger-width;
@@ -949,6 +954,9 @@
         @if $ddt-skin-name == 'bootstrap4' {
           font-size: 10px;
         }
+        @else if $ddt-skin-name == 'fluent2' {
+          font-size: 18px;
+        }
       }
 
       .e-clear-icon {
@@ -959,45 +967,60 @@
         @else {
           min-height: $ddt-close-icon-bigger-min-height;
         }
+        @if $ddt-skin-name == 'fluent2' {
+          &::before {
+            font-size: 18px;
+          }
+        }
       }
     }
 
     &.e-show-chip {
       .e-chips-close {
         @if $ddt-skin-name == 'bootstrap4' {
-          line-height: 27px;
-          min-height: 30px;
-          min-width: 30px;
-
-          &::before {
-            font-size: 10px;
-          }
+          @include min-style(30px, 30px, 10px, 27px);
         }
         @if $ddt-skin-name == 'tailwind' {
-          line-height: 18px;
-          min-height: 24px;
-          min-width: 24px;
-
-          &::before {
-            font-size: 20px;
-          }
+          @include min-style(24px, 24px, 20px, 18px);
         }
         @if $ddt-skin-name == 'bootstrap5' {
-          min-height: 24px;
-          min-width: 24px;
-
+          @include min-style(24px, 24px, 12px, null);
           &::before {
-            font-size: 12px;
             vertical-align: middle;
           }
         }
         @if $ddt-skin-name == 'FluentUI' {
-          line-height: 27px;
-          min-height: 32px;
-          min-width: 32px;
+          @include min-style(32px, 32px, 12px, 27px);
+        }
+      }
 
-          &::before {
-            font-size: 12px;
+      .e-overflow {
+        .e-remain {
+          &.e-wrap-count {
+            @if $ddt-skin-name == 'tailwind' {
+              line-height: 22px;
+              padding-top: 7px;
+            }
+            @if $ddt-skin-name == 'FluentUI' {
+              line-height: 38px;
+              padding-top: 0;
+            }
+          }
+        }
+
+        &.e-total-count {
+          .e-remain {
+            @if $ddt-skin-name == 'bootstrap5' {
+              line-height: 36px;
+              padding: 0 12px;
+            }
+            @else if $ddt-skin-name == 'tailwind' {
+              padding: 8px 12px;
+            }
+            @else if  $ddt-skin-name == 'FluentUI' {
+              line-height: 38px;
+              padding: 0 8px;
+            }
           }
         }
       }
@@ -1016,11 +1039,8 @@
       }
 
       .e-remain {
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
-          font-size: $text-base;
-        }
-        @else if $ddt-skin-name == 'FluentUI' {
-          font-size: $text-lg;
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+          font-size: $ddt-remains-font-size;
         }
       }
     }
@@ -1028,10 +1048,7 @@
     @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
       &.e-outline {
         .e-overflow {
-          &.e-show-text {
-            padding: $ddt-outline-bigger-padding;
-          }
-
+          &.e-show-text,
           &.e-total-count {
             padding: $ddt-outline-bigger-padding;
           }
@@ -1093,18 +1110,15 @@
         &.e-float-input.e-control-wrapper.e-show-chip,
         &.e-float-input.e-control-wrapper.e-show-text {
           .e-ddt-icon {
-            bottom: 12px;
-            right: 12px;
+            @include icon-style(12px, 12px);
           }
 
           .e-clear-icon {
-            bottom: 11px;
-            right: 44px;
+            @include icon-style(11px, 44px);
           }
 
           &:not(.e-show-dd-icon) .e-clear-icon {
-            bottom: 14px;
-            right: 12px;
+            @include icon-style(14px, 12px);
           }
         }
 
@@ -1130,9 +1144,7 @@
             }
 
             .e-chips-close::before  {
-              font-size: 14px;
-              height: 14px;
-              width: 14px;
+              @include close-style(14px, 14px, 14px);
             }
           }
         }
@@ -1157,16 +1169,14 @@
               .e-chips {
                 height: 32px;
                 padding: 0 12px;
-              }
 
-              .e-chips > .e-chipcontent {
-                font-size: 14px;
+                > .e-chipcontent {
+                  font-size: 14px;
+                }
               }
 
               .e-chips-close::before  {
-                font-size: 16px;
-                height: 16px;
-                width: 16px;
+                @include close-style(16px, 16px, 16px);
               }
             }
           }
@@ -1175,47 +1185,12 @@
           &.e-show-dd-icon.e-show-chip {
             .e-ddt-icon,
             &:not(.e-show-dd-icon) .e-clear-icon {
-              bottom: 16px;
-              right: 12px;
+              @include icon-style(16px, 12px);
             }
           }
 
           .e-clear-icon {
-            bottom: 15px;
-            right: 44px;
-          }
-        }
-      }
-    }
-
-    &.e-show-chip {
-      .e-overflow {
-        .e-remain {
-          &.e-wrap-count {
-            @if $ddt-skin-name == 'tailwind' {
-              line-height: 22px;
-              padding-top: 7px;
-            }
-            @if $ddt-skin-name == 'FluentUI' {
-              line-height: 38px;
-              padding-top: 0;
-            }
-          }
-        }
-
-        &.e-total-count {
-          .e-remain {
-            @if $ddt-skin-name == 'bootstrap5' {
-              line-height: 36px;
-              padding: 0 12px;
-            }
-            @else if $ddt-skin-name == 'tailwind' {
-              padding: 8px 12px;
-            }
-            @else if  $ddt-skin-name == 'FluentUI' {
-              line-height: 38px;
-              padding: 0 8px;
-            }
+            @include icon-style(15px, 44px);
           }
         }
       }
@@ -1235,31 +1210,19 @@
       max-width: $ddt-big-chip-ci-width;
     }
 
-    &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-      margin-right: $ddt-last-chip-bigger-right-margin;
-      max-width: $ddt-big-chip-ddi-ci-width;
+    &.e-show-clear.e-show-dd-icon {
+      @include chip-last($ddt-last-chip-bigger-right-margin, $ddt-big-chip-ddi-ci-width);
     }
 
     &.e-popup {
-      @if $ddt-skin-name == 'tailwind' {
-        margin-top: 8px;
-      }
-      @else if $ddt-skin-name == 'bootstrap5' {
-        margin-top: 4px;
+      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
+        margin-top: $ddt-popup-margin;
       }
 
       .e-selectall-parent {
         text-indent: $ddt-select-all-bigger-text-indent;
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          @if $ddt-skin-name == 'bootstrap5' {
-            padding: 3px 12px;
-          }
-          @else if $ddt-skin-name == 'tailwind'  {
-            padding: 12px 16px;
-          }
-          @else {
-            padding: 10px 16px;
-          }
+          padding: $ddt-big-select-all-padding;
 
           .e-all-text {
             font-size: $text-base;
@@ -1301,18 +1264,20 @@
         }
       }
 
-      .e-treeview .e-fullrow {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
-          height: $ddt-treeview-fullrow-bigger-height;
+      .e-treeview {
+        .e-fullrow {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
+            height: $ddt-treeview-fullrow-bigger-height;
+          }
         }
-      }
 
-      .e-treeview > .e-ul {
-        @if $ddt-skin-name == 'bootstrap5' {
-          padding: 8px 16px;
-        }
-        @if $ddt-skin-name == 'tailwind' {
-          padding: 8px 0 8px 16px;
+        > .e-ul {
+          @if $ddt-skin-name == 'bootstrap5' {
+            padding: 8px 16px;
+          }
+          @if $ddt-skin-name == 'tailwind' {
+            padding: 8px 0 8px 16px;
+          }
         }
       }
     }
@@ -1345,19 +1310,19 @@
                 padding: 19px 0 0 12px;
               }
             }
-          }
 
-          &.e-float-input.e-control-wrapper.e-show-chip,
-          &.e-float-input.e-control-wrapper.e-show-text {
-            .e-ddt-icon,
-            &:not(.e-show-dd-icon) .e-clear-icon {
-              left: 12px;
-              right: auto;
-            }
+            &.e-show-chip,
+            &.e-show-text {
+              .e-ddt-icon,
+              &:not(.e-show-dd-icon) .e-clear-icon {
+                left: 12px;
+                right: auto;
+              }
 
-            &.e-show-dd-icon .e-clear-icon {
-              left: 44px;
-              right: auto;
+              &.e-show-dd-icon .e-clear-icon {
+                left: 44px;
+                right: auto;
+              }
             }
           }
 
@@ -1379,33 +1344,30 @@
         }
       }
 
-      &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+      &.e-show-dd-icon {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          margin-right: 4px;
+          @include chip-last-margin(4px, null);
         }
         @else if $ddt-skin-name != 'Material3' {
-          margin-left: $ddt-dd-icon-bigger-width;
-          margin-right: 1px;
+          @include chip-last-margin(1px, $ddt-dd-icon-bigger-width);
         }
       }
 
-      &.e-show-clear .e-chips-wrapper .e-chips:last-child {
+      &.e-show-clear {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          margin-right: 4px;
+          @include chip-last-margin(4px, null);
         }
         @else if $ddt-skin-name != 'Material3' {
-          margin-left: $ddt-close-icon-bigger-width;
-          margin-right: 1px;
+          @include chip-last-margin(1px, $ddt-close-icon-bigger-width);
         }
       }
 
-      &.e-show-clear.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-        margin-left: $ddt-last-chip-bigger-right-margin;
+      &.e-show-clear.e-show-dd-icon {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          margin-right: 4px;
+          @include chip-last-margin($ddt-last-chip-bigger-right-margin, 4px);
         }
         @else {
-          margin-right: 1px;
+          @include chip-last-margin($ddt-last-chip-bigger-right-margin, 1px);
         }
       }
 

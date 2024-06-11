@@ -299,7 +299,7 @@ export class Render {
     private isNeedForeignAction(): boolean {
         const gObj: IGrid = this.parent;
         return !!((gObj.allowFiltering && gObj.filterSettings.columns.length) ||
-            (gObj.searchSettings.key.length)) && this.foreignKey(this.parent.getForeignKeyColumns());
+            (!isNullOrUndefined(gObj.searchSettings.key) && gObj.searchSettings.key.length)) && this.foreignKey(this.parent.getForeignKeyColumns());
     }
 
     private foreignKey(columns: Column[]): boolean {
@@ -396,7 +396,7 @@ export class Render {
         } else {
             td = this.parent.createElement('td', {
                 innerHTML: this.l10n.getConstant('EmptyRecord'),
-                attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString()}
+                attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + (!isNullOrUndefined(gObj.groupSettings.columns) ? gObj.groupSettings.columns.length : 0)).toString()}
             });
         }
         if (gObj.isFrozenGrid()) {
@@ -520,7 +520,7 @@ export class Render {
                 gObj.enableInfiniteScrolling)) {
                 this.parent.notify(events.commandColumnDestroy, { type : 'refreshCommandColumn' } );
             }
-            this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();
+            this.contentRenderer.prevCurrentView = !isNullOrUndefined(this.parent.currentViewData) && this.parent.currentViewData.slice();
             gObj.currentViewData = <Object[]>dataArgs.result;
             gObj.notify(events.refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
             if (dataArgs.count && !gObj.allowPaging && (gObj.enableVirtualization || gObj.enableInfiniteScrolling)) {

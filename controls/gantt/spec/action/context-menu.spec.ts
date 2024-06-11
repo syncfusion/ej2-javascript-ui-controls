@@ -1,7 +1,7 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter, DayMarkers, Reorder, ColumnMenu, VirtualScroll, ExcelExport, PdfExport} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData, CR885011} from '../base/data-source.spec';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData, CR885011, MT889303} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { ContextMenuItemModel } from '@syncfusion/ej2-grids';
@@ -2550,5 +2550,83 @@ describe('context menu items for parent task', () => {
     it('context menu open', (done: Function) => {
         expect((ganttObj.contextMenuModule as any).hideItems.length).toBe(7);
         done();
+    });
+});
+describe('MT:889303-Parent taskbar not rendered in unscheduled tasks', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: MT889303,
+            enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration'}
+        ],
+        
+        allowSelection: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        gridLines: "Both",
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        setTimeout(done, 500);
+    });
+    it('Task indent on unschedule mode', () => {
+        ganttObj.selectionModule.selectRow(2);
+        let indent: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Indent' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '5 days';
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(5);
+        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(5);
+        expect(ganttObj.currentViewData[0].hasChildRecords).toBe(true);
     });
 });

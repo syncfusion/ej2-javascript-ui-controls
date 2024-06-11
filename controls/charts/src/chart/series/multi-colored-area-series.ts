@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { getPoint, withInRange, ChartLocation } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -15,12 +13,18 @@ import { ChartSegmentModel } from './chart-series-model';
 export class MultiColoredAreaSeries extends MultiColoredSeries {
 
     /**
-     * Render Area series.
+     * Render the multi colored area series on the chart.
      *
+     * @param {Series} series - The series to be rendered.
+     * @param {Axis} xAxis - The X-axis associated with the series.
+     * @param {Axis} yAxis - The Y-axis associated with the series.
+     * @param {boolean} isInverted - Specifies whether the chart is inverted or not.
+     * @param {boolean} pointAnimate - Specifies whether the point has to be animated or not.
+     * @param {boolean} pointUpdate - Specifies whether the point has to be updated or not.
      * @returns {void}
      * @private
      */
-    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate?: boolean, pointUpdate?: boolean): void {
         let firstPoint: ChartLocation;
         let startPoint: ChartLocation = null;
         let direction: string = '';
@@ -31,7 +35,8 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
         let rendered: boolean;
         const segments: ChartSegmentModel[] = this.sortSegments(series, series.segments);
         let emptyPointDirection:  string = '';
-        series.visiblePoints.map((point: Points, i: number, seriesPoints: Points[]) => {
+        const visiblePoints: Points[] = this.enableComplexProperty(series);
+        visiblePoints.map((point: Points, i: number, seriesPoints: Points[]) => {
             point.symbolLocations = [];
             point.regions = [];
             rendered = false;
@@ -73,11 +78,18 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
             emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
             this.generateBorderPathOption(options, series, previous, emptyPointDirection, '');
         }
-        this.applySegmentAxis(series, options, segments);
-        this.renderMarker(series);
+        this.applySegmentAxis(series, options, segments, pointAnimate);
+        if (!pointUpdate) {this.renderMarker(series); }
     }
     /**
-     * To Store the path directions of the area
+     * Generate path options for rendering series elements.
+     *
+     * @param {PathOption[]} options - The array of path options to be updated.
+     * @param {Series} series - The series associated with the path options.
+     * @param {Points} point - The point associated with the path options.
+     * @param {string} direction - The direction of the path options.
+     * @param {string} id - The id associated with the path options.
+     * @returns {void}
      */
     private generatePathOption(
         options: PathOption[], series: Series, point: Points, direction: string, id: string
@@ -90,7 +102,14 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
     }
 
     /**
-     * To draw border for the path directions of area
+     * Generate path options for rendering series border elements.
+     *
+     * @param {PathOption[]} options - The array of path options to be updated.
+     * @param {Series} series - The series associated with the path options.
+     * @param {Points} point - The point associated with the path options.
+     * @param {string} emptyPointDirection - The direction of the empty point.
+     * @param {string} id - The ID associated with the path options.
+     * @returns {void}
      */
     private generateBorderPathOption(
         options: PathOption[], series: Series, point: Points, emptyPointDirection: string, id: string
@@ -102,27 +121,51 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
         ));
 
     }
-
+    /**
+     * To animate point for multicolored area series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
+        for (let i: number = 0; i < point.length; i++) {
+            if (series.marker && series.marker.visible) {
+                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
+                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
+    }
     /**
      * To destroy the area series.
      *
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroy method calling here
+         * Destroy method calling here.
          */
     }
 
     /**
-     * Get module name
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'MultiColoredAreaSeries';
     }
@@ -133,7 +176,6 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
      */
-
     public doAnimation(series: Series): void {
         this.doLinearAnimation(series, series.animation);
     }

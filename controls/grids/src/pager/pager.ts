@@ -209,16 +209,6 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     public created: EmitType<Object>;
 
     /**
-     * @hidden
-     */
-    public isReact: boolean;
-
-    /**
-     * @hidden
-     */
-    public isVue: boolean;
-
-    /**
      * Constructor for creating the component.
      *
      * @param {PagerModel} options - specifies the options

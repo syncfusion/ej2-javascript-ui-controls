@@ -92,8 +92,8 @@ export class PeriodSelector {
 
     public renderSelectorElement(control?: RangeNavigator, options?: ISelectorRenderArgs, x? : number): void {
         //render border
-        this.periodSelectorSize = control ? this.periodSelectorSize : new Rect(x, (this.rootControl as StockChart).titleSize.height ? (this.rootControl as StockChart).titleSize.height : 10,
-                                                                               options.width, options.height);
+        this.periodSelectorSize = control ? this.periodSelectorSize : new Rect(x, (this.rootControl as StockChart).titleSize.height ?
+            (this.rootControl as StockChart).titleSize.height : 10, options.width, options.height);
         let thumbSize: number;
         let element: HTMLElement;
         if (control) {
@@ -149,11 +149,11 @@ export class PeriodSelector {
         };
         if (this.rootControl.getModuleName() === 'stockChart') {
             if ((<StockChart>this.rootControl).exportType.length) {
-                let exportElement: HTMLElement = createElement('button', { id: controlId + '_export', styles: buttonStyles,
-                className: 'e-dropdown-btn e-btn e-flat' });
+                const exportElement: HTMLElement = createElement('button', { id: controlId + '_export', styles: buttonStyles,
+                    className: 'e-dropdown-btn e-btn e-flat' });
                 exportElement.innerText = 'Export';
                 selector.push({ template: exportElement,
-                align: 'Right'});
+                    align: 'Right'});
             }
         }
         this.rootControl.trigger('selectorRender', selctorArgs);
@@ -197,8 +197,7 @@ export class PeriodSelector {
             this.datePicker = new DateRangePicker({
                 min: this.isDatetimeCategory ? new Date(this.sortedData[this.control.seriesXMin]) : new Date(this.control.seriesXMin),
                 max: this.isDatetimeCategory ? new Date(this.sortedData[this.control.seriesXMax]) : new Date(this.control.seriesXMax),
-                // eslint-disable-next-line no-useless-escape
-                format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
+                format: 'dd/MM/yyyy', placeholder: 'Select a range',
                 showClearButton: false,
                 startDate: this.isDatetimeCategory ? new Date(this.sortedData[Math.floor(this.control.startValue)]) :
                     new Date(this.control.startValue),
@@ -214,7 +213,7 @@ export class PeriodSelector {
                             }
                         }
                         datePickerElement.style.display = 'none';
-                        let element: HTMLElement = createElement('div', {
+                        const element: HTMLElement = createElement('div', {
                             id: dateRangeId,
                             className: 'e-control e-btn e-dropdown-btn e-flat',
                             styles: 'font-size: 14px; font-weight: 500; text-transform: none '
@@ -277,6 +276,7 @@ export class PeriodSelector {
 
     /**
      * To find start and end value
+     *
      * @param startValue
      * @param endValue
      */
@@ -330,32 +330,32 @@ export class PeriodSelector {
         const className: string = 'e-dropdown-btn e-btn e-flat';
         if (this.rootControl.getModuleName() === 'stockChart') {
             if ((<StockChart>this.rootControl).seriesType.length) {
-                let SeriesElement: HTMLElement = createElement('button', { id: controlId + '_seriesType',
-                styles: buttonStyles,
-                className: className });
+                const SeriesElement: HTMLElement = createElement('button', { id: controlId + '_seriesType',
+                    styles: buttonStyles,
+                    className: className });
                 SeriesElement.innerText = 'Series';
                 selector.push({ template: SeriesElement,
-                align: 'Left'});
+                    align: 'Left'});
             }
             if ((<StockChart>this.rootControl).indicatorType.length) {
-                let indicatorElement: HTMLElement = createElement('button', {
+                const indicatorElement: HTMLElement = createElement('button', {
                     id: controlId + '_indicatorType',
                     styles: buttonStyles,
                     className: className
-                });  
+                });
                 indicatorElement.innerText = 'Indicators';
                 selector.push({ template: indicatorElement,
-                align: 'Left'});
+                    align: 'Left'});
             }
             if ((<StockChart>this.rootControl).trendlineType.length) {
-                let trendlineElement: HTMLElement = createElement('button', {
+                const trendlineElement: HTMLElement = createElement('button', {
                     id: controlId + '_trendType',
                     styles: buttonStyles,
                     className: className
                 });
                 trendlineElement.innerText = 'Trendline';
                 selector.push({ template: trendlineElement,
-                align: 'Left'});
+                    align: 'Left'});
             }
         }
         return selector;
@@ -462,6 +462,7 @@ export class PeriodSelector {
     }
     /**
      * To find the start value
+     *
      * @param startValue
      * @param endValue
      */

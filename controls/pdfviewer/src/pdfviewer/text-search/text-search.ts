@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { createElement, Browser, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
@@ -6,13 +5,14 @@ import { DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pd
 import { createSpinner, showSpinner, hideSpinner } from '../index';
 import { Rect } from '@syncfusion/ej2-drawings';
 import { PdfPage } from '@syncfusion/ej2-pdf';
-let searchTextCollection: any = [];
-
+const searchTextCollection: any = [];
 /**
  * TextSearch module
+ *
+ * @param {Event} event - event
+ * @returns {void}
  */
 export class TextSearch {
-
     /**
      * @private
      */
@@ -41,20 +41,16 @@ export class TextSearch {
     private searchString: string = null;
     private isMatchCase: boolean = false;
     private searchRequestHandler: AjaxHandler = null;
-    // eslint-disable-next-line
-    private textContents: Array<string[]> = new Array();
-    // eslint-disable-next-line
-    private searchMatches: Array<any[]> = new Array();
-    // eslint-disable-next-line
-    private searchCollection: Array<{ [key: string]: object }[]> = new Array();
+    private textContents: Array<string[]> = [];
+    private searchMatches: Array<any[]> = [];
+    private searchCollection: Array<{ [key: string]: object }[]> = [];
     private searchedPages: number[] = [];
     private isPrevSearch: boolean = false;
     /**
      * @private
      */
-    public searchTextDivzIndex: string = "-1";
-    // eslint-disable-next-line
-    private tempElementStorage: Array<{ [key: string]: string }> = new Array();
+    public searchTextDivzIndex: string = '-1';
+    private tempElementStorage: Array<{ [key: string]: string }> = [];
     /**
      * @private
      */
@@ -62,7 +58,6 @@ export class TextSearch {
     /**
      * @private
      */
-    // eslint-disable-next-line
     public documentTextCollection: DocumentTextCollectionSettingsModel[][];
     /**
      * @private
@@ -72,11 +67,10 @@ export class TextSearch {
     private isTextSearchEventTriggered: boolean = false;
     private isSearchText: boolean = false;
     /**
-     * @param pdfViewer
-     * @param pdfViewerBase
-     * @param pdfViewer
-     * @param pdfViewerBase
+     * @param {PdfViewer} pdfViewer - It describes about the pdf viewer
+     * @param {PdfViewerBase} pdfViewerBase - It describes about the pdfviewer base
      * @private
+     * @returns {void}
      */
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
@@ -85,9 +79,9 @@ export class TextSearch {
 
     /**
      * @private
+     * @returns {void}
      */
     public createTextSearchBox(): void {
-        // eslint-disable-next-line max-len
         this.searchBox = createElement('div', { id: this.pdfViewer.element.id + '_search_box', className: 'e-pv-search-bar' });
         let toolbarElement: HTMLElement;
         if (isBlazor()) {
@@ -99,23 +93,21 @@ export class TextSearch {
             if (isBlazor()) {
                 this.searchBox.style.top = toolbarElement.clientHeight + 'px';
             } else {
-               this.searchBox.style.top = toolbarElement.clientHeight + 'px';
+                this.searchBox.style.top = toolbarElement.clientHeight + 'px';
             }
         }
         const searchElementsContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_search_box_elements', className: 'e-pv-search-bar-elements' });
-        // eslint-disable-next-line max-len
         const searchInputContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_search_input_container', className: 'e-input-group e-pv-search-input' });
         this.searchInput = createElement('input', { id: this.pdfViewer.element.id + '_search_input', className: 'e-input' });
         (this.searchInput as HTMLInputElement).type = 'text';
         if (isBlazor()) {
             const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Findindocument');
             promise.then((value: string) => {
-                (this.searchInput as HTMLInputElement).placeholder  = value;
+                (this.searchInput as HTMLInputElement).placeholder = value;
             });
         } else {
             (this.searchInput as HTMLInputElement).placeholder = this.pdfViewer.localeObj.getConstant('Find in document');
         }
-        // eslint-disable-next-line max-len
         this.searchBtn = createElement('span', { id: this.pdfViewer.element.id + '_search_box-icon', className: 'e-input-group-icon e-input-search-group-icon e-pv-search-icon' });
         this.searchBtn.setAttribute('tabindex', '0');
         searchInputContainer.appendChild(this.searchInput);
@@ -135,7 +127,6 @@ export class TextSearch {
         }
         this.nextSearchBtn.setAttribute('aria-label', 'Next Search text');
         searchElementsContainer.appendChild(this.nextSearchBtn);
-        // eslint-disable-next-line max-len
         const matchCaseContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_match_case_container', className: 'e-pv-match-case-container' });
         const matchCaseInput: HTMLElement = createElement('input', { id: this.pdfViewer.element.id + '_match_case' });
         (matchCaseInput as HTMLInputElement).type = 'checkbox';
@@ -149,7 +140,6 @@ export class TextSearch {
         this.searchBox.appendChild(matchCaseContainer);
         this.pdfViewerBase.mainContainer.appendChild(this.searchBox);
         if (isBlazor()) {
-            // eslint-disable-next-line max-len
             const matchCaseText: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_search_box_text', styles: 'position: absolute; padding-top: 3px; padding-left: 8px; padding-right: 8px; font-size: 13px' });
             const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Matchcase');
             promise.then((value: string) => {
@@ -157,12 +147,11 @@ export class TextSearch {
             });
             matchCaseContainer.appendChild(matchCaseText);
         } else {
-            // eslint-disable-next-line max-len
-            const checkBox: CheckBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'),htmlAttributes:{'tabindex': '0'}, change: this.checkBoxOnChange.bind(this) });
+            const checkBox: CheckBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'), htmlAttributes: { 'tabindex': '0' }, change: this.checkBoxOnChange.bind(this) });
             checkBox.appendTo(matchCaseInput);
         }
         matchCaseContainer.firstElementChild.addEventListener('keydown', (event: KeyboardEvent) => {
-            if (event.key === "Enter" || event.key === " ") {
+            if (event.key === 'Enter' || event.key === ' ') {
                 (event.target as any).click();
                 event.preventDefault();
                 event.stopPropagation();
@@ -192,7 +181,7 @@ export class TextSearch {
         this.searchInput.addEventListener('keydown', this.searchKeypressHandler.bind(this));
         this.searchBtn.addEventListener('click', this.searchClickHandler.bind(this));
         this.searchBtn.addEventListener('keydown', (event: KeyboardEvent) => {
-            if (event.key === "Enter" || event.key === " ") {
+            if (event.key === 'Enter' || event.key === ' ') {
                 this.searchClickHandler(event);
                 event.preventDefault();
                 event.stopPropagation();
@@ -224,6 +213,7 @@ export class TextSearch {
 
     /**
      * @private
+     * @returns {void}
      */
     public textSearchBoxOnResize(): void {
         if (this.pdfViewer.toolbarModule && this.pdfViewer.enableToolbar) {
@@ -234,13 +224,11 @@ export class TextSearch {
                 }
             }
         } else {
-            // eslint-disable-next-line max-len
-            if (this.pdfViewerBase.viewerContainer.clientWidth + this.pdfViewerBase.viewerContainer.offsetLeft < this.searchBox.offsetLeft + this.searchBox.clientWidth) {
+            if (this.pdfViewerBase.viewerContainer.clientWidth + this.pdfViewerBase.viewerContainer.offsetLeft <
+                this.searchBox.offsetLeft + this.searchBox.clientWidth) {
                 this.searchBox.style.right = '0px';
-                // eslint-disable-next-line
-                this.searchBox.style.width = parseInt(this.searchBox.style.width) - ((this.searchBox.offsetLeft + this.searchBox.clientWidth) - (this.pdfViewerBase.viewerContainer.clientWidth)) + 'px';
-                // eslint-disable-next-line
-                this.searchInput.style.width = parseInt(this.searchInput.style.width) - ((this.searchBox.offsetLeft + this.searchBox.clientWidth) - (this.pdfViewerBase.viewerContainer.clientWidth)) + 'px';
+                this.searchBox.style.width = parseInt(this.searchBox.style.width, 10) - ((this.searchBox.offsetLeft + this.searchBox.clientWidth) - (this.pdfViewerBase.viewerContainer.clientWidth)) + 'px';
+                this.searchInput.style.width = parseInt(this.searchInput.style.width, 10) - ((this.searchBox.offsetLeft + this.searchBox.clientWidth) - (this.pdfViewerBase.viewerContainer.clientWidth)) + 'px';
             } else {
                 this.searchBox.style.right = '88.3px';
                 this.searchBox.style.width = '';
@@ -250,11 +238,12 @@ export class TextSearch {
     }
 
     /**
-     * @param isShow
+     * @param {boolean} isShow - It describes about the isShow
      * @private
+     * @returns {void}
      */
     public showSearchBox(isShow: boolean): void {
-        if(!isNullOrUndefined(this.searchBox)){
+        if (!isNullOrUndefined(this.searchBox)) {
             if (isShow) {
                 this.searchBox.style.display = 'block';
             } else {
@@ -267,6 +256,7 @@ export class TextSearch {
 
     /**
      * @private
+     * @returns {void}
      */
     public searchAfterSelection(): void {
         if (this.isTextSearch) {
@@ -287,8 +277,9 @@ export class TextSearch {
     }
 
     /**
-     * @param inputString
+     * @param {string} inputString - It describes about the input string
      * @private
+     * @returns {void}
      */
     public initiateSearch(inputString: string): void {
         if (inputString !== this.searchString) {
@@ -297,7 +288,6 @@ export class TextSearch {
         }
         this.clearAllOccurrences();
         if (inputString !== '') {
-            // eslint-disable-next-line
             if (this.searchMatches[this.searchPageIndex] && inputString === this.searchString) {
                 if (this.searchMatches[this.searchPageIndex].length === 0) {
                     this.initSearch(this.searchPageIndex, false);
@@ -393,7 +383,7 @@ export class TextSearch {
                 this.initSearch(this.searchPageIndex, false);
                 this.showLoadingIndicator(true);
             } else {
-                this.highlightSearchedTexts(this.searchPageIndex, false,undefined);
+                this.highlightSearchedTexts(this.searchPageIndex, false, undefined);
                 this.showLoadingIndicator(false);
             }
             this.highlightOthers(true);
@@ -405,42 +395,39 @@ export class TextSearch {
         }
     }
 
-    private findPreviousPageWithText() {
-        let currentPageIndex: any = this.searchPageIndex;
-        for (var i = 1; i < this.pdfViewerBase.pageCount; i++) {
-            let prevPageIndex: any = (currentPageIndex - i + this.pdfViewerBase.pageCount) % this.pdfViewerBase.pageCount;
-            if (this.searchMatches[prevPageIndex] && this.searchMatches[prevPageIndex].length > 0) {
+    private findPreviousPageWithText(): any {
+        const currentPageIndex: number = this.searchPageIndex;
+        for (let i: number = 1; i < this.pdfViewerBase.pageCount; i++) {
+            const prevPageIndex: any = (currentPageIndex - i + this.pdfViewerBase.pageCount) % this.pdfViewerBase.pageCount;
+            if (this.searchMatches[parseInt(prevPageIndex.toString(), 10)] &&
+            this.searchMatches[parseInt(prevPageIndex.toString(), 10)].length > 0) {
                 return prevPageIndex;
             }
         }
         return currentPageIndex;
-    };
+    }
 
-    private initSearch(pageIndex: number, isSinglePageSearch: boolean, isCount?: boolean ): void {
-        // eslint-disable-next-line
-        let storedData: any = this.pdfViewerBase.getStoredData(pageIndex, true);
+    private initSearch(pageIndex: number, isSinglePageSearch: boolean, isCount?: boolean): void {
+        const storedData: any = this.pdfViewerBase.getStoredData(pageIndex, true);
         let pageText: string = null;
         let textContents: string[] = null;
-        // eslint-disable-next-line
         let characterBounds: any[] = null;
         if (isCount) {
             if (this.documentTextCollection.length !== 0) {
-                // eslint-disable-next-line
-                let documentIndex: any = this.documentTextCollection[pageIndex][pageIndex];
+                const documentIndex: any = this.
+                    documentTextCollection[parseInt(pageIndex.toString(), 10)][parseInt(pageIndex.toString(), 10)];
                 const pageTextData: string = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
-                if (this.documentTextCollection[pageIndex] && documentIndex) {
-                    // eslint-disable-next-line max-len
-                    this.getSearchTextContent(pageIndex, this.searchString, pageTextData, textContents, isSinglePageSearch, this.documentTextCollection[pageIndex]);
+                if (this.documentTextCollection[parseInt(pageIndex.toString(), 10)] && documentIndex) {
+                    this.getSearchTextContent(pageIndex, this.searchString, pageTextData, textContents,
+                                              isSinglePageSearch, this.documentTextCollection[parseInt(pageIndex.toString(), 10)]);
                 }
             }
         } else {
             if (storedData) {
-            // eslint-disable-next-line
-            pageText = storedData['pageText'];
-                // eslint-disable-next-line
-            textContents = storedData['textContent'];
-                characterBounds = this.pdfViewerBase.textLayer.characterBound[pageIndex];
-                this.textContents[pageIndex] = textContents;
+                pageText = storedData['pageText'];
+                textContents = storedData['textContent'];
+                characterBounds = this.pdfViewerBase.textLayer.characterBound[parseInt(pageIndex.toString(), 10)];
+                this.textContents[parseInt(pageIndex.toString(), 10)] = textContents;
                 this.getPossibleMatches(pageIndex, this.searchString, pageText, textContents, isSinglePageSearch, characterBounds);
             } else {
                 if (!isSinglePageSearch) {
@@ -456,30 +443,30 @@ export class TextSearch {
         }
     }
 
-    // eslint-disable-next-line
-    private getPossibleMatches(pageIndex: number, searchString: string, pageString: string, textContents: string[], isSinglePageSearch: boolean, characterBounds: any[]): void {
-        let arrayReturns:any;
-        if (this.searchMatches && !this.searchMatches[pageIndex]) {
+    private getPossibleMatches(pageIndex: number, searchString: string, pageString: string, textContents: string[],
+                               isSinglePageSearch: boolean, characterBounds: any[]): void {
+        let arrayReturns: any;
+        if (this.searchMatches && !this.searchMatches[parseInt(pageIndex.toString(), 10)]) {
             let pageText: string = pageString;
             let searchText: string = searchString;
-            let multiSearch:string =(pageText.replace((/(\s\r\n)/gm),' ')).replace((/(\r\n)/gm)," ")
-            let Multiline:string =(pageString.replace((/(\s\r\n)/gm),'  ')).replace((/(\r\n)/gm)," ")
-            let specialCharcterSearch =multiSearch.replace(/[^a-zA-z0-9" "]/g,"");
+            let multiSearch: string = (pageText.replace((/(\s\r\n)/gm), ' ')).replace((/(\r\n)/gm), ' ');
+            let Multiline: string = (pageString.replace((/(\s\r\n)/gm), '  ')).replace((/(\r\n)/gm), ' ');
+            let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-z0-9" "]/g, '');
             const queryLength: number = searchString.length;
             if (!this.isMatchCase) {
                 searchText = searchString.toLowerCase();
                 pageText = pageString.toLowerCase();
-                multiSearch =multiSearch.toLowerCase();
-                Multiline =Multiline.toLowerCase();
-                specialCharcterSearch =specialCharcterSearch.toLowerCase();
+                multiSearch = multiSearch.toLowerCase();
+                Multiline = Multiline.toLowerCase();
+                specialCharcterSearch = specialCharcterSearch.toLowerCase();
             }
             const matches: any[] = [];
-            let matchedArray:number[]=[];
+            const matchedArray: number[] = [];
             let matchIndex: number = -queryLength;
             let newIndex: number = -queryLength;
-            let multiSearchIndex:number =-queryLength;
-            let MultilineIndex =-queryLength;
-            let specialcharcterIndex =-queryLength;
+            let multiSearchIndex: number = -queryLength;
+            let MultilineIndex: number = -queryLength;
+            let specialcharcterIndex: number = -queryLength;
             while (matchIndex !== 0 || matchIndex === 0) {
                 if (searchText === '' || searchText === ' ' || !searchText) {
                     break;
@@ -488,7 +475,7 @@ export class TextSearch {
                 if (searchText.indexOf(' ') !== -1) {
                     const newString: string = searchString.replace(' ', '\r\n');
                     newIndex = pageText.indexOf(newString, newIndex + queryLength);
-                    newIndex =-1;
+                    newIndex = -1;
                     if (!(newIndex <= -1)) {
                         if (newIndex < matchIndex) {
                             matches.push(newIndex);
@@ -505,80 +492,84 @@ export class TextSearch {
                     matches.push(newIndex);
                 }
             }
-            if(matches.length ==0){
+            if (matches.length === 0) {
                 multiSearchIndex = multiSearch.indexOf(searchText, multiSearchIndex + queryLength);
-                MultilineIndex =Multiline.indexOf(searchText,MultilineIndex+queryLength)
-                specialcharcterIndex =specialCharcterSearch.indexOf(searchText,specialcharcterIndex+queryLength)
-                if(multiSearchIndex !==-1){
-                   arrayReturns =this.correctLinetext(searchString,matchIndex,pageText)
-                    matchIndex =-arrayReturns[0].length;
-                    
-                    for(var i=0;i<arrayReturns.length;i++){
-                        matchIndex=pageText.indexOf(arrayReturns[i].trim(),matchIndex+(arrayReturns[i-1]===undefined||null?arrayReturns[0].length:arrayReturns[i-1].length)) 
+                MultilineIndex = Multiline.indexOf(searchText, MultilineIndex + queryLength);
+                specialcharcterIndex = specialCharcterSearch.indexOf(searchText, specialcharcterIndex + queryLength);
+                if (multiSearchIndex !== -1) {
+                    arrayReturns = this.correctLinetext(searchString, matchIndex, pageText);
+                    matchIndex = -arrayReturns[0].length;
+                    for (let i: number = 0; i < arrayReturns.length; i++) {
+                        matchIndex = pageText.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
+                                                      matchIndex + (arrayReturns[i - 1] === undefined ||
+                                                        null ? arrayReturns[0].length : arrayReturns[i - 1].length));
                         matchedArray.push(matchIndex);
-                        if(matchedArray.length>1 ){
-                            if((matchedArray[1]-(matchedArray[0]+arrayReturns[0].length))<=3){
+                        if (matchedArray.length > 1) {
+                            if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
                                 matches.push(matchedArray);
-                                this.searchMatches[pageIndex] = matches;
+                                this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
                             }
-                            else{
-                                i =-1;
-                                matchIndex =matchedArray[0]+arrayReturns[0].length;
-                                matchedArray.splice(0,matchedArray.length);
-                               
+                            else {
+                                i = -1;
+                                matchIndex = matchedArray[0] + arrayReturns[0].length;
+                                matchedArray.splice(0, matchedArray.length);
+
                             }
                         }
                     }
                 }
-                else if(specialcharcterIndex !==-1){
-                    arrayReturns =this.correctLinetext(searchString,matchIndex,pageText)
-                    matchIndex =-arrayReturns[0].length;
-                    
-                    for(var i=0;i<arrayReturns.length;i++){
-                        matchIndex=pageText.indexOf(arrayReturns[i].trim(),matchIndex+(arrayReturns[i-1]===undefined||null?arrayReturns[0].length:arrayReturns[i-1].length)) 
+                else if (specialcharcterIndex !== -1) {
+                    arrayReturns = this.correctLinetext(searchString, matchIndex, pageText);
+                    matchIndex = -arrayReturns[0].length;
+                    for (let i: number = 0; i < arrayReturns.length; i++) {
+                        matchIndex = pageText.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
+                                                      matchIndex + (arrayReturns[i - 1] === undefined ||
+                                                        null ? arrayReturns[0].length : arrayReturns[i - 1].length));
                         matchedArray.push(matchIndex);
-                        if(matchedArray.length>1 ){
-                            if((matchedArray[1]-(matchedArray[0]+arrayReturns[0].length))<=3){
+                        if (matchedArray.length > 1) {
+                            if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
                                 matches.push(matchedArray);
-                                this.searchMatches[pageIndex] = matches;
+                                this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
                             }
-                            else{
-                                i =-1;
-                                matchIndex =matchedArray[0]+arrayReturns[0].length;
-                                matchedArray.splice(0,matchedArray.length);
-                               
+                            else {
+                                i = -1;
+                                matchIndex = matchedArray[0] + arrayReturns[0].length;
+                                matchedArray.splice(0, matchedArray.length);
+
                             }
                         }
                     }
                 }
-                else if(MultilineIndex !==-1){
-                   arrayReturns =this.correctLinetext(searchString,matchIndex,pageText)
-                    matchIndex =-arrayReturns[0].length;
-                    
-                    for(var i=0;i<arrayReturns.length;i++){
-                        matchIndex=pageText.indexOf(arrayReturns[i].trim(),matchIndex+(arrayReturns[i-1]===undefined||null?arrayReturns[0].length:arrayReturns[i-1].length)) 
+                else if (MultilineIndex !== -1) {
+                    arrayReturns = this.correctLinetext(searchString, matchIndex, pageText);
+                    matchIndex = -arrayReturns[0].length;
+
+                    for (let i: number = 0; i < arrayReturns.length; i++) {
+                        matchIndex = pageText.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
+                                                      matchIndex + (arrayReturns[i - 1] === undefined ||
+                                                         null ? arrayReturns[0].length : arrayReturns[i - 1].length));
                         matchedArray.push(matchIndex);
-                        if(matchedArray.length>1){
-                            if((matchedArray[1]-(matchedArray[0]+arrayReturns[0].length))<=3){
+                        if (matchedArray.length > 1) {
+                            if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
                                 matches.push(matchedArray);
-                                this.searchMatches[pageIndex] = matches;
-                            }else{
-                                i =-1;
-                                matchIndex =matchedArray[0]+arrayReturns[0].length;
-                                matchedArray.splice(0,matchedArray.length);
-                                
+                                this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
+                            } else {
+                                i = -1;
+                                matchIndex = matchedArray[0] + arrayReturns[0].length;
+                                matchedArray.splice(0, matchedArray.length);
+
                             }
                         }
-                        
+
                     }
-                   
+
                 }
-                if(matches.length>1){
-                    matches.splice(1,matches.length);
+                if (matches.length > 1) {
+                    matches.splice(1, matches.length);
                 }
             }
             if (this.searchMatches && matches.length > 0) {
-                this.searchMatches[pageIndex] = matches;
+                this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
             }
         }
         if (!isSinglePageSearch) {
@@ -588,42 +579,47 @@ export class TextSearch {
             }
             this.updateSearchInputIcon(false);
         }
-        if (this.searchMatches && this.searchMatches[pageIndex] && this.searchMatches[pageIndex].length !== 0) {
+        if (this.searchMatches && this.searchMatches[parseInt(pageIndex.toString(), 10)] &&
+        this.searchMatches[parseInt(pageIndex.toString(), 10)].length !== 0) {
             if (!isSinglePageSearch) {
                 if (this.isPrevSearch) {
-                    this.searchIndex = this.searchMatches[pageIndex].length - 1;
+                    this.searchIndex = this.searchMatches[parseInt(pageIndex.toString(), 10)].length - 1;
                 }
                 if ((this.pdfViewerBase.currentPageNumber - 1) !== this.searchPageIndex) {
-                    // eslint-disable-next-line max-len
-                    if (this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (this.searchPageIndex) === this.currentSearchIndex) {
+                    if (this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) &&
+                    (this.searchPageIndex) === this.currentSearchIndex) {
                         if (!this.isMessagePopupOpened && !this.isSearchText) {
                             this.onMessageBoxOpen();
                         }
                         this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
                         this.searchedPages = [this.searchPageIndex];
                     }
-                    // eslint-disable-next-line max-len
-                    else if (this.isPrevSearch && this.searchMatches && this.searchMatches.length > 0 && (this.searchMatches[this.searchPageIndex] && this.searchMatches[this.searchPageIndex].length > 0) && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex - 1 === this.searchPageIndex) {
+                    else if (this.isPrevSearch && this.searchMatches && this.searchMatches.length > 0 &&
+                        (this.searchMatches[this.searchPageIndex] && this.searchMatches[this.searchPageIndex].length > 0) &&
+                        this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex - 1 === this.searchPageIndex) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
                         this.searchedPages = [this.startIndex];
                     }
-                    else if (searchTextCollection[0] == this.searchPageIndex) {
+                    else if (searchTextCollection[0] === this.searchPageIndex) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
                     }
                     this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
                 }
-                else if (this.searchMatches && (this.searchMatches[this.searchPageIndex] && this.searchMatches[this.searchPageIndex].length > 0) && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex === this.searchPageIndex && this.pdfViewerBase.pageCount > 1) {
+                else if (this.searchMatches && (this.searchMatches[this.searchPageIndex] &&
+                    this.searchMatches[this.searchPageIndex].length > 0) &&
+                    this.searchedPages.length === this.pdfViewerBase.pageCount &&
+                    this.startIndex === this.searchPageIndex && this.pdfViewerBase.pageCount > 1) {
                     if (!this.isMessagePopupOpened) {
                         this.onMessageBoxOpen();
                     }
                     this.searchedPages = [this.startIndex];
                 }
             }
-            this.highlightSearchedTexts(pageIndex, isSinglePageSearch,arrayReturns);
+            this.highlightSearchedTexts(pageIndex, isSinglePageSearch, arrayReturns);
         } else {
             if (!isSinglePageSearch) {
                 if (this.isPrevSearch) {
@@ -636,17 +632,15 @@ export class TextSearch {
                     this.initSearch(this.searchPageIndex, false);
                 } else {
                     const searchPageIndex: number = this.getSearchPage(pageIndex);
-                    // eslint-disable-next-line max-len
-                    if (this.searchMatches && isNullOrUndefined(this.searchMatches[this.searchPageIndex]) && this.searchedPages.length === this.pdfViewerBase.pageCount) {
-                        // eslint-disable-next-line max-len
+                    if (this.searchMatches && isNullOrUndefined(this.searchMatches[this.searchPageIndex]) &&
+                    this.searchedPages.length === this.pdfViewerBase.pageCount) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
                         this.pdfViewerBase.updateScrollTop(this.startIndex);
-                        // eslint-disable-next-line max-len
-                    } else if (this.searchMatches && this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
+                    } else if (this.searchMatches && this.searchMatches.length > 0 && (this.searchIndex === 0 ||
+                        this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
                         if (this.isPrevSearch) {
-                            // eslint-disable-next-line max-len
                             if (!this.isMessagePopupOpened) {
                                 this.onMessageBoxOpen();
                             }
@@ -661,8 +655,10 @@ export class TextSearch {
                             this.searchedPages = [searchPageIndex];
                             this.searchIndex = 0;
                         }
-                        this.highlightSearchedTexts(this.searchPageIndex, isSinglePageSearch,undefined);
-                    } else if (this.searchMatches && (this.searchMatches[this.searchPageIndex] && this.searchMatches[this.searchPageIndex].length > 0) && this.searchedPages.length === this.pdfViewerBase.pageCount) {
+                        this.highlightSearchedTexts(this.searchPageIndex, isSinglePageSearch, undefined);
+                    } else if (this.searchMatches && (this.searchMatches[this.searchPageIndex] &&
+                        this.searchMatches[this.searchPageIndex].length > 0) &&
+                        this.searchedPages.length === this.pdfViewerBase.pageCount) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
@@ -670,27 +666,26 @@ export class TextSearch {
                         this.searchedPages = [this.searchPageIndex];
                         this.searchIndex = 0;
                         this.pdfViewerBase.updateScrollTop(this.startIndex);
-                        this.highlightSearchedTexts(this.searchPageIndex, isSinglePageSearch,undefined);
+                        this.highlightSearchedTexts(this.searchPageIndex, isSinglePageSearch, undefined);
                     }
                 }
             }
         }
     }
 
-    private correctLinetext (searchString:string,matchIndex:number,pageText:string) 
-    {
-        let indiuvalLineArray:string[] = [];
-        let searchArray:string[] = searchString.split(/[" "]+/);
+    private correctLinetext(searchString: string, matchIndex: number, pageText: string): string[] {
+        const indiuvalLineArray: string[] = [];
+        let searchArray: string[] = searchString.split(/[" "]+/);
         if (!this.isMatchCase) {
             searchArray = searchString.toLowerCase().split(/\s+/);
         }
         matchIndex = 0;
-        let linestring:string = "";
-        let mergedText: string = pageText.replace(/ \r\n/g, " ");
-        mergedText = mergedText.replace(/\r\n/g, " ");
+        let linestring: string = '';
+        let mergedText: string = pageText.replace(/ \r\n/g, ' ');
+        mergedText = mergedText.replace(/\r\n/g, ' ');
         mergedText = mergedText.replace(/[^a-zA-Z0-9 ]/g, '');
         searchString = searchString.replace(/[^a-zA-Z0-9 ]/g, '');
-        let result:any = mergedText.match(searchString);
+        let result: any = mergedText.match(searchString);
         if (!this.isMatchCase) {
             result = mergedText.match(searchString.toLowerCase());
         }
@@ -699,43 +694,43 @@ export class TextSearch {
         } else {
             result = pageText.slice(result.index, pageText.length);
         }
-        let pageCheck= result;
-        for (var i = 0; i < searchArray.length; i++) {
-            let searchArrayText = linestring + searchArray[i];
+        let pageCheck: any = result;
+        for (let i: number = 0; i < searchArray.length; i++) {
+            const searchArrayText: string = linestring + searchArray[parseInt(i.toString(), 10)];
             matchIndex = pageText.indexOf(searchArrayText, matchIndex);
-            pageCheck =pageCheck?pageCheck.replace(searchArray[i-1] ,""): pageText.replace(searchArray[i-1] ,"");
-            if((pageCheck[pageCheck.indexOf(searchArray[i])-1] === "\n" && (pageCheck[pageCheck.indexOf(searchArray[i+1])-1]) === "\n")|| (pageCheck[pageCheck.indexOf(searchArray[i])-1] === "\n" && isNullOrUndefined((pageCheck[pageCheck.indexOf(searchArray[i+1])-1])))){
-                matchIndex =-1;
-                if(linestring===""){
-                    linestring = searchArray[i];
-                    i=i+1;
+            pageCheck = pageCheck ? pageCheck.replace(searchArray[i - 1], '') : pageText.replace(searchArray[i - 1], '');
+            if ((pageCheck[pageCheck.indexOf(searchArray[parseInt(i.toString(), 10)]) - 1] === '\n' && (pageCheck[pageCheck.indexOf(searchArray[i + 1]) - 1]) === '\n') || (pageCheck[pageCheck.indexOf(searchArray[parseInt(i.toString(), 10)]) - 1] === '\n' && isNullOrUndefined((pageCheck[pageCheck.indexOf(searchArray[i + 1]) - 1])))) {
+                matchIndex = -1;
+                if (linestring === '') {
+                    linestring = searchArray[parseInt(i.toString(), 10)];
+                    i = i + 1;
                 }
             }
             if (matchIndex !== -1) {
-                linestring += searchArray[i] + " ";
-                if (i == (searchArray.length - 1)) {
+                linestring += searchArray[parseInt(i.toString(), 10)] + ' ';
+                if (i === (searchArray.length - 1)) {
                     indiuvalLineArray.push(linestring);
                 }
             }
             else {
                 indiuvalLineArray.push(linestring);
-                linestring = searchArray[i] + " ";
-                if(pageCheck[pageCheck.indexOf(searchArray[i])-1] == "\n" && pageCheck[pageCheck.indexOf(searchArray[i+1])-1] == "\n"){
+                linestring = searchArray[parseInt(i.toString(), 10)] + ' ';
+                if (pageCheck[pageCheck.indexOf(searchArray[parseInt(i.toString(), 10)]) - 1] === '\n' && pageCheck[pageCheck.indexOf(searchArray[i + 1]) - 1] === '\n') {
                     indiuvalLineArray.push(linestring);
-                    linestring = searchArray[i+1] + " ";
-                    pageCheck =pageCheck?pageCheck.replace(searchArray[i-1] ,""): pageText.replace(searchArray[i-1] ,"");
-                    i =i+1;
+                    linestring = searchArray[i + 1] + ' ';
+                    pageCheck = pageCheck ? pageCheck.replace(searchArray[i - 1], '') : pageText.replace(searchArray[i - 1], '');
+                    i = i + 1;
                 }
-                if (i == (searchArray.length - 1)) {
+                if (i === (searchArray.length - 1)) {
                     indiuvalLineArray.push(linestring);
                 }
             }
         }
-       return indiuvalLineArray;
+        return indiuvalLineArray;
     }
 
-    // eslint-disable-next-line
-    private getSearchTextContent(pageIndex: number, searchString: string, pageString: string, textContents: string[], isSinglePageSearch: boolean, characterBounds: any[]): void {
+    private getSearchTextContent(pageIndex: number, searchString: string, pageString: string, textContents: string[],
+                                 isSinglePageSearch: boolean, characterBounds: any[]): void {
         let pageText: string = pageString;
         let searchText: string = searchString;
         const queryLength: number = searchString.length;
@@ -773,21 +768,21 @@ export class TextSearch {
         if (matches.length !== 0) {
             this.searchCount = this.searchCount + matches.length;
         }
-        this.searchMatches[pageIndex] = matches;
+        this.searchMatches[parseInt(pageIndex.toString(), 10)] = matches;
     }
 
     private getSearchPage(pageIndex: number): number {
         let pageNumber: number = null;
         if (this.isPrevSearch) {
             for (let i: number = pageIndex; i >= 0; i--) {
-                if (i !== pageIndex && this.searchMatches[i]) {
+                if (i !== pageIndex && this.searchMatches[parseInt(i.toString(), 10)]) {
                     pageNumber = i;
                     break;
                 }
             }
             if (!pageNumber) {
                 for (let j: number = this.pdfViewerBase.pageCount - 1; j > pageIndex; j--) {
-                    if (this.searchMatches[j]) {
+                    if (this.searchMatches[parseInt(j.toString(), 10)]) {
                         pageNumber = j;
                         break;
                     }
@@ -795,17 +790,17 @@ export class TextSearch {
             }
         } else {
             for (let i: number = pageIndex; i < this.pdfViewerBase.pageCount; i++) {
-                if (i !== pageIndex && this.searchMatches[i]) {
+                if (i !== pageIndex && this.searchMatches[parseInt(i.toString(), 10)]) {
                     pageNumber = i;
                     break;
                 }
             }
             if (!pageNumber) {
-                if (pageIndex === 0)  {
+                if (pageIndex === 0) {
                     pageNumber = pageIndex;
                 } else {
                     for (let j: number = 0; j < pageIndex; j++) {
-                        if (this.searchMatches[j]) {
+                        if (this.searchMatches[parseInt(j.toString(), 10)]) {
                             pageNumber = j;
                             break;
                         }
@@ -816,17 +811,12 @@ export class TextSearch {
         return pageNumber;
     }
 
-    private highlightSearchedTexts(pageIndex: number, isSinglePageSearch: boolean,ArrayReturns:any): void {
-        // eslint-disable-next-line
-        let matches: any[] = this.searchMatches[pageIndex];
-        const prevEnd: { [key: string]: object } = null;
-        // eslint-disable-next-line
-        let scrollPoint: any = { y: -100, x: -100 };
-        let startId: number;
+    private highlightSearchedTexts(pageIndex: number, isSinglePageSearch: boolean, ArrayReturns: any): void {
+        const matches: any[] = this.searchMatches[parseInt(pageIndex.toString(), 10)];
+        const scrollPoint: any = { y: -100, x: -100 };
         let className: string;
-        let searchingText =this.searchString;
-        // eslint-disable-next-line
-        let characterBounds: any[] = this.pdfViewerBase.textLayer.characterBound[pageIndex];
+        const searchingText: string = this.searchString;
+        const characterBounds: any[] = this.pdfViewerBase.textLayer.characterBound[parseInt(pageIndex.toString(), 10)];
         let isHighlight: boolean = false;
         if (isSinglePageSearch && (this.pdfViewerBase.currentPageNumber - 1) !== this.searchPageIndex) {
             if (this.searchMatches.length > 0) {
@@ -837,32 +827,31 @@ export class TextSearch {
         }
         if (characterBounds && matches !== undefined) {
             for (let i: number = 0; i < matches.length; i++) {
-                if(matches[i].length !==undefined && ArrayReturns !==undefined){
-                    if(i === this.searchIndex && pageIndex === this.searchPageIndex){
-                        for(var j =0;j<ArrayReturns.length;j++){
+                if (matches[parseInt(i.toString(), 10)].length !== undefined && ArrayReturns !== undefined) {
+                    if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
+                        for (let j: number = 0; j < ArrayReturns.length; j++) {
                             className = 'e-pv-search-text-highlight';
-                            this.searchString=ArrayReturns[j].trim();
-                            this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className,j);
-                        }  
-                    }else{
-                        for(var j =0;j<ArrayReturns.length;j++){
+                            this.searchString = ArrayReturns[parseInt(j.toString(), 10)].trim();
+                            this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className, j);
+                        }
+                    } else {
+                        for (let j: number = 0; j < ArrayReturns.length; j++) {
                             className = 'e-pv-search-text-highlightother';
-                            this.searchString=ArrayReturns[j].trim();
-                            this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className,j);
-                        } 
+                            this.searchString = ArrayReturns[parseInt(j.toString(), 10)].trim();
+                            this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className, j);
+                        }
                     }
-
                 }
-               else if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
+                else if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
                     className = 'e-pv-search-text-highlight';
                 } else {
                     className = 'e-pv-search-text-highlightother';
                 }
-                if(matches[i].length ==undefined){
-                    this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className,undefined);
+                if ( isNullOrUndefined(matches[parseInt(i.toString(), 10)].length) ) {
+                    this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className, undefined);
                 }
             }
-            this.searchString=searchingText;
+            this.searchString = searchingText;
             if (pageIndex === this.searchPageIndex && !isSinglePageSearch) {
                 const element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + pageIndex + '_' + this.searchIndex);
                 if (element) {
@@ -880,8 +869,8 @@ export class TextSearch {
         }
     }
 
-    // eslint-disable-next-line
-    private addDivForSearch(index: number, pageIndex: number, characterBounds: any, queryLength: number, className: string,nestedIndex:any): void {
+    private addDivForSearch(index: number, pageIndex: number, characterBounds: any, queryLength: number,
+                            className: string, nestedIndex: any): void {
         const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
         if (isNullOrUndefined(textLayer) && className === 'e-pv-search-text-highlight') {
             if (this.pdfViewer.navigation) {
@@ -889,15 +878,15 @@ export class TextSearch {
             }
         }
         let count: number;
-        if(this.searchMatches[pageIndex][index].length !==undefined){
-            count =this.searchMatches[pageIndex][index][nestedIndex]
-       }else{
-            count = this.searchMatches[pageIndex][index];
-       }
+        if (this.searchMatches[parseInt(pageIndex.toString(), 10)][parseInt(index.toString(), 10)].length !== undefined) {
+            count = this.searchMatches[parseInt(pageIndex.toString(), 10)][parseInt(index.toString(), 10)][`${nestedIndex}`];
+        } else {
+            count = this.searchMatches[parseInt(pageIndex.toString(), 10)][parseInt(index.toString(), 10)];
+        }
         const initial: number = count;
         let divCount: number = 0;
         while (count < initial + queryLength) {
-            count = this.addDivElement(count, characterBounds, queryLength, className, index, pageIndex, initial, divCount,nestedIndex);
+            count = this.addDivElement(count, characterBounds, queryLength, className, index, pageIndex, initial, divCount, nestedIndex);
             divCount++;
         }
         if (className === 'e-pv-search-text-highlight') {
@@ -905,26 +894,26 @@ export class TextSearch {
         }
     }
 
-    // eslint-disable-next-line
-    private addDivElement(count: number, characterBounds: any, queryLength: number, className: string, index: number, pageIndex: number, initial: number, divCount: number,nestedIndex:any): number {
+    private addDivElement(count: number, characterBounds: any, queryLength: number, className: string,
+                          index: number, pageIndex: number, initial: number, divCount: number, nestedIndex: any): number {
         let height: number = 0;
         let width: number = 0;
         let top: number = 0;
         let left: number = 0;
         let isRTL: boolean = false;
-        if (characterBounds[count]) {
-            left = characterBounds[count].X;
-            top = characterBounds[count].Y;
+        if (characterBounds[parseInt(count.toString(), 10)]) {
+            left = characterBounds[parseInt(count.toString(), 10)].X;
+            top = characterBounds[parseInt(count.toString(), 10)].Y;
         }
         let v: number = 0;
         if ((count - initial) !== 0) {
             v = count - initial;
             queryLength += 1;
         }
+        // eslint-disable-next-line
         for (v = v; v < queryLength; v++) {
-            if (characterBounds[count]) {
-                // eslint-disable-next-line
-                let charBound: any = characterBounds[count];
+            if (characterBounds[parseInt(count.toString(), 10)]) {
+                const charBound: any = characterBounds[parseInt(count.toString(), 10)];
                 if (left > charBound.X + charBound.Width) {
                     isRTL = true;
                 }
@@ -943,21 +932,21 @@ export class TextSearch {
                 }
             } else {
                 isContinuation = false;
-                // eslint-disable-next-line
-                let storedData: any = this.pdfViewerBase.clientSideRendering? this.pdfViewerBase.getLinkInformation(pageIndex, true) : this.pdfViewerBase.getStoredData(pageIndex, true);
+                const storedData: any = this.pdfViewerBase.clientSideRendering ?
+                    this.pdfViewerBase.getLinkInformation(pageIndex, true) : this.pdfViewerBase.getStoredData(pageIndex, true);
                 let pageText: string = null;
                 if (storedData) {
                     pageText = storedData['pageText'];
                 } else if (this.pdfViewer.isExtractText && this.documentTextCollection.length !== 0) {
-                    // eslint-disable-next-line
-                    let documentIndex: any = this.documentTextCollection[pageIndex][pageIndex];
+                    const documentIndex: any =
+                    this.documentTextCollection[parseInt(pageIndex.toString(), 10)][parseInt(pageIndex.toString(), 10)];
                     pageText = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
                 }
-                if (characterBounds[count]) {
-                    if (pageText && (pageText[count] === '' || pageText[count] === ' ' || pageText[count] === '\r' || pageText[count] === '\n') && (characterBounds[count].Width) === 0) {
+                if (characterBounds[parseInt(count.toString(), 10)]) {
+                    if (pageText && (pageText[parseInt(count.toString(), 10)] === '' || pageText[parseInt(count.toString(), 10)] === ' ' || pageText[parseInt(count.toString(), 10)] === '\r' || pageText[parseInt(count.toString(), 10)] === '\n') && (characterBounds[parseInt(count.toString(), 10)].Width) === 0) {
                         width = (characterBounds[count - 1].X - left) + characterBounds[count - 1].Width;
                     } else {
-                        width = (characterBounds[count].X - left);
+                        width = (characterBounds[parseInt(count.toString(), 10)].X - left);
                     }
                 } else {
                     if (characterBounds[count - 1]) {
@@ -968,43 +957,41 @@ export class TextSearch {
         } else {
             let charBound: any = characterBounds[(initial + queryLength) - 1];
             left = charBound.X;
-            width = characterBounds[initial].X - characterBounds[(initial + queryLength) - 1].X;
+            width = characterBounds[parseInt(initial.toString(), 10)].X - characterBounds[(initial + queryLength) - 1].X;
             top = (top < charBound.Y) ? top : charBound.Y;
             const topDifference: number = (top < charBound.Y) ? (charBound.Y - top) : (top - charBound.Y);
             height = (height > (topDifference + charBound.Height)) ? height : (topDifference + charBound.Height);
             //some RTL character calculated width is zero and width difference value calculated from Y possition difference in the same line.
-            let widthDifference: number = characterBounds[initial - 1].Y - characterBounds[initial].Y
-            for (let j = (initial + queryLength) - 1; j >= initial; j--) {
-                charBound = characterBounds[j];
+            let widthDifference: number = characterBounds[initial - 1].Y - characterBounds[parseInt(initial.toString(), 10)].Y;
+            for (let j: number = (initial + queryLength) - 1; j >= initial; j--) {
+                charBound = characterBounds[parseInt(j.toString(), 10)];
                 if (charBound.Width === 0) {
                     widthDifference = charBound.Y - characterBounds[j - 1].Y;
                 }
             }
             width = width + widthDifference;
         }
-        this.createSearchTextDiv(index, pageIndex, height, width, top, left, className, isContinuation, divCount,nestedIndex);
+        this.createSearchTextDiv(index, pageIndex, height, width, top, left, className, isContinuation, divCount, nestedIndex);
         return count;
     }
 
-    // eslint-disable-next-line
-    private createSearchTextDiv(index: number, pageIndex: number, height: number, width: number, top: number, left: number, className: string, isContinuation: boolean, divCount: number,nestedIndex:any): void {
+    private createSearchTextDiv(index: number, pageIndex: number, height: number, width: number,
+                                top: number, left: number, className: string, isContinuation: boolean,
+                                divCount: number, nestedIndex: any): void {
         let idString: string = '_searchtext_' + pageIndex + '_' + index;
         if (isContinuation) {
             idString += '_' + divCount;
         }
-        if(nestedIndex !==undefined && this.pdfViewerBase.getElement(idString)){
-            const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString+"_"+nestedIndex });
-            // eslint-disable-next-line
-            let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
-            this.calculateBounds(textDiv, height, width, top, left, pageDetails)
+        if (nestedIndex !== undefined && this.pdfViewerBase.getElement(idString)) {
+            const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString + '_' + nestedIndex });
+            const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
+            this.calculateBounds(textDiv, height, width, top, left, pageDetails);
             textDiv.classList.add(className);
             if (className === 'e-pv-search-text-highlight') {
-                // eslint-disable-next-line max-len
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchHighlightColor === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.searchHighlightColor;
-                const bounds: RectangleBoundsModel  = { left: left, top: top, width: width, height: height };
+                const bounds: RectangleBoundsModel = { left: left, top: top, width: width, height: height };
                 this.pdfViewer.fireTextSearchHighlight(this.searchString, this.isMatchCase, bounds, (pageIndex + 1));
             } else if (className === 'e-pv-search-text-highlightother') {
-                // eslint-disable-next-line max-len
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchColor === '') ? '#8b4c12' : this.pdfViewer.textSearchColorSettings.searchColor;
             }
             const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
@@ -1015,17 +1002,14 @@ export class TextSearch {
         }
         if (!this.pdfViewerBase.getElement(idString)) {
             const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString });
-            // eslint-disable-next-line
-            let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
-            this.calculateBounds(textDiv, height, width, top, left, pageDetails)
+            const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
+            this.calculateBounds(textDiv, height, width, top, left, pageDetails);
             textDiv.classList.add(className);
             if (className === 'e-pv-search-text-highlight') {
-                // eslint-disable-next-line max-len
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchHighlightColor === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.searchHighlightColor;
-                const bounds: RectangleBoundsModel  = { left: left, top: top, width: width, height: height };
+                const bounds: RectangleBoundsModel = { left: left, top: top, width: width, height: height };
                 this.pdfViewer.fireTextSearchHighlight(this.searchString, this.isMatchCase, bounds, (pageIndex + 1));
             } else if (className === 'e-pv-search-text-highlightother') {
-                // eslint-disable-next-line max-len
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchColor === '') ? '#8b4c12' : this.pdfViewer.textSearchColorSettings.searchColor;
             }
             const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
@@ -1036,18 +1020,17 @@ export class TextSearch {
         }
     }
 
-    // eslint-disable-next-line
     private calculateBounds(textDiv: HTMLElement, height: number, width: number, top: number, left: number, pageDetails: any): void {
         if (pageDetails.rotation === 0 || pageDetails.rotation === 2) {
             textDiv.style.height = Math.ceil(height) * this.pdfViewerBase.getZoomFactor() + 'px';
             textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
             if (pageDetails.rotation === 2) {
-               textDiv.style.top = (pageDetails.height - top - height) * this.pdfViewerBase.getZoomFactor() + 'px';
-               textDiv.style.left = Math.ceil(pageDetails.width - left - width) * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.top = (pageDetails.height - top - height) * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.left = Math.ceil(pageDetails.width - left - width) * this.pdfViewerBase.getZoomFactor() + 'px';
             }
             else {
-               textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
-               textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
             }
         } else if (pageDetails.rotation === 1) {
             textDiv.style.height = width * this.pdfViewerBase.getZoomFactor() + 'px';
@@ -1066,9 +1049,8 @@ export class TextSearch {
     private isClassAvailable(): boolean {
         let isClass: boolean = false;
         for (let j: number = 0; j < this.tempElementStorage.length; j++) {
-            if (this.tempElementStorage[j].classString) {
-                // eslint-disable-next-line max-len
-                if (this.tempElementStorage[j].classString === 'e-pv-search-text-highlight' || this.tempElementStorage[j].classString === 'e-pv-search-text-highlightother') {
+            if (this.tempElementStorage[parseInt(j.toString(), 10)].classString) {
+                if (this.tempElementStorage[parseInt(j.toString(), 10)].classString === 'e-pv-search-text-highlight' || this.tempElementStorage[parseInt(j.toString(), 10)].classString === 'e-pv-search-text-highlightother') {
                     isClass = true;
                     break;
                 }
@@ -1081,9 +1063,9 @@ export class TextSearch {
         let targetElement: HTMLElement = element;
         if (element.childNodes.length > 0) {
             for (let i: number = 0; i < element.childNodes.length; i++) {
-                if ((element.childNodes[i] as HTMLElement).classList) {
-                    if ((element.childNodes[i] as HTMLElement).classList.contains('e-pv-search-text-highlight')) {
-                        targetElement = element.childNodes[i] as HTMLElement;
+                if ((element.childNodes[parseInt(i.toString(), 10)] as HTMLElement).classList) {
+                    if ((element.childNodes[parseInt(i.toString(), 10)] as HTMLElement).classList.contains('e-pv-search-text-highlight')) {
+                        targetElement = element.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
                     }
                 }
             }
@@ -1091,7 +1073,6 @@ export class TextSearch {
         return targetElement;
     }
 
-    // eslint-disable-next-line
     private scrollToSearchStr(element: HTMLElement, scrollPoint: any): void {
         let parent: HTMLElement = element.offsetParent as HTMLElement;
         let offsetY: number = element.offsetTop + element.clientTop;
@@ -1117,27 +1098,23 @@ export class TextSearch {
     }
 
     /**
-     * @param pageIndex
+     * @param {number} pageIndex - It describes about the page index
      * @private
+     * @returns {void}
      */
     public resizeSearchElements(pageIndex: number): void {
         const searchDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_searchtext_' + pageIndex + '"]');
         for (let i: number = 0; i < searchDivs.length; i++) {
-            const textDiv: HTMLElement = searchDivs[i] as HTMLElement;
+            const textDiv: HTMLElement = searchDivs[parseInt(i.toString(), 10)] as HTMLElement;
             let previousZoomFactor: number = 1;
             if (this.pdfViewer.magnificationModule) {
                 previousZoomFactor = this.pdfViewer.magnificationModule.previousZoomFactor;
             }
-            // eslint-disable-next-line max-len
             const outputdata: string = pageIndex + '_' + previousZoomFactor + '_' + this.pdfViewerBase.getZoomFactor();
             if (textDiv.getAttribute('name') !== outputdata) {
-                // eslint-disable-next-line
                 textDiv.style.width = (parseFloat(textDiv.style.width) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
-                // eslint-disable-next-line
                 textDiv.style.height = (parseFloat(textDiv.style.height) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
-                // eslint-disable-next-line
                 textDiv.style.top = (parseFloat(textDiv.style.top) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
-                // eslint-disable-next-line
                 textDiv.style.left = (parseFloat(textDiv.style.left) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
                 textDiv.setAttribute('name', outputdata);
             }
@@ -1145,8 +1122,9 @@ export class TextSearch {
     }
 
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - It describes about the page number
      * @private
+     * @returns {void}
      */
     public highlightOtherOccurrences(pageNumber: number): void {
         this.initSearch(pageNumber, true);
@@ -1166,18 +1144,19 @@ export class TextSearch {
 
     /**
      * @private
+     * @returns {void}
      */
     public clearAllOccurrences(): void {
         const searchTextDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_searchtext_"]');
         for (let i: number = 0; i < searchTextDivs.length; i++) {
-            searchTextDivs[i].parentElement.removeChild(searchTextDivs[i]);
+            searchTextDivs[parseInt(i.toString(), 10)].parentElement.removeChild(searchTextDivs[parseInt(i.toString(), 10)]);
         }
     }
 
     /**
      * @private
+     * @returns {any} - any
      */
-    // eslint-disable-next-line
     public getIndexes(): any {
         let lowerPageValue: number = this.pdfViewerBase.currentPageNumber - 3;
         lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
@@ -1199,6 +1178,7 @@ export class TextSearch {
 
     /**
      * @private
+     * @returns {void}
      */
     public resetTextSearch(): void {
         this.resetVariables();
@@ -1226,11 +1206,12 @@ export class TextSearch {
     }
 
     private createRequestForSearch(pageIndex: number): void {
+        // eslint-disable-next-line
         const proxy: TextSearch = this;
         const viewPortWidth: number = 816;
         const viewPortHeight: number = this.pdfViewer.element.clientHeight;
-        const pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
-        const pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
+        const pageWidth: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width;
+        const pageHeight: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height;
         const tileCount: number = this.pdfViewerBase.getTileCount(pageWidth, pageHeight);
         let noTileX: number = viewPortWidth >= pageWidth ? 1 : tileCount;
         let noTileY: number = viewPortWidth >= pageWidth ? 1 : tileCount;
@@ -1245,12 +1226,11 @@ export class TextSearch {
         }
         for (let x: number = 0; x < noTileX; x++) {
             for (let y: number = 0; y < noTileY; y++) {
-                let jsonObject: object;
-                // eslint-disable-next-line max-len
-                jsonObject = { xCoordinate: x, yCoordinate: y, pageNumber: pageIndex, viewPortWidth: viewPortWidth, viewPortHeight: viewPortHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount: tileCount, action: 'Search', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId
-                    , tileXCount: noTileX, tileYCount: noTileY };
+                const jsonObject: object = {
+                    xCoordinate: x, yCoordinate: y, pageNumber: pageIndex, viewPortWidth: viewPortWidth, viewPortHeight: viewPortHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount: tileCount, action: 'Search', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId
+                    , tileXCount: noTileX, tileYCount: noTileY
+                };
                 if (this.pdfViewerBase.jsonDocumentId) {
-                    // eslint-disable-next-line
                     (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
                 }
                 const zoomFactor: number = this.pdfViewerBase.retrieveCurrentZoomFactor();
@@ -1260,9 +1240,7 @@ export class TextSearch {
                 if (!this.pdfViewerBase.clientSideRendering) {
                     this.searchRequestHandler.send(jsonObject);
                 }
-                // eslint-disable-next-line
-                this.searchRequestHandler.onSuccess = function (result: any) {
-                    // eslint-disable-next-line
+                this.searchRequestHandler.onSuccess = function (result: any): void {
                     let data: any = result.data;
                     if (data) {
                         if (typeof data !== 'object') {
@@ -1274,23 +1252,23 @@ export class TextSearch {
                             }
                         }
                         if (data) {
-                            proxy.searchRequestOnSuccess(data, proxy, viewPortWidth,pageWidth, isTileRendering, pageIndex, x, y, noTileX, noTileY )
+                            proxy.searchRequestOnSuccess(data, proxy, viewPortWidth, pageWidth,
+                                                         isTileRendering, pageIndex, x, y, noTileX, noTileY);
                         }
                     }
                 };
-                // eslint-disable-next-line
-                this.searchRequestHandler.onFailure = function (result: any) {
-                    proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderPages);
+                this.searchRequestHandler.onFailure = function (result: any): void {
+                    proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText,
+                                                          this.pdfViewer.serverActionSettings.renderPages);
                 };
-                // eslint-disable-next-line
-                this.searchRequestHandler.onError = function (result: any) {
+                this.searchRequestHandler.onError = function (result: any): void {
                     proxy.pdfViewerBase.openNotificationPopup();
-                    // eslint-disable-next-line max-len
-                    proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderPages);
+                    proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText,
+                                                          this.pdfViewer.serverActionSettings.renderPages);
                 };
                 if (this.pdfViewerBase.clientSideRendering) {
-                    let textDetailsId: string = this.pdfViewerBase.documentId + '_' + pageIndex + '_textDetails';
-                    let isTextNeed: boolean = this.pdfViewerBase.pageTextDetails ? this.pdfViewerBase.pageTextDetails[textDetailsId] ? false : true : true;
+                    const textDetailsId: string = this.pdfViewerBase.documentId + '_' + pageIndex + '_textDetails';
+                    const isTextNeed: boolean = this.pdfViewerBase.pageTextDetails ? this.pdfViewerBase.pageTextDetails[`${textDetailsId}`] ? false : true : true;
                     let cropBoxRect: Rect = new Rect(0, 0, 0, 0);
                     let currentPage: PdfPage = this.pdfViewer.pdfRenderer.loadedDocument.getPage(pageIndex);
                     if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map && currentPage._pageDictionary._map.CropBox) {
@@ -1319,148 +1297,154 @@ export class TextSearch {
                             cropBoxRect: cropBoxRect
                         });
                     }
-                    this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any) {
+                    this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any): void {
                         switch (event.data.message) {
-                            case 'imageRenderedSearch':
-                                if (event.data.message === 'imageRenderedSearch') {
-                                    let canvas: HTMLCanvasElement = document.createElement('canvas');
-                                    let { value, width, height, pageIndex } = event.data;
-                                    canvas.width = width;
-                                    canvas.height = height;
-                                    const canvasContext = canvas.getContext('2d');
-                                    const imageData = canvasContext.createImageData(width, height);
-                                    imageData.data.set(value);
-                                    canvasContext.putImageData(imageData, 0, 0);
-                                    let imageUrl: string = canvas.toDataURL();
-                                    proxy.pdfViewerBase.releaseCanvas(canvas);
-                                    const textBounds = event.data.textBounds;
-                                    const textContent = event.data.textContent;
-                                    const pageText = event.data.pageText;
-                                    const rotation = event.data.rotation;
-                                    const characterBounds = event.data.characterBounds;
-                                    let hyperlinksDetails : any= proxy.pdfViewer.pdfRendererModule.getHyperlinks(pageIndex);
-                                    let data: any = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: proxy.pdfViewerBase.documentId, pageWidth: width, zoomFactor: event.data.zoomFactor, hyperlinks: hyperlinksDetails.hyperlinks, hyperlinkBounds: hyperlinksDetails.hyperlinkBounds,linkAnnotation:hyperlinksDetails.linkAnnotation , linkPage:hyperlinksDetails.linkPage, annotationLocation: hyperlinksDetails.annotationLocation, characterBounds: characterBounds });
-                                    if (event.data.isTextNeed) {
-                                        data.textBounds = textBounds;
-                                        data.textContent = textContent;
-                                        data.rotation = rotation;
-                                        data.pageText = pageText;
-                                        proxy.pdfViewerBase.storeTextDetails(pageIndex, textBounds, textContent, pageText, rotation, characterBounds);
-                                    } else {
-                                        let textDetails: any = JSON.parse(proxy.pdfViewerBase.pageTextDetails[`${event.data.textDetailsId}`]);
-                                        data.textBounds = textDetails.textBounds;
-                                        data.textContent = textDetails.textContent;
-                                        data.rotation = textDetails.rotation;
-                                        data.pageText = textDetails.pageText;
-                                        data.characterBounds = textDetails.characterBounds;
-                                    }
-                                    if (data && data.image && data.uniqueId === proxy.pdfViewerBase.documentId) {
-                                        let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
-                                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
-                                        const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
-                                        let blobObj: string = proxy.pdfViewerBase.createBlobUrl(data.image.split('base64,')[1], 'image/png');
-                                        let Url: any = URL || webkitURL;
-                                        const blobUrl: string = Url.createObjectURL(blobObj);
-                                        let storeObject: any = {
-                                            // eslint-disable-next-line
-                                            image: blobUrl, width: data.pageWidth, uniqueId: data.uniqueId, zoomFactor: data.zoomFactor
-                                        };
-                                        proxy.pdfViewerBase.storeImageData(pageNumber, storeObject);
-                                        proxy.searchRequestOnSuccess(data, proxy, viewPortWidth, pageWidth, isTileRendering, pageIndex, x, y, noTileX, noTileY);
-                                    }
+                        case 'imageRenderedSearch':
+                            if (event.data.message === 'imageRenderedSearch') {
+                                const canvas: HTMLCanvasElement = document.createElement('canvas');
+                                const { value, width, height, pageIndex } = event.data;
+                                canvas.width = width;
+                                canvas.height = height;
+                                const canvasContext: CanvasRenderingContext2D = canvas.getContext('2d');
+                                const imageData: ImageData = canvasContext.createImageData(width, height);
+                                imageData.data.set(value);
+                                canvasContext.putImageData(imageData, 0, 0);
+                                const imageUrl: string = canvas.toDataURL();
+                                proxy.pdfViewerBase.releaseCanvas(canvas);
+                                const textBounds = event.data.textBounds;
+                                const textContent = event.data.textContent;
+                                const pageText = event.data.pageText;
+                                const rotation = event.data.rotation;
+                                const characterBounds = event.data.characterBounds;
+                                const hyperlinksDetails: any = proxy.pdfViewer.pdfRendererModule.getHyperlinks(pageIndex);
+                                const data: any = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: proxy.pdfViewerBase.documentId,
+                                    pageWidth: width, zoomFactor: event.data.zoomFactor, hyperlinks: hyperlinksDetails.hyperlinks,
+                                    hyperlinkBounds: hyperlinksDetails.hyperlinkBounds,
+                                    linkAnnotation: hyperlinksDetails.linkAnnotation, linkPage: hyperlinksDetails.linkPage,
+                                    annotationLocation: hyperlinksDetails.annotationLocation, characterBounds: characterBounds });
+                                if (event.data.isTextNeed) {
+                                    data.textBounds = textBounds;
+                                    data.textContent = textContent;
+                                    data.rotation = rotation;
+                                    data.pageText = pageText;
+                                    proxy.pdfViewerBase.storeTextDetails(pageIndex, textBounds, textContent, pageText,
+                                                                         rotation, characterBounds);
+                                } else {
+                                    const textDetails: any = JSON.parse(proxy.pdfViewerBase.pageTextDetails[`${event.data.textDetailsId}`]);
+                                    data.textBounds = textDetails.textBounds;
+                                    data.textContent = textDetails.textContent;
+                                    data.rotation = textDetails.rotation;
+                                    data.pageText = textDetails.pageText;
+                                    data.characterBounds = textDetails.characterBounds;
                                 }
-                                break;
-                            case 'renderTileImageSearch':
-                                if (event.data.message === 'renderTileImageSearch') {
-                                    let canvas: any = document.createElement('canvas');
-                                    let { value, w, h, noTileX, noTileY, x, y, pageIndex } = event.data;
-                                    canvas.setAttribute('height', h);
-                                    canvas.setAttribute('width', w);
-                                    canvas.width = w;
-                                    canvas.height = h;
-                                    const canvasContext = canvas.getContext('2d');
-                                    const imageData = canvasContext.createImageData(w, h);
-                                    imageData.data.set(value);
-                                    canvasContext.putImageData(imageData, 0, 0);
-                                    let imageUrl: string = canvas.toDataURL();
-                                    proxy.pdfViewerBase.releaseCanvas(canvas);
-                                    let tileWidth: number = w;
-                                    let tileHeight: number = h;
-                                    const textBounds = event.data.textBounds;
-                                    const textContent = event.data.textContent;
-                                    const pageText = event.data.pageText;
-                                    const rotation = event.data.rotation;
-                                    const characterBounds = event.data.characterBounds;
-                                    let tileData: any = {
-                                        image: imageUrl,
-                                        noTileX: noTileX,
-                                        noTileY: noTileY,
-                                        pageNumber: pageIndex,
-                                        tileX: x,
-                                        tileY: y,
-                                        uniqueId: proxy.pdfViewerBase.documentId,
-                                        pageWidth: pageWidth,
-                                        width: tileWidth,
-                                        transformationMatrix: {
-                                            Values: [1, 0, 0, 1, tileWidth * x, tileHeight * y, 0, 0, 0]
-                                        },
-                                        zoomFactor: event.data.zoomFactor,
-                                        characterBounds: characterBounds,
-                                        isTextNeed: event.data.isTextNeed,
-                                        textDetailsId: event.data.textDetailsId
+                                if (data && data.image && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
+                                    const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
+                                    const blobObj: string = proxy.pdfViewerBase.createBlobUrl(data.image.split('base64,')[1], 'image/png');
+                                    const Url: any = URL || webkitURL;
+                                    const blobUrl: string = Url.createObjectURL(blobObj);
+                                    const storeObject: any = {
+                                        image: blobUrl, width: data.pageWidth, uniqueId: data.uniqueId, zoomFactor: data.zoomFactor
                                     };
-                                    if (tileData && tileData.image && tileData.uniqueId === proxy.pdfViewerBase.documentId) {
-                                        let currentPageWidth: number = (tileData.pageWidth && tileData.pageWidth > 0) ? tileData.pageWidth : pageWidth;
-                                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, tileData);
-                                        const pageNumber: number = (tileData.pageNumber !== undefined) ? tileData.pageNumber : pageIndex;
-                                        if (x == 0 && y == 0) {
-                                            let blobObj: string = proxy.pdfViewerBase.createBlobUrl(tileData.image.split('base64,')[1], 'image/png');
-                                            let Url: any = URL || webkitURL;
-                                            const blobUrl: string = Url.createObjectURL(blobObj);
-                                            let storeObject: any = {
-                                                // eslint-disable-next-line
-                                                image: blobUrl, width: tileData.pageWidth, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY,
-                                                zoomFactor: tileData.zoomFactor
-                                            };
-                                            if (tileData.isTextNeed) {
-                                                tileData.textBounds = textBounds;
-                                                tileData.textContent = textContent;
-                                                tileData.rotation = rotation;
-                                                tileData.pageText = pageText;
-                                                proxy.pdfViewerBase.storeTextDetails(pageIndex, textBounds, textContent, pageText, rotation, characterBounds);
-                                            } else {
-                                                let textDetails: any = JSON.parse(proxy.pdfViewerBase.pageTextDetails[`${tileData.textDetailsId}`]);
-                                                tileData.textBounds = textDetails.textBounds;
-                                                tileData.textContent = textDetails.textContent;
-                                                tileData.rotation = textDetails.rotation;
-                                                tileData.pageText = textDetails.pageText;
-                                                tileData.characterBounds = textDetails.characterBounds;
-                                            }
-                                            proxy.pdfViewerBase.storeImageData(pageNumber, storeObject, tileData.tileX, tileData.tileY);
-                                        }
-                                        else {
-                                            let blobObj: string = proxy.pdfViewerBase.createBlobUrl(tileData.image.split('base64,')[1], 'image/png');
-                                            let Url: any = URL || webkitURL;
-                                            const blobUrl: string = Url.createObjectURL(blobObj);
-                                            let storeObject: any = {
-                                                // eslint-disable-next-line
-                                                image: blobUrl, width: tileData.pageWidth, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY, zoomFactor: tileData.zoomFactor
-                                            };
-                                            proxy.pdfViewerBase.storeImageData(pageNumber, storeObject, tileData.tileX, tileData.tileY);
-                                        }
-                                        proxy.searchRequestOnSuccess(tileData, proxy, viewPortWidth, pageWidth, isTileRendering, pageIndex, x, y, noTileX, noTileY);
-                                    }
+                                    proxy.pdfViewerBase.storeImageData(pageNumber, storeObject);
+                                    proxy.searchRequestOnSuccess(data, proxy, viewPortWidth, pageWidth, isTileRendering,
+                                                                 pageIndex, x, y, noTileX, noTileY);
                                 }
-                                break;
+                            }
+                            break;
+                        case 'renderTileImageSearch':
+                            if (event.data.message === 'renderTileImageSearch') {
+                                const canvas: HTMLCanvasElement = document.createElement('canvas');
+                                const { value, w, h, noTileX, noTileY, x, y, pageIndex } = event.data;
+                                canvas.setAttribute('height', h);
+                                canvas.setAttribute('width', w);
+                                canvas.width = w;
+                                canvas.height = h;
+                                const canvasContext: CanvasRenderingContext2D = canvas.getContext('2d');
+                                const imageData: any = canvasContext.createImageData(w, h);
+                                imageData.data.set(value);
+                                canvasContext.putImageData(imageData, 0, 0);
+                                const imageUrl: string = canvas.toDataURL();
+                                proxy.pdfViewerBase.releaseCanvas(canvas);
+                                const tileWidth: number = w;
+                                const tileHeight: number = h;
+                                const textBounds: any = event.data.textBounds;
+                                const textContent: any = event.data.textContent;
+                                const pageText: any = event.data.pageText;
+                                const rotation: any = event.data.rotation;
+                                const characterBounds: any = event.data.characterBounds;
+                                const tileData: any = {
+                                    image: imageUrl,
+                                    noTileX: noTileX,
+                                    noTileY: noTileY,
+                                    pageNumber: pageIndex,
+                                    tileX: x,
+                                    tileY: y,
+                                    uniqueId: proxy.pdfViewerBase.documentId,
+                                    pageWidth: pageWidth,
+                                    width: tileWidth,
+                                    transformationMatrix: {
+                                        Values: [1, 0, 0, 1, tileWidth * x, tileHeight * y, 0, 0, 0]
+                                    },
+                                    zoomFactor: event.data.zoomFactor,
+                                    characterBounds: characterBounds,
+                                    isTextNeed: event.data.isTextNeed,
+                                    textDetailsId: event.data.textDetailsId
+                                };
+                                if (tileData && tileData.image && tileData.uniqueId === proxy.pdfViewerBase.documentId) {
+                                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, tileData);
+                                    const pageNumber: number = (tileData.pageNumber !== undefined) ? tileData.pageNumber : pageIndex;
+                                    if (x === 0 && y === 0) {
+                                        const blobObj: string = proxy.pdfViewerBase.createBlobUrl(tileData.image.split('base64,')[1], 'image/png');
+                                        const Url: any = URL || webkitURL;
+                                        const blobUrl: string = Url.createObjectURL(blobObj);
+                                        const storeObject: any = {
+                                            image: blobUrl, width: tileData.pageWidth, uniqueId: tileData.uniqueId,
+                                            tileX: tileData.tileX, tileY: tileData.tileY,
+                                            zoomFactor: tileData.zoomFactor
+                                        };
+                                        if (tileData.isTextNeed) {
+                                            tileData.textBounds = textBounds;
+                                            tileData.textContent = textContent;
+                                            tileData.rotation = rotation;
+                                            tileData.pageText = pageText;
+                                            proxy.pdfViewerBase.storeTextDetails(pageIndex, textBounds, textContent, pageText,
+                                                                                 rotation, characterBounds);
+                                        } else {
+                                            const textDetails: any = JSON.parse(proxy.pdfViewerBase.pageTextDetails[`${tileData.textDetailsId}`]);
+                                            tileData.textBounds = textDetails.textBounds;
+                                            tileData.textContent = textDetails.textContent;
+                                            tileData.rotation = textDetails.rotation;
+                                            tileData.pageText = textDetails.pageText;
+                                            tileData.characterBounds = textDetails.characterBounds;
+                                        }
+                                        proxy.pdfViewerBase.storeImageData(pageNumber, storeObject, tileData.tileX, tileData.tileY);
+                                    }
+                                    else {
+                                        const blobObj: string = proxy.pdfViewerBase.createBlobUrl(tileData.image.split('base64,')[1], 'image/png');
+                                        const Url: any = URL || webkitURL;
+                                        const blobUrl: string = Url.createObjectURL(blobObj);
+                                        const storeObject: any = {
+                                            image: blobUrl, width: tileData.pageWidth, uniqueId: tileData.uniqueId,
+                                            tileX: tileData.tileX, tileY: tileData.tileY, zoomFactor: tileData.zoomFactor
+                                        };
+                                        proxy.pdfViewerBase.storeImageData(pageNumber, storeObject, tileData.tileX, tileData.tileY);
+                                    }
+                                    proxy.searchRequestOnSuccess(tileData, proxy, viewPortWidth, pageWidth,
+                                                                 isTileRendering, pageIndex, x, y, noTileX, noTileY);
+                                }
+                            }
+                            break;
                         }
                     };
                 }
-                
+
             }
         }
     }
-    
-    private searchRequestOnSuccess(data: any, proxy: TextSearch, viewPortWidth: number, pageWidth: number, isTileRendering: boolean, pageIndex: number, x: number, y: number, noTileX: number, noTileY: number): void{
+
+    private searchRequestOnSuccess(data: any, proxy: TextSearch, viewPortWidth: number, pageWidth: number, isTileRendering: boolean,
+                                   pageIndex: number, x: number, y: number, noTileX: number, noTileY: number): void {
         if (!isNullOrUndefined(data.pageText) && data.uniqueId === proxy.pdfViewerBase.documentId) {
             proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderPages, data);
             const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
@@ -1488,6 +1472,7 @@ export class TextSearch {
 
     /**
      * @private
+     * @returns {void}
      */
     public getPDFDocumentTexts(): void {
         const startIndex: number = 0;
@@ -1500,28 +1485,25 @@ export class TextSearch {
     }
 
     /**
-     * @param startIndex
-     * @param endIndex
+     * @param {number} startIndex - It describes about the start index
+     * @param {number} endIndex - It describes about the end index
      * @private
+     * @returns {void}
      */
     public createRequestForGetPdfTexts(startIndex: number, endIndex: number): void {
+        // eslint-disable-next-line
         const proxy: TextSearch = this;
-        let jsonObject: object;
-        // eslint-disable-next-line max-len
-        jsonObject = { pageStartIndex: startIndex, pageEndIndex: endIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, action: 'RenderPdfTexts', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+        const jsonObject: object = { pageStartIndex: startIndex, pageEndIndex: endIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, action: 'RenderPdfTexts', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
         if (this.pdfViewerBase.jsonDocumentId) {
-            // eslint-disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
         this.searchRequestHandler = new AjaxHandler(this.pdfViewer);
         this.searchRequestHandler.url = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.renderTexts;
         this.searchRequestHandler.responseType = 'json';
-        if(!this.pdfViewerBase.clientSideRendering){
+        if (!this.pdfViewerBase.clientSideRendering) {
             this.searchRequestHandler.send(jsonObject);
         }
-        // eslint-disable-next-line
-        this.searchRequestHandler.onSuccess = function (result: any) {
-            // eslint-disable-next-line
+        this.searchRequestHandler.onSuccess = function (result: any): void {
             let data: any = result.data;
             if (data) {
                 if (typeof data !== 'object') {
@@ -1537,29 +1519,31 @@ export class TextSearch {
                 }
             }
         };
-        // eslint-disable-next-line
-        this.searchRequestHandler.onFailure = function (result: any) {
+        this.searchRequestHandler.onFailure = function (result: any): void {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderTexts);
         };
-        // eslint-disable-next-line
-        this.searchRequestHandler.onError = function (result: any) {
+        this.searchRequestHandler.onError = function (result: any): void {
             proxy.pdfViewerBase.openNotificationPopup();
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderTexts);
         };
-        if(this.pdfViewerBase.clientSideRendering){
-            let requestType: string = 'pdfTextSearchRequest';
+        if (this.pdfViewerBase.clientSideRendering){
+            const requestType: string = 'pdfTextSearchRequest';
             this.pdfViewer.pdfRendererModule.getDocumentText(jsonObject, requestType);
         }
     }
 
     /**
      * @private
+     * @param {any} data - It gets the data
+     * @param {number} startIndex - It gets the starting index
+     * @param {number} endIndex - It gets the ending index
+     * @returns {void}
      */
-    public pdfTextSearchRequestSuccess(data: any, startIndex: number, endIndex: number){
+    public pdfTextSearchRequestSuccess(data: any, startIndex: number, endIndex: number): void{
         this.pdfTextSearchRequestOnSuccess(data, this, startIndex, endIndex);
     }
 
-    private pdfTextSearchRequestOnSuccess(data: any, proxy: TextSearch, startIndex: number, endIndex: number){
+    private pdfTextSearchRequestOnSuccess(data: any, proxy: TextSearch, startIndex: number, endIndex: number): void{
         if (data.documentTextCollection && data.uniqueId === proxy.pdfViewerBase.documentId) {
             proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderTexts, data);
             if (proxy.documentTextCollection.length > 0) {
@@ -1587,22 +1571,20 @@ export class TextSearch {
         }
     }
 
-    // eslint-disable-next-line
     private orderPdfTextCollections(oldCollection: any): any {
-        // eslint-disable-next-line
-        let annotationCollectionList: any = [];
+        const annotationCollectionList: any = [];
         for (let i: number = 0; i < oldCollection.length; i++) {
             if (annotationCollectionList.length === 0) {
-                annotationCollectionList.push(oldCollection[i]);
+                annotationCollectionList.push(oldCollection[parseInt(i.toString(), 10)]);
             } else {
-                // eslint-disable-next-line
-                if (parseInt(Object.keys(oldCollection[i])[0]) > parseInt(Object.keys(annotationCollectionList[annotationCollectionList.length - 1])[0])) {
-                    annotationCollectionList.push(oldCollection[i]);
+                if (parseInt(Object.keys(oldCollection[parseInt(i.toString(), 10)])[0], 10) >
+                parseInt(Object.keys(annotationCollectionList[annotationCollectionList.length - 1])[0], 10)) {
+                    annotationCollectionList.push(oldCollection[parseInt(i.toString(), 10)]);
                 } else {
                     for (let j: number = 0; j < annotationCollectionList.length; j++) {
-                        // eslint-disable-next-line
-                        if ((parseInt(Object.keys(oldCollection[i])[0]) < parseInt(Object.keys(annotationCollectionList[j])[0]))) {
-                            annotationCollectionList.splice(j, 0, oldCollection[i]);
+                        if ((parseInt(Object.keys(oldCollection[parseInt(i.toString(), 10)])[0], 10) <
+                        parseInt(Object.keys(annotationCollectionList[parseInt(j.toString(), 10)])[0], 10))) {
+                            annotationCollectionList.splice(j, 0, oldCollection[parseInt(i.toString(), 10)]);
                             break;
                         }
                     }
@@ -1613,10 +1595,8 @@ export class TextSearch {
     }
 
     private createSearchBoxButtons(id: string, className: string): HTMLElement {
-        // eslint-disable-next-line max-len
         const button: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_' + id, className: 'e-btn e-icon-btn e-pv-search-btn ' + className });
         button.setAttribute('type', 'button');
-        // eslint-disable-next-line max-len
         const iconSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_' + id + 'Icon', className: 'e-pv-icon-search ' + className + '-icon' });
         (button as HTMLButtonElement).disabled = true;
         button.appendChild(iconSpan);
@@ -1647,7 +1627,6 @@ export class TextSearch {
         }
     }
 
-    // eslint-disable-next-line
     private checkBoxOnChange = (event: any): void => {
         if (isBlazor()) {
             if (event.currentTarget && event.currentTarget.checked) {
@@ -1673,11 +1652,11 @@ export class TextSearch {
 
     /**
      * @private
+     * @returns {void}
      */
     public resetVariables(): void {
         this.searchedPages = [];
-        // eslint-disable-next-line
-        this.searchMatches = new Array();
+        this.searchMatches = [];
     }
 
     private searchKeypressHandler = (event: KeyboardEvent): void => {
@@ -1696,9 +1675,10 @@ export class TextSearch {
     };
 
     /**
-     * @param element
-     * @param inputElement
+     * @param {HTMLElement} element - It describes about the element
+     * @param {HTMLElement} inputElement - It describes about the input element
      * @private
+     * @returns {void}
      */
     public searchButtonClick(element: HTMLElement, inputElement: HTMLElement): void {
         this.isMessagePopupOpened = false;
@@ -1772,13 +1752,13 @@ export class TextSearch {
      *
      * @param  {string} searchText - Specifies the searchText content
      * @param  {boolean} isMatchCase - If set true , its highlights the MatchCase content
-     * @returns void
+     * @returns {void}
      */
     public searchText(searchText: string, isMatchCase: boolean): void {
         if (searchText && searchText.length > 0 && searchText[searchText.length - 1] === ' ') {
             searchText = searchText.slice(0, searchText.length - 1);
         }
-        if(this.pdfViewer.enableHtmlSanitizer && searchText){
+        if (this.pdfViewer.enableHtmlSanitizer && searchText) {
             searchText = SanitizeHtmlHelper.sanitize(searchText);
         }
         this.searchString = searchText;
@@ -1790,7 +1770,7 @@ export class TextSearch {
     /**
      * Searches the next occurrence of the searched text from the current occurrence of the PdfViewer.
      *
-     * @returns void
+     * @returns {void}
      */
     public searchNext(): void {
         this.nextSearch();
@@ -1799,7 +1779,7 @@ export class TextSearch {
     /**
      * Searches the previous occurrence of the searched text from the current occurrence of the PdfViewer.
      *
-     * @returns void
+     * @returns {void}
      */
     public searchPrevious(): void {
         this.prevSearch();
@@ -1808,7 +1788,7 @@ export class TextSearch {
     /**
      * Cancels the text search of the PdfViewer.
      *
-     * @returns void
+     * @returns {void}
      */
     public cancelTextSearch(): void {
         this.resetTextSearch();
@@ -1816,12 +1796,15 @@ export class TextSearch {
 
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.searchMatches = undefined;
     }
+
     /**
      * @private
+     * @returns {void}
      */
     public getModuleName(): string {
         return 'TextSearch';

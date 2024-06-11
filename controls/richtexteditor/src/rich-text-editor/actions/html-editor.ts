@@ -2,7 +2,7 @@ import * as events from '../base/constant';
 import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer, IDropDownItemModel } from '../base/interface';
 import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
-import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs, EventHandler, L10n } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs, L10n } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
 import { RendererFactory } from '../services/renderer-factory';
@@ -17,7 +17,7 @@ import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { getTextNodesUnder, sanitizeHelper, getDefaultValue } from '../base/util';
-import { isIDevice, scrollToCursor } from '../../common/util';
+import { isIDevice, removeClassWithAttr, scrollToCursor } from '../../common/util';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { XhtmlValidation } from './xhtml-validation';
 import { ON_BEGIN } from './../../common/constant';
@@ -99,7 +99,7 @@ export class HtmlEditor {
         this.parent.on(events.readOnlyMode, this.updateReadOnly, this);
         this.parent.on(events.paste, this.onPaste, this);
         this.parent.on(events.tableclass, this.isTableClassAdded, this);
-        this.parent.on(events.onHandleFontsizeChange, this.onHandleFontsizeChange, this)
+        this.parent.on(events.onHandleFontsizeChange, this.onHandleFontsizeChange, this);
     }
     private updateReadOnly(): void {
         if (this.parent.readonly) {
@@ -156,7 +156,7 @@ export class HtmlEditor {
             const actualTxtFontValues: RegExpMatchArray = fontSizeValue.match(/^([\d.]+)(\D+)$/);
             const size: number = parseInt(actualTxtFontValues[1], 10);
             const unit: string = actualTxtFontValues[2];
-            const defaultFontValues: RegExpMatchArray = items[0].value.match(/^([\d.]+)(\D+)$/);
+            const defaultFontValues: RegExpMatchArray = items[1].value.match(/^([\d.]+)(\D+)$/);
             if (defaultFontValues[2] === unit) {
                 const index: number = items.findIndex(({ value }: { value: string }) => parseInt(value, 10) >= size);
                 activeElem = items[index as number].text;
@@ -166,7 +166,7 @@ export class HtmlEditor {
                 activeElem = items[index as number].text;
             }
         }
-        const fontIndex: number = items.findIndex((size: IDropDownItemModel) => size.text === activeElem);
+        const fontIndex: number = items.findIndex((size: IDropDownItemModel) => size.text === (activeElem === 'Font Size' ? 'Default' : activeElem));
         if (keyboardArgs.action === 'increase-fontsize' && fontIndex !== -1) {
             if (fontIndex >= items.length - 1) {
                 const fontValues: RegExpMatchArray = items[fontIndex as number].value.match(/^([\d.]+)(\D+)$/);
@@ -208,10 +208,10 @@ export class HtmlEditor {
         const restrictKeys: number[] = [8, 9, 13, 16, 17, 18, 20, 27, 37, 38, 39, 40, 44, 45, 46, 91,
             112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
         const range: Range = this.parent.getRange();
-        // eslint-disable-next-line
-        const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+        const regEx: RegExp = new RegExp('\u200B', 'g');
         const isEmptyNode: boolean = range.startContainer === range.endContainer && range.startOffset === range.endOffset &&
-            range.startOffset === 1 && range.startContainer.textContent.length === 1 && range.startContainer.textContent.charCodeAt(0) == 8203 &&
+            range.startOffset === 1 && range.startContainer.textContent.length === 1 &&
+            range.startContainer.textContent.charCodeAt(0) === 8203 &&
             range.startContainer.textContent.replace(regEx, '').length === 0;
         let pointer: number;
         let isRootParent: boolean = false;
@@ -306,6 +306,11 @@ export class HtmlEditor {
     private onKeyDown(e: NotifyArgs): void {
         let currentRange: Range;
         const args: KeyboardEvent = e.args as KeyboardEvent;
+        if (this.parent.inputElement.querySelectorAll('.e-cell-select').length > 1 && (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13)) {
+            this.tableSelectionKeyAction(e);
+            this.parent.autoResize();
+            return;
+        }
         if (Browser.info.name === 'chrome') {
             currentRange = this.parent.getRange();
             this.backSpaceCleanup(e, currentRange);
@@ -359,7 +364,6 @@ export class HtmlEditor {
             }
             this.parent.formatter.saveData(e);
         }
-
         if (((e as NotifyArgs).args as KeyboardEventArgs).action === 'space' ||
             ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter' ||
             ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13) {
@@ -423,6 +427,7 @@ export class HtmlEditor {
             }
             args.preventDefault();
         }
+        this.parent.autoResize();
     }
     private isOrderedList(editorValue: string): boolean {
         editorValue = editorValue.replace(/\u200B/g, '');
@@ -457,7 +462,7 @@ export class HtmlEditor {
         }
         const checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
         const isSelectedPositionNotStart: boolean = closest(currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer, 'li') ?
-        checkNode.nodeName !== 'li' && isNOU(checkNode.previousSibling) : true;
+            checkNode.nodeName !== 'li' && isNOU(checkNode.previousSibling) : true;
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 && currentRange.startOffset === 0 &&
             currentRange.endOffset === 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
             currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH' &&
@@ -474,7 +479,7 @@ export class HtmlEditor {
                     this.oldRangeElement = liElement.previousElementSibling.lastElementChild.nodeName === 'BR' ?
                         liElement.previousElementSibling : liElement.previousElementSibling.lastChild as HTMLElement;
                     if (!isNOU(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR' &&
-                    isNOU(liElement.lastElementChild.previousSibling) && liElement.lastChild.nodeName !== "#text") {
+                    isNOU(liElement.lastElementChild.previousSibling) && liElement.lastChild.nodeName !== '#text') {
                         this.rangeElement = liElement.lastElementChild;
                         isLiElement = true;
                     } else {
@@ -560,7 +565,8 @@ export class HtmlEditor {
             if (this.deleteRangeElement.querySelectorAll('img').length > 0 && this.deleteRangeElement.textContent.trim() === '') {
                 isImgWithEmptyBlockNode = true;
             }
-            if (this.getCaretIndex(currentRange, this.deleteRangeElement) === this.deleteRangeElement.textContent.length && !isImgWithEmptyBlockNode) {
+            if (this.getCaretIndex(currentRange, this.deleteRangeElement) === this.deleteRangeElement.textContent.length &&
+                !isImgWithEmptyBlockNode) {
                 if (!isNullOrUndefined(liElement)) {
                     if (isLiElement || !isNullOrUndefined(liElement.nextElementSibling)) {
                         this.deleteOldRangeElement = this.getRangeElement(liElement.nextElementSibling);
@@ -584,7 +590,7 @@ export class HtmlEditor {
                             this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement.childNodes.length);
                         this.isImageDelete = false;
                     }
-                    const brNode: HTMLElement = this.deleteRangeElement.querySelector('BR')
+                    const brNode: HTMLElement = this.deleteRangeElement.querySelector('BR');
                     if (brNode && brNode.classList.contains('e-rte-image-remove-focus')) {
                         removeClass([brNode], ['e-rte-image-focus']);
                         return;
@@ -699,7 +705,7 @@ export class HtmlEditor {
                 for (let j: number = 0 ; j < splitTextContent.length; j++) {
                     if (splitTextContent[j as number].match(httpRegex) || splitTextContent[j as number].match(wwwRegex)) {
                         resultSplitContent += '<a class="e-rte-anchor" href="' + splitTextContent[j as number] +
-                        '" title="' + splitTextContent[j as number] + '" target="_blank"' + ' aria-label="' + this.parent.serviceLocator.getService<L10n>('rteLocale').getConstant("linkAriaLabel") + '">' + splitTextContent[j as number] + ' </a>';
+                        '" title="' + splitTextContent[j as number] + '" target="_blank"' + ' aria-label="' + this.parent.serviceLocator.getService<L10n>('rteLocale').getConstant('linkAriaLabel') + '">' + splitTextContent[j as number] + ' </a>';
                     } else {
                         resultSplitContent += splitTextContent[j as number] + ' ';
                     }
@@ -751,8 +757,8 @@ export class HtmlEditor {
         let selectParentEle: Node[];
         const item: IToolbarItemModel = args.item as IToolbarItemModel;
         const closestElement: Element = closest(args.originalEvent.target as Element, '.e-rte-quick-popup');
-        let target: HTMLElement = args.originalEvent.target as HTMLElement;
-        this.parent.notify(events.closeTooltip,{target: target});
+        const target: HTMLElement = args.originalEvent.target as HTMLElement;
+        this.parent.notify(events.closeTooltip, {target: target});
         if (item.command !== 'FormatPainter') {
             if (closestElement && !closestElement.classList.contains('e-rte-inline-popup') && !closestElement.classList.contains('e-rte-text-popup')) {
                 if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
@@ -1024,6 +1030,26 @@ export class HtmlEditor {
         ).toString());
     }
 
+    private tableSelectionKeyAction(e: NotifyArgs): void {
+        const args: KeyboardEvent = e.args as KeyboardEvent;
+        // Handle the space, enter and backspace keys when the table cells are selected.
+        const tableCellSelectNodes: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.e-cell-select');
+        for (let i: number = 0; i < tableCellSelectNodes.length; i++) {
+            const currentCell: Element = tableCellSelectNodes[i as number];
+            removeClassWithAttr([currentCell as HTMLElement],
+                                [classes.CLS_TABLE_SEL, classes.CLS_TABLE_MULTI_CELL, classes.CLS_TABLE_SEL_END]);
+            if (i === 0) {
+                if (args.keyCode === 32) {
+                    currentCell.innerHTML = '&#8203;<br>';
+                } else {
+                    currentCell.innerHTML = '<br>';
+                }
+                this.nodeSelectionObj.setCursorPoint(this.parent.contentModule.getDocument(), currentCell.firstChild as Element, 0);
+            } else {
+                currentCell.innerHTML = '<br>';
+            }
+        }
+    }
     private marginTabAdd(val: boolean, alignmentNodes: Node[]): void {
         for (let index: number = 0; index < alignmentNodes.length; index++) {
             const element: HTMLElement = alignmentNodes[index as number] as HTMLElement;

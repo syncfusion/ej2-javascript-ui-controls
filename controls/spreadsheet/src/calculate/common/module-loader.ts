@@ -23,7 +23,6 @@ export interface IParent {
  * @returns {any} - To get nameSpace value from the desired object.
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getValue(nameSpace: string, obj: any): any {
     /* eslint-disable  @typescript-eslint/no-explicit-any */
     let value: any = obj;
@@ -44,7 +43,6 @@ export function getValue(nameSpace: string, obj: any): any {
  * @returns {void} - To set value for the nameSpace in desired object.
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function setValue(nameSpace: string, value: any, obj: any): any {
     const keyValues: string[] = nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
     const start: any = obj || {};

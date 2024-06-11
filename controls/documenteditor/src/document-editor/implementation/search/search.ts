@@ -118,7 +118,8 @@ export class Search {
      * @returns {number} - Returns replaced text count.
      */
     public replace(replaceText: string, result: TextSearchResult, results: TextSearchResults): number {
-        if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode  || !this.viewer.owner.editorModule.canEditContentControl || isNullOrUndefined(results)) {
+        if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode
+        || !this.viewer.owner.editorModule.canEditContentControl || isNullOrUndefined(results)) {
             return 0;
         }
         if (!isNullOrUndefined(this.viewer)) {
@@ -205,7 +206,7 @@ export class Search {
         }
         const count: number = results.length;
         this.viewer.owner.isLayoutEnabled = false;
-        let text: string = results.innerList[0].text;
+        const text: string = results.innerList[0].text;
         for (let i: number = count - 1; i >= 0; i--) {
             const result: TextSearchResult = results.innerList[parseInt(i.toString(), 10)];
             if (result.start.currentWidget.children.length === 0) {
@@ -218,17 +219,17 @@ export class Search {
                 }
                 let allowLayout: boolean = true;
                 if (i > 0) {
-                    let previousResult: TextSearchResult = results.innerList[i - 1];
+                    const previousResult: TextSearchResult = results.innerList[i - 1];
                     if (previousResult.start.paragraph.equals(result.start.paragraph)) {
                         allowLayout = false;
-                     }
-                 }
-                 this.owner.editorModule.insertTextInternal(replaceText, true, undefined, allowLayout);
-                 result.destroy();
-             }
+                    }
+                }
+                this.owner.editorModule.insertTextInternal(replaceText, true, undefined, allowLayout);
+                result.destroy();
+            }
             //if (result.isHeader || result.isFooter) {
-                // eslint-disable-next-line max-len
-                //this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
+            // eslint-disable-next-line max-len
+            //this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
             //}
         }
         if (this.owner.editorHistoryModule && !isNullOrUndefined(this.owner.editorHistoryModule.currentHistoryInfo)) {

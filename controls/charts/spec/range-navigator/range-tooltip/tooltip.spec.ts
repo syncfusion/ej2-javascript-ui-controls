@@ -363,6 +363,7 @@ describe('Range navigator Tooltip', () => {
             range.loaded = (args: object) => {
                 element = document.getElementById('tooltip_container_RightSlider');
                 targetElement = <Element>element.childNodes[2];
+                expect(element !== null).toBe(true);
                 // expect(getElement('tooltip_container_leftTooltip_path').getAttribute('fill')).toBe('#ffffff');
                 // expect(getElement('tooltip_container_rightTooltip_path').getAttribute('fill')).toBe('#ffffff');
                 // expect(getElement('tooltip_container_leftTooltip_text').children[0].getAttribute('fill')).toBe('#000000');
@@ -392,6 +393,46 @@ describe('Range navigator Tooltip', () => {
                 done();
             };
             range.enableRtl = true;
+            range.refresh();
+        });
+        it('checking tooltip with fluent2 RTL', (done: Function) => {
+            range.loaded = (args: object) => {
+                element = document.getElementById('tooltip_container_RightSlider');
+                targetElement = <Element>element.childNodes[2];
+                let transform: string = element.getAttribute('transform');
+                let str1: string = transform.substring(transform.indexOf('(') + 1);
+                let xValue: number = +str1.substring(0, str1.indexOf(','));
+                range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, null, null, null, null, xValue, 10));
+                range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, xValue + 200, 10));
+                range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, xValue + 200, 10));
+                let leftValue: string = getElement('tooltip_container_leftTooltip_path').getAttribute('fill');
+                let rightValue: string = getElement('tooltip_container_rightTooltip_path').getAttribute('fill');
+                expect(leftValue).toBe('#FFFFFF');
+                expect(rightValue).toBe('#FFFFFF');
+                done();
+            };
+            range.enableRtl = true;
+            range.theme = 'Fluent2';
+            range.refresh();
+        });
+        it('checking tooltip with fluent2 dark RTL', (done: Function) => {
+            range.loaded = (args: object) => {
+                element = document.getElementById('tooltip_container_RightSlider');
+                targetElement = <Element>element.childNodes[2];
+                let transform: string = element.getAttribute('transform');
+                let str1: string = transform.substring(transform.indexOf('(') + 1);
+                let xValue: number = +str1.substring(0, str1.indexOf(','));
+                range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(targetElement, null, null, null, null, xValue, 10));
+                range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, xValue + 200, 10));
+                range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, xValue + 200, 10));
+                let leftValue: string = getElement('tooltip_container_leftTooltip_path').getAttribute('fill');
+                let rightValue: string = getElement('tooltip_container_rightTooltip_path').getAttribute('fill');
+                expect(leftValue).toBe('#292929');
+                expect(rightValue).toBe('#292929');
+                done();
+            };
+            range.enableRtl = true;
+            range.theme = 'Fluent2Dark';
             range.refresh();
         });
 

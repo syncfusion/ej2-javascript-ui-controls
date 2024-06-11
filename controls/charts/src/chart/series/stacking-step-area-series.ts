@@ -1,8 +1,4 @@
-/* eslint-disable max-len */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-import { ChartLocation, StackValues, getPoint, withInRange } from '../../common/utils/helper';
+import { ChartLocation, StackValues, animateAddPoints, getPoint, withInRange } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
@@ -19,12 +15,18 @@ export class StackingStepAreaSeries extends LineBase {
     private prevStep: StepPosition;
 
     /**
-     * Render the Stacking step area series.
+     * Render the Stacking Step Area series.
      *
+     * @param {Series} stackSeries - The series to be rendered.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
+     * @param {boolean} isInverted - Specifies whether the chart is inverted.
+     * @param {boolean} pointAnimate - Specifies whether the point has to be animated or not.
+     * @param {boolean} pointUpdate - Specifies whether the point has to be updated or not.
      * @returns {void}
      * @private
      */
-    public render(stackSeries: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+    public render(stackSeries: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate: boolean, pointUpdate?: boolean): void {
         let currentPointLocation: ChartLocation; let secondPoint: ChartLocation;
         let start: ChartLocation = null; let direction: string = '';
         let borderDirection: string = '';
@@ -35,7 +37,6 @@ export class StackingStepAreaSeries extends LineBase {
         let point2: ChartLocation; let point3: ChartLocation; let xValue: number; let lineLength: number;
         let prevPoint: Points = null; let validIndex: number; let startPoint: number = 0;
         let pointIndex: number;
-        let emptyPointDirection:  string = '';
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         } else {
@@ -50,7 +51,8 @@ export class StackingStepAreaSeries extends LineBase {
                     start = new ChartLocation(xValue, 0);
                     currentPointLocation = getPoint(xValue - lineLength, origin, xAxis, yAxis, isInverted);
                     direction += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
-                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[pointIndex as number],
+                                                    xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                     borderDirection += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
@@ -80,8 +82,10 @@ export class StackingStepAreaSeries extends LineBase {
                     pointIndex = visiblePoint[j as number].index;
                     previousPointIndex = j === 0 ? 0 : visiblePoint[j - 1].index;
                     currentPointLocation = getPoint(
-                        visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
-                    if (j !== 0 && (stackedvalue.startValues[pointIndex as number] < stackedvalue.startValues[previousPointIndex as number] ||
+                        visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number],
+                        xAxis, yAxis, isInverted);
+                    if (j !== 0 && (stackedvalue.startValues[pointIndex as number] <
+                        stackedvalue.startValues[previousPointIndex as number] ||
                         stackedvalue.startValues[pointIndex as number] > stackedvalue.startValues[previousPointIndex as number])) {
                         direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                         secondPoint = getPoint(
@@ -90,7 +94,8 @@ export class StackingStepAreaSeries extends LineBase {
                         );
                     } else {
                         secondPoint = getPoint(
-                            visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
+                            visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number],
+                            xAxis, yAxis, isInverted);
                     }
                     if (visiblePoint[previousPointIndex as number].visible) {
                         direction = direction.concat(this.GetStepLineDirection(secondPoint, currentPointLocation, this.prevStep));
@@ -118,7 +123,8 @@ export class StackingStepAreaSeries extends LineBase {
                 let index: number;
                 if (visiblePoint[j as number].visible) {
                     pointIndex = visiblePoint[j as number].index;
-                    point2 = getPoint(visiblePoint[j as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
+                    point2 = getPoint(visiblePoint[j as number].xValue, stackedvalue.startValues[pointIndex as number],
+                                      xAxis, yAxis, isInverted);
                     direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
                 }
                 if (j !== 0 && !visiblePoint[j - 1].visible) {
@@ -140,7 +146,7 @@ export class StackingStepAreaSeries extends LineBase {
                 stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior,
                 0, 'transparent', stackSeries.opacity, stackSeries.dashArray, direction
             );
-            this.appendLinePath(options, stackSeries, '');
+            this[pointAnimate ? 'addPath' : 'appendLinePath'](options, stackSeries, '');
             /**
              * To draw border for the path directions of area
              */
@@ -150,9 +156,82 @@ export class StackingStepAreaSeries extends LineBase {
                     stackSeries.border.width, stackSeries.border.color ? stackSeries.border.color : stackSeries.interior, 1,
                     stackSeries.dashArray, borderDirection
                 );
-                this.appendLinePath(options, stackSeries, '');
+                this[pointAnimate ? 'addPath' : 'appendLinePath'](options, stackSeries, '');
             }
-            this.renderMarker(stackSeries);
+            if (!pointUpdate) {this.renderMarker(stackSeries); }
+        }
+    }
+
+    /**
+     * To animate point for stacking step area series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        for (let i: number = 0; i < series.xAxis.series.length; i++) {
+            const stackSeries: Series = series.xAxis.series[i as number];
+            this.render(stackSeries, stackSeries.xAxis, stackSeries.yAxis, stackSeries.chart.requireInvertedAxis, false, true);
+            for (let j: number = 0; j < point.length; j++) {
+                if (stackSeries.marker && stackSeries.marker.visible) {
+                    stackSeries.chart.markerRender.renderMarker(stackSeries, stackSeries.points[point[j as number]],
+                                                                stackSeries.points[point[j as number]].symbolLocations[0], null, true);
+                }
+                if (stackSeries.marker.dataLabel.visible && stackSeries.chart.dataLabelModule) {
+                    stackSeries.chart.dataLabelModule.commonId = stackSeries.chart.element.id + '_Series_' + stackSeries.index + '_Point_';
+                    const dataLabelElement: Element[] = stackSeries.chart.dataLabelModule.
+                        renderDataLabel(stackSeries, stackSeries.points[point[j as number]],
+                                        null, stackSeries.marker.dataLabel);
+                    for (let k: number = 0; k < dataLabelElement.length; k++) {
+                        stackSeries.chart.dataLabelModule.doDataLabelAnimation(stackSeries, dataLabelElement[k as number]);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Adds a area path to equate the start and end paths.
+     *
+     * @param {PathOption} options - The options for the path.
+     * @param {Series} series - The series to which the path belongs.
+     * @param {string} clipRect - The clip rectangle for the path.
+     * @returns {void}
+     */
+    public addPath (options: PathOption, series: Series, clipRect: string): void {
+        const points: { element: Element; previousDirection: string; } =
+        this.appendPathElement(options, series, clipRect);
+        if (points.previousDirection !== '' && options.d !== '') {
+            const startPathCommands: string[] = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (startPathCommands.length < endPathCommands.length) {
+                for (let i: number = startPathCommands.length; i < endPathCommands.length; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        startPathCommands.splice((Math.floor((startPathCommands.length / 2)) - 1), 0,
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) - 1],
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) - 1]);
+                        startPathCommands.splice((Math.floor((startPathCommands.length / 2)) + 2), 0,
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) + 2],
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) + 2],
+                                                 startPathCommands[Math.floor((startPathCommands.length / 2)) + 2]);
+                    }
+                }
+                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+            } else if (startPathCommands.length > endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        endPathCommands.splice(2, 0, endPathCommands[2]);
+                        endPathCommands.splice(endPathCommands.length - 3, 0, endPathCommands[endPathCommands.length - 3]);
+                    }
+                }
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
+            }
+            else {
+                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+            }
         }
     }
     /**
@@ -173,23 +252,26 @@ export class StackingStepAreaSeries extends LineBase {
      */
     public destroy(): void {
         /**
-         * Destroy method calling here
+         * Destroy method calling here.
          */
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'StackingStepAreaSeries';
     }
     /**
-     * To get the nearest visible point
+     * To get the nearest visible point.
      *
      * @param {Points[]} points points
      * @param {number} j index
+     * @returns {number} - Returns the nearest visible point.
      */
     private getNextVisiblePointIndex(points: Points[], j: number): number {
         let index: number;

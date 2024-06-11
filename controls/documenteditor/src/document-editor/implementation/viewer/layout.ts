@@ -108,6 +108,7 @@ export class Layout {
     private isFieldCode: boolean = false;
     private isRtlFieldCode: boolean = false;
     private isRTLLayout: boolean = false;
+    private isSkipFirstLineIndent: boolean = false;
     public currentCell: TableCellWidget = undefined;
     public isFootnoteContentChanged: boolean = false;
     public isEndnoteContentChanged: boolean = false;
@@ -116,7 +117,6 @@ export class Layout {
     private nextElementToLayout: ElementBox = undefined;
     private endNoteHeight: number = 0;
     private isMultiColumnSplit = false;
-    private isMultiColumnLayout: boolean = false;
     private skipUpdateContainerWidget = false;
     private isIFfield: boolean = false;
     /**
@@ -307,6 +307,7 @@ export class Layout {
         this.maxTextHeight = undefined;
         this.maxBaseline = undefined;
         this.maxTextBaseline = undefined;
+        this.isSkipFirstLineIndent = undefined;
         this.isFieldCode = undefined;
         this.footnoteHeight = undefined;
         this.isMultiColumnDoc = undefined;
@@ -534,9 +535,7 @@ export class Layout {
         }
         this.addBodyWidget(this.viewer.clientActiveArea, section);
         this.clearBlockWidget(section.childWidgets, true, true, true);
-        this.isMultiColumnLayout = true;
         this.reLayoutMultiColumnBlock(section, nextSection, blockIndex);
-        this.isMultiColumnLayout = false;
         this.isInitialLoad = false;
         let splitSections: Widget[] = section.getSplitWidgets();
         let lastSection: BodyWidget = splitSections[splitSections.length - 1] as BodyWidget;
@@ -2445,9 +2444,11 @@ export class Layout {
         // if (element.indexInOwner === 0 && element.line.isFirstLine()) {
         //     wrapDiff -= HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
         // }
-        if (element.line.isFirstLine() && this.getFirstElement(element.line) === element && wrapDiff > 0) {
-            wrapDiff += HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
+        if (element.line.isFirstLine() && this.getFirstElement(element.line) === element && wrapDiff > 0 && !this.isSkipFirstLineIndent) {
+            let firstLineIndent: number = element.line.paragraph.paragraphFormat.firstLineIndent;
+            wrapDiff += HelperMethods.convertPointToPixel(firstLineIndent > 0 ? firstLineIndent : 0);
         }
+        this.isSkipFirstLineIndent = false;
         element.padding.left = wrapDiff > 0 ? wrapDiff : 0;
         if (previousWidth !== this.viewer.clientActiveArea.width) {
             let wrapPos: WrapPosition = new WrapPosition(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.width);
@@ -2895,6 +2896,7 @@ export class Layout {
                                     //TabsLayoutInfo tabsInfo = null;
                                     rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
                                     rect.width -= firstLineIndent;
+                                    this.isSkipFirstLineIndent = true;
 
                                     //When there is no space to fit the content in right, then update the y position.
                                     if (textWrappingStyle === 'Square' && rect.width < 0 && elementBox.width > 0) {
@@ -2928,6 +2930,7 @@ export class Layout {
                                 let xposition: number = rect.x;
                                 rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
                                 rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0) - firstLineIndent;
+                                this.isSkipFirstLineIndent = true;
 
                                 //When there is no space to fit the content in right, then update the y position.
                                 if (textWrappingStyle === 'Square' && rect.width < 0 && elementBox.width > 0) {
@@ -3560,8 +3563,8 @@ export class Layout {
                     this.setCheckBoxFontSize(formFieldData, checkBoxTextElement.characterFormat);
                 } else if (formFieldData instanceof DropDownFormField) {
                     const dropDownTextElement: TextElementBox = new TextElementBox();
-                    dropDownTextElement.skipformFieldLength = true;
                     dropDownTextElement.characterFormat.copyFormat(fieldBegin.characterFormat);
+                    dropDownTextElement.skipformFieldLength = true;
                     dropDownTextElement.line = fieldBegin.line;
                     if (formFieldData.dropdownItems.length > 0) {
                         dropDownTextElement.text = formFieldData.dropdownItems[formFieldData.selectedIndex];
@@ -4535,7 +4538,7 @@ export class Layout {
         if (line.paragraph.bodyWidget.sectionFormat.equalWidth) {
             let parawidget: ParagraphWidget = line.paragraph;
             this.documentHelper.blockToShift = parawidget;
-            this.shiftLayoutedItems(false, true);
+            this.shiftLayoutedItems(false);
         }
     }
     //Checks Inbetween Overlap & Updates Line marginTop
@@ -5838,7 +5841,7 @@ export class Layout {
         }
         return words;
     }
-
+    
     private getAsOrdinal(number: number, characterFormat: WCharacterFormat): string {
         switch (characterFormat.localeIdAscii) {
             case 1069:
@@ -8066,7 +8069,7 @@ export class Layout {
                 lineHeight = lineWidget.height;
             }
             if (!isNullOrUndefined(paragraphWidget.associatedCell) && paragraphWidget.associatedCell.index === 0 && paragraphWidget.index === 0
-                && isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousSplitWidget) && isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousWidget)
+               && isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousSplitWidget) && isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousWidget)
                 && paragraphWidget.paragraphFormat.keepWithNext) {
                 moveEntireBlock = true;
                 lineWidget = paragraphWidget.childWidgets[0] as LineWidget;
@@ -9099,6 +9102,12 @@ export class Layout {
                         this.layoutfootNote(bodyWidget.containerWidget);
                     }
                 }
+                let footnote=bodyWidget as BodyWidget;
+                if(bodyWidget.containerWidget == undefined && footnote.page.footnoteWidget!=undefined){
+                    if(footnote.page.footnoteWidget.footNoteType === 'Footnote'){
+                        this.layoutfootNote(footnote.page.footnoteWidget);
+                    }
+                }
                 if (shiftNextWidget) {
                     this.shiftNextWidgets(curretBlock);
                 } else {
@@ -9719,7 +9728,7 @@ export class Layout {
 
     //#region Shifting
 
-    public shiftLayoutedItems(reLayout: boolean, isMultiColumnShift?: boolean): void {
+    public shiftLayoutedItems(reLayout: boolean): void {
         if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget)) {
             this.documentHelper.blockToShift = undefined;
             this.checkAndShiftEndnote();
@@ -9760,9 +9769,6 @@ export class Layout {
         let splittedWidget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         let nextBlock: BlockWidget = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
         while (nextBlock instanceof BlockWidget && (nextBlock.bodyWidget.index === sectionIndex || (nextBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak' && block.bodyWidget.sectionFormat.pageWidth === nextBlock.bodyWidget.sectionFormat.pageWidth && block.bodyWidget.sectionFormat.pageHeight === nextBlock.bodyWidget.sectionFormat.pageHeight))) {
-            if (isMultiColumnShift && nextBlock.bodyWidget.sectionFormat.columns.length === 0) {
-                return;
-            }
             isColumnBreak = this.getColumnBreak(nextBlock.bodyWidget);
             if ((!isColumnBreak || (reLayout && this.isSectionEndsWithColumnBreak(nextBlock.bodyWidget))) && this.viewer instanceof PageLayoutViewer && !this.isMultiColumnSplit && nextBlock.bodyWidget.sectionFormat.columns.length > 1) {
                 // let lastbody: BodyWidget = this.getBodyWidget(nextBlock.bodyWidget, false);
@@ -10017,13 +10023,13 @@ export class Layout {
                     i--;
                     continue;
                 }
+                prevWidget = undefined;
                 if (prevBodyWidget !== widget.containerWidget) {
                     prevBodyWidget = widget.containerWidget as BodyWidget;
-                    if (isPageBreak && prevWidget !== widget.previousSplitWidget) {
+                    if (isPageBreak) {
                         viewer.updateClientAreaByWidget(widget);
                     }
                 }
-                prevWidget = undefined;
             }
            
             let footWidget: BodyWidget[] = [];
@@ -11017,10 +11023,10 @@ export class Layout {
         let prevBodyWidget: BodyWidget = undefined;
         const previousBlock: BlockWidget = block.previousRenderedWidget as BlockWidget;
         prevBodyWidget = (previousBlock && previousBlock.containerWidget.equals(block.containerWidget)) ?
-        previousBlock.containerWidget as BodyWidget : 
-        (block instanceof TableWidget && !isNullOrUndefined(block.containerWidget.previousRenderedWidget) && block.containerWidget.index === block.containerWidget.previousRenderedWidget.index) ? 
-            block.containerWidget.previousRenderedWidget as BodyWidget :
-            block.containerWidget as BodyWidget;
+            previousBlock.containerWidget as BodyWidget : 
+            (block instanceof TableWidget && !isNullOrUndefined(block.containerWidget.previousRenderedWidget) && block.containerWidget.index === block.containerWidget.previousRenderedWidget.index) ? 
+                block.containerWidget.previousRenderedWidget as BodyWidget :
+                block.containerWidget as BodyWidget;
         index = previousBlock && previousBlock.containerWidget.equals(block.containerWidget) ?
             prevBodyWidget.childWidgets.indexOf(previousBlock) : block.containerWidget.childWidgets.indexOf(block);
         return { bodyWidget: prevBodyWidget, index: index };
@@ -11053,7 +11059,7 @@ export class Layout {
             let insertPage: boolean = false;
             const page: Page = body.page;
             const pageIndex: number = page.index + 1;
-            if (this.documentHelper.pages.length > pageIndex && !this.isMultiColumnLayout) {
+            if (this.documentHelper.pages.length > pageIndex) {
                 nextPage = this.documentHelper.pages[pageIndex];
                 if (!isNullOrUndefined(nextPage) && nextPage.bodyWidgets.length !== 0 && body.sectionFormat.pageHeight === nextPage.bodyWidgets[0].sectionFormat.pageHeight && body.sectionFormat.pageWidth === nextPage.bodyWidgets[0].sectionFormat.pageWidth && body.sectionFormat.breakCode === 'NoBreak') {
                     if (nextPage.bodyWidgets[0].index === body.index) {
@@ -11073,9 +11079,6 @@ export class Layout {
                     nextBody = nextPage.bodyWidgets[0];
                     this.viewer.updateClientArea(nextBody, nextBody.page);
                 }
-            }
-            if (this.isMultiColumnLayout) {
-                insertPage = true;
             }
             if (isNullOrUndefined(nextPage)) {
                 nextBody = this.createSplitBody(body);
@@ -12605,6 +12608,7 @@ export class Layout {
                                 + (HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.rightMargin - sectionFormat.leftMargin) - tableTotalWidth) / 2;
                         }
                     }
+
                     if (Math.round(position.horizontalPosition) > 0 || (position.horizontalOrigin === 'Margin' && position.horizontalAlignment === 'Left')) {
                         this.viewer.clientActiveArea.x += HelperMethods.convertPointToPixel(position.horizontalPosition);
                     }

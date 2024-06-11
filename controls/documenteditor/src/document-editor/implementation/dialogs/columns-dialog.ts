@@ -4,16 +4,15 @@ import { CheckBox, ChangeEventArgs as CheckBoxChangeArgs, classNames } from '@sy
 import { NumericTextBox, ChangeEventArgs as NumericChangeEventArgs, TextBox, ChangedEventArgs } from '@syncfusion/ej2-inputs';
 import { SelectionSectionFormat, WSectionFormat, WColumnFormat, HelperMethods } from '../index';
 
- 
+
 /**
  * @private
- * The Columns dialog is used to spilt the text into columns.
  */
- class Column {
+class Column {
     public index: NumericTextBox;
     public width: NumericTextBox;
     public space: NumericTextBox;
-   
+
 }
 export class ColumnsDialog {
     private oneDiv: HTMLDivElement;
@@ -28,17 +27,17 @@ export class ColumnsDialog {
     private equalCheckbox: CheckBox = undefined;
 
     private columnCountBox1: HTMLInputElement;
-    private widthCountBox1:HTMLInputElement;
-    private spacingCountBox1:HTMLInputElement;
-    
-    //public subWidthAndSpacingContainerDiv :HTMLDivElement;
-    public columnElementDiv :HTMLDivElement
+    private widthCountBox1: HTMLInputElement;
+    private spacingCountBox1: HTMLInputElement;
 
-    private widthcontainerDiv1 :HTMLDivElement;
+    //public subWidthAndSpacingContainerDiv :HTMLDivElement;
+    public columnElementDiv : HTMLDivElement
+
+    private widthcontainerDiv1 : HTMLDivElement;
     private columnTable: HTMLTableElement;
     private widthContainer: HTMLDivElement ;
     // private containerHead :HTMLDivElement;
-    
+
     // private columnCountSI: HTMLInputElement;
     // private columnValueSI: NumericTextBox;
     // private widthCountSI: HTMLInputElement;
@@ -46,9 +45,9 @@ export class ColumnsDialog {
     // private spaceCountSI: HTMLInputElement;
     // private spaceValueSI: NumericTextBox;
     private columns: Column[];
-    public numberOfColumns:number;
+    public numberOfColumns: number;
     private section: SelectionSectionFormat ;
-    private pageWidth:number;
+    private pageWidth: number;
     /**
      * @private
      */
@@ -57,7 +56,7 @@ export class ColumnsDialog {
      * @param {DocumentHelper} documentHelper - Specifies the document helper
      * @private
      */
-     public constructor(documentHelper: DocumentHelper) {
+    public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
     private getModuleName(): string {
@@ -69,65 +68,65 @@ export class ColumnsDialog {
      * @param {boolean} isRtl - Specifies is rtl.
      * @returns {void}
      */
-     public initColumnsDialog(localeValue: L10n , isRtl?:boolean): void {
+    public initColumnsDialog(localeValue: L10n , isRtl?: boolean): void {
         this.columns = [];
         this.target = createElement('div', {
             id: this.documentHelper.owner.containerId + '_Columns',
             className: 'e-de-table-border-shading-dlg'
         });
-        let displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Presets'),
             className: 'e-de-para-dlg-heading'
         });
-        let PresetsContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        const PresetsContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-dlg-row'
         });
-        let oneDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_One_Div_Container',className: 'e-de-preset-container'
+        const oneDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            id: this.target.id + '_One_Div_Container', className: 'e-de-preset-container'
         });
         this.oneDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_One_Div',
             className: 'e-icons e-de-ctnr-columns-one e-de-columns-presets-genral'
         });
-        let oneDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const oneDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('One'), className: 'e-de-column-label',
             id: this.target.id + '_One_Div_Label'
         });
-        let twoDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_Two_Div_Container',className: 'e-de-preset-container'
+        const twoDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            id: this.target.id + '_Two_Div_Container', className: 'e-de-preset-container'
         });
         this.twoDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Two_Div',
             className: 'e-icons e-de-ctnr-columns-two e-de-columns-presets-genral'
         });
-        let twoDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const twoDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Two'), className: 'e-de-column-label',
             id: this.target.id + '_Two_Div_Label'
         });
-        let threeDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_Three_Div_Container',className: 'e-de-preset-container'
+        const threeDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            id: this.target.id + '_Three_Div_Container', className: 'e-de-preset-container'
         });
         this.threeDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Three_Div',
             className: 'e-icons e-de-ctnr-columns-three  e-de-columns-presets-genral'
         });
-        let threeDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const threeDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Three'), className: 'e-de-column-label',
             id: this.target.id + '_Three_Div_Label'
         });
-        let leftDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_Left_Div_Container',className: 'e-de-preset-container'
+        const leftDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            id: this.target.id + '_Left_Div_Container', className: 'e-de-preset-container'
         });
         this.leftDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Left_Div',
             className: 'e-icons e-de-ctnr-columns-left e-de-columns-presets-genral'
         });
-        let leftDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const leftDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Left'), className: 'e-de-column-label',
             id: this.target.id + '_Left_Div_Label'
         });
-        let rightDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_Right_Div_Container',className: 'e-de-preset-container'
+        const rightDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            id: this.target.id + '_Right_Div_Container', className: 'e-de-preset-container'
         });
         this.rightDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Right_Div',
@@ -137,18 +136,18 @@ export class ColumnsDialog {
             innerHTML: localeValue.getConstant('Right'), className: 'e-de-column-label' ,
             id: this.target.id + '_Right_Div_Label'
         });
-        let nuberOfColumnsContainer: HTMLElement = createElement('div', { 
+        const nuberOfColumnsContainer: HTMLElement = createElement('div', {
             className: 'e-de-container-row e-de-columns-padding-alignment'
         });
         const subcontainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-left'
         });
-      
-        oneDivContainer.setAttribute('aria-label',localeValue.getConstant('One'));
-        twoDivContainer.setAttribute('aria-label',localeValue.getConstant('Two'));
-        threeDivContainer.setAttribute('aria-label',localeValue.getConstant('Three'));
-        leftDivContainer.setAttribute('aria-label',localeValue.getConstant('Left'));
-        rightDivContainer.setAttribute('aria-label',localeValue.getConstant('Right'));
+
+        oneDivContainer.setAttribute('aria-label', localeValue.getConstant('One'));
+        twoDivContainer.setAttribute('aria-label', localeValue.getConstant('Two'));
+        threeDivContainer.setAttribute('aria-label', localeValue.getConstant('Three'));
+        leftDivContainer.setAttribute('aria-label', localeValue.getConstant('Left'));
+        rightDivContainer.setAttribute('aria-label', localeValue.getConstant('Right'));
         if (isRtl) {
             this.oneDiv.classList.add('e-de-rtl');
             this.twoDiv.classList.add('e-de-rtl');
@@ -168,12 +167,12 @@ export class ColumnsDialog {
         }
 
         this.columnsCountBox = createElement('input', {
-            attrs: { type: 'text' } 
+            attrs: { type: 'text' }
         }) as HTMLInputElement;
         subcontainer.appendChild(this.columnsCountBox);
         nuberOfColumnsContainer.appendChild(subcontainer);
-        this.section =this.documentHelper.selection.sectionFormat;
-        this.pageWidth=this.section.pageWidth-this.section.leftMargin-this.section.rightMargin;
+        this.section = this.documentHelper.selection.sectionFormat;
+        this.pageWidth = this.section.pageWidth - this.section.leftMargin - this.section.rightMargin;
         this.columnValueTexBox = new NumericTextBox({
             format: '#',
             value: 1,
@@ -181,30 +180,30 @@ export class ColumnsDialog {
             strictMode: true,
             placeholder: localeValue.getConstant('Number of columns'),
             floatLabelType: 'Always',
-            change:  this.createTextBox,
-        });     
+            change:  this.createTextBox
+        });
         this.columnValueTexBox.appendTo(this.columnsCountBox);
         const subcontainer1: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-right'
         });
-        
-        let lineCheckDiv: HTMLDivElement = createElement('div', {
+
+        const lineCheckDiv: HTMLDivElement = createElement('div', {
             className: 'e-de-columns-padding-alignment'
         }) as HTMLDivElement;
-        let lineCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        const lineCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
         subcontainer1.appendChild(lineCheckDiv);
         lineCheckDiv.appendChild(lineCheck);
-         lineCheck.setAttribute('aria-labelledby', localeValue.getConstant('Line between column'));
-         this.columnsCountBox.setAttribute('aria-labelledby', localeValue.getConstant('Number of columns'));
+        lineCheck.setAttribute('aria-labelledby', localeValue.getConstant('Line between column'));
+        this.columnsCountBox.setAttribute('aria-labelledby', localeValue.getConstant('Number of columns'));
         this.lineCheckbox = new CheckBox({
             label: localeValue.getConstant('Line between column')
         });
-        let widthAndSpacingContainer: HTMLDivElement = <HTMLDivElement>createElement('div',{
+        const widthAndSpacingContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-dlg-row'
         });
-        let widthAndSpacingContainerDiv: HTMLDivElement = <HTMLDivElement>createElement('div',{
+        const widthAndSpacingContainerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
         });
-        let widthAndSpacingText: HTMLDivElement = <HTMLDivElement>createElement('div',{
+        const widthAndSpacingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Width and Spacing'),
             className: 'e-de-para-dlg-heading'
         });
@@ -212,8 +211,8 @@ export class ColumnsDialog {
         //     className:'e-bookmark-listview e-width-space-div',
         //     styles: "width:100%;"
         // });
-        this.columnElementDiv = <HTMLDivElement>createElement('div',{
-            className:'e-width-space-div ',
+        this.columnElementDiv = <HTMLDivElement>createElement('div', {
+            className: 'e-width-space-div '
         });
         this.widthcontainerDiv1 = <HTMLDivElement>createElement('div', {
             className: 'e-de-container-row'
@@ -221,14 +220,14 @@ export class ColumnsDialog {
         this.widthContainer = <HTMLDivElement>createElement('div', {
             className: 'e-de-container-row'
         });
-        // Heading 
+        // Heading
         // this.containerHead = <HTMLDivElement>createElement('div', {
         //     className: 'e-de-container-row'
         // });
-        
-        let tableElement: HTMLTableElement = createElement('table') as HTMLTableElement;
+
+        const tableElement: HTMLTableElement = createElement('table') as HTMLTableElement;
         tableElement.style.width = '96%';
-        let row: HTMLTableRowElement = tableElement.insertRow();
+        const row: HTMLTableRowElement = tableElement.insertRow();
         let cell: HTMLTableCellElement = row.insertCell();
         cell.innerHTML = localeValue.getConstant('Column');
         cell.style.width = '20%';
@@ -244,48 +243,48 @@ export class ColumnsDialog {
         cell.style.width = '40%';
         cell.style.display = 'table-cell';
         cell.classList.add('e-de-dlg-sub-header');
-                    //wC
-                    //this.columnCountSI = <HTMLInputElement>createElement('input', {
-                    //});
-                    // this.columnValueSI = new NumericTextBox({
-                    //     //placeholder: localeValue.getConstant('Column'),
-                    //     enabled: false,
-                    //     showSpinButton: false
-                        
-                    // });
-                    //this.containerHead.appendChild(this.columnCountSI);
-                   // this.columnValueSI.appendTo(this.columnCountSI);
-            //wSi
-                    //this.widthCountSI = <HTMLInputElement>createElement('input', {
-                    //});
-                    // this.widthValueSI = new NumericTextBox({
-                    //     //placeholder: localeValue.getConstant('Width'),
-                    //     enabled: false,
-                    //     showSpinButton: false
-                    
-                    // });
-                    //this.containerHead.appendChild(this.widthCountSI);
-                    //this.widthValueSI.appendTo(this.widthCountSI);
-            //ws
-                    //this.spaceCountSI = <HTMLInputElement>createElement('input', {
-                    //});
-                    // this.spaceValueSI = new NumericTextBox({
-                    //     //placeholder: localeValue.getConstant('Spacing'),
-                    //     enabled: false,
-                    //     showSpinButton: false
-                        
-                    // });
-                    //this.containerHead.appendChild(this.spaceCountSI);
-                    //this.spaceValueSI.appendTo(this.spaceCountSI);
-        let columnDiv: HTMLDivElement =  createElement('div', {styles: 'width:100%;height:100px;overflow-y: scroll;overflow-x: hidden;'}) as HTMLDivElement;
+        //wC
+        //this.columnCountSI = <HTMLInputElement>createElement('input', {
+        //});
+        // this.columnValueSI = new NumericTextBox({
+        //     //placeholder: localeValue.getConstant('Column'),
+        //     enabled: false,
+        //     showSpinButton: false
+
+        // });
+        //this.containerHead.appendChild(this.columnCountSI);
+        // this.columnValueSI.appendTo(this.columnCountSI);
+        //wSi
+        //this.widthCountSI = <HTMLInputElement>createElement('input', {
+        //});
+        // this.widthValueSI = new NumericTextBox({
+        //     //placeholder: localeValue.getConstant('Width'),
+        //     enabled: false,
+        //     showSpinButton: false
+
+        // });
+        //this.containerHead.appendChild(this.widthCountSI);
+        //this.widthValueSI.appendTo(this.widthCountSI);
+        //ws
+        //this.spaceCountSI = <HTMLInputElement>createElement('input', {
+        //});
+        // this.spaceValueSI = new NumericTextBox({
+        //     //placeholder: localeValue.getConstant('Spacing'),
+        //     enabled: false,
+        //     showSpinButton: false
+
+        // });
+        //this.containerHead.appendChild(this.spaceCountSI);
+        //this.spaceValueSI.appendTo(this.spaceCountSI);
+        const columnDiv: HTMLDivElement =  createElement('div', {styles: 'width:100%;height:100px;overflow-y: scroll;overflow-x: hidden;'}) as HTMLDivElement;
         this.columnTable = createElement('table', {styles: 'width:100%;'}) as HTMLTableElement;
-        
-        let row1: HTMLTableRowElement = this.columnTable.insertRow();
-        let cell1: HTMLTableCellElement = row1.insertCell();
+
+        const row1: HTMLTableRowElement = this.columnTable.insertRow();
+        const cell1: HTMLTableCellElement = row1.insertCell();
         cell1.style.width = '20%';
         //NUMERIC TEXT BOX
         // column
-        let col: Column = new Column();
+        const col: Column = new Column();
         this.columnCountBox1 = <HTMLInputElement>createElement('input', {
         });
         col.index = new NumericTextBox({
@@ -296,16 +295,16 @@ export class ColumnsDialog {
             cssClass: 'index1',
             showSpinButton: false,
             floatLabelType: 'Always',
-            change: this.spaceChange,
+            change: this.spaceChange
         });
         cell1.appendChild(this.columnCountBox1);
         col.index.appendTo(this.columnCountBox1);
 
         // width
-        let cell2: HTMLTableCellElement = row1.insertCell();
+        const cell2: HTMLTableCellElement = row1.insertCell();
         cell2.style.width = '40%';
         this.widthCountBox1 = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' },
+            attrs: { 'type': 'text' }
         });
         col.width = new NumericTextBox({
             min: 36,
@@ -314,17 +313,17 @@ export class ColumnsDialog {
             enablePersistence: false,
             cssClass: 'width1',
             floatLabelType: 'Always',
-            change: this.widthChange,
+            change: this.widthChange
         });
         cell2.appendChild(this.widthCountBox1);
         cell2.style.width = '40%';
         col.width.appendTo(this.widthCountBox1);
 
         //spacing
-        let cell3: HTMLTableCellElement = row1.insertCell();
+        const cell3: HTMLTableCellElement = row1.insertCell();
         cell3.style.width = '40%';
         this.spacingCountBox1 = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' },
+            attrs: { 'type': 'text' }
         });
         col.space = new NumericTextBox({
             min: 0,
@@ -333,30 +332,30 @@ export class ColumnsDialog {
             enablePersistence: false,
             cssClass: 'space1',
             floatLabelType: 'Always',
-            change: this.spaceChange,
+            change: this.spaceChange
         });
         cell3.appendChild(this.spacingCountBox1);
-        col.space.appendTo(this.spacingCountBox1); 
+        col.space.appendTo(this.spacingCountBox1);
         this.columns.push(col);
         col.space.enabled = false;
-        this.widthCountBox1.setAttribute('aria-labelledby','Width');
-        this.spacingCountBox1.setAttribute('aria-labelledby','Space');
-        let equalCheckDiv: HTMLDivElement = createElement('div',{
+        this.widthCountBox1.setAttribute('aria-labelledby', 'Width');
+        this.spacingCountBox1.setAttribute('aria-labelledby', 'Space');
+        const equalCheckDiv: HTMLDivElement = createElement('div', {
             className: 'e-de-columns-padding-alignment'
         }) as HTMLDivElement;
-        let equalCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        const equalCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
         equalCheckDiv.appendChild(equalCheck);
-        equalCheckDiv.setAttribute('aria-label',localeValue.getConstant('Equal column width'));
+        equalCheckDiv.setAttribute('aria-label', localeValue.getConstant('Equal column width'));
         this.equalCheckbox = new CheckBox({
             label: localeValue.getConstant('Equal column width'),
-            change:this.checkBox,
+            change: this.checkBox
         });
         this.equalCheckbox.appendTo(equalCheck);
 
- 
+
         this.lineCheckbox.appendTo(lineCheck);
         nuberOfColumnsContainer.appendChild(subcontainer1);
- 
+
         oneDivContainer.appendChild(this.oneDiv);
         oneDivContainer.appendChild(oneDivLabel);
         twoDivContainer.appendChild(this.twoDiv);
@@ -367,7 +366,7 @@ export class ColumnsDialog {
         leftDivContainer.appendChild(leftDivLabel);
         rightDivContainer.appendChild(this.rightDiv);
         rightDivContainer.appendChild(rightDivLabel);
- 
+
         PresetsContainer.appendChild(oneDivContainer);
         PresetsContainer.appendChild(twoDivContainer);
         PresetsContainer.appendChild(threeDivContainer);
@@ -375,14 +374,14 @@ export class ColumnsDialog {
         PresetsContainer.appendChild(rightDivContainer);
         //this.subWidthAndSpacingContainerDiv.appendChild(this.containerHead);
         //this.subWidthAndSpacingContainerDiv.appendChild(this.widthcontainerDiv1);//<- First add
-    
+
         widthAndSpacingContainerDiv.appendChild(widthAndSpacingText);
         widthAndSpacingContainerDiv.appendChild(tableElement);
         columnDiv.appendChild(this.columnTable);
         widthAndSpacingContainerDiv.appendChild(columnDiv);
         //widthAndSpacingContainerDiv.appendChild(this.subWidthAndSpacingContainerDiv);
         widthAndSpacingContainer.appendChild(widthAndSpacingContainerDiv);
- 
+
         this.target.appendChild(displayText);
         this.target.appendChild(PresetsContainer);
         this.target.appendChild(nuberOfColumnsContainer);
@@ -395,19 +394,19 @@ export class ColumnsDialog {
         threeDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
         leftDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
         rightDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
-        this.widthcontainerDiv1.style.display ="flex";
+        this.widthcontainerDiv1.style.display = 'flex';
 
-        this.equalCheckbox.checked =true;
+        this.equalCheckbox.checked = true;
         this.equalCheckbox.disabled = true;
-        this.lineCheckbox.disabled = true;   
+        this.lineCheckbox.disabled = true;
 
-       
-     }
+
+    }
     public checkBox = (args: ChangedEventArgs): void => {
         for (let i: number = 0; i < this.columns.length; i++) {
-            let col: Column = this.columns[parseInt(i.toString(), 10)];
-            if (this.equalCheckbox.checked == true) {
-                if (i != 0) {
+            const col: Column = this.columns[parseInt(i.toString(), 10)];
+            if (this.equalCheckbox.checked === true) {
+                if (i !== 0) {
                     col.width.enabled = false;
                     col.space.enabled = false;
                 }
@@ -418,62 +417,62 @@ export class ColumnsDialog {
         }
     }
     public createTextBox = (args: NumericChangeEventArgs): void => {
-        
-            if (this.columnValueTexBox.value == 1) {
-                this.oneDiv.classList.add('e-de-table-border-inside-setting-click');
-                this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.threeDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
+
+        if (this.columnValueTexBox.value === 1) {
+            this.oneDiv.classList.add('e-de-table-border-inside-setting-click');
+            this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.threeDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
+        }
+        else if (this.columnValueTexBox.value === 2) {
+            this.oneDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.twoDiv.classList.add('e-de-table-border-inside-setting-click');
+            this.threeDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
+        }
+        else if (this.columnValueTexBox.value === 3) {
+            this.oneDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.threeDiv.classList.add('e-de-table-border-inside-setting-click');
+            this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
+        }
+        this.numberOfColumns = args.value;
+        if (args.value >= 1) {
+            this.equalCheckbox.disabled = false;
+            this.lineCheckbox.disabled = false;
+            let i: number = args.previousValue;
+            while (i < this.numberOfColumns) {
+                this.createColumn(i + 1);
+                i++;
             }
-            else if (this.columnValueTexBox.value == 2) {
-                this.oneDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.twoDiv.classList.add('e-de-table-border-inside-setting-click');
-                this.threeDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
-            }
-            else if (this.columnValueTexBox.value == 3) {
-                this.oneDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.threeDiv.classList.add('e-de-table-border-inside-setting-click');
-                this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
-            }
-            this.numberOfColumns = args.value;
-            if (args.value >= 1) {
-                this.equalCheckbox.disabled = false;
-                this.lineCheckbox.disabled = false;
-                let i: number = args.previousValue;
-                while (i < this.numberOfColumns) {
-                    this.createColumn(i+1);
-                    i++;
+            while (i > this.numberOfColumns) {
+                this.columnTable.deleteRow(this.columnTable.rows.length - 1);
+                this.columns.splice(this.columns.length - 1, this.columns.length);
+                if (this.numberOfColumns === 1) {
+                    this.equalCheckbox.disabled = true;
+                    this.columns[0].space.enabled = false;
                 }
-                while (i > this.numberOfColumns) {
-                    this.columnTable.deleteRow(this.columnTable.rows.length-1);
-                    this.columns.splice(this.columns.length - 1, this.columns.length);
-                    if (this.numberOfColumns === 1) {
-                        this.equalCheckbox.disabled = true;
-                        this.columns[0].space.enabled = false;
-                    }
-                    i--;
-                }
-                this.canUpdateColumnWidthAndSpacing(args.value, undefined, undefined, undefined);
+                i--;
             }
-        
+            this.canUpdateColumnWidthAndSpacing(args.value, undefined, undefined, undefined);
+        }
+
     }
-    private createColumn(index: number, width?: number, space?: number){
+    private createColumn(index: number, width?: number, space?: number) : void{
         this.widthContainer = <HTMLDivElement>createElement('div', {
             className: 'e-de-container-row'
         });
-        this.widthContainer.style.display = "flex";
-        let row: HTMLTableRowElement = this.columnTable.insertRow();
-        let cell1: HTMLTableCellElement = row.insertCell();
+        this.widthContainer.style.display = 'flex';
+        const row: HTMLTableRowElement = this.columnTable.insertRow();
+        const cell1: HTMLTableCellElement = row.insertCell();
         cell1.style.width = '20%';
-        let col: Column = new Column();
+        const col: Column = new Column();
         // column
-        let columnCount: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            
+        const columnCount: HTMLInputElement = <HTMLInputElement>createElement('input', {
+
         });
         col.index = new NumericTextBox({
             format: '#',
@@ -487,11 +486,11 @@ export class ColumnsDialog {
         cell1.appendChild(columnCount);
         col.index.appendTo(columnCount);
 
-        // width 
-        let cell2: HTMLTableCellElement = row.insertCell();
+        // width
+        const cell2: HTMLTableCellElement = row.insertCell();
         cell2.style.width = '40%';
-        let widthCountBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' },
+        const widthCountBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+            attrs: { 'type': 'text' }
         });
         col.width = new NumericTextBox({
             min: 36,
@@ -500,19 +499,19 @@ export class ColumnsDialog {
             enablePersistence: false,
             cssClass: 'width1',
             floatLabelType: 'Always',
-            change: this.widthChange,
+            change: this.widthChange
         });
-        if(!isNullOrUndefined(width)){
+        if (!isNullOrUndefined(width)){
             col.width.value = width;
         }
         cell2.appendChild(widthCountBox);
         col.width.appendTo(widthCountBox);
 
         //spacing
-        let cell3: HTMLTableCellElement = row.insertCell();
+        const cell3: HTMLTableCellElement = row.insertCell();
         cell3.style.width = '40%';
-        let spacingCountBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' },
+        const spacingCountBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+            attrs: { 'type': 'text' }
         });
         col.space = new NumericTextBox({
             min: 0,
@@ -521,9 +520,9 @@ export class ColumnsDialog {
             enablePersistence: false,
             cssClass: 'space1',
             floatLabelType: 'Always',
-            change: this.spaceChange,
+            change: this.spaceChange
         });
-        if(!isNullOrUndefined(space)){
+        if (!isNullOrUndefined(space)){
             col.space.value = space;
         }
         cell3.appendChild(spacingCountBox);
@@ -533,19 +532,17 @@ export class ColumnsDialog {
         this.columns.push(col);
     }
     private widthChange = (args: NumericChangeEventArgs): void => {
-        if (args.isInteracted == true) {
-            let val = ((args.event.target) as HTMLElement).parentElement.classList;
-            val.replace(val.item(4), "Width");
-            ((args.event.target) as HTMLElement).parentElement.classList;
+        if (args.isInteracted === true) {
+            const val: DOMTokenList = ((args.event.target) as HTMLElement).parentElement.classList;
+            val.replace(val.item(4), 'Width');
             this.checkAndApplyColumnFormatWidth(args.value);
 
         }
     }
     private spaceChange = (args: NumericChangeEventArgs): void => {
-        if (args.isInteracted == true) {
-            let val = ((args.event.target) as HTMLElement).parentElement.classList;
-            val.replace(val.item(4), "Space");
-            ((args.event.target) as HTMLElement).parentElement.classList;
+        if (args.isInteracted === true) {
+            const val: DOMTokenList = ((args.event.target) as HTMLElement).parentElement.classList;
+            val.replace(val.item(4), 'Space');
             this.checkAndApplyColumnFormatSpace(args.value);
 
         }
@@ -558,12 +555,12 @@ export class ColumnsDialog {
                 this.columns[0].width.value = columnWidth + 1;
             }
         } else {
-            if (this.equalCheckbox.checked == true) {
+            if (this.equalCheckbox.checked === true) {
 
                 for (let i: number = 0; i < this.columns.length; i++) {
-                    let col: Column = this.columns[parseInt(i.toString(), 10)];
+                    const col: Column = this.columns[parseInt(i.toString(), 10)];
                     if (columnWidth >= 36 && this.columns[0].space.value >= 0) {
-                        let spaceCal: number = (this.pageWidth - (this.numberOfColumns * columnWidth)) / (this.numberOfColumns - 1);
+                        const spaceCal: number = (this.pageWidth - (this.numberOfColumns * columnWidth)) / (this.numberOfColumns - 1);
                         col.width.value = columnWidth;
                         if (i < this.columns.length - 1) {
                             col.space.value = spaceCal;
@@ -573,17 +570,18 @@ export class ColumnsDialog {
                     }
                 }
             }
-            if (this.equalCheckbox.checked == false) {
+            if (this.equalCheckbox.checked === false) {
                 for (let i: number = 0; i < this.columns.length; i++) {
-                    let col: Column = this.columns[parseInt(i.toString(), 10)];
+                    const col: Column = this.columns[parseInt(i.toString(), 10)];
                     let updatedNumber: number;
-                    if (columnWidth == this.columns[parseInt(i.toString(), 10)].width.value) {
+                    if (columnWidth === this.columns[parseInt(i.toString(), 10)].width.value) {
                         updatedNumber = i;
 
-                        if (updatedNumber + 1 != this.columns.length) {
-                            if (columnWidth > this.columns[0].width.value || columnWidth > this.columns[this.columns.length - 1].width.value) {
+                        if (updatedNumber + 1 !== this.columns.length) {
+                            if (columnWidth > this.columns[0].width.value
+                                || columnWidth > this.columns[this.columns.length - 1].width.value) {
                                 for (let y: number = updatedNumber + 1; y <= this.columns.length; y++) {
-                                    let col: Column = this.columns[parseInt(y.toString(), 10)];
+                                    const col: Column = this.columns[parseInt(y.toString(), 10)];
                                     //1
                                     if (y < this.columns.length) {
                                         if (col.width.value > 36) {
@@ -591,18 +589,19 @@ export class ColumnsDialog {
                                         }
                                     }
                                     //2
-                                    if (this.columns[0].space.value == 0) {
+                                    if (this.columns[0].space.value === 0) {
                                         for (let k: number = updatedNumber - 1; k >= 0; k--) {
-                                            let col: Column = this.columns[parseInt(k.toString(), 10)];
+                                            const col: Column = this.columns[parseInt(k.toString(), 10)];
                                             if (col.width.value > 36) {
                                                 col.width.value = col.width.value - 1;
                                             }
                                         }
                                     }
                                     //3
-                                    if ((y >= this.columns.length && this.columns[0].width.value == 36) || (this.columns[y - 1].width.value == 36 && this.columns[0].space.value != 0)) {
+                                    if ((y >= this.columns.length && this.columns[0].width.value === 36)
+                                        || (this.columns[y - 1].width.value === 36 && this.columns[0].space.value !== 0)) {
                                         for (let j: number = 0; j < this.columns.length - 1; j++) {
-                                            let col: Column = this.columns[parseInt(j.toString(), 10)];
+                                            const col: Column = this.columns[parseInt(j.toString(), 10)];
                                             if (col.space.value > 0) {
                                                 if (j < this.columns.length - 1) {
                                                     col.space.value = col.space.value - 1;
@@ -611,10 +610,12 @@ export class ColumnsDialog {
                                         }
                                     }
                                     //4
-                                    if (this.columns[0].width.value == 36 && this.columns[0].space.value == 0 || this.columns[y - 1].width.value == 36 && this.columns[0].space.value == 0) {
+                                    if (this.columns[0].width.value === 36 && this.columns[0].space.value === 0
+                                        || this.columns[y - 1].width.value === 36 && this.columns[0].space.value === 0) {
                                         for (let j: number = 0; j < this.columns.length; j++) {
-                                            let col: Column = this.columns[parseInt(j.toString(), 10)];
-                                            if (col.width.value != 36 && columnWidth > (this.pageWidth - ((this.numberOfColumns - 1) * 36))) {
+                                            const col: Column = this.columns[parseInt(j.toString(), 10)];
+                                            if (col.width.value !== 36 && columnWidth
+                                                > (this.pageWidth - ((this.numberOfColumns - 1) * 36))) {
                                                 col.width.value = columnWidth - 1;
                                             }
                                         }
@@ -622,7 +623,7 @@ export class ColumnsDialog {
                                 }
                             } else {
                                 for (let y: number = updatedNumber + 1; y < this.columns.length; y++) {
-                                    let col: Column = this.columns[parseInt(y.toString(), 10)];
+                                    const col: Column = this.columns[parseInt(y.toString(), 10)];
                                     if (col.width.value > 36) {
                                         col.width.value = col.width.value + 1;
                                     }
@@ -630,21 +631,22 @@ export class ColumnsDialog {
 
                             }
                         } else {
-                            if (columnWidth > this.columns[0].width.value || columnWidth > this.columns[this.columns.length - 1].width.value) {
+                            if (columnWidth > this.columns[0].width.value
+                                || columnWidth > this.columns[this.columns.length - 1].width.value) {
                                 for (let y: number = updatedNumber + 1; y <= this.columns.length; y++) {
                                     //2
-                                    if (this.columns[0].space.value == 0) {
+                                    if (this.columns[0].space.value === 0) {
                                         for (let k: number = updatedNumber - 1; k >= 0; k--) {
-                                            let col: Column = this.columns[parseInt(k.toString(), 10)];
+                                            const col: Column = this.columns[parseInt(k.toString(), 10)];
                                             if (col.width.value > 36) {
                                                 col.width.value = col.width.value - 1;
                                             }
                                         }
                                     }
                                     //3
-                                    if ((y <= this.columns.length && this.columns[0].space.value != 0)) {
+                                    if ((y <= this.columns.length && this.columns[0].space.value !== 0)) {
                                         for (let j: number = 0; j < this.columns.length - 1; j++) {
-                                            let col: Column = this.columns[parseInt(j.toString(), 10)];
+                                            const col: Column = this.columns[parseInt(j.toString(), 10)];
                                             if (col.space.value > 0) {
                                                 if (j < this.columns.length - 1) {
                                                     col.space.value = col.space.value - 1;
@@ -653,10 +655,11 @@ export class ColumnsDialog {
                                         }
                                     }
                                     //4
-                                    if (this.columns[0].width.value == 36 && this.columns[0].space.value == 0) {
+                                    if (this.columns[0].width.value === 36 && this.columns[0].space.value === 0) {
                                         for (let j: number = 0; j < this.columns.length; j++) {
-                                            let col: Column = this.columns[parseInt(j.toString(), 10)];
-                                            if (col.width.value != 36 && columnWidth > (this.pageWidth - ((this.numberOfColumns - 1) * 36))) {
+                                            const col: Column = this.columns[parseInt(j.toString(), 10)];
+                                            if (col.width.value !== 36 && columnWidth
+                                                > (this.pageWidth - ((this.numberOfColumns - 1) * 36))) {
                                                 col.width.value = columnWidth - 1;
                                             }
                                         }
@@ -664,7 +667,7 @@ export class ColumnsDialog {
                                 }
                             } else {
                                 for (let y: number = updatedNumber + 1; y < this.columns.length; y++) {
-                                    let col: Column = this.columns[parseInt(y.toString(), 10)];
+                                    const col: Column = this.columns[parseInt(y.toString(), 10)];
                                     if (col.width.value > 36) {
                                         col.width.value = col.width.value + 1;
                                     }
@@ -678,11 +681,11 @@ export class ColumnsDialog {
     }
 
     public checkAndApplyColumnFormatSpace = (columnSpace: number): void => {
-        if (this.equalCheckbox.checked == true) {
+        if (this.equalCheckbox.checked === true) {
             for (let i: number = 0; i < this.columns.length; i++) {
-                let col: Column = this.columns[parseInt(i.toString(), 10)];
+                const col: Column = this.columns[parseInt(i.toString(), 10)];
                 if (columnSpace >= 0 && this.columns[0].width.value >= 36) {
-                    let widthCal: number = (this.pageWidth - (columnSpace * (this.numberOfColumns - 1))) / (this.numberOfColumns);
+                    const widthCal: number = (this.pageWidth - (columnSpace * (this.numberOfColumns - 1))) / (this.numberOfColumns);
                     col.width.value = widthCal;
                     if (i < this.columns.length - 1) {
                         col.space.value = columnSpace;
@@ -692,51 +695,53 @@ export class ColumnsDialog {
                 }
             }
         }
-        if (this.equalCheckbox.checked == false) {
+        if (this.equalCheckbox.checked === false) {
             for (let i: number = 0; i < this.columns.length; i++) {
-                let col: Column = this.columns[parseInt(i.toString(), 10)];
+                const col: Column = this.columns[parseInt(i.toString(), 10)];
                 let updatedNumber: number;
-                if (columnSpace == this.columns[parseInt(i.toString(), 10)].space.value) {
+                if (columnSpace === this.columns[parseInt(i.toString(), 10)].space.value) {
                     updatedNumber = i;
-                    if (updatedNumber + 1 != this.columns.length) {
-                        this.columns[this.columns.length-1 ].space.value =0;
+                    if (updatedNumber + 1 !== this.columns.length) {
+                        this.columns[this.columns.length - 1 ].space.value = 0;
                         if (columnSpace > this.columns[0].space.value || columnSpace > this.columns[this.columns.length - 2].space.value) {
-                            //1 
+                            //1
                             for (let y: number = updatedNumber + 1; y <= this.columns.length; y++) {
-                                let col: Column = this.columns[parseInt(y.toString(), 10)];
+                                const col: Column = this.columns[parseInt(y.toString(), 10)];
                                 if (y < this.columns.length) {
                                     if (col.width.value > 36) {
                                         col.width.value = col.width.value - 1;
                                     }
                                 }
                                 //2
-                                if ((this.columns[updatedNumber + 1].width.value == 36 && this.columns[parseInt(updatedNumber.toString(), 10)].width.value > 36)) {
+                                if ((this.columns[updatedNumber + 1].width.value === 36
+                                    && this.columns[parseInt(updatedNumber.toString(), 10)].width.value > 36)) {
                                     for (let j: number = updatedNumber; j >= 0; j--) {
-                                        let col: Column = this.columns[parseInt(j.toString(), 10)];
+                                        const col: Column = this.columns[parseInt(j.toString(), 10)];
                                         if (col.width.value > 36) {
                                             col.width.value = col.width.value - 1;
                                         }
                                     }
                                 }
                                 //3
-                                if (this.columns[parseInt(updatedNumber.toString(), 10)].width.value == 36 ) {
-                                    if(this.columns[0].space.value !=0 || this.columns[updatedNumber+1].space.value !=0){
-                                    for (let k: number = 0; k < this.columns.length - 1; k++) {
-                                        let col: Column = this.columns[parseInt(k.toString(), 10)];
-                                        if (col.space.value > 0) {
-                                            if (k < this.columns.length - 1) {
-                                                col.space.value = col.space.value - 1;
-                                                this.columns[parseInt(updatedNumber.toString(), 10)].space.value = columnSpace;
+                                if (this.columns[parseInt(updatedNumber.toString(), 10)].width.value === 36 ) {
+                                    if (this.columns[0].space.value !== 0 || this.columns[updatedNumber + 1].space.value !== 0){
+                                        for (let k: number = 0; k < this.columns.length - 1; k++) {
+                                            const col: Column = this.columns[parseInt(k.toString(), 10)];
+                                            if (col.space.value > 0) {
+                                                if (k < this.columns.length - 1) {
+                                                    col.space.value = col.space.value - 1;
+                                                    this.columns[parseInt(updatedNumber.toString(), 10)].space.value = columnSpace;
+                                                }
                                             }
                                         }
                                     }
                                 }
-                                }
                                 //4
-                                if (this.columns[0].width.value == 36 && (this.columns[0].space.value == 0|| this.columns[updatedNumber+1].space.value ==0)) {
+                                if (this.columns[0].width.value === 36 && (this.columns[0].space.value === 0
+                                    || this.columns[updatedNumber + 1].space.value === 0)) {
                                     for (let j: number = 0; j < this.columns.length; j++) {
-                                        let col: Column = this.columns[parseInt(j.toString(), 10)];
-                                        if (col.space.value != 0 && columnSpace > (this.pageWidth - ((this.numberOfColumns) * 36))) {
+                                        const col: Column = this.columns[parseInt(j.toString(), 10)];
+                                        if (col.space.value !== 0 && columnSpace > (this.pageWidth - ((this.numberOfColumns) * 36))) {
                                             col.space.value = columnSpace - 1;
                                         }
                                     }
@@ -744,37 +749,37 @@ export class ColumnsDialog {
                             }
                         } else {
                             for (let y: number = updatedNumber + 1; y < this.columns.length; y++) {
-                                let col: Column = this.columns[parseInt(y.toString(), 10)];
+                                const col: Column = this.columns[parseInt(y.toString(), 10)];
                                 if (col.width.value > 36) {
                                     col.width.value = col.width.value + 0.5;
                                 }
                             }
                         }
                     }else{
-                        this.columns[parseInt(updatedNumber.toString(), 10)].space.value =0;
+                        this.columns[parseInt(updatedNumber.toString(), 10)].space.value = 0;
                     }
                 }
             }
         }
     }
     public canUpdateColumnWidthAndSpacing = (numberOfColumns: number, colIndex: number, colWidth: number, colSpace: number): void => {
-        let spaceValue: number = 36;
-        let valueWidthEqualFirst: number = (this.pageWidth - 36 * (numberOfColumns - 1)) / numberOfColumns;
-        let valueWidthEqualsecond: number = (this.pageWidth - 36 * (numberOfColumns)) / (numberOfColumns - 1);
+        const spaceValue: number = 36;
+        const valueWidthEqualFirst: number = (this.pageWidth - 36 * (numberOfColumns - 1)) / numberOfColumns;
+        const valueWidthEqualsecond: number = (this.pageWidth - 36 * (numberOfColumns)) / (numberOfColumns - 1);
         if (numberOfColumns === 2) {
-            this.equalCheckbox.checked = true
+            this.equalCheckbox.checked = true;
         }
-        if (this.equalCheckbox.checked == true) {
+        if (this.equalCheckbox.checked === true) {
             if (numberOfColumns > 1) {
-                let col: Column = this.columns[numberOfColumns - 1];
+                const col: Column = this.columns[numberOfColumns - 1];
                 col.index.value = numberOfColumns;
                 for (let i: number = 0; i < numberOfColumns; i++) {
-                    let col: Column = this.columns[parseInt(i.toString(), 10)];
-                    if (numberOfColumns <= 6) {         
+                    const col: Column = this.columns[parseInt(i.toString(), 10)];
+                    if (numberOfColumns <= 6) {
                         col.width.value = valueWidthEqualFirst;
-                        } else{
-                            col.width.value = spaceValue;
-                        }
+                    } else{
+                        col.width.value = spaceValue;
+                    }
                     col.width.value = valueWidthEqualFirst;
                     if (i < numberOfColumns - 1) {
                         if (numberOfColumns <= 6) {
@@ -797,12 +802,12 @@ export class ColumnsDialog {
                 this.columns[0].space.enabled = false;
             }
         }
-        if (this.equalCheckbox.checked == false) {
+        if (this.equalCheckbox.checked === false) {
             if (numberOfColumns > 2) {
-                let col: Column = this.columns[numberOfColumns - 1];
+                const col: Column = this.columns[numberOfColumns - 1];
                 col.index.value = numberOfColumns;
                 for (let i: number = 0; i < numberOfColumns; i++) {
-                    let col: Column = this.columns[parseInt(i.toString(), 10)];
+                    const col: Column = this.columns[parseInt(i.toString(), 10)];
                     col.width.value = valueWidthEqualFirst;
                     if (i < numberOfColumns - 1) {
                         if (col.width.value <= 36) {
@@ -845,12 +850,12 @@ export class ColumnsDialog {
         this.equalCheckbox.checked = true;
         this.lineCheckbox.checked = false;
         this.equalCheckbox.disabled = true;
-        let cols: WColumnFormat[] = [];
-        for (let i = 0; i < this.columns.length; i++) {
+        const cols: WColumnFormat[] = [];
+        for (let i: number = 0; i < this.columns.length; i++) {
             this.columns.splice(1, this.columns.length - 1);
             this.columns[0].space.enabled = false;
         }
-        while(this.columnTable.rows.length>1){
+        while (this.columnTable.rows.length > 1){
             this.columnTable.deleteRow(this.columnTable.rows.length - 1);
         }
     };
@@ -860,35 +865,35 @@ export class ColumnsDialog {
      */
     public openColumnsDialog = (): void => {
         const sectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
-        let pageWidthBox = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
+        const pageWidthBox: number = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
         this.columnValueTexBox.max = pageWidthBox / 36;
         this.columns[0].width.value = pageWidthBox;
-        this.documentHelper.updateFocus();        
+        this.documentHelper.updateFocus();
         this.equalCheckbox.checked = sectionFormat.equalWidth;
         this.lineCheckbox.checked = sectionFormat.lineBetweenColumns;
-        this.columnValueTexBox.value = sectionFormat.columns.length === 0 ? 1: sectionFormat.columns.length;
+        this.columnValueTexBox.value = sectionFormat.columns.length === 0 ? 1 : sectionFormat.columns.length;
         switch (this.columnValueTexBox.value) {
-            case 1:
-                this.oneDiv.classList.add('e-de-table-border-inside-setting-click');
-                this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.threeDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
-                break;
-            case 2:
-                this.twoDiv.classList.add('e-de-table-border-inside-setting-click');
-                this.oneDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.threeDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
-                break;
-            case 3:
-                this.threeDiv.classList.add('e-de-table-border-inside-setting-click');
-                this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.oneDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
-                break;
+        case 1:
+            this.oneDiv.classList.add('e-de-table-border-inside-setting-click');
+            this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.threeDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
+            break;
+        case 2:
+            this.twoDiv.classList.add('e-de-table-border-inside-setting-click');
+            this.oneDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.threeDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
+            break;
+        case 3:
+            this.threeDiv.classList.add('e-de-table-border-inside-setting-click');
+            this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.oneDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.leftDiv.classList.remove('e-de-table-border-inside-setting-click');
+            this.rightDiv.classList.remove('e-de-table-border-inside-setting-click');
+            break;
         }
         if (this.columnValueTexBox.value !== 1) {
             this.columns[0].space.value = sectionFormat.columns[0].space;
@@ -933,7 +938,7 @@ export class ColumnsDialog {
         this.documentHelper.dialog.show();
     }
 
-       /**
+    /**
      * @private
      * @param {Event} event - Specifies the event args.
      * @returns {void}
@@ -966,78 +971,78 @@ export class ColumnsDialog {
     private setSettingPreviewDivElement(position: string, type?: string): void {
         this.equalCheckbox.checked = true;
         switch (position) {
-            case 'one':
-                this.columnValueTexBox.value = 1;
-                break;
-            case 'two':
-                this.columnValueTexBox.value = 2;
-                setTimeout(() => {
-                    if (type == "left" || type == "right") {
-                        this.equalCheckbox.checked = false;
-                    }
-                    if(type == 'left') {
-                        this.numberOfColumns = 2;
-                        this.leftDiv.classList.add('e-de-table-border-inside-setting-click');
-                        this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
-                        let colWidth: number = ((this.pageWidth - (2 * 36)) / 3);
-                        this.columns[0].width.value = colWidth;
-                        this.columns[1].width.value = colWidth + colWidth + 36;
-                        this.columns[1].space.value = undefined
-                    } else if(type == 'right') {
-                        this.numberOfColumns = 2;
-                        this.rightDiv.classList.add('e-de-table-border-inside-setting-click');
-                        this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
-                        let colWidth: number = ((this.pageWidth - (2 * 36)) / 3);
-                        this.columns[0].width.value = colWidth + colWidth + 36;
-                        this.columns[1].width.value = colWidth;
-                        this.columns[1].space.value = undefined;
-                    }
-                }, 5);
-                break;
-            case 'three':
-                this.columnValueTexBox.value = 3;
-                break;
+        case 'one':
+            this.columnValueTexBox.value = 1;
+            break;
+        case 'two':
+            this.columnValueTexBox.value = 2;
+            setTimeout(() => {
+                if (type === 'left' || type === 'right') {
+                    this.equalCheckbox.checked = false;
+                }
+                if (type === 'left') {
+                    this.numberOfColumns = 2;
+                    this.leftDiv.classList.add('e-de-table-border-inside-setting-click');
+                    this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
+                    const colWidth: number = ((this.pageWidth - (2 * 36)) / 3);
+                    this.columns[0].width.value = colWidth;
+                    this.columns[1].width.value = colWidth + colWidth + 36;
+                    this.columns[1].space.value = undefined;
+                } else if (type === 'right') {
+                    this.numberOfColumns = 2;
+                    this.rightDiv.classList.add('e-de-table-border-inside-setting-click');
+                    this.twoDiv.classList.remove('e-de-table-border-inside-setting-click');
+                    const colWidth: number = ((this.pageWidth - (2 * 36)) / 3);
+                    this.columns[0].width.value = colWidth + colWidth + 36;
+                    this.columns[1].width.value = colWidth;
+                    this.columns[1].space.value = undefined;
+                }
+            }, 5);
+            break;
+        case 'three':
+            this.columnValueTexBox.value = 3;
+            break;
         }
-        }
-        /**
-     * @private
-     * @returns {void}
-     */
-         public applyColumnDialog = (): void => {
-            
-            const sectionFormat: WSectionFormat = new WSectionFormat();
-            let currentSectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
-            sectionFormat.bottomMargin = currentSectionFormat.bottomMargin;
-            sectionFormat.topMargin = currentSectionFormat.topMargin;
-            sectionFormat.leftMargin = currentSectionFormat.leftMargin;
-            sectionFormat.rightMargin = currentSectionFormat.rightMargin;
-            sectionFormat.pageWidth = currentSectionFormat.pageWidth;
-            sectionFormat.pageHeight = currentSectionFormat.pageHeight;
-            sectionFormat.differentOddAndEvenPages = currentSectionFormat.differentOddAndEvenPages;
-            sectionFormat.differentFirstPage = currentSectionFormat.differentFirstPage;
-            sectionFormat.headerDistance = currentSectionFormat.headerDistance;
-            sectionFormat.footerDistance = currentSectionFormat.footerDistance;
-            sectionFormat.numberOfColumns = this.numberOfColumns;
-            sectionFormat.equalWidth = this.equalCheckbox.checked;
-            sectionFormat.lineBetweenColumns = this.lineCheckbox.checked;
-            let cols: WColumnFormat[] = [];
-            for(let i=0;i< this.columns.length;i++)
-            {
-                let colFormat: WColumnFormat = new WColumnFormat();
-                colFormat.width =  HelperMethods.convertPointToPixel(this.columns[parseInt(i.toString(), 10)].width.value as number);
-                colFormat.space =  HelperMethods.convertPointToPixel(this.columns[parseInt(i.toString(), 10)].space.value as number);
-                cols.push(colFormat);
-            }
-            sectionFormat.columns = cols;
-            sectionFormat.breakCode = currentSectionFormat.breakCode;
-            this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
-            this.documentHelper.hideDialog();
-        };
+    }
     /**
      * @private
      * @returns {void}
      */
-     public destroy(): void {
+    public applyColumnDialog = (): void => {
+
+        const sectionFormat: WSectionFormat = new WSectionFormat();
+        const currentSectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
+        sectionFormat.bottomMargin = currentSectionFormat.bottomMargin;
+        sectionFormat.topMargin = currentSectionFormat.topMargin;
+        sectionFormat.leftMargin = currentSectionFormat.leftMargin;
+        sectionFormat.rightMargin = currentSectionFormat.rightMargin;
+        sectionFormat.pageWidth = currentSectionFormat.pageWidth;
+        sectionFormat.pageHeight = currentSectionFormat.pageHeight;
+        sectionFormat.differentOddAndEvenPages = currentSectionFormat.differentOddAndEvenPages;
+        sectionFormat.differentFirstPage = currentSectionFormat.differentFirstPage;
+        sectionFormat.headerDistance = currentSectionFormat.headerDistance;
+        sectionFormat.footerDistance = currentSectionFormat.footerDistance;
+        sectionFormat.numberOfColumns = this.numberOfColumns;
+        sectionFormat.equalWidth = this.equalCheckbox.checked;
+        sectionFormat.lineBetweenColumns = this.lineCheckbox.checked;
+        const cols: WColumnFormat[] = [];
+        for (let i: number = 0; i < this.columns.length; i++)
+        {
+            const colFormat: WColumnFormat = new WColumnFormat();
+            colFormat.width =  HelperMethods.convertPointToPixel(this.columns[parseInt(i.toString(), 10)].width.value as number);
+            colFormat.space =  HelperMethods.convertPointToPixel(this.columns[parseInt(i.toString(), 10)].space.value as number);
+            cols.push(colFormat);
+        }
+        sectionFormat.columns = cols;
+        sectionFormat.breakCode = currentSectionFormat.breakCode;
+        this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
+        this.documentHelper.hideDialog();
+    };
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
         this.target = undefined;
         this.oneDiv = undefined;
         this.twoDiv = undefined;
@@ -1045,7 +1050,7 @@ export class ColumnsDialog {
         this.leftDiv = undefined;
         this.rightDiv = undefined;
         this.documentHelper = undefined;
-     }
+    }
 }
 
 

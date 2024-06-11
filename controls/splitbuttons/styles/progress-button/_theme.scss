@@ -33,7 +33,7 @@
         stroke: $btn-primary-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             stroke: fade-out($btn-primary-color, $progress-btn-circle-opacity);
           }
         }
@@ -49,7 +49,7 @@
           stroke: $btn-flat-primary-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap'{
@@ -77,7 +77,7 @@
           stroke: $btn-primary-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-primary-color, $progress-btn-circle-opacity);
             }
           }
@@ -99,7 +99,7 @@
         stroke: $btn-success-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             stroke: fade-out($btn-success-color, $progress-btn-circle-opacity);
           }
         }
@@ -115,11 +115,11 @@
           stroke: $btn-flat-success-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else {
-              @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+              @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
                 stroke: fade-out($btn-flat-success-color, $progress-btn-circle-opacity);
               }
             }
@@ -145,7 +145,7 @@
           stroke: $btn-success-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-success-color, $progress-btn-circle-opacity);
             }
           }
@@ -167,8 +167,11 @@
         stroke: $btn-info-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             stroke: fade-out($btn-info-color, $progress-btn-circle-opacity);
+          }
+          @if $skin-name == 'fluent2' {
+            stroke: fade-out(#242424, $progress-btn-circle-opacity);
           }
         }
 
@@ -183,10 +186,10 @@
           stroke: $btn-flat-info-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
-            @else if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @else if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-flat-info-color, $progress-btn-circle-opacity);
             }
           }
@@ -211,7 +214,7 @@
           stroke: $btn-info-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-info-color, $progress-btn-circle-opacity);
             }
           }
@@ -233,7 +236,7 @@
         stroke: $btn-warning-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             stroke: fade-out($btn-warning-color, $progress-btn-circle-opacity);
           }
         }
@@ -249,7 +252,7 @@
           stroke: $btn-flat-warning-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else {
@@ -277,7 +280,7 @@
           stroke: $btn-warning-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-warning-color, $progress-btn-circle-opacity);
             }
           }
@@ -299,7 +302,7 @@
         stroke: $btn-danger-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             stroke: fade-out($btn-danger-color, $progress-btn-circle-opacity);
           }
         }
@@ -315,10 +318,10 @@
           stroke: $btn-flat-danger-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
-            @else if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @else if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-flat-danger-color, $progress-btn-circle-opacity);
             }
           }
@@ -343,7 +346,7 @@
           stroke: $btn-danger-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-danger-color, $progress-btn-circle-opacity);
             }
           }
@@ -363,7 +366,7 @@
           stroke: $btn-primary-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-primary-bgcolor, $progress-btn-circle-opacity);
             }
           }
@@ -380,7 +383,7 @@
           stroke: $btn-success-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-success-bgcolor, $progress-btn-circle-opacity);
             }
           }
@@ -396,7 +399,7 @@
           stroke: $btn-info-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-info-bgcolor, $progress-btn-circle-opacity);
             }
           }
@@ -413,7 +416,7 @@
           stroke: $btn-warning-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-warning-bgcolor, $progress-btn-circle-opacity);
             }
           }
@@ -430,7 +433,7 @@
           stroke: $btn-danger-bgcolor;
 
           .e-path-circle {
-            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
               stroke: fade-out($btn-danger-bgcolor, $progress-btn-circle-opacity);
             }
           }
@@ -448,7 +451,7 @@
         stroke: $btn-link-color;
 
         .e-path-circle {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             stroke: fade-out($btn-link-color, $progress-btn-circle-opacity);
           }
         }
@@ -466,17 +469,24 @@
 
   #{if(&, '&', '*')}.e-primary,
   #{if(&, '&', '*')}.e-success,
-  #{if(&, '&', '*')}.e-danger,
-  #{if(&, '&', '*')}.e-info {
+  #{if(&, '&', '*')}.e-danger {
     .e-progress {
       background: $progress-btn-bgcolor;
+    }
+  }
+
+  #{if(&, '&', '*')}.e-info {
+    .e-progress {
+      @if $skin-name != 'fluent2' {
+        background: $progress-btn-bgcolor;
+      }
     }
   }
 
   #{if(&, '&', '*')}.e-flat {
     &.e-primary {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($progress-btn-flat-primary-progress-color, .8);
         }
       }
@@ -484,7 +494,7 @@
 
     &.e-success {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($progress-btn-flat-success-progress-color, .8);
         }
       }
@@ -492,7 +502,7 @@
 
     &.e-info {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($progress-btn-flat-info-progress-color, .8);
         }
       }
@@ -500,7 +510,7 @@
 
     &.e-warning {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($progress-btn-flat-warning-progress-color, .8);
         }
       }
@@ -508,7 +518,7 @@
 
     &.e-danger {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($progress-btn-flat-danger-progress-color, .8);
         }
       }
@@ -518,7 +528,7 @@
   #{if(&, '&', '*')}.e-outline:not(:focus) {
     &.e-primary {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($btn-primary-bgcolor, .8);
         }
       }
@@ -526,7 +536,7 @@
 
     &.e-success {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($btn-success-bgcolor, .8);
         }
       }
@@ -534,7 +544,7 @@
 
     &.e-info {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($btn-info-bgcolor, .8);
         }
       }
@@ -542,7 +552,7 @@
 
     &.e-warning {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($btn-warning-bgcolor, .8);
         }
       }
@@ -550,7 +560,7 @@
 
     &.e-danger {
       .e-progress {
-        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           background: fade-out($btn-danger-bgcolor, .8);
         }
       }
@@ -596,7 +606,7 @@
     @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
       &.e-primary {
         .e-progress {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             background: fade-out($btn-primary-bgcolor, .8);
           }
         }
@@ -604,7 +614,7 @@
 
       &.e-success {
         .e-progress {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             background: fade-out($btn-success-bgcolor, .8);
           }
         }
@@ -612,7 +622,7 @@
 
       &.e-info {
         .e-progress {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             background: fade-out($btn-info-bgcolor, .8);
           }
         }
@@ -620,7 +630,7 @@
 
       &.e-warning {
         .e-progress {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             background: fade-out($btn-warning-bgcolor, .8);
           }
         }
@@ -628,7 +638,7 @@
 
       &.e-danger {
         .e-progress {
-          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
+          @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             background: fade-out($btn-danger-bgcolor, .8);
           }
         }
@@ -637,16 +647,71 @@
   }
 }
 
-.e-progress-btn.e-outline .e-spinner-pane .e-spinner-inner svg {
-  fill: $btn-outline-color;
-  stroke: $btn-outline-color;
+@if $skin-name != 'fluent2' {
+  .e-progress-btn.e-outline .e-spinner-pane .e-spinner-inner svg {
+    fill: $btn-outline-color;
+    stroke: $btn-outline-color;
+  }
+  
+  .e-progress-btn.e-outline:focus .e-spinner-pane .e-spinner-inner svg {
+    fill: $btn-color;
+    stroke: $btn-color;
+  }
+  
+  .e-progress-btn.e-outline.e-success .e-spinner-pane .e-spinner-inner svg .e-path-arc {
+    stroke: $btn-outline-color;
+  }
 }
 
-.e-progress-btn.e-outline:focus .e-spinner-pane .e-spinner-inner svg {
-  fill: $btn-color;
-  stroke: $btn-color;
-}
+@if $skin-name == 'fluent2' {
+  .e-primary.e-outline .e-progress,
+  .e-primary.e-flat .e-progress {
+    background: rgba(15, 108, 189, .5) !important; /* stylelint-disable-line declaration-no-important */
+  }
 
-.e-progress-btn.e-outline.e-success .e-spinner-pane .e-spinner-inner svg .e-path-arc {
-  stroke: $btn-outline-color;
+  .e-success.e-outline .e-progress,
+  .e-success.e-flat .e-progress {
+    background: rgba(16, 124, 16, .5) !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-danger.e-outline .e-progress,
+  .e-danger.e-flat .e-progress {
+    background: rgba(197, 15, 31, .5) !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-warning.e-outline .e-progress,
+  .e-warning.e-flat .e-progress {
+    background: rgba(247, 99, 12, .5) !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-info.e-outline .e-progress,
+  .e-info.e-flat .e-progress {
+    background: rgba(49, 175, 204, .5) !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-progress-btn.e-warning .e-spinner-pane .e-spinner-inner .e-spin-fluent2 .e-path-circle {
+    stroke: fade-out(#242424, $progress-btn-circle-opacity) !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-progress-btn.e-warning.e-flat:focus .e-spinner-pane .e-spinner-inner .e-spin-fluent2 .e-path-circle {
+    stroke: $brand-160 !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-progress-btn.e-outline {
+    &.e-success:focus .e-spinner-pane .e-spinner-inner svg .e-path-arc {
+      stroke: $success-bg-color;
+    }
+    &.e-primary:focus .e-spinner-pane .e-spinner-inner svg .e-path-arc {
+      stroke: $primary-bg-color;
+    }
+    &.e-danger:focus .e-spinner-pane .e-spinner-inner svg .e-path-arc {
+      stroke: $danger-bg-color;
+    }
+    &.e-warning:focus .e-spinner-pane .e-spinner-inner svg .e-path-arc {
+      stroke: $warning-bg-color;
+    }
+    &.e-info:focus .e-spinner-pane .e-spinner-inner svg .e-path-arc {
+      stroke: $info-bg-color;
+    }
+  }
 }

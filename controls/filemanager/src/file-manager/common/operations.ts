@@ -3,11 +3,12 @@ import { isNullOrUndefined as isNOU, setValue, getValue } from '@syncfusion/ej2-
 import { IFileManager, ReadArgs, BeforeSendEventArgs, BeforeDownloadEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { createDialog, createExtDialog } from '../pop-up/dialog';
-import { FileDetails, FileDragEventArgs, FailureEventArgs, SuccessEventArgs } from '../../index';
+import { FileDetails, FileDragEventArgs, FailureEventArgs, SuccessEventArgs, FolderCreateEventArgs, DeleteEventArgs, RenameEventArgs, MoveEventArgs, SearchEventArgs } from '../../index';
 import { fileType, setNodeId, getLocaleText, setDateObject, doPasteUpdate, getPathObject } from '../common/utility';
-import { generatePath } from '../common/utility';
-import { ColumnModel } from '@syncfusion/ej2-grids';
+import { generatePath, getAccessDetails } from '../common/utility';
+import { ColumnModel, getUid } from '@syncfusion/ej2-grids';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Function to read the content from given path in File Manager.
  *
@@ -18,12 +19,10 @@ import { ColumnModel } from '@syncfusion/ej2-grids';
  * @private
  */
 export function read(parent: IFileManager, event: string, path: string): void {
-    // eslint-disable-next-line
     const itemData: Object[] = parent.itemData;
     for (let i: number = 0; i < itemData.length; i++) {
         if (isNOU(getValue('hasChild', itemData[i as number]))) { setValue('hasChild', false, itemData[i as number]); }
     }
-    // eslint-disable-next-line
     const data: Object = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: itemData };
     createAjax(parent, data, readSuccess, event);
 }
@@ -37,7 +36,6 @@ export function read(parent: IFileManager, event: string, path: string): void {
  * @private
  */
 export function createFolder(parent: IFileManager, itemName: string): void {
-    // eslint-disable-next-line
     const data: Object = { action: 'create', path: parent.path, name: itemName, data: parent.itemData };
     createAjax(parent, data, createSuccess, itemName);
 }
@@ -51,11 +49,8 @@ export function createFolder(parent: IFileManager, itemName: string): void {
  * @private
  */
 export function filter(parent: IFileManager, event: string): void {
-    // eslint-disable-next-line
     const data: Object = { action: 'filter', path: parent.path, showHiddenItems: parent.showHiddenItems, data: [getPathObject(parent)] };
-    // eslint-disable-next-line
     let filterData: Object;
-    // eslint-disable-next-line
     const filterDataVal: Object = parent.filterData ? extend(filterData, data, parent.filterData) : data;
     createAjax(parent, filterDataVal, filterSuccess, event, getValue('action', filterDataVal));
 }
@@ -86,7 +81,6 @@ export function rename(parent: IFileManager, path: string, itemNewName: string):
             newName = fPath.replace(path, '') + itemNewName;
         }
     }
-    // eslint-disable-next-line
     const data: Object = {
         action: 'rename', path: path, name: name, newName: newName, data: parent.itemData, showFileExtension: parent.showFileExtension
     };
@@ -109,9 +103,7 @@ export function rename(parent: IFileManager, path: string, itemNewName: string):
  */
 export function paste(
     parent: IFileManager, path: string, names: string[], targetPath: string, pasteOperation: string,
-    // eslint-disable-next-line
     renameItems?: string[], actionRecords?: Object[]): void {
-    // eslint-disable-next-line
     const data: Object = {
         action: pasteOperation, path: path, targetData: parent.itemData[0],
         targetPath: targetPath, names: names, renameFiles: renameItems, data: actionRecords
@@ -131,7 +123,6 @@ export function paste(
  * @private
  */
 export function Delete(parent: IFileManager, items: string[], path: string, operation: string): void {
-    // eslint-disable-next-line
     const data: Object = { action: operation, path: path, names: items, data: parent.itemData };
     createAjax(parent, data, deleteSuccess, path);
 }
@@ -148,26 +139,21 @@ export function Delete(parent: IFileManager, items: string[], path: string, oper
  * @private
  */
 export function GetDetails(parent: IFileManager, names: string[], path: string, operation: string): void {
-    // eslint-disable-next-line
     const data: Object = { action: operation, path: path, names: names, data: parent.itemData };
     createAjax(parent, data, detailsSuccess, path, operation);
 }
 /**
- * Function for createAjax in File Manager.
+ * Function for getDateFormat in File Manager.
  *
  * @param {IFileManager} parent - specifies the parent element.
- * @param {Object} data - specifies the data.
- * @param {Function} fn - specifies the fn.
- * @param {string} event - specifies the event.
- * @param {string} operation - specifies the operation.
- * @param {string} targetPath - specifies the target path.
  * @returns {void}
  * @private
  */
 function getDateFormat(parent: IFileManager): string {
-    const columns: ColumnModel[] = parent.detailsViewSettings.columns as any;
+    const columns: ColumnModel[] = parent.detailsViewSettings.columns as ColumnModel[];
     let dateFormat: string;
-    for (var i = 0; i < columns.length; i++) {
+    if (!columns) { return null; }
+    for (let i: number = 0; i < columns.length; i++) {
         if (columns[i as number].field === '_fm_modified') {
             if (!isNOU(columns[i as number].format)) {
                 dateFormat = columns[i as number].format.toString();
@@ -175,13 +161,408 @@ function getDateFormat(parent: IFileManager): string {
             break;
         }
     }
-    return dateFormat
+    return dateFormat;
 }
+
+/**
+ * Checks whether fileSystemData is enabled.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @returns {boolean} - returns the boolean value.
+ */
+export function isFileSystemData(parent: IFileManager): boolean {
+    const isFileSystemData: boolean = parent.fileSystemData.length >= 0 && isNOU(parent.ajaxSettings.url);
+    return isFileSystemData;
+}
+
+/**
+ * Function to check whether file already exist or not.
+ *
+ * @param {Record<string, any>} fileSystemData - specifies the file data.
+ * @param {string} name - specifies the name.
+ * @returns {boolean} - returns the boolean value.
+ * @private
+ */
+function isFileExists(fileSystemData: Record<string, any>, name: string): boolean {
+    const isExists: boolean = fileSystemData.some((item: { [key: string]: Object; }) => item.name === name);
+    return isExists;
+}
+
+/**
+ * Function to find the index value of a file or folder.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {number} id - specifies the id.
+ * @returns {number} - returns the index value.
+ * @private
+ */
+function findIndexById(parent: IFileManager, id: number): number {
+    const index: number = parent.fileSystemData.findIndex((item: { [key: string]: Object; }) => String(item.id) === String(id));
+    return index;
+}
+
+/**
+ * Function to get the entire data of a file or folder using id value.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {number | string} id - specifies the id.
+ * @returns {Object} - returns the data.
+ * @private
+ */
+function filterById(parent: IFileManager, id: number | string): Object {
+    const data: Object = parent.fileSystemData.filter((item: { [key: string]: Object; }) => String(item.id) === String(id))[0];
+    return data;
+}
+
+/**
+ * Function to get the entire data of a file or folder for a parent.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {number | string} parentId - specifies the parent id.
+ * @returns {Object[]} - returns the data.
+ * @private
+ */
+function filterByParent(parent: IFileManager, parentId: number | string): Object[] {
+    const data: Object[] = parent.fileSystemData.filter((item: { [key: string]: Object; }) => String(item.parentId) === String(parentId));
+    return data;
+}
+
+/**
+ * Function to create a new copied file or folder.
+ *
+ * @param {Record<string, any>} data - specifies the file or folder data.
+ * @param {Record<string, any>} target - specifies the target data.
+ * @param {string} itemName - specifies the item name.
+ * @param {boolean} isCopy - specifies the copy operation.
+ * @returns {Record<string, Object>} - returns the data.
+ * @private
+ */
+function createNewItem(data: { [key: string]: any }, target: { [key: string]: any },
+                       itemName: string, isCopy: boolean): Record<string, any> {
+    const newItem: Record<string, any> = {};
+    //Construct the new folder details.
+    for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+            newItem[key as string] = null;
+        }
+    }
+    const currentDate: Date = new Date();
+    const folderPath: string = target.id !== 0 ? target.filterPath + target.name : '\\';
+    Object.assign(newItem, {
+        dateCreated: currentDate,
+        dateModified: currentDate,
+        filterPath: folderPath,
+        hasChild: isCopy ? data.hasChild : false,
+        id: getUid(itemName === null ? data.name : itemName),
+        isFile: isCopy ? data.isFile : false,
+        name: itemName === null ? data.name : itemName,
+        parentId: target.id,
+        size: isCopy ? data.size : 0,
+        type: isCopy ? data.type : ''
+    });
+    return newItem;
+}
+
+/**
+ * Function to create an error response.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {string} message - specifies the error message.
+ * @param {string} code - specifies the error code.
+ * @param {Object[]} fileName - specifies the file name.
+ * @returns {void}
+ * @private
+ */
+function createErrorObject(parent: IFileManager, message: string, code: string, fileName: Object[]): void {
+    parent.responseData = {
+        cwd: null,
+        details: null,
+        error: {
+            code: code,
+            message: message,
+            fileExists: fileName != null ? fileName : null
+        },
+        files: null
+    };
+}
+
+/**
+ * Function to trigger folder creation.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} data - specifies the data.
+ * @param {BeforeSendEventArgs} eventArgs - specifies the eventArgs.
+ * @returns {void}
+ * @private
+ */
+function triggerFolderCreation(parent: IFileManager, data: Object, eventArgs: BeforeSendEventArgs): void {
+    const createEventArgs: FolderCreateEventArgs = {
+        folderName: getValue('name', data),
+        cancel: false,
+        path: getValue('path', data),
+        parentFolder: getValue('data', data)
+    };
+    parent.trigger('beforeFolderCreate', createEventArgs, function (args: FolderCreateEventArgs): void {
+        if (args.cancel) {
+            eventArgs.cancel = true; return;
+        }
+        if (isFileSystemData(parent)) {
+            if (!isFileExists(parent.fileSystemData, args.folderName)) {
+                const data: { [key: string]: Object; } = args.parentFolder[0];
+                const newObject: { [key: string]: Object; } = createNewItem(data, data, args.folderName, false);
+                parent.fileSystemData.push(newObject);
+            }
+            else {
+                const message: string = 'A file or folder with the name ' + args.folderName + ' already exists.';
+                createErrorObject(parent, message, '400', null);
+            }
+        }
+    });
+}
+
+/**
+ * Function to trigger delete operation.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} data - specifies the data.
+ * @param {BeforeSendEventArgs} eventArgs - specifies the eventArgs.
+ * @returns {void}
+ * @private
+ */
+function triggerDeleteOperation(parent: IFileManager, data: Object, eventArgs: BeforeSendEventArgs): void {
+    const deleteEventArgs: DeleteEventArgs = {
+        cancel: false,
+        itemData: getValue('data', data),
+        path: getValue('path', data)
+    };
+    parent.trigger('beforeDelete', deleteEventArgs, function (args: DeleteEventArgs): void {
+        if (args.cancel) {
+            eventArgs.cancel = true; return;
+        }
+        if (isFileSystemData(parent)) {
+            args.itemData.forEach((itemData: any) => {
+                const index: number = findIndexById(parent, itemData.id);
+                if (index !== -1) {
+                    parent.fileSystemData.splice(index, 1);
+                }
+                if (!itemData.isFile) {
+                    const subItems: { [key: string]: any; } = parent.fileSystemData.filter(function (obj: { [key: string]: any; }): void
+                    { return obj.filterPath.includes(itemData.name); });
+                    subItems.forEach((subItem: any) => {
+                        const index: number = findIndexById(parent, subItem.id);
+                        if (index !== -1) {
+                            parent.fileSystemData.splice(index, 1);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+/**
+ * Function to trigger rename operation.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} data - specifies the data.
+ * @param {BeforeSendEventArgs} eventArgs - specifies the eventArgs.
+ * @returns {void}
+ * @private
+ */
+function triggerRenameOperation(parent: IFileManager, data: Object, eventArgs: BeforeSendEventArgs): void {
+    const renameEventArgs: RenameEventArgs = {
+        cancel: false,
+        newName: getValue('newName', data),
+        itemData: getValue('data', data),
+        path: getValue('path', data)
+    };
+    parent.trigger('beforeRename', renameEventArgs, function (args: RenameEventArgs): void {
+        if (args.cancel) {
+            eventArgs.cancel = true; return;
+        }
+        if (isFileSystemData(parent)) {
+            if (!isFileExists(parent.fileSystemData, args.newName)) {
+                const fileData: { [key: string]: any; } = filterById(parent, (args.itemData[0] as any).id);
+                fileData.name = args.newName;
+            }
+            else {
+                const message: string = 'Cannot rename' + (args.itemData[0] as { [key: string]: Object; }).name + 'to' + args.newName + ': destination already exists.';
+                createErrorObject(parent, message, '400', null);
+            }
+        }
+    });
+}
+
+/**
+ * Function to trigger move or copy operation.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} data - specifies the data.
+ * @param {BeforeSendEventArgs} eventArgs - specifies the eventArgs.
+ * @returns {void}
+ * @private
+ */
+function triggerMoveOrCopyOperation(parent: IFileManager, data: Object, eventArgs: BeforeSendEventArgs): void {
+    const moveEventArgs: MoveEventArgs = {
+        cancel: false,
+        itemData: getValue('data', data),
+        isCopy: getValue('action', data) === 'copy' ? true : false,
+        path: getValue('path', data),
+        targetData: getValue('targetData', data),
+        targetPath: getValue('targetPath', data)
+    };
+    parent.trigger('beforeMove', moveEventArgs, function (args: MoveEventArgs): void {
+        if (args.cancel) {
+            eventArgs.cancel = true; return;
+        }
+        if (isFileSystemData(parent)) {
+            const message: string = 'File Already Exists';
+            const action: string = getValue('action', data);
+            const itemPermission: string = getAccessDetails(parent, args.itemData, action, false);
+            const pathPermission: string = getAccessDetails(parent, [args.targetData], action, true);
+            const file: Object[] = [];
+            parent.pasteNodes = [];
+            if (itemPermission === '' && pathPermission === '') {
+                if (args.isCopy) {
+                    const folderSubItems: Object[] = filterByParent(parent, (args.targetData as any).id);
+                    const copiedFolders: { [key: string]: Object; }[] = args.itemData;
+                    copiedFolders.forEach((itemData: any) => {
+                        if (!isFileExists(folderSubItems, itemData.name) || getValue('renameFiles', data).length > 0) {
+                            if (getValue('renameFiles', data).length > 0) {
+                                const names: string[] = itemData.name.split('.');
+                                const name: string = itemData.name.includes('.') ? names[0] + '(' + parent.existingFileCount + ').' + names[1] : names[0] + '(' + parent.existingFileCount + ')';
+                                copyFolderItems(parent, itemData, args.targetData, name);
+                                parent.responseData.error = null;
+                                parent.existingFileCount++;
+                                return;
+                            }
+                            copyFolderItems(parent, itemData, args.targetData, null);
+                        }
+                        else {
+                            file.push(itemData.name);
+                        }
+                    });
+                    if (file.length > 0) {
+                        createErrorObject(parent, message, '400', file);
+                    }
+                    return;
+                }
+                let target: { [key: string]: any; } = args.targetData;
+                const getTargetFiles: Object[] = filterByParent(parent, target.id);
+                for (let i: number = 0; i < args.itemData.length; i++) {
+                    const currItem: { [key: string]: any; } = args.itemData[i as number];
+                    if (!isFileExists(getTargetFiles, currItem.name) || getValue('renameFiles', data).length > 0) {
+                        if (!target.hasChild) {
+                            target.hasChild = !currItem.isFile;
+                        }
+                        if (!currItem.isFile) {
+                            //Check whether the source folder include other sub folders or not.
+                            const subItems: Object[] = currItem.parentId !== 0
+                                ? filterByParent(parent, currItem.parentID) : [];
+                            const itemData: any = filterById(parent, currItem.parentId);
+                            itemData.hasChild = subItems.length > 1 ? true : false;
+                        }
+                        const fileData: any = filterById(parent, currItem.id);
+                        if (getValue('renameFiles', data).length > 0) {
+                            const names: string[] = currItem.name.split('.');
+                            currItem.name = currItem.name.includes('.') ? names[0] + '(' + parent.existingFileCount + ').' + names[1] : names[0] + '(' + parent.existingFileCount + ')';
+                            fileData.name = currItem.name;
+                            parent.responseData.error = null;
+                            parent.existingFileCount++;
+                            parent.dropData = target;
+                            parent.dropPath = args.path;
+                            const pathArray: string[] = args.targetPath.replace(/^\/|\/$/g, '').split('/');
+                            target = filterById(parent, pathArray[pathArray.length - 1]);
+                        }
+                        fileData.parentId = target.id;
+                        fileData.filterPath = target.id === 0 ? '\\' : target.filterPath + target.name + '\\';
+                    }
+                    else {
+                        file.push(currItem.name);
+                    }
+                }
+                if (file.length > 0) {
+                    createErrorObject(parent, message, '400', file);
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Function to trigger search operation.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} data - specifies the data.
+ * @param {BeforeSendEventArgs} eventArgs - specifies the eventArgs.
+ * @returns {void}
+ * @private
+ */
+function triggerSearchOperation(parent: IFileManager, data: Object, eventArgs: BeforeSendEventArgs): void {
+    const searchEventArgs: SearchEventArgs = {
+        searchResults: getValue('data', data),
+        cancel: false,
+        path: getValue('path', data),
+        searchText: getValue('searchString', data),
+        caseSensitive: getValue('caseSensitive', data),
+        showHiddenItems: getValue('showHiddenItems', data)
+    };
+    parent.trigger('search', searchEventArgs, function (args: SearchEventArgs): void {
+        if (args.cancel) {
+            eventArgs.cancel = true;
+        }
+    });
+}
+
+/**
+ * Function to trigger client side events.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} data - specifies the data.
+ * @param {BeforeSendEventArgs} eventArgs - specifies the eventArgs.
+ * @returns {void}
+ * @private
+ */
+function triggerClientEvents(parent: IFileManager, data: Object, eventArgs: BeforeSendEventArgs): void {
+    switch (getValue('action', data)) {
+    case 'create': {
+        triggerFolderCreation(parent, data, eventArgs);
+        break;
+    }
+    case 'delete': {
+        triggerDeleteOperation(parent, data, eventArgs);
+        break;
+    }
+    case 'rename': {
+        triggerRenameOperation(parent, data, eventArgs);
+        break;
+    }
+    case 'move':
+    case 'copy': {
+        triggerMoveOrCopyOperation(parent, data, eventArgs);
+        break;
+    }
+    case 'search': {
+        triggerSearchOperation(parent, data, eventArgs);
+        break;
+    }
+    }
+}
+/**
+ * Creates an AJAX request for the file manager.
+ *
+ * @param {IFileManager} parent - The parent file manager instance.
+ * @param {Object} data - The data object for the AJAX request.
+ * @param {Function} fn - The callback function to be executed after the AJAX request.
+ * @param {string} [event] - The event type for the AJAX request.
+ * @param {string} [operation] - The operation type for the AJAX request.
+ * @param {string} [targetPath] - The target path for the AJAX request.
+ * @returns {void}
+ * @private
+ */
 function createAjax(
-    // eslint-disable-next-line
     parent: IFileManager, data: Object, fn: Function, event?: string,
     operation?: string, targetPath?: string): void {
-    // eslint-disable-next-line
     const ajaxSettings: Object = {
         url: parent.ajaxSettings.url,
         type: 'POST',
@@ -194,9 +575,65 @@ function createAjax(
         beforeSend: null
     };
     const eventArgs: BeforeSendEventArgs = { action: getValue('action', data), ajaxSettings: ajaxSettings, cancel: false };
+    triggerClientEvents(parent, data, eventArgs);
     parent.trigger('beforeSend', eventArgs, (beforeSendArgs: BeforeSendEventArgs) => {
         if (!beforeSendArgs.cancel) {
             parent.notify(events.beforeRequest, {});
+            if (isFileSystemData(parent)) {
+                const filePath: string = event === 'node-expand' || event === 'finalize-end' ? getValue('path', data) : parent.path;
+                const pathArray: string[] = filePath.replace(/^\/|\/$/g, '').split('/');
+                const idValue: string = event === 'rename-end-parent' || (event === 'path-changed' && getValue('data', data).length != 0)
+                    || (event === 'paste-end' && (parent.targetModule === 'largeiconsview' || parent.targetModule === 'detailsview'))
+                    ? getValue('data', data)[0].id : pathArray[pathArray.length - 1];
+                const action: string = getValue('action', data);
+                const isFileOperation: boolean = (action === 'move' || action === 'rename' || action === 'copy' || action === 'delete' || action === 'search') && event !== 'rename-end';
+                if (action === 'read' || action === 'create' || event === 'rename-end') {
+                    parent.responseData = {
+                        cwd: filterById(parent, parent.path === '/' && event !== 'node-expand' && event != 'rename-end-parent' ? 0 : idValue),
+                        details: null,
+                        error: null,
+                        files: filterByParent(parent, parent.path === '/' && event !== 'node-expand' && event != 'rename-end-parent' ? 0 : idValue)
+                    };
+                    if (isNOU(parent.responseData.cwd)) {
+                        const message: string = 'Cannot load empty data within the File Manager.';
+                        createErrorObject(parent, message, '400', null);
+                    }
+                }
+                else if (isFileOperation && parent.responseData.error === null) {
+                    let itemData: Object[] =  action === 'search' || action === 'delete' ? getValue('data', data) : [];
+                    if (itemData.length === 0) {
+                        itemData = getValue('data', data).map((item: any) => filterById(parent, item.id));
+                    }
+                    parent.responseData = {
+                        cwd: null,
+                        details: null,
+                        error: null,
+                        files: itemData
+                    };
+                }
+                else if (getValue('action', data) === 'details') {
+                    const itemData: { [key: string]: any } = getValue('data', data);
+                    const details: { [key: string]: any } = itemData[0];
+                    const isMultipleFiles: boolean = itemData.length > 1;
+                    const itemNames: string[] = itemData.map((item: { [key: string]: any }) => item.name);
+                    const totalSize: string = isMultipleFiles ? getSize(itemData.reduce(
+                        (accumulator: number, currentObject: any) => accumulator + (currentObject.size || 0), 0)) : getSize(details.size);
+                    const path: string | string[] = ((parent.pathNames as any).includes(details.name) ? parent.pathNames.join('/') : parent.pathNames.join('/') + '/' + details.name);
+                    parent.responseData.details = Object.assign({
+                        location: isMultipleFiles ? null : path,
+                        multipleFiles: isMultipleFiles,
+                        name: itemNames.join(', '),
+                        size: totalSize
+                    }, isMultipleFiles ? {} : {
+                        created: details.dateCreated,
+                        isFile: details.isFile,
+                        modified: details.dateModified,
+                        permission: details.permission
+                    });
+                }
+                performReadOperation(parent, parent.responseData, fn, data, event, operation, targetPath, beforeSendArgs);
+                return;
+            }
             const ajax: Ajax = new Ajax({
                 url: getValue('url', beforeSendArgs.ajaxSettings),
                 type: getValue('type', beforeSendArgs.ajaxSettings),
@@ -221,59 +658,7 @@ function createAjax(
                     if (typeof (result) === 'string') {
                         result = JSON.parse(result);
                     }
-                    parent.notify(events.afterRequest, { action: 'success' });
-                    const id: string = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
-                    if (!isNOU(result.cwd) && (getValue('action', data) === 'read')) {
-                        result.cwd.name = (parent.pathId.length === 1) ? (parent.rootAliasName || result.cwd.name) : result.cwd.name;
-                        setValue('_fm_id', id, result.cwd);
-                        setValue(id, result.cwd, parent.feParent);
-                        if (!isNOU(result.files) || result.error.code === '401') {
-                            if ((event === 'finalize-end' || event === 'initial-end') && parent.pathNames.length === 0) {
-                                // eslint-disable-next-line
-                                const root: Object = getValue(parent.pathId[0], parent.feParent);
-                                parent.pathNames[0] = getValue('name', root);
-                                parent.hasId = !isNOU(getValue('id', root));
-                            }
-                            if (event === 'finalize-end') {
-                                generatePath(parent);
-                            }
-                        }
-                    }
-                    const intl: Internationalization = new Internationalization(parent.locale);
-                    if (!isNOU(result.files)) {
-                        setDateObject(result.files, intl, getDateFormat(parent));
-                        for (let i: number = 0, len: number = result.files.length; i < len; i++) {
-                            // eslint-disable-next-line
-                            const item: Object = result.files[i];
-                            setValue('_fm_iconClass', fileType(item), item);
-                        }
-                        if (getValue('action', data) === 'read') {
-                            setNodeId(result, id);
-                            setValue(id, result.files, parent.feFiles);
-                        }
-                    }
-                    if (!isNOU(result.details) && !isNOU(parent.rootAliasName)) {
-                        const rootName: string = parent.rootAliasName || getValue('name', result.details);
-                        let location: string = getValue('location', result.details).replace(new RegExp('/', 'g'), '\\');
-                        if ((getValue('path', data) === '/') || (parent.hasId && getValue('path', data).match(/[/]/g).length === 1)) {
-                            if (getValue('names', data).length === 0) {
-                                setValue('name', rootName, result.details);
-                                location = rootName;
-                            } else {
-                                location = location.replace(location.substring(0, location.indexOf('\\')), rootName);
-                            }
-                        } else {
-                            location = location.replace(location.substring(0, location.indexOf('\\')), rootName);
-                        }
-                        setValue('location', location, result.details);
-                    }
-                    fn(parent, result, event, operation, targetPath);
-                    if (!isNOU(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end' || event === 'drop-path')) {
-                        parent.notify(events.searchTextChange, result);
-                    }
-                    if (typeof getValue('onSuccess', beforeSendArgs.ajaxSettings) === 'function') {
-                        getValue('onSuccess', beforeSendArgs.ajaxSettings)();
-                    }
+                    performReadOperation(parent, result, fn, data, event, operation, targetPath, beforeSendArgs);
                 },
                 onFailure: () => {
                     const result: ReadArgs = {
@@ -291,6 +676,112 @@ function createAjax(
         }
     });
 }
+
+/**
+ * Function to get file size.
+ *
+ * @param {number} size - specifies the size.
+ * @returns {string} - returns the size.
+ * @private
+ */
+function getSize(size: number): string {
+    let hz: string;
+    if (size < 1024) {hz = size + ' B'; }
+    else if (size < 1024 * 1024) {hz = (size / 1024).toFixed(2) + ' KB'; }
+    else if (size < 1024 * 1024 * 1024) {hz = (size / 1024 / 1024).toFixed(2) + ' MB'; }
+    else {hz = (size / 1024 / 1024 / 1024).toFixed(2) + ' GB'; }
+    return hz;
+}
+
+/**
+ * Function to perform read operation.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {ReadArgs} result - specifies the result.
+ * @param {Function} fn - specifies the function.
+ * @param {Object} data - specifies the data.
+ * @param {string} event - specifies the event.
+ * @param {string} operation - specifies the operation.
+ * @param {string} targetPath - specifies the targetPath.
+ * @param {BeforeSendEventArgs} beforeSendArgs - specifies the eventArgs.
+ * @returns {void}
+ * @private
+ */
+function performReadOperation(
+    parent: IFileManager, result: ReadArgs, fn: Function, data: Object, event?: string,
+    operation?: string, targetPath?: string, beforeSendArgs?: BeforeSendEventArgs): void {
+    parent.notify(events.afterRequest, { action: 'success' });
+    const id: string = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
+    if (!isNOU(result.cwd) && (getValue('action', data) === 'read')) {
+        result.cwd.name = (parent.pathId.length === 1) ? (parent.rootAliasName || result.cwd.name) : result.cwd.name;
+        setValue('_fm_id', id, result.cwd);
+        setValue(id, result.cwd, parent.feParent);
+        if (!isNOU(result.files) || result.error.code === '401') {
+            if ((event === 'finalize-end' || event === 'initial-end') && parent.pathNames.length === 0) {
+                const root: Object = getValue(parent.pathId[0], parent.feParent);
+                parent.pathNames[0] = getValue('name', root);
+                parent.hasId = !isNOU(getValue('id', root));
+            }
+            if (event === 'finalize-end') {
+                generatePath(parent);
+            }
+        }
+    }
+    const intl: Internationalization = new Internationalization(parent.locale);
+    if (!isNOU(result.files)) {
+        setDateObject(result.files, intl, getDateFormat(parent));
+        for (let i: number = 0, len: number = result.files.length; i < len; i++) {
+            const item: Object = result.files[i as number];
+            setValue('_fm_iconClass', fileType(item), item);
+        }
+        if (getValue('action', data) === 'read' || isFileSystemData(parent) && getValue('action', data) === 'search') {
+            setNodeId(result, id);
+            setValue(id, result.files, parent.feFiles);
+        }
+    }
+    if (!isNOU(result.details) && !isNOU(parent.rootAliasName)) {
+        const rootName: string = parent.rootAliasName || getValue('name', result.details);
+        let location: string = getValue('location', result.details).replace(new RegExp('/', 'g'), '\\');
+        if ((getValue('path', data) === '/') || (parent.hasId && getValue('path', data).match(/[/]/g).length === 1)) {
+            if (getValue('names', data).length === 0) {
+                setValue('name', rootName, result.details);
+                location = rootName;
+            } else {
+                location = location.replace(location.substring(0, location.indexOf('\\')), rootName);
+            }
+        } else {
+            location = location.replace(location.substring(0, location.indexOf('\\')), rootName);
+        }
+        setValue('location', location, result.details);
+    }
+    fn(parent, result, event, operation, targetPath);
+    if (!isNOU(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end' || event === 'drop-path')) {
+        parent.notify(events.searchTextChange, result);
+    }
+    if (typeof getValue('onSuccess', beforeSendArgs.ajaxSettings) === 'function') {
+        getValue('onSuccess', beforeSendArgs.ajaxSettings)();
+    }
+}
+
+/**
+ * Function to copy operation.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} data - specifies the data.
+ * @param {string} target - specifies the target.
+ * @param {string} itemName - specifies the item name.
+ * @returns {void}
+ * @private
+ */
+function copyFolderItems(parent: IFileManager, data: { [key: string]: any }, target: { [key: string]: any }, itemName: string): void {
+    const newObject: { [key: string]: any } = createNewItem(data, target, itemName, true);
+    parent.fileSystemData.push(newObject);
+    parent.pasteNodes.push(newObject.id);
+    const copiedItems: Object[] = filterByParent(parent, data.id);
+    for (let i: number = 0; i < copiedItems.length; i++) {
+        copyFolderItems(parent, copiedItems[i as number], newObject, null);
+    }
+}
 /**
  * Function for trigger Ajax failure in File Manager.
  *
@@ -305,7 +796,6 @@ function createAjax(
  * @private
  */
 function triggerAjaxFailure(
-    // eslint-disable-next-line
     parent: IFileManager, beforeSendArgs: BeforeSendEventArgs, fn: Function,
     result: ReadArgs, event?: string, operation?: string, targetPath?: string): void {
     parent.notify(events.afterRequest, { action: 'failure' });
@@ -382,8 +872,14 @@ function filterSuccess(parent: IFileManager, result: ReadArgs, event: string, ac
 function createSuccess(parent: IFileManager, result: ReadArgs, itemName: string): void {
     if (!isNOU(result.files)) {
         if (parent.dialogObj && parent.dialogObj.visible) { parent.dialogObj.hide(); }
-        parent.createdItem = result.files[0];
+        parent.createdItem = isFileSystemData(parent) ? result.files[result.files.length - 1] : result.files[0];
         parent.breadcrumbbarModule.searchObj.value = '';
+        const createEventArgs: FolderCreateEventArgs = {
+            folderName: itemName,
+            path: parent.path,
+            parentFolder: parent.itemData as { [key: string]: Object }[]
+        };
+        parent.trigger('folderCreate', createEventArgs);
         const args: SuccessEventArgs = { action: 'create', result: result };
         parent.trigger('success', args);
         parent.itemData = [getPathObject(parent)];
@@ -420,25 +916,31 @@ function createSuccess(parent: IFileManager, result: ReadArgs, itemName: string)
  *
  * @param {IFileManager} parent - specifies the parent element.
  * @param {ReadArgs} result - specifies the result.
- * @param {string} path - specifies the path
  * @returns {void}
  * @private
  */
-function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): void {
+function renameSuccess(parent: IFileManager, result: ReadArgs): void {
     if (!isNOU(result.files)) {
         if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
         const args: SuccessEventArgs = { action: 'rename', result: result };
         parent.trigger('success', args);
         parent.renamedItem = Array.isArray(result.files) ? result.files[0] : result.files;
+        const renameEventArgs: RenameEventArgs = {
+            newName: parent.renamedItem.name as string,
+            itemData: parent.renamedItem as any,
+            path: parent.path
+        };
+        parent.trigger('rename', renameEventArgs);
         if (parent.activeModule === 'navigationpane') {
             parent.pathId.pop();
             parent.itemData = [getValue(parent.pathId[parent.pathId.length - 1], parent.feParent)];
             read(parent, events.renameEndParent, getValue('filterPath', parent.renamedItem).replace(/\\/g, '/'));
             parent.itemData[0] = parent.renamedItem;
-            read(parent, events.pathChanged, parent.path === '/' ? parent.path : getValue('filterPath', parent.renamedItem).replace(/\\/g, '/') + parent.renamedItem.name + '/');
             if (getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1) {
                 parent.pathNames[parent.pathNames.length - 1] = parent.renameText;
             }
+            read(parent, events.pathChanged, parent.path === '/' ? parent.path : getValue('filterPath', parent.renamedItem).replace(/\\/g, '/') + parent.renamedItem.name + '/');
+            parent.renamedItem = null;
         } else {
             parent.itemData = [getPathObject(parent)];
             if (parent.breadcrumbbarModule.searchObj.value !== '') {
@@ -479,6 +981,14 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
  */
 function pasteSuccess(
     parent: IFileManager, result: ReadArgs, path: string, operation: string): void {
+    const moveorcopyEventArgs: MoveEventArgs = {
+        itemData: result.files,
+        isCopy: operation === 'copy' ? true : false,
+        path: path,
+        targetData: parent.itemData[0] as { [key: string]: Object},
+        targetPath: parent.path
+    };
+    parent.trigger('move', moveorcopyEventArgs);
     if (result.error && result.error.fileExists) {
         parent.fileLength = 0;
         if (!isNOU(result.files)) {
@@ -511,6 +1021,11 @@ function pasteSuccess(
  * @private
  */
 function deleteSuccess(parent: IFileManager, result: ReadArgs, path: string): void {
+    const deleteEventArgs: DeleteEventArgs = {
+        itemData: result.files,
+        path: path
+    };
+    parent.trigger('delete', deleteEventArgs);
     if (!isNOU(result.files)) {
         parent.setProperties({ path: path }, true);
         parent.itemData = [getPathObject(parent)];
@@ -573,9 +1088,7 @@ function onFailure(parent: IFileManager, result: ReadArgs, action: string): void
  * @private
  */
 export function Search(
-    // eslint:disable-next-line
     parent: IFileManager, event: string, path: string, searchString: string, showHiddenItems?: boolean, caseSensitive?: boolean): void {
-    // eslint-disable-next-line
     const data: Object = {
         action: 'search', path: path, searchString: searchString, showHiddenItems: showHiddenItems, caseSensitive: caseSensitive,
         data: parent.itemData
@@ -614,7 +1127,6 @@ function searchSuccess(parent: IFileManager, result: ReadArgs, event: string): v
  */
 export function Download(parent: IFileManager, path: string, items: string[]): void {
     const downloadUrl: string = parent.ajaxSettings.downloadUrl ? parent.ajaxSettings.downloadUrl : parent.ajaxSettings.url;
-    // eslint-disable-next-line
     const data: Object = { 'action': 'download', 'path': path, 'names': items, 'data': parent.itemData };
     const ajaxSettings: Object = {
         url: downloadUrl,
@@ -679,12 +1191,12 @@ export function Download(parent: IFileManager, path: string, items: string[]): v
                         const result: ReadArgs = {
                             error: {
                                 code: e.status.toString(),
-                                message: getLocaleText(parent, 'Network-Error') + ' ' + parent.ajaxSettings.downloadUrl,
-                            },
+                                message: getLocaleText(parent, 'Network-Error') + ' ' + parent.ajaxSettings.downloadUrl
+                            }
                         };
                         createDialog(parent, 'Error', result);
                         parent.trigger('failure', downloadArgs);
-                    },
+                    }
                 });
                 fetch.send(JSON.stringify(downloadArgs.data));
             }

@@ -283,7 +283,8 @@ export class DragAndDrop extends ActionBase {
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide(true);
         }
-        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
+        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList &&
+            (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
             return;
         }
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;

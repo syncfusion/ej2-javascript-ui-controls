@@ -1,5 +1,5 @@
 import { Workbook, CellModel, getCell, setCell, SheetModel, getSheet } from '../base/index';
-import { executeTaskAsync, getAutoDetectFormatParser } from '../common/index';
+import { SerializationOptions, executeTaskAsync, getAutoDetectFormatParser } from '../common/index';
 import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol, ExtendedRange } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
@@ -92,7 +92,7 @@ export class WorkbookSave extends SaveWorker {
         this.customParams = args.customParams;
         this.pdfLayoutSettings = args.pdfLayoutSettings;
         this.updateBasicSettings();
-        this.processSheets(saveSettings.autoDetectFormat);
+        this.processSheets(saveSettings.autoDetectFormat, args.jsonConfig);
     }
 
     /**
@@ -122,13 +122,38 @@ export class WorkbookSave extends SaveWorker {
      * Process sheets properties.
      *
      * @param {boolean} autoDetectFormat - Auto detect the format based on the cell value.
+     * @param {SerializationOptions} jsonConfig - Specify the serialization options to exclude specific features from the JSON.
      * @hidden
      * @returns {void} - Process sheets properties.
      */
-    private processSheets(autoDetectFormat?: boolean): void {
+    private processSheets(autoDetectFormat?: boolean, jsonConfig?: SerializationOptions): void {
         const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader', 'result'];
-        if ((this.parent as { isAngular?: boolean }).isAngular) {
+        if (this.parent.isAngular) {
             skipProps.push('template');
+        }
+        if (jsonConfig) {
+            if (jsonConfig.onlyValues) {
+                skipProps.push(...['style', 'formula', 'format', 'conditionalFormats', 'validation',
+                    'hyperlink', 'wrap', 'chart', 'image', 'notes']);
+            } else {
+                const ignoreProps: { [key: string]: boolean } = {
+                    style: jsonConfig.ignoreStyle,
+                    formula: jsonConfig.ignoreFormula,
+                    format: jsonConfig.ignoreFormat,
+                    conditionalFormats: jsonConfig.ignoreConditionalFormat,
+                    validation: jsonConfig.ignoreValidation,
+                    wrap: jsonConfig.ignoreWrap,
+                    chart: jsonConfig.ignoreChart,
+                    image: jsonConfig.ignoreImage,
+                    notes: jsonConfig.ignoreNote
+                };
+                if (jsonConfig.ignoreFreezePane) { skipProps.push(...['frozenColumns', 'frozenRows']); }
+                for (const prop in ignoreProps) {
+                    if (ignoreProps[prop as string]) {
+                        skipProps.push(prop);
+                    }
+                }
+            }
         }
         let isNotLoaded: boolean; let isDataBinding: boolean; let sheet: SheetModel; let range: ExtendedRange;
         for (let sheetIdx: number = 0, sheetCount: number = this.parent.sheets.length; sheetIdx < sheetCount; sheetIdx++) {

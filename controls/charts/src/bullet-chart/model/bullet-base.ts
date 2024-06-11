@@ -285,7 +285,7 @@ export class BulletTooltipSettings extends ChildProperty<BulletTooltipSettings> 
      * Options to customize the ToolTip text.
      */
 
-    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
     public textStyle: BulletLabelStyleModel;
 
     /**
@@ -325,7 +325,7 @@ export class BulletDataLabel extends ChildProperty<BulletDataLabel> {
      * Options to customize the data label text.
      */
 
-    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, BulletLabelStyle)
     public labelStyle: BulletLabelStyleModel;
 
 }
@@ -401,7 +401,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
     /**
      * Options to customize the bullet chart legend text.
      */
-    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, BulletLabelStyle)
     public textStyle: BulletLabelStyleModel;
 
     /**

@@ -1554,7 +1554,7 @@ export class _XfdfDocument extends _ExportHelper {
         this._document = document;
         this._crossReference = document._crossReference;
         this._isAnnotationExport = false;
-        const xml: string = _bytesToString(data);
+        const xml: string = _bytesToString(data, true);
         this._xmlDocument = (new DOMParser()).parseFromString(xml, 'text/xml');
         this._isAnnotationImport = true;
         this._readXmlData(this._xmlDocument.documentElement);
@@ -1563,7 +1563,7 @@ export class _XfdfDocument extends _ExportHelper {
         this._document = document;
         this._crossReference = document._crossReference;
         this._isAnnotationExport = false;
-        this._xmlDocument = (new DOMParser()).parseFromString(_bytesToString(data), 'text/xml');
+        this._xmlDocument = (new DOMParser()).parseFromString(_bytesToString(data, true), 'text/xml');
         this._readXmlData(this._xmlDocument.documentElement);
     }
     _readXmlData(root: HTMLElement): void {

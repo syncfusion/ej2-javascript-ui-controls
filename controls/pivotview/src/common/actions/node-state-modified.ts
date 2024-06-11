@@ -22,14 +22,12 @@ export class NodeStateModified {
         this.parent = parent;
     }
 
-    /* eslint-disable-next-line */
     /**
      * Updates the dataSource by drag and drop the selected field from either field list or axis table with dropped target position.
      *
-     * @function onStateModified
-     * @param  {DragEventArgs & DragAndDropEventArgs} args -  Contains both pivot button and field list drag and drop information.
-     * @param  {string} fieldName - Defines dropped field name to update dataSource.
-     * @returns {void}
+     * @param {DragAndDropEventArgs} args - Contains both pivot button and field list drag and drop information.
+     * @param {string} fieldName - Defines dropped field name to update dataSource.
+     * @returns {boolean} true if the node is successfully dropped, otherwise false.
      * @hidden
      */
     public onStateModified(args: DragEventArgs & DragAndDropEventArgs, fieldName: string): boolean {

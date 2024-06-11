@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-returns */
 import { Chart } from '../../chart/chart';
 import { ChartAnnotationSettings } from './../model/chart-base';
 import { AnnotationBase } from '../../common/annotation/annotation';
@@ -20,6 +17,8 @@ export class ChartAnnotation extends AnnotationBase {
      * Constructor for chart annotation.
      *
      * @private
+     * @param {Chart} control - The chart control instance.
+     * @param {ChartAnnotationSettings[]} annotations - The array of annotation settings.
      */
     constructor(control: Chart, annotations: ChartAnnotationSettings[]) {
         super(control);
@@ -30,7 +29,8 @@ export class ChartAnnotation extends AnnotationBase {
     /**
      * Method to render the annotation for chart
      *
-     * @param {Element} element annotation element
+     * @param {Element} element - annotation element.
+     * @returns {void}
      * @private
      */
     public renderAnnotations(element: Element): void {
@@ -57,6 +57,8 @@ export class ChartAnnotation extends AnnotationBase {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         // Returns te module name

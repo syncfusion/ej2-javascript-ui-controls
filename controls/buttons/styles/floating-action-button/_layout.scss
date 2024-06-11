@@ -1,3 +1,18 @@
+@mixin fab-button-styles($border-radius, $min-height, $min-width, $padding, $icon-font-size) {
+  border-radius: $border-radius;
+  min-height: $min-height;
+  min-width: $min-width;
+  padding: $padding;
+
+  &.e-icon-btn {
+    padding: 0;
+  }
+
+  .e-btn-icon {
+    font-size: $icon-font-size;
+  }
+}
+
 @include export-module('floating-action-button-layout') {
   .e-fab.e-btn {
     align-items: center;
@@ -25,28 +40,62 @@
     &.e-fab-top {
       top: $fab-offset;
       &.e-fab-middle {
-        top: var(--fabVertDist);
+        top: 50%;
+        transform: translateY(-50%);
+        &.e-fab-left.e-fab-center {
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
       }
     }
 
     &.e-fab-bottom {
       bottom: $fab-offset;
-      &.e-fab-middle {
-        bottom: var(--fabVertDist);
-      }
     }
 
     &.e-fab-left {
       left: $fab-offset;
       &.e-fab-center {
-        left: var(--fabHorzDist);
+        left: 50%;
+        transform: translateX(-50%);
       }
     }
 
     &.e-fab-right {
       right: $fab-offset;
-      &.e-fab-center {
-        right: var(--fabHorzDist);
+    }
+  }
+
+  .e-rtl {
+    &.e-fab.e-btn {
+      &.e-fab-top {
+        top: $fab-offset;
+        &.e-fab-middle {
+          top: 50%;
+          transform: translateY(-50%);
+          &.e-fab-right.e-fab-center {
+            right: 50%;
+            top: 50%;
+            transform: translate(50%, -50%);
+          }
+        }
+      }
+  
+      &.e-fab-bottom {
+        bottom: $fab-offset;
+      }
+  
+      &.e-fab-right {
+        right: $fab-offset;
+        &.e-fab-center {
+          right: 50%;
+          transform: translateX(50%);
+        }
+      }
+  
+      &.e-fab-left {
+        left: $fab-offset;
       }
     }
   }
@@ -57,49 +106,16 @@
 
   .e-small.e-fab.e-btn,
   .e-small .e-fab.e-btn {
-    border-radius: $fab-small-border-radius;
-    min-height: $fab-small-min-height;
-    min-width: $fab-small-min-width;
-    padding: $fab-small-padding;
-
-    &.e-icon-btn {
-      padding: 0;
-    }
-
-    .e-btn-icon {
-      font-size: $fab-small-icon-font-size;
-    }
+    @include fab-button-styles($fab-small-border-radius, $fab-small-min-height, $fab-small-min-width, $fab-small-padding, $fab-small-icon-font-size);
   }
   .e-bigger.e-fab.e-btn,
   .e-bigger .e-fab.e-btn {
-    border-radius: $fab-bigger-border-radius;
-    min-height: $fab-bigger-min-height;
-    min-width: $fab-bigger-min-width;
-    padding: $fab-bigger-padding;
-
-    &.e-icon-btn {
-      padding: 0;
-    }
-
-    .e-btn-icon {
-      font-size: $fab-bigger-icon-font-size;
-    }
+    @include fab-button-styles($fab-bigger-border-radius, $fab-bigger-min-height, $fab-bigger-min-width, $fab-bigger-padding, $fab-bigger-icon-font-size);
   }
   .e-bigger.e-small.e-fab.e-btn,
   .e-bigger.e-small .e-fab.e-btn,
   .e-bigger .e-small.e-fab.e-btn,
   .e-small .e-bigger.e-fab.e-btn {
-    border-radius: $fab-bigger-small-border-radius;
-    min-height: $fab-bigger-small-min-height;
-    min-width: $fab-bigger-small-min-width;
-    padding: $fab-bigger-small-padding;
-
-    &.e-icon-btn {
-      padding: 0;
-    }
-
-    .e-btn-icon {
-      font-size: $fab-bigger-small-icon-font-size;
-    }
+    @include fab-button-styles($fab-bigger-small-border-radius, $fab-bigger-small-min-height, $fab-bigger-small-min-width, $fab-bigger-small-padding, $fab-bigger-small-icon-font-size);
   }
 }

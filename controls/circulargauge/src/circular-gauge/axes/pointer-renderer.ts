@@ -437,6 +437,7 @@ export class PointerRenderer {
      * @param {Element} pointerElement - specifies the pointer element.
      * @param {Pointer} pointer - Specifies the pointer.
      * @param {Axis} axis - Specifies the axis.
+     * @param {number} axisIndex - Specifies the axis index.
      * @returns {void}
      * @private
      */
@@ -467,6 +468,7 @@ export class PointerRenderer {
      * @param {number} end - specifies the end.
      * @param {Axis} axis - specifies the axis.
      * @param {Pointer} pointer - specfies the pointer.
+     * @param {number} axisIndex - Specifies the axis index.
      * @returns {void}
      * @private
      */
@@ -526,6 +528,7 @@ export class PointerRenderer {
      * @param {number} end - Specifies the end
      * @param {Axis} axis - Specifies the axis
      * @param {Pointer} pointer - Specifies the pointer.
+     * @param {number} axisIndex - Specifies the axis index.
      * @returns {void}
      * @private
      */
@@ -594,6 +597,7 @@ export class PointerRenderer {
      * @param {number} end - Specifies the end.
      * @param {Axis} axis - Specifies the axis.
      * @param {Pointer} pointer - Specifies the pointer.
+     * @param {number} axisIndex - Specifies the axis index.
      * @returns {void}
      * @private
      */

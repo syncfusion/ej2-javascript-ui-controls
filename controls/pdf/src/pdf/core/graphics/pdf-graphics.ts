@@ -713,12 +713,12 @@ export class PdfGraphics {
      */
     drawTemplate(template: PdfTemplate, bounds: {x: number, y: number, width: number, height: number}): void {
         if (typeof template !== 'undefined') {
-            if (template._isExported) {
+            if (template._isExported || template._isResourceExport) {
                 if (this._crossReference) {
                     template._crossReference = this._crossReference;
-                    template._importStream(true);
+                    template._importStream(true, template._isResourceExport);
                 } else {
-                    template._importStream(false);
+                    template._importStream(false, template._isResourceExport);
                     this._pendingResource.push(template);
                 }
             }

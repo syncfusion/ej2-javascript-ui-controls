@@ -955,7 +955,7 @@ export class ContentRender implements IRenderer {
         if (this.parent.enableInfiniteScrolling) {
             this.isInfiniteFreeze = isFreeze;
             if (this.parent.infiniteScrollSettings.enableCache) {
-                infiniteData = isFreeze ? this.getCurrentBlockInfiniteRecords() : this.getCurrentBlockInfiniteRecords();
+                infiniteData = this.getCurrentBlockInfiniteRecords();
             } else {
                 infiniteData = isFreeze ? this.visibleFrozenRows : this.visibleRows;
             }

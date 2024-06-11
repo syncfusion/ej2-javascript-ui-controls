@@ -4,7 +4,7 @@
 import { createElement, isVisible, isNullOrUndefined, Browser, EmitType, extend } from '@syncfusion/ej2-base';
 import { AutoComplete } from '../../src/auto-complete/index';
 import { FilteringEventArgs } from '../../src/drop-down-base';
-import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import { DataManager, Query, WebApiAdaptor } from '@syncfusion/ej2-data';
 
 let mouseEventArgs: any = { preventDefault: function () { }, target: null };
 xdescribe('AutoComplete', () => {
@@ -23,7 +23,9 @@ xdescribe('AutoComplete', () => {
         MockAjaxReturn => {
         jasmine.Ajax.install();
         let dataManager = d.dm || new DataManager({
-            url: '/api/Employees',
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
         });
         let prom: Promise<Object> = dataManager.executeQuery(query);
         let request: JasmineAjaxRequest;

@@ -1,4 +1,4 @@
-import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest, Collection } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';import { createElement, addClass, removeClass, setStyleAttribute as setAttr, getUniqueID } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Event, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';import { Dialog, createSpinner, hideSpinner, showSpinner, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import { createDialog, createExtDialog } from '../pop-up/dialog';import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';import { ToolbarItem, ToolbarItemModel } from'../models/index' ;import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';import { Toolbar } from '../actions/toolbar';import { DetailsView } from '../layout/details-view';import { LargeIconsView } from '../layout/large-icons-view';import { Uploader, UploadingEventArgs, SelectedEventArgs, FileInfo, CancelEventArgs } from '@syncfusion/ej2-inputs';import { UploadSettingsModel } from '../models/upload-settings-model';import { UploadSettings } from '../models/upload-settings';import * as events from './constant';import * as CLS from './classes';import { read, filter, createFolder } from '../common/operations';import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs, ReadArgs, FileSelectionEventArgs } from './interface';import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs, BeforeDownloadEventArgs, BeforeImageLoadEventArgs } from './interface';import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog, getCssClass } from '../common/utility';import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem } from '../common/utility';import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';import { ContextMenuSettings } from '../models/contextMenu-settings';import { BreadCrumbBar } from '../actions/breadcrumb-bar';import { ContextMenu } from '../pop-up/context-menu';import { defaultLocale } from '../models/default-locale';import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';import { Virtualization } from '../actions/virtualization';import { SortComparer } from './interface';
+import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest, Collection } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';import { createElement, addClass, removeClass, setStyleAttribute as setAttr, getUniqueID } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Event, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';import { Dialog, createSpinner, hideSpinner, showSpinner, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import { createDialog, createExtDialog } from '../pop-up/dialog';import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';import { ToolbarItem, ToolbarItemModel } from'../models/index' ;import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';import { Toolbar } from '../actions/toolbar';import { DetailsView } from '../layout/details-view';import { LargeIconsView } from '../layout/large-icons-view';import { Uploader, UploadingEventArgs, SelectedEventArgs, FileInfo, CancelEventArgs } from '@syncfusion/ej2-inputs';import { UploadSettingsModel } from '../models/upload-settings-model';import { UploadSettings } from '../models/upload-settings';import * as events from './constant';import * as CLS from './classes';import { read, filter, createFolder } from '../common/operations';import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs, ReadArgs, FileSelectionEventArgs } from './interface';import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs, FolderCreateEventArgs, DeleteEventArgs, RenameEventArgs, MoveEventArgs, SearchEventArgs } from './interface';import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs, BeforeDownloadEventArgs, BeforeImageLoadEventArgs } from './interface';import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog, getCssClass } from '../common/utility';import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem, closePopup } from '../common/utility';import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';import { ContextMenuSettings } from '../models/contextMenu-settings';import { BreadCrumbBar } from '../actions/breadcrumb-bar';import { ContextMenu } from '../pop-up/context-menu';import { defaultLocale } from '../models/default-locale';import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';import { Virtualization } from '../actions/virtualization';import { SortComparer } from './interface';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -17,6 +17,15 @@ export interface FileManagerModel extends ComponentModel{
      * }
      */
     ajaxSettings?: AjaxSettingsModel;
+
+    /**
+     * Specifies the array of data to populate folders/files in the File Manager.
+     * The mandatory fields to be included in the JSON data are defined in fileData interface.
+     * This interface can be extended to add additional fields as required.
+     *
+     * @default []
+     */
+    fileSystemData?: { [key: string]: Object }[];
 
     /**
      * Enables or disables drag-and-drop of files.
@@ -211,7 +220,7 @@ export interface FileManagerModel extends ComponentModel{
      * The sort comparer function has the same functionality like
      * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
      * This can be used to customize the default sorting functionalities with required comparison values.
-     * 
+     *
      * @default null
      * @aspType string
      */
@@ -229,15 +238,15 @@ export interface FileManagerModel extends ComponentModel{
     toolbarSettings?: ToolbarSettingsModel;
 
     /**
-     * An array of items that are used to configure File Manager toolbar items. 
-     * 
-     * @remarks 
+     * An array of items that are used to configure File Manager toolbar items.
+     *
+     * @remarks
      * Use this property if you want to include custom toolbar items along with existing toolbar items. If both `toolbarSettings` and `toolbarItems` are defined, then items will be rendered based on toolbarItems.
-     * 
-     * @default [] 
-     * 
-     */ 
-    toolbarItems?: ToolbarItemModel[]; 
+     *
+     * @default []
+     *
+     */
+    toolbarItems?: ToolbarItemModel[];
 
     /**
      * Specifies the upload settings for the file manager.
@@ -263,169 +272,231 @@ export interface FileManagerModel extends ComponentModel{
     /**
      * Triggers before the file/folder is rendered.
      *
-     * @event
+     * @event fileLoad
      */
     fileLoad?: EmitType<FileLoadEventArgs>;
 
     /**
      * Triggers before the file/folder is opened.
      *
-     * @event
+     * @event fileOpen
      */
     fileOpen?: EmitType<FileOpenEventArgs>;
 
     /**
      * Triggers before sending the download request to the server.
      *
-     * @event
+     * @event beforeDownload
      */
     beforeDownload?: EmitType<BeforeDownloadEventArgs>;
 
     /**
      * Triggers before sending the getImage request to the server.
      *
-     * @event
+     * @event beforeImageLoad
      */
     beforeImageLoad?: EmitType<BeforeImageLoadEventArgs>;
 
     /**
      * Triggers before the dialog is closed.
      *
-     * @event
+     * @event beforePopupClose
      */
     beforePopupClose?: EmitType<BeforePopupOpenCloseEventArgs>;
 
     /**
      * Triggers before the dialog is opened.
      *
-     * @event
+     * @event beforePopupOpen
      */
     beforePopupOpen?: EmitType<BeforePopupOpenCloseEventArgs>;
 
     /**
      * Triggers before sending the AJAX request to the server.
      *
-     * @event
+     * @event beforeSend
      */
     beforeSend?: EmitType<BeforeSendEventArgs>;
 
     /**
      * Triggers when the file manager component is created.
      *
-     * @event
+     * @event created
      */
-    /* eslint-disable */
     created?: EmitType<Object>;
+
+    /**
+     * This event is triggered before a folder is created. It allows for the restriction of folder creation based on the application's use case.
+     *
+     * @event beforeFolderCreate
+     */
+    beforeFolderCreate?: EmitType<FolderCreateEventArgs>;
+
+    /**
+     * This event is triggered when a folder is successfully created. It provides an opportunity to retrieve details about the newly created folder.
+     *
+     * @event folderCreate
+     */
+    folderCreate?: EmitType<FolderCreateEventArgs>;
 
     /**
      * Triggers when the file manager component is destroyed.
      *
-     * @event
+     * @event destroyed
      */
-    /* eslint-disable */
     destroyed?: EmitType<Object>;
+
+    /**
+     * This event is triggered before the deletion of a file or folder occurs. It can be utilized to prevent the deletion of specific files or folders. Any actions, such as displaying a spinner for deletion, can be implemented here.
+     *
+     * @event beforeDelete
+     */
+    beforeDelete?: EmitType<DeleteEventArgs>;
+
+    /**
+     * This event is triggered after the file or folder is deleted successfully. The deleted file or folder details can be retrieved here. Additionally, custom elements' visibility can be managed here based on the application's use case.
+     *
+     * @event delete
+     */
+    delete?: EmitType<DeleteEventArgs>;
+
+    /**
+     * This event is triggered when a file or folder is about to be renamed. It allows for the restriction of the rename action for specific folders or files by utilizing the cancel option.
+     *
+     * @event beforeRename
+     */
+    beforeRename?: EmitType<RenameEventArgs>;
+
+    /**
+     * This event is triggered when a file or folder is successfully renamed. It provides an opportunity to fetch details about the renamed file.
+     *
+     * @event rename
+     */
+    rename?: EmitType<RenameEventArgs>;
+
+    /**
+     * This event is triggered when a file or folder begins to move from its current path through a copy/cut and paste action.
+     *
+     * @event beforeMove
+     */
+    beforeMove?: EmitType<MoveEventArgs>;
+
+    /**
+     * This event is triggered when a file or folder is pasted into the destination path.
+     *
+     * @event move
+     */
+    move?: EmitType<MoveEventArgs>;
+
+    /**
+     * This event is triggered when a search action occurs in the search bar of the File Manager component. It triggers each character entered in the input during the search process.
+     *
+     * @event search
+     */
+    search?: EmitType<SearchEventArgs>;
 
     /**
      * Triggers when the file/folder dragging is started.
      *
-     * @event
+     * @event fileDragStart
      */
     fileDragStart?: EmitType<FileDragEventArgs>;
 
     /**
      * Triggers while dragging the file/folder.
      *
-     * @event
+     * @event fileDragging
      */
     fileDragging?: EmitType<FileDragEventArgs>;
 
     /**
      * Triggers when the file/folder is about to be dropped at the target.
      *
-     * @event
+     * @event fileDragStop
      */
     fileDragStop?: EmitType<FileDragEventArgs>;
 
     /**
      * Triggers when the file/folder is dropped.
      *
-     * @event
+     * @event fileDropped
      */
     fileDropped?: EmitType<FileDragEventArgs>;
 
     /**
      * Triggers before the file/folder is selected.
      *
-     * @event
+     * @event fileSelection
      */
     fileSelection?: EmitType<FileSelectionEventArgs>;
 
     /**
      * Triggers when the file/folder is selected/unselected.
      *
-     * @event
+     * @event fileSelect
      */
     fileSelect?: EmitType<FileSelectEventArgs>;
 
     /**
      * Triggers when the context menu item is clicked.
      *
-     * @event
+     * @event menuClick
      */
     menuClick?: EmitType<MenuClickEventArgs>;
 
     /**
      * Triggers before the context menu is opened.
      *
-     * @event
+     * @event menuOpen
      */
     menuOpen?: EmitType<MenuOpenEventArgs>;
 
     /**
      * Triggers when the AJAX request is failed.
      *
-     * @event
+     * @event failure
      */
     failure?: EmitType<FailureEventArgs>;
 
     /**
      * Triggers when the dialog is closed.
      *
-     * @event
+     * @event popupClose
      */
     popupClose?: EmitType<PopupOpenCloseEventArgs>;
 
     /**
      * Triggers when the dialog is opened.
      *
-     * @event
+     * @event popupOpen
      */
     popupOpen?: EmitType<PopupOpenCloseEventArgs>;
 
     /**
      * Triggers when the AJAX request is success.
-     * @event
+     *
+     * @event success
      */
     success?: EmitType<SuccessEventArgs>;
 
     /**
      * Triggers when the toolbar item is clicked.
      *
-     * @event
+     * @event toolbarClick
      */
     toolbarClick?: EmitType<ToolbarClickEventArgs>;
 
     /**
      * Triggers before creating the toolbar.
      *
-     * @event
+     * @event toolbarCreate
      */
     toolbarCreate?: EmitType<ToolbarCreateEventArgs>;
 
     /**
      * Triggers before rendering each file item in upload dialog box.
      *
-     * @event
+     * @event uploadListCreate
      */
     uploadListCreate?: EmitType<UploadListCreateArgs>;
 

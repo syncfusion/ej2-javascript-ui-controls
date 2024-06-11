@@ -1,8 +1,4 @@
-/*! Accordion's bootstrap5 theme wise override definitions and variables */
-/* stylelint-disable */
 $acrdn-skin: 'bootstrap5' !default;
-
-// font definitions
 $acrdn-icon-font-size: $text-lg !default;
 $acrdn-slct-header-font-weight: $font-weight-normal;
 $acrdn-header-font: $content-text-color !default;
@@ -19,8 +15,6 @@ $acrdn-bgr-arrow-icon-font-size: 22px;
 $acrdn-bgr-item-header-content-font-size: 16px !default;
 $acrdn-icon-font-size: 18px !default;
 $acrdn-selected-header-font-color: $primary !default;
-
-// Header, Nested header and RTL mode Padding
 $acrdn-nest-nrml-header-padding: 8px 0 8px 26px !default;
 $acrdn-nest-bgr-header-padding: 12px 0 12px 28px !default;
 $acrdn-nest-second-nrml-header-padding: 8px 0 8px 38px !default;
@@ -34,8 +28,6 @@ $acrdn-rtl-nest-bgr-header-padding: 12px 28px 12px 0 !default;
 $acrdn-rtl-nest-second-nrml-header-padding: 8px 38px 8px 0 !default;
 $acrdn-rtl-nest-second-bgr-header-padding: 12px 40px 12px 0 !default;
 $acrdn-nested-item-header-focus-box-shadow: none !default;
-
-// Content, Nested content and RTL mode Padding
 $acrdn-nrml-content-padding: 12px !default;
 $acrdn-bgr-content-padding: 16px !default;
 $acrdn-nest-nrml-content-padding: 16px 16px 16px 26px !default;
@@ -46,8 +38,6 @@ $acrdn-rtl-nest-nrml-content-padding: 16px 26px 16px 16px !default;
 $acrdn-rtl-nest-bgr-content-padding: 20px 28px 20px 20px !default;
 $acrdn-rtl-nest-second-nrml-content-padding: 20px 38px 20px 20px !default;
 $acrdn-rtl-nest-second-bgr-content-padding: 24px 40px 24px 24px !default;
-
-// dimension definitions
 $acrdn-border-radius: 4px !default;
 $acrdn-nrml-header-minheight: 38px !default;
 $acrdn-bgr-header-minheight: 48px !default;
@@ -65,7 +55,6 @@ $acrdn-item-padding-size: 0 !default;
 $acrdn-selected-border-type: none !default;
 $acrdn-border-type: solid !default;
 $acrdn-border-size: 1px !default;
-
 $acrdn-item-hdr-con-lineheight: 22px !default;
 $acrdn-item-selected-first-child-border-top: 1px none $border-light !default;
 $acrdn-item-selected-last-child-border-bottom: 1px solid $border-light !default;
@@ -78,8 +67,6 @@ $acrdn-item-hdr-border-radius: 0 !default;
 $acrdn-item-tgl-icon-display: table !default;
 $acrdn-item-arrow-icon-font-size: 18px !default;
 $acrdn-opacity: .5 !default;
-
-// color definitions
 $acrdn-tab-highlight-color:  rgba(0, 0, 0, 0) !default;
 $acrdn-active-bg: $content-bg-color !default;
 $acrdn-bg-color: $content-bg-color !default;
@@ -97,7 +84,6 @@ $acrdn-item-header-focus-border-color: $primary !default;
 $acrdn-item-icon-disable-color: $icon-color-disabled;
 $acrdn-text-disable-color: $content-text-color-disabled;
 $acrdn-default-border: $acrdn-selected-border-color !default;
-
 $acrdn-item-border-color: $acrdn-default-border !default;
 $acrdn-item-border-nav-type: solid !default;
 $acrdn-item-border-size: 0 0 1px 0 !default;

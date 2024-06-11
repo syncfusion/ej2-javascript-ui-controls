@@ -32,6 +32,10 @@ export type CircularChart3DTheme =
     'Fluent' |
     /**  Render a circular 3D chart with the FluentDark theme. */
     'FluentDark' |
+    /**  Render a circular 3D chart with the Fluent 2 theme. */
+    'Fluent2' |
+    /**  Render a circular 3D chart with the Fluent 2 dark theme. */
+    'Fluent2Dark' |
     /**  Render a circular 3D chart with the Material 3 theme. */
     'Material3' |
     /**  Render a circular 3D chart with the Material 3 Dark theme. */

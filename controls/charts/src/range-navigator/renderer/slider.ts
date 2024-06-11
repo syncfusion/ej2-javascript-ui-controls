@@ -1,11 +1,5 @@
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/tslint/config */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/ban-types */
 import { PeriodsModel, RangeNavigator, RangeValueType } from '../index';
-import { animationMode, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { animationMode, Browser, createElement } from '@syncfusion/ej2-base';
 import { RectOption, drawSymbol, linear } from '../../common/utils/helper';
 import { getXLocation, getExactData, getRangeValueXByPoint, DataPoint, getNearestValue } from '../utils/helper';
 import { VisibleLabels, Axis } from '../../chart/axis/axis';
@@ -50,7 +44,7 @@ export class RangeSlider {
     private thumpY: number;
     public sliderY: number;
     /** @private */
-    public isIOS: Boolean;
+    public isIOS: boolean;
 
     constructor(range: RangeNavigator) {
         this.control = range;
@@ -67,7 +61,8 @@ export class RangeSlider {
     /**
      * Render Slider elements for range navigator.
      *
-     * @param {RangeNavigator} range RangeNavigator instance
+     * @param {RangeNavigator} range - RangeNavigator instance.
+     * @returns {void}
      */
     public render(range: RangeNavigator): void {
         const renderer: SvgRenderer = range.renderer;
@@ -112,11 +107,12 @@ export class RangeSlider {
     /**
      * Thumb creation performed.
      *
-     * @param {SvgRenderer} render SvgRenderer
-     * @param {Rect} bounds bounds
-     * @param {Element} parent parent element
-     * @param {string} id id
-     * @param {Element} sliderGroup sliderGroup
+     * @param {SvgRenderer} render - SvgRenderer
+     * @param {Rect} bounds - bounds
+     * @param {Element} parent - parent element
+     * @param {string} id - id
+     * @param {Element} sliderGroup - sliderGroup
+     * @returns {void}
      */
     public createThump(render: SvgRenderer, bounds: Rect, parent: Element, id: string, sliderGroup?: Element): void {
         const control: RangeNavigator = this.control;
@@ -178,13 +174,20 @@ export class RangeSlider {
                 id + '_ThumpGrip', 'transparent',
                 1, disabledColor || control.themeStyle.gripColor, 1, null,
                 'M' + ' ' + (x + 2) + ' ' + (y + tickLength) + ' ' + 'L' + ' ' + (x + 2) + ' ' + (y - tickLength) + ' ' +
-                'M' + ' ' + (x) + ' ' + (y + tickLength) + ' ' + 'L' + ' ' + (x) + ' ' + (y - tickLength) + ' ' +
+                (this.control.theme.indexOf('Fluent2') > -1 ? '' : 'M' + ' ' + (x) + ' ' + (y + tickLength) + ' ' + 'L' + ' ' + (x) + ' ' + (y - tickLength) + ' ') +
                 'M' + ' ' + (x - 2) + ' ' + (y + tickLength) + ' ' + 'L' + ' ' + (x - 2) + ' ' + (y - tickLength) + ' '
             )));
         }
     }
     /**
-     * Set slider value for range navigator.
+     * Sets the slider value for the range navigator.
+     *
+     * @param {number} start - The start value of the slider.
+     * @param {number} end - The end value of the slider.
+     * @param {boolean} trigger - Indicates whether to trigger events.
+     * @param {boolean} showTooltip - Indicates whether to show tooltips.
+     * @param {boolean} resize - Indicates whether to resize.
+     * @returns {void}
      */
     public setSlider(start: number, end: number, trigger: boolean, showTooltip: boolean, resize: boolean = false): void {
         const range: RangeNavigator = this.control;
@@ -254,7 +257,8 @@ export class RangeSlider {
     /**
      * Trigger changed event.
      *
-     * @param {VisibleRangeModel} range axis visible range
+     * @param {VisibleRangeModel} range - Axis visible range.
+     * @returns {void}
      */
     public triggerEvent(range: VisibleRangeModel): void {
         const xAxis: Axis = this.control.chartSeries.xAxis;
@@ -277,6 +281,7 @@ export class RangeSlider {
 
     /**
      * @hidden
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.control.isDestroyed) { return; }
@@ -287,6 +292,7 @@ export class RangeSlider {
     }
     /**
      * @hidden
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (this.control.isDestroyed) { return; }
@@ -296,10 +302,11 @@ export class RangeSlider {
         this.control.off(Browser.isPointer ? 'pointerleave' : 'mouseleave', this.mouseCancelHandler);
     }
     /**
-     * Move move handler perfomed here
+     * Mouse move handler perfomed here.
      *
      * @hidden
-     * @param {PointerEvent} e mouse event argument
+     * @param {PointerEvent | TouchEvent} e - Mouse event argument.
+     * @returns {void}
      */
     public mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         const control: RangeNavigator = this.control;
@@ -316,14 +323,13 @@ export class RangeSlider {
             case 'Right':
                 control.endValue = this.getRangeValue(Math.abs(control.mouseX - bounds.x));
                 break;
-            case 'Middle':
+            case 'Middle': {
                 start = Math.max(
                     this.getRangeValue(Math.abs(this.startX - (this.previousMoveX - control.mouseX) - bounds.x)), axisRange.min
                 );
                 end = Math.min(
                     this.getRangeValue(Math.abs(this.endX - (this.previousMoveX - control.mouseX) - bounds.x)), axisRange.max
                 );
-                // eslint-disable-next-line no-case-declarations
                 const currentWidth: number = Math.floor(Math.abs(
                     getXLocation(end, axisRange, control.bounds.width, control.enableRtl) -
                         getXLocation(start, axisRange, control.bounds.width, control.enableRtl)
@@ -342,6 +348,7 @@ export class RangeSlider {
                 }
                 break;
             }
+            }
             if (e.preventDefault && this.isIOS) {
                 e.preventDefault();
             }
@@ -349,7 +356,7 @@ export class RangeSlider {
                 const periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
                 if (periodSelectorModule) {
                     const buttons: PeriodsModel[] = periodSelectorModule.control.periods;
-                    buttons.map(function (period) {
+                    buttons.map(function (period: PeriodsModel): void {
                         period.selected = false;
                     });
                     periodSelectorModule.selectedIndex = undefined;
@@ -366,9 +373,10 @@ export class RangeSlider {
         }
     }
     /**
-     * To get the range value
+     * To get the range value.
      *
-     * @param {number} x xValue
+     * @param {number} x - The xValue.
+     * @returns {number} - The range value.
      */
     private getRangeValue(x: number): number {
         const control: RangeNavigator = this.control;
@@ -379,9 +387,10 @@ export class RangeSlider {
         );
     }
     /**
-     * Moused down handler for slider perform here
+     * Moused down handler for slider perform here.
      *
-     * @param {PointerEvent} e mouse event argument
+     * @param {PointerEvent} e - Mouse event argument.
+     * @returns {void}
      */
     private mouseDownHandler(e: PointerEvent): void {
         this.currentSlider = this.getCurrentSlider((<Element>e.target).id);
@@ -390,9 +399,10 @@ export class RangeSlider {
         this.previousMoveX = this.control.mouseDownX;
     }
     /**
-     * To get the current slider element
+     * To get the current slider element.
      *
-     * @param {string} id slider element id
+     * @param {string} id - The id of the slider element.
+     * @returns {string} - The slider element.
      */
     private getCurrentSlider(id: string): string {
         const hoverColor: string = this.control.themeStyle.thumbHoverColor;
@@ -424,7 +434,9 @@ export class RangeSlider {
         }
     }
     /**
-     * Mouse up handler performed here
+     * Mouse up handler performed here.
+     *
+     * @returns {void}
      */
     private mouseUpHandler(): void {
         const control: RangeNavigator = this.control;
@@ -461,11 +473,13 @@ export class RangeSlider {
                 const periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
                 if (periodSelectorModule) {
                     const buttons: PeriodsModel[] = periodSelectorModule.control.periods;
-                    buttons.map(function (period) {
+                    buttons.map(function (period: PeriodsModel): void {
                         period.selected = false;
                     });
                     periodSelectorModule.selectedIndex = undefined;
-                    const selectedIndex: number = periodSelectorModule.findSelectedIndex(control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? (control.allowIntervalData ? secondLabel.value - 1 : secondLabel.value) : range.max), buttons);
+                    const selectedIndex: number = periodSelectorModule.findSelectedIndex(
+                        control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? (control.allowIntervalData ?
+                            secondLabel.value - 1 : secondLabel.value) : range.max), buttons);
                     periodSelectorModule.setSelectedStyle(selectedIndex);
                 }
             }
@@ -491,8 +505,10 @@ export class RangeSlider {
         if (this.currentSlider !== null) {
             if (this.control.periodSelectorSettings.periods.length > 0) {
                 this.control.periodSelectorModule.triggerChange = false;
-                this.control.periodSelectorModule.datePicker.startDate = this.control.periodSelectorModule.isDatetimeCategory ? new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentStart)]) : new Date(this.currentStart);
-                this.control.periodSelectorModule.datePicker.endDate = this.control.periodSelectorModule.isDatetimeCategory ? new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentEnd)]) : new Date(this.currentEnd);
+                this.control.periodSelectorModule.datePicker.startDate = this.control.periodSelectorModule.isDatetimeCategory ?
+                    new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentStart)]) : new Date(this.currentStart);
+                this.control.periodSelectorModule.datePicker.endDate = this.control.periodSelectorModule.isDatetimeCategory ?
+                    new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentEnd)]) : new Date(this.currentEnd);
             }
         }
         (this.selectedElement as HTMLElement).style.cursor = '-webkit-grab';
@@ -503,14 +519,15 @@ export class RangeSlider {
         this.currentSlider = null;
     }
     /**
-     * Allow Snapping perfomed here
+     * Allow Snapping perfomed here.
      *
-     * @param {RangeNavigator} control RangeNavigator instance
-     * @param {number} start start
-     * @param {number} end end
-     * @param {boolean} trigger trigger
-     * @param {boolean} tooltip tooltip
+     * @param {RangeNavigator} control - RangeNavigator instance.
+     * @param {number} start - start
+     * @param {number} end - end
+     * @param {boolean} trigger - trigger
+     * @param {boolean} tooltip - tooltip
      * @private
+     * @returns {void}
      */
     public setAllowSnapping(
         control: RangeNavigator, start: number, end: number,
@@ -524,8 +541,13 @@ export class RangeSlider {
     }
     /**
      * Animation Calculation for slider navigation.
+     *
+     * @param {number} start - The start value for the animation.
+     * @param {number} end - The end value for the animation.
+     * @param {RangeNavigator} control - The RangeNavigator control.
+     * @returns {void}
      */
-    public performAnimation(start: number, end: number, control: RangeNavigator, animationDuration ?: number): void {
+    public performAnimation(start: number, end: number, control: RangeNavigator): void {
         const currentStart: number = this.currentStart;
         const currentEnd: number = this.currentEnd;
         const isDeffered: boolean = control.enableDeferredUpdate;
@@ -549,14 +571,18 @@ export class RangeSlider {
                 this.control.endValue = this.currentEnd;
                 if (this.control.periodSelectorSettings.periods.length > 0) {
                     this.control.periodSelectorModule.triggerChange = false;
-                    this.control.periodSelectorModule.datePicker.startDate = this.control.periodSelectorModule.isDatetimeCategory ? new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentStart)]) : new Date(this.currentStart);
-                    this.control.periodSelectorModule.datePicker.endDate = this.control.periodSelectorModule.isDatetimeCategory ? new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentEnd)]) : new Date(this.currentEnd);
+                    this.control.periodSelectorModule.datePicker.startDate = this.control.periodSelectorModule.isDatetimeCategory ?
+                        new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentStart)]) : new Date(this.currentStart);
+                    this.control.periodSelectorModule.datePicker.endDate = this.control.periodSelectorModule.isDatetimeCategory ?
+                        new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentEnd)]) : new Date(this.currentEnd);
                 }
             }
         });
     }
     /**
-     * Mouse Cancel Handler
+     * Mouse Cancel Handler.
+     *
+     * @returns {void}
      */
     private mouseCancelHandler(): void {
         if (this.isDrag && this.control.allowSnapping) {
@@ -568,7 +594,9 @@ export class RangeSlider {
         this.control.endValue = this.currentEnd;
     }
     /**
-     * Destroy Method Calling here
+     * Destroy Method Calling here.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.removeEventListener();

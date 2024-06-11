@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement } from '../../common/utils/helper';
 import { findlElement, drawSymbol, markerAnimate, CircleOption } from '../../common/utils/helper';
 import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
@@ -14,7 +12,7 @@ import { MarkerExplode } from './marker-explode';
 import { getSaturationColor } from '../../common/utils/helper';
 import { ChartShape } from '../utils/enum';
 
-export const markerShapes: ChartShape[] = ["Circle", "Triangle", "Diamond", "Rectangle", "Pentagon", "InvertedTriangle", "VerticalLine", "Cross", "Plus", "HorizontalLine"];
+export const markerShapes: ChartShape[] = ['Circle', 'Triangle', 'Diamond', 'Rectangle', 'Pentagon', 'InvertedTriangle', 'VerticalLine', 'Cross', 'Plus', 'HorizontalLine'];
 /**
  * Marker module used to render the marker for line type series.
  */
@@ -53,7 +51,7 @@ export class Marker extends MarkerExplode {
         }
     }
 
-    private renderMarker(
+    public renderMarker(
         series: Series, point: Points,
         location: ChartLocation, index: number, redraw: boolean
     ): void {
@@ -78,8 +76,8 @@ export class Marker extends MarkerExplode {
             findlElement(series.seriesElement.childNodes, 'Series_' + series.index + '_Point_' + point.index)
             : series.symbolElement;
         border.color = borderColor || series.setPointColor(point, series.interior);
-        const symbolId: string = this.elementId + '_Series_' + seriesIndex + '_Point_' + point.index + '_Symbol' +
-            (index ? index : '');
+        const symbolId: string = this.elementId + '_Series_' + seriesIndex + '_Point_' + ((this.chart.pointsRemoved && series.removedPointIndex !== null && series.removedPointIndex <= point.index) || this.chart.pointsAdded ?
+            (point.index + 1) : point.index) + '_Symbol' + (index ? index : '');
         const argsData: IPointRenderEventArgs = {
             cancel: false, name: pointRender, series: series, point: point,
             fill: point.isEmpty ? (series.emptyPointSettings.fill || fill) : fill,
@@ -149,6 +147,9 @@ export class Marker extends MarkerExplode {
                     this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y',
                     previousLocation, previousPath, false, false, null, series.chart.duration
                 );
+                if ((this.chart.pointsRemoved && series.removedPointIndex !== null && series.removedPointIndex <= point.index)) {
+                    (parentElement.lastChild as HTMLElement).id = this.elementId + '_Series_' + seriesIndex + '_Point_' + point.index + '_Symbol' + (index ? index : '');
+                }
             }
             point.marker = {
                 border: markerBorder, fill: markerFill, height: markerHeight,
@@ -175,7 +176,7 @@ export class Marker extends MarkerExplode {
             const markerHeight: number = (marker.height + explodeValue) / 2;
             const markerWidth: number = (marker.width + explodeValue) / 2;
             if (series.chart.chartAreaType === 'Cartesian') {
-                let isZoomed: Boolean = series.xAxis.zoomFactor < 1 || series.xAxis.zoomPosition > 0;
+                const isZoomed: boolean = series.xAxis.zoomFactor < 1 || series.xAxis.zoomPosition > 0;
                 options = new RectOption(this.elementId + '_ChartMarkerClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, {
                     x: isZoomed ? 0 : -markerWidth, y: -markerHeight,
                     width: series.clipRect.width + (isZoomed ? 0 : markerWidth * 2),
@@ -218,10 +219,10 @@ export class Marker extends MarkerExplode {
     }
 
     /**
-     * Animates the marker.
+     * Perform marker animation for the given series.
      *
+     * @param {Series} series - The series for which marker animation needs to be performed.
      * @returns {void}
-     * @private
      */
     public doMarkerAnimation(series: Series): void {
         if (!(series.type === 'Scatter' || series.type === 'Bubble' || series.type === 'Candle' || series.type === 'Hilo' ||

@@ -192,10 +192,12 @@ export class Series {
                 if (isNullOrUndefined(this.heatMap.cellSettings.labelTemplate) || this.heatMap.cellSettings.labelTemplate === '') {
                     displayText = this.getFormatedText(this.text, cellSetting.format);
                 } else {
-                    let rectValue = heatMap.dataSourceSettings.bubbleDataMapping && heatMap.dataSourceSettings.isJsonData && heatMap.dataSourceSettings.adaptorType === 'Cell' && !isNullOrUndefined(rectPosition.value[0]) ? rectPosition.value[0].bubbleData : rectPosition.value;
+                    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const rectValue: any = heatMap.dataSourceSettings.bubbleDataMapping && heatMap.dataSourceSettings.isJsonData && heatMap.dataSourceSettings.adaptorType === 'Cell' && !isNullOrUndefined(rectPosition.value[0]) ? rectPosition.value[0].bubbleData : rectPosition.value;
                     if (typeof rectValue == 'number' && this.cellColor.getColorByValue(rectValue) !== '#ffffff') {
                         createLabelTemplate(this.heatMap.cellSettings.labelTemplate, heatMap, templateElement, rectPosition,
-                            heatMap.axisCollections[0].axisLabels, heatMap.axisCollections[1].axisLabels.slice().reverse(), x);
+                                            heatMap.axisCollections[0].axisLabels,
+                                            heatMap.axisCollections[1].axisLabels.slice().reverse(), x);
                     }
                 }
             } else {
@@ -275,7 +277,7 @@ export class Series {
         }
         if (!isNullOrUndefined(templateElement)) {
             document.getElementById(this.heatMap.element.id + '_Secondary_Element').appendChild(templateElement);
-        } 
+        }
         if (!heatMap.enableCanvasRendering) {
             heatMap.svgObject.appendChild(this.containerRectObject as HTMLElement);
             if (cellSetting.showLabel && !(cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
@@ -739,5 +741,25 @@ export class Series {
         this.hoverYAxisValue = this.heatMap.axisCollections[1].labelValue[(
             this.heatMap.axisCollections[1].labelValue.length - 1) - rectY];
         return currentRect;
+    }
+
+    /**
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        if (!isNullOrUndefined(this.cellColor)) {
+            this.cellColor.destroy();
+        }
+        this.cellColor = null;
+        this.bubbleColorValue = null;
+        this.containerRectObject = null;
+        this.containerTextObject = null;
+        this.drawSvgCanvas = null;
+        this.format = null;
+        this.hoverXAxisValue = null;
+        this.hoverYAxisValue = null;
+        this.rectPositionCollection = null;
+        this.heatMap = null;
     }
 }

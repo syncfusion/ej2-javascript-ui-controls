@@ -81,7 +81,7 @@ export class Parser {
             return text;
         }
         if (isExternalFileLink(text)) {
-            return this.parent.getErrorStrings()[CommonErrors.ref];
+            return this.parent.getErrorStrings()[CommonErrors.Ref];
         }
         if (this.parent.getFormulaCharacter() !== String.fromCharCode(0) && this.parent.getFormulaCharacter() === text[0]) {
             text = text.substring(1);
@@ -90,43 +90,43 @@ export class Parser {
             text = this.checkForNamedRangeAndKeyValue(text);
             this.findNamedRange = false;
         }
-        text = text.replace(/[-+*\/\&\^]+/g, (operators) => {
+        text = text.replace(/[-+*/&^]+/g, (operators: string) => {
             let firstOp: string = '';
             while (1 < operators.length) {
                 switch (operators.substring(0, 2)) {
-                    case '++': 
-                        operators = '+' + operators.substring(2);
-                        break;
-                    case '--':
-                        operators = '+' + operators.substring(2);
-                        break;
-                    case '+-': 
-                        operators = '-' + operators.substring(2);
-                        break;
-                    case '-+':
-                        operators = '-' + operators.substring(2);
-                        break;
-                    case '*+': 
-                        operators = '*' + operators.substring(2);
-                        break;
-                    case '/+':
-                        operators = '/' + operators.substring(2);
-                        break;
-                    case '^+':
-                        operators = '^' + operators.substring(2);
-                        break;
-                    case '&+':
-                        operators = '&' + operators.substring(2);
-                        break;
-                    case '*-':
-                    case '/-':
-                    case '^-':
-                    case '&-':
-                        firstOp = operators.substring(0, 1);
-                        operators = operators.substring(1);
-                        break;
-                    default:
-                        throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], true);
+                case '++':
+                    operators = '+' + operators.substring(2);
+                    break;
+                case '--':
+                    operators = '+' + operators.substring(2);
+                    break;
+                case '+-':
+                    operators = '-' + operators.substring(2);
+                    break;
+                case '-+':
+                    operators = '-' + operators.substring(2);
+                    break;
+                case '*+':
+                    operators = '*' + operators.substring(2);
+                    break;
+                case '/+':
+                    operators = '/' + operators.substring(2);
+                    break;
+                case '^+':
+                    operators = '^' + operators.substring(2);
+                    break;
+                case '&+':
+                    operators = '&' + operators.substring(2);
+                    break;
+                case '*-':
+                case '/-':
+                case '^-':
+                case '&-':
+                    firstOp = operators.substring(0, 1);
+                    operators = operators.substring(1);
+                    break;
+                default:
+                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidExpression], true);
                 }
             }
             return firstOp + operators;
@@ -165,7 +165,7 @@ export class Parser {
                 computeForceCalculate: false
             };
             if (!args.isForceCalculable) {
-                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression];
+                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidExpression];
             }
             if (!this.isFailureTriggered) {
                 this.parent.trigger('onFailure', args);
@@ -175,7 +175,7 @@ export class Parser {
                 text = this.formulaAutoCorrection(text, args);
                 this.parent.storedData.get(fkey).formulaText = '=' + text;
             } else {
-                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression];
+                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidExpression];
             }
         }
         if (!this.ignoreBracet) {
@@ -183,10 +183,10 @@ export class Parser {
             while (i > -1) {
                 const k: number = text.substring(0, i).lastIndexOf('(');
                 if (k === -1) {
-                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.mismatched_parentheses]);
+                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.MismatchedParentheses]);
                 }
                 if (k === i - 1) {
-                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.empty_expression]);
+                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.EmptyExpression]);
                 }
                 let s: string = this.emptyStr;
                 if (this.ignoreBracet) {
@@ -209,7 +209,7 @@ export class Parser {
             }
         }
         if (!this.ignoreBracet && text.indexOf('(') > -1) {
-            throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.mismatched_parentheses]);
+            throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.MismatchedParentheses]);
         }
         text = this.parseSimple(text);
         if (formulaString !== null && formulaString.size > 0) {
@@ -242,7 +242,7 @@ export class Parser {
             return formula;
         } else {
             if (this.indexOfAny(formula, this.specialSym) > -1) {
-                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], false);
+                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidExpression], false);
             }
             while (i < formula.length) {
                 formula = formula.split('-*').join('-').split('/*').join('/').split('*/').join('*').split('-/').join('-').
@@ -282,7 +282,7 @@ export class Parser {
                             i = i + 1;
                         }
                     } else {
-                        throw this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
+                        throw this.parent.formulaErrorStrings[FormulasErrorsStrings.ImproperFormula];
                     }
                 } else if ((this.parent.isDigit(formula[i as number]) || formula[i as number] === this.parent.rightBracket ||
                     this.parent.storedData.has(formula[i as number].toUpperCase())) && (isNullOrUndefined(formula[i + 1]) ||
@@ -291,8 +291,8 @@ export class Parser {
                     op = op === '&' && formula[i + 2] !== '-' ? '' : op; // for the cases 5&3=>53 and 5&-3=>5-3.
                     form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i as number] + op : form + formula[i as number] + op;
                     i = i + 2;
-                    /* eslint-disable-next-line */
-                } else if (this.indexOfAny(formula[i], logicalSym) > -1 && !isNullOrUndefined(formula[i - 1]) && !isNullOrUndefined(formula[i + 1])) {
+                } else if (this.indexOfAny(formula[i as number], logicalSym) > -1 && !isNullOrUndefined(formula[i - 1]) &&
+                    !isNullOrUndefined(formula[i + 1])) {
                     form = form + formula[i as number];
                     i = i + 1;
                 } else if (formula[i as number] === 'q') {
@@ -391,7 +391,7 @@ export class Parser {
                 }
                 j = i + 1 < tempString.length ? tempString.indexOf(this.parent.tic, i + 1) : -1;
                 if (j === -1) {
-                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.mismatched_tics]);
+                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.MismatchedTics]);
                 }
                 condition = this.parent.substring(tempString, i, j - i + 1);
                 key = this.parent.tic + this.spaceString + id.toString() + this.parent.tic;
@@ -495,10 +495,8 @@ export class Parser {
         for (let c: number = 0; c < operators.length; c++) {
             op = op + operators[c as number];
         }
-        /* eslint-disable */
-        text = text.split("---").join("-").split("--").join("+").split(this.parent.getParseArgumentSeparator() + "-").join(this.parent.getParseArgumentSeparator() + "u").split(this.parent.leftBracket + "-").join(this.parent.leftBracket + "u").split("=-").join("=u");
-        text = text.split(',+').join(',').split(this.parent.leftBracket + '+').join(this.parent.leftBracket).split('=+').join('=').split('>+').join('>').split('<+').join('<').split('/+').join('/').split('*+').join('*').split('++').join('+').split("*-").join("*u").split("/-").join("/u").split("w-").join("wu").split("i-").join("iu").toString();
-        /* eslint-enable */
+        text = text.split('---').join('-').split('--').join('+').split(this.parent.getParseArgumentSeparator() + '-').join(this.parent.getParseArgumentSeparator() + 'u').split(this.parent.leftBracket + '-').join(this.parent.leftBracket + 'u').split('=-').join('=u');
+        text = text.split(',+').join(',').split(this.parent.leftBracket + '+').join(this.parent.leftBracket).split('=+').join('=').split('>+').join('>').split('<+').join('<').split('/+').join('/').split('*+').join('*').split('++').join('+').split('*-').join('*u').split('/-').join('/u').split('w-').join('wu').split('i-').join('iu').toString();
         if (text.length > 0 && text[0] === '-') {
             text = text.substring(1).split('-').join(this.tokenOr);
             text = '0-' + text;
@@ -552,7 +550,7 @@ export class Parser {
                         if (text[j as number] === this.parent.arithMarker) {
                             const k: number = this.findLeftMarker(text.substring(0, j - 1));
                             if (k < 0) {
-                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
+                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.CannotParse]);
                             }
                             left = this.parent.substring(text, k + 1, j - k - 1);
                             leftIndex = k + 1;
@@ -568,7 +566,7 @@ export class Parser {
                                 k--;
                             }
                             if (k < 0) {
-                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
+                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.CannotParse]);
                             }
 
                             left = this.parent.substring(text, k, j - k + 1);
@@ -576,7 +574,7 @@ export class Parser {
                         } else if (text[j as number] === this.parent.tic[0]) {
                             const l: number = text.substring(0, j - 1).lastIndexOf(this.parent.tic);
                             if (l < 0) {
-                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
+                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.CannotParse]);
                             }
                             left = this.parent.substring(text, l, j - l + 1);
                             leftIndex = l;
@@ -590,8 +588,8 @@ export class Parser {
                                 j = j - 1;
                             }
                             if (j > -1 && period && text[j as number] === decimalSep) {
-                                /* eslint-disable-next-line */
-                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.number_contains_2_decimal_points]);
+                                throw new FormulaError(
+                                    this.parent.formulaErrorStrings[FormulasErrorsStrings.NumberContains2DecimalPoints]);
                             }
                             j = j + 1;
                             if (j === 0 || (j > 0 && !this.parent.isUpperChar(text[j - 1]))) {
@@ -665,8 +663,8 @@ export class Parser {
                         leftIndex = i;
                     }
                     if (i === text.length - 1) {
-                        /* eslint-disable-next-line */
-                        throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.expression_cannot_end_with_an_operator]);
+                        throw new FormulaError(
+                            this.parent.formulaErrorStrings[FormulasErrorsStrings.ExpressionCannotEndWithAnOperator]);
                     } else {
                         j = i + 1;
                         let uFound: boolean = text[j as number] === 'u';      // for 3*-2
@@ -676,14 +674,14 @@ export class Parser {
                         if (text[j as number] === this.parent.tic[0]) {
                             const k: number = text.substring(j + 1).indexOf(this.parent.tic);
                             if (k < 0) {
-                                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse];
+                                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.CannotParse];
                             }
                             right = this.parent.substring(text, j, k + 2);
                             rightIndex = k + j + 2;
                         } else if (text[j as number] === this.parent.arithMarker) {
                             const k: number = this.findRightMarker(text.substring(j + 1));
                             if (k < 0) {
-                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
+                                throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.CannotParse]);
                             }
                             right = this.parent.substring(text, j + 1, k);
                             rightIndex = k + j + 2;
@@ -699,7 +697,7 @@ export class Parser {
                                 k++;
                             }
                             if (k === text.length) {
-                                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse];
+                                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.CannotParse];
                             }
                             right = this.parent.substring(text, j, k - j + 1);
                             if (uFound) {
@@ -709,8 +707,8 @@ export class Parser {
                         } else if (this.parent.isDigit(text[j as number]) || text[j as number] === decimalSep) {
                             let period: boolean = (text[j as number] === decimalSep);
                             j = j + 1;
-                            /* eslint-disable-next-line */
-                            while (j < text.length && (this.parent.isDigit(text[j]) || (!period && text[j] === decimalSep))) {
+                            while (j < text.length && (this.parent.isDigit(text[j as number]) ||
+                                (!period && text[j as number] === decimalSep))) {
                                 if (text[j as number] === decimalSep) {
                                     period = true;
                                 }
@@ -720,7 +718,7 @@ export class Parser {
                                 j += 1;
                             }
                             if (period && j < text.length && text[j as number] === decimalSep) {
-                                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.number_contains_2_decimal_points];
+                                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.NumberContains2DecimalPoints];
                             }
                             right = 'n' + this.parent.substring(text, i + 1, j - i - 1);
                             rightIndex = j;
@@ -823,7 +821,7 @@ export class Parser {
                     for (let k: number = 0; k < textLen; ++k) {
                         if (text[k as number] === this.sheetToken) {
                             if (k > 0 && !oneTokenFound) {
-                                throw this.parent.getErrorStrings()[CommonErrors.ref];
+                                throw this.parent.getErrorStrings()[CommonErrors.Ref];
                             }
                             oneTokenFound = true;
                             k++;
@@ -931,7 +929,7 @@ export class Parser {
             formula = formula.substring(1);
         }
         if (formula.indexOf('#REF!') > -1) {
-            return this.parent.getErrorStrings()[CommonErrors.ref];
+            return this.parent.getErrorStrings()[CommonErrors.Ref];
         }
         if (formula.length > 0 && formula[0] === '+') {
             formula = formula.substring(1);
@@ -978,7 +976,7 @@ export class Parser {
                     leftParens--;
                 }
                 if (leftParens === -1) {
-                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.mismatched_parentheses]);
+                    throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.MismatchedParentheses]);
                 }
                 let i: number = leftParens - 1;
                 while (i > -1 && (this.parent.isChar(formula[i as number]))) {
@@ -1009,7 +1007,7 @@ export class Parser {
                             isForceCalculable: ex.formulaCorrection, computeForceCalculate: false
                         };
                         if (!args.isForceCalculable) {
-                            throw this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
+                            throw this.parent.formulaErrorStrings[FormulasErrorsStrings.ImproperFormula];
                         }
                         if (!this.isFailureTriggered) {
                             this.parent.trigger('onFailure', args);
@@ -1022,10 +1020,10 @@ export class Parser {
                                 substr = substr.split('(').join('').split(')').join('');
                                 substr = '(' + this.formulaAutoCorrection(substr, args) + ')';
                             } else {
-                                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
+                                throw this.parent.formulaErrorStrings[FormulasErrorsStrings.ImproperFormula];
                             }
                         } else {
-                            throw this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
+                            throw this.parent.formulaErrorStrings[FormulasErrorsStrings.ImproperFormula];
                         }
                     }
                     substr = this.markNamedRanges(substr);
@@ -1044,7 +1042,7 @@ export class Parser {
                         (substr.split('(').join(this.parent.leftBracket))
                             .split(')').join(this.parent.rightBracket) + formula.substring(rightParens + 1);
                 } else if (len > 0) {
-                    return this.parent.getErrorStrings()[CommonErrors.name];
+                    return this.parent.getErrorStrings()[CommonErrors.Name];
                 } else {
                     let s: string = this.emptyStr;
                     if (leftParens > 0) {
@@ -1332,9 +1330,9 @@ export class Parser {
         let l: number = loc;
         let found: boolean = false;
         while (!found && loc < formula.length) {
-            if (formula[l] === '[') {
+            if (formula[l as number] === '[') {
                 count++;
-            } else if (formula[l] === ']') {
+            } else if (formula[l as number] === ']') {
                 count--;
                 if (count === 0) {
                     found = true;

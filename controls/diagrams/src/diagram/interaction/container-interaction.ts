@@ -202,7 +202,7 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
     diagram.enableServerDataBinding(false);
     let object: NodeModel | ConnectorModel; let container: Canvas;
     let nodes: NodeModel;
-    if ((!isBlazor()) || (isBlazor() && (diagram.diagramActions & DiagramAction.ToolAction))) {
+    if (!isBlazor()) {
         if (diagram.selectedObject.helperObject) {
             nodes = diagram.selectedObject.helperObject;
         } else if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
@@ -211,15 +211,8 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
                 container = diagram.selectedItems.wrapper.children[0] as Canvas;
             } else {
                 object = obj as NodeModel;
-                if (isBlazor()) {
-                    if (obj === diagram.selectedItems.nodes[0]) {
-                        container = diagram.selectedItems.wrapper as Canvas;
-                    } else {
-                        container = obj.wrapper as Canvas;
-                    }
-                } else {
-                    container = diagram.selectedItems.wrapper as Canvas;
-                }
+                //Removed isBlazor code
+                container = diagram.selectedItems.wrapper as Canvas;
             }
             diagram.selectedObject.actualObject = object as NodeModel;
             if ((!diagram.currentSymbol) && ((((object as Node).isLane && canLaneInterchange(object as Node, diagram) &&
@@ -273,7 +266,7 @@ export function checkParentAsContainer(diagram: Diagram, obj: NodeModel | Connec
  */
 export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): void {
     const parentNode: NodeModel = diagram.nameTable[(obj as Node).parentId];
-    (obj as any).laneMargin = {left:obj.margin.left,right:obj.margin.right,top:obj.margin.top,bottom:obj.margin.bottom};
+    (obj as any).laneMargin = { left: obj.margin.left, right: obj.margin.right, top: obj.margin.top, bottom: obj.margin.bottom };
     if (parentNode.container.type === 'Canvas') {
         obj.margin.left = (obj.offsetX - parentNode.wrapper.bounds.x - (obj.width / 2));
         obj.margin.top = (obj.offsetY - parentNode.wrapper.bounds.y - (obj.height / 2));
@@ -373,6 +366,8 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                             // eslint-disable-next-line
                             (node as any).parentObj = lanes[parseInt(i.toString(), 10)];
                         }
+                        // 878719: Resolve ESLint errors
+                        // eslint-disable-next-line no-prototype-builtins
                         if (!diagram.nameTable.hasOwnProperty(node.id)) {
                             lanes[parseInt(i.toString(), 10)].children.push(node);
                         }

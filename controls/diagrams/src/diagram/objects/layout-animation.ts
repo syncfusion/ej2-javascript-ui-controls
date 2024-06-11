@@ -17,7 +17,6 @@ export class LayoutAnimation {
 
     private protectChange: boolean = false;
     public setIntervalObject: any = [];
-
     /**
      * Layout expand function for animation of expand and collapse \
      *
@@ -63,16 +62,19 @@ export class LayoutAnimation {
             }
         }
     }
-    //Bug 877226: Nodes overlapped while changing isExpanded property with Layout Animation.
+
+    // Bug 877226: Nodes overlapped while changing isExpanded property with Layout Animation.
     // To stop the and clear the existing setinterval object
     // Added this to stop the existing setinterval object when the layout animation is called for multiple nodes.
-    public stopCurrentAnimation(objValue:ILayout,  diagram:Diagram, node:NodeModel) {
+    public stopCurrentAnimation(objValue: ILayout, diagram: Diagram, node: NodeModel): void {
         clearInterval(this.setIntervalObject[0]);
         this.setIntervalObject = [];
-        for (var k = 0; k < objValue.objects.length; k++) {
-            var node_1 = diagram.nameTable[objValue.objects[parseInt(k.toString(), 10)].id];
-            node_1.offsetX += objValue.objects[parseInt(k.toString(), 10)].differenceX - (objValue.objects[parseInt(k.toString(), 10)].differenceX / 5);
-            node_1.offsetY += objValue.objects[parseInt(k.toString(), 10)].differenceY - (objValue.objects[parseInt(k.toString(), 10)].differenceY / 5);
+        for (let k: number = 0; k < objValue.objects.length; k++) {
+            const node1: NodeModel = diagram.nameTable[objValue.objects[parseInt(k.toString(), 10)].id];
+            node1.offsetX += objValue.objects[parseInt(k.toString(), 10)].differenceX
+                - (objValue.objects[parseInt(k.toString(), 10)].differenceX / 5);
+            node1.offsetY += objValue.objects[parseInt(k.toString(), 10)].differenceY
+                - (objValue.objects[parseInt(k.toString(), 10)].differenceY / 5);
         }
         diagram.realActions = diagram.realActions & RealAction.AnimationClick;
         diagram.refreshCanvasLayers();
@@ -87,7 +89,8 @@ export class LayoutAnimation {
         if (diagram.lineRoutingModule && diagram.constraints & DiagramConstraints.LineRouting) {
             diagram.resetSegments();
         }
-    };
+    }
+
 
 
 

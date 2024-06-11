@@ -144,6 +144,9 @@ export class Lists {
                 } else {
                     insertTag = createElement('br');
                 }
+                if (!isNOU(parentOfCurrentOLUL) && parentOfCurrentOLUL.nodeName === 'BLOCKQUOTE') {
+                    this.parent.observer.notify('blockquote_list_handled', {});
+                }
                 this.parent.domNode.insertAfter(insertTag, startNodeParent);
                 e.event.preventDefault();
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, insertTag, 0);
@@ -218,7 +221,7 @@ export class Lists {
         let endNode: Element = (!isNOU(range.endContainer.parentElement.closest('li')) && range.endContainer.parentElement.closest('li').childElementCount > 1 && range.endContainer.nodeName === '#text') ? range.endContainer as Element :  this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         const parentList: Element = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
         let fullContent: string = '';
-        if (!isNOU(parentList) && !isNOU(parentList.childNodes)) {
+        if (!isNOU(parentList) && !isNOU(parentList.firstChild)) {
             parentList.childNodes.forEach((e: ChildNode) => {
                 fullContent = fullContent + e.textContent;
             });
@@ -240,20 +243,20 @@ export class Lists {
                 detach(range.commonAncestorContainer);
             }
             e.event.preventDefault();
-        } 
+        }
         else if (!isNOU(parentList) && !range.collapsed && parentList.textContent === fullContent ){
             range.deleteContents();
-            this.parent.editableElement.querySelectorAll('li').forEach((li: HTMLElement) => {
+            this.parent.editableElement.querySelectorAll('li').forEach((li: HTMLLIElement) => {
                 if (!li.firstChild || li.textContent.trim() === '') {
                     li.parentNode.removeChild(li);
                 }
             });
-            this.parent.editableElement.querySelectorAll('ol').forEach((ol: HTMLElement) => {
+            this.parent.editableElement.querySelectorAll('ol').forEach((ol: HTMLOListElement) => {
                 if (!ol.firstChild || ol.textContent.trim() === '') {
                     ol.parentNode.removeChild(ol);
                 }
             });
-            this.parent.editableElement.querySelectorAll('ul').forEach((ul: HTMLElement) => {
+            this.parent.editableElement.querySelectorAll('ul').forEach((ul: HTMLUListElement) => {
                 if (!ul.firstChild || ul.textContent.trim() === '') {
                     ul.parentNode.removeChild(ul);
                 }
@@ -272,7 +275,7 @@ export class Lists {
         if (e.event.keyCode === 13) {
             const listElements: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('UL, OL');
             for (let i: number = 0; i < listElements.length; i++) {
-                if (!isNullOrUndefined(listElements[i as number]) && !isNullOrUndefined(listElements[i as number].parentElement) && !isNullOrUndefined(listElements[i as number].previousElementSibling) && (listElements[i as number].parentElement.nodeName === 'UL' || listElements[i as number].parentElement.nodeName === 'OL')) {
+                if (!isNullOrUndefined(listElements[i as number]) && !isNOU(listElements[i as number].parentElement) && !isNullOrUndefined(listElements[i as number].previousElementSibling) && (listElements[i as number].parentElement.nodeName === 'UL' || listElements[i as number].parentElement.nodeName === 'OL')) {
                     listElements[i as number].previousElementSibling.appendChild(listElements[i as number]);
                 }
             }
@@ -353,7 +356,7 @@ export class Lists {
                     nodes.push(blockNodes[i as number]);
                 }
             }
-            if (nodes.length > 1 || nodes.length && ((startOffset === 0 && endOffset === 0) || e.ignoreDefault)) {
+            if (nodes.length > 1 || nodes.length === 1) {
                 e.event.preventDefault();
                 e.event.stopPropagation();
                 this.currentAction = this.getAction(nodes[0]);
@@ -385,7 +388,7 @@ export class Lists {
                     if (e.event && e.event.shiftKey && e.event.key === 'Tab') {
                         e.event.action = 'tab';
                     }
-                    this.saveSelection = this.domNode.saveMarker(this.saveSelection, e.event.action);
+                    this.saveSelection = this.domNode.saveMarker(this.saveSelection);
                     this.saveSelection.restore();
                 }
             }
@@ -603,7 +606,7 @@ export class Lists {
 
     private applyLists(elements: HTMLElement[], type: string, selector?: string, item?: IAdvanceListItem, e?: IHtmlSubCommands): void {
         let isReverse: boolean = true;
-        if (this.isRevert(elements, type, item) && isNOU(item) || (!isNOU(item) && item.listStyle === 'none')) {
+        if (this.isRevert(elements, type, item) && isNOU(item)) {
             this.revertList(elements, e);
             this.removeEmptyListElements();
         } else {
@@ -622,9 +625,8 @@ export class Lists {
                         setStyleAttribute(elements[i as number], { 'list-style-type': item.listStyle.replace( /([a-z])([A-Z])/g, '$1-$2' ).toLowerCase() });
                     }
                 }
-                let elemAtt: string;
                 elements[i as number].style.removeProperty('margin-left');
-                elemAtt = elements[i as number].tagName === 'IMG' || elements[i as number].classList.contains('e-editor-select-start') ? '' : this.domNode.attributes(elements[i as number]);
+                const elemAtt: string = elements[i as number].tagName === 'IMG' || elements[i as number].classList.contains('e-editor-select-start') ? '' : this.domNode.attributes(elements[i as number]);
                 if (elements[i as number].getAttribute('contenteditable') === 'true'
                     && elements[i as number].childNodes.length === 1 && elements[i as number].childNodes[0].nodeName === 'TABLE') {
                     const listEle: Element = document.createElement(type);
@@ -871,100 +873,97 @@ export class Lists {
         const viewNode: Element[] = [];
         for (let i: number = 0; i < elements.length; i++) {
             const element: Element = elements[i as number];
-            if ((isNullOrUndefined((e as IHtmlSubCommands).item)) || ((element.nodeName === 'LI' && (e as IHtmlSubCommands).item.listStyle === 'none'))) {
-                if (this.domNode.contents(element)[0].nodeType === 3 && this.domNode.contents(element)[0].textContent.trim().length === 0) {
-                    detach(this.domNode.contents(element)[0]);
-                }
-
-                let parentNode: Element = elements[i as number].parentNode as Element;
-                let className: string = element.getAttribute('class');
-                if (temp.length === 0) {
-                    const siblingList: Element[] = <NodeListOf<Element> & Element[]>(elements[i as number] as Element).querySelectorAll('ul, ol');
-                    const firstNode: Element = siblingList[0];
-                    if (firstNode) {
-                        const child: NodeListOf<HTMLLIElement> = firstNode
-                            .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
-                        if (child) {
-                            const nestedElement: Element = createElement(firstNode.tagName);
-                            append([nestedElement], firstNode.parentNode as Element);
-                            const nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
-                            append([nestedElementLI], nestedElement);
-                            append([firstNode], nestedElementLI);
-                        }
+            if (this.domNode.contents(element)[0].nodeType === 3 && this.domNode.contents(element)[0].textContent.trim().length === 0) {
+                detach(this.domNode.contents(element)[0]);
+            }
+            let parentNode: Element = elements[i as number].parentNode as Element;
+            let className: string = element.getAttribute('class');
+            if (temp.length === 0) {
+                const siblingList: Element[] = <NodeListOf<Element> & Element[]>(elements[i as number] as Element).querySelectorAll('ul, ol');
+                const firstNode: Element = siblingList[0];
+                if (firstNode) {
+                    const child: NodeListOf<HTMLLIElement> = firstNode
+                        .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
+                    if (child) {
+                        const nestedElement: Element = createElement(firstNode.tagName);
+                        append([nestedElement], firstNode.parentNode as Element);
+                        const nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
+                        append([nestedElementLI], nestedElement);
+                        append([firstNode], nestedElementLI);
                     }
                 }
-                if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
-                    'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
-                    'UL' === (parentNode.parentNode as Element).tagName) {
-                    element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
+            }
+            if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
+                'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
+                'UL' === (parentNode.parentNode as Element).tagName) {
+                element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
+            } else {
+                let classAttr: string = '';
+                if (className) {
+                    // eslint-disable-next-line
+                    classAttr += ' class="' + className + '"';
+                }
+                if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
+                    const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
+                        ' class="' + className + ' e-rte-wrap-inner"';
+                    const parentElement: HTMLElement = parentNode as HTMLElement;
+                    if (elements.length === parentElement.querySelectorAll('li').length) {
+                        if (!isNOU(parentElement.style.listStyleType)) {
+                            (parentNode as HTMLElement).style.removeProperty('list-style-type');
+                        }
+                        if (!isNOU(parentElement.style.listStyleImage)) {
+                            (parentNode as HTMLElement).style.removeProperty('list-style-image');
+                        }
+                        if (parentElement.style.length === 0) {
+                            parentNode.removeAttribute('style');
+                        }
+                    }
+                    const wrapper: string = '<' + e.enterAction + wrapperclass + this.domNode.attributes(element) + '></' + e.enterAction + '>';
+                    if (e.enterAction !== 'BR') {
+                        this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
+                    }
+                    else {
+                        const wrapperSpan: string = '<span class=e-rte-wrap-inner id=removeSpan></span>';
+                        const br: HTMLElement = document.createElement('br');
+                        this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapperSpan));
+                        element.appendChild(br);
+                    }
+                } else if (this.domNode.contents(element)[0].nodeType === 3) {
+                    const replace: string = this.domNode.createTagString(
+                        CONSTANT.DEFAULT_TAG, parentNode, this.parent.domNode.encode(this.domNode.contents(element)[0].textContent));
+                    this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
+                } else if ((this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.startSelection) ||
+                    (this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.endSelection)) {
+                    const replace: string = this.domNode.createTagString(
+                        CONSTANT.DEFAULT_TAG, parentNode, (this.domNode.contents(element)[0] as HTMLElement).outerHTML);
+                    this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
                 } else {
-                    let classAttr: string = '';
-                    if (className) {
-                        // eslint-disable-next-line
-                        classAttr += ' class="' + className + '"';
-                    }
-                    if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
-                        const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
-                            ' class="' + className + ' e-rte-wrap-inner"';
-                        let parentElement = parentNode as HTMLElement;
-                            if (elements.length === parentElement.querySelectorAll('li').length) {
-                                if (!isNOU(parentElement.style.listStyleType)) {
-                                    (parentNode as HTMLElement).style.removeProperty("list-style-type");
-                                }
-                                if (!isNOU(parentElement.style.listStyleImage)) {
-                                    (parentNode as HTMLElement).style.removeProperty("list-style-image");
-                                }
-                                if (parentElement.style.length === 0) {
-                                    parentNode.removeAttribute("style");
-                                }
-                            }
-                        const wrapper: string = '<' + e.enterAction + wrapperclass + this.domNode.attributes(element) + '></' + e.enterAction + '>';
-                        if (e.enterAction !== 'BR') {
-                            this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
-                        }
-                        else {
-                            const wrapperSpan: string = '<span class=e-rte-wrap-inner id=removeSpan></span>';
-                            const br: HTMLElement = document.createElement('br');
-                            this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapperSpan));
-                            element.appendChild(br);
-                        }
-                    } else if (this.domNode.contents(element)[0].nodeType === 3) {
-                        const replace: string = this.domNode.createTagString(
-                            CONSTANT.DEFAULT_TAG, parentNode, this.parent.domNode.encode(this.domNode.contents(element)[0].textContent));
-                        this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
-                    } else if ((this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.startSelection) ||
-                        (this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.endSelection)) {
-                        const replace: string = this.domNode.createTagString(
-                            CONSTANT.DEFAULT_TAG, parentNode, (this.domNode.contents(element)[0] as HTMLElement).outerHTML);
-                        this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
-                    } else {
-                        const childNode: Element = element.firstChild as Element;
-                        if (childNode) {
-                            const attributes: NamedNodeMap = element.parentElement.attributes;
-                            if (attributes.length > 0) {
-                                for (let d: number = 0; d < attributes.length; d++) {
-                                    const e: Attr = attributes[d as number];
-                                    const existingValue: string = childNode.getAttribute(e.nodeName);
-                                    const parentValue: string = (element.parentElement).getAttribute(e.nodeName);
-                                    childNode.setAttribute(e.nodeName, existingValue ? parentValue + ' ' + existingValue : parentValue);
-                                }
+                    const childNode: Element = element.firstChild as Element;
+                    if (childNode) {
+                        const attributes: NamedNodeMap = element.parentElement.attributes;
+                        if (attributes.length > 0) {
+                            for (let d: number = 0; d < attributes.length; d++) {
+                                const e: Attr = attributes[d as number];
+                                const existingValue: string = childNode.getAttribute(e.nodeName);
+                                const parentValue: string = (element.parentElement).getAttribute(e.nodeName);
+                                childNode.setAttribute(e.nodeName, existingValue ? parentValue + ' ' + existingValue : parentValue);
                             }
                         }
-                        className = childNode.getAttribute('class');
-                        if (className && childNode.getAttribute('class')) {
-                            attributes(childNode, { 'class': className + ' ' + childNode.getAttribute('class') });
-                        }
                     }
-                    append([this.openTag('LI') as Element], element);
-                    prepend([this.closeTag('LI') as Element], element);
+                    className = childNode.getAttribute('class');
+                    if (className && childNode.getAttribute('class')) {
+                        attributes(childNode, { 'class': className + ' ' + childNode.getAttribute('class') });
+                    }
                 }
-                this.domNode.insertAfter(this.openTag(parentNode.tagName), element);
-                if ((parentNode.parentNode as Element).tagName === 'LI') {
-                    parentNode = parentNode.parentNode.parentNode as Element;
-                }
-                if (viewNode.indexOf(parentNode) < 0) {
-                    viewNode.push(parentNode);
-                }
+                append([this.openTag('LI') as Element], element);
+                prepend([this.closeTag('LI') as Element], element);
+            }
+            this.domNode.insertAfter(this.openTag(parentNode.tagName), element);
+            if ((parentNode.parentNode as Element).tagName === 'LI') {
+                parentNode = parentNode.parentNode.parentNode as Element;
+            }
+            if (viewNode.indexOf(parentNode) < 0) {
+                viewNode.push(parentNode);
             }
         }
         for (let i: number = 0; i < viewNode.length; i++) {

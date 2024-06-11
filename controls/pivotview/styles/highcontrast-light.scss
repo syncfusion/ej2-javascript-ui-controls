@@ -1,2 +1,8 @@
-@import 'pivotview/highcontrast-light.scss';
-@import 'pivotfieldlist/highcontrast-light.scss';
+@import 'ej2-base/styles/definition/highcontrast-light.scss';
+@import 'pivotfieldlist/highcontrast-light-definition.scss';
+@import 'pivotview/highcontrast-light-definition.scss';
+@import 'pivotview/icons/highcontrast-light.scss';
+@import 'pivotview/all.scss';
+
+@import 'pivotfieldlist/icons/highcontrast-light.scss';
+@import 'pivotfieldlist/all.scss';

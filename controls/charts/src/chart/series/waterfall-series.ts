@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { withInRange } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { subArraySum, getElement, appendChildElement, redrawElement } from '../../common/utils/helper';
@@ -116,17 +113,40 @@ export class WaterfallSeries extends ColumnBase {
         }
         const element: HTMLElement = <HTMLElement>(redrawElement(redraw, options.id, options, series.chart.renderer) ||
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])));
-            element.style.visibility = (!series.chart.enableCanvas) ? ((((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && series.chart.animateSeries) ?
+        element.style.visibility = (!series.chart.enableCanvas) ? ((((series.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && series.chart.animateSeries) ?
             'hidden' : 'visible') : null;
-        appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw, true, null, null, null, direction);
+        appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw, true, null, null, null, direction,
+                           null, null, null, series.chart.duration);
         this.renderMarker(series);
     }
 
     /**
-     * To check intermediateSumIndex in waterfall series.
+     * Updates the direction of rendering for the specified series.
      *
-     * @returns {boolean} check intermediateSumIndex
-     * @private
+     * @param {Series} series - The series to be rendered.
+     * @returns {void}
+     */
+    public updateDirection(series: Series): void {
+        this.render(series);
+        if (series.marker.visible) {
+            appendChildElement(series.chart.enableCanvas, series.chart.seriesElements, series.symbolElement, true);
+        }
+        if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+            series.chart.dataLabelCollections = [];
+            series.chart.dataLabelModule.render(series, series.chart, series.marker.dataLabel);
+            if (series.textElement) {
+                appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.shapeElement, true);
+                appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.textElement, true);
+            }
+        }
+    }
+
+    /**
+     * Checks whether the current point in the series is an intermediate sum.
+     *
+     * @param {Series} series - The series to check.
+     * @param {number} index - The index of the point in the series.
+     * @returns {boolean} - Returns true if the current point is an intermediate sum, otherwise false.
      */
     private isIntermediateSum(series: Series, index: number): boolean {
         if (series.intermediateSumIndexes !== undefined && series.intermediateSumIndexes.indexOf(index) !== -1) {
@@ -136,10 +156,11 @@ export class WaterfallSeries extends ColumnBase {
     }
 
     /**
-     * To check sumIndex in waterfall series.
+     * Checks whether the current point in the series is a sum index.
      *
-     * @returns {boolean} check sumIndex
-     * @private
+     * @param {Series} series - The series to check.
+     * @param {number} index - The index of the point in the series.
+     * @returns {boolean} - Returns true if the current point is a sum index, otherwise false.
      */
     private isSumIndex(series: Series, index: number): boolean {
         if (series.sumIndexes !== undefined && series.sumIndexes.indexOf(index) !== -1) {
@@ -149,10 +170,11 @@ export class WaterfallSeries extends ColumnBase {
     }
 
     /**
-     * To trigger the point rendering event for waterfall series.
+     * Triggers the point render event for a given series and point.
      *
-     * @returns {IPointRenderEventArgs} point rendering event values
-     * @private
+     * @param {Series} series - The series to which the point belongs.
+     * @param {Points} point - The point for which to trigger the event.
+     * @returns {IPointRenderEventArgs} - The event arguments for the point render event.
      */
     private triggerPointRenderEvent(series: Series, point: Points): IPointRenderEventArgs {
         let color: string;
@@ -169,10 +191,11 @@ export class WaterfallSeries extends ColumnBase {
     }
 
     /**
-     * Add sumIndex and intermediateSumIndex data.
+     * Processes the internal data for a series.
      *
-     * @returns {object[]} data
-     * @private
+     * @param {Object[]} json - The internal data JSON array.
+     * @param {Series} series - The series for which to process the data.
+     * @returns {Object[]} - The processed internal data array.
      */
     public processInternalData(json: Object[], series: Series): Object[] {
         const data: Object[] = json; let index: number; let sumValue : number = 0;
@@ -225,11 +248,13 @@ export class WaterfallSeries extends ColumnBase {
     }
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'WaterfallSeries';
         /**
-         * return the module name
+         * return the module name.
          */
     }
     /**
@@ -238,7 +263,6 @@ export class WaterfallSeries extends ColumnBase {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
          * Destroys the waterfall series.

@@ -1,6 +1,4 @@
-
 import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
-
 import { LegendTitleModel, LegendLocationModel, LegendBorderModel, LegendItemStyleModel} from '../legend/legend-model';
 import { SmithchartAlignment } from '../utils/enum';
 import { LegendItemStyleBorderModel} from '../legend/legend-model';
@@ -49,7 +47,7 @@ export class LegendTitle extends  ChildProperty<LegendTitle> {
      *  options for customizing font.
      */
 
-    @Complex<SmithchartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, SmithchartFont)
     public textStyle: SmithchartFont;
 
 }
@@ -284,10 +282,6 @@ export class SmithchartLegendSettings extends ChildProperty<SmithchartLegendSett
      *  options for customizing font.
      */
 
-    @Complex<SmithchartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, SmithchartFont)
     public textStyle: SmithchartFont;
 }
-
-
-
-

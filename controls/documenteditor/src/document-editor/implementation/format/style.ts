@@ -38,6 +38,7 @@ export class WParagraphStyle extends WStyle {
     }
     /**
      * @private
+     * @returns {void}
      */
     public clear(): void {
         if (this.characterFormat) {
@@ -49,7 +50,9 @@ export class WParagraphStyle extends WStyle {
     }
     /**
      * Disposes the internal objects which are maintained.
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.characterFormat) {
@@ -94,6 +97,7 @@ export class WCharacterStyle extends WStyle {
     }
     /**
      * @private
+     * @returns {void}
      */
     public clear(): void {
         if (this.characterFormat) {
@@ -102,7 +106,9 @@ export class WCharacterStyle extends WStyle {
     }
     /**
      * Disposes the internal objects which are maintained.
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.characterFormat) {
@@ -134,7 +140,9 @@ export class WTableStyle extends WStyle {
     }
     /**
      * Disposes the internal objects which are maintained.
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         this.ownerBase = undefined;
@@ -177,7 +185,7 @@ export class WStyles {
     public clear(): void {
         if (this.collection && this.collection.length > 0) {
             for (let i: number = 0; i < this.collection.length; i++) {
-                let style: Object = this.collection[parseInt(i.toString(), 10)];
+                const style: Object = this.collection[parseInt(i.toString(), 10)];
                 if (style instanceof WCharacterStyle) {
                     (style as WCharacterStyle).clear();
                 } else if (style instanceof WParagraphStyle) {
@@ -215,11 +223,11 @@ export class WStyles {
         for (const style of styles) {
             const returnStyle: any = {};
             const returnStyleObject: any = {};
-            if (type == "Paragraph") {
+            if (type === 'Paragraph') {
                 returnStyleObject.paragraphFormat = {};
                 HelperMethods.writeParagraphFormat(returnStyleObject.paragraphFormat, true, (style as any).paragraphFormat);
             }
-            if (type !== "Table") {
+            if (type !== 'Table') {
                 returnStyleObject.characterFormat = {};
                 HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat, true, (style as any).characterFormat);
             }
@@ -227,8 +235,8 @@ export class WStyles {
             returnStyle.style = JSON.stringify(returnStyleObject);
             if (!isNullOrUndefined(type)) {
                 returnStyle.type = type;
-                if (returnStyle.type == "Paragraph" && !isNullOrUndefined(style.link)){
-                    returnStyle.type = "Linked";
+                if (returnStyle.type === 'Paragraph' && !isNullOrUndefined(style.link)){
+                    returnStyle.type = 'Linked';
                 }
             }
             styleObjects.push(returnStyle);
@@ -238,12 +246,14 @@ export class WStyles {
 
     /**
      * Disposes the internal objects which are maintained.
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.collection && this.collection.length > 0) {
             for (let i: number = 0; i < this.collection.length; i++) {
-                let style: Object = this.collection[parseInt(i.toString(), 10)];
+                const style: Object = this.collection[parseInt(i.toString(), 10)];
                 if (style instanceof WCharacterStyle) {
                     (style as WCharacterStyle).destroy();
                 } else if (style instanceof WParagraphStyle) {

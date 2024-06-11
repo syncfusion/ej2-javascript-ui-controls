@@ -1,10 +1,5 @@
-/* eslint-disable no-trailing-spaces */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
-import { getAnimationFunction, ChartLocation, pathAnimation, getElement } from '../../common/utils/helper';
-import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
+import { getAnimationFunction, ChartLocation, pathAnimation, getElement, animateAddPoints } from '../../common/utils/helper';
+import { PathAttributes, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../axis/axis';
 import { Series, Points } from './chart-series';
 import { Chart } from '../chart';
@@ -22,14 +17,19 @@ import { VisibleRangeModel } from '../../common/model/interface';
 export class LineBase {
 
     public chart: Chart;
-    /** @private */
+    /**
+     * Initializes the tooltip module for the chart.
+     *
+     * @param {Chart} [chartModule] - The chart instance to which the tooltip module is initialized.
+     */
     constructor(chartModule?: Chart) {
         this.chart = chartModule;
     }
     /**
-     * To improve the chart performance.
+     * Enhances the performance of the chart by enabling complex properties.
      *
-     * @returns {void}
+     * @param {Series} series - The series for which complex properties are enabled.
+     * @returns {Points[]} An array of points.
      * @private
      */
     public enableComplexProperty(series: Series): Points[] {
@@ -75,10 +75,11 @@ export class LineBase {
      * @param {boolean} isInverted isInverted
      * @param {Function} getPointLocation getPointLocation
      * @param {string} startPoint startPoint
+     * @returns {string} get line path direction
      */
     public getLineDirection(
         firstPoint: Points, secondPoint: Points, series: Series,
-        isInverted: Boolean, getPointLocation: Function,
+        isInverted: boolean, getPointLocation: Function,
         startPoint: string
     ): string {
         let direction: string = '';
@@ -89,7 +90,7 @@ export class LineBase {
             const point2: ChartLocation = getPointLocation(
                 secondPoint.xValue, secondPoint.yValue, series.xAxis, series.yAxis, isInverted, series
             );
-            
+
             direction = startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ' +
                 'L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ';
         }
@@ -97,12 +98,22 @@ export class LineBase {
 
     }
     /**
-     * To append the line path.
+     * Appends a line path to the chart.
      *
+     * @param {PathOption} options - The options for the path.
+     * @param {Series} series - The series to which the path belongs.
+     * @param {string} clipRect - The clipping rectangle for the path.
      * @returns {void}
-     * @private
      */
     public appendLinePath(options: PathOption, series: Series, clipRect: string): void {
+        const points: { element: Element; previousDirection: string; chart: Chart } =
+            this.appendPathElement(options, series, clipRect);
+        pathAnimation(points.element, options.d, series.chart.redraw, points.previousDirection, points.chart.duration);
+    }
+
+    public appendPathElement(options: PathOption | PathAttributes, series: Series, clipRect: string): {
+        element: Element, previousDirection: string, chart: Chart
+    } {
         const element: Element = getElement(options.id);
         const chart: Chart = series.chart;
         const previousDirection: string = element ? element.getAttribute('d') : null;
@@ -116,12 +127,106 @@ export class LineBase {
             series.seriesElement.appendChild(htmlObject);
         }
         series.isRectSeries = false;
-        pathAnimation(element, options.d, series.chart.redraw, previousDirection, chart.duration);
+        return { element, previousDirection, chart };
+    }
+    /**
+     * Adds a line path to equate the start and end paths.
+     *
+     * @param {PathOption} options - The options for the path.
+     * @param {Series} series - The series to which the path belongs.
+     * @param {string} clipRect - The clip rectangle for the path.
+     * @returns {void}
+     */
+    public addPath(options: PathOption, series: Series, clipRect: string): void {
+        const points: { element: Element; previousDirection: string; chart: Chart } =
+            this.appendPathElement(options, series, clipRect);
+        if (points.previousDirection !== '' && options.d !== '') {
+            const startPathCommands: string[] = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (startPathCommands.length < endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        startPathCommands.push((startPathCommands[startPathCommands.length - 1]).replace('M', 'L'));
+                    }
+                }
+                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+            } else if (startPathCommands.length > endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        if (series.removedPointIndex === series.points.length) {
+                            endPathCommands.push((endPathCommands[endPathCommands.length - 1]).replace('M', 'L'));
+                        }
+                        else {
+                            endPathCommands.splice(1, 0, endPathCommands[0].replace('M', 'L'));
+                        }
+                    }
+                }
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
+            }
+            else {
+                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+            }
+        }
+    }
+    /**
+     * Adds a area path to equate the start and end paths.
+     *
+     * @param {PathOption} options - The options for the path.
+     * @param {Series} series - The series to which the path belongs.
+     * @param {string} clipRect - The clip rectangle for the path.
+     * @returns {void}
+     */
+    public addAreaPath(options: PathOption, series: Series, clipRect: string): void {
+        const points: { element: Element; previousDirection: string; chart: Chart } =
+            this.appendPathElement(options, series, clipRect);
+        if (points.previousDirection !== '' && options.d !== '') {
+            const startPathCommands: string[] = points.previousDirection.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
+            const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
+            const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (minLength < endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        if (endPathCommands.length !== startPathCommands.length) {
+                            if (startPathCommands.length === 1) {
+                                startPathCommands.push(startPathCommands[startPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)].replace('M', 'L'));
+                            } else {
+                                startPathCommands.splice(startPathCommands.length - 1, 0, startPathCommands[startPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)]);
+                            }
+                        }
+                    }
+                }
+                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+            } else if (startPathCommands.length > endPathCommands.length) {
+                for (let i: number = minLength; i < maxLength; i++) {
+                    if (endPathCommands.length !== startPathCommands.length) {
+                        if (series.removedPointIndex === series.points.length) {
+                            if (endPathCommands.length === 1) {
+                                endPathCommands.push(endPathCommands[endPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)].replace('M', 'L'));
+                            } else {
+                                endPathCommands.splice(endPathCommands.length - 1, 0, endPathCommands[endPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)]);
+                            }
+                        }
+                        else {
+                            endPathCommands.splice(1, 0, endPathCommands[1] ? endPathCommands[1] : endPathCommands[0]);
+                        }
+                      
+                    }
+                }
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
+            }
+            else {
+                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+            }
+        }
     }
 
     /**
      * To render the marker for the series.
      *
+     * @param {Series} series - The series for which markers are rendered.
      * @returns {void}
      * @private
      */
@@ -131,10 +236,11 @@ export class LineBase {
         }
     }
     /**
-     * To do the progressive animation.
+     * Executes progressive animation for the series.
      *
+     * @param {Series} series - The series for which progressive animation is executed.
+     * @param {AnimationModel} option - The animation option.
      * @returns {void}
-     * @private
      */
     public doProgressiveAnimation(series: Series, option: AnimationModel): void {
         const animation: Animation = new Animation({});
@@ -166,6 +272,7 @@ export class LineBase {
      * @param {Series} series series
      * @param {boolean} isInverted isInverted
      * @param {Function} getLocation getLocation
+     * @returns {void}
      */
     public storePointLocation(point: Points, series: Series, isInverted: boolean, getLocation: Function): void {
         const markerWidth: number = (series.marker && series.marker.width) ? series.marker.width : 0;
@@ -186,11 +293,11 @@ export class LineBase {
         );
     }
     /**
-     * To find point with in the visible range
+     * Checks if the y-value of a point falls within the y-axis range.
      *
-     * @param {Points} point point
-     * @param {Axis} yAxis yAxis
-     * @private
+     * @param {Points} point - The point to be checked.
+     * @param {Axis} yAxis - The y-axis.
+     * @returns {boolean} - Returns true if the y-value falls within the y-axis range, otherwise false.
      */
     public withinYRange(point: Points, yAxis: Axis): boolean {
         return point.yValue >= yAxis.visibleRange.min && point.yValue <= yAxis.visibleRange.max;
@@ -211,11 +318,12 @@ export class LineBase {
                 (currentPoint.x) + ' ' + (previousPoint.y) + ' L ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
         }
     }
-    
+
     /**
-     * To get first and last visible points
+     * Gets the first and last visible points from a collection of points.
      *
-     * @private
+     * @param {Points[]} points - Collection of points.
+     * @returns {{ first: Points, last: Points }} - Returns an object containing the first and last visible points.
      */
     public getFirstLastVisiblePoint(points: Points[]): { first: Points, last: Points } {
         let first: Points = null; let last: Points = null;
@@ -229,40 +337,42 @@ export class LineBase {
     }
 
     /**
-     * To Generate the area series border path direction from area series main direction path.
-     * 
-     *  @param {string} direction direction
+     * Gets the border direction based on the provided direction.
      *
-     * */
+     * @param {string} direction - The direction string.
+     * @returns {string} - Returns the border direction.
+     */
     public getBorderDirection(
         direction: string
-    ): string{
-        const coordinates: string [] = direction.split(' ');
+    ): string {
+        const coordinates: string[] = direction.split(' ');
         if (coordinates.length > 3 && !(this.chart.stackingAreaSeriesModule) && !(this.chart.stackingStepAreaSeriesModule)) {
             coordinates.splice(coordinates.length - 4, 3);
         }
         else if (this.chart.stackingAreaSeriesModule || this.chart.stackingStepAreaSeriesModule) {
             coordinates.splice(coordinates.length / 2 + 1, coordinates.length / 2 + 1);
-            if (coordinates[coordinates.length - 1] === 'L') {
+            if (coordinates[coordinates.length - 1] === 'L' || coordinates[coordinates.length - 1] === 'M') {
                 coordinates.splice(coordinates.length - 1, 1);
             }
         }
         return coordinates.join(' ');
-    } 
+    }
 
     /**
-     * To remove empty point directions from series direction of area types.
-     * 
-     *  @param {string} borderDirection direction
+     * Removes the border from the empty points based on the provided border direction.
      *
-     * */
+     * @param {string} borderDirection - The border direction.
+     * @returns {string} - Returns the updated border direction.
+     */
     public removeEmptyPointsBorder(
         borderDirection: string
     ): string {
         let startIndex: number = 0;
-        const coordinates: string [] = borderDirection.split(' ');
-        // eslint-disable-next-line @typescript-eslint/tslint/config
-        let point;
+        const coordinates: string[] = borderDirection.split(' ');
+        let point: number;
+        if (coordinates.length === 4) {
+            return coordinates.join(' ');
+        }
         do {
             point = coordinates.indexOf('M', startIndex);
             if (point > -1) {
@@ -276,13 +386,14 @@ export class LineBase {
         } while (point !== -1);
 
         return coordinates.join(' ');
-    } 
+    }
 
     /**
-     * To do the linear animation.
+     * Performs linear animation for the series based on the provided animation model.
      *
-     * @returns {void}   
-     * @private
+     * @param {Series} series - The series to animate.
+     * @param {AnimationModel} animation - The animation model containing animation details.
+     * @returns {void}
      */
     public doLinearAnimation(series: Series, animation: AnimationModel): void {
         const clipRect: HTMLElement = <HTMLElement>series.clipRectElement.childNodes[0].childNodes[0];

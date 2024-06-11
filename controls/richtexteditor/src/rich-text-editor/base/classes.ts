@@ -36,6 +36,11 @@ export const CLS_STYLE_SHEET: string = 'rte-iframe-style-sheet';
  * @hidden
  * @deprecated
  */
+export const CLS_RTE_CONTAINER: string = 'e-rte-container';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_TOOLBAR: string = 'e-rte-toolbar';
 /**
  * @hidden
@@ -429,6 +434,16 @@ export const CLS_TABLE_SEL: string = 'e-cell-select';
  * @hidden
  * @deprecated
  */
+export const CLS_TABLE_SEL_END: string = 'e-cell-select-end';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_TABLE_MULTI_CELL: string = 'e-multi-cells-select';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_TB_DASH_BOR: string = 'e-dashed-border';
 /**
  * @hidden
@@ -610,3 +625,8 @@ export const CLS_RTE_RES_WEST: string = 'e-south-west';
  * @deprecated
  */
 export const CLS_RTE_SOURCE_CODE_TXTAREA: string = 'e-rte-srctextarea';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const ALLOWED_ACTIONKEYS: string[] = ['Enter', 'ArrowRight', 'ArrowLeft'];

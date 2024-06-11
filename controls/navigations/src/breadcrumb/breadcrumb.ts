@@ -62,6 +62,14 @@ export class BreadcrumbItem extends ChildProperty<BreadcrumbItem> {
     public text: string;
 
     /**
+     * Specifies the id of the Breadcrumb item.
+     *
+     * @default ''
+     */
+    @Property('')
+    public id: string;
+
+    /**
      * Specifies the Url of the Breadcrumb item that will be activated when clicked.
      *
      * @default ''
@@ -439,6 +447,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                         args.item.setAttribute(ARIADISABLED, 'true');
                         args.item.classList.add(DISABLEDCLASS);
                     }
+                    if (eventArgs.item.id) {
+                        args.item.setAttribute('id', eventArgs.item.id);
+                    }
                     if ((eventArgs.item.disabled || this.disabled) && args.item.children.length && !this.itemTemplate) {
                         args.item.children[0].setAttribute(TABINDEX, '-1');
                     }
@@ -476,7 +487,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                             return '/';
                         });
                     } else {
-                        listBaseOptions.template = this.separatorTemplate as any;
+                        listBaseOptions.template = this.separatorTemplate as string | Function;
                     }
                     listBaseOptions.itemClass = 'e-breadcrumb-separator';
                     isSingleLevel = false;
@@ -554,12 +565,17 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
             }
             if ((this as unknown as { isReact: boolean }).isReact) {
                 this.renderReactTemplates();
+                setTimeout(() => {
+                    this.calculateMaxItems();
+                }, 5);
             }
             if (this.overflowMode === 'Wrap') {
                 this.element.appendChild(firstOl);
             }
             this.element.appendChild(ol);
-            this.calculateMaxItems();
+            if (!(this as unknown as { isReact: boolean }).isReact) {
+                this.calculateMaxItems();
+            }
         }
     }
 
@@ -633,11 +649,10 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     private beforeItemRenderChanges(prevItem: BreadcrumbItemModel, currItem: BreadcrumbItemModel, elem: Element, isRightIcon: boolean)
         : void {
         const wrapElem: Element = elem.querySelector('.e-anchor-wrap');
-        if (wrapElem && wrapElem.querySelector('.e-home')) {
+        if (wrapElem) {
             wrapElem.parentElement.setAttribute('aria-label', 'home');
-            wrapElem.parentElement.setAttribute('role', 'link');
         }
-        if (currItem.text !== prevItem.text) {
+        if (currItem.text !== prevItem.text && wrapElem) {
             wrapElem.childNodes.forEach((child: Element) => {
                 if (child.nodeType === Node.TEXT_NODE) {
                     child.textContent = currItem.text;
@@ -721,7 +736,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 this.endIndex = idx;
             }
             this.trigger('itemClick', { element: li, item: this.items[idx as number], event: e });
-            this.activeItem = this.items[idx as number].url || this.items[idx as number].text;
+            if (this.items[idx as number]) {
+                this.activeItem = this.items[idx as number].url || this.items[idx as number].text;
+            }
             this.dataBind();
         }
         if ((e.target as Element).classList.contains('e-breadcrumb-collapsed')) {
@@ -744,7 +761,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
             position: { X: 'left', Y: 'bottom' },
             collision: { X: 'fit', Y: 'flip' },
             open: (): void => {
-                this.popupUl.focus();
+                if (this.popupUl) { this.popupUl.focus(); }
             }
         });
         this.popupWireEvents();

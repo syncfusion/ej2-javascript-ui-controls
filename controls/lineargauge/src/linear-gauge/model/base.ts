@@ -345,7 +345,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
     /**
      * Sets and gets the options to customize the border for range tooltip.
      */
-    @Complex<BorderModel>({}, Border)
+    @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
 
     /**
@@ -442,7 +442,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Sets and gets the options to customize the border for tooltip.
      */
-    @Complex<BorderModel>({}, Border)
+    @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
 
     /**

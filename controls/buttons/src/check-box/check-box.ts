@@ -40,13 +40,12 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private tagName: string;
     private isFocused: boolean = false;
     private isMouseClick: boolean = false;
-    private isVue: boolean;
     private formElement: HTMLElement;
     private initialCheckedValue: boolean;
     private wrapper: Element;
     private clickTriggered: boolean = false;
     private validCheck: boolean = true;
-    
+
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
      *
@@ -166,8 +165,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private changeState(state?: string, isInitialize?: boolean ): void {
-        let ariaState: string;
-        let wrapper: Element = this.getWrapper() as Element;
+        const wrapper: Element = this.getWrapper() as Element;
         let rippleSpan: Element | null = null;
         let frameSpan: Element | null = null;
         if (wrapper) {
@@ -185,7 +183,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 rippleSpan.classList.remove(RIPPLEINDETERMINATE);
                 rippleSpan.classList.add(RIPPLECHECK);
             }
-            ariaState = 'true';
             this.element.checked = true;
             if ((this.element.required || closest(this.element, 'form') && closest(this.element, 'form').classList.contains('e-formvalidator')) && this.validCheck && !isInitialize) {
                 this.element.checked = false;
@@ -200,7 +197,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             if (rippleSpan) {
                 removeClass([rippleSpan], [RIPPLECHECK, RIPPLEINDETERMINATE]);
             }
-            ariaState = 'false';
             this.element.checked = false;
             if ((this.element.required || closest(this.element, 'form') && closest(this.element, 'form').classList.contains('e-formvalidator')) && this.validCheck && !isInitialize) {
                 this.element.checked = true;
@@ -217,7 +213,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 rippleSpan.classList.remove(RIPPLECHECK);
                 rippleSpan.classList.add(RIPPLEINDETERMINATE);
             }
-            ariaState = 'mixed';
             this.element.indeterminate = true;
             this.indeterminate = true;
         }
@@ -564,8 +559,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         wrapper.setAttribute('aria-disabled', 'true');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
     private setText(text: string): void {
         const wrapper: Element = this.getWrapper() as Element;
         if (!wrapper) {
@@ -677,7 +670,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     } else if (key === 'style') {
                         const frameSpan: Element = (this.getWrapper() as Element).getElementsByClassName(FRAME)[0];
                         frameSpan.setAttribute(key, this.htmlAttributes[`${key}`]);
-                    } else if(key === 'disabled') {
+                    } else if (key === 'disabled') {
                         if (this.htmlAttributes[`${key}`] === 'true') {
                             this.setDisabled();
                         }

@@ -1,4 +1,3 @@
-/* eslint-disable valid-jsdoc */
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ExportType } from '../../common/utils/enum';
 import { ExportUtils } from '../../common/utils/export';
@@ -78,6 +77,7 @@ export class Export3D {
      * @param {Chart3D} chart - The 3D chart for which the data URL is requested.
      * @returns {{ element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string }} An object containing the HTML canvas element, data URL, and blob URL.
      */
+
     public getDataUrl(chart: Chart3D): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string} {
         const exportUtil: ExportUtils = new ExportUtils(chart);
         return exportUtil.getDataUrl(chart as Chart3D);

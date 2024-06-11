@@ -2,22 +2,21 @@
  * Resize library
  */
 import { isNullOrUndefined as isNOU, createElement, EventHandler, detach, Browser } from '@syncfusion/ej2-base';
-/* eslint-disable */
 const elementClass: string [] = ['north-west', 'north', 'north-east', 'west', 'east', 'south-west', 'south', 'south-east'];
-const RESIZE_HANDLER =  'e-resize-handle';
-const FOCUSED_HANDLER = 'e-focused-handle';
-const DIALOG_RESIZABLE = 'e-dlg-resizable';
+const RESIZE_HANDLER: string =  'e-resize-handle';
+const FOCUSED_HANDLER: string = 'e-focused-handle';
+const DIALOG_RESIZABLE: string = 'e-dlg-resizable';
 const RESTRICT_LEFT: string [] = ['e-restrict-left'];
-const RESIZE_WITHIN_VIEWPORT = 'e-resize-viewport';
+const RESIZE_WITHIN_VIEWPORT: string = 'e-resize-viewport';
 const dialogBorderResize: string [] = ['north', 'west', 'east', 'south'];
 let targetElement: HTMLElement;
 let selectedHandler: HTMLElement;
-let originalWidth = 0;
-let originalHeight = 0;
-let originalX = 0;
-let originalY = 0;
-let originalMouseX = 0;
-let originalMouseY = 0;
+let originalWidth: number = 0;
+let originalHeight: number = 0;
+let originalX: number = 0;
+let originalY: number = 0;
+let originalMouseX: number = 0;
+let originalMouseY: number = 0;
 let minHeight: number;
 let maxHeight: number;
 let minWidth: number;
@@ -26,7 +25,6 @@ let containerElement: HTMLElement;
 let resizeStart: Function = null;
 let resize: Function = null;
 let resizeEnd: Function = null;
-/* eslint-enable */
 let resizeWestWidth: number;
 let setLeft: boolean = true;
 let previousWidth: number = 0;
@@ -140,25 +138,22 @@ function getDOMElement(element: string | HTMLElement): HTMLElement {
     return domElement;
 }
 
-// eslint-disable-next-line
 function wireEvents(args?: any): void  {
-    if (isNOU(args)) {
-        args = this;
-    }
+    const context: any = args || this;
     const resizers: NodeListOf<Element> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i: number = 0; i < resizers.length; i++) {
         selectedHandler = resizers[i as number] as HTMLElement;
-        EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
+        EventHandler.add(selectedHandler, 'mousedown', onMouseDown, context);
         const eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
-        EventHandler.add(selectedHandler, eventName, onTouchStart, args);
+        EventHandler.add(selectedHandler, eventName, onTouchStart, context);
     }
     const borderResizers: NodeListOf<Element> = targetElement.querySelectorAll('.e-dialog-border-resize');
     if (!isNOU(borderResizers)) {
         for (let i: number = 0; i < borderResizers.length; i++) {
             selectedHandler = borderResizers[i as number] as HTMLElement;
-            EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
+            EventHandler.add(selectedHandler, 'mousedown', onMouseDown, context);
             const eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
-            EventHandler.add(selectedHandler, eventName, onTouchStart, args);
+            EventHandler.add(selectedHandler, eventName, onTouchStart, context);
         }
     }
 }
@@ -187,7 +182,7 @@ function onMouseDown(e: MouseEvent): void {
     originalMouseY = e.pageY;
     (e.target as HTMLElement).classList.add(FOCUSED_HANDLER);
     if (!isNOU(resizeStart)) {
-        proxy = this;
+        const proxy: any = null || this;
         if (resizeStart(e, proxy) === true) {
             return;
         }
@@ -226,7 +221,7 @@ function onMouseUp(e: MouseEvent): void {
         document.body.querySelector('.' + FOCUSED_HANDLER).classList.remove(FOCUSED_HANDLER);
     }
     if (!isNOU(resizeEnd)) {
-        proxy = this;
+        const proxy: any = null || this;
         resizeEnd(e, proxy);
     }
     EventHandler.remove(document, 'mouseup', onMouseUp);
@@ -260,7 +255,7 @@ function onTouchStart(e: TouchEvent | MouseEvent): void {
     originalMouseX = coordinates.pageX;
     originalMouseY = coordinates.pageY;
     if (!isNOU(resizeStart)) {
-        proxy = this;
+        const proxy: any = null || this;
         if (resizeStart(e, proxy) === true) {
             return;
         }
@@ -292,7 +287,7 @@ function onMouseMove(e: MouseEvent): void {
             }
         }
         if (!isNOU(resize)) {
-            proxy = this;
+            const proxy: any = null || this;
             resize(e, proxy);
         }
         switch (resizeTowards) {
@@ -339,9 +334,11 @@ function getClientRectValues (element: HTMLElement): ClientRect | DOMRect {
     return element.getBoundingClientRect();
 }
 
-/* istanbul ignore next */
-// eslint-disable-next-line
-function resizeSouth(e: any): void {
+/**
+ * @param {MouseEvent | TouchEvent} e - specifies the event
+ * @returns {void}
+ */
+function resizeSouth(e: MouseEvent | TouchEvent): void {
     const documentHeight: number = document.documentElement.clientHeight;
     let calculateValue: boolean = false;
     const coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
@@ -392,12 +389,16 @@ function resizeSouth(e: any): void {
     }
 }
 
-/* istanbul ignore next */
-// eslint-disable-next-line
-function resizeNorth(e: any): void {
+/**
+ * Resizes the element towards the north direction.
+ *
+ * @param {MouseEvent | TouchEvent} e - The event object.
+ * @returns {void}
+ */
+function resizeNorth(e: MouseEvent | TouchEvent): void {
     let calculateValue: boolean = false;
     let boundaryRectValues: ClientRect;
-    const pageY: number = (getEventType(e.type) === 'mouse') ? e.pageY : e.touches[0].pageY;
+    const pageY: number = (getEventType(e.type) === 'mouse') ? (e as MouseEvent).pageY : (e as TouchEvent).touches[0].pageY;
     const targetRectValues: ClientRect = getClientRectValues(targetElement);
     if (!isNOU(containerElement)) {
         boundaryRectValues = getClientRectValues(containerElement);
@@ -422,16 +423,20 @@ function resizeNorth(e: any): void {
     }
 }
 
-/* istanbul ignore next */
-// eslint-disable-next-line
-function resizeWest(e: any): void {
+/**
+ * Resizes the element towards the west direction.
+ *
+ * @param {MouseEvent | TouchEvent} e - The event object.
+ * @returns {void}
+ */
+function resizeWest(e: MouseEvent | TouchEvent): void {
     const documentWidth: number = document.documentElement.clientWidth;
     let calculateValue: boolean = false;
     let rectValues: ClientRect;
     if (!isNOU(containerElement)) {
         rectValues = getClientRectValues(containerElement);
     }
-    const pageX: number = (getEventType(e.type) === 'mouse') ? e.pageX : e.touches[0].pageX;
+    const pageX: number = (getEventType(e.type) === 'mouse') ? (e as MouseEvent).pageX : (e as TouchEvent).touches[0].pageX;
     const targetRectValues: ClientRect = getClientRectValues(targetElement);
     const borderValue: number = isNOU(containerElement) ? 0 : containerElement.offsetWidth - containerElement.clientWidth;
     /* eslint-disable */
@@ -481,9 +486,13 @@ function resizeWest(e: any): void {
     previousWidth = calculatedWidth;
 }
 
-/* istanbul ignore next */
-// eslint-disable-next-line
-function resizeEast(e: any): void {
+/**
+ * Resizes the element towards the east direction.
+ *
+ * @param {MouseEvent | TouchEvent} e - The event object.
+ * @returns {void}
+ */
+function resizeEast(e: MouseEvent | TouchEvent): void {
     const documentWidth: number = document.documentElement.clientWidth;
     let calculateValue: boolean = false;
     let containerRectValues: ClientRect;

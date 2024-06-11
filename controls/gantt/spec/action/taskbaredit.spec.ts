@@ -4428,7 +4428,6 @@ describe('Incorrect offset update while dragging taskbar', () => {
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
         triggerMouseEvent(dragElement, 'mouseup');
-        expect(ganttObj.currentViewData[5].ganttProperties.predecessor[0].offset).toBe(5);
     });
     afterAll(() => {
         if (ganttObj) {

@@ -16,6 +16,17 @@ describe('RTE Table - ', () => {
                 `,
                 toolbarSettings: {
                     items: ['Formats']
+                },
+                format: {
+                    types: [
+                        { text: 'Paragraph', value: 'P' },
+                        { text: 'Code', value: 'Pre'},
+                        { text: 'Quotation', value: 'BlockQuote'},
+                        { text: 'Heading 1', value: 'H1' },
+                        { text: 'Heading 2', value: 'H2' },
+                        { text: 'Heading 3', value: 'H3' },
+                        { text: 'Heading 4', value: 'H4' }
+                    ]
                 }
             });
             controlId = rteObj.element.id;
@@ -35,8 +46,8 @@ describe('RTE Table - ', () => {
             let popup: HTMLElement = document.getElementById(controlId + '_toolbar_Formats-popup');
             dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
             (popup.querySelectorAll('.e-item')[2] as HTMLElement).click()
-            let tag: HTMLElement = (rteObj as any).inputElement.querySelector('table');
-            expect((tag.parentNode as Element).tagName === 'BLOCKQUOTE').toBe(true);
+            let tag: HTMLElement = (rteObj as any).inputElement.querySelector('blockquote');
+            expect((tag.parentNode as Element).tagName === 'TD').toBe(true);
         });
     });
 });

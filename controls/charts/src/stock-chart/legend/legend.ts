@@ -1,8 +1,3 @@
-/* eslint-disable jsdoc/check-param-names */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable jsdoc/require-param-type */
-/* eslint-disable jsdoc/require-param-description */
-/* eslint-disable valid-jsdoc */
 import { ChartLocation, getUnicodeText, textTrim, withInBounds } from '../../common/utils/helper';
 import { ILegendRegions } from '../../common/model/interface';
 import { BaseLegend, LegendOptions } from '../../common/legend/legend';
@@ -13,10 +8,9 @@ import { Series } from '../../chart/series/chart-series';
 import { legendClick, legendRender, regSub, regSup } from '../../common/model/constants';
 import { IStockLegendClickEventArgs, IStockLegendRenderEventArgs, StockChartBorder, StockChartFont, StockMargin } from '../model/base';
 import { Browser } from '@syncfusion/ej2-base';
-import { StockChart, Chart } from '../../stock-chart/index';
+import { StockChart } from '../../stock-chart/index';
 import { Axis } from '../../chart/axis/axis';
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
-import { Theme } from '../../common/model/theme';
 import { ContainerPadding, Location } from '../../common/model/base';
 import { ContainerPaddingModel } from '../../common/model/base-model';
 import { StockChartLegendSettingsModel } from './legend-model';
@@ -136,7 +130,7 @@ export class StockChartLegendSettings extends ChildProperty<StockChartLegendSett
     /**
      * Options to customize the legend text.
      */
-    @Complex<StockChartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, StockChartFont)
+    @Complex<StockChartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, StockChartFont)
     public textStyle: StockChartFontModel;
 
     /**
@@ -243,7 +237,7 @@ export class StockChartLegendSettings extends ChildProperty<StockChartLegendSett
     /**
      * Options to customize the legend title in stock chart.
      */
-    @Complex<StockChartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, StockChartFont)
+    @Complex<StockChartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, StockChartFont)
     public titleStyle: StockChartFontModel;
 
     /**
@@ -296,6 +290,8 @@ export class StockLegend extends BaseLegend {
 
     /**
      * Binding events for Stocklegend module.
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -305,6 +301,8 @@ export class StockLegend extends BaseLegend {
     }
     /**
      * UnBinding events for Stocklegend module.
+     *
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -313,9 +311,10 @@ export class StockLegend extends BaseLegend {
         this.chart.off(Browser.touchMoveEvent, this.mouseMove);
     }
     /**
-     * To handle mosue move for Stocklegend module
+     * To handle mouse move for Stocklegend module.
      *
-     * @param e
+     * @param {MouseEvent} e - The mouse move event.
+     * @returns {void}
      */
     private mouseMove(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
@@ -323,9 +322,10 @@ export class StockLegend extends BaseLegend {
         }
     }
     /**
-     * To handle mosue end for Stocklegend module
+     * To handle mouse end for Stocklegend module.
      *
-     * @param e
+     * @param {MouseEvent} e - The mouse move event.
+     * @returns {void}
      */
     private mouseEnd(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && this.chart.isTouch) {
@@ -356,15 +356,12 @@ export class StockLegend extends BaseLegend {
         }
     }
     /**
-     * @param availableSize
-     * @param legendBound
-     * @param legend
-     * @param availableSize
-     * @param legendBound
-     * @param legend
-     * @param availableSize
-     * @param legendBound
-     * @param legend
+     * Retrieves the bounds of the legend.
+     *
+     * @param {Size} availableSize - The available size for the legend.
+     * @param {Rect} legendBound - The bounds of the legend element.
+     * @param {StockChartLegendSettingsModel} legend - The settings for the legend.
+     * @returns {void}
      * @private
      */
     public getLegendBounds(availableSize: Size, legendBound: Rect, legend: StockChartLegendSettingsModel): void {
@@ -442,10 +439,7 @@ export class StockLegend extends BaseLegend {
         columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleSpace);
         this.isPaging = legendBound.height < columnHeight;
         if (this.isPaging && !legend.enablePages) {
-            if (this.isVertical) {
-                // eslint-disable-next-line no-self-assign
-                columnHeight = columnHeight;
-            } else {
+            if (!this.isVertical) {
                 columnHeight = (this.maxItemHeight + padding) + padding + (titlePosition === 'Top' ? titleSpace : 0);
             }
         }
@@ -460,55 +454,16 @@ export class StockLegend extends BaseLegend {
         }
     }
     /**
-     * @param legendOptions
-     * @param start
-     * @param textPadding
-     * @param prevLegend
-     * @param rect
-     * @param count
-     * @param firstLegend
-     * @param legendOptions
-     * @param start
-     * @param textPadding
-     * @param prevLegend
-     * @param rect
-     * @param count
-     * @param firstLegend
-     * @param legendOptions
-     * @param start
-     * @param textPadding
-     * @param prevLegend
-     * @param rect
-     * @param count
-     * @param firstLegend
-     * @param legendOptions
-     * @param start
-     * @param textPadding
-     * @param prevLegend
-     * @param rect
-     * @param count
-     * @param firstLegend
-     * @param legendOptions
-     * @param start
-     * @param textPadding
-     * @param prevLegend
-     * @param rect
-     * @param count
-     * @param firstLegend
-     * @param legendOptions
-     * @param start
-     * @param textPadding
-     * @param prevLegend
-     * @param rect
-     * @param count
-     * @param firstLegend
-     * @param legendOptions
-     * @param start
-     * @param textPadding
-     * @param prevLegend
-     * @param rect
-     * @param count
-     * @param firstLegend
+     * Retrieves the render point for the legend.
+     *
+     * @param {LegendOptions} legendOptions - The options for the legend.
+     * @param {ChartLocation} start - The starting point for rendering the legend.
+     * @param {number} textPadding - The padding around legend text.
+     * @param {LegendOptions} prevLegend - The options for the previous legend.
+     * @param {Rect} rect - The bounding for the legend.
+     * @param {number} count - The count of legends.
+     * @param {number} firstLegend - The index of the first legend.
+     * @returns {void}
      * @private
      */
     public getRenderPoint(
@@ -528,16 +483,17 @@ export class StockLegend extends BaseLegend {
         }
         const availwidth: number = (this.legendBounds.width + this.legendBounds.x) - (legendOptions.location.x +
             textPadding - this.itemPadding - this.legend.shapeWidth / 2);
-        legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
+        legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle,
+                                      this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
     }
     /**
-     * @param index
-     * @param event
-     * @param index
-     * @param event
+     * Handles the click event on the legend.
+     *
+     * @param {number} index - The index of the legend item.
+     * @returns {void}
      * @private
      */
-    public legendClick(index: number, event: Event | PointerEvent): void {
+    public legendClick(index: number): void {
         const chart: StockChart = <StockChart>this.chart;
         const seriesIndex: number = chart.legendSettings.mode === 'Series' ? index : 0;
         const targetSeries: Series = chart.visibleSeries[seriesIndex as number];
@@ -555,11 +511,11 @@ export class StockLegend extends BaseLegend {
             this.changeSeriesVisiblity(targetSeries, targetSeries.visible);
             targetLegend.visible = targetSeries.category === 'TrendLine' ? chart.series[targetSeries.sourceIndex].trendlines[targetSeries.index].visible :
                 (targetSeries.visible);
-            this.refreshLegendToggle(chart, targetSeries);
+            this.refreshLegendToggle(chart);
         }
     }
 
-    private refreshLegendToggle(chart: StockChart, series: Series): void {
+    private refreshLegendToggle(chart: StockChart): void {
         const bounds: Rect = chart.stockLegendModule.legendBounds;
         chart.stockLegendModule.renderLegend(chart, chart.legendSettings, bounds);
         chart.cartesianChart.cartesianChartRefresh(chart);
@@ -581,7 +537,7 @@ export class StockLegend extends BaseLegend {
     /**
      * To show the tooltip for the trimmed text in legend.
      *
-     * @param event
+     * @param {Event | PointerEvent} event - The click event.
      * @returns {void}
      */
     public click(event: Event | PointerEvent): void {
@@ -590,7 +546,6 @@ export class StockLegend extends BaseLegend {
         }
         const pageY: number = this.chart.mouseY;
         const pageX: number = this.chart.mouseX;
-        let legendRegion: ILegendRegions[] = [];
         const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
             this.legendID + '_shape_'];
         const targetId: string = (<HTMLElement>event.target).id;
@@ -598,7 +553,7 @@ export class StockLegend extends BaseLegend {
         for (const id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 seriesIndex = parseInt(targetId.split(id)[1], 10);
-                this.legendClick(seriesIndex, event);
+                this.legendClick(seriesIndex);
                 break;
             }
         }
@@ -607,17 +562,17 @@ export class StockLegend extends BaseLegend {
         } else if (targetId.indexOf(this.legendID + '_pageup') > -1) {
             this.changePage(event, true);
         }
-        legendRegion = this.legendRegions.filter((region: ILegendRegions) => {
+        this.legendRegions.filter((region: ILegendRegions) => {
             return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) *
             this.translatePage(false, null, 1, 2) : 0)),
                                  region.rect));
         });
     }
 
-    // eslint-disable-next-line jsdoc/require-returns
     /**
+     * Get module name.
      *
-     * Get module name
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'StockLegend';

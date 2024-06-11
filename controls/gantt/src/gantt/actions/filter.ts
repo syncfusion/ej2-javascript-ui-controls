@@ -54,7 +54,7 @@ export class Filter {
         this.parent.on('actionComplete', this.actionComplete, this);
         this.parent.on('columnMenuOpen', this.columnMenuOpen, this);
     }
-    private wireEvents(a:string): void {
+    private wireEvents(a: string): void {
         EventHandler.add(document.getElementById(a), 'click', this.mouseClickHandler, this);
 
     }
@@ -91,8 +91,8 @@ export class Filter {
         return filterUI;
     }
     private mouseClickHandler(e: PointerEvent): void {
-        if (closest(e.target as Element,".e-excelfilter")){
-            this.parent.treeGrid.grid.notify("click",e);
+        if (closest(e.target as Element, '.e-excelfilter')){
+            this.parent.treeGrid.grid.notify('click', e);
         }
     }
     private unWireEvents(): void {
@@ -211,13 +211,15 @@ export class Filter {
         // ...
     }
     public closeFilterOnContextClick(element: Element): void {
-        let datePickerElement : Element = document.querySelector('body > div.e-datepicker') as HTMLElement;
-        let dateTimePickerElement : Element = document.querySelector('body > div.e-datetimepicker') as HTMLElement;
+        const datePickerElement : Element = document.querySelector('body > div.e-datepicker') as HTMLElement;
+        const dateTimePickerElement : Element = document.querySelector('body > div.e-datetimepicker') as HTMLElement;
         if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
             const ganttElement: Element = closest(element, '#' + this.parent.element.id)
                 || element.querySelector('#' + this.parent.element.id);
-            if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) || (!(this.filterMenuElement.contains(element)) && (isNullOrUndefined(datePickerElement)) 
-            && (isNullOrUndefined(dateTimePickerElement)) && ((element.nodeName === 'DIV') || (element.nodeName === 'HTML') || (element.nodeName === 'SPAN') || (element.nodeName === 'BUTTON'))) && !element.classList.contains('e-dropdownbase')) {
+            if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) ||
+            (!(this.filterMenuElement.contains(element)) && (isNullOrUndefined(datePickerElement)) &&
+            (isNullOrUndefined(dateTimePickerElement)) && ((element.nodeName === 'DIV') || (element.nodeName === 'HTML') ||
+            (element.nodeName === 'SPAN') || (element.nodeName === 'BUTTON'))) && !element.classList.contains('e-dropdownbase')) {
                 remove(this.filterMenuElement);
                 this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
                 this.filterMenuElement = null;
@@ -231,7 +233,7 @@ export class Filter {
                     if (this.parent.filterSettings.type === 'Excel'){
                         this.wireEvents(args['filterModel']['dialogObj']['element'].id);
                     }
-                }  
+                }
             }
         }
         if (args.requestType === filterAfterOpen) {
@@ -268,21 +270,24 @@ export class Filter {
     }
 
     private setPosition(li: Element, ul: HTMLElement): void {
+        /* eslint-disable-next-line */
         const gridPos: any = this.parent.element.getBoundingClientRect();
-        let gridPosTop:number = gridPos.top;
-        let gridPosLeft:number = gridPos.left;
+        const gridPosTop: number = gridPos.top;
+        const gridPosLeft: number = gridPos.left;
+        /* eslint-disable-next-line */
         let parentNode: any;
-        let parentNodeTop:number;
-        let parentNodeLeft:number;
-        let paddingTop:number;
-        let paddingLeft:number;
-        let marginTop:any;
-        let marginLeft:any;
-        if (!isNullOrUndefined(this.parent.element.parentNode) && this.parent.element.parentNode['tagName'] !='BODY') {
+        let parentNodeTop: number;
+        let parentNodeLeft: number;
+        let paddingTop: number;
+        let paddingLeft: number;
+        let marginTop: number | string;
+        const isValid: boolean = true;
+        let marginLeft: number | string;
+        if (!isNullOrUndefined(this.parent.element.parentNode) && this.parent.element.parentNode['tagName'] !== 'BODY') {
             parentNode = this.parent.element.parentNode;
             parentNodeTop = parentNode.getBoundingClientRect().top;
             marginTop = parentNode.style.marginTop;
-            while (true) {
+            while (isValid) {
                 if (Math.abs(gridPosTop) > Math.abs(parentNodeTop)) {
                     paddingTop = gridPosTop - parentNodeTop;
                     break;
@@ -293,14 +298,14 @@ export class Filter {
                     }
                     parentNode = parentNode.parentNode;
                     if (parentNode.parentNode && parentNode.parentNode.style) {
-                       marginTop = parentNode.parentNode.style.marginTop;
+                        marginTop = parentNode.parentNode.style.marginTop;
                     }
                 }
                 parentNodeTop = parentNode.getBoundingClientRect().top;
             }
             parentNodeLeft = parentNode.getBoundingClientRect().left;
             marginLeft = parentNode.style.marginLeft;
-            while (true) {
+            while (isValid) {
                 if (Math.abs(gridPosLeft) > Math.abs(parentNodeLeft)) {
                     paddingLeft = gridPosLeft - parentNodeLeft;
                     break;
@@ -312,10 +317,11 @@ export class Filter {
                     parentNode = parentNode.parentNode;
                     marginLeft = parentNode.style.marginLeft;
                 }
-                parentNodeLeft = parentNode.getBoundingClientRect().left
+                parentNodeLeft = parentNode.getBoundingClientRect().left;
             }
         }
-        let liPos: any = li.getBoundingClientRect();
+        /* eslint-disable-next-line */
+        const liPos: any = li.getBoundingClientRect();
         let left: number = liPos.right + window.scrollX;
         let top: number = liPos.top + window.scrollY;
         if (gridPos.right < (left + ul.offsetWidth)) {
@@ -326,13 +332,13 @@ export class Filter {
             }
         } else {
             if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
-                left = Math.abs(liPos.right - gridPos.left)
-                top = Math.abs(liPos.top - gridPos.top)
+                left = Math.abs(liPos.right - gridPos.left);
+                top = Math.abs(liPos.top - gridPos.top);
             }
         }
         if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
-            ul.style.top = typeof(parseInt(marginTop)) === "string" ? (top + paddingTop + parseInt(marginTop)) + 'px' : (top + paddingTop) + 'px'
-            ul.style.left = typeof(parseInt(marginLeft)) === "string" ? (left + paddingLeft + parseInt(marginLeft) + 8) + 'px' : (left + paddingLeft) + 'px' 
+            ul.style.top = typeof(parseInt(marginTop as string, 10)) === 'string' ? (top + paddingTop + parseInt(marginTop as string, 10)) + 'px' : (top + paddingTop) + 'px';
+            ul.style.left = typeof(parseInt(marginLeft as string, 10)) === 'string' ? (left + paddingLeft + parseInt(marginLeft as string, 10) + 8) + 'px' : (left + paddingLeft) + 'px';
         } else {
             ul.style.top = top + 'px';
             ul.style.left = left + 'px';
@@ -341,7 +347,9 @@ export class Filter {
 
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {
         addClass([element], 'e-gantt');
-        document.querySelector('#' + this.parent.controlId).appendChild(element);
+        if (!this.parent.enableAdaptiveUI) {
+            document.querySelector('#' + this.parent.controlId).appendChild(element);
+        }
         let targetElement: HTMLElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
@@ -365,7 +373,7 @@ export class Filter {
             (element.querySelector('.e-valid-input') as HTMLElement).focus();
         }
         if (this.parent.treeGrid.filterSettings.type === 'Excel') {
-            var inputElement = document.querySelector('.e-searchinput') as HTMLElement;
+            const inputElement: HTMLElement = document.querySelector('.e-searchinput') as HTMLElement;
             inputElement.focus();
         }
     }

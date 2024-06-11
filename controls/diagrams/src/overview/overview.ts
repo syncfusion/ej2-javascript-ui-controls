@@ -652,8 +652,9 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
                 bounds.y = svgRect.y;
             }
             //Bug 884239: Overview rectangle not updated properly while double-clicking the overview canvas.
-            this.actionName === 'pan' ? this.updateOverviewrect(-bounds.x, -bounds.y, bounds.width, bounds.height) : 
-            this.updateOverviewrect(bounds.x, bounds.y, bounds.width, bounds.height);
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            this.actionName === 'pan' ? this.updateOverviewrect(-bounds.x, -bounds.y, bounds.width, bounds.height) :
+                this.updateOverviewrect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
     }
 
@@ -668,18 +669,18 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             //const viewPort: Rect;
             //Bug 863516: Overview is not synced with diagram content while zoom-out the diagram.
             //Added below code to consider ruler size and scrollbar size while calculating the width and height for the overview rectangle.
-            let rulerSize = 0;
-            if(this.parent.rulerSettings.showRulers){
-                rulerSize = 25
+            let rulerSize: number = 0;
+            if (this.parent.rulerSettings.showRulers) {
+                rulerSize = 25;
             }
-            const container =  document.getElementById(this.parent.element.id + 'content');
-            let wScrollBar = 0; let hScrollBar = 0;
-            if(container){
+            const container: HTMLElement = document.getElementById(this.parent.element.id + 'content');
+            let wScrollBar: number = 0; let hScrollBar: number = 0;
+            if (container) {
                 wScrollBar = container.offsetWidth - container.clientWidth;
                 hScrollBar = container.offsetHeight - container.clientHeight;
             }
-            const width = bounds.width = ((this.parent.scroller.viewPortWidth-rulerSize-wScrollBar )/ currentZoom) / scale;
-            const height = bounds.height = ((this.parent.scroller.viewPortHeight-rulerSize-hScrollBar )/ currentZoom) / scale;
+            const width: number = bounds.width = ((this.parent.scroller.viewPortWidth - rulerSize - wScrollBar) / currentZoom) / scale;
+            const height: number = bounds.height = ((this.parent.scroller.viewPortHeight - rulerSize - hScrollBar) / currentZoom) / scale;
             //const ratio: number = this.parent.scroller.viewPortWidth / this.parent.scroller.viewPortHeight;
             if (scaled) {
                 const rect: Rect = new Rect();
@@ -745,7 +746,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     public updateView(view: Overview): void {
         //let width: number; let height: number;
         const bounds: Rect = this.parent.scroller.getPageBounds();
-       // Bug 851571: Overview with html node is not updated properly when we zoom-out the diagram.
+        // Bug 851571: Overview with html node is not updated properly when we zoom-out the diagram.
         // Below transformWidth calculation is removed.
         const width: number = bounds.width;
         const height: number = bounds.height;

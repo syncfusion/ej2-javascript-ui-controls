@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points, Trendline } from '../series/chart-series';
 import { TrendlineTypes } from '../../chart/utils/enum';
 import { findClipRect, RectOption } from '../../common/utils/helper';
@@ -13,9 +10,11 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 export class Trendlines {
     /**
-     * Defines the collection of series, that are used to represent a trendline
+     * Initializes the series collection for the specified trendline in the chart.
      *
-     * @private
+     * @param {Trendline} trendline - The trendline for which the series collection is initialized.
+     * @param {Chart} chart - The chart instance.
+     * @returns {void}
      */
     public initSeriesCollection(trendline: Trendline, chart: Chart): void {
         const trendLineSeries: Series = new Series(trendline, 'targetSeries', {}, true);
@@ -30,7 +29,15 @@ export class Trendlines {
     }
 
     /**
-     * Initializes the properties of the trendline series
+     * Sets the properties for the specified series related to the specified trendline.
+     *
+     * @param {Series} series - The series to which properties are applied.
+     * @param {Trendline} trendline - The trendline associated with the series.
+     * @param {string} name - The name of the series.
+     * @param {string} fill - The fill color of the series.
+     * @param {number} width - The width of the series.
+     * @param {Chart} chart - The chart instance.
+     * @returns {void}
      */
     private setSeriesProperties(
         series: Series, trendline: Trendline, name: string, fill: string,
@@ -64,7 +71,14 @@ export class Trendlines {
     }
 
     /**
-     * Creates the elements of a trendline
+     * Creates elements for the specified trendline and adds them to the chart.
+     *
+     * @param {Chart} chart - The chart instance.
+     * @param {Trendline} trendline - The trendline for which elements are created.
+     * @param {number} index - The index of the trendline.
+     * @param {Element} element - The parent element to which trendline elements are added.
+     * @param {Element} clipRectElement - The clip rect element associated with the chart.
+     * @returns {void}
      */
     private createTrendLineElements(
         chart: Chart, trendline: Trendline, index: number, element: Element, clipRectElement: Element): void {
@@ -77,7 +91,13 @@ export class Trendlines {
     }
 
     /**
-     * Defines the data point of trendline
+     * Retrieves the data point at the specified index from the series.
+     *
+     * @param {Object} x - The x-value of the data point.
+     * @param {Object} y - The y-value of the data point.
+     * @param {Series} series - The series from which to retrieve the data point.
+     * @param {number} index - The index of the data point in the series.
+     * @returns {Points} - The data point object.
      */
     private getDataPoint(
         x: Object, y: Object, series: Series, index: number
@@ -99,7 +119,13 @@ export class Trendlines {
     }
 
     /**
-     * Finds the slope and intercept of trendline
+     * Finds the slope and intercept for the trendline.
+     *
+     * @param {number[]} xValues - The array of x-values.
+     * @param {number[]} yValues - The array of y-values.
+     * @param {Trendline} trendline - The trendline configuration.
+     * @param {Points[]} points - The data points for the trendline.
+     * @returns {SlopeIntercept} - The slope and intercept values.
      */
     private findSlopeIntercept(xValues: number[], yValues: number[], trendline: Trendline, points: Points[]): SlopeIntercept {
         let xAvg: number = 0; let yAvg: number = 0;
@@ -141,7 +167,10 @@ export class Trendlines {
     }
 
     /**
-     * Defines the points to draw the trendlines.
+     * Initializes the data source for the trendline.
+     *
+     * @param {Trendline} trendline - The trendline configuration.
+     * @returns {void}
      */
     public initDataSource(trendline: Trendline): void {
         const points: Points[] = trendline.points;
@@ -175,7 +204,12 @@ export class Trendlines {
     }
 
     /**
-     * Calculation of exponential points
+     * Sets the range for an exponential trendline.
+     *
+     * @param {Points[]} points - The data points of the series.
+     * @param {Trendline} trendline - The exponential trendline configuration.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {void}
      */
     private setExponentialRange(points: Points[], trendline: Trendline, series: Series): void {
         const xValue: number[] = [];
@@ -193,7 +227,12 @@ export class Trendlines {
     }
 
     /**
-     * Calculation of logarithmic points
+     * Sets the range for a logarithmic trendline.
+     *
+     * @param {Points[]} points - The data points of the series.
+     * @param {Trendline} trendline - The logarithmic trendline configuration.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {void}
      */
     private setLogarithmicRange(points: Points[], trendline: Trendline, series: Series): void {
         const xLogValue: number[] = [];
@@ -213,7 +252,12 @@ export class Trendlines {
     }
 
     /**
-     * Calculation of polynomial points
+     * Sets the range for a polynomial trendline.
+     *
+     * @param {Points[]} points - The data points of the series.
+     * @param {Trendline} trendline - The polynomial trendline configuration.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {void}
      */
     private setPolynomialRange(points: Points[], trendline: Trendline, series: Series): void {
         const xPolyValues: number[] = [];
@@ -229,7 +273,12 @@ export class Trendlines {
     }
 
     /**
-     * Calculation of power points
+     * Sets the range for a power trendline.
+     *
+     * @param {Points[]} points - The data points of the series.
+     * @param {Trendline} trendline - The power trendline configuration.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {void}
      */
     private setPowerRange(points: Points[], trendline: Trendline, series: Series): void {
         const xValues: number[] = [];
@@ -250,7 +299,12 @@ export class Trendlines {
     }
 
     /**
-     * Calculation of linear points
+     * Sets the range for a linear trendline.
+     *
+     * @param {Points[]} points - The data points of the series.
+     * @param {Trendline} trendline - The linear trendline configuration.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {void}
      */
     private setLinearRange(points: Points[], trendline: Trendline, series: Series): void {
         const xValues: number[] = [];
@@ -267,7 +321,12 @@ export class Trendlines {
     }
 
     /**
-     * Calculation of moving average points
+     * Sets the range for a moving average trendline.
+     *
+     * @param {Points[]} points - The data points of the series.
+     * @param {Trendline} trendline - The moving average trendline configuration.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {void}
      */
     private setMovingAverageRange(points: Points[], trendline: Trendline, series: Series): void {
         const xValues: number[] = [];
@@ -285,7 +344,15 @@ export class Trendlines {
     }
 
     /**
-     * Calculation of logarithmic points
+     * Calculates the points for a logarithmic trendline.
+     *
+     * @param {Trendline} trendline - The logarithmic trendline configuration.
+     * @param {Points[]} points - The data points of the series.
+     * @param {number[]} xValues - The x values of the data points.
+     * @param {number[]} yValues - The y values of the data points.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @param {SlopeIntercept} slopeInterceptLog - The slope and intercept of the logarithmic trendline.
+     * @returns {Points[]} - The calculated points for the logarithmic trendline.
      */
     private getLogarithmicPoints(trendline: Trendline, points: Points[], xValues: number[], yValues: number[],
                                  series: Series, slopeInterceptLog: SlopeIntercept): Points[] {
@@ -310,7 +377,15 @@ export class Trendlines {
     }
 
     /**
-     * Defines the points based on data point
+     * Calculates the points for a power trendline.
+     *
+     * @param {Trendline} trendline - The power trendline configuration.
+     * @param {Points[]} points - The data points of the series.
+     * @param {number[]} xValues - The x values of the data points.
+     * @param {number[]} yValues - The y values of the data points.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @param {SlopeIntercept} slopeInterceptPower - The slope and intercept of the power trendline.
+     * @returns {Points[]} - The calculated points for the power trendline.
      */
     private getPowerPoints(trendline: Trendline, points: Points[], xValues: number[], yValues: number[],
                            series: Series, slopeInterceptPower: SlopeIntercept): Points[] {
@@ -333,7 +408,14 @@ export class Trendlines {
     }
 
     /**
-     * Get the polynomial points based on polynomial slopes
+     * Calculates the points for a polynomial trendline.
+     *
+     * @param {Trendline} trendline - The polynomial trendline configuration.
+     * @param {Points[]} points - The data points of the series.
+     * @param {number[]} xValues - The x values of the data points.
+     * @param {number[]} yValues - The y values of the data points.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {Points[]} - The calculated points for the polynomial trendline.
      */
     private getPolynomialPoints(
         trendline: Trendline, points: Points[], xValues: number[], yValues: number[], series: Series): Points[] {
@@ -401,7 +483,14 @@ export class Trendlines {
     }
 
     /**
-     * Defines the moving average points
+     * Calculates the points for a moving average trendline.
+     *
+     * @param {Trendline} trendline - The moving average trendline configuration.
+     * @param {Points[]} points - The data points of the series.
+     * @param {number[]} xValues - The x values of the data points.
+     * @param {number[]} yValues - The y values of the data points.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {Points[]} - The calculated points for the moving average trendline.
      */
     private getMovingAveragePoints(
         trendline: Trendline, points: Points[],
@@ -428,7 +517,15 @@ export class Trendlines {
     }
 
     /**
-     * Defines the linear points
+     * Calculates the points for a linear trendline.
+     *
+     * @param {Trendline} trendline - The linear trendline configuration.
+     * @param {Points[]} points - The data points of the series.
+     * @param {number[]} xValues - The x values of the data points.
+     * @param {number[]} yValues - The y values of the data points.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @param {SlopeIntercept} slopeInterceptLinear - The slope and intercept of the linear trendline.
+     * @returns {Points[]} - The calculated points for the linear trendline.
      */
     private getLinearPoints(trendline: Trendline, points: Points[], xValues: number[], yValues: number[],
                             series: Series, slopeInterceptLinear: SlopeIntercept): Points[] {
@@ -447,7 +544,15 @@ export class Trendlines {
     }
 
     /**
-     * Defines the exponential points
+     * Calculates the points for an exponential trendline.
+     *
+     * @param {Trendline} trendline - The exponential trendline configuration.
+     * @param {Points[]} points - The data points of the series.
+     * @param {number[]} xValues - The x values of the data points.
+     * @param {number[]} yValues - The y values of the data points.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @param {SlopeIntercept} slopeInterceptExp - The slope and intercept of the exponential trendline.
+     * @returns {Points[]} - The calculated points for the exponential trendline.
      */
     private getExponentialPoints(trendline: Trendline, points: Points[], xValues: number[], yValues: number[],
                                  series: Series, slopeInterceptExp: SlopeIntercept): Points[] {
@@ -469,7 +574,13 @@ export class Trendlines {
     }
 
     /**
-     * Defines the points based on data point
+     * Calculates the points for the specified type of trendline.
+     *
+     * @param {Trendline} trendline - The trendline configuration.
+     * @param {Points[]} points - The data points of the series.
+     * @param {number[]} xValues - The x values of the data points.
+     * @param {Series} series - The series to which the trendline belongs.
+     * @returns {Points[]} - The calculated points for the trendline.
      */
     private getPoints(trendline: Trendline, points: Points[], xValues: number[], series: Series): Points[] {
         const polynomialSlopes: number[] = trendline.polynomialSlopes;
@@ -502,7 +613,11 @@ export class Trendlines {
     }
 
     /**
-     * Defines the polynomial value of y
+     * Calculates the y value for the specified x value using polynomial regression.
+     *
+     * @param {number[]} slopes - The coefficients of the polynomial equation.
+     * @param {number} x - The x value for which to calculate the y value.
+     * @returns {number} - The calculated y value.
      */
     private getPolynomialYValue(slopes: number[], x: number): number {
         let sum: number = 0;
@@ -515,8 +630,14 @@ export class Trendlines {
     }
 
     /**
-     * Defines the gauss jordan elimination
+     * Applies Gauss-Jordan elimination to solve a system of linear equations represented by a matrix.
+     * Updates the coefficients of the polynomial equation.
+     *
+     * @param {number[][]} matrix - The matrix representing the system of linear equations.
+     * @param {number[]} polynomialSlopes - The coefficients of the polynomial equation to be updated.
+     * @returns {boolean} - A boolean indicating whether the elimination process was successful.
      */
+
     private gaussJordanElimination(matrix: number[][], polynomialSlopes: number[]): boolean {
         const length: number = matrix.length;
         const numArray1: number[] = [];
@@ -607,7 +728,11 @@ export class Trendlines {
     }
 
     /**
-     * Defines the trendline elements.
+     * Retrieves the elements required for rendering trendlines for a series in the chart.
+     *
+     * @param {Series} series - The series for which trendlines are to be rendered.
+     * @param {Chart} chart - The chart instance.
+     * @returns {void}
      */
     public getTrendLineElements(series: Series, chart: Chart): void {
         findClipRect(series);
@@ -641,19 +766,23 @@ export class Trendlines {
 
     /**
      * To destroy the trendline.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         /**
-         * Destroys the Linear Trendline
+         * Destroys the Linear Trendline.
          */
     }
 
     /**
-     * Get module name
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'TrendLine';
     }

@@ -7,7 +7,7 @@ import { Double3D } from '../axis/double-axis';
 import { DateTime3D } from '../axis/date-time-axis';
 import { Category3D } from '../axis/category-axis';
 import { DateTimeCategory3D } from '../axis/date-time-category-axis';
-import { ChartRangePadding, EdgeLabelPlacement, IntervalType, LabelIntersectAction, LabelPlacement, Orientation, SkeletonType, TextAlignment, ValueType } from '../../common/utils/enum';
+import { ChartRangePadding, EdgeLabelPlacement, IntervalType, LabelIntersectAction, LabelPlacement, Orientation, SkeletonType, ValueType } from '../../common/utils/enum';
 import { axisRangeCalculated } from '../../common/model/constants';
 import { textWrap } from '../../common/utils/helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -236,7 +236,7 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
     /**
      * Options for customizing the axis title.
      */
-    @Complex<Chart3DTextFontModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '600', color: null }, Chart3DTextFont)
+    @Complex<Chart3DTextFontModel>({ fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null }, Chart3DTextFont)
     public titleStyle: Chart3DTextFontModel;
 
     /**
@@ -687,8 +687,7 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
      * @private */
     public isRTLEnabled: boolean = false;
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+    constructor(parent: Chart3DAxis, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
         this.angle = this.labelRotation;
     }
@@ -709,12 +708,12 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
                 titleSize = this.titleSize.height + innerPadding;
             }
             else {
-                this.titleSize = rotateTextSize(this.titleStyle, this.title, angle, chart);
+                this.titleSize = rotateTextSize(this.titleStyle, this.title, angle, chart, chart.themeStyle.axisTitleFont);
                 titleSize = (this.orientation === 'Vertical' ? this.titleSize.width : this.titleSize.height) + innerPadding;
             }
             if (this.rect.width || this.rect.height) {
                 const length: number = isHorizontal ? this.rect.width : this.rect.height;
-                this.titleCollection = getTitle(this.title, this.titleStyle, length, chart.enableRtl, chart.themeStyle.legendLabelFont);
+                this.titleCollection = getTitle(this.title, this.titleStyle, length, chart.enableRtl, chart.themeStyle.axisTitleFont);
                 titleSize = (titleSize * this.titleCollection.length);
             }
         }
@@ -842,13 +841,14 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
                         isIntersect = true;
                     }
                     break;
-                default:
+                default: {
                     if (isAxisLabelBreak) {
                         let result: string[]; const result1: string[] = []; let str: string;
                         for (let index: number = 0; index < label.text.length; index++) {
                             result = textWrap(
                                 label.text[index as number],
-                                this.rect.width / this.visibleLabels.length, this.labelStyle, chart.enableRtl, null, null, chart.themeStyle.axisLabelFont);
+                                this.rect.width / this.visibleLabels.length, this.labelStyle,
+                                chart.enableRtl, null, null, chart.themeStyle.axisLabelFont);
                             if (result.length > 1) {
                                 for (let j: number = 0; j < result.length; j++) {
                                     str = result[j as number]; result1.push(str);
@@ -861,15 +861,16 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
                     } else {
                         label.text = textWrap(
                                 <string>label.text,
-                                this.rect.width / this.visibleLabels.length, this.labelStyle, chart.enableRtl, null, null, chart.themeStyle.axisLabelFont
+                                this.rect.width / this.visibleLabels.length, this.labelStyle,
+                                chart.enableRtl, null, null, chart.themeStyle.axisLabelFont
                         );
                     }
-                    // eslint-disable-next-line no-case-declarations
                     const height: number = (label.size.height * label.text.length);
                     if (height > this.maxLabelSize.height) {
                         this.maxLabelSize.height = height;
                     }
                     break;
+                }
                 }
                 previousEnd = this.isAxisInverse ? pointX : pointX + width1;
             }
@@ -881,7 +882,7 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
             if (!isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
             }
-            this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+            this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart, chart.themeStyle.axisLabelFont);
         } else if (this.angle !== 0 && this.orientation === 'Vertical') {
             this.rotatedLabel = isNullOrUndefined(this.rotatedLabel) ? '' : this.rotatedLabel;
             const isHorizontalAngle: boolean = this.angle === -360 || this.angle === 0 || this.angle === -180 ||
@@ -890,7 +891,7 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
             if (!isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
             }
-            this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+            this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart, chart.themeStyle.axisLabelFont);
         }
     }
 

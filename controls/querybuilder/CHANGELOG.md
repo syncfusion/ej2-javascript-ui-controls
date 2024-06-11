@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
+## 26.1.35 (2024-06-11)
 
 ### QueryBuilder
 
@@ -10,30 +10,13 @@
 
 - `#I887637` - Issue with Script error thrown in QueryBuilder when `clicking` the button group component in header template has been fixed.
 
-## 25.2.4 (2024-05-14)
-
 ### QueryBuilder
 
-#### Bug Fixes
+#### New Features
 
-- `#I585876` - Removing the isLocked property from query builder rules when the rule/group is not locked / unlocked.
+- `Drag-and-drop support` - The Query Builder component now includes a drag-and-drop feature, allowing users to reposition rules or groups within the component effortlessly. This enhancement provides a more intuitive and flexible way to construct and modify queries.
 
-## 25.2.3 (2024-05-08)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I553588` - Issue with `setRulesFromSql` method is not working while using a field name like `"Name = '|_fn { keyword ' kFinishedProduct '}_|'"` has been fixed.
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#F187657` - Provided the input event support for QueryBuilder numeric textbox value changes.
-- `#I585320` - Issue with Query builder dropdown list element removed when placed two query builder in same page while calling refresh method has been fixed.
-
-## 25.1.42 (2024-04-30)
+- `Separate connector support` - The separate connector feature in the Query Builder component enables users to integrate standalone connectors between rules or groups within the same group. This allows for greater flexibility, as users can connect rules or groups using different connectors, enhancing the complexity and precision of query construction.
 
 ### QueryBuilder
 
@@ -41,38 +24,26 @@
 
 - `#F553588` - Issue with `setRulesFromSql` method is not working while using a field name like `"Name = '|_fn { keyword ' kFinishedProduct '}_|'"` has been fixed.
 
-## 25.1.40 (2024-04-16)
-
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I578463` - Issue with popups height is not updated properly in QueryBuilder sub field has been fixed.
 
-## 25.1.38 (2024-04-02)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I568017` - Issue with Sub field value is not set properly while setting rule for complex data binding has been fixed.
-
-## 25.1.37 (2024-03-26)
-
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I873568` - Issue with `getSqlFromRules` method not working properly in boolean fields when calling validateFields within the `ruleChange` event has been fixed.
-- `#I568017` - Issue with QueryBuilder 'In' or 'Not in' Operator results in value field as empty list when using fieldMode as default mode has been fixed.
-
-## 25.1.35 (2024-03-15)
+- `#I873624` - Issue with `getSqlFromRules` method is not working while using a field name like `Http Response Header Name-Verify` has been fixed.
 
 ### QueryBuilder
 
 #### Bug Fixes
 
-- `#I873624` - Issue with `getSqlFromRules` method is not working while using a field name like `Http Response Header Name-Verify` has been fixed.
+- `#I568017` - Issue with QueryBuilder 'In' or 'Not in' Operator results in value field as empty list when using fieldMode as default mode has been fixed.
+
+## 25.1.35 (2024-03-15)
 
 ### QueryBuilder
 

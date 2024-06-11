@@ -1,5 +1,6 @@
 @include export-module('gantt-bootstrap-dark-icons') {
-  #{&}.e-gantt {
+  #{&}.e-gantt,
+  .e-gantt-menu {
     .e-add::before {
       content: '\e823';
     }
@@ -16,7 +17,8 @@
       content: '\e84e';
     }
 
-    .e-cancel::before {
+    .e-cancel-icon::before,
+    .e-toolbar-item .e-cancel::before {
       content: '\e842';
     }
 
@@ -30,10 +32,6 @@
 
     .e-search-icon::before {
       content: '\e961';
-    }
-
-    .e-cancel-icon::before {
-      content: '\e842';
     }
 
     .e-notes-info::before {
@@ -53,10 +51,12 @@
       content: '\e557';
     }
 
+    .e-gantt-tooltip-arrow-left::before,
     .e-prevtimespan::before {
       content: '\e85b';
     }
 
+    .e-gantt-tooltip-arrow-right::before,
     .e-nexttimespan::before {
       content: '\e85f';
     }
@@ -116,13 +116,5 @@
 
   .e-icon-rowselect::before {
     content: '\e930';
-  }
-  
-  .e-gantt-tooltip-arrow-left::before {
-    content: '\e85b';
-  }
-
-  .e-gantt-tooltip-arrow-right::before {
-    content: '\e85f';
   }
 }

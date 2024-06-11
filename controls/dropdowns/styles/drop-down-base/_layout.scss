@@ -17,7 +17,12 @@
       }
 
       #{if(&, '&', '*')} .e-list-item .e-list-icon {
-        font-size: 20px;
+        @if $skin-name == 'fluent2' {
+          font-size: 18px;
+        }
+        @else {
+          font-size: 20px;
+        }
       }
     }
   }
@@ -50,7 +55,12 @@
       }
 
       #{if(&, '&', '*')} .e-list-item .e-list-icon {
-        font-size: 16px;
+        @if $skin-name == 'fluent2' {
+          font-size: 14px;
+        }
+        @else {
+          font-size: 16px;
+        }
         vertical-align: middle;
       }
 

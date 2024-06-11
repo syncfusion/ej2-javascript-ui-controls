@@ -64,6 +64,14 @@ export class Column extends ChildProperty<Column> {
      */
     @Property('')
     public validation: ValidationModel;
+
+    /**
+     * Represents whether a column in the sheet is read-only or not. If set to true, it prevents editing the specified cell in the sheet.
+     *
+     * @default false
+     */
+    @Property(false)
+    public isReadOnly: boolean;
 }
 
 /**
@@ -158,6 +166,7 @@ export function isHiddenCol(sheet: SheetModel, index: number): boolean {
  * @param {ColumnModel} column - Specifies the column.
  * @param {number} rowIndex - Specifies the row index.
  * @param {number} colIndex - Specifies the column index.
+ * @returns {boolean} - Specifies boolean values by checking column validation or not.
  */
 export function checkColumnValidation(column: ColumnModel, rowIndex: number, colIndex: number): boolean {
     if (column && column.validation) {

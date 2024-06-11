@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DateFormatOptions } from '../internationalization';
 import { IntlBase as base } from './intl-base';
 import { ParserBase as parser, NumericOptions, NumberMapper } from './parser-base';
@@ -54,7 +55,7 @@ interface ValuePosition {
     pos: number;
     hourOnly?: boolean;
 }
-/* tslint:disable no-any */
+
 /**
  * Date Parser.
  *
@@ -72,8 +73,8 @@ export class DateParser {
      */
     public static dateParser(culture: string, option: DateFormatOptions, cldr: Object): Function {
         const dependable: base.Dependables = base.getDependables(cldr, culture, option.calendar);
-        const numOptions: NumericOptions =
-        parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr), false, isBlazor());
+        const numOptions: NumericOptions = parser.getCurrentNumericOptions(dependable.parserObject,
+                                                                           parser.getNumberingSystem(cldr), false, isBlazor());
         let parseOptions: ParseOptions = {};
         if (isBlazor() && option.isServerRendered) {
             option = base.compareBlazorDateFormats(option, culture);
@@ -93,17 +94,15 @@ export class DateParser {
             let zCorrectTemp: number = 0;
             let isgmtTraversed: boolean = false;
             const nRegx: string = numOptions.numericRegex;
-            // eslint-disable-next-line
-            let numMapper: NumberMapper = isBlazor() ? (dependable.parserObject as any).numbers :
-                parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));
+            const numMapper: NumberMapper = isBlazor() ? (dependable.parserObject as any).numbers
+                : parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));
             for (let i: number = 0; i < length; i++) {
                 const str: string = patternMatch[parseInt(i.toString(), 10)];
                 const len: number = str.length;
                 const char: string = (str[0] === 'K') ? 'h' : str[0];
                 let isNumber: boolean;
                 let canUpdate: boolean;
-                // eslint-disable-next-line
-                let charKey: any = datePartMatcher[char];
+                const charKey: any = datePartMatcher[`${char}`];
                 const optional: string = (len === 2) ? '' : '?';
                 if (isgmtTraversed) {
                     gmtCorrection = zCorrectTemp;
@@ -111,21 +110,17 @@ export class DateParser {
                 }
                 switch (char) {
                 case 'E':
-                case 'c':
-                    // eslint-disable-next-line
+                case 'c': {
                     let weekData: Object;
                     if (isBlazor()) {
-                        // eslint-disable-next-line
-                        weekData = getValue('days.' + (base as any).monthIndex[len], dependable.dateObject);
+                        weekData = getValue('days.' + (base as any).monthIndex[`${len}`], dependable.dateObject);
                     } else {
-                        // eslint-disable-next-line
-                        weekData = (<any>dependable.dateObject)[base.days][standalone][(<any>base).monthIndex[len]];
+                        weekData = (<any>dependable.dateObject)[`${base.days}`][`${standalone}`][(<any>base).monthIndex[`${len}`]];
                     }
-                    // eslint-disable-next-line
-                    let weekObject: Object = parser.reverseObject(weekData);
-                    // tslint:enable
+                    const weekObject: Object = parser.reverseObject(weekData);
                     regexString += '(' + Object.keys(weekObject).join('|') + ')';
                     break;
+                }
                 case 'M':
                 case 'L':
                 case 'd':
@@ -138,16 +133,12 @@ export class DateParser {
                     if ((char === 'M' || char === 'L') && len > 2) {
                         let monthData: Object;
                         if (isBlazor()) {
-                            // eslint-disable-next-line
-                            monthData = getValue('months.' + (base as any).monthIndex[len], dependable.dateObject);
+                            monthData = getValue('months.' + (base as any).monthIndex[`${len}`], dependable.dateObject);
                         } else {
-                            // eslint-disable-next-line
-                            monthData = (<any>dependable).dateObject[month][standalone][(<any>base).monthIndex[len]];
+                            monthData = (<any>dependable).dateObject[`${month}`][`${standalone}`][(<any>base).monthIndex[`${len}`]];
                         }
-                        // eslint-disable-next-line
-                        (<any>parseOptions)[charKey] = parser.reverseObject(monthData);
-                        // eslint-disable-next-line
-                        regexString += '(' + Object.keys((<any>parseOptions)[charKey]).join('|') + ')';
+                        (<any>parseOptions)[`${charKey}`] = parser.reverseObject(monthData);
+                        regexString += '(' + Object.keys((<any>parseOptions)[`${charKey}`]).join('|') + ')';
                     } else if (char === 'f') {
                         if (len > 3) {
                             continue;
@@ -162,11 +153,11 @@ export class DateParser {
                         parseOptions.hour12 = true;
                     }
                     break;
-                case 'W':
-                    // eslint-disable-next-line
-                    let opt: string = len === 1 ? '?' : '';
+                case 'W': {
+                    const opt: string = len === 1 ? '?' : '';
                     regexString += '(' + nRegx + opt + nRegx + ')';
                     break;
+                }
                 case 'y':
                     canUpdate = isNumber = true;
                     if (len === 2) {
@@ -175,48 +166,41 @@ export class DateParser {
                         regexString += '(' + nRegx + '{' + len + ',})';
                     }
                     break;
-                case 'a':
+                case 'a': {
                     canUpdate = true;
-                    // eslint-disable-next-line
-                    let periodValur: Object = isBlazor() ?
+                    const periodValur: Object = isBlazor() ?
                         getValue('dayPeriods', dependable.dateObject) :
                         getValue('dayPeriods.format.wide', dependable.dateObject);
-                    // eslint-disable-next-line
-                    (<any>parseOptions)[charKey] = parser.reverseObject(periodValur);
-                    // eslint-disable-next-line
-                    regexString += '(' + Object.keys((<any>parseOptions)[charKey]).join('|') + ')';
+                    (<any>parseOptions)[`${charKey}`] = parser.reverseObject(periodValur);
+                    regexString += '(' + Object.keys((<any>parseOptions)[`${charKey}`]).join('|') + ')';
                     break;
-                case 'G':
+                }
+                case 'G': {
                     canUpdate = true;
-                    // eslint-disable-next-line
-                    let eText: string = (len <= 3) ? 'eraAbbr' : (len === 4) ? 'eraNames' : 'eraNarrow';
-                    // eslint-disable-next-line
-                    (<any>parseOptions)[charKey] = parser.reverseObject(isBlazor() ?
+                    const eText: string = (len <= 3) ? 'eraAbbr' : (len === 4) ? 'eraNames' : 'eraNarrow';
+                    (<any>parseOptions)[`${charKey}`] = parser.reverseObject(isBlazor() ?
                         getValue('eras', dependable.dateObject) : getValue('eras.' + eText, dependable.dateObject));
-                    // eslint-disable-next-line
-                    regexString += '(' + Object.keys((<any>parseOptions)[charKey]).join('|') + '?)';
+                    regexString += '(' + Object.keys((<any>parseOptions)[`${charKey}`]).join('|') + '?)';
                     break;
-                case 'z':
-                    // eslint-disable-next-line
-                    let tval: number = new Date().getTimezoneOffset();
+                }
+                case 'z': {
+                    const tval: number = new Date().getTimezoneOffset();
                     canUpdate = (tval !== 0);
-                    // eslint-disable-next-line
-                    (<any>parseOptions)[charKey] = getValue('dates.timeZoneNames', dependable.parserObject);
-                    // eslint-disable-next-line
-                    let tzone: base.TimeZoneOptions = (<any>parseOptions)[charKey];
+                    (<any>parseOptions)[`${charKey}`] = getValue('dates.timeZoneNames', dependable.parserObject);
+                    const tzone: base.TimeZoneOptions = (<any>parseOptions)[`${charKey}`];
                     hourOnly = (len < 4);
-                    // eslint-disable-next-line
                     let hpattern: string = hourOnly ? '+H;-H' : tzone.hourFormat;
                     hpattern = hpattern.replace(/:/g, numMapper.timeSeparator);
                     regexString += '(' + this.parseTimeZoneRegx(hpattern, tzone, nRegx) + ')?';
                     isgmtTraversed = true;
                     zCorrectTemp = hourOnly ? 6 : 12;
                     break;
-                case '\'':
-                    // eslint-disable-next-line
-                    let iString: string = str.replace(/'/g, '');
+                }
+                case '\'': {
+                    const iString: string = str.replace(/'/g, '');
                     regexString += '(' + iString + ')?';
                     break;
+                }
                 default:
                     regexString += '([\\D])';
                     break;
@@ -248,7 +232,6 @@ export class DateParser {
                 if (is2DigitYear) {
                     tYear = parseInt((dobj.year + '').slice(0, 2) + ystrig, 10);
                 }
-                // tslint:disable-next-line
                 const dateObject: Date = HijriParser.toGregorian(
                     tYear || dobj.year, tMonth || dobj.month, tDate || dobj.date);
                 parsedDateParts.year = dateObject.getFullYear();
@@ -259,7 +242,6 @@ export class DateParser {
             return this.getDateObject(parsedDateParts);
         };
     }
-    /* tslint:disable */
     /**
      * Returns date object for provided date options
      *
@@ -283,8 +265,7 @@ export class DateParser {
             res.setFullYear(y);
         }
         for (const key of tKeys) {
-            // eslint-disable-next-line
-            let tValue: number = (<any>options)[key];
+            let tValue: number = (<any>options)[`${key}`];
             if (isUndefined(tValue) && key === 'day') {
                 res.setDate(1);
             }
@@ -296,8 +277,7 @@ export class DateParser {
                     }
                     const pDate: number = res.getDate();
                     res.setDate(1);
-                    // eslint-disable-next-line
-                    (<any>res)[(<any>timeSetter)[key]](tValue);
+                    (<any>res)[(<any>timeSetter)[`${key}`]](tValue);
                     const lDate: number = new Date(res.getFullYear(), tValue + 1, 0).getDate();
                     res.setDate(pDate < lDate ? pDate : lDate);
                 } else {
@@ -307,8 +287,7 @@ export class DateParser {
                             return null;
                         }
                     }
-                    // eslint-disable-next-line
-                    (<any>res)[(<any>timeSetter)[key]](tValue);
+                    (<any>res)[`${(<any>timeSetter)[`${key}`]}`](tValue);
                 }
             }
         }
@@ -347,8 +326,7 @@ export class DateParser {
                 const curObject: ValuePosition = parseOptions.evalposition[`${prop}`];
                 let matchString: string = matches[curObject.pos];
                 if (curObject.isNumber) {
-                    // eslint-disable-next-line
-                    (<any>retOptions)[prop] = this.internalNumberParser(matchString, num);
+                    (<any>retOptions)[`${prop}`] = this.internalNumberParser(matchString, num);
                 } else {
                     if (prop === 'timeZone' && !isUndefined(matchString)) {
                         const pos: number = curObject.pos;
@@ -367,14 +345,11 @@ export class DateParser {
                         }
                     } else {
                         const cultureOptions: string[] = ['en-US', 'en-MH', 'en-MP'];
-                        // eslint-disable-next-line
-                        matchString = ((prop === 'month') && (!(<any>parseOptions).isIslamic) && ((<any>parseOptions).culture === 'en' || (<any>parseOptions).culture === 'en-GB' || (<any>parseOptions).culture === 'en-US')) 
+                        matchString = ((prop === 'month') && (!(<any>parseOptions).isIslamic) && ((<any>parseOptions).culture === 'en' || (<any>parseOptions).culture === 'en-GB' || (<any>parseOptions).culture === 'en-US'))
                             ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
-                        // eslint-disable-next-line
-                        matchString = ((prop !== 'month') && (prop === 'designator') && <any>parseOptions.culture && (<any>parseOptions).culture.indexOf('en-') !== -1 && cultureOptions.indexOf(<any>parseOptions.culture) === -1) 
+                        matchString = ((prop !== 'month') && (prop === 'designator') && <any>parseOptions.culture && (<any>parseOptions).culture.indexOf('en-') !== -1 && cultureOptions.indexOf(<any>parseOptions.culture) === -1)
                             ? matchString.toLowerCase() : matchString;
-                        // eslint-disable-next-line
-                        (<any>retOptions)[prop] = (<any>parseOptions)[prop][matchString];
+                        (<any>retOptions)[`${prop}`] = (<any>parseOptions)[`${prop}`][`${matchString}`];
                     }
                 }
             }
@@ -410,7 +385,6 @@ export class DateParser {
         const pattern: string = tZone.gmtFormat;
         let ret: string;
         const cRegex: string = '(' + nRegex + ')' + '(' + nRegex + ')';
-        let splitStr: string[];
 
         ret = hourFormat.replace('+', '\\+');
         if (hourFormat.indexOf('HH') !== -1) {
@@ -418,8 +392,7 @@ export class DateParser {
         } else {
             ret = ret.replace(/H|m/g, '(' + cRegex + '?)');
         }
-        // eslint-disable-next-line
-        splitStr = (ret.split(';').map((str: string): string => {
+        const splitStr: string[] = (ret.split(';').map((str: string): string => {
             return pattern.replace('{0}', str);
         }));
         ret = splitStr.join('|') + '|' + tZone.gmtZeroFormat;

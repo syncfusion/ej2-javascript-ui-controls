@@ -5,7 +5,6 @@ import { DrawingElement } from '@syncfusion/ej2-drawings';
  * HTMLElement defines the basic html elements
  */
 export class DiagramHtmlElement extends DrawingElement {
-
     /**
      * set the id for each element
      *
@@ -19,11 +18,8 @@ export class DiagramHtmlElement extends DrawingElement {
         this.templateFn = this.templateCompiler(nodeTemplate);
     }
 
-
     public templateCompiler(template: string | Function): Function {
         if (template) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            let e: Object;
             try {
                 if (typeof template !== 'function' && document.querySelectorAll(template).length) {
                     return baseTemplateComplier(document.querySelector(template).innerHTML.trim());
@@ -36,6 +32,7 @@ export class DiagramHtmlElement extends DrawingElement {
         }
         return undefined;
     }
+
     /**
      * getNodeTemplate method \
      *
@@ -46,9 +43,7 @@ export class DiagramHtmlElement extends DrawingElement {
     public getNodeTemplate(): Function {
         return this.templateFn;
     }
-
     private templateFn: Function;
-
     /**
      * check whether it is html element or not
      *

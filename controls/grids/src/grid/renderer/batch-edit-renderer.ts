@@ -52,9 +52,5 @@ export class BatchEditRender {
         }
         return form;
     }
-
-    public removeEventListener(): void {
-        //To destroy the renderer
-    }
 }
 

@@ -2,6 +2,7 @@ import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-
 import { DrawingElement, TextElement, PointModel, Point, BaseAttributes, rotateMatrix, identityMatrix, transformPointByMatrix, Matrix } from '@syncfusion/ej2-drawings';
 import { Transforms } from './drawing';
 import { getValue } from '@syncfusion/ej2-base';
+
 /**
  * @param {PdfAnnotationBaseModel} obj - Specified the shape annotation object.
  * @hidden
@@ -14,6 +15,7 @@ export function isLineShapes(obj: PdfAnnotationBaseModel): boolean {
     }
     return false;
 }
+
 /**
  * @param {PdfAnnotationBaseModel | PdfFormFieldBaseModel} obj - Specified the annotation or form fields object.
  * @param {DrawingElement} element - Specified the annotation drawing element.
@@ -34,10 +36,10 @@ export function setElementStype(obj: PdfAnnotationBaseModel | PdfFormFieldBaseMo
         } else {
             const fillColor: string = ((obj as PdfAnnotationBaseModel).fillColor === '#ffffff00' ? 'transparent' : (obj as PdfAnnotationBaseModel).fillColor);
             element.style.fill = fillColor ? fillColor : 'white';
-            // eslint-disable-next-line max-len
-            element.style.strokeColor = (obj as PdfAnnotationBaseModel).strokeColor ? (obj as PdfAnnotationBaseModel).strokeColor : (obj as PdfFormFieldBaseModel).borderColor;
-            // eslint-disable-next-line max-len
-            (element as TextElement).style.color = (obj as PdfAnnotationBaseModel).strokeColor ? (obj as PdfAnnotationBaseModel).strokeColor : (obj as PdfFormFieldBaseModel).borderColor;
+            element.style.strokeColor = (obj as PdfAnnotationBaseModel).strokeColor ?
+                (obj as PdfAnnotationBaseModel).strokeColor : (obj as PdfFormFieldBaseModel).borderColor;
+            (element as TextElement).style.color = (obj as PdfAnnotationBaseModel).strokeColor ?
+                (obj as PdfAnnotationBaseModel).strokeColor : (obj as PdfFormFieldBaseModel).borderColor;
             element.style.strokeWidth = obj.thickness;
             if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText' || (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureImage' ) {
                 element.style.strokeWidth = 0;
@@ -47,6 +49,7 @@ export function setElementStype(obj: PdfAnnotationBaseModel | PdfFormFieldBaseMo
         }
     }
 }
+
 /**
  * @param {PointModel[]} points - Specified the annotation points value.
  * @hidden
@@ -114,12 +117,10 @@ export function getFunction(value: Function | string): Function {
  * @param {any} obj - Specified the annotation object.
  * @param {Function | string} additionalProp - Specified the annotation additional properties.
  * @param {string} key - Specified the annotation key value.
- * @returns {Object} - Returns the cloned object.
+ * @returns {object} - Returns the cloned object.
  */
-// eslint-disable-next-line
 export function cloneObject(obj: any, additionalProp?: Function | string, key?: string): Object {
-    // eslint-disable-next-line
-    let newObject: any = {};
+    const newObject: any = {};
     const keys: string = 'properties';
     const prop: string = 'propName';
     if (obj) {
@@ -143,8 +144,7 @@ export function cloneObject(obj: any, additionalProp?: Function | string, key?: 
         for (const property of properties) {
             if (property !== 'historyManager') {
                 if (property !== 'wrapper') {
-                    // eslint-disable-next-line
-                    const isEventEmmitter: boolean = obj[property] && (obj as any).hasOwnProperty('observers') ? true : false;
+                    const isEventEmmitter: boolean = obj[`${property}`] && Object.prototype.hasOwnProperty.call(obj, 'observers') ? true : false;
                     if (!isEventEmmitter) {
                         if (obj[`${property}`] instanceof Array) {
                             newObject[`${property}`] = cloneArray(
@@ -176,10 +176,10 @@ export function cloneObject(obj: any, additionalProp?: Function | string, key?: 
 
 /**
  * @private
- * @param {Object[]} sourceArray - Specified the annotation source collections.
+ * @param {object[]} sourceArray - Specified the annotation source collections.
  * @param {Function | string} additionalProp - Specified the annotation additional properties.
  * @param {string} key - Specified the annotation key value.
- * @returns {Object[]} - Returns the cloned object array.
+ * @returns {object[]} - Returns the cloned object array.
  */
 export function cloneArray(sourceArray: Object[], additionalProp?: Function | string, key?: string): Object[] {
     let clonedArray: Object[];
@@ -219,6 +219,7 @@ export function getInternalProperties(propName: string): string[] {
     }
     return [];
 }
+
 /**
  * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
  * @param {string} position - Specified the annotation position.
@@ -232,8 +233,7 @@ export function isLeader(obj: PdfAnnotationBaseModel, position: string): Leader 
         let newPoint1: PointModel;
         for (let i: number = 0; i < obj.wrapper.children.length; i++) {
             const angle: number = Point.findAngle(obj.sourcePoint, obj.targetPoint);
-            // eslint-disable-next-line
-            let segment: any = obj.wrapper.children[i];
+            const segment: any = obj.wrapper.children[parseInt(i.toString(), 10)];
             if (segment.id.indexOf('leader') > -1) {
                 let center: PointModel = obj.wrapper.children[0].bounds.center;
                 if (leaderCount === 0) {

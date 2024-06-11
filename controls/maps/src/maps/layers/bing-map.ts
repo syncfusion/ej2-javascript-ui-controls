@@ -1,5 +1,5 @@
 import { Maps } from '../maps';
-import { Tile, BingMapType } from '../index';
+import { Tile } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -17,7 +17,7 @@ export class BingMap {
         this.maps = maps;
     }
 
-    public getBingMap(tile: Tile, key: string, type: BingMapType, language: string, imageUrl: string, subDomains: string[]): string {
+    public getBingMap(tile: Tile, key: string, type: string, language: string, imageUrl: string, subDomains: string[]): string {
         let quadKey: string = '';
         const maxZoom: number = Math.min(this.maps.tileZoomLevel, parseInt(this.maxZoom, 10));
         for (let i: number = maxZoom; i > 0; i--) {

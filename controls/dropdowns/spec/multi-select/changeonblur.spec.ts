@@ -5,7 +5,7 @@ import { MultiSelect, TaggingEventArgs, MultiSelectChangeEventArgs, ISelectAllEv
 import { Browser, isNullOrUndefined, EmitType } from '@syncfusion/ej2-base';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { dropDownBaseClasses, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
-import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, WebApiAdaptor, Query } from '@syncfusion/ej2-data';
 import { CheckBoxSelection } from '../../src/multi-select/checkbox-selection';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
@@ -145,13 +145,17 @@ describe('MultiSelect - changeonblur', () => {
 
         it(' change event not trigger in remote data', (done) => {
             let changeCount: number = 0;
-            let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+            let remoteData: DataManager = new DataManager({ 
+                url: 'https://services.syncfusion.com/js/production/api/Employees',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
             let multiObj = new MultiSelect({
                 dataSource: remoteData,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
                 mode: 'CheckBox',
                 changeOnBlur: false,
-                value: [1005],
+                value: [5],
                 change: () => {
                     isNotRemoteChange = false;
                     changeCount = changeCount + 1;

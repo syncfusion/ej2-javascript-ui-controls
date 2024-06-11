@@ -1,8 +1,8 @@
-import { Size } from "@syncfusion/ej2-svg-base";
-import { CircularChart3DPoints, CircularChart3DSeries } from "../renderer/series";
-import { CircularChart3DTextRenderEventArgs } from "./pie-interface";
-import { FontModel } from "../../common/model/base-model";
-import { CircularChart3DMatrix } from "../renderer/3d-renderer";
+import { Size } from '@syncfusion/ej2-svg-base';
+import { CircularChart3DPoints, CircularChart3DSeries } from '../renderer/series';
+import { CircularChart3DTextRenderEventArgs } from './pie-interface';
+import { FontModel } from '../../common/model/base-model';
+import { CircularChart3DMatrix } from '../renderer/3d-renderer';
 
 /**
  * Interface for a 3D vector with components for x, y, and z coordinates.

@@ -2,6 +2,7 @@ import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
  * The `BlazorUIAdaptor` module is used to handle the UI update of native components.
+ *
  * @hidden
  */
 export class BlazorUiAdaptor {
@@ -95,46 +96,37 @@ export class BlazorUiAdaptor {
         this.editAnnotationButtonElement.classList.add('e-pv-tbar-btn');
         this.printElement = this.pdfViewerBase.getElement('_print') as HTMLElement;
         this.downloadElement = this.pdfViewerBase.getElement('_download') as HTMLElement;
-
         this.highlightElement = this.pdfViewerBase.getElement('_highLight') as HTMLElement;
         this.underlineElement = this.pdfViewerBase.getElement('_underline') as HTMLElement;
         this.strikeThroughElement = this.pdfViewerBase.getElement('_strikethrough') as HTMLElement;
-
         this.shapeElement = this.pdfViewerBase.getElement('_annotation_shapes') as HTMLElement;
         this.calibrateElement = this.pdfViewerBase.getElement('_annotation_calibrate') as HTMLElement;
         this.stampElement = this.pdfViewerBase.getElement('_annotation_stamp') as HTMLElement;
         this.freeTextElement = this.pdfViewerBase.getElement('_annotation_freeTextEdit') as HTMLElement;
         this.signatureElement = this.pdfViewerBase.getElement('_annotation_signature') as HTMLElement;
         this.inkElement = this.pdfViewerBase.getElement('_annotation_ink') as HTMLElement;
-        // tslint:disable-next-line:max-line-length
         this.annotationFontSizeInputElement = this.pdfViewerBase.getElement('_annotation_fontsize').children[0].children[0] as HTMLInputElement;
-        // tslint:disable-next-line:max-line-length
         this.annotationFontFamilyInputElement = this.pdfViewerBase.getElement('_annotation_fontname').children[0].children[0] as HTMLInputElement;
-
         this.annotationColorElement = this.pdfViewerBase.getElement('_annotation_color') as HTMLElement;
         this.annotationStrokeColorElement = this.pdfViewerBase.getElement('_annotation_stroke') as HTMLElement;
         this.annotationThicknessElement = this.pdfViewerBase.getElement('_annotation_thickness') as HTMLElement;
         this.annotationOpacityElement = this.pdfViewerBase.getElement('_annotation_opacity') as HTMLElement;
-
         this.annotationFontColorElement = this.pdfViewerBase.getElement('_annotation_textcolor') as HTMLElement;
         this.annotationFontFamilyElement = this.pdfViewerBase.getElement('_annotation_fontname') as HTMLElement;
         this.annotationFontSizeElement = this.pdfViewerBase.getElement('_annotation_fontsize') as HTMLElement;
-
         this.annotationTextAlignElement = this.pdfViewerBase.getElement('_annotation_textalign') as HTMLElement;
         this.annotationTextColorElement = this.pdfViewerBase.getElement('_annotation_textcolor') as HTMLElement;
         this.annotationTextPropertiesElement = this.pdfViewerBase.getElement('_annotation_textproperties') as HTMLElement;
-
         this.annotationDeleteElement = this.pdfViewerBase.getElement('_annotation_delete') as HTMLElement;
         this.annotationCommentPanelElement = this.pdfViewerBase.getElement('_annotation_commentPanel') as HTMLElement;
         this.annotationCloseElement = this.pdfViewerBase.getElement('_annotation_close') as HTMLElement;
-
-
         this.mobileToolbarContainerElement = this.pdfViewerBase.getElement('_mobileToolbarContainer') as HTMLElement;
         this.mobileSearchPreviousOccurenceElement = this.pdfViewerBase.getElement('_prev_occurrence') as HTMLElement;
         this.mobileSearchNextOccurenceElement = this.pdfViewerBase.getElement('_next_occurrence') as HTMLElement;
     }
     /**
      * Update the total page.
+     *
      * @returns {void}
      */
     public updateTotalPage() : void {
@@ -142,6 +134,7 @@ export class BlazorUiAdaptor {
     }
     /**
      * Update current page.
+     *
      * @param {number} pageNumber - The pageNumber.
      * @returns {void}
      */
@@ -150,6 +143,7 @@ export class BlazorUiAdaptor {
     }
     /**
      * Load the PDF document.
+     *
      * @returns {void}
      */
     public loadDocument(): void {
@@ -207,14 +201,12 @@ export class BlazorUiAdaptor {
             this.underlineElement.classList.remove(this.cssClass);
             this.strikeThroughElement.classList.remove(this.cssClass);
         }
-
         if (this.pdfViewer.enableAnnotation && this.pdfViewer.enableShapeAnnotation) {
             this.shapeElement.classList.remove(this.cssClass);
         }
         if (this.pdfViewer.enableAnnotation && this.pdfViewer.enableMeasureAnnotation) {
             this.calibrateElement.classList.remove(this.cssClass);
         }
-
         if (this.pdfViewer.enableAnnotation && this.pdfViewer.enableStampAnnotations) {
             this.stampElement.classList.remove(this.cssClass);
         }
@@ -235,27 +227,27 @@ export class BlazorUiAdaptor {
 
     public selectItem(element: HTMLElement): void {
         if (element) {
-            element.classList.add("e-pv-select");
+            element.classList.add('e-pv-select');
         }
-    }   
+    }
 
     public deselectItem(element: HTMLElement): void {
-        if (element) {            
-            element.classList.remove("e-pv-select");
-        } 
+        if (element) {
+            element.classList.remove('e-pv-select');
+        }
     }
 
     public showAnnotationToolbar(isToolbarVisible: any): void {
         this.pdfViewer.toolbar.annotationToolbarModule.adjustViewer(isToolbarVisible[0]);
-        if(isToolbarVisible[0]){
-            this.pdfViewer.toolbar.selectItem(this.editAnnotationButtonElement);            
+        if (isToolbarVisible[0]){
+            this.pdfViewer.toolbar.selectItem(this.editAnnotationButtonElement);
         } else {
             this.pdfViewer.toolbar.deSelectItem(this.editAnnotationButtonElement);
             this.pdfViewerBase.focusViewerContainer();
         }
     }
 
-    public closeAnnotationToolbar(): void {        
+    public closeAnnotationToolbar(): void {
         this.pdfViewer.toolbar.annotationToolbarModule.adjustViewer(false);
         this.pdfViewer.toolbar.deSelectItem(this.editAnnotationButtonElement);
         this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
@@ -263,6 +255,7 @@ export class BlazorUiAdaptor {
 
     /**
      * Reset the toolbar.
+     *
      * @returns {void}
      */
     public resetToolbar(): void {
@@ -390,12 +383,13 @@ export class BlazorUiAdaptor {
 
     /**
      * When annotation selection changed.
-     * @param {boolean} currentPageNumber - The current page number.
+     *
+     * @param {boolean} isEnable - isEnable
      * @returns {void}
      */
-     public EnableDeleteOption(isEnable: boolean): void {
+    public EnableDeleteOption(isEnable: boolean): void {
         if (this.annotationDeleteElement !== null) {
-            if(isEnable) {
+            if (isEnable) {
                 this.annotationDeleteElement.classList.remove(this.cssClass);
             } else {
                 if (!this.isEnabled(this.annotationDeleteElement)) {
@@ -404,9 +398,10 @@ export class BlazorUiAdaptor {
             }
         }
     }
-    
+
     /**
      * when the page changes.
+     *
      * @param {number} currentPageNumber - The current page number.
      * @returns {void}
      */
@@ -478,42 +473,43 @@ export class BlazorUiAdaptor {
         }
     }
     /**
+     * @param {boolean} isEnable - isEnable
      * @returns {void}
      */
-     public enableTextMarkupAnnotationPropertiesTools(isEnable: boolean): void {
+    public enableTextMarkupAnnotationPropertiesTools(isEnable: boolean): void {
         if (isEnable) {
-           this.annotationColorElement.classList.remove(this.cssClass);
-           this.annotationOpacityElement.classList.remove(this.cssClass);
+            this.annotationColorElement.classList.remove(this.cssClass);
+            this.annotationOpacityElement.classList.remove(this.cssClass);
         } else {
-           if (!this.isEnabled(this.annotationOpacityElement)) {
-               this.annotationOpacityElement.className += this.disableClass;
-           }
-           if (!this.isEnabled(this.annotationColorElement)) {
-               this.annotationColorElement.className += this.disableClass;
-           }
+            if (!this.isEnabled(this.annotationOpacityElement)) {
+                this.annotationOpacityElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationColorElement)) {
+                this.annotationColorElement.className += this.disableClass;
+            }
         }
         if (!this.isEnabled(this.annotationFontColorElement)) {
-           this.annotationFontColorElement.className += this.disableClass;
-       }
-       if (!this.isEnabled(this.annotationFontFamilyElement)) {
-           this.annotationFontFamilyElement.className += this.disableClass;
-       }
-       if (!this.isEnabled(this.annotationFontSizeElement)) {
-           this.annotationFontSizeElement.className += this.disableClass;
-       }
-       if (!this.isEnabled(this.annotationTextAlignElement)) {
-           this.annotationTextAlignElement.className += this.disableClass;
-       }
-       if (!this.isEnabled(this.annotationTextPropertiesElement)) {
-           this.annotationTextPropertiesElement.className += this.disableClass;
-       }
-       if (!this.isEnabled(this.annotationStrokeColorElement)) {
-           this.annotationStrokeColorElement.className += this.disableClass;
-       }
-       if (!this.isEnabled(this.annotationThicknessElement)) {
-           this.annotationThicknessElement.className += this.disableClass;
-       }
-     }
+            this.annotationFontColorElement.className += this.disableClass;
+        }
+        if (!this.isEnabled(this.annotationFontFamilyElement)) {
+            this.annotationFontFamilyElement.className += this.disableClass;
+        }
+        if (!this.isEnabled(this.annotationFontSizeElement)) {
+            this.annotationFontSizeElement.className += this.disableClass;
+        }
+        if (!this.isEnabled(this.annotationTextAlignElement)) {
+            this.annotationTextAlignElement.className += this.disableClass;
+        }
+        if (!this.isEnabled(this.annotationTextPropertiesElement)) {
+            this.annotationTextPropertiesElement.className += this.disableClass;
+        }
+        if (!this.isEnabled(this.annotationStrokeColorElement)) {
+            this.annotationStrokeColorElement.className += this.disableClass;
+        }
+        if (!this.isEnabled(this.annotationThicknessElement)) {
+            this.annotationThicknessElement.className += this.disableClass;
+        }
+    }
     /**
      * @param {boolean} isEnable - To enable the item or not.
      * @param {boolean} isProperitiesChange - To enable the item or not.

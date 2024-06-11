@@ -6,13 +6,15 @@ import { ComboBox, FilteringEventArgs } from "@syncfusion/ej2-dropdowns";
 import { ColorPicker } from "@syncfusion/ej2-inputs";
 import { Query } from "@syncfusion/ej2-data";
 import { DropDownButton, ItemModel, SplitButton, OpenCloseMenuEventArgs } from "@syncfusion/ej2-splitbuttons";
-import { ExpandCollapseEventArgs, ItemOrientation, LauncherClickEventArgs, Ribbon, RibbonItemSize, RibbonItemType, DisplayMode, TabSelectedEventArgs, TabSelectingEventArgs } from "../../src/ribbon/base/index";
+import { ExpandCollapseEventArgs, ItemOrientation, LauncherClickEventArgs, Ribbon, RibbonItemSize, RibbonItemType, DisplayMode, TabSelectedEventArgs, TabSelectingEventArgs, RibbonLayout } from "../../src/ribbon/base/index";
 import { getMemoryProfile, inMB, profile } from "./common.spec";
 import { RibbonTabModel } from "../../src/ribbon/models/ribbon-tab-model";
-import { FileMenuSettingsModel, RibbonCollectionModel, RibbonGroupModel, RibbonItemModel, RibbonTooltipModel } from "../../src/ribbon/models/index";
-import { RibbonColorPicker, RibbonFileMenu } from "../../src/index";
+import { BackStageMenu, BackStageMenuModel, FileMenuSettingsModel, RibbonButtonSettings, RibbonButtonSettingsModel, RibbonCollectionModel, RibbonGalleryItemModel, RibbonGallerySettings, RibbonGallerySettingsModel, RibbonGroupButtonItemModel, RibbonGroupButtonSettingsModel, RibbonGroupModel, RibbonItemModel, RibbonSplitButtonSettingsModel, RibbonTooltipModel } from "../../src/ribbon/models/index";
+import { RibbonButton, RibbonColorPicker, RibbonContextualTab, RibbonContextualTabSettingsModel, RibbonFileMenu } from "../../src/index";
+import { flip } from "@syncfusion/ej2-popups";
+import { MenuAnimationSettings } from "@syncfusion/ej2-navigations";
 
-Ribbon.Inject(RibbonColorPicker, RibbonFileMenu);
+Ribbon.Inject(RibbonColorPicker, RibbonFileMenu, RibbonContextualTab);
 function triggerMouseEvent(node: HTMLElement, eventType: string, x?: number, y?: number, relatedTarget?: any) {
     let mouseEve: MouseEvent = document.createEvent("MouseEvents");
     const relatedTargetElement = relatedTarget ? relatedTarget : null;
@@ -38,7 +40,7 @@ describe('Ribbon', () => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -494,6 +496,1531 @@ describe('Ribbon', () => {
             expect(ribbon.isMinimized).toBe(false);
         });
     });
+    describe('Null or Undefined value', () => {
+        let ribbon: Ribbon;
+        let ribbonEle: HTMLElement;
+        beforeEach(() => {
+            ribbonEle = createElement('div', { id: 'ribbon' });
+            document.body.appendChild(ribbonEle);
+        })
+        afterEach(() => {
+            if (ribbon) {
+                ribbon.destroy();
+                ribbon = undefined;
+            }
+            remove(ribbonEle);
+        });
+
+        it('in Active Layout', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, activeLayout: null }, ribbonEle);
+            expect(ribbon.activeLayout).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, activeLayout: undefined }, ribbonEle);
+            expect(ribbon.activeLayout).toBe(RibbonLayout.Classic);
+        });
+        it('in Contextual Tabs', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, contextualTabs: null }, ribbonEle);
+            expect(ribbon.contextualTabs).toEqual([]);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, contextualTabs: undefined }, ribbonEle);
+            expect(ribbon.contextualTabs).toEqual([]);
+        });
+        it('in CSS class', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, cssClass: null }, ribbonEle);
+            expect(ribbon.cssClass).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, cssClass: undefined }, ribbonEle);
+            expect(ribbon.cssClass).toBe('');
+        });
+        it('in Enable Keytip', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, enableKeyTips: null }, ribbonEle);
+            expect(ribbon.enableKeyTips).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, enableKeyTips: undefined }, ribbonEle);
+            expect(ribbon.enableKeyTips).toBe(false);
+        });
+        it('in Enable Persistence', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, enablePersistence: null }, ribbonEle);
+            expect(ribbon.enablePersistence).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, enablePersistence: undefined }, ribbonEle);
+            expect(ribbon.enablePersistence).toBe(false);
+        });
+        it('in Enable RTL', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, enableRtl: null }, ribbonEle);
+            expect(ribbon.enableRtl).toBe(false);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, enableRtl: undefined }, ribbonEle);
+            expect(ribbon.enableRtl).toBe(false);
+        });
+        it('in Help Pane template', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, helpPaneTemplate: null }, ribbonEle);
+            expect(ribbon.helpPaneTemplate).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, helpPaneTemplate: undefined }, ribbonEle);
+            expect(ribbon.helpPaneTemplate).toBe('');
+        });
+        it('in Hide Layout Switcher', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, hideLayoutSwitcher: null }, ribbonEle);
+            expect(ribbon.hideLayoutSwitcher).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, hideLayoutSwitcher: undefined }, ribbonEle);
+            expect(ribbon.hideLayoutSwitcher).toBe(false);
+        });
+        it('in Is Minimized', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, isMinimized: null }, ribbonEle);
+            expect(ribbon.isMinimized).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, isMinimized: undefined }, ribbonEle);
+            expect(ribbon.isMinimized).toBe(false);
+        });
+        it('in Launcher Icon CSS', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, launcherIconCss: null }, ribbonEle);
+            expect(ribbon.launcherIconCss).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, launcherIconCss: undefined }, ribbonEle);
+            expect(ribbon.launcherIconCss).toBe('');
+        });
+        it('in Layout Switcher KeyTip', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, layoutSwitcherKeyTip: null }, ribbonEle);
+            expect(ribbon.layoutSwitcherKeyTip).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, layoutSwitcherKeyTip: undefined }, ribbonEle);
+            expect(ribbon.layoutSwitcherKeyTip).toBe('');
+        });
+        it('in Locale', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, locale: null }, ribbonEle);
+            expect(ribbon.locale).toBe('en-US');
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, locale: undefined }, ribbonEle);
+            expect(ribbon.locale).toBe('en-us');
+        });
+        it('in Selected Tab', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, selectedTab: undefined }, ribbonEle);
+            expect(ribbon.selectedTab).toBe(0);
+        });
+        it('in Width', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({ tabs: tabs, width: null }, ribbonEle);
+            expect(ribbon.width).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({ tabs: tabs, width: undefined }, ribbonEle);
+            expect(ribbon.width).toBe('100%');
+        });
+        it('in Backstage back button', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            let backstageNull: BackStageMenuModel = {
+                backButton: { text: null, iconCss: null, visible: null }
+            };
+            let backstageUndefined: BackStageMenuModel = {
+                backButton: { text: undefined, iconCss: undefined, visible: undefined }
+            };
+            ribbon = new Ribbon({
+                tabs: tabs,
+                backStageMenu: backstageNull
+            }, ribbonEle);
+            expect(ribbon.backStageMenu.backButton.text).toBe(null);
+            expect(ribbon.backStageMenu.backButton.iconCss).toBe(null);
+            expect(ribbon.backStageMenu.backButton.visible).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({
+                tabs: tabs,
+                backStageMenu: backstageUndefined
+            }, ribbonEle);
+            expect(ribbon.backStageMenu.backButton.text).toBe('');
+            expect(ribbon.backStageMenu.backButton.iconCss).toBe('');
+            expect(ribbon.backStageMenu.backButton.visible).toBe(true);
+
+        });
+        it('in Back stage menu', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            let backstageNull: BackStageMenuModel = {
+                text: null,
+                keyTip: null,
+                visible: null,
+                height: null,
+                width: null,
+                target: null,
+                items: null,
+                template: null
+            };
+            let backstageUndefined: BackStageMenuModel = {
+                text: undefined,
+                keyTip: undefined,
+                visible: undefined,
+                height: undefined,
+                width: undefined,
+                target: undefined,
+                items: undefined,
+                template: undefined
+            };
+            ribbon = new Ribbon({
+                tabs: tabs,
+                backStageMenu: backstageNull
+            }, ribbonEle);
+            expect(ribbon.backStageMenu.text).toBe(null);
+            expect(ribbon.backStageMenu.keyTip).toBe(null);
+            expect(ribbon.backStageMenu.visible).toBe(null);
+            expect(ribbon.backStageMenu.height).toBe(null);
+            expect(ribbon.backStageMenu.width).toBe(null);
+            expect(ribbon.backStageMenu.target).toBe(null);
+            expect(ribbon.backStageMenu.items).toEqual([]);
+            expect(ribbon.backStageMenu.template).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({
+                tabs: tabs,
+                backStageMenu: backstageUndefined
+            }, ribbonEle);
+            expect(ribbon.backStageMenu.text).toBe('File');
+            expect(ribbon.backStageMenu.keyTip).toBe('');
+            expect(ribbon.backStageMenu.visible).toBe(false);
+            expect(ribbon.backStageMenu.height).toBe('auto');
+            expect(ribbon.backStageMenu.width).toBe('auto');
+            expect(ribbon.backStageMenu.target).toBe(null);
+            expect(ribbon.backStageMenu.items).toEqual([]);
+            expect(ribbon.backStageMenu.template).toBe('');
+        });
+        it('in Backstage items', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            let backstageNull: BackStageMenuModel = {
+                items: [
+                    { id: null, text: null, iconCss: null, content: null, separator: null, isFooter: null, keyTip: null }
+                  ],
+            };
+            let backstageUndefined: BackStageMenuModel = {
+                items: [
+                    { id: undefined, text: undefined, iconCss: undefined, content: undefined, separator: undefined, isFooter: undefined, keyTip: undefined }
+                  ],
+            };
+            ribbon = new Ribbon({
+                tabs: tabs,
+                backStageMenu: backstageNull
+            }, ribbonEle);
+            expect(ribbon.backStageMenu.items[0].text).toBe(null);
+            expect(ribbon.backStageMenu.items[0].id).toBe(null);
+            expect(ribbon.backStageMenu.items[0].keyTip).toBe(null);
+            expect(ribbon.backStageMenu.items[0].content).toBe(null);
+            expect(ribbon.backStageMenu.items[0].iconCss).toBe(null);
+            expect(ribbon.backStageMenu.items[0].separator).toBe(null);
+            expect(ribbon.backStageMenu.items[0].isFooter).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({
+                tabs: tabs,
+                backStageMenu: backstageUndefined
+            }, ribbonEle);
+            expect(ribbon.backStageMenu.items[0].text).toBe('');
+            expect(ribbon.backStageMenu.items[0].id).toBe('');
+            expect(ribbon.backStageMenu.items[0].keyTip).toBe('');
+            expect(ribbon.backStageMenu.items[0].content).toBe('');
+            expect(ribbon.backStageMenu.items[0].iconCss).toBe('');
+            expect(ribbon.backStageMenu.items[0].separator).toBe(false);
+            expect(ribbon.backStageMenu.items[0].isFooter).toBe(false);
+        });
+        it('in Button settings', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: null,
+                                cssClass: null,
+                                iconCss: null,
+                                isToggle: null,
+                                isPrimary: null,
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.content).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.iconCss).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.isToggle).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.isPrimary).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].buttonSettings = {
+                content: undefined,
+                cssClass: undefined,
+                iconCss: undefined,
+                isToggle: undefined,
+                isPrimary: undefined,
+                htmlAttributes: undefined
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.content).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.iconCss).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.isToggle).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.isPrimary).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].buttonSettings.htmlAttributes).toEqual({});
+        });
+        it('in Checkbox Settings', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.CheckBox,
+                            allowedSizes: RibbonItemSize.Large,
+                            checkBoxSettings: {
+                                checked: null,
+                                cssClass: null,
+                                label: null,
+                                labelPosition: null,
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.checked).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.label).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.labelPosition).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].checkBoxSettings = {
+                checked: undefined,
+                cssClass: undefined,
+                label: undefined,
+                labelPosition: undefined,
+                htmlAttributes: undefined
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.checked).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.label).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.labelPosition).toBe('After');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].checkBoxSettings.htmlAttributes).toEqual({});
+        });
+        it('in Collection', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: null,
+                        id: null,
+                        cssClass: null
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].id).toBe('tab1_group0_collection1');
+            expect(ribbon.tabs[0].groups[0].collections[0].cssClass).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0] = {
+                items: undefined,
+                id: undefined,
+                cssClass: undefined
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].id).toBe('tab1_group0_collection1');
+            expect(ribbon.tabs[0].groups[0].collections[0].cssClass).toBe('');
+        });
+        it('in Color picker settings', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.ColorPicker,
+                            allowedSizes: RibbonItemSize.Large,
+                            colorPickerSettings: {
+                                columns: null,
+                                cssClass: null,
+                                label: null,
+                                enableOpacity: null,
+                                mode: null,
+                                modeSwitcher: null,
+                                noColor: null,
+                                presetColors: null,
+                                showButtons: null,
+                                value: null
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.columns).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.label).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.enableOpacity).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.mode).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.modeSwitcher).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.noColor).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.presetColors).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.showButtons).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.value).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].colorPickerSettings = {
+                columns: undefined,
+                cssClass: undefined,
+                label: undefined,
+                enableOpacity: undefined,
+                mode: undefined,
+                modeSwitcher: undefined,
+                noColor: undefined,
+                presetColors: undefined,
+                showButtons: undefined,
+                value: undefined,
+                htmlAttributes: undefined
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.columns).toBe(10);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.label).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.enableOpacity).toBe(true);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.mode).toBe('Palette');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.modeSwitcher).toBe(true);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.noColor).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.presetColors).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.showButtons).toBe(true);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].colorPickerSettings.value).toBe('#008000ff');
+        });
+        it('in Combo box settings', function () {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.ComboBox,
+                            allowedSizes: RibbonItemSize.Large,
+                            comboBoxSettings: {
+                                allowFiltering: null,
+                                autofill: null,
+                                cssClass: null,
+                                label: null,
+                                dataSource: null,
+                                filterType: null,
+                                footerTemplate: null,
+                                groupTemplate: null,
+                                headerTemplate: null,
+                                index: null,
+                                itemTemplate: null,
+                                noRecordsTemplate: null,
+                                placeholder: null,
+                                popupHeight: null,
+                                popupWidth: null,
+                                showClearButton: null,
+                                sortOrder: null,
+                                text: null,
+                                value: null,
+                                width: null
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.allowFiltering).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.autofill).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.label).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.dataSource).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.filterType).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.footerTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.groupTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.headerTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.index).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.itemTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.noRecordsTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.placeholder).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.popupHeight).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.popupWidth).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.showClearButton).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.sortOrder).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.text).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.value).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.width).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.htmlAttributes).toEqual({});
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].comboBoxSettings = {
+                allowFiltering: undefined,
+                autofill: undefined,
+                cssClass: undefined,
+                label: undefined,
+                dataSource: undefined,
+                fields: undefined,
+                filterType: undefined,
+                footerTemplate: undefined,
+                groupTemplate: undefined,
+                headerTemplate: undefined,
+                index: undefined,
+                itemTemplate: undefined,
+                noRecordsTemplate: undefined,
+                placeholder: undefined,
+                popupHeight: undefined,
+                popupWidth: undefined,
+                showClearButton: undefined,
+                sortOrder: undefined,
+                text: undefined,
+                value: undefined,
+                width: undefined,
+                htmlAttributes: undefined
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.allowFiltering).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.autofill).toBe(true);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.label).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.dataSource).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.filterType).toBe('Contains');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.footerTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.groupTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.headerTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.index).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.itemTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.noRecordsTemplate).toBe('No records found');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.placeholder).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.popupHeight).toBe('300px');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.popupWidth).toBe('100%');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.showClearButton).toBe(true);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.sortOrder).toBe('None');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.text).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.value).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].comboBoxSettings.width).toBe('150px');
+        });
+        it('in Contextual tab settings', function () {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            let contextualNull: RibbonContextualTabSettingsModel = {
+                visible: null,
+                isSelected: null,
+                tabs: null,
+            }
+            let contextualUndefined: RibbonContextualTabSettingsModel = {
+                visible: undefined,
+                isSelected: undefined,
+                tabs: undefined,
+            }
+            ribbon = new Ribbon({
+                tabs: tabs,
+                contextualTabs: [contextualNull]
+            }, ribbonEle);
+            expect(ribbon.contextualTabs[0].visible).toBe(null);
+            expect(ribbon.contextualTabs[0].isSelected).toBe(null);
+            expect(ribbon.contextualTabs[0].tabs).toEqual([]);
+            ribbon.destroy();
+            ribbon = new Ribbon({
+                tabs: tabs,
+                contextualTabs: [contextualUndefined]
+            }, ribbonEle);
+            expect(ribbon.contextualTabs[0].visible).toBe(false);
+            expect(ribbon.contextualTabs[0].isSelected).toBe(false);
+            expect(ribbon.contextualTabs[0].tabs).toEqual([]);
+        });
+        it('in Drop down settings', function () {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.DropDown,
+                            allowedSizes: RibbonItemSize.Large,
+                            dropDownSettings: {
+                                closeActionEvents: null,
+                                content: null,
+                                cssClass: null,
+                                iconCss: null,
+                                items: null,
+                                target: null,
+                                createPopupOnClick: null
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.closeActionEvents).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.content).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.iconCss).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.items).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.target).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.createPopupOnClick).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].dropDownSettings = {
+                closeActionEvents: undefined,
+                content: undefined,
+                cssClass: undefined,
+                iconCss: undefined,
+                items: undefined,
+                target: undefined,
+                createPopupOnClick: undefined,
+                htmlAttributes: undefined
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.closeActionEvents).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.content).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.iconCss).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.items).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.target).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.createPopupOnClick).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].dropDownSettings.htmlAttributes).toEqual({});
+        });
+        it('in File menu settings', function () {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs,
+                fileMenu:{
+                    text: null,
+                    visible: null,
+                    menuItems: null,
+                    showItemOnClick: null,
+                    itemTemplate: null,
+                    popupTemplate: null,
+                }
+            }, ribbonEle);
+            expect(ribbon.fileMenu.text).toBe(null);
+            expect(ribbon.fileMenu.visible).toBe(null);
+            expect(ribbon.fileMenu.menuItems).toEqual([]);
+            expect(ribbon.fileMenu.showItemOnClick).toBe(null);
+            expect(ribbon.fileMenu.itemTemplate).toBe(null);
+            expect(ribbon.fileMenu.popupTemplate).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({
+                tabs: tabs,
+                fileMenu:{
+                    text: undefined,
+                    visible: undefined,
+                    menuItems: undefined,
+                    showItemOnClick: undefined,
+                    animationSettings: undefined,
+                    itemTemplate: undefined,
+                    popupTemplate: undefined,
+                    ribbonTooltipSettings: undefined
+                }
+            }, ribbonEle);
+            expect(ribbon.fileMenu.text).toBe('File');
+            expect(ribbon.fileMenu.visible).toBe(false);
+            expect(ribbon.fileMenu.menuItems).toEqual([]);
+            expect(ribbon.fileMenu.showItemOnClick).toBe(false);
+            expect(ribbon.fileMenu.itemTemplate).toBe('');
+            expect(ribbon.fileMenu.popupTemplate).toBe('');
+        });
+        it('in Gallery group', function () {
+            let tabs: RibbonTabModel[] = [{
+                header: "Gallery",
+                groups: [{
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Gallery,
+                            gallerySettings: {
+                                groups: [{
+                                    items: null,
+                                    header: null,
+                                    itemWidth: null,
+                                    itemHeight: null,
+                                    cssClass: null
+                                }]
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].header).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].itemWidth).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].itemHeight).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].cssClass).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0]={
+                items: undefined,
+                itemHeight: undefined,
+                itemWidth: undefined,
+                header: undefined,
+                cssClass: undefined
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].header).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].itemWidth).toBe('auto');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].itemHeight).toBe('auto');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].cssClass).toBe('');
+        });
+        it('in Gallery items', function () {
+            let tabs: RibbonTabModel[] = [{
+                header: "Gallery",
+                groups: [{
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Gallery,
+                            gallerySettings: {
+                                groups: [{
+                                    items: [
+                                        {
+                                            content: null,
+                                            iconCss: null,
+                                            cssClass: null,
+                                            disabled: null
+                                        }
+                                    ]
+                                }]
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            let galleryUndefined: RibbonGalleryItemModel = 
+            {
+                content: undefined,
+                iconCss: undefined,
+                cssClass: undefined,
+                disabled: undefined,
+                htmlAttributes: undefined
+            };
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0].content).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0].cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0].disabled).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0].iconCss).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0] = galleryUndefined;
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0].content).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0].cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0].disabled).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups[0].items[0].iconCss).toBe('');
+        });
+        it('in Gallery settings', function () {
+            let galleryNull: RibbonGallerySettingsModel = {
+                groups: null,
+                itemCount: null,
+                selectedItemIndex: null,
+                popupHeight: null,
+                popupWidth: null,
+                template: null,
+                popupTemplate: null
+            }
+            let galleryUndefined: RibbonGallerySettingsModel = {
+                groups: undefined,
+                itemCount: undefined,
+                selectedItemIndex: undefined,
+                popupHeight: undefined,
+                popupWidth: undefined,
+                template: undefined,
+                popupTemplate: undefined
+            }
+            let tabs: RibbonTabModel[] = [{
+                header: "Gallery",
+                groups: [{
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Gallery,
+                            gallerySettings: galleryNull
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.itemCount).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.selectedItemIndex).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.popupHeight).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.popupWidth).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.template).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.popupTemplate).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].gallerySettings = galleryUndefined;
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.itemCount).toBe(3);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.selectedItemIndex).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.popupHeight).toBe('auto');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.popupWidth).toBe('auto');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.template).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.popupTemplate).toBe('');
+        });
+        it('in Group button item', function () {
+            let groupbuttonUndefined: RibbonGroupButtonItemModel = {
+                content: undefined,
+                iconCss: undefined,
+                keyTip: undefined,
+                selected: undefined,
+                htmlAttributes: undefined
+            }
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.GroupButton,
+                            allowedSizes: RibbonItemSize.Large,
+                            groupButtonSettings: {
+                                items: [
+                                    {
+                                        content: null,
+                                        iconCss: null,
+                                        keyTip: null,
+                                        selected: null
+                                    }
+                                ]
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].content).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].iconCss).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].keyTip).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].selected).toBe(null);
+
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0] = groupbuttonUndefined;
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].content).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].iconCss).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].keyTip).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].selected).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0].htmlAttributes).toEqual({});
+        });
+        it('in Group button settings', function () {
+            let groupbuttonNull: RibbonGroupButtonSettingsModel = {
+                header:null,
+                selection: null,
+                items: null
+            }
+            let groupbuttonUndefined: RibbonGroupButtonSettingsModel = {
+                header: undefined,
+                selection: undefined,
+                items: undefined
+            }
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.GroupButton,
+                            allowedSizes: RibbonItemSize.Large,
+                            groupButtonSettings: groupbuttonNull
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.header).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.selection).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items).toEqual([]);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0].groupButtonSettings = groupbuttonUndefined;
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.header).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.selection).toBe('Single');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items).toEqual([]);
+        });
+        it('in Group', function () {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    keyTip: null,
+                    launcherIconKeyTip: null,
+                    collections: null,
+                    cssClass: null,
+                    id: null,
+                    isCollapsed: null,
+                    isCollapsible: null,
+                    enableGroupOverflow: null,
+                    groupIconCss: null,
+                    header: null,
+                    orientation: null,
+                    overflowHeader: null,
+                    priority: null,
+                    showLauncherIcon: null
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].keyTip).toBe(null);
+            expect(ribbon.tabs[0].groups[0].launcherIconKeyTip).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].id).toBe('tab1_group0');
+            expect(ribbon.tabs[0].groups[0].isCollapsed).toBe(null);
+            expect(ribbon.tabs[0].groups[0].isCollapsible).toBe(null);
+            expect(ribbon.tabs[0].groups[0].enableGroupOverflow).toBe(null);
+            expect(ribbon.tabs[0].groups[0].groupIconCss).toBe(null);
+            expect(ribbon.tabs[0].groups[0].header).toBe(null);
+            expect(ribbon.tabs[0].groups[0].orientation).toBe(null);
+            expect(ribbon.tabs[0].groups[0].overflowHeader).toBe(null);
+            expect(ribbon.tabs[0].groups[0].priority).toBe(null);
+            expect(ribbon.tabs[0].groups[0].showLauncherIcon).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0] = {
+                keyTip: undefined,
+                launcherIconKeyTip: undefined,
+                collections: undefined,
+                cssClass: undefined,
+                id: undefined,
+                isCollapsed: undefined,
+                isCollapsible: undefined,
+                enableGroupOverflow: undefined,
+                groupIconCss: undefined,
+                header: undefined,
+                orientation: undefined,
+                overflowHeader: undefined,
+                priority: undefined,
+                showLauncherIcon: undefined
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].keyTip).toBe('');
+            expect(ribbon.tabs[0].groups[0].launcherIconKeyTip).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].id).toBe('tab1_group0');
+            expect(ribbon.tabs[0].groups[0].isCollapsed).toBe(false);
+            expect(ribbon.tabs[0].groups[0].isCollapsible).toBe(true);
+            expect(ribbon.tabs[0].groups[0].enableGroupOverflow).toBe(false);
+            expect(ribbon.tabs[0].groups[0].groupIconCss).toBe('');
+            expect(ribbon.tabs[0].groups[0].header).toBe('');
+            expect(ribbon.tabs[0].groups[0].orientation).toBe(ItemOrientation.Column);
+            expect(ribbon.tabs[0].groups[0].overflowHeader).toBe('');
+            expect(ribbon.tabs[0].groups[0].priority).toBe(0);
+            expect(ribbon.tabs[0].groups[0].showLauncherIcon).toBe(false);
+        });
+        it('in Item', function () {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            keyTip: null,
+                            allowedSizes: null,
+                            id: null,
+                            cssClass: null,
+                            disabled: null,
+                            itemTemplate: null,
+                            type: null,
+                            displayOptions: null,
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].keyTip).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].allowedSizes).toBe(RibbonItemSize.Large + RibbonItemSize.Medium + RibbonItemSize.Small);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].id).toBe('tab1_group0_collection1_item2');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].disabled).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].itemTemplate).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].type).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].displayOptions).toBe(null);
+            ribbon.destroy();
+            tabs[0].groups[0].collections[0].items[0] = {
+                keyTip: undefined,
+                allowedSizes: undefined,
+                id: undefined,
+                cssClass: undefined,
+                disabled: undefined,
+                itemTemplate: undefined,
+                type: undefined,
+                displayOptions: undefined,
+            }
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].keyTip).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].allowedSizes).toBe(RibbonItemSize.Large + RibbonItemSize.Medium + RibbonItemSize.Small);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].id).toBe('tab1_group0_collection1_item2');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].disabled).toBe(false);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].itemTemplate).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].type).toBe(RibbonItemType.Button);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].displayOptions).toBe(DisplayMode.Auto);
+
+        });
+        it('in Split button settings', function () {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.SplitButton,
+                            allowedSizes: RibbonItemSize.Large,
+                            splitButtonSettings: {
+                                closeActionEvents: null,
+                                content: null,
+                                cssClass: null,
+                                iconCss: null,
+                                items: null,
+                                target: null
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.closeActionEvents).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.content).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.iconCss).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.items).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.target).toBe(null);
+            ribbon.destroy();
+            let splitundefined: RibbonSplitButtonSettingsModel = {
+                closeActionEvents: undefined,
+                content: undefined,
+                cssClass: undefined,
+                iconCss: undefined,
+                items: undefined,
+                target: undefined,
+                htmlAttributes: undefined
+            }
+            tabs[0].groups[0].collections[0].items[0].splitButtonSettings = splitundefined;
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.closeActionEvents).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.content).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.iconCss).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.items).toEqual([]);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.target).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].splitButtonSettings.htmlAttributes).toEqual({});
+
+        });
+        it('in Tab', function () {
+            ribbon = new Ribbon({
+                tabs: [{
+                    keyTip: null,
+                    id: null,
+                    cssClass: null,
+                    groups: null,
+                    header: null
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabs[0].keyTip).toBe(null);
+            expect(ribbon.tabs[0].id).toBe('ribbon_tab0');
+            expect(ribbon.tabs[0].cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups).toEqual([]);
+            expect(ribbon.tabs[0].header).toBe(null);
+            ribbon.destroy();
+            ribbon = new Ribbon({
+                tabs: [{
+                    keyTip: undefined,
+                    id: undefined,
+                    cssClass: undefined,
+                    groups: undefined,
+                    header: undefined
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabs[0].keyTip).toBe('');
+            expect(ribbon.tabs[0].id).toBe('ribbon_tab0');
+            expect(ribbon.tabs[0].cssClass).toBe('');
+            expect(ribbon.tabs[0].groups).toEqual([]);
+            expect(ribbon.tabs[0].header).toBe('');
+        });
+        it('in Tooltip', function () {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            },
+                            ribbonTooltipSettings: {
+                                cssClass: null,
+                                id: null,
+                                title: null,
+                                content: null,
+                                iconCss: null
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.cssClass).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.id).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.title).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.content).toBe(null);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.iconCss).toBe(null);
+            ribbon.destroy();
+            let tooltipUndefined: RibbonTooltipModel = {
+                cssClass: undefined,
+                id: undefined,
+                title: undefined,
+                content: undefined,
+                iconCss: undefined
+            }
+            tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings = tooltipUndefined;
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.cssClass).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.id).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.title).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.content).toBe('');
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].ribbonTooltipSettings.iconCss).toBe('');
+        });
+
+    });
+
     describe('Ribbon Props', () => {
         let ribbon: Ribbon;
         let ribbonEle: HTMLElement;
@@ -1201,6 +2728,45 @@ describe('Ribbon', () => {
             expect(ribbon.element.querySelectorAll('.e-ribbon-group-header').length).toBe(1);
             expect(ribbon.element.querySelectorAll('.e-ribbon-content-height').length).toBe(1);
             expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+        });
+        it('aria label attribute for button', () => {
+            ribbon = new Ribbon({
+                cssClass: 'oldCss',
+                locale: 'en-us',
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-icons e-copy'
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-paste'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item')[0].getElementsByTagName('button')[0].hasAttribute('aria-label')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item')[0].getElementsByTagName('button')[0].getAttribute('aria-label')).toBe('Cut');
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item')[1].getElementsByTagName('button')[0].hasAttribute('aria-label')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item')[1].getElementsByTagName('button')[0].getAttribute('aria-label')).toBe('button');
         });
     });
     describe('Ribbon Methods', () => {

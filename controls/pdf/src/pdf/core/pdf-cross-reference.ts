@@ -1,6 +1,6 @@
 import { _PdfStream } from './base-stream';
 import { _PdfDictionary, _PdfReferenceSet, _isCommand, _PdfReference, _PdfCommand, _PdfName } from './pdf-primitives';
-import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString, _getSize } from './utils';
+import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString, _stringToBigEndianBytes, _getSize } from './utils';
 import { _PdfParser, _PdfLexicalOperator } from './pdf-parser';
 import { _PdfBaseStream } from './base-stream';
 import { PdfCrossReferenceType } from './enumerator';
@@ -747,7 +747,7 @@ export class _PdfCrossReference {
                 }
                 this._writeObject(archiveStream, buffer, archiveRef, cipher);
             }
-            const formatValue: number = Math.max(_getSize(this._stream.bytes.length), _getSize(this._nextReferenceNumber));
+            const formatValue: number = Math.max(_getSize(this._stream.bytes.length + buffer.length), _getSize(this._nextReferenceNumber));
             const newRef: _PdfReference = this._getNextReference();
             const newStartXref: number = currentLength + buffer.length;
             const newXref: _PdfDictionary = new _PdfDictionary(this);
@@ -963,6 +963,9 @@ export class _PdfCrossReference {
     }
     _writeValue(value: any, buffer: Array<number>, transform?: _CipherTransform, isCrossReference?: boolean): void { // eslint-disable-line
         if (value instanceof _PdfName) {
+            if (value.name.indexOf(' ') !== -1) {
+                value.name = value.name.replace(/ /g,'#20'); // eslint-disable-line
+            }
             this._writeString(`/${value.name}`, buffer);
         } else if (value instanceof _PdfReference) {
             this._writeString(`${value.toString()} R`, buffer);
@@ -982,7 +985,18 @@ export class _PdfCrossReference {
             if (!isCrossReference && transform) {
                 value = transform.encryptString(value);
             }
-            this._writeString(`(${this._escapeString(value)})`, buffer);
+            let isUnicode: boolean = false;
+            for (let i: number = 0; i < value.length; i++) {
+                if (value.charCodeAt([i]) > 255) {
+                    isUnicode = true;
+                    break;
+                }
+            }
+            if (isUnicode) {
+                this._writeUnicodeString(value, buffer);
+            } else {
+                this._writeString(`(${this._escapeString(value)})`, buffer);
+            }
         } else if (typeof value === 'number') {
             this._writeString(_numberToString(value), buffer);
         } else if (typeof value === 'boolean') {
@@ -994,6 +1008,37 @@ export class _PdfCrossReference {
         } else if (value === null) {
             this._writeString('null', buffer);
         }
+    }
+    _writeUnicodeString(value: string, buffer: Array<number>): void {
+        const byteValues: number[] = _stringToBigEndianBytes(value);
+        byteValues.unshift(254, 255);
+        const data: number[] = [];
+        for (let i: number = 0; i < byteValues.length; i++) {
+            const byte: number = byteValues[Number.parseInt(i.toString(), 10)];
+            switch (byte) {
+            case 40:
+            case 41:
+                data.push(92);
+                data.push(byte);
+                break;
+            case 13:
+                data.push(92);
+                data.push(114);
+                break;
+            case 92:
+                data.push(92);
+                data.push(byte);
+                break;
+            default:
+                data.push(byte);
+                break;
+            }
+        }
+        buffer.push('('.charCodeAt(0) & 0xff);
+        for (let i: number = 0; i < data.length; i++) {
+            buffer.push(data[Number.parseInt(i.toString(), 10)] & 0xff);
+        }
+        buffer.push(')'.charCodeAt(0) & 0xff);
     }
     _writeString(value: string, buffer: Array<number>): void {
         for (let i: number = 0; i < value.length; i++) {

@@ -1,6 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
 import { Double } from '../axis/double-axis';
 import { Axis } from '../../chart/index';
 import { Size } from '@syncfusion/ej2-svg-base';
@@ -14,6 +11,13 @@ import { RangeIntervalType } from '../../common/utils/enum';
 export class NiceInterval extends Double {
     /**
      * Method to calculate numeric datetime interval.
+     *
+     * @param {Axis} axis - The axis for which to calculate the interval.
+     * @param {Size} size - The size of the axis.
+     * @param {number} start - The start value of the axis.
+     * @param {number} end - The end value of the axis.
+     * @param {boolean} [isChart=true] - Indicating whether it's a chart. Defaults to true.
+     * @returns {number} - The calculated numeric datetime interval.
      */
     public calculateDateTimeNiceInterval(axis: Axis, size: Size, start: number, end: number, isChart: boolean = true): number {
         const oneDay: number = 24 * 60 * 60 * 1000;
@@ -96,7 +100,11 @@ export class NiceInterval extends Double {
     /**
      * To get the skeleton for the DateTime axis.
      *
-     * @returns {string} skeleton format
+     * @param {Axis} axis - The DateTime axis for which to get the skeleton.
+     * @param {number} currentValue - The current value.
+     * @param {number} previousValue - The previous value.
+     * @param {boolean} isBlazor - Indicates whether it's for Blazor.
+     * @returns {string} - The skeleton for the DateTime axis.
      * @private
      */
     public getSkeleton(axis: Axis, currentValue: number, previousValue: number, isBlazor ?: boolean): string {
@@ -152,12 +160,11 @@ export class NiceInterval extends Double {
     /**
      * Find label format for axis
      *
-     * @param {Axis} axis axis
-     * @param {number} currentValue currentValue
-     * @param {number} previousValue previousValue
+     * @param {Axis} axis - axis
+     * @returns {string} - Returns the label format.
      * @private
      */
-    public findCustomFormats(axis: Axis, currentValue: number, previousValue: number): string {
+    public findCustomFormats(axis: Axis): string {
         let labelFormat: string = axis.labelFormat ? axis.labelFormat : '';
         if (axis.isChart && !axis.skeleton && axis.actualIntervalType === 'Months' && !labelFormat) {
             labelFormat = axis.valueType === 'DateTime' ? 'MMM yyyy' : 'yMMM';

@@ -733,6 +733,17 @@ describe('BR Configured - Apply parent based selection formats', () => {
             enterKey: 'BR',
             toolbarSettings: {
                 items: ['Formats']
+            },
+            format: {
+                types: [
+                    { text: 'Paragraph', value: 'P' },
+                    { text: 'Code', value: 'Pre'},
+                    { text: 'Quotation', value: 'BlockQuote'},
+                    { text: 'Heading 1', value: 'H1' },
+                    { text: 'Heading 2', value: 'H2' },
+                    { text: 'Heading 3', value: 'H3' },
+                    { text: 'Heading 4', value: 'H4' }
+                ]
             }
         });
         rteEle = rteObj.element;
@@ -1730,9 +1741,9 @@ describe( 'EJ2-62198 Place holder displayed again when focusing out after pressi
         rteObj.dataBind();
         rteObj.focusIn();
         let spanElemement: HTMLElement = document.querySelector( '.e-rte-placeholder' );
-        expect( spanElemement.style.display == 'block' ).toBe( true );
+        expect( spanElemement.classList.contains('enabled') ).toBe( true );
         rteObj.focusOut();
-        expect( spanElemement.style.display == 'block' ).toBe( true );
+        expect( spanElemement.classList.contains('enabled') ).toBe( true );
     } );
     it( 'After One Enter key Press Placeholder span element style.display should be none', () => {
         rteObj.dataBind();
@@ -1742,9 +1753,9 @@ describe( 'EJ2-62198 Place holder displayed again when focusing out after pressi
             document, startNode, startNode, 0, 0 );
         ( <any>rteObj ).keyDown( keyboardEventArgs );
         let spanElemement: HTMLElement = document.querySelector( '.e-rte-placeholder' );
-        expect( spanElemement.style.display == 'none' ).toBe( true );
+        expect( spanElemement.classList.contains('enabled') ).toBe( false );
         rteObj.focusOut();
-        expect( spanElemement.style.display == 'none' ).toBe( true );
+        expect( spanElemement.classList.contains('enabled') ).toBe( false );
     } );
 } );
 
@@ -2413,6 +2424,29 @@ describe('868816 - The enter key is not working properly in the Rich Text Editor
         (<any>rteObj).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.querySelector('.e-rte-table').nextElementSibling.getAttribute('style')).toBe(null);
     });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('875888 - Enter the key after inserting the mention; its creating two new lines in the Rich Text Editor.', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            value: `<p>Hello <span contenteditable="false" class="e-mention-chip"><a href="mailto:maria@gmail.com" title="maria@gmail.com">@@Maria</a></span>&#8203;</p>
+            <p>Welcome to the mention integration with rich text editor demo. Type <code>@@</code> character and tag user from the suggestion list. </p>`,
+        });
+        done();
+    });
+    it('Press enter at the end of the zeroWithSpace', function (): void {
+        const nodetext: any = rteObj.inputElement.childNodes[0].childNodes[2];
+        const sel: void = new NodeSelection().setCursorPoint(document, nodetext, nodetext.length - 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML.includes('\u200B')).toBe(false);
+    });
+
     afterAll(() => {
         destroy(rteObj);
     });

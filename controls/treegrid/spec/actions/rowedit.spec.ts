@@ -23,7 +23,7 @@ describe('Edit module', () => {
     const isDef = (o: any) => o !== undefined && o !== null;
     if (!isDef(window.performance)) {
         console.log("Unsupported environment, window.performance.memory is unavailable");
-        this.skip(); //Skips test (in Chai)
+        pending(); //Skips test (in Chai)
         return;
     }
   });
@@ -2351,7 +2351,7 @@ describe('Remote Data Editing with Child Mode', () => {
             ]
           });
       gridObj.appendTo('#Grid');
-      this.request = window.fetch['calls'].mostRecent();
+      request = window.fetch['calls'].mostRecent();
   });
 
   it('Add Row - No Selection', function (done) {
@@ -3352,7 +3352,7 @@ describe('Remote Data Editing with Below Mode', () => {
             ]
           });
       gridObj.appendTo('#Grid');
-      this.request = window.fetch['calls'].mostRecent();
+      request = window.fetch['calls'].mostRecent();
   });
 
   it('Add Row - No Selection', function (done) {
@@ -3427,7 +3427,7 @@ describe('Remote Data Editing with Above Mode', () => {
             ]
           });
       gridObj.appendTo('#Grid');
-      this.request = window.fetch['calls'].mostRecent();
+      request = window.fetch['calls'].mostRecent();
   });
 
   it('Add Row - No Selection', function (done) {

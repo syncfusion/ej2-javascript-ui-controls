@@ -15,6 +15,13 @@ export interface BreadcrumbItemModel {
     text?: string;
 
     /**
+     * Specifies the id of the Breadcrumb item.
+     *
+     * @default ''
+     */
+    id?: string;
+
+    /**
      * Specifies the Url of the Breadcrumb item that will be activated when clicked.
      *
      * @default ''

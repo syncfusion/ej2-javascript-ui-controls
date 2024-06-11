@@ -127,69 +127,69 @@ export class SmithchartLegend {
 
         return { width: width, height: height };
     }
-    /* eslint-disable  */
     private _drawLegend(smithchart: Smithchart): void {
-        let legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
-        let legendPosition: string = legend.position.toLowerCase();
-        let alignment: string = legend.alignment;
-        let legendBounds: SmithchartRect = this.legendActualBounds;
+        const legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
+        const legendPosition: string = legend.position.toLowerCase();
+        const alignment: string = legend.alignment;
+        const legendBounds: SmithchartRect = this.legendActualBounds;
         let maxWidth: number = 0;
         let startX: number;
         let startY: number;
-        let titleFont: SmithchartFontModel = smithchart.title.font ? smithchart.title.font : smithchart.title.textStyle;
-        let smithchartTitleHeight: number = measureText(smithchart.title.text, titleFont, smithchart.themeStyle.legendLabelFont).height;
-        let smithchartSubtitleHeight: number = measureText(smithchart.title.subtitle.text, smithchart.title.subtitle.textStyle, smithchart.themeStyle.legendLabelFont).height;
-        let elementSpacing: number = smithchart.elementSpacing;
-        let offset: number = smithchartTitleHeight + smithchartSubtitleHeight + elementSpacing + smithchart.margin.top;
-        let itemPadding: number = legend.itemPadding > 0 ? legend.itemPadding : 0;
-        let svgObjectWidth: number = smithchart.availableSize.width;
-        let svgObjectHeight: number = smithchart.availableSize.height;
-        let legendBorder: number = legend.border.width;
+        const titleFont: SmithchartFontModel = smithchart.title.font ? smithchart.title.font : smithchart.title.textStyle;
+        const smithchartTitleHeight: number = measureText(smithchart.title.text, titleFont, smithchart.themeStyle.legendLabelFont).height;
+        const smithchartSubtitleHeight: number = measureText(smithchart.title.subtitle.text, smithchart.title.subtitle.textStyle,
+                                                             smithchart.themeStyle.legendLabelFont).height;
+        const elementSpacing: number = smithchart.elementSpacing;
+        const offset: number = smithchartTitleHeight + smithchartSubtitleHeight + elementSpacing + smithchart.margin.top;
+        const itemPadding: number = legend.itemPadding > 0 ? legend.itemPadding : 0;
+        const svgObjectWidth: number = smithchart.availableSize.width;
+        const svgObjectHeight: number = smithchart.availableSize.height;
+        const legendBorder: number = legend.border.width;
         let legendWidth: number = 0;
-        let titleSize: SmithchartSize = measureText(legend['title']['text'], legend.title.textStyle, smithchart.themeStyle.legendLabelFont);
-        let legendTitleHeight: number = titleSize.height;
-        let borderSize: number = smithchart.border.width;
-        let svgWidth: number = svgObjectWidth - ((borderSize * 2));
-        let svgHeight: number = svgObjectHeight - ((borderSize * 2));
+        const titleSize: SmithchartSize = measureText(legend['title']['text'], legend.title.textStyle, smithchart.themeStyle.legendLabelFont);
+        const legendTitleHeight: number = titleSize.height;
+        const borderSize: number = smithchart.border.width;
+        const svgWidth: number = svgObjectWidth - ((borderSize * 2));
+        const svgHeight: number = svgObjectHeight - ((borderSize * 2));
         legendBounds.height += legendTitleHeight;
         if (legendPosition !== 'custom') {
             switch (legendPosition) {
-                case 'bottom':
-                    legendBounds.y = svgHeight - (legendBounds.height + (legendBorder) + elementSpacing);
-                    break;
-                case 'top':
-                    legendBounds.y = borderSize + offset;
-                    break;
-                case 'right':
-                    legendBounds.x = svgWidth - legendBounds.width - (elementSpacing * 2);
-                    break;
-                case 'left':
-                    legendBounds.x = borderSize + (elementSpacing * 2);
-                    break;
+            case 'bottom':
+                legendBounds.y = svgHeight - (legendBounds.height + (legendBorder) + elementSpacing);
+                break;
+            case 'top':
+                legendBounds.y = borderSize + offset;
+                break;
+            case 'right':
+                legendBounds.x = svgWidth - legendBounds.width - (elementSpacing * 2);
+                break;
+            case 'left':
+                legendBounds.x = borderSize + (elementSpacing * 2);
+                break;
             }
             if (legendPosition === 'left' || legendPosition === 'right') {
                 switch (alignment) {
-                    case 'Center':
-                        legendBounds.y = (svgHeight / 2) - ((legendBounds.height + legendBorder * 2) / 2) + (elementSpacing / 2);
-                        break;
-                    case 'Near':
-                        legendBounds.y = borderSize + (elementSpacing * 2) + offset;
-                        break;
-                    case 'Far':
-                        legendBounds.y = svgHeight - (legendBounds.height + (legendBorder)) - (elementSpacing * 2);
-                        break;
+                case 'Center':
+                    legendBounds.y = (svgHeight / 2) - ((legendBounds.height + legendBorder * 2) / 2) + (elementSpacing / 2);
+                    break;
+                case 'Near':
+                    legendBounds.y = borderSize + (elementSpacing * 2) + offset;
+                    break;
+                case 'Far':
+                    legendBounds.y = svgHeight - (legendBounds.height + (legendBorder)) - (elementSpacing * 2);
+                    break;
                 }
             } else {
                 switch (alignment) {
-                    case 'Center':
-                        legendBounds.x = (svgWidth / 2) - ((legendBounds.width + legendBorder * 2) / 2) + (elementSpacing / 2);
-                        break;
-                    case 'Near':
-                        legendBounds.x = borderSize + (elementSpacing * 2);
-                        break;
-                    case 'Far':
-                        legendBounds.x = svgWidth - (legendBounds.width + (legendBorder)) - (elementSpacing * 2);
-                        break;
+                case 'Center':
+                    legendBounds.x = (svgWidth / 2) - ((legendBounds.width + legendBorder * 2) / 2) + (elementSpacing / 2);
+                    break;
+                case 'Near':
+                    legendBounds.x = borderSize + (elementSpacing * 2);
+                    break;
+                case 'Far':
+                    legendBounds.x = svgWidth - (legendBounds.width + (legendBorder)) - (elementSpacing * 2);
+                    break;
                 }
             }
         } else {
@@ -198,14 +198,14 @@ export class SmithchartLegend {
         }
         if (legendPosition === 'bottom' || legendPosition === 'top') {
             for (let i: number = 0; i < this.legendSeries.length; i++) {
-                legendWidth += this.legendSeries[i].bounds.width + itemPadding;
+                legendWidth += this.legendSeries[i as number].bounds.width + itemPadding;
                 if (legendWidth > svgWidth) {
                     legendBounds.x = (svgWidth / 2) - ((legendBounds.width + legendBorder * 2) / 2) + (elementSpacing / 2);
                     break;
                 }
             }
         }
-        let gLegendEle: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_legend_group' });
+        const gLegendEle: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_legend_group' });
         smithchart.svgObject.appendChild(gLegendEle);
         this.legendItemGroup = smithchart.renderer.createGroup({ 'id': smithchart.element.id + 'legendItem_Group' });
         let currentX: number = startX = elementSpacing;
@@ -217,24 +217,25 @@ export class SmithchartLegend {
         for (let k: number = 0; k < this.legendSeries.length; k++) {
             if ((legend.rowCount < legend.columnCount || legend.rowCount === legend.columnCount) &&
                 (legendPosition === 'top' || legendPosition === 'bottom' || legendPosition === 'custom')) {
-                if ((currentX + this.legendSeries[k]['bounds'].width) > legendBounds.width + startX) {
+                if ((currentX + this.legendSeries[k as number]['bounds'].width) > legendBounds.width + startX) {
                     currentX = elementSpacing;
-                    currentY += this.legendSeries[k]['bounds'].height + itemPadding;
+                    currentY += this.legendSeries[k as number]['bounds'].height + itemPadding;
                 }
-                this.legendGroup = this.drawLegendItem(smithchart, legend, this.legendSeries[k], k, currentX, (currentY), legendBounds);
+                this.legendGroup = this.drawLegendItem(smithchart, legend, this.legendSeries[k as number],
+                                                       k, currentX, (currentY));
                 gLegendEle.appendChild(this.legendGroup);
-                currentX += this.legendSeries[k]['bounds'].width + itemPadding;
+                currentX += this.legendSeries[k as number]['bounds'].width + itemPadding;
             } else {
-                if (((currentY + this.legendSeries[k]['bounds'].height + itemPadding) +
+                if (((currentY + this.legendSeries[k as number]['bounds'].height + itemPadding) +
                     legendTitleHeight + borderSize > legendBounds.height + startY)) {
                     currentY = startY;
                     currentX += maxWidth + (itemPadding);
                 }
                 this.legendGroup = this.drawLegendItem(
-                    smithchart, legend, this.legendSeries[k], k, (currentX), (currentY), legendBounds);
+                    smithchart, legend, this.legendSeries[k as number], k, (currentX), (currentY));
                 gLegendEle.appendChild(this.legendGroup);
-                currentY += this.legendSeries[k]['bounds'].height + itemPadding;
-                maxWidth = Math.max(maxWidth, this.legendSeries[k]['bounds'].width);
+                currentY += this.legendSeries[k as number]['bounds'].height + itemPadding;
+                maxWidth = Math.max(maxWidth, this.legendSeries[k as number]['bounds'].width);
             }
         }
         gLegendEle.setAttribute('transform', 'translate(' + legendBounds.x.toString() + ',' + legendBounds.y.toString() + ')');
@@ -243,7 +244,7 @@ export class SmithchartLegend {
 
     private drawLegendBorder(
         gLegendEle: Element, smithchart: Smithchart, legend: SmithchartLegendSettingsModel, legendBounds: SmithchartRect): void {
-        let borderRect: RectOption = new RectOption(
+        const borderRect: RectOption = new RectOption(
             smithchart.element.id + '_svg' + '_legendRect', 'none', legend.border, 1,
             new SmithchartRect(0, 0, legendBounds.width, legendBounds.height));
         gLegendEle.appendChild(smithchart.renderer.drawRectangle(borderRect) as SVGRectElement);
@@ -251,21 +252,21 @@ export class SmithchartLegend {
     private drawLegendTitle(
         smithchart: Smithchart, legend: SmithchartLegendSettingsModel, legendBounds: SmithchartRect,
         gLegendEle: Element): Element {
-        let elementSpacing: number = smithchart.elementSpacing;
-        let titleSize: SmithchartSize = measureText(legend.title.text, legend.title.textStyle, smithchart.themeStyle.legendLabelFont);
-        let titleWidth: number = titleSize.width;
-        let titleHeight: number = titleSize.height;
-        let textAlignment: string = legend.title.textAlignment;
+        const elementSpacing: number = smithchart.elementSpacing;
+        const titleSize: SmithchartSize = measureText(legend.title.text, legend.title.textStyle, smithchart.themeStyle.legendLabelFont);
+        const titleWidth: number = titleSize.width;
+        const titleHeight: number = titleSize.height;
+        const textAlignment: string = legend.title.textAlignment;
         let startX: number = 0;
         let legendBoundsWidth: number = legendBounds.width;
-        let startY: number = elementSpacing + (titleHeight / 2);
+        const startY: number = elementSpacing + (titleHeight / 2);
         switch (textAlignment) {
-            case 'Far':
-                startX = legendBoundsWidth - titleWidth - startX;
-                break;
-            case 'Center':
-                startX = legendBoundsWidth / 2 - (titleWidth) / 2;
-                break;
+        case 'Far':
+            startX = legendBoundsWidth - titleWidth - startX;
+            break;
+        case 'Center':
+            startX = legendBoundsWidth / 2 - (titleWidth) / 2;
+            break;
         }
         if (startX < 0) {
             startX = 0;
@@ -274,50 +275,47 @@ export class SmithchartLegend {
         if (legendBoundsWidth < titleWidth + startX) {
             legendBoundsWidth = titleWidth + startX;
         }
-        let options: TextOption = new TextOption(
+        const options: TextOption = new TextOption(
             smithchart.element.id + '_LegendTitleText', startX, startY, 'start', legend.title.text
         );
-        let element: Element = renderTextElement(options, legend.title.textStyle, legend.title.textStyle.color || smithchart.themeStyle.legendTitleFont.color, gLegendEle, smithchart.themeStyle.legendTitleFont);
+        const element: Element = renderTextElement(options, legend.title.textStyle, legend.title.textStyle.color ||
+            smithchart.themeStyle.legendTitleFont.color, gLegendEle, smithchart.themeStyle.legendTitleFont);
         element.setAttribute('aria-label', legend.title.description || legend.title.text);
         return element;
     }
 
     private drawLegendItem(
         smithchart: Smithchart, legend: SmithchartLegendSettingsModel, legendSeries: LegendSeries,
-        k: number, x: number, y: number, legendBounds: SmithchartRect): Element {
-        let location: Point;
-        let radius: number;
-        let symbol: LegendItemStyleModel = legend.itemStyle;
-        let itemPadding: number = legend.itemPadding;
-        let textHeight: number;
-        radius = Math.sqrt(symbol['width'] * symbol['width'] + symbol['height'] * symbol['height']) / 2;
-        textHeight = measureText(legendSeries['text'], legend.textStyle, smithchart.themeStyle.legendLabelFont).height;
-        location = {
+        k: number, x: number, y: number): Element {
+        const symbol: LegendItemStyleModel = legend.itemStyle;
+        const textHeight: number = measureText(legendSeries['text'], legend.textStyle, smithchart.themeStyle.legendLabelFont).height;
+        const location: Point = {
             x: x + symbol['width'] / 2,
             y: (y + (textHeight > symbol['height'] ? textHeight : symbol['height']) / 2)
         };
 
-        let legendGroup: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_svg' + '_Legend' + k.toString() });
+        const legendGroup: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_svg' + '_Legend' + k.toString() });
         legendGroup['style']['cursor'] = legend.toggleVisibility ? 'pointer' : 'default';
         legendGroup.setAttribute('tabindex', k === 0 ? '0' : '');
-        let legendEventArgs: ISmithchartLegendRenderEventArgs = {
+        const legendEventArgs: ISmithchartLegendRenderEventArgs = {
             text: legendSeries['text'],
             fill: legendSeries['fill'],
             shape: legendSeries['shape'],
             name: legendRender,
             cancel: false
         };
-        let legendRenderSuccess: Function = (args: ISmithchartLegendRenderEventArgs) => {
+        const legendRenderSuccess: Function = (args: ISmithchartLegendRenderEventArgs) => {
             if (!args.cancel) {
-                let shape: Element = this.drawLegendShape(smithchart, legendSeries, location.x, location.y, k, legend, args);
+                const shape: Element = this.drawLegendShape(smithchart, legendSeries, location.x, location.y, k, legend, args);
                 legendGroup.appendChild(shape);
-                let options: TextOption = new TextOption(
+                const options: TextOption = new TextOption(
                     smithchart.element.id + '_LegendItemText' + k.toString(), location.x + symbol['width'] / 2 + legend.shapePadding,
                     location.y + textHeight / 4, 'start', args.text
                 );
                 legend.textStyle.fontFamily = legend.textStyle.fontFamily || smithchart.themeStyle.legendLabelFont.fontFamily;
                 legend.textStyle.size = legend.textStyle.size || smithchart.themeStyle.legendLabelFont.size;
-                let element: Element = renderTextElement(options, legend.textStyle, legend.textStyle.color || smithchart.themeStyle.legendLabelFont.color, legendGroup, smithchart.themeStyle.legendLabelFont);
+                const element: Element = renderTextElement(options, legend.textStyle, legend.textStyle.color ||
+                    smithchart.themeStyle.legendLabelFont.color, legendGroup, smithchart.themeStyle.legendLabelFont);
                 legendGroup.setAttribute('aria-label', legend.description || ('Show ' + options.text));
                 legendGroup.setAttribute('role', 'button');
                 legendGroup.appendChild(element);
@@ -335,88 +333,91 @@ export class SmithchartLegend {
         let circleOptions: CircleOption;
         let pathOptions: PathOption;
         let path: string;
-        let symbol: LegendItemStyleModel = legend.itemStyle;
-        let width: number = symbol['width'];
-        let height: number = symbol['height'];
-        let x: number = locX + (-width / 2);
-        let y: number = locY + (-height / 2);
-        let border: LegendItemStyleBorderModel = { color: symbol.border.color, width: symbol.border.width };
-        let opacity: number = 1;
-        let fill: string = (smithchart.series[index].visibility === 'visible') ? legendEventArgs.fill : 'grey';
-        let shape: string = legendEventArgs.shape.toLowerCase();
-        let radius: number = Math.sqrt(height * height + width * width) / 2;
+        const symbol: LegendItemStyleModel = legend.itemStyle;
+        const width: number = symbol['width'];
+        const height: number = symbol['height'];
+        const x: number = locX + (-width / 2);
+        const border: LegendItemStyleBorderModel = { color: symbol.border.color, width: symbol.border.width };
+        const opacity: number = 1;
+        const fill: string = (smithchart.series[index as number].visibility === 'visible') ? legendEventArgs.fill : 'grey';
+        const shape: string = legendEventArgs.shape.toLowerCase();
+        const radius: number = Math.sqrt(height * height + width * width) / 2;
         switch (shape) {
-            case 'circle':
-                circleOptions = new CircleOption(
-                    smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
-                    fill, border, opacity, locX, locY, radius, null);
-                element = smithchart.renderer.drawCircle(circleOptions) as SVGCircleElement;
-                break;
-            case 'rectangle':
-                path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' +
+        case 'circle':
+            circleOptions = new CircleOption(
+                smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
+                fill, border, opacity, locX, locY, radius, null);
+            element = smithchart.renderer.drawCircle(circleOptions) as SVGCircleElement;
+            break;
+        case 'rectangle':
+            path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' +
                     'L' + ' ' + ((width / 2) + locX) + ' ' + (locY + (-height / 2)) + ' ' +
                     'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
                     'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
                     'L' + ' ' + x + ' ' + (locY + (-height / 2)) + ' z';
-                pathOptions = new PathOption(
-                    smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
-                    fill, border.width, border.color, 1, '', path);
-                element = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
-                break;
-            case 'diamond':
-                path = 'M' + ' ' + x + ' ' + locY + ' ' +
+            pathOptions = new PathOption(
+                smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
+                fill, border.width, border.color, 1, '', path);
+            element = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
+            break;
+        case 'diamond':
+            path = 'M' + ' ' + x + ' ' + locY + ' ' +
                     'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
                     'L' + ' ' + ((width / 2) + locX) + ' ' + locY + ' ' +
                     'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
                     'L' + ' ' + x + ' ' + locY + ' z';
-                pathOptions = new PathOption(
-                    smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
-                    fill, border.width, border.color, 1, '', path);
-                element = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
-                break;
-            case 'pentagon':
-                let eq: number = 72;
-                for (let j: number = 0; j <= 5; j++) {
-                    let xValue: number = radius * Math.cos((Math.PI / 180) * (j * eq));
-                    let yValue: number = radius * Math.sin((Math.PI / 180) * (j * eq));
-                    if (j === 0) {
-                        path = 'M' + ' ' + (xValue + locX) + ' ' + (locY + yValue) + ' ';
-                    } else {
-                        path = path.concat('L' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ');
-                    }
+            pathOptions = new PathOption(
+                smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
+                fill, border.width, border.color, 1, '', path);
+            element = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
+            break;
+        case 'pentagon': {
+            const eq: number = 72;
+            for (let j: number = 0; j <= 5; j++) {
+                const xValue: number = radius * Math.cos((Math.PI / 180) * (j * eq));
+                const yValue: number = radius * Math.sin((Math.PI / 180) * (j * eq));
+                if (j === 0) {
+                    path = 'M' + ' ' + (xValue + locX) + ' ' + (locY + yValue) + ' ';
+                } else {
+                    path = path.concat('L' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ');
                 }
-                path = path.concat('Z');
-                pathOptions = new PathOption(
-                    smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
-                    fill, border.width, border.color, 1, '', path);
-                element = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
-                break;
-            case 'triangle':
-                path = 'M' + ' ' + x + ' ' + ((height / 2) + locY) + ' ' +
+            }
+            path = path.concat('Z');
+            pathOptions = new PathOption(
+                smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
+                fill, border.width, border.color, 1, '', path);
+            element = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
+            break;
+        }
+        case 'triangle':
+            path = 'M' + ' ' + x + ' ' + ((height / 2) + locY) + ' ' +
                     'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
                     'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
                     'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' Z';
-                pathOptions = new PathOption(
-                    smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
-                    fill, border.width, border.color, 1, '', path);
-                element = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
-                break;
+            pathOptions = new PathOption(
+                smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(),
+                fill, border.width, border.color, 1, '', path);
+            element = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
+            break;
         }
         return element;
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - To get the module name.
      */
     protected getModuleName(): string {
         return 'SmithchartLegend';
     }
     /**
-     * To destroy the legend. 
-     * @return {void}
+     * To destroy the legend.
+     *
+     * @returns {void}
      * @private
      */
-    public destroy(smithchart: Smithchart): void {
+    public destroy(): void {
         /**
          * Destroy method performed here
          */

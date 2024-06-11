@@ -162,7 +162,6 @@ export class BreadCrumbBar {
                     addressbarUL.insertBefore(liElements[i as number], addressbarUL.querySelector('li'));
                     breadCrumbBarWidth = diff;
                 } else {
-                    // eslint-disable-next-line
                     const items: Object[] = [];
                     for (let j: number = 0; j <= i; j++) {
                         const liElement: Element = liElements[j as number];
@@ -172,7 +171,6 @@ export class BreadCrumbBar {
                         });
                     }
                     const subMenuLi: HTMLElement = this.parent.createElement('li', { className: 'e-breadcrumb-menu' });
-                    // eslint-disable-next-line
                     const attributes: Object = { className: 'e-breadcrumb-submenu' };
                     const subMenuSpan: HTMLElement = this.parent.createElement('button', attributes);
                     subMenuLi.appendChild(subMenuSpan);
@@ -212,7 +210,6 @@ export class BreadCrumbBar {
     }
     /* istanbul ignore next */
     private subMenuSelectOperations(event: MenuEventArgs): void {
-        // eslint-disable-next-line
         const args: Object = { target: event.element };
         this.addressPathClickHandler(<Event>args);
     }
@@ -258,7 +255,6 @@ export class BreadCrumbBar {
         }
     }
 
-    // eslint-disable-next-line
     private triggerFileOpen(data: Object): void {
         const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data, module: 'BreadCrumbBar' };
         delete eventArgs.cancel;

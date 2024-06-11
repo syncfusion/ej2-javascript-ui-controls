@@ -1,5 +1,5 @@
 import { _PdfCommand, _PdfName, _PdfDictionary, _isCommand, _PdfReference, _isName } from './pdf-primitives';
-import { _isWhiteSpace, _stringToBytes, FormatError, ParserEndOfFileException, _decodeText } from './utils';
+import { _isWhiteSpace, FormatError, ParserEndOfFileException, _decodeText } from './utils';
 import { _PdfStream, _PdfNullStream, _PdfBaseStream } from './base-stream';
 import { PdfPredictorStream } from './predictor-stream';
 import { _PdfFlateStream } from './flate-stream';

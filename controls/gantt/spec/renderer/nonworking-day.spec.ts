@@ -255,4 +255,4 @@ describe('874399 - weekend is not visible', function () {
             destroyGantt(ganttObj);
         }
     });
-});
+});	

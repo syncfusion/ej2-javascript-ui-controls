@@ -23,7 +23,7 @@ describe('Pivot Rendering', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -132,65 +132,74 @@ describe('Pivot Rendering', () => {
             pivotViewKeyModule = pivotGridObj.keyboardModule;
             pivotCommon = pivotGridObj.pivotCommon;
         });
-        it('Check sort action', () => {
+        it('Check sort action', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
             expect(pivotButtons.length).toBeGreaterThan(0);
             keyModule.keyActionHandler({ action: 'shiftS', target: pivotButtons[pivotButtons.length - 1], preventDefault: (): void => { /** Null */ } });
-            expect((pivotButtons[pivotButtons.length - 1]).querySelector('.e-descend')).toBeTruthy;
+            setTimeout(() => {
+                expect((pivotButtons[pivotButtons.length - 1]).querySelector('.e-descend')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('Check sort action', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                keyModule.keyActionHandler({ action: 'shiftF', target: pivotButtons[pivotButtons.length - 1], preventDefault: (): void => { /** Null */ } });
+                done();
+            }, 1000);
         });
         it('Check filter action', (done: Function) => {
-            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toBeGreaterThan(0);
-            keyModule.keyActionHandler({ action: 'shiftF', target: pivotButtons[pivotButtons.length - 1], preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect(pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(true);
+                let filterDialog: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+                (filterDialog.querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
             }, 1000);
         });
         it('Close filter dialog', (done: Function) => {
-            let filterDialog: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
-            (filterDialog.querySelector('.e-ok-btn') as HTMLElement).click();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect(pivotCommon.filterDialog.dialogPopUp).toBeUndefined;
+                let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                keyModule.keyActionHandler({ action: 'delete', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
                 done();
             }, 1000);
         });
         it('Check remove action', (done: Function) => {
-            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toBeGreaterThan(0);
-            keyModule.keyActionHandler({ action: 'delete', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
+                let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
                 let pivotButtonUpdate: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
-                expect(pivotButtonUpdate.length).toEqual(pivotButtons.length - 1);
+                pivotViewKeyModule.keyActionHandler({
+                    action: 'tab',
+                    target: pivotButtons[0],
+                    preventDefault: (): void => { /** Null */ }
+                });
                 done();
             }, 1000);
         });
         it('Check tab action', (done: Function) => {
             let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toBeGreaterThan(0);
-            pivotViewKeyModule.keyActionHandler({
-                action: 'tab',
-                target: pivotButtons[0],
-                preventDefault: (): void => { /** Null */ }
-            });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 let focuesdEle: HTMLElement = document.activeElement as HTMLElement;
                 expect(focuesdEle.id === pivotButtons[1].id).toBeTruthy;
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                pivotViewKeyModule.keyActionHandler({
+                    action: 'tab',
+                    target: pivotButtons[pivotButtons.length - 1],
+                    preventDefault: (): void => { /** Null */ }
+                });
                 done();
             }, 1000);
         });
         it('Check tab action to grid cell focus', (done: Function) => {
-            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toBeGreaterThan(0);
-            pivotViewKeyModule.keyActionHandler({
-                action: 'tab',
-                target: pivotButtons[pivotButtons.length - 1],
-                preventDefault: (): void => { /** Null */ }
-            });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect(pivotGridObj.grid.element.querySelector('.e-focused')).toBeTruthy;

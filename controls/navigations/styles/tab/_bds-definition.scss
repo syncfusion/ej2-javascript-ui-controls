@@ -1,6 +1,3 @@
-/*! theme definition's */
-/*! component's theme wise override definitions and variables */
-/*! Horizontal Tab */
 $tab-skin: $skin-name !default;
 $tab-big-vertical-scroll-nav-top-bottom: 23px !default;
 $tab-big-vertical-nav-arrow-size: $text-base !default;
@@ -9,7 +6,6 @@ $tab-font-family: $font-family !default;
 $tab-nrml-vertical-scroll-nav-top-bottom: 15px !default;
 $tab-nrml-vertical-nav-arrow-size: $text-sm !default;
 $tab-nrml-vertical-nav-arrow-font-size: $text-sm !default;
-
 $tab-text-transform: capitalize !default;
 $tab-big-height: 46px !default;
 $tab-nrml-height: 42px !default;
@@ -30,7 +26,6 @@ $tab-disable-cnt-opacity: .38 !default;
 $tab-big-tb-icon-height: 72px !default;
 $tab-nrml-tb-icon-height: 62px !default;
 $tab-content-font-color: $content-text-color !default;
-
 $tab-border-width: 2px !default;
 $tab-border-style: $tab-border-width Solid !default;
 $tab-focus-outline: 0 !default;
@@ -48,16 +43,13 @@ $tab-alt-border-color: $primary-text-color !default;
 $tab-alt-disable-border-color: $border-light !default;
 $tab-bg-color: $transparent !default;
 $tab-border: none !default;
-
 $tab-alt-hdr-bg-color: $primary !default;
 $tab-focus-hscroll-content-padding: 0 !default;
 $tab-hdr-bdr-color: $border-light !default;
 $tab-hdr-border: 1px solid $tab-hdr-bdr-color !default;
 $tab-hdr-border-width: 1px !default;
 $tab-alt-hdr-border: 0 !default;
-
 $tab-items-border: 0 !default;
-
 $tab-big-item-margin: 0 !default;
 $tab-nrml-item-margin: 0 !default;
 $tab-big-item-padding: 0 8px !default;
@@ -122,7 +114,6 @@ $tab-item-wrap-border-radius: 0 !default;
 $tab-hscroll-item-padding: 0 !default;
 $tab-big-item-last-child-padding-bottom: 0 !default;
 $tab-nrml-item-last-child-padding-bottom: 0 !default;
-
 $tab-big-wrap-padding: 0 12px !default;
 $tab-nrml-wrap-padding: 0 8px !default;
 $tab-mob-wrap-padding: 12px 16px !default;
@@ -143,7 +134,7 @@ $tab-nrml-fill-tb-wrap-height: 44px !default;
 $tab-focus-bg-color: rgba($content-bg-color-alt2, .12) !default;
 $tab-fill-focus-bg-color: rgba($content-bg-color-alt2, .8) !default;
 $tab-hover-bg-color: $content-bg-color-alt3 !default;
-$tab-active-bg-color: $primary-lighter !default;
+$tab-active-bg-color: none !default;
 $tab-fill-active-bg-color: $primary !default;
 $tab-fill-disable-active-bg-color: rgba($primary, .38) !default;
 $tab-alt-active-bg-color: $primary !default;
@@ -174,7 +165,6 @@ $tab-bg-big-active-item-wrap-margin-bottom: 0 !default;
 $tab-bg-nrml-active-item-wrap-margin-bottom: 0 !default;
 $tab-alt-big-active-item-padding: 0 12px !default;
 $tab-alt-nrml-active-item-padding: 0 8px !default;
-
 $tab-active-text-container-margin: 0 !default;
 $tab-big-text-container-margin-right: 22px !default;
 $tab-nrml-text-container-margin-right: 20px !default;
@@ -189,12 +179,11 @@ $tab-fill-nrml-active-it-text-container-height: 38px !default;
 $tab-big-even-active-text-container-height: 48px !default;
 $tab-nrml-even-active-text-container-height: 38px !default;
 $tab-even-active-text-container-margin: 0 !default;
-
 $tab-big-font-size: $text-base !default;
 $tab-nrml-font-size: $text-sm !default;
-$tab-font-weight: $font-weight-semibold !default;
-$tab-semi-font-weight: $font-weight-semibold !default;
-$tab-light-font-weight: $font-weight-semibold !default;
+$tab-font-weight: $font-weight-medium !default;
+$tab-semi-font-weight: $font-weight-medium !default;
+$tab-light-font-weight: $font-weight-medium !default;
 $tab-big-it-text-margin: 0 0 6px 12px !default;
 $tab-nrml-it-text-margin: 0 0 5px 8px !default;
 $tab-mob-it-text-margin: 0 0 6px 12px !default;
@@ -231,12 +220,10 @@ $tab-alt-active-hover-text-color: $primary-bg-color-pressed !default;
 $tab-alt-active-style-hover-icon-color: $tab-alt-active-hover-text-color !default;
 $tab-clone-item-bg-color: $content-bg-color-alt3 !default;
 $tab-clone-text-color: $content-text-color-alt1 !default;
-
 $tab-icon-container-width: auto !default;
-
 $tab-nav-pop-press-border: 0 !default;
 $tab-big-nav-icon-container-size: 48px !default;
-$tab-nrml-nav-icon-container-size: 24px !default;
+$tab-nrml-nav-icon-container-size: 42px !default;
 $tab-big-nav-icon-size: $text-base !default;
 $tab-nrml-nav-icon-size: $text-sm !default;
 $tab-mob-nav-icon-size: $text-base !default;
@@ -265,7 +252,6 @@ $tab-big-edge-pop-icon-line-height: 15px !default;
 $tab-nrml-edge-pop-icon-line-height: 14px !default;
 $tab-comb-icon-color: $primary !default;
 $tab-comb-text-color: $primary !default;
-
 $tab-close-icon-size: $text-sm !default;
 $tab-big-close-icon-size: $text-base !default;
 $tab-nrml-close-icon-size: $text-sm !default;
@@ -309,7 +295,6 @@ $tab-alt-active-hover-close-icon-color: rgba($primary, 1) !default;
 $tab-pop-bg-color: $flyout-bg-color !default;
 $tab-pop-border: 0 !default;
 $tab-pop-border-radius: 0 !default;
-
 $tab-big-nav-right-icon-padding: 0 !default;
 $tab-nrml-nav-right-icon-padding: 0 !default;
 $tab-mob-nav-right-icon-padding: 0 !default;
@@ -347,20 +332,16 @@ $tab-even-active-item-bottom-border-color: 0 !default;
 $tab-pop-up-icon-active-border: $tab-pop-icon-active-border !default;
 $tab-pop-border-box-shadow: none !default;
 $tab-bg-hover-nav-icon-color: $icon-color !default;
-
 $tab-pop-box-shadow: $shadow-lg !default;
 $tab-pop-icon-transition: transform .1s ease !default;
 $tab-pop-up-icon-transform: rotate(180deg) !default;
 $tab-pop-down-icon-transform: rotate(0deg) !default;
-
 $hscroll-alt-ribble-animation-border-frame: rgba(0, 0, 0, .12) !default;
 $hscroll-alt-ribble-animation-shadow-frame: 0 0 0 0 $hscroll-alt-ribble-animation-border-frame !default;
 $hscroll-alt-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(0, 0, 0, .12) !default;
-
 $tbar-alt-ribble-animation-border-frame: rgba(0, 0, 0, .12) !default;
 $tbar-alt-ribble-animation-shadow-frame: 0 0 0 0 $tbar-alt-ribble-animation-border-frame !default;
 $tbar-alt-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(0, 0, 0, .12) !default;
-
 $tab-bgr-active-last-margin: 0 !default;
 $tab-bgr-hscroll-items-nav-width: 50px !default;
 $tab-bgr-item-textwrap-height: $tab-big-height !default;
@@ -387,7 +368,6 @@ $tab-bgr-rtl-icon-right-margin: 0 !default;
 $tab-bgr-background-active-padding: 0 9px !default;
 $tab-bgr-fill-active-item-padding: 0 10px !default;
 $tab-bgr-item-text-margin-bottom: 6px !default;
-
 $tab-nrml-hscroll-items-nav-width: 24px !default;
 $tab-nrml-hscroll-items-bdr-radius: 0 !default;
 $tab-nrml-item-text-wrap-height: $tab-nrml-height !default;
@@ -447,11 +427,9 @@ $tab-nrml-bottom-wrap-before-top: unset !default;
 $tab-nrml-background-vertical-indicator-display: block !default;
 $tab-nrml-background-active-padding: 0 7px !default;
 $tab-nrml-item-text-margin-bottom: 5px !default;
-
 @mixin tbar-alt-btn-animation-after {
   animation: tbar-alt-popup-shadow 1s ease-out 0ms;
 }
-
 @keyframes tbar-alt-popup-shadow {
   0% {
     border-color: $tbar-alt-ribble-animation-border-frame;
@@ -462,11 +440,9 @@ $tab-nrml-item-text-margin-bottom: 5px !default;
     box-shadow: $tbar-alt-ribble-animation-shadow-frame-end;
   }
 }
-
 @mixin hscroll-alt-btn-animation-after {
   animation: hscroll-alt-popup-shadow 1s ease-out 0ms;
 }
-
 @keyframes hscroll-alt-popup-shadow {
   0% {
     border-color: $hscroll-alt-ribble-animation-border-frame;
@@ -477,11 +453,7 @@ $tab-nrml-item-text-margin-bottom: 5px !default;
     box-shadow: $hscroll-alt-ribble-animation-shadow-frame-end;
   }
 }
-
-/*! Material specific themes definition's */
 $tab-alt-wrap-hover-close-icon-focus-or-active-color: $border-light !default;
-
-/*! Vertical Tab */
 $tab-vscroll-nrml-padding: 16px 0 !default;
 $tab-vscroll-big-padding: 24px 0 !default;
 $tab-big-v-wrap-padding: 0 24px !default;
@@ -491,7 +463,6 @@ $tab-big-more-btn-line-height: 46px !default;
 $tab-nrml-more-btn-line-height: 35px !default;
 $tab-pop-more-icon-margin: 0 0 0 10px !default;
 $tab-rtl-pop-more-icon-margin: 0 10px 0 0 !default;
-
 $tab-vscroll-nav-border: 1px solid transparent !default;
 $tab-vscroll-nav-border-color: rgba($content-bg-color-alt3, .12) !default;
 $tab-v-nav-focus-bg-color: rgba($content-bg-color-alt2, .12) !default;
@@ -501,16 +472,13 @@ $tab-v-popup-box-shadow:
   0 2px 2px 0 rgba(0, 0, 0, .14),
   0 1px 5px 0 rgba(0, 0, 0, .12) !default;
 $tab-v-nav-icon-border-width: 0 !default;
-
 $tab-v-big-close-icon-top-bottom-right: -24px !default;
 $tab-v-nrml-close-icon-top-bottom-right: -18px !default;
 $tab-v-rtl-big-close-icon-top-bottom-right: 0 !default;
 $tab-v-rtl-nrml-close-icon-top-bottom-right: 0 !default;
 $tab-v-rtl-big-close-icon-top-bottom-left: -24px !default;
 $tab-v-rtl-nrml-close-icon-top-bottom-left: -18px !default;
-
 $tab-v-pop-focus-outline: 0 !default;
-
 $tab-header-font-weight: $tab-font-weight !default;
 $tab-header-before-border-color: unset !default;
 $tab-header-before-border-width: 0 !default;
@@ -537,7 +505,6 @@ $tab-item-left-icon-before-top: 1px !default;
 $tab-item-icon-before-top: 1px !default;
 $tab-item-icon-before-left: 4px !default;
 $tab-item-active-border-bottom: initial !default;
-
 $tab-pop-wrap-hover-border: 0 !default;
 $tab-pop-wrap-hover-border-radius: 0 !default;
 $tab-pop-wrap-hover-close-color: $tab-hover-text-color !default;
@@ -552,7 +519,6 @@ $tab-pop-nav-active-bg: inherit !default;
 $tab-pop-nav-active-border: 0 !default;
 $tab-pop-nav-active-border-radius: 0 !default;
 $tab-pop-active-icons-color: $content-text-color-alt2 !default;
-
 $tab-scroll-nav-bg: $content-bg-color-alt2 !default;
 $tab-scroll-nav-arrow-font: $tab-nav-icon-color !default;
 $tab-scroll-arrow-hover-border: $tab-item-active-wrap-border !default;
@@ -568,7 +534,6 @@ $tab-scroll-overlay-arrow-hover-bg: $tab-pop-icon-hover-bg-color !default;
 $tab-scroll-overlay-arrow-hover-border-color: unset !default;
 $tab-scroll-focused-nav-focus-icon-bg: $tab-nav-focus-bg-color !default;
 $tab-scroll-focused-nav-focus-icon-border: $tab-pop-up-icon-focus-border !default;
-
 $tab-bottom-border-color: $tab-hdr-bdr-color !default;
 $tab-bottom-border-width: 1px 0 0 !default;
 $tab-bottom-hidden-items-border-color: unset !default;
@@ -576,7 +541,6 @@ $tab-bottom-hidden-items-border-width: 0 !default;
 $tab-bottom-active-border-color: $tab-active-item-border-color unset unset !default;
 $tab-bottom-active-border-width: 0 !default;
 $tab-bottom-active-margin-top: 0 !default;
-
 $tab-vertical-scroll-hover-border-color: $tab-vscroll-nav-border-color transparent transparent !default;
 $tab-vertical-scroll-hover-active-bg: $tab-v-nav-focus-bg-color !default;
 $tab-vertical-focus-active-arrow-color: none !default;
@@ -584,7 +548,6 @@ $tab-vertical-pop-icon-hover-color: $tab-hover-nav-icon-color !default;
 $tab-vertical-pop-icon-active-color: $tab-nav-focus-icon-color !default;
 $tab-vertical-focused-nav-focus-border-color: $tab-vertical-scroll-hover-border-color !default;
 $tab-vertical-before-border-width: 0 !default;
-
 $tab-fill-wrap-hover-icon-color: $tab-hover-text-color !default;
 $tab-fill-active-tabwrap-border-color: unset !default;
 $tab-fill-active-text-before-border: unset !default;
@@ -597,7 +560,6 @@ $tab-fill-pop-wrap-hover-close-color: $tab-hover-text-color !default;
 $tab-fill-focused-active-tabwrap-focus-border-color: unset !default;
 $tab-fill-focused-active-wrap-focus-text-color: $tab-alt-active-style-hover-icon-color !default;
 $tab-fill-focused-active-wrap-focus-close-color: $tab-hover-text-color !default;
-
 $tab-background-indicator-bottom: 1px !default;
 $tab-background-wrap-border-color: unset !default;
 $tab-background-close-hover-color: $tab-alt-text-color !default;
@@ -690,9 +652,7 @@ $tab-background-focused-active-wrap-icon-color: $tab-alt-active-hover-text-color
 $tab-background-accent-indicator-bg: $tab-alt-border-color !default;
 $tab-background-active-text-font-weight: $font-weight-medium !default;
 $tab-background-text-color: $tab-alt-text-color !default;
-
 $tab-fill-background-disable-text-color: $tab-disable-text-color !default;
-
 /* stylelint-disable */
 .e-toolbar-item {
   &.e-active {

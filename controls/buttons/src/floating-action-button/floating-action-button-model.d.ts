@@ -1,4 +1,4 @@
-import { getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property, EventHandler } from '@syncfusion/ej2-base';import { select } from '@syncfusion/ej2-base';import { Button } from '../button/button';
+import { getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { select } from '@syncfusion/ej2-base';import { Button } from '../button/button';
 import {FabPosition} from "./floating-action-button";
 import {ButtonModel} from "../button/button-model";
 
@@ -20,8 +20,6 @@ export interface FabModel extends ButtonModel{
      * * BottomCenter: Places the FAB on the bottom-center position of the target.
      * * BottomRight: Positions the FAB at the target's bottom right corner.
      *
-     *  To refresh the position of FAB on target resize, use refreshPosition method.
-     *  The position will be refreshed automatically when browser resized.
      * {% codeBlock src='fab/position/index.md' %}{% endcodeBlock %}
      *
      * @isenumeration true

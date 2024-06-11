@@ -1,6 +1,6 @@
 import { Browser, EventHandler, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet, FormulaBarEdit, ScrollEventArgs, isFormulaBarEdit, colWidthChanged, mouseDown, getUpdateUsingRaf } from '../index';
-import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
+import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs, updateNoteContainer } from '../common/index';
 import { IOffset, onContentScroll, deInitProperties, setScrollEvent, updateScroll, selectionStatus } from '../common/index';
 import { virtualContentLoaded, updateScrollValue } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress, skipHiddenIdx } from '../../workbook/index';
@@ -64,6 +64,7 @@ export class Scroll {
             };
             this.updateTopLeftCell(scrollRight, true);
             this.parent.notify(onHorizontalScroll, scrollArgs);
+            this.updateNoteContainer();
             if (!this.parent.scrollSettings.enableVirtualization && scrollRight && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualCols();
             }
@@ -83,6 +84,7 @@ export class Scroll {
                 this.offset.top = { idx: 0, size: 0 };
             } else if (!e.skipRowVirualScroll) {
                 this.parent.notify(onVerticalScroll, scrollArgs);
+                this.updateNoteContainer();
             } else {
                 scrollArgs.prev.idx = scrollArgs.cur.idx;
             }
@@ -99,6 +101,12 @@ export class Scroll {
             textArea.focus();
         }
         this.isKeyScroll = true;
+    }
+
+    private updateNoteContainer(): void {
+        if (document.getElementsByClassName('e-addNoteContainer') && document.getElementsByClassName('e-addNoteContainer').length > 0) {
+            this.parent.notify(updateNoteContainer, null);
+        }
     }
 
     private updateScrollValue(args: { scrollLeft?: number, scrollTop?: number }): void {
@@ -301,6 +309,7 @@ export class Scroll {
     /**
      * @hidden
      *
+     * @param {boolean} isRtlChange - Specifies RtlChange or not.
      * @returns {void} - To Set padding
      */
     public setPadding(isRtlChange?: boolean): void {

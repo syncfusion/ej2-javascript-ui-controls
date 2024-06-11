@@ -37,9 +37,6 @@ export class Crop {
     private cropping(args?: { onPropertyChange: boolean, prop: string, value?: object }): void {
         this.updateCropPvtVar();
         switch (args.prop) {
-        case 'cropImg':
-            this.cropImg(args.value['isRotateCrop']);
-            break;
         case 'cropCircle':
             this.cropCircle(args.value['context'], args.value['isSave'], args.value['isFlip']);
             break;
@@ -174,18 +171,12 @@ export class Crop {
             const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
             this.cropObjColl();
             parent.transform.straighten = 0;
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-            const objColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
-            for (let i: number = 0, len: number = objColl.length; i < len; i++) {
-                if (this.isObjInImage(objColl[i as number])) {
-                    parent.notify('shape', { prop: 'apply', onPropertyChange: false,
-                        value: {shape: objColl[i as number].shape, obj: objColl[i as number], canvas: null}});
-                    parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
-                }
-            }
             parent.activeObj = activeObj;
             this.cropFreehandDrawColl();
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+            parent.shapeColl = [];
+            parent.notify('shape', { prop: 'updateShapeColl', onPropertyChange: false });
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
             parent.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.lowerContext}});
             parent.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.upperContext}});
             if (parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') {this.cropCircle(this.lowerContext); }
@@ -257,8 +248,9 @@ export class Crop {
         if (straighten !== 0) {
             parent.transform.straighten = 0;
             parent.straightenBaseImageCanvas();
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: { isPreventApply: null } });
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: { isPreventApply: null } });
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
+            parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
             parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: false } });
         }
         this.resetZoom();
@@ -268,11 +260,11 @@ export class Crop {
         if (straighten !== 0) {
             parent.transform.straighten = (flipState === 'horizontal' || flipState === 'vertical') ? -straighten : straighten;
             parent.straightenBaseImageCanvas();
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: { isPreventApply: null } });
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: { isPreventApply: null } });
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
             parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: false } });
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: { isPreventApply: null } });
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: { isPreventApply: null } });
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         }
         activeObj = extend({}, parent.objColl[parent.objColl.length - 1], {}, true) as SelectionPoint;
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
@@ -426,8 +418,8 @@ export class Crop {
         parent.notify('shape', { prop: 'redrawObj', onPropertyChange: false, value: {degree: this.getCurrFlipState()}});
         parent.notify('freehand-draw', { prop: 'flipFHDColl', onPropertyChange: false,
             value: {value: this.getCurrFlipState()}});
-        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         this.lowerContext.filter = temp;
         if ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop) {
             this.cropCircle(this.lowerContext);
@@ -487,6 +479,7 @@ export class Crop {
         } else {
             x = destLeft; y = destTop; width = destWidth; height = destHeight;
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const pointColl: any = parent.objColl[i as number].pointColl;
         for (let n: number = 0, len: number = pointColl.length; n < len; n++) {
             pointColl[n as number].ratioX = (pointColl[n as number].x - x) / width;
@@ -567,8 +560,8 @@ export class Crop {
                 img.destLeft = startX; img.destTop = startY;
                 img.destWidth = width; img.destHeight = height;
             }
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
             img.destLeft = destPoints.startX; img.destTop = destPoints.startY;
             img.destWidth = destPoints.width; img.destHeight = destPoints.height;
             parent.notify('freehand-draw', { prop: 'updateFHDColl', onPropertyChange: false});
@@ -602,13 +595,12 @@ export class Crop {
             }
             parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false,
                 value: {obj: {selPointColl: cropSelPointColl } }});
-            parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-            parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-                value: {context: this.lowerContext, points: null} });
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
             this.adjustStraightenForShapes('reverse', false);
             parent.notify('freehand-draw', { prop: 'updateFHDColl', onPropertyChange: false, value: {isPreventApply: true }});
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
             if (parent.transform.degree === 0) {
                 parent.notify('transform', { prop: 'drawPannImage', onPropertyChange: false,
                     value: {point: {x: 0, y: 0}}});
@@ -638,9 +630,8 @@ export class Crop {
             parent.notify('freehand-draw', { prop: 'updateFHDColl', onPropertyChange: false, value: {isPreventApply: true }});
             const temp: string = this.lowerContext.filter;
             this.lowerContext.filter = 'none';
-            parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-            parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-                value: {context: this.lowerContext, points: null} });
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
             this.lowerContext.filter = temp;
             parent.currSelectionPoint = null;
         }
@@ -685,44 +676,17 @@ export class Crop {
         }
     }
 
-    private getCurrCropState(type: string, isAllowInvert?: boolean): string {
+    private getCurrCropState(): string {
         const parent: ImageEditor = this.parent; let flipState: string = '';
-        const state: string[] = []; const obj: Object = {flipColl: null };
+        const obj: Object = {flipColl: null };
         parent.notify('transform', { prop: 'getFlipColl', onPropertyChange: false, value: {obj: obj }});
-        if (type === 'initial') {
-            if (Math.abs(parent.transform.degree) === 180) {
-                flipState = obj['flipColl'].length > 1 ? this.getCurrFlipState() : parent.transform.currFlipState;
-            } else {
-                for (let i: number = 0, len: number = parent.rotateFlipColl.length; i < len; i++) {
-                    if (typeof(parent.rotateFlipColl[i as number]) === 'number') {state.push('number'); }
-                    else if (typeof(parent.rotateFlipColl[i as number]) === 'string') {state.push('string'); }
-                }
-                if (state.length > 1 && state[state.length - 1] === 'string' && state[state.length - 2] === 'number') {
-                    if (parent.transform.currFlipState === 'horizontal') {flipState = 'vertical'; }
-                    else if (parent.transform.currFlipState === 'vertical') {flipState = 'horizontal'; }
-                } else if (state.length > 1 && state[state.length - 1] === 'number' && state[state.length - 2] === 'string') {
-                    flipState = obj['flipColl'].length > 1 ? this.getCurrFlipState() : parent.transform.currFlipState;
-                }
-            }
-        } else {
-            flipState = this.getCurrFlipState();
-            if (isAllowInvert || !this.isInitialRotate()) {
-                if (parent.transform.degree === -90 || parent.transform.degree === -270) {
-                    if (flipState === 'horizontal') {flipState = 'vertical'; }
-                    else if (flipState === 'vertical') {flipState = 'horizontal'; }
-                }
-            }
+        flipState = this.getCurrFlipState();
+        if (parent.transform.degree === -90 || parent.transform.degree === -270) {
+            if (flipState === 'horizontal') {flipState = 'vertical'; }
+            else if (flipState === 'vertical') {flipState = 'horizontal'; }
         }
         if (flipState === '') {flipState = obj['flipColl'].length > 1 ? this.getCurrFlipState() : parent.transform.currFlipState; }
         return flipState;
-    }
-
-    private isInitialRotate(): boolean {
-        let isRotate: boolean = false;
-        if (this.parent.rotateFlipColl.length > 0 && typeof(this.parent.rotateFlipColl[0]) === 'number') {
-            isRotate = true;
-        }
-        return isRotate;
     }
 
     private updateRotatePan(): void {
@@ -734,7 +698,7 @@ export class Crop {
         const { x, y} = parent.panPoint.currentPannedPoint;
         if (parent.rotateFlipColl.length > 0 && typeof(parent.rotateFlipColl[0]) === 'number'
             && degree < 0) {
-            panRegion = this.getCurrCropState('reverse', true);
+            panRegion = this.getCurrCropState();
         } else {
             panRegion = this.getCurrFlipState();
         }
@@ -811,6 +775,10 @@ export class Crop {
                 if (transitionArgs.preventScaling) {this.isPreventScaling = true; }
                 else {this.isPreventScaling = false; }
                 this.cropImg();
+                if (this.isPreventScaling) {
+                    parent.aspectWidth = parent.img.destWidth;
+                    parent.aspectHeight = parent.img.destHeight;
+                }
                 parent.notify('freehand-draw', { prop: 'resetStraightenPoint' });
                 parent.isCropTab = false;
                 parent.transform.zoomFactor = 0;
@@ -850,6 +818,7 @@ export class Crop {
     private resizeWrapper(): void {
         const parent: ImageEditor = this.parent;
         if (Browser.isDevice) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const elem: HTMLElement = (parent as any).element;
             const ctxToolbar: HTMLElement = elem.querySelector('#' + elem.id + '_contextualToolbarArea') as HTMLElement;
             if (ctxToolbar && ctxToolbar.style.position === '' && !this.isTransformCrop) {
@@ -866,8 +835,8 @@ export class Crop {
         const { degree } = parent.transform;
         const { destWidth, destHeight } = parent.img;
         const { width, height } = dimension || parent.baseImgCanvas;
-        const widthRatio = (degree === 0 || degree % 180 === 0) ? width / destWidth : height / destWidth;
-        const heightRatio = (degree === 0 || degree % 180 === 0) ? height / destHeight : width / destHeight;
+        const widthRatio: number = (degree === 0 || degree % 180 === 0) ? width / destWidth : height / destWidth;
+        const heightRatio: number = (degree === 0 || degree % 180 === 0) ? height / destHeight : width / destHeight;
         if (obj) {
             obj['width'] = widthRatio;
             obj['height'] = heightRatio;

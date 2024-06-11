@@ -1,4 +1,3 @@
-
 import { Tooltip as SVGTooltip } from '@syncfusion/ej2-svg-base';
 import { ProgressBar } from '../progressbar';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';

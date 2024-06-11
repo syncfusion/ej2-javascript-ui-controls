@@ -2425,7 +2425,8 @@ describe('Drawing connectors from a source port to target port do not attach to 
 
               {
                 id: 'Out2_xyz',offset: { x: 1, y: 0.5 },visibility: PortVisibility.Visible,
-                constraints:PortConstraints.Default | PortConstraints.Draw,  
+                constraints:PortConstraints.Default | PortConstraints.Draw,
+                width:50,height:50
               }
             ],
           };
@@ -2437,6 +2438,7 @@ describe('Drawing connectors from a source port to target port do not attach to 
               {
                 id: 'Inp_xyz_abc',offset: { x: 0, y: 0.5 },visibility: PortVisibility.Visible,
                 constraints:PortConstraints.Default | PortConstraints.Draw,
+                width:50,height:50
              },
             ],
         };

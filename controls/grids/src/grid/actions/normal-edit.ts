@@ -52,7 +52,8 @@ export class NormalEdit {
         if (gObj.editSettings.showAddNewRow && isNullOrUndefined(gObj.element.querySelector('.' + literals.editedRow))) { return; }
         if ((((parentsUntil(target,  literals.gridContent) &&
             parentsUntil(parentsUntil(target,  literals.gridContent), 'e-grid').id === gObj.element.id)) || (gObj.frozenRows
-                && parentsUntil(target, literals.headerContent))) && !parentsUntil(target, 'e-unboundcelldiv')) {
+                && parentsUntil(target, literals.headerContent) && !parentsUntil(target, 'e-columnheader')))
+                && !parentsUntil(target, 'e-unboundcelldiv')) {
             this.rowIndex = parentsUntil(target, literals.rowCell)
                 ? parseInt(target.parentElement.getAttribute(literals.dataRowIndex), 10) : -1;
             if (gObj.isEdit) {

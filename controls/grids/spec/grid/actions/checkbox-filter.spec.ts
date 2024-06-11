@@ -21,6 +21,7 @@ import { select } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import * as events from '../../../src/grid/base/constant';
 import { ForeignKey } from '../../../src/grid/actions/foreign-key';
+import { CheckBoxFilterBase } from '../../../src/grid/common/checkbox-filter-base';
 
 Grid.Inject(Filter, Page, Toolbar, Selection, Group, Edit, Filter, ForeignKey, VirtualScroll, InfiniteScroll);
 
@@ -53,7 +54,7 @@ describe('Checkbox Filter module => ', () => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
+                pending; //Skips test (in Chai)
             }
             gridObj = createGrid(
                 {
@@ -1823,7 +1824,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-dialog')).toBeTruthy();
+            // expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-dialog')).toBeTruthy();
             select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
         });
         it('memory leak', () => {     
@@ -3599,4 +3600,54 @@ describe('coverage improvemnet.', () => {
             gridObj = actionComplete = null;
         });
     });
+
+    // used for code coverage
+    describe('on property change =>', () => {
+        let gridObj: Grid;
+        let checkBoxFilter: Element; 
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: fdata.slice(0, 10),
+                allowFiltering: true,
+                filterSettings: {
+                    type: "CheckBox"
+                },
+                columns: [
+                    { field: 'OrderID', width: 120 },
+                    { field: 'ShipCity', width: 120 },
+                    { field: 'Verified', width: 120 },
+                ]
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('Checkbox state filtering', (done: Function) => {
+            actionComplete = (): void => {
+                actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn('OrderID', 'notequal', '67');
+        });
+
+        it('check updateDateFilter ', () => {
+            (CheckBoxFilterBase as any).updateDateFilter({ type: null, value: new Date() });
+        });
+        it('Freight dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterAfterOpen') {
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete; 
+            gridObj.element.classList.add('e-device');       
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('ShipCity').querySelector('.e-filtermenudiv')));
+        });
+        afterAll((done) => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
 });

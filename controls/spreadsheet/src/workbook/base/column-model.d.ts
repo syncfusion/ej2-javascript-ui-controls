@@ -56,4 +56,11 @@ export interface ColumnModel {
      */
     validation?: ValidationModel;
 
+    /**
+     * Represents whether a column in the sheet is read-only or not. If set to true, it prevents editing the specified cell in the sheet.
+     *
+     * @default false
+     */
+    isReadOnly?: boolean;
+
 }

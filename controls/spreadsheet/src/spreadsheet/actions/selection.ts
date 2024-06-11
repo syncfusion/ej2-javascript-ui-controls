@@ -1,15 +1,15 @@
 import { Spreadsheet } from '../base/index';
 import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue, rangeSelectionByKeydown } from '../common/index';
-import { showAggregate, refreshOverlayElem, getRowIdxFromClientY, getColIdxFromClientX, hideAutoFillElement } from '../common/index';
+import { showAggregate, refreshOverlayElem, getRowIdxFromClientY, getColIdxFromClientX, hideAutoFillElement, NoteSaveEventArgs, showNote } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach } from '@syncfusion/ej2-base';
 import { BeforeSelectEventArgs, getMoveEvent, getEndEvent, isTouchStart, isMouseUp, isDiscontinuousRange } from '../common/index';
-import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
+import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged, completeAction } from '../common/index';
 import { colWidthChanged, protectSelection, editOperation, initiateFormulaReference, initiateCur, clearCellRef, getScrollBarWidth } from '../common/index';
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
-import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
-import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell } from '../../workbook/index';
+import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle, removeNoteContainer, setActionData } from '../common/index';
+import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell, updateCell, getSheetName } from '../../workbook/index';
 import { getIndexesFromAddress, selectionComplete, skipHiddenIdx, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX } from '../../workbook/common/index';
 
 
@@ -31,6 +31,9 @@ export class Selection {
     private touchSelectionStarted: boolean;
     private isautoFillClicked: boolean;
     public dAutoFillCell: string;
+    /** @hidden */
+    public previousActiveCell: string;
+    private isNoteTouch: boolean = false;
 
     /**
      * Constructor for the Spreadsheet selection module.
@@ -239,6 +242,30 @@ export class Selection {
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean =  checkIsFormula(eventArgs.editedValue, true);
+        const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
+        if (!isNullOrUndefined(targetElement) && targetElement.children !== null && targetElement.children.length > 0
+            && document.activeElement.className.indexOf('e-addNoteContainer') > -1 && targetElement.children[targetElement.children.length - 1].classList.contains('e-addNoteIndicator')) {
+            const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], sheet);
+            const noteContainer: HTMLTextAreaElement  = document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement;
+            const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + this.parent.getActiveSheet().activeCell;
+            if (!isNullOrUndefined(noteContainer) && !isNullOrUndefined(noteContainer.value) && (e.target as HTMLElement).className !== 'e-addNoteContainer'
+                && ((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) || (cell.notes !== noteContainer.value))) {
+                this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
+                updateCell(
+                    this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
+                        cell: { notes: noteContainer.value, isNoteEditable:  false }});
+                const eventArgs : NoteSaveEventArgs =  { notes: noteContainer.value, address: address, element: targetElement};
+                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
+            }
+            this.parent.spreadsheetNoteModule.isShowNote = null;
+        }
+        if (!this.isNoteTouch && (e.target as HTMLElement).className !== 'e-addNoteContainer' && document.getElementsByClassName('e-addNoteContainer') && document.getElementsByClassName('e-addNoteContainer').length > 0){
+            this.parent.notify(removeNoteContainer, '');
+        }
+        if (this.isNoteTouch && e.type.indexOf('mouse') > -1) {
+            this.isNoteTouch = false;
+        }
         if (!this.parent.isEdit || isFormulaEdit) {
             const overlayElem: HTMLElement = document.getElementById(this.parent.element.id + '_overlay');
             if (typeof((e.target as HTMLElement).className) === 'string' ) {
@@ -257,7 +284,6 @@ export class Selection {
                     const rowIdx: number = this.getRowIdxFromClientY({ clientY: getClientY(e), target: e.target as Element });
                     const colIdx: number = this.getColIdxFromClientX({ clientX: getClientX(e), target: e.target as Element });
                     const activeIdx: number[] = getCellIndexes(sheet.activeCell);
-                    const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     let isRowSelected: boolean; let isColSelected: boolean;
                     if (sheet.showHeaders) {
                         const trgt: Element = e.target as Element;
@@ -319,7 +345,7 @@ export class Selection {
                         }
                     }
                     if (isTouchStart(e) && !(isRowSelected || isColSelected) && range) {
-                        let colRowSelectArgs: { isRowSelected: boolean, isColSelected: boolean } = this.isRowColSelected(range);
+                        const colRowSelectArgs: { isRowSelected: boolean, isColSelected: boolean } = this.isRowColSelected(range);
                         this.isRowSelected = colRowSelectArgs.isRowSelected; this.isColSelected = colRowSelectArgs.isColSelected;
                     }
                     const preventEvt: boolean = e.ctrlKey && range && sheet.selectedRange.includes(getRangeAddress(range));
@@ -339,12 +365,25 @@ export class Selection {
                     if (!preventEvt && !isTouchEnd(e)) {
                         EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
                     }
+                    const isNoteAvailable: boolean = ((e.target as HTMLElement).className === 'e-addNoteIndicator' ||
+                        ((e.target as HTMLElement).children.length > 0 && (e.target as HTMLElement).children[(e.target as HTMLElement).childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1));
+                    if (isTouchStart(e) && isNoteAvailable) {
+                        const cellIndexes: number[] = getCellIndexes(getRangeAddress(range).split(':')[0]);
+                        this.parent.notify(showNote, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1], isNoteEditable: false });
+                        this.isNoteTouch = true;
+                        this.parent.spreadsheetNoteModule.isNoteVisibleOnTouch = true;
+                    }
                     if (isTouchStart(e) && !(isColSelected || isRowSelected)) {
                         this.touchEvt = e;
                         return;
                     }
                     if (range) {
                         this.selectRangeByIdx(range, e);
+                    }
+                    if (!this.isNoteTouch && e.type.indexOf('mouse') > -1 && isNoteAvailable) {
+                        const cellIndexes: number[] = getCellIndexes(getRangeAddress(range).split(':')[0]);
+                        this.parent.notify(showNote, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1], isNoteEditable: false });
+                        this.parent.spreadsheetNoteModule.isNoteVisible = true;
                     }
                     if (this.parent.isMobileView()) {
                         this.parent.element.classList.add('e-mobile-focused');
@@ -373,7 +412,8 @@ export class Selection {
         const horizontalContent: Element = this.parent.element.getElementsByClassName('e-scroller')[0];
         const clientRect: ClientRect = verticalContent.getBoundingClientRect(); const frozenCol: number = this.parent.frozenColCount(sheet);
         let left: number = clientRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet);
-        const top: number = clientRect.top; let right: number = clientRect.right - getScrollBarWidth(); const bottom: number = clientRect.bottom;
+        let right: number = clientRect.right - getScrollBarWidth();
+        const top: number = clientRect.top; const bottom: number = clientRect.bottom;
         const clientX: number = getClientX(e); const clientY: number = getClientY(e);
         // remove math.min or handle top and left auto scroll
         let colIdx: number = this.isRowSelected ? sheet.colCount - 1 :
@@ -612,7 +652,8 @@ export class Selection {
         let size: number;
         for (let i: number = 0; ; i++) {
             size = width += getColumnWidth(sheet, i, null, !e.isImage);
-            if (left < (e.isImage ? Number(addDPRValue(size).toFixed(2)) : size) || (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
+            if (left < (e.isImage ? Number(addDPRValue(size).toFixed(2)) : size) ||
+                (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
                 if (!e.isImage) { e.size = left; }
                 e.clientX = i;
                 return i;
@@ -646,7 +687,8 @@ export class Selection {
         let size: number;
         for (let i: number = 0; ; i++) {
             size = height += getRowHeight(sheet, i, !args.isImage);
-            if (top < (args.isImage ? Number(addDPRValue(size).toFixed(2)) : size) || (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
+            if (top < (args.isImage ? Number(addDPRValue(size).toFixed(2)) : size) ||
+                (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
                 if (!args.isImage) { args.size = top; }
                 args.clientY = i;
                 return i;
@@ -895,6 +937,7 @@ export class Selection {
         }
         range = mergeArgs.range as number[];
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
+            this.previousActiveCell = sheet.activeCell.indexOf(':') > -1 ? this.previousActiveCell : sheet.activeCell ;
             this.parent.setSheetPropertyOnMute(sheet, 'activeCell', getCellAddress(range[0], range[1]));
             if (sheet.isProtected) {
                 const element: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;

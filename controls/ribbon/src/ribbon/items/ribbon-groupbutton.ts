@@ -1,6 +1,6 @@
 import { EventHandler, KeyboardEventArgs, getComponent, remove } from '@syncfusion/ej2-base';
 import { Ribbon } from '../base/ribbon';
-import { RibbonGroupButtonItem, RibbonGroupButtonItemModel, RibbonGroupButtonSettingsModel, RibbonItem, RibbonItemModel } from '../models';
+import { RibbonGroupButtonItem, RibbonGroupButtonItemModel, RibbonGroupButtonSettingsModel, RibbonItemModel } from '../models';
 import * as constants from '../base/constant';
 import { Button } from '@syncfusion/ej2-buttons';
 import { BeforeClickGroupButtonEventArgs, ClickGroupButtonEventArgs, RibbonGroupButtonSelection, RibbonItemSize } from '../base/interface';
@@ -63,6 +63,10 @@ export class RibbonGroupButton {
                 }
                 if (groupBtnSettings.items[parseInt(i.toString(), 10)].content) {
                     groupButtonEle.classList.add(constants.RIBBON_GROUP_BUTTON_CONTENT);
+                    groupButtonEle.setAttribute('aria-label', groupBtnSettings.items[parseInt(i.toString(), 10)].content);
+                }
+                else {
+                    groupButtonEle.setAttribute('aria-label', 'groupbuttonitem');
                 }
                 const buttonEle: HTMLElement = itemElement.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + i);
                 if (groupBtnSettings.selection === RibbonGroupButtonSelection.Single) {
@@ -124,7 +128,7 @@ export class RibbonGroupButton {
                 }
                 count++;
             }
-            const dropdown = new DropDownButton({
+            const dropdown: DropDownButton = new DropDownButton({
                 iconCss: dropdownIcon,
                 target: btnContainerEle,
                 enableRtl: this.parent.enableRtl,
@@ -182,7 +186,8 @@ export class RibbonGroupButton {
                 for (let j: number = 0; j < grpBtnSettings.items.length; j++) {
                     if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j) && document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j).classList.contains('e-active')) {
                         document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j).classList.remove('e-active');
-                        (grpBtnSettings.items[parseInt(j.toString(), 10)] as RibbonGroupButtonItem).setProperties({ selected: false }, true);
+                        (grpBtnSettings.items[parseInt(j.toString(), 10)] as RibbonGroupButtonItem).
+                            setProperties({ selected: false }, true);
                     }
                 }
                 document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.toggle('e-active');
@@ -203,10 +208,12 @@ export class RibbonGroupButton {
                 }
                 document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.toggle('e-active');
                 if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.contains('e-active')) {
-                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).setProperties({ selected: true }, true);
+                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).
+                        setProperties({ selected: true }, true);
                 }
                 else {
-                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).setProperties({ selected: false }, true);
+                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).
+                        setProperties({ selected: false }, true);
                 }
                 let activeEleCount: number = 0;
                 for (let n: number = 0; n < grpBtnSettings.items.length; n++) {
@@ -296,7 +303,7 @@ export class RibbonGroupButton {
                 }
                 itemsCount++;
             }
-            const dropdown = new DropDownButton({
+            const dropdown: DropDownButton = new DropDownButton({
                 iconCss: dropdownIcon,
                 target: containerEle,
                 enableRtl: this.parent.enableRtl,
@@ -330,7 +337,7 @@ export class RibbonGroupButton {
 
     private handleFocusState(item: RibbonItemModel, itemElement: HTMLElement): void {
         if (itemElement.querySelector('#' + item.id).classList.contains('e-active')) {
-            const defaultSelectedBtn: HTMLElement = document.querySelector('#' + item.id + '_grpbtn').querySelector('.' + constants.RIBBON_GROUP_BUTTON +'.e-active');
+            const defaultSelectedBtn: HTMLElement = document.querySelector('#' + item.id + '_grpbtn').querySelector('.' + constants.RIBBON_GROUP_BUTTON + '.e-active');
             if (defaultSelectedBtn) {
                 defaultSelectedBtn.focus();
             }
@@ -341,7 +348,7 @@ export class RibbonGroupButton {
         }
     }
 
-    private addGroupButtonHeader(itemID: string, groupBtnSettings: RibbonGroupButtonSettingsModel, popupEle: HTMLElement): void {        
+    private addGroupButtonHeader(itemID: string, groupBtnSettings: RibbonGroupButtonSettingsModel, popupEle: HTMLElement): void {
         const groupButtonHeader: HTMLElement = this.parent.createElement('div', {
             className: 'e-ribbon-groupbutton-header',
             id: itemID + constants.HEADER_ID,
@@ -411,6 +418,7 @@ export class RibbonGroupButton {
      *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
+     * @param {DropDownButton} overflowButton - Gets the overflow button.
      * @returns {void}
      * @hidden
      */

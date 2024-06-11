@@ -1,14 +1,17 @@
-import { createElement, EventHandler, remove, isNullOrUndefined} from '@syncfusion/ej2-base';
-import { Stepper, StepperChangedEventArgs, StepperChangingEventArgs, StepperClickEventArgs, StepperRenderingEventArgs, StepLabelPosition } from '../src/stepper/index';
+import { Browser, createElement, EventHandler, remove, isNullOrUndefined} from '@syncfusion/ej2-base';
+import { Stepper, StepperChangedEventArgs, StepperChangingEventArgs, StepperClickEventArgs, StepperRenderingEventArgs, StepLabelPosition, StepType } from '../src/stepper/index';
 import { StepModel, StepperBase, StepperOrientation } from '../src/stepper-base/index';
 import { getMemoryProfile, inMB, profile } from './common.spec';
+
+let stepperObj: Stepper;
+let ele: HTMLElement;
 
 describe('Stepper', () => {
     beforeAll(() => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); // skips test (in Chai)
+            pending(); // skips test (in Chai)
             return;
         }
     });
@@ -246,6 +249,34 @@ describe('Stepper', () => {
             remove(tempContent);
         });
 
+        it('default stepper with valid properties', () => {
+            stepper = new Stepper({
+                steps: [{isValid: true}, {isValid: false}, {isValid: true}, {isValid: false}]
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-step-valid').length).toBe(2);
+            expect(stepperElement.querySelectorAll('.e-step-error').length).toBe(2);
+            expect(stepperElement.querySelectorAll('.e-check').length).toBe(2);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(2);
+        });
+
+        it('default stepper indicator type with valid properties', () => {
+            stepper = new Stepper({
+                steps: [{isValid: true}, {isValid: false}, {isValid: true}, {isValid: false}],
+                stepType: 'indicator'
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-step-type-indicator')).toBe(true);
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-step-valid').length).toBe(2);
+            expect(stepperElement.querySelectorAll('.e-step-error').length).toBe(2);
+            expect(stepperElement.querySelectorAll('.e-check').length).toBe(2);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(2);
+        });
+
         it('Default Indicator Type', () => {
             stepper = new Stepper({
                 steps: [{}, {}, {}, {}],
@@ -274,7 +305,8 @@ describe('Stepper', () => {
             stepper.appendTo('#stepper');
             expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(0);
-            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-content').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(0);
             expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(0);
             stepper.stepType = 'indicator';
             stepper.dataBind();
@@ -306,6 +338,8 @@ describe('Stepper', () => {
             expect(stepperElement.querySelectorAll('.e-step-content').length).toBe(3);
             expect(stepperElement.querySelectorAll('.e-step-valid').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-error').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-check').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(1);
         });
 
         it('stepper label as indicator', () => {
@@ -326,6 +360,8 @@ describe('Stepper', () => {
             expect(stepperElement.querySelectorAll('.e-step-content').length).toBe(3);
             expect(stepperElement.querySelectorAll('.e-step-valid').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-error').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-check').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(1);
         });
 
         it('stepper text as label stepType', () => {
@@ -341,9 +377,9 @@ describe('Stepper', () => {
             expect(stepperElement.classList.contains('e-step-type-label')).toBe(true);
             expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(0);
-            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(0);
             expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(0);
-            expect(stepperElement.querySelectorAll('.e-step-content').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-step-content').length).toBe(5);
         });
 
         it('stepper label as label stepType', () => {
@@ -523,7 +559,7 @@ describe('Stepper', () => {
             expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
             expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
             expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
-            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-content').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(0);
             expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
@@ -544,16 +580,18 @@ describe('Stepper', () => {
             const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
             expect((liElementArray[1] as HTMLElement).classList.contains('e-step-valid')).toEqual(true);
             expect((liElementArray[2] as HTMLElement).classList.contains('e-step-error')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-check').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(1);
             stepper.activeStep = 1;
             stepper.dataBind();
-            expect((liElementArray[1].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-check')).toEqual(true);
+            expect((liElementArray[1].querySelector('.e-indicator') as HTMLElement).classList.contains('e-check')).toEqual(true);
             stepper.activeStep = 2;
             stepper.dataBind();
-            expect((liElementArray[1].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-check')).toEqual(true);
-            expect((liElementArray[2].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-info')).toEqual(true);
+            expect((liElementArray[1].querySelector('.e-indicator') as HTMLElement).classList.contains('e-check')).toEqual(true);
+            expect((liElementArray[2].querySelector('.e-indicator') as HTMLElement).classList.contains('e-circle-info')).toEqual(true);
             stepper.activeStep = 3;
             stepper.dataBind();
-            expect((liElementArray[2].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-info')).toEqual(true);
+            expect((liElementArray[2].querySelector('.e-indicator') as HTMLElement).classList.contains('e-circle-info')).toEqual(true);
         });
 
         it('stepper with text only with validation in vertical orientation', () => {
@@ -570,16 +608,18 @@ describe('Stepper', () => {
             const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
             expect((liElementArray[1] as HTMLElement).classList.contains('e-step-valid')).toEqual(true);
             expect((liElementArray[2] as HTMLElement).classList.contains('e-step-error')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-check').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(1);
             stepper.activeStep = 1;
             stepper.dataBind();
-            expect((liElementArray[1].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-check')).toEqual(true);
+            expect((liElementArray[1].querySelector('.e-indicator') as HTMLElement).classList.contains('e-check')).toEqual(true);
             stepper.activeStep = 2;
             stepper.dataBind();
-            expect((liElementArray[1].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-check')).toEqual(true);
-            expect((liElementArray[2].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-info')).toEqual(true);
+            expect((liElementArray[1].querySelector('.e-indicator') as HTMLElement).classList.contains('e-check')).toEqual(true);
+            expect((liElementArray[2].querySelector('.e-indicator') as HTMLElement).classList.contains('e-circle-info')).toEqual(true);
             stepper.activeStep = 3;
             stepper.dataBind();
-            expect((liElementArray[2].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-info')).toEqual(true);
+            expect((liElementArray[2].querySelector('.e-indicator') as HTMLElement).classList.contains('e-circle-info')).toEqual(true);
         });
 
         it('stepper with label only', () => {
@@ -616,7 +656,7 @@ describe('Stepper', () => {
             stepper.enableRtl = true;
             stepper.dataBind();
             expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(0);
-            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-content').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(0);
         });
 
@@ -633,6 +673,8 @@ describe('Stepper', () => {
             const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
             expect((liElementArray[1] as HTMLElement).classList.contains('e-step-valid')).toEqual(true);
             expect((liElementArray[2] as HTMLElement).classList.contains('e-step-error')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-circle-check').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(1);
             stepper.activeStep = 1;
             stepper.dataBind();
             expect((liElementArray[1].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-check')).toEqual(true);
@@ -659,6 +701,8 @@ describe('Stepper', () => {
             const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
             expect((liElementArray[1] as HTMLElement).classList.contains('e-step-valid')).toEqual(true);
             expect((liElementArray[2] as HTMLElement).classList.contains('e-step-error')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-circle-check').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(1);
             stepper.activeStep = 1;
             stepper.dataBind();
             expect((liElementArray[1].querySelector('.e-step-validation-icon') as HTMLElement).classList.contains('e-circle-check')).toEqual(true);
@@ -708,6 +752,8 @@ describe('Stepper', () => {
             expect((liElementArray[1] as HTMLElement).classList.contains('e-step-valid')).toEqual(true);
             expect((liElementArray[2] as HTMLElement).classList.contains('e-step-error')).toEqual(true);
             expect(stepperElement.querySelectorAll('.e-step-label-optional').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-check').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-circle-info').length).toBe(1);
             stepper.activeStep = 1;
             stepper.dataBind();
             expect((liElementArray[1].querySelector('.e-indicator') as HTMLElement).classList.contains('e-folder')).toEqual(false);
@@ -836,11 +882,11 @@ describe('Stepper', () => {
 
         it('stepper text with default label position', () => {
             const customData: StepModel[] = [
-                {text: 'Step 1', label: 'Purchase'},
-                {text: 'Step 2', label: 'Location'},
-                {text: 'Step 3', label: 'Payment', optional: true},
-                {text: 'Step 4', label: 'Preview'},
-                {text: 'Step 5', label: 'Success'}
+                {text: 'A', label: 'Purchase'},
+                {text: 'B', label: 'Location'},
+                {text: 'C', label: 'Payment', optional: true},
+                {text: 'D', label: 'Preview'},
+                {text: 'E', label: 'Success'}
             ];
             stepper = new Stepper({ steps: customData });
             stepper.appendTo('#stepper');
@@ -848,16 +894,96 @@ describe('Stepper', () => {
             expect(stepperElement.querySelectorAll('.e-step-label-optional').length).toBe(1);
             expect(stepperElement.classList.contains('.e-stepper') != null).toEqual(true);
             expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
             expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(5);
             expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-after').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-label-before').length).toBe(0);
-            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
             expect(stepperElement.querySelectorAll('.e-step-completed').length).toBe(0);
-            stepperElement.style.width = '500px';
+        });
+
+        it('stepper text with top label position', () => {
+            const customData: StepModel[] = [
+                {text: 'A', label: 'Purchase'},
+                {text: 'B', label: 'Location'},
+                {text: 'C', label: 'Payment', optional: true},
+                {text: 'D', label: 'Preview'},
+                {text: 'E', label: 'Success'}
+            ];
+            stepper = new Stepper({ steps: customData, labelPosition: 'top' });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-stepper')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-label-optional').length).toBe(1);
+            expect(stepperElement.classList.contains('.e-stepper') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(5);
+            expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-before').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-label-after').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-step-completed').length).toBe(0);
+        });
+
+        it('stepper text with start label position', () => {
+            const customData: StepModel[] = [
+                {text: 'A', label: 'Purchase'},
+                {text: 'B', label: 'Location'},
+                {text: 'C', label: 'Payment', optional: true},
+                {text: 'D', label: 'Preview'},
+                {text: 'E', label: 'Success'}
+            ];
+            stepper = new Stepper({ steps: customData, labelPosition: 'start' });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-stepper')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-label-optional').length).toBe(1);
+            expect(stepperElement.classList.contains('.e-stepper') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-label-start') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-before').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-label-after').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-step-completed').length).toBe(0);
+        });
+
+        it('stepper text with end label position', () => {
+            const customData: StepModel[] = [
+                {text: 'A', label: 'Purchase'},
+                {text: 'B', label: 'Location'},
+                {text: 'C', label: 'Payment', optional: true},
+                {text: 'D', label: 'Preview'},
+                {text: 'E', label: 'Success'}
+            ];
+            stepper = new Stepper({ steps: customData, labelPosition: 'end' });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-stepper')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-label-optional').length).toBe(1);
+            expect(stepperElement.classList.contains('.e-stepper') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-label-end') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-before').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-label-after').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-step-completed').length).toBe(0);
         });
 
         it('stepper icon, text with default label position', () => {
@@ -978,7 +1104,7 @@ describe('Stepper', () => {
             expect(stepperElement.classList.contains('.e-steps-vertical') != null).toEqual(true);
             expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
             expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
-            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-content').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(0);
             expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
@@ -1062,7 +1188,7 @@ describe('Stepper', () => {
             expect(stepperElement.querySelectorAll('.e-step-completed').length).toBe(0);
         });
 
-        it('stepper text with default label position', () => {
+        it('stepper text with default label position in vertical orientation', () => {
             const customData: StepModel[] = [
                 {text: 'Step 1', label: 'Purchase'},
                 {text: 'Step 2', label: 'Location'},
@@ -1077,17 +1203,17 @@ describe('Stepper', () => {
             expect(stepperElement.classList.contains('.e-stepper') != null).toEqual(true);
             expect(stepperElement.classList.contains('.e-steps-vertical') != null).toEqual(true);
             expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
-            expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(5);
-            expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-bottom').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-bottom').length).toBe(0);
             expect(stepperElement.querySelectorAll('.e-label-before').length).toBe(0);
-            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
             expect(stepperElement.querySelectorAll('.e-step-completed').length).toBe(0);
         });
 
-        it('stepper text with before label position', () => {
+        it('stepper text with before label position in vertical orientation', () => {
             const customData: StepModel[] = [
                 {text: 'Step 1', label: 'Purchase'},
                 {text: 'Step 2', label: 'Location'},
@@ -1106,6 +1232,58 @@ describe('Stepper', () => {
             expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-after').length).toBe(0);
             expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-before').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-step-completed').length).toBe(0);
+        });
+
+        it('stepper text with top label position in vertical orientation', () => {
+            const customData: StepModel[] = [
+                {text: 'A', label: 'Purchase'},
+                {text: 'B', label: 'Location'},
+                {text: 'C', label: 'Payment', optional: true},
+                {text: 'D', label: 'Preview'},
+                {text: 'E', label: 'Success'}
+            ];
+            stepper = new Stepper({ steps: customData, labelPosition: 'top', orientation: 'vertical' });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-stepper')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-label-optional').length).toBe(1);
+            expect(stepperElement.classList.contains('.e-stepper') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-label-top') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
+            expect(stepperElement.querySelectorAll('.e-step-completed').length).toBe(0);
+        });
+
+        it('stepper text with end label position', () => {
+            const customData: StepModel[] = [
+                {text: 'A', label: 'Purchase'},
+                {text: 'B', label: 'Location'},
+                {text: 'C', label: 'Payment', optional: true},
+                {text: 'D', label: 'Preview'},
+                {text: 'E', label: 'Success'}
+            ];
+            stepper = new Stepper({ steps: customData, labelPosition: 'end', orientation: 'vertical' });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-stepper')).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-label-optional').length).toBe(1);
+            expect(stepperElement.classList.contains('.e-stepper') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.classList.contains('.e-label-end') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(5);
+            expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-after').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-label-start').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-indicator').length).toBe(5);
             expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
@@ -2323,4 +2501,158 @@ describe('Stepper', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });
     });
+});
+
+describe("Null or undefined value testing", () => {
+    beforeAll(() => {
+        ele = createElement('div', { id: 'stepper' });
+        document.body.appendChild(ele);
+    });
+    beforeEach((): void => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
+    });
+    afterAll(() => {
+        document.body.innerHTML = "";
+    });
+    it("activeStep", () => {
+        stepperObj = new Stepper({ activeStep: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.activeStep).toBe(-1);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ activeStep: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.activeStep).toBe(-1);
+        stepperObj.destroy();
+    });
+    it('linear', () => {
+        stepperObj = new Stepper({ linear: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.linear).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ linear: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.linear).toBe(false);
+        stepperObj.destroy();
+    })
+    it('showTooltip', () => {
+        stepperObj = new Stepper({ showTooltip: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.showTooltip).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ showTooltip: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.showTooltip).toBe(false);
+        stepperObj.destroy();
+    })
+    it('template', () => {
+        stepperObj = new Stepper({ template: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.template).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ template: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.template).toBe('');
+        stepperObj.destroy();
+    })
+    it('tooltipTemplate', () => {
+        stepperObj = new Stepper({ tooltipTemplate: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.tooltipTemplate).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ tooltipTemplate: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.tooltipTemplate).toBe('');
+        stepperObj.destroy();
+    })
+    it('labelPosition', () => {
+        stepperObj = new Stepper({ labelPosition: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.labelPosition).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ labelPosition: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.labelPosition).toBe(StepLabelPosition.Bottom);
+        stepperObj.destroy();
+    })
+    it('stepType', () => {
+        stepperObj = new Stepper({ stepType: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.stepType).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ stepType: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.stepType).toBe(StepType.Default);
+        stepperObj.destroy();
+    })
+    it('cssClass', () => {
+        stepperObj = new Stepper({ cssClass: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.cssClass).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ cssClass: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.cssClass).toBe('');
+        stepperObj.destroy();
+    })
+    it('enablePersistence', () => {
+        stepperObj = new Stepper({ enablePersistence: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.enablePersistence).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ enablePersistence: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.enablePersistence).toBe(false);
+        stepperObj.destroy();
+    })
+    it('enableRtl', () => {
+        stepperObj = new Stepper({ enableRtl: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.enableRtl).toBe(false);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ enableRtl: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.enableRtl).toBe(false);
+        stepperObj.destroy();
+    })
+    it('locale', () => {
+        stepperObj = new Stepper({ locale: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.locale).toBe('en-US');
+        stepperObj.destroy();
+        stepperObj = new Stepper({ locale: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.locale).toBe('en-US');
+        stepperObj.destroy();
+    })
+    it('orientation', () => {
+        stepperObj = new Stepper({ orientation: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.orientation).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ orientation: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.orientation).toBe(StepperOrientation.Horizontal);
+        stepperObj.destroy();
+    })
+    it('readOnly', () => {
+        stepperObj = new Stepper({ readOnly: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.readOnly).toBe(null);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ readOnly: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.readOnly).toBe(false);
+        stepperObj.destroy();
+    })
+    it('steps', () => {
+        stepperObj = new Stepper({ steps: null });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.steps).toEqual([]);
+        stepperObj.destroy();
+        stepperObj = new Stepper({ steps: undefined });
+        stepperObj.appendTo('#stepper');
+        expect(stepperObj.steps).toEqual([]);
+        stepperObj.destroy();
+    })
 });

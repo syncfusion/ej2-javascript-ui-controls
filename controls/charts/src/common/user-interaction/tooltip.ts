@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
@@ -124,7 +123,7 @@ export class BaseTooltip extends ChartData {
 
     public removeHighlight(): void {
         let item: PointData | AccPointData | Point3D;
-        let series: Series;
+        // let series: Series;
         for (let i: number = 0, len: number = this.previousPoints.length; i < len; i++) {
             item = this.previousPoints[i as number];
             if (item.series.isRectSeries) {
@@ -133,7 +132,7 @@ export class BaseTooltip extends ChartData {
                 }
                 continue;
             }
-            series = item.series as Series;
+            // series = item.series as Series;
         }
     }
 
@@ -164,7 +163,6 @@ export class BaseTooltip extends ChartData {
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
     public createTooltip(
         chart: Chart | AccumulationChart | Chart3D, isFirst: boolean, location: ChartLocation, clipLocation: ChartLocation,
         point: Points | AccPoints | Chart3DPoint, shapes: ChartShape[], offset: number, bounds: Rect,
@@ -195,14 +193,15 @@ export class BaseTooltip extends ChartData {
                     clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                     areaBounds: bounds,
                     palette: this.findPalette(),
-                    template: customTemplate || this.template as any,
+                    template: customTemplate || this.template as string | Function,
                     data: templatePoint,
                     theme: chart.theme,
                     offset: offset,
                     textStyle: chart.tooltip.textStyle,
                     isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
                     inverted: this.chart.requireInvertedAxis && series.isRectSeries,
-                    arrowPadding: this.text.length > 1 || this.chart.stockChart || (this.chart.tooltip.location.x !== null || this.chart.tooltip.location.y !== null ) ? 0 : 7,
+                    arrowPadding: this.text.length > 1 || this.chart.stockChart || (this.chart.tooltip.location.x !== null
+                        || this.chart.tooltip.location.y !== null ) ? 0 : 7,
                     availableSize: chart.availableSize,
                     duration: this.chart.tooltip.duration,
                     isCanvas: this.chart.enableCanvas,
@@ -223,7 +222,7 @@ export class BaseTooltip extends ChartData {
                             module.fadeOut(<PointData[]>module.previousPoints);
                         }
                     }
-                })
+                });
             this.svgTooltip.appendTo(this.getElement(this.element.id + '_tooltip'));
         } else {
             if (this.svgTooltip) {
@@ -234,18 +233,18 @@ export class BaseTooltip extends ChartData {
                 this.svgTooltip.palette = this.findPalette();
                 this.svgTooltip.shapes = shapes;
                 this.svgTooltip.data = templatePoint;
-                this.svgTooltip.template = this.template as any;
+                this.svgTooltip.template = this.template as string | Function;
                 this.svgTooltip.controlName = 'Chart';
                 this.svgTooltip.crosshair = crosshairEnabled;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
                 this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
-                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart || (this.chart.tooltip.location.x !== null || this.chart.tooltip.location.y !== null) ? 0 : 7;
+                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart || (this.chart.tooltip.location.x !== null
+                    || this.chart.tooltip.location.y !== null) ? 0 : 7;
                 this.svgTooltip.allowHighlight = chart.getModuleName() === 'chart' && !series.marker.allowHighlight;
                 this.svgTooltip.dataBind();
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.chart as any).isReact) { (this.chart as any).renderReactTemplates(); }
     }
 
@@ -345,8 +344,8 @@ export class BaseTooltip extends ChartData {
 
     public removeTooltip(duration: number): void {
         const tooltipElement: HTMLElement =  this.getElement(this.element.id + '_tooltip');
-        const tooltipTemplate: HTMLElement = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
-        const isTemplateRendered: boolean = tooltipTemplate && tooltipTemplate.innerText !== '<div></div>';
+        // const tooltipTemplate: HTMLElement = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
+        // const isTemplateRendered: boolean = tooltipTemplate && tooltipTemplate.innerText !== '<div></div>';
         this.stopAnimation();
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = +setTimeout(

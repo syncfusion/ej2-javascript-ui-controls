@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * Defines the common behavior of funnel and pyramid series
  */
@@ -17,9 +14,12 @@ import { AccumulationBase } from './accumulation-base';
  */
 export class TriangularBase extends AccumulationBase {
     /**
-     * Initializes the properties of funnel/pyramid series
+     * Initializes the properties of funnel/pyramid series.
      *
      * @private
+     * @param {AccumulationChart} chart - The accumulation chart control.
+     * @param {AccumulationSeries} series - The series for which to initialize properties.
+     * @returns {void}
      */
     public initProperties(chart: AccumulationChart, series: AccumulationSeries): void {
         const actualChartArea: Size = chart.initialClipRect;
@@ -41,9 +41,13 @@ export class TriangularBase extends AccumulationBase {
     }
 
     /**
-     * Initializes the size of the pyramid/funnel segments
+     * Initializes the size of the pyramid/funnel segments.
      *
      * @private
+     * @param {AccPoints[]} points - The points to initialize the segment size.
+     * @param {AccumulationSeries} series - The series for which to initialize properties.
+     * @param {boolean} reverse - Indicates whether the pyramid/funnel segments should be reversed.
+     * @returns {void}
      */
     protected initializeSizeRatio(points: AccPoints[], series: AccumulationSeries, reverse: boolean = false): void {
 
@@ -70,9 +74,13 @@ export class TriangularBase extends AccumulationBase {
     }
 
     /**
-     * Marks the label location from the set of points that forms a pyramid/funnel segment
+     * Marks the label location from the set of points that forms a pyramid/funnel segment.
      *
      * @private
+     * @param {AccumulationSeries} series - The series for which to mark label locations.
+     * @param {AccPoints} point - The point to mark the label location.
+     * @param {ChartLocation[]} points - The set of points that forms a pyramid/funnel segment.
+     * @returns {void}
      */
     protected setLabelLocation(series: AccumulationSeries, point: AccPoints, points: ChartLocation[]): void {
 
@@ -97,9 +105,11 @@ export class TriangularBase extends AccumulationBase {
     }
 
     /**
-     * Finds the path to connect the list of points
+     * Finds the path to connect the list of points.
      *
      * @private
+     * @param {ChartLocation[]} locations - The set of points that form a pyramid/funnel segment.
+     * @returns {string} - The path to connect the points.
      */
     protected findPath(locations: ChartLocation[]): string {
         let path: string = 'M';
@@ -113,9 +123,14 @@ export class TriangularBase extends AccumulationBase {
     }
 
     /**
-     * To calculate data-label bounds
+     * To calculate data-label bounds.
      *
      * @private
+     * @param {AccumulationSeries} series - The series for which to calculate data-label bounds.
+     * @param {boolean} visible - Specifies whether the data-labels are visible.
+     * @param {AccumulationLabelPosition} position - The position of the data-labels.
+     * @param {AccumulationChart} chart - The accumulation chart control.
+     * @returns {void}
      */
     public defaultLabelBound(series: AccumulationSeries, visible: boolean, position: AccumulationLabelPosition,
                              chart: AccumulationChart): void {

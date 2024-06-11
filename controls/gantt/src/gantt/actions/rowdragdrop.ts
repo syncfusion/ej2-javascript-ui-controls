@@ -132,13 +132,15 @@ export class RowDD {
         const ganttLeft: number = this.parent.element.getClientRects()[0].left;
         let left: number;
         let top: number;
-        if(this.parent.isAdaptive){
-           left = (args.originalEvent as any).event.touches[0].clientX - ganttLeft;
+        if (this.parent.isAdaptive) {
+            /* eslint-disable-next-line */
+            left = (args.originalEvent as any).event.touches[0].clientX - ganttLeft;
+            /* eslint-disable-next-line */
             top = (args.originalEvent as any).event.touches[0].clientY - ganttTop;
         }
-    else{
-        left = getValue('event', args.originalEvent).clientX - ganttLeft;
-        top = getValue('event', args.originalEvent).clientY - ganttTop;
+        else{
+            left = getValue('event', args.originalEvent).clientX - ganttLeft;
+            top = getValue('event', args.originalEvent).clientY - ganttTop;
         }
         dragElement.style.left = left + 20 + 'px';
         dragElement.style.top = top + 20 + 'px';
@@ -178,7 +180,7 @@ export class RowDD {
         if (!args.cancel) {
             args.requestType = 'beforeDrop';
             this.parent.trigger('actionBegin', args);
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.showMaskRow();
             } else {
                 this.parent.showSpinner();
@@ -201,21 +203,21 @@ export class RowDD {
                             this.parent.undoRedoModule['disableRedo']();
                             this.parent.undoRedoModule['createUndoCollection']();
                         }
-                        if (!args.target && this.parent.editModule && this.parent.editModule.taskbarEditModule && this.parent.editModule.taskbarEditModule.taskBarEditAction) {
+                        if (!args.target && this.parent.editModule && this.parent.editModule.taskbarEditModule &&
+                            this.parent.editModule.taskbarEditModule.taskBarEditAction) {
                             this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] = [];
                         }
                         else {
                             this.parent.undoRedoModule['createUndoCollection']();
                         }
-                        let rowItems: IGanttData[];
-                        let datas: IGanttData[] = [];
+                        const datas: IGanttData[] = [];
                         for (let i: number = 0; i < args.data.length; i++) {
                             datas.push(this.parent.flatData.filter((data: IGanttData) => {
-                                return args.data[i as number]['ganttProperties'].taskId == data.ganttProperties.taskId;
+                                return args.data[i as number]['ganttProperties'].taskId === data.ganttProperties.taskId;
                             })[0]);
                         }
-                        rowItems = extend([], [], datas, true) as IGanttData[];
-                        let records: Object = {};
+                        const rowItems: IGanttData[] = extend([], [], datas, true) as IGanttData[];
+                        const records: Object = {};
                         if (args['name']) {
                             records['action'] = 'RowDragAndDrop';
                         }
@@ -223,21 +225,21 @@ export class RowDD {
                             records['action'] = 'TaskbarDragAndDrop';
                         }
                         records['beforeDrop'] = [];
-                        let previousDetails: Object = {}
+                        const previousDetails: Object = {};
                         previousDetails['dropRecord'] = extend([], [], [args.dropRecord ? args.dropRecord : this.droppedRecord], true)[0];
                         previousDetails['data'] = extend([], [], args.data, true);
-                        if (args.dropPosition == 'middleSegment') {
+                        if (args.dropPosition === 'middleSegment') {
                             previousDetails['dropPosition'] = 'child';
                         }
-                        else if (args.dropPosition == 'topSegment') {
+                        else if (args.dropPosition === 'topSegment') {
                             previousDetails['dropPosition'] = 'above';
                         }
-                        else if (args.dropPosition == 'bottomSegment') {
+                        else if (args.dropPosition === 'bottomSegment') {
                             previousDetails['dropPosition'] = 'below';
                         }
                         records['afterDrop'] = previousDetails;
                         this.parent.undoRedoModule['findPosition'](rowItems, records, 'beforeDrop');
-                        (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = records;
+                        (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as object) = records;
                     }
                     if (this.parent.toolbarModule) {
                         this.parent.toolbarModule.enableItems([this.parent.controlId + '_undo'], true);
@@ -321,11 +323,11 @@ export class RowDD {
                                 delete droppedRecord.taskData[this.parent.taskFields.segments];
                             }
                         }
-                        if (this.treeGridData.length != 0) {
+                        if (this.treeGridData.length !== 0) {
                             for (let i: number = 0; i < this.treeGridData.length; i++) {
                                 this.treeGridData[parseInt(i.toString(), 10)].index = i;
                                 if (!isNullOrUndefined(this.treeGridData[parseInt(i.toString(), 10)].parentItem)) {
-                                    let updatedParent: any = getValue('uniqueIDCollection.' + this.treeGridData[parseInt(i.toString(), 10)].parentUniqueID, this.parent.treeGrid);
+                                    const updatedParent: ITreeData = getValue('uniqueIDCollection.' + this.treeGridData[parseInt(i.toString(), 10)].parentUniqueID, this.parent.treeGrid);
                                     this.treeGridData[parseInt(i.toString(), 10)].parentItem.index = updatedParent.index;
                                 }
                             }
@@ -344,7 +346,7 @@ export class RowDD {
                         if (draggedRecord.index < droppedRecord.index) {
                             startIndex = draggedRecord.index;
                             for (let i: number = 0; i < ganttData.length; i++) {
-                                const currentData: IGanttData = this.parent.currentViewData.filter(function (e: IGanttData) {
+                                const currentData: IGanttData = this.parent.currentViewData.filter(function (e: IGanttData): boolean {
                                     return e[uniqueTaskID as string] === ganttData[i as number][uniqueTaskID as string];
                                 })[0];
                                 if (currentData && currentData.index > droppedRecord.index) {
@@ -355,7 +357,7 @@ export class RowDD {
                         } else {
                             startIndex = droppedRecord.index;
                             for (let i: number = 0; i < ganttData.length; i++) {
-                                const currentData: IGanttData = this.parent.currentViewData.filter(function (e: IGanttData) {
+                                const currentData: IGanttData = this.parent.currentViewData.filter(function (e: IGanttData): boolean {
                                     return e[uniqueTaskID as string] === ganttData[i as number][uniqueTaskID as string];
                                 })[0];
                                 if (currentData && currentData.index > draggedRecord.index) {
@@ -383,16 +385,20 @@ export class RowDD {
                         const len: number = droppedRecord.ganttProperties.predecessor.length;
                         for (let count: number = 0; count < len; count++) {
                             if (droppedRecord.ganttProperties.predecessor && droppedRecord.ganttProperties.predecessor[count as number]) {
-                                const fromRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].from);
-                                const toRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].to)
-                                const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
-                                if (droppedRecord.ganttProperties.predecessor && (!validPredecessor || !this.parent.allowParentDependency)) {
+                                const fromRecord: IGanttData = this.parent.getRecordByID(
+                                    droppedRecord.ganttProperties.predecessor[count as number].from);
+                                const toRecord: IGanttData = this.parent.getRecordByID(
+                                    droppedRecord.ganttProperties.predecessor[count as number].to);
+                                const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(
+                                    fromRecord, toRecord);
+                                if (droppedRecord.ganttProperties.predecessor && (!validPredecessor ||
+                                    !this.parent.allowParentDependency)) {
                                     this.parent.editModule.removePredecessorOnDelete(droppedRecord);
                                     droppedRecord.ganttProperties.predecessor.splice(0, 1);
                                     if (droppedRecord.ganttProperties.predecessorsName) {
-                                        let splittedName: string[] = (droppedRecord.ganttProperties.predecessorsName as string).split(',');
+                                        const splittedName: string[] = (droppedRecord.ganttProperties.predecessorsName as string).split(',');
                                         for (let i: number = 0; i < splittedName.length; i++) {
-                                            if (splittedName[i as number].indexOf(draggedRecord.ganttProperties.taskId + '') != -1) {
+                                            if (splittedName[i as number].indexOf(draggedRecord.ganttProperties.taskId + '') !== -1) {
                                                 splittedName.splice(i, 1);
                                             }
                                         }
@@ -419,7 +425,8 @@ export class RowDD {
                     if (this.dropPosition === 'middleSegment') {
                         parentUniqueID = this.droppedRecord.uniqueID;
                     } else {
-                        parentUniqueID = this.droppedRecord.parentItem ? this.droppedRecord.parentItem.uniqueID: this.droppedRecord.uniqueID;
+                        parentUniqueID = this.droppedRecord.parentItem ?
+                            this.droppedRecord.parentItem.uniqueID : this.droppedRecord.uniqueID;
                     }
                     const droppedParentItem: IGanttData = this.parent.getTaskByUniqueID(parentUniqueID);
                     const editedObj: Object = {};
@@ -466,19 +473,21 @@ export class RowDD {
                         validateRecords = this.parent.currentViewData.filter((data: IGanttData) => {
                             if ((data.ganttProperties.predecessor && data.ganttProperties.predecessor.length > 0)) {
                                 for (let i: number = 0; i < data.ganttProperties.predecessor.length; i++) {
-                                    return (parseInt(data.ganttProperties.predecessor[i as number].to) === parseInt(toParent.ganttProperties.taskId) ||
-                                        parseInt(data.ganttProperties.predecessor[i as number].from) === parseInt(toParent.ganttProperties.taskId));
+                                    return (parseInt(data.ganttProperties.predecessor[i as number].to, 10) ===
+                                    parseInt(toParent.ganttProperties.taskId, 10) ||
+                                        parseInt(data.ganttProperties.predecessor[i as number].from, 10) ===
+                                        parseInt(toParent.ganttProperties.taskId, 10));
                                 }
                             }
-                            return null
+                            return null;
                         });
                         let predName: string[] = [];
                         for (let i: number = 0; i < validateRecords.length; i++) {
                             predName = [];
                             if (validateRecords[i as number].ganttProperties.predecessor) {
                                 for (let k: number = 0; k < validateRecords[i as number].ganttProperties.predecessor.length; k++) {
-                                    if (parseInt(validateRecords[i as number].ganttProperties.taskId) !==
-                                        parseInt(validateRecords[i as number].ganttProperties.predecessor[k as number].from)) {
+                                    if (parseInt(validateRecords[i as number].ganttProperties.taskId, 10) !==
+                                        parseInt(validateRecords[i as number].ganttProperties.predecessor[k as number].from, 10)) {
                                         predName.push(validateRecords[i as number].ganttProperties.predecessor[k as number].from);
                                     }
                                     else {
@@ -487,11 +496,12 @@ export class RowDD {
                                 }
                             }
                             for (let j: number = 0; j < predName.length; j++) {
-                                let name: string = predName[j as number].replace(/\D/g, '');
-                                let toRec: IGanttData[] = this.parent.currentViewData.filter((data) => {
-                                    return parseInt(data.ganttProperties.taskId) == parseInt(name);
+                                const name: string = predName[j as number].replace(/\D/g, '');
+                                const toRec: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
+                                    return parseInt(data.ganttProperties.taskId, 10) === parseInt(name, 10);
                                 });
-                                isValidPredecessor = this.parent.connectorLineEditModule.validateParentPredecessor(validateRecords[i as number], toRec[0]);
+                                isValidPredecessor = this.parent.connectorLineEditModule.validateParentPredecessor(
+                                    validateRecords[i as number], toRec[0]);
                                 if (!isValidPredecessor) {
                                     this.parent.dataOperation['resetDependency'](validateRecords[i as number]);
                                     this.parent.dataOperation['resetDependency'](toRec[0]);
@@ -504,11 +514,16 @@ export class RowDD {
                 for (let j: number = 0; j < this.updateParentRecords.length; j++) {
                     this.parent.dataOperation.updateParentItems(this.updateParentRecords[j as number]);
                 }
-                if (this.parent.viewType == 'ProjectView' && this.parent.editModule && this.parent.editModule.taskbarEditModule && this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.predecessorModule && this.parent.undoRedoModule['currentAction']['action'] == 'TaskbarDragAndDrop' && this.parent.undoRedoModule['currentAction']['beforeDrop'][0].position !== 'child') {
-                    const dropRec: IGanttData = this.parent.flatData[this.parent.ids.indexOf(this.parent.undoRedoModule['currentAction']['afterDrop'].dropRecord.ganttProperties.taskId.toString())];
+                if (this.parent.viewType === 'ProjectView' && this.parent.editModule &&
+                this.parent.editModule.taskbarEditModule && this.parent.undoRedoModule &&
+                this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.predecessorModule &&
+                this.parent.undoRedoModule['currentAction']['action'] === 'TaskbarDragAndDrop' &&
+                this.parent.undoRedoModule['currentAction']['beforeDrop'][0].position !== 'child') {
+                    const dropRec: IGanttData = this.parent.flatData[this.parent.ids.indexOf(
+                        this.parent.undoRedoModule['currentAction']['afterDrop'].dropRecord.ganttProperties.taskId.toString())];
                     this.parent.editModule.taskbarEditModule.taskBarEditRecord = dropRec;
                     this.parent.editModule.taskbarEditModule.taskBarEditAction = 'ChildDrag';
-                    this.parent.predecessorModule.validatePredecessor(dropRec,[],'');
+                    this.parent.predecessorModule.validatePredecessor(dropRec, [], '');
                     this.parent.editModule.taskbarEditModule.taskBarEditAction = null;
                 }
                 this.updateParentRecords = [];
@@ -518,7 +533,7 @@ export class RowDD {
                 this.parent.editModule.refreshRecord(args, true);
             }
             if (!this.parent.undoRedoModule || (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'])) {
-                this.parent.previousFlatData = extend([],[],this.parent.flatData,true) as IGanttData[];
+                this.parent.previousFlatData = extend([], [], this.parent.flatData, true) as IGanttData[];
             }
         }
     }
@@ -537,8 +552,8 @@ export class RowDD {
                 if (this.parent.getTaskByUniqueID(this.parent.flatData[i as number].parentItem.uniqueID).ganttProperties.taskName !== 'Unassigned Task') {
                     this.removeRecords(this.parent.flatData[i as number]);
                 }
-                /* eslint-disable-next-line */
-                if (!isNullOrUndefined(this.parent.flatData[i].parentItem && this.updateParentRecords.indexOf(this.parent.flatData[i].parentItem) !== -1)) {
+                if (!isNullOrUndefined(this.parent.flatData[parseInt(i.toString(), 10)].parentItem &&
+                this.updateParentRecords.indexOf(this.parent.flatData[parseInt(i.toString(), 10)].parentItem) !== -1)) {
                     this.updateParentRecords.push(this.parent.flatData[i as number].parentItem);
                 }
             }
@@ -548,8 +563,8 @@ export class RowDD {
         const preParentRecord: IGanttData = this.parent.getTaskByUniqueID(this.previousParent);
         if (this.draggedRecord.ganttProperties.resourceInfo) {
             for (let count: number = 0; count < this.draggedRecord.ganttProperties.resourceInfo.length; count++) {
-                /* eslint-disable-next-line */
-                if (this.draggedRecord.ganttProperties.resourceInfo[count][this.parent.resourceFields.id] === preParentRecord.ganttProperties.taskId) {
+                if (this.draggedRecord.ganttProperties.resourceInfo[parseInt(count.toString(), 10)][this.parent.resourceFields.id] ===
+                preParentRecord.ganttProperties.taskId) {
                     this.draggedRecord.ganttProperties.resourceInfo.splice(count, 1);
                     break;
                 }
@@ -562,8 +577,8 @@ export class RowDD {
             if (this.parent.getTaskIds()[i as number] === 'T' + this.draggedRecord.ganttProperties.taskId) {
                 this.parent.editModule.updateGanttProperties(this.draggedRecord, this.parent.flatData[i as number]);
                 this.parent.dataOperation.updateTaskData(this.parent.flatData[i as number]);
-                /* eslint-disable-next-line */
-                if (!isNullOrUndefined(this.parent.flatData[i].parentItem && this.updateParentRecords.indexOf(this.parent.flatData[i].parentItem) !== -1)) {
+                if (!isNullOrUndefined(this.parent.flatData[parseInt(i.toString(), 10)].parentItem &&
+                this.updateParentRecords.indexOf(this.parent.flatData[parseInt(i.toString(), 10)].parentItem) !== -1)) {
                     this.updateParentRecords.push(this.parent.flatData[i as number].parentItem);
                 }
             }
@@ -585,7 +600,7 @@ export class RowDD {
         if (record.ganttProperties.resourceInfo && record.ganttProperties.resourceInfo.length > 1) {
             const sameIdTasks: IGanttData[] = this._getExistingTaskWithID(record);
             let currentTask: IGanttData;
-            if (sameIdTasks == null) {
+            if (sameIdTasks === null) {
                 return;
             }
             for (let i: number = 0; i < sameIdTasks.length; i++) {
@@ -618,7 +633,7 @@ export class RowDD {
         }
         if ((tempDataSource as IGanttData[]).length > 0 && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem)) {
             for (let i: number = 0; i < Object.keys(tempDataSource).length; i++) {
-                if (!isNullOrUndefined(droppedRecord.taskData[ganttFields.child]) && 
+                if (!isNullOrUndefined(droppedRecord.taskData[ganttFields.child]) &&
                     tempDataSource[i as number][ganttFields.child] === droppedRecord.taskData[ganttFields.child]) {
                     idx = i;
                 }
@@ -661,11 +676,13 @@ export class RowDD {
             }
 
         }
-        if (this.parent.viewType == 'ProjectView' && this.parent.editModule && this.parent.editModule.taskbarEditModule && this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.predecessorModule && this.parent.undoRedoModule['currentAction']['action'] == 'TaskbarDragAndDrop') {
+        if (this.parent.viewType === 'ProjectView' && this.parent.editModule && this.parent.editModule.taskbarEditModule &&
+        this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.predecessorModule &&
+        this.parent.undoRedoModule['currentAction']['action'] === 'TaskbarDragAndDrop') {
             const dragRec: IGanttData = this.parent.flatData[this.parent.ids.indexOf(this.parent.undoRedoModule['currentAction']['afterDrop'].data[0].ganttProperties.taskId.toString())];
             this.parent.editModule.taskbarEditModule.taskBarEditRecord = dragRec;
             this.parent.editModule.taskbarEditModule.taskBarEditAction = 'ChildDrag';
-            this.parent.predecessorModule.validatePredecessor(dragRec,[],'');
+            this.parent.predecessorModule.validatePredecessor(dragRec, [], '');
             this.parent.editModule.taskbarEditModule.taskBarEditAction = null;
         }
     }
@@ -722,14 +739,15 @@ export class RowDD {
             this.parent.setRecordValue('parentItem', createParentItem, draggedRecord);
             this.parent.setRecordValue('parentUniqueID', droppedRecord.uniqueID, draggedRecord);
             droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
-            if (!isNullOrUndefined(draggedRecord) && !gObj.taskFields.parentID && !isNullOrUndefined(droppedRecord.taskData[childItem as string])) {
+            if (!isNullOrUndefined(draggedRecord) && !gObj.taskFields.parentID &&
+            !isNullOrUndefined(droppedRecord.taskData[childItem as string])) {
                 droppedRecord.taskData[gObj.taskFields.child].splice(droppedRecord.childRecords.length, 0, draggedRecord.taskData);
             }
             if (!draggedRecord.hasChildRecords) {
                 draggedRecord.level = droppedRecord.level + 1;
             } else {
                 const level: number = 1;
-                draggedRecord.level = droppedRecord.level + 1; 
+                draggedRecord.level = droppedRecord.level + 1;
                 this.parent.setRecordValue('level' , this.draggedRecord.level , this.draggedRecord);
                 this.updateChildRecordLevel(draggedRecord, level);
             }
@@ -746,12 +764,12 @@ export class RowDD {
                 this.parent.dataSource as Object[];
         }
         let deletedRow: IGanttData;
-        if(this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
-            if(this.parent.viewType == 'ProjectView') {
-               deletedRow = this.parent.flatData[this.parent.ids.indexOf(this.draggedRecord.ganttProperties.taskId.toString())];
+        if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+            if (this.parent.viewType === 'ProjectView') {
+                deletedRow = this.parent.flatData[this.parent.ids.indexOf(this.draggedRecord.ganttProperties.taskId.toString())];
             }
             else {
-                if(this.draggedRecord.hasChildRecords) {
+                if (this.draggedRecord.hasChildRecords) {
                     deletedRow = this.parent.flatData['R' + this.parent.taskIds.indexOf(this.draggedRecord.ganttProperties.taskId)];
                 }
                 else {
@@ -792,7 +810,7 @@ export class RowDD {
             this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
             this.parent.setRecordValue('parentItem', this.droppedRecord.parentItem, this.draggedRecord);
             this.parent.setRecordValue('parentUniqueID', this.droppedRecord.parentUniqueID, this.draggedRecord);
-            this.parent.setRecordValue('level', this.droppedRecord.level, this.draggedRecord);                 
+            this.parent.setRecordValue('level', this.droppedRecord.level, this.draggedRecord);
             if (this.parent.viewType === 'ResourceView') {
                 const id: string = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
                 this.parent.getTaskIds().splice(recordIndex1, 0, id);
@@ -1008,12 +1026,12 @@ export class RowDD {
                     this.dropPosition = 'middleSegment';
                 }
                 let prevData: Object;
-                if(this.parent.undoRedoModule) {
-                    prevData = extend([],[],[this.parent.undoRedoModule['currentAction']],true)[0];
+                if (this.parent.undoRedoModule) {
+                    prevData = extend([], [], [this.parent.undoRedoModule['currentAction']], true)[0];
                 }
                 const data: IGanttData[] = [];
                 for (let i: number = 0; i < fromIndexes.length; i++) {
-                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && (prevData['action'] == 'RowDragAndDrop' || prevData['action'] == 'TaskbarDragAndDrop')) {
+                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && (prevData['action'] === 'RowDragAndDrop' || prevData['action'] === 'TaskbarDragAndDrop')) {
                         data[i as number] = prevData['beforeDrop'][i as number].data;
                     }
                     else {

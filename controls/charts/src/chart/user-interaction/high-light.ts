@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * Highlight src file
  */
@@ -32,6 +29,8 @@ export class Highlight extends Selection {
     }
     /**
      * Binding events for selection module.
+     *
+     * @returns {void}
      */
     private wireEvents(): void {
         if (this.chart.isDestroyed || (this.chart.stockChart && this.chart.stockChart.onPanning)) { return; }
@@ -40,13 +39,18 @@ export class Highlight extends Selection {
 
     /**
      * UnBinding events for selection module.
+     *
+     * @returns {void}
      */
     private unWireEvents(): void {
         if (this.chart.isDestroyed) { return; }
         this.chart.off(Browser.touchMoveEvent, this.mouseMove);
     }
     /**
-     * To find private variable values
+     * Declares private variables used within the chart.
+     *
+     * @param {Chart} chart - The chart instance.
+     * @returns {void}
      */
     private declarePrivateVariables(chart: Chart): void {
         this.styleId = chart.element.id + '_ej2_chart_highlight';
@@ -59,6 +63,7 @@ export class Highlight extends Selection {
     /**
      * Method to select the point and series.
      *
+     * @param {Chart} chart - The chart instance.
      * @returns {void}
      */
     public invokeHighlight(chart: Chart): void {
@@ -72,6 +77,7 @@ export class Highlight extends Selection {
      * Get module name.
      *
      * @private
+     * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {
         return 'Highlight';
@@ -84,6 +90,6 @@ export class Highlight extends Selection {
      */
     public destroy(): void {
         this.unWireEvents();
-        // Destroy method performed here
+        // Destroy method performed here.
     }
 }

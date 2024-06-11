@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
 import { ProgressBar } from '../progressbar';
 import { lineCapRadius, completeAngle } from '../model/constant';
 import { getPathArc, Pos, degreeToLocation } from '../utils/helper';
@@ -12,7 +9,17 @@ import { RangeColorModel } from '../model';
  */
 export class Segment {
 
-    /** To render the linear segment */
+    /**
+     * Creates a linear segment element for the progress bar.
+     *
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {string} id - The id of the segment element.
+     * @param {number} width - The width of the segment.
+     * @param {number} opacity - The opacity of the segment.
+     * @param {number} thickness - The thickness of the segment.
+     * @param {number} progressWidth - The width of the progress.
+     * @returns {Element} - The created linear segment element.
+     */
     public createLinearSegment(
         progress: ProgressBar, id: string, width: number, opacity: number, thickness: number, progressWidth: number
     ): Element {
@@ -66,7 +73,21 @@ export class Segment {
         return 'M' + ' ' + x + ' ' + y + ' ' + 'L' + (x + ((enableRtl) ? -width : width)) + ' ' + y;
     }
 
-    /** To render the circular segment */
+    /**
+     * Creates a circular segment element for the progress bar.
+     *
+     * @param {ProgressBar} progress - The progress bar control.
+     * @param {string} id - The id of the segment element.
+     * @param {number} x - The x-coordinate of the center of the circle.
+     * @param {number} y - The y-coordinate of the center of the circle.
+     * @param {number} r - The radius of the circle.
+     * @param {number} value - The value determining the angle of the segment.
+     * @param {number} opacity - The opacity of the segment.
+     * @param {number} thickness - The thickness of the segment.
+     * @param {number} totalAngle - The total angle covered by the progress.
+     * @param {number} progressWidth - The width of the progress.
+     * @returns {Element} - The created circular segment element.
+     */
     public createCircularSegment(
         progress: ProgressBar, id: string, x: number, y: number, r: number,
         value: number, opacity: number, thickness: number, totalAngle: number, progressWidth: number

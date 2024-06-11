@@ -1,5 +1,5 @@
-import { KeyboardEventArgs, removeClass, selectAll, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
-import { IRichTextEditor, IRenderer } from '../base/interface';
+import { KeyboardEventArgs, removeClass, selectAll, isNullOrUndefined as isNOU, EventHandler } from '@syncfusion/ej2-base';
+import { IRichTextEditor, IRenderer, ActionBeginEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { CLS_EXPAND_OPEN, CLS_TB_ITEM, CLS_ACTIVE, CLS_RTE_SOURCE_CODE_TXTAREA } from '../base/classes';
 import * as CONSTANT from '../../common/constant';
@@ -131,65 +131,52 @@ export class ViewSource {
     public sourceCode(args?: ClickEventArgs | IHtmlKeyboardEvent): void {
         this.parent.notify(events.hidePopup, {});
         this.parent.isBlur = false;
-        this.parent.trigger(events.actionBegin, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
-        const tbItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM, this.parent.element);
-        this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-        this.parent.notify(events.updateToolbarItem, {
-            targetItem: 'SourceCode', updateItem: 'Preview',
-            baseToolbar: this.parent.getBaseToolbarObject()
-        });
-        if (isNullOrUndefined(this.previewElement)) {
-            this.previewElement = this.getSourceCode() as HTMLElement;
-        }
-        this.parent.updateValueData();
-        if (this.parent.iframeSettings.enable) {
-            let rteContent: HTMLElement;
-            if (isNullOrUndefined(this.parent.element.querySelector('#' + this.parent.getID() + '_source-view'))) {
-                rteContent = this.parent.createElement('div', {
-                    className: 'e-source-content', id: this.parent.getID() + '_source-view'
+        this.parent.trigger(events.actionBegin, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args, cancel: false }, (actionBeginArgs: ActionBeginEventArgs) => {
+            if (!actionBeginArgs.cancel) {
+                const tbItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM, this.parent.element);
+                this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
+                const height: number = this.parent.inputElement.getBoundingClientRect().height;
+                this.parent.rootContainer.classList.add('e-source-code-enabled');
+                this.parent.notify(events.updateToolbarItem, {
+                    targetItem: 'SourceCode', updateItem: 'Preview',
+                    baseToolbar: this.parent.getBaseToolbarObject()
                 });
-            } else {
-                rteContent = this.parent.element.querySelector('#' + this.parent.getID() + '_source-view') as HTMLElement;
+                if (isNOU(this.previewElement)) {
+                    this.previewElement = this.getSourceCode() as HTMLElement;
+                }
+                this.parent.updateValueData();
+                let rteContent: HTMLElement;
+                if (isNOU(this.parent.element.querySelector('#' + this.parent.getID() + '_source-view'))) {
+                    rteContent = this.parent.createElement('div', {
+                        className: 'e-source-content', id: this.parent.getID() + '_source-view',
+                        attrs: { style: 'height:' + height + 'px'}
+                    });
+                } else {
+                    rteContent = this.parent.element.querySelector('#' + this.parent.getID() + '_source-view') as HTMLElement;
+                    rteContent.style.height = height + 'px';
+                }
+                rteContent.appendChild(this.previewElement);
+                this.parent.rootContainer.appendChild(rteContent);
+                (this.getPanel() as HTMLTextAreaElement).value = this.getTextAreaValue();
+                this.parent.isBlur = false;
+                this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
+                this.parent.enableToolbarItem('SourceCode');
+                if (this.parent.getToolbar()) {
+                    removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
+                }
+                removeClass(tbItems, [CLS_ACTIVE]);
+                this.wireEvent(this.previewElement);
+                this.unWireBaseKeyDown();
+                this.previewElement.focus();
+                this.parent.updateValue();
+                this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
+                this.parent.invokeChangeEvent();
+                if (!isNOU(this.parent.saveInterval) && this.parent.saveInterval > 0 && this.parent.autoSaveOnIdle) {
+                    this.codeViewTimeInterval = setInterval(() =>
+                    {this.parent.notify(events.updateValueOnIdle, {}); }, this.parent.saveInterval);
+                }
             }
-            rteContent.appendChild(this.previewElement);
-            this.parent.element.appendChild(rteContent);
-            rteContent.style.height = (this.contentModule.getPanel() as HTMLElement).style.height;
-            (this.getPanel() as HTMLTextAreaElement).value = this.getTextAreaValue();
-            (this.contentModule.getPanel() as HTMLElement).style.display = 'none';
-            rteContent.style.display = 'block';
-            (this.getPanel() as HTMLTextAreaElement).style.display = 'block';
-        } else {
-            const height: number = this.parent.inputElement.offsetHeight;
-            this.contentModule.getPanel().appendChild(this.previewElement);
-            (this.getPanel() as HTMLTextAreaElement).value = this.getTextAreaValue();
-            this.previewElement.style.height = height + 'px';
-            (this.contentModule.getEditPanel() as HTMLElement).style.display = 'none';
-            this.previewElement.style.display = 'block';
-        }
-        this.parent.isBlur = false;
-        this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
-        this.parent.enableToolbarItem('SourceCode');
-        if (this.parent.getToolbar()) {
-            removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
-        }
-        removeClass(tbItems, [CLS_ACTIVE]);
-        const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
-        this.parent.setContentHeight('SourceCode', isExpand);
-        this.wireEvent(this.previewElement);
-        this.unWireBaseKeyDown();
-        this.previewElement.focus();
-        this.parent.updateValue();
-        if (!isNullOrUndefined(this.parent.placeholder) && !this.parent.iframeSettings.enable) {
-            const placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
-            if (placeHolderWrapper) {
-                placeHolderWrapper.style.display = 'none';
-            }
-        }
-        this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
-        this.parent.invokeChangeEvent();
-        if (!isNullOrUndefined(this.parent.saveInterval) && this.parent.saveInterval > 0 && this.parent.autoSaveOnIdle) {
-            this.codeViewTimeInterval = setInterval(()=>{this.parent.notify(events.updateValueOnIdle,{})}, this.parent.saveInterval);
-        }
+        });
     }
 
     /**
@@ -202,56 +189,45 @@ export class ViewSource {
      */
     public updateSourceCode(args?: ClickEventArgs | KeyboardEventArgs): void {
         this.parent.isBlur = false;
-        this.parent.trigger(events.actionBegin, { requestType: 'Preview', targetItem: 'Preview', args: args });
-        const editHTML: HTMLTextAreaElement = this.getPanel() as HTMLTextAreaElement;
-        this.parent.notify(events.updateToolbarItem, {
-            targetItem: 'Preview', updateItem: 'SourceCode',
-            baseToolbar: this.parent.getBaseToolbarObject()
-        });
-        const serializeValue: string = this.parent.serializeValue(editHTML.value);
-        let value: string;
-        if (serializeValue === null || serializeValue === '') {
-            if (this.parent.enterKey === 'DIV') {
-                value = '<div><br/></div>';
-            } else if (this.parent.enterKey === 'BR') {
-                value = '<br/>';
-            } else {
-                value = '<p><br/></p>';
+        this.parent.trigger(events.actionBegin, { requestType: 'Preview', targetItem: 'Preview', args: args, cancel: false }, (actionBeginArgs: ActionBeginEventArgs) => {
+            if (!actionBeginArgs.cancel) {
+                this.parent.rootContainer.classList.remove('e-source-code-enabled');
+                const editHTML: HTMLTextAreaElement = this.getPanel() as HTMLTextAreaElement;
+                this.parent.notify(events.updateToolbarItem, {
+                    targetItem: 'Preview', updateItem: 'SourceCode',
+                    baseToolbar: this.parent.getBaseToolbarObject()
+                });
+                const serializeValue: string = this.parent.serializeValue(editHTML.value);
+                let value: string;
+                if (serializeValue === null || serializeValue === '') {
+                    if (this.parent.enterKey === 'DIV') {
+                        value = '<div><br/></div>';
+                    } else if (this.parent.enterKey === 'BR') {
+                        value = '<br/>';
+                    } else {
+                        value = '<p><br/></p>';
+                    }
+                } else {
+                    value = serializeValue;
+                }
+                this.contentModule.getEditPanel().innerHTML = value;
+                this.parent.isBlur = false;
+                this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
+                if (this.parent.getToolbar()) {
+                    removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
+                }
+                this.unWireEvent();
+                this.wireBaseKeyDown();
+                (this.contentModule.getEditPanel() as HTMLElement).focus();
+                this.parent.updateValue();
+                this.parent.trigger(events.actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });
+                this.parent.formatter.enableUndo(this.parent);
+                this.parent.addAudioVideoWrapper();
+                clearTimeout(this.codeViewTimeInterval);
+                this.parent.invokeChangeEvent();
+                this.parent.notify(events.tableclass, {});
             }
-        } else {
-            value = serializeValue;
-        }
-        if (this.parent.iframeSettings.enable) {
-            editHTML.parentElement.style.display = 'none';
-            editHTML.style.display = 'none';
-            (this.contentModule.getPanel() as HTMLElement).style.display = 'block';
-            this.contentModule.getEditPanel().innerHTML = value;
-        } else {
-            editHTML.style.display = 'none';
-            (this.contentModule.getEditPanel() as HTMLElement).style.display = 'block';
-            this.contentModule.getEditPanel().innerHTML = value;
-        }
-        this.parent.isBlur = false;
-        this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
-        if (this.parent.getToolbar()) {
-            removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
-        }
-        const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
-        this.parent.setContentHeight('Preview', isExpand);
-        this.unWireEvent();
-        this.wireBaseKeyDown();
-        (this.contentModule.getEditPanel() as HTMLElement).focus();
-        this.parent.updateValue();
-        if (!isNullOrUndefined(this.parent.placeholder) && (this.contentModule.getEditPanel() as HTMLElement).innerText.length === 0) {
-            const placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
-            placeHolderWrapper.style.display = 'block';
-        }
-        this.parent.trigger(events.actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });
-        this.parent.formatter.enableUndo(this.parent);
-        this.parent.addAudioVideoWrapper();
-        clearTimeout(this.codeViewTimeInterval);
-        this.parent.invokeChangeEvent();
-        this.parent.notify(events.tableclass, {});
+        });
     }
 
     private getTextAreaValue(): string {
@@ -268,23 +244,12 @@ export class ViewSource {
     /**
      * getPanel method
      *
-     * @returns {void}
+     * @returns {HTMLTextAreaElement} - Specifies the Souce codetext area element.
      * @hidden
      * @deprecated
      */
-    public getPanel(): HTMLTextAreaElement | Element {
+    public getPanel(): HTMLTextAreaElement {
         return this.parent.element && this.parent.element.querySelector('.e-rte-srctextarea');
-    }
-
-    /**
-     * getViewPanel method
-     *
-     * @returns {void}
-     * @hidden
-     * @deprecated
-     */
-    public getViewPanel(): HTMLTextAreaElement | Element {
-        return (this.parent.iframeSettings.enable && this.getPanel()) ? this.getPanel().parentElement : this.getPanel();
     }
 
     /**
@@ -295,7 +260,7 @@ export class ViewSource {
      * @deprecated
      */
     public destroy(): void {
-        if (isNullOrUndefined(this.parent)) { return; }
+        if (isNOU(this.parent)) { return; }
         this.removeEventListener();
     }
 

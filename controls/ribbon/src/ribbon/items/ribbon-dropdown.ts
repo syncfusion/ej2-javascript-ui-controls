@@ -10,7 +10,7 @@ import { DROPDOWN_ID, ITEM_VERTICAL_CENTER, OVERFLOW_ID, RIBBON_CONTROL, RIBBON_
  * Defines the items of Ribbon.
  */
 export class RibbonDropDown {
-    private parent: Ribbon
+    private parent: Ribbon;
 
     constructor(parent: Ribbon) {
         this.parent = parent;

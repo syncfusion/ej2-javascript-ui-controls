@@ -39,7 +39,6 @@ $btn-link-color: $primary !default;
 $btn-link-hover-color: darken($primary, 15%) !default;
 $btn-link-disabled-bgcolor: transparent !default;
 
-//endnormal
 //primary
 $btn-ripple-primary-bgcolor: transparent !default;
 $btn-primary-outline: $btn-bgcolor 0 solid !default;
@@ -60,7 +59,6 @@ $btn-primary-disabled-bgcolor: rgba($btn-primary-bgcolor, .65) !default;
 $btn-primary-disabled-color: $white !default;
 $btn-primary-disabled-border-color: transparent !default;
 
-//endprimary
 //outline
 $btn-outline-color: $gray-600 !default;
 $btn-outline-bgcolor: transparent !default;
@@ -83,7 +81,6 @@ $btn-outline-primary-color: $btn-primary-bgcolor !default;
 $btn-outline-primary-focus-bgcolor: $btn-primary-bgcolor !default;
 $btn-outline-primary-focus-color: $white !default;
 
-//endoutline
 //flat
 $btn-flat-color: $btn-color !default;
 $btn-flat-border: $btn-border !default;
@@ -110,7 +107,6 @@ $btn-ripple-flat-info-bgcolor: transparent !default;
 $btn-ripple-flat-warning-bgcolor: transparent !default;
 $btn-ripple-flat-danger-bgcolor: transparent !default;
 
-//endflat
 //success
 $btn-success-color: $white !default;
 $btn-success-bgcolor: $success !default;
@@ -129,7 +125,6 @@ $btn-success-focus-color: $white !default;
 $btn-ripple-success-bgcolor: transparent !default;
 $btn-success-active-color: $btn-success-color !default;
 
-//endsuccess
 //warning
 $btn-warning-bgcolor: $warning !default;
 $btn-warning-color: $gray-900 !default;
@@ -148,7 +143,6 @@ $btn-warning-disabled-color: $gray-900 !default;
 $btn-warning-disabled-border-color: transparent !default;
 $btn-ripple-warning-bgcolor: transparent !default;
 
-//endwarning
 //danger
 $btn-danger-color: $white !default;
 $btn-danger-bgcolor: $danger !default;
@@ -166,7 +160,6 @@ $btn-danger-disabled-border-color: transparent !default;
 $btn-danger-hover-color: $white !default;
 $btn-ripple-danger-bgcolor: transparent !default;
 
-//enddanger
 //info
 $btn-info-bgcolor: $info !default;
 $btn-info-color: $white !default;
@@ -184,7 +177,6 @@ $btn-info-active-color: $white !default;
 $btn-info-hover-color: $white !default;
 $btn-ripple-info-bgcolor: transparent !default;
 
-//endinfo
 //round
 $btn-round-focus-color: $white !default;
 $btn-round-active-color: $white !default;
@@ -195,7 +187,6 @@ $btn-round-hover-bgcolor:  $btn-hover-bgcolor !default;
 $btn-round-hover-border-color: $btn-hover-border-color !default;
 $btn-round-hover-color: $btn-hover-color !default;
 
-//endround
 //flatprimary
 $btn-flat-primary-hover-bgcolor: $btn-primary-hover-bgcolor !default;
 $btn-flat-primary-border-color: $btn-primary-border-color !default;
@@ -213,7 +204,6 @@ $btn-flat-primary-focus-color: $btn-primary-focus-color !default;
 $btn-flat-primary-active-color: $btn-primary-color !default;
 $btn-flat-primary-active-bgcolor: $btn-primary-active-bgcolor !default;
 
-//endflatprimary
 //flatsuccess
 $btn-flat-success-color: $btn-success-color !default;
 $btn-flat-success-hover-color: $btn-success-color !default;
@@ -230,7 +220,6 @@ $btn-flat-success-focus-border-color: $btn-success-focus-border-color !default;
 $btn-flat-success-disabled-border-color: $btn-success-disabled-border-color !default;
 $btn-flat-success-focus-bgcolor: $btn-success-hover-bgcolor !default;
 
-//endflatsuccess
 //flatinfo
 $btn-flat-info-bgcolor: $btn-info-bgcolor !default;
 $btn-flat-info-hover-bgcolor: $btn-info-hover-bgcolor !default;
@@ -247,7 +236,6 @@ $btn-flat-info-focus-color: $btn-info-color !default;
 $btn-flat-info-active-color: $btn-info-color !default;
 $btn-flat-info-active-bgcolor: $btn-info-active-bgcolor !default;
 
-//endflatinfo
 //flatwarning
 $btn-flat-warning-bgcolor: $btn-warning-bgcolor !default;
 $btn-flat-warning-hover-bgcolor: $btn-warning-hover-bgcolor !default;
@@ -264,7 +252,6 @@ $btn-flat-warning-focus-color: $btn-warning-color !default;
 $btn-flat-warning-active-color: $btn-warning-color !default;
 $btn-flat-warning-active-bgcolor: $btn-warning-active-bgcolor !default;
 
-//endflatwarning
 //flatdanger
 $btn-flat-danger-bgcolor: $btn-danger-bgcolor !default;
 $btn-flat-danger-hover-bgcolor: $btn-danger-hover-bgcolor !default;
@@ -281,7 +268,6 @@ $btn-flat-danger-active-color: $btn-danger-color !default;
 $btn-flat-danger-active-bgcolor: $btn-danger-active-bgcolor !default;
 $btn-flat-danger-disabled-color: rgba($btn-flat-danger-color, .65) !default;
 
-//endflatdanger
 //outlineprimary
 $btn-outline-primary-disabled-color: rgba($primary, .65) !default;
 $btn-outline-primary-disabled-border-color: rgba($primary, .65) !default;
@@ -290,28 +276,23 @@ $btn-outline-primary-hover-bgcolor: $btn-primary-bgcolor !default;
 $btn-outline-primary-focus-border-color: $btn-primary-focus-border-color !default;
 $btn-outline-primary-active-border-color: $primary !default;
 
-//endoutlineprimay
 //outlinesuccess
 $btn-outline-success-disabled-color: rgba($success, .65) !default;
 $btn-outline-success-disabled-border-color: rgba($btn-success-bgcolor, .65) !default;
 $btn-outline-success-hover-bgcolor: $btn-success-bgcolor !default;
 
-//endoutlinesuccess
 //outlineinfo
 $btn-outline-info-disabled-color: rgba($info, .65) !default;
 $btn-outline-info-disabled-border-color: rgba($btn-info-bgcolor, .65) !default;
 
-//endoutlineinfo
 //outlinewarning
 $btn-outline-warning-disabled-color: rgba($warning, .65) !default;
 $btn-outline-warning-disabled-border-color: rgba($btn-warning-bgcolor, .65) !default;
 
-//endoutlinewarning
 //outlinedanger
 $btn-outline-danger-disabled-color: rgba($danger, .65) !default;
 $btn-outline-danger-disabled-border-color: rgba($btn-danger-bgcolor, .65) !default;
 
-//endoutlinedanger
 //size
 $btn-font-weight: 400 !default;
 $btn-font-size: 14px !default;
@@ -368,5 +349,3 @@ $btn-flat-info-disabled-bgcolor: $btn-info-disabled-bgcolor !default;
 $btn-flat-warning-disabled-bgcolor: $btn-warning-disabled-bgcolor !default;
 $btn-flat-danger-disabled-bgcolor: $btn-danger-disabled-bgcolor !default;
 $btn-focus-box-shadow: none !default;
-
-//endsize

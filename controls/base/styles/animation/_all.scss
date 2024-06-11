@@ -1,6 +1,5 @@
 @include export-module('base-animation') {
 
-  /*! animation keyframes */
   @keyframes SlideLeftOut {
     from {
       transform: translate(0, 0);

@@ -1,7 +1,5 @@
 @import 'theme-mixin.scss';
 @include export-module('contextmenu-theme') {
-
-  /*! contextmenu theme */
   .e-contextmenu-wrapper,
   .e-contextmenu-container {
     @at-root {
@@ -16,6 +14,12 @@
 
         & .e-menu-item  {
           @include icon-color;
+          @if $skin-name == 'fluent2' {
+            & .e-menu-icon,
+            & .e-caret {
+              color: $icon-color;
+            }
+          }
 
           & .e-menu-url {
             color: $cmenu-color;
@@ -41,7 +45,6 @@
     }
 
     &:not(.e-menu-container) {
-
       & .e-menu-vscroll.e-vscroll {
         background-color: inherit;
         border: $cmenu-ul-border;

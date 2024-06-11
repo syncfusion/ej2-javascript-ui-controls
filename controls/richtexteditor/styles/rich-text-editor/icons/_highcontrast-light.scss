@@ -4,9 +4,14 @@
 
   /*! richtexteditor icons */
 
+  .e-toolbar-wrapper,
+  .e-toolbar-container,
   .e-rte-toolbar,
   .e-rte-dropdown-popup {
 
+    .e-blockquote::before {
+      content: '\e9c7';
+    }
     .e-alignments::before {
       content: '\e33a';
     }

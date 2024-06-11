@@ -1,5 +1,4 @@
 @include export-module('documenteditor-paragraph-dialog') {
-  // Bigger
   .e-bigger {
     .e-de-para-dlg-container,
     .e-de-table-options-dlg {
@@ -15,12 +14,16 @@
     /* stylelint-enable */
 
     .e-de-para-dlg-heading {
-      color: $de-dlg-heading-main-header;
+      @if $skin-name=='fluent2' {
+        color: $de-sub-header-color;
+      }
+      @else {
+        color: $de-dlg-heading-main-header;
+      }
       display: block;
       font-size: $de-para-dlg-heading-font-size;
       font-weight: $de-par-dlg-hdr-weight;
       margin-bottom: $de-padding-half-bigger;
-      //margin-top: $de-para-dlg-hdr-margin-top;
       @if $skin-name == 'tailwind' {
         line-height: 22px;
       }
@@ -89,12 +92,16 @@
   }
 
   .e-de-para-dlg-heading {
-    color: $de-dlg-heading-main-header;
+    @if $skin-name=='fluent2' {
+      color: $de-sub-header-color;
+    }
+    @else {
+      color: $de-dlg-heading-main-header;
+    }
     display: block;
     font-size: $de-para-dlg-heading-font-size;
     font-weight: $de-par-dlg-hdr-weight;
     margin-bottom: $de-para-dlg-sub-title-bottom-margin;
-    //margin-top: $de-para-dlg-hdr-margin-top;
     opacity: $de-dlg-heading-opacity;
     @if $skin-name == 'tailwind' {
       line-height: 22px;
@@ -140,7 +147,6 @@
 
   .e-de-para-dlg-right-sub-container {
     top: $de-para-dlg-right-contaner-top;
-    //   bottom: $de-para-dlg-right-contaner-bottom;
   }
 
   .e-de-dlg-sub-header {
@@ -154,7 +160,6 @@
     }
     font-weight: $de-header-font-weight;
     margin-bottom: $de-para-dlg-sub-title-bottom-margin;
-    //margin-top: $de-para-dlg-sub-title-top-margin;
   }
 
   .e-de-rtl-btn-div {

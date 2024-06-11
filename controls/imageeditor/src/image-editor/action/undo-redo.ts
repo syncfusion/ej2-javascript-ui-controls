@@ -53,7 +53,7 @@ export class UndoRedo {
             this.refreshUrc(args.value['bool']);
             break;
         case 'updateCurrUrc':
-            this.updateCurrUrc(args.value['type']);
+            this.updateCurrUrc(args.value['type'], args.value['isCancel']);
             break;
         case 'call-undo':
             this.callUndo();
@@ -88,6 +88,13 @@ export class UndoRedo {
         case 'setPreventUR':
             this.isPreventing = args.value['bool'];
             break;
+        case 'updateUndoRedoStack':
+            if (args.value && args.value['isPenDraw']) {
+                this.updateUndoRedoStack(args.value['isPenDraw']);
+            } else {
+                this.updateUndoRedoStack();
+            }
+            break;
         case 'reset':
             this.reset();
             break;
@@ -119,9 +126,9 @@ export class UndoRedo {
         parent.notify('toolbar', { prop: 'enable-disable-btns' });
     }
 
-    private updateCurrUrc(type: string): void {
+    private updateCurrUrc(type: string, isCancel?: boolean): void {
         const parent: ImageEditor = this.parent;
-        if (parent.isResize || this.isPreventing) {return; }
+        if (parent.isResize || this.isPreventing || parent.noPushUndo) {return; }
         parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: false} });
         if (type === 'ok') {
             parent.notify('draw', { prop: 'setShapeTextInsert', onPropertyChange: false, value: {bool: false } });
@@ -171,8 +178,20 @@ export class UndoRedo {
             this.undoRedoStep = this.tempUndoRedoStep;
             this.tempUndoRedoColl = []; this.tempUndoRedoStep = 0;
         }
+        const lastObj: Transition = this.appliedUndoRedoColl[this.appliedUndoRedoColl.length - 1];
+        const lastPrevObj: Transition = this.appliedUndoRedoColl[this.appliedUndoRedoColl.length - 2];
         if (this.appliedUndoRedoColl.length > 16) {
             this.appliedUndoRedoColl.splice(0, 1);
+        } else if (!isCancel && lastObj && lastPrevObj) {
+            if ((((lastObj.operation === 'shapeTransform' && lastPrevObj.operation === 'shapeTransform') ||
+                    (lastObj.operation === 'shapeInsert' && lastPrevObj.operation === 'shapeInsert')) &&
+                    JSON.stringify(lastObj.currentObjColl) === JSON.stringify(lastPrevObj.currentObjColl)) ||
+                (lastObj.operation === 'freehand-draw' && lastPrevObj.operation === 'freehand-draw' &&
+                    JSON.stringify(lastObj.currentPointColl) === JSON.stringify(lastPrevObj.currentPointColl)) ||
+                (lastObj.operation === 'freehanddrawCustomized' && lastPrevObj.operation === 'freehanddrawCustomized' &&
+                    JSON.stringify(lastObj.currentPointColl) === JSON.stringify(lastPrevObj.currentPointColl))) {
+                this.appliedUndoRedoColl.splice(this.appliedUndoRedoColl.length - 1, 1);
+            }
         }
         this.undoRedoColl = [];
         this.undoRedoColl = extend([], this.appliedUndoRedoColl, [], true) as Transition[];
@@ -303,21 +322,21 @@ export class UndoRedo {
                 case 'sharpen':
                 case 'imageRotate':
                 case 'shapeInsert':
-                    this.shapeTransform(obj.previousObjColl);
+                    this.shapeTransform(obj.previousObjColl, obj.previousPointColl);
                     break;
                 case 'freehanddraw':
                 case 'freehand-draw':
                     this.updateFreehandDraw(obj.previousPointColl, obj.previousSelPointColl);
                     break;
                 case 'freehanddrawCustomized':
-                    this.updateFreehandDrawCustomized(obj.previousPointColl);
+                    this.updateFreehandDrawCustomized(obj.previousObjColl, obj.previousPointColl);
                     break;
                 case 'deleteFreehandDrawing':
                 case 'deleteObj':
                     this.updateDelete(obj.operation, obj.previousObjColl, obj.previousPointColl, obj.previousSelPointColl);
                     break;
                 case 'textAreaCustomization':
-                    this.shapeTransform(obj.previousObjColl);
+                    this.shapeTransform(obj.previousObjColl, obj.previousPointColl);
                     this.updateTextAreaCustomization(activeObj, obj.previousObjColl);
                     break;
                 case 'text':
@@ -429,21 +448,21 @@ export class UndoRedo {
                 case 'sharpen':
                 case 'imageRotate':
                 case 'shapeInsert':
-                    this.shapeTransform(obj.currentObjColl);
+                    this.shapeTransform(obj.currentObjColl, obj.currentPointColl);
                     break;
                 case 'freehanddraw':
                 case 'freehand-draw':
                     this.updateFreehandDraw(obj.currentPointColl, obj.currentSelPointColl);
                     break;
                 case 'freehanddrawCustomized':
-                    this.updateFreehandDrawCustomized(obj.currentPointColl);
+                    this.updateFreehandDrawCustomized(obj.currentObjColl, obj.currentPointColl);
                     break;
                 case 'deleteFreehandDrawing':
                 case 'deleteObj':
                     this.updateDelete(obj.operation, obj.currentObjColl, obj.currentPointColl, obj.currentSelPointColl);
                     break;
                 case 'textAreaCustomization':
-                    this.shapeTransform(obj.currentObjColl);
+                    this.shapeTransform(obj.currentObjColl, obj.currentPointColl);
                     this.updateTextAreaCustomization(activeObj, obj.currentObjColl);
                     break;
                 case 'text':
@@ -474,8 +493,8 @@ export class UndoRedo {
                         value: {obj: {selPointColl: extend([], obj.currentSelPointColl, [], true) as Point[] } }});
                     parent.transform.straighten = 0;
                     this.lowerContext.filter = 'none';
-                    parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-                    parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+                    parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                        value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
                     this.lowerContext.filter = obj.currentObj.filter;
                     parent.prevStraightenedDegree = parent.transform.straighten;
                     parent.activeObj = activeObj;
@@ -512,7 +531,7 @@ export class UndoRedo {
 
     private imageFlip(type: string, objColl: SelectionPoint[]): void {
         const parent: ImageEditor = this.parent;
-        this.shapeTransform(objColl);
+        this.shapeTransform(objColl, null);
         parent.activeObj = extend({}, parent.objColl[parent.objColl.length - 1], {}, true) as SelectionPoint;
         const { shape, isHorImageFlip, isVerImageFlip } = parent.activeObj;
         parent.objColl.pop();
@@ -548,10 +567,15 @@ export class UndoRedo {
         }
     }
 
-    private shapeTransform(objColl: SelectionPoint[]): void {
+    private shapeTransform(objColl: SelectionPoint[], pointColl: Point[]): void {
         const parent: ImageEditor = this.parent;
         parent.objColl = extend([], objColl, [], true) as SelectionPoint[];
-        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
+        if (pointColl) {
+            parent.pointColl = extend([], pointColl, [], true) as Point[];
+            parent.freehandCounter = parent.pointColl.length;
+        }
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         parent.isUndoRedo = true; parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
@@ -564,16 +588,19 @@ export class UndoRedo {
         parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false,
             value: {obj: {selPointColl: selPointColl }}});
         parent.freehandCounter = parent.pointColl.length;
-        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         parent.isUndoRedo = true; parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
     }
 
-    private updateFreehandDrawCustomized(pointColl: Point[]): void {
+    private updateFreehandDrawCustomized(objColl: SelectionPoint[], pointColl: Point[]): void {
         const parent: ImageEditor = this.parent;
+        parent.objColl = extend([], objColl, [], true) as SelectionPoint[];
         parent.pointColl = pointColl;
-        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         parent.isUndoRedo = true; parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
@@ -586,10 +613,12 @@ export class UndoRedo {
             parent.freehandCounter = parent.pointColl.length;
             parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false,
                 value: {obj: {selPointColl: selPointColl } }});
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         } else if (operation === 'deleteObj') {
             parent.objColl = objColl as SelectionPoint[];
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
+            parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         }
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
@@ -599,7 +628,8 @@ export class UndoRedo {
     private updateTextAreaCustomization(activeObj: SelectionPoint, objColl: SelectionPoint[]): void {
         const parent: ImageEditor = this.parent;
         parent.objColl = extend([], objColl, [], true) as SelectionPoint[];
-        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: true}});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         parent.isUndoRedo = true; parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
         for (let i: number = 0, len: number = (objColl as SelectionPoint[]).length; i < len; i++) {
@@ -643,7 +673,8 @@ export class UndoRedo {
         }
         if (allowActiveObj) {parent.activeObj = extend({}, this.tempActObj, {}, true) as SelectionPoint; }
         parent.objColl = extend([], objColl, [], true) as SelectionPoint[];
-        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: true}});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: true }});
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         parent.isUndoRedo = true; parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
@@ -656,7 +687,7 @@ export class UndoRedo {
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
         parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-        const textArea = parent.textArea;
+        const textArea: HTMLInputElement = parent.textArea;
         textArea.style.display = 'block';
         textArea.style.fontFamily = obj.textSettings.fontFamily;
         textArea.style.fontSize = obj.textSettings.fontSize + 'px';
@@ -691,8 +722,8 @@ export class UndoRedo {
             value: {obj: {selPointColl: extend([], obj.previousSelPointColl, [], true) as Point[] } }});
         parent.transform.straighten = 0;
         this.lowerContext.filter = 'none';
-        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+        parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+            value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: null }});
         this.lowerContext.filter = obj.previousObj.filter;
         parent.activeObj = activeObj;
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
@@ -793,7 +824,7 @@ export class UndoRedo {
     private updateUrObj(objColl: SelectionPoint[], operation?: string): void {
         const parent: ImageEditor = this.parent;
         if (parent.allowUndoRedo) {
-            if (parent.currObjType.isUndoAction) { this.refreshUrc(true); }
+            if (parent.currObjType.isUndoAction && !parent.isShapeDrawing) { this.refreshUrc(true); }
             if (isNullOrUndefined(parent.activeObj.imageRatio)) {
                 parent.notify('shape', { prop: 'updImgRatioForActObj', onPropertyChange: false});
             }
@@ -809,7 +840,7 @@ export class UndoRedo {
             parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
                 value: {obj: selPointCollObj }});
             obj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-            let oper: string = operation ? operation : 'shapeTransform';
+            const oper: string = operation ? operation : 'shapeTransform';
             this.undoRedoColl.push({operation: oper, previousObj: obj, currentObj: obj,
                 previousObjColl: objColl, currentObjColl: obj.objColl,
                 previousPointColl: obj.pointColl, currentPointColl: obj.pointColl,
@@ -837,7 +868,7 @@ export class UndoRedo {
             parent.notify('shape', { prop: 'updImgRatioForActObj', onPropertyChange: false});
         }
         parent.objColl.push(parent.activeObj);
-        let oper: string = operation ? operation : 'shapeTransform';
+        const oper: string = operation ? operation : 'shapeTransform';
         this.updateUrc(oper, prevObj, prevObj.objColl, prevObj.pointColl, prevObj.selPointColl, prevCropObj);
         parent.objColl.pop();
         parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: null}});
@@ -850,6 +881,7 @@ export class UndoRedo {
 
     private getZeroZoomObjPointValue(obj: SelectionPoint[], point: Point[]): Object {
         const parent: ImageEditor = this.parent;
+        this.updateObjColl();
         const object: Object = {currObj: {} as CurrentObject };
         parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
         const currentObj: CurrentObject = object['currObj'];
@@ -882,8 +914,8 @@ export class UndoRedo {
             const isCropTab: boolean = parent.isCropTab;
             if (parent.transform.zoomFactor !== 0) {
                 parent.isUndoRedo = true;
-                parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: { isPreventApply: true } });
-                parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: { isPreventApply: true } });
+                parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                    value: {ctx: this.lowerContext, shape: 'zoom', pen: 'zoom', isPreventApply: true }});
                 parent.notify('freehand-draw', { prop: 'updateFHDColl', onPropertyChange: false});
                 parent.isCropTab = true;
                 const zoomSettings: ZoomSettings = extend({}, parent.zoomSettings, null, true) as ZoomSettings;
@@ -920,9 +952,8 @@ export class UndoRedo {
                 this.lowerContext.filter = 'none';
                 parent.transform.straighten = 0;
                 this.applyImgTranform();
-                parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-                parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-                    value: {context: this.lowerContext, points: null} });
+                parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
+                    value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
                 parent.notify('freehand-draw', { prop: 'updateFHDCurPts', onPropertyChange: false});
                 this.lowerContext.filter = currentObj.filter;
                 if (parent.transform.degree !== 0) {
@@ -939,6 +970,21 @@ export class UndoRedo {
         return {obj: getZeroZoomObjColl, point: getZeroZoomPointColl };
     }
 
+    private updateObjColl(): void {
+        const parent: ImageEditor = this.parent;
+        for (let i: number = 0; i < parent.objColl.length; i++) {
+            const obj: SelectionPoint = parent.objColl[i as number];
+            if (obj.shape === 'line' || obj.shape === 'arrow') {
+                if (obj.activePoint.width < 0) {
+                    obj.activePoint.width = Math.abs(obj.activePoint.width);
+                }
+                if (obj.activePoint.height < 0) {
+                    obj.activePoint.height = Math.abs(obj.activePoint.height);
+                }
+            }
+        }
+    }
+
     private applyImgTranform(): void {
         const parent: ImageEditor = this.parent;
         const obj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
@@ -952,5 +998,41 @@ export class UndoRedo {
             }
         }
         parent.activeObj = obj;
+    }
+
+    private updateUndoRedoStack(isPenDraw?: boolean): void {
+        const parent: ImageEditor = this.parent;
+        if ((parent.activeObj.currIndex && parent.activeObj.activePoint.width !== 0 ||
+            parent.activeObj.activePoint.height !== 0 || (parent.activeObj.pointColl &&
+            parent.activeObj.pointColl.length > 0)) || isPenDraw) {
+            const isTextArea: boolean = parent.textArea.style.display === 'none' ? false : true;
+            const temp: boolean = parent.noPushUndo;
+            parent.noPushUndo = false; parent.isUndoRedoStack = true;
+            if (isPenDraw) {
+                const tempTogglePen: boolean = parent.togglePen;
+                const obj: Object = {freehandDrawSelectedId: null };
+                parent.notify('freehand-draw', { prop: 'getFreehandDrawSelectedId', onPropertyChange: false, value: {obj: obj }});
+                parent.okBtn();
+                parent.noPushUndo = temp;
+                if (obj['freehandDrawSelectedId']){
+                    parent.selectShape(obj['freehandDrawSelectedId']);
+                } else {
+                    parent.freeHandDraw(true);
+                }
+                parent.togglePen = tempTogglePen;
+            } else if (parent.activeObj.currIndex) {
+                const shapeId: string = parent.activeObj.currIndex;
+                parent.okBtn();
+                parent.noPushUndo = temp;
+                parent.selectShape(shapeId);
+                if (parent.drawingShape) {
+                    parent.notify('selection', { prop: 'setCurrentDrawingShape', onPropertyChange: false, value: {value: parent.drawingShape.toLowerCase() }});
+                }
+                if (isTextArea) {
+                    parent.enableTextEditing();
+                }
+            }
+            parent.isUndoRedoStack = false;
+        }
     }
 }

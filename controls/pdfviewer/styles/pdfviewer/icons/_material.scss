@@ -235,6 +235,14 @@
   .e-pv-bookmark-icon.e-menu-icon::before {
     content: '\ec0c';
   }
+  
+  .e-pv-save-icon.e-menu-icon::before {
+    content: '\e703';
+  }
+
+  .e-pv-save-as-icon.e-menu-icon::before {
+    content: '\e704';
+  }
 
   .e-pv-highlight-icon::before {
     content: '\ec15';

@@ -1193,7 +1193,7 @@ export interface UmlClassAttributeModel extends MethodArgumentsModel{
      *
      * @default new ShapeStyle()
      * @aspType object
-    */
+     */
     separatorStyle?: ShapeStyleModel;
 
 }
@@ -1271,7 +1271,7 @@ export interface UmlInterfaceModel extends UmlClassModel{
      *
      * @default new ShapeStyle()
      * @aspType object
-    */
+     */
     separatorStyle?: ShapeStyleModel;
 
 }
@@ -1306,11 +1306,11 @@ export interface UmlEnumerationMemberModel {
     isSeparator?: boolean;
 
     /**
-      * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
-      *
-      * @default new ShapeStyle()
-      * @aspType object
-    */
+     * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
+     *
+     * @default new ShapeStyle()
+     * @aspType object
+     */
     separatorStyle?: ShapeStyleModel;
 
     /**
@@ -2436,7 +2436,7 @@ export interface SelectorModel {
     selectedObjects?: (NodeModel | ConnectorModel)[];
 
     /**
-     * Specifies whether the selection state of the diagram element should be toggled based on a mouse click at runtime. 
+     * Specifies whether the selection state of the diagram element should be toggled based on a mouse click at runtime.
      * The default value is false.
      *
      * @default false

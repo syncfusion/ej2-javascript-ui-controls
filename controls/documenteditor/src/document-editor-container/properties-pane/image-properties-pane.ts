@@ -88,13 +88,13 @@ export class ImageProperties {
         const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.textContent = localObj.getConstant('Alternate Text');
         AltDiv.appendChild(label);
-        this.textArea = createElement('textarea', { id: this.elementId + '_textarea',className: 'e-de-ctnr-prop-label '}); 
+        this.textArea = createElement('textarea', { id: this.elementId + '_textarea', className: 'e-de-ctnr-prop-label '});
         AltDiv.appendChild(this.textArea);
-        let textareaObj = new TextBox({
-            floatLabelType: 'Never'   
+        const textareaObj: TextBox = new TextBox({
+            floatLabelType: 'Never'
         });
         textareaObj.appendTo(this.textArea);
-    };
+    }
     /* eslint-disable-next-line max-len */
     private createImagePropertiesDiv(id: string, outerDiv: HTMLElement, inputId: string, spanContent: string, tooltip: string): HTMLElement {
         const divElement: HTMLElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
@@ -124,17 +124,17 @@ export class ImageProperties {
             this.applyImageHeight(); this.isHeightApply = false;
         });
         this.textArea.addEventListener('blur', (): void => {
-            if (this.documentEditor.selectionModule.imageFormat.alternateText != (this.textArea as HTMLInputElement).value) {
-            this.applyImageAlternativeText();
+            if (this.documentEditor.selectionModule.imageFormat.alternateText !== (this.textArea as HTMLInputElement).value) {
+                this.applyImageAlternativeText();
             }
         });
     }
     private applyImageAlternativeText(): void{
-        let altText: string = SanitizeHtmlHelper.sanitize((this.textArea as HTMLInputElement).value);
-        if(!isNullOrUndefined(altText))
+        const altText: string = SanitizeHtmlHelper.sanitize((this.textArea as HTMLInputElement).value);
+        if (!isNullOrUndefined(altText))
         {
             this.documentEditor.selectionModule.imageFormat.applyImageAlternativeText(altText);
-        }    
+        }
     }
     private onImageWidth(e: KeyboardEventArgs): void {
         if (e.keyCode === 13) {
@@ -213,14 +213,14 @@ export class ImageProperties {
     public updateImageProperties(): void {
         this.widthNumericBox.value = this.documentEditor.selectionModule.imageFormat.width;
         this.heightNumericBox.value = this.documentEditor.selectionModule.imageFormat.height;
-        if(isNullOrUndefined(this.documentEditor.selectionModule.imageFormat.alternateText))
+        if (isNullOrUndefined(this.documentEditor.selectionModule.imageFormat.alternateText))
         {
-            (this.textArea as HTMLInputElement).value = "";  
+            (this.textArea as HTMLInputElement).value = '';
         }
         else
         {
-            (this.textArea as HTMLInputElement).value = this.documentEditor.selectionModule.imageFormat.alternateText;  
-        }  
+            (this.textArea as HTMLInputElement).value = this.documentEditor.selectionModule.imageFormat.alternateText;
+        }
     }
     public destroy(): void {
         this.container = undefined;
@@ -232,7 +232,7 @@ export class ImageProperties {
             this.heightNumericBox.destroy();
         }
         this.heightNumericBox = undefined;
-        if (this.aspectRatioBtn) {            
+        if (this.aspectRatioBtn) {
             this.aspectRatioBtn.destroy();
         }
         this.aspectRatioBtn = undefined;

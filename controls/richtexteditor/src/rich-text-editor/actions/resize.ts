@@ -32,7 +32,11 @@ export class Resize {
                 + ' ' + classes.CLS_RTE_RES_HANDLE + ' ' + enableRtlClass
         });
         this.parent.element.classList.add(classes.CLS_RTE_RES_CNT);
-        this.parent.element.appendChild(this.resizer);
+        this.parent.rootContainer.appendChild(this.resizer);
+        this.parent.rootContainer.classList.add('e-resize-enabled');
+        if (this.parent.iframeSettings.enable) {
+            this.parent.inputElement.classList.add('e-resize-enabled');
+        }
         this.touchStartEvent = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
         EventHandler.add(this.resizer, 'mousedown', this.resizeStart, this);
         EventHandler.add(this.resizer, this.touchStartEvent, this.resizeStart, this);
@@ -65,8 +69,8 @@ export class Resize {
             this.parent.element.style.width = (!this.parent.enableRtl) ? (<MouseEvent>e).clientX - boundRect.left + 'px' :
                 boundRect.right - (<MouseEvent>e).clientX + 'px';
             const toolBarEle: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
-            if (toolBarEle !== null) {
-                if (toolBarEle.classList.contains(classes.CLS_TB_FLOAT) && this.parent.toolbarSettings.enableFloating &&
+            if (!isNullOrUndefined(toolBarEle) && !isNullOrUndefined(toolBarEle.parentElement)) {
+                if (toolBarEle.parentElement.classList.contains(classes.CLS_TB_FLOAT) && this.parent.toolbarSettings.enableFloating &&
                 this.parent.getToolbar() && !this.parent.inlineMode.enable) {
                     const contentPanel: HTMLElement = this.parent.contentModule.getPanel() as HTMLElement;
                     const contentPanelWidth : number = contentPanel.getBoundingClientRect().width;
@@ -77,10 +81,6 @@ export class Resize {
             const eventType: MouseEvent | Touch = Browser.info.name !== 'msie' ? (<TouchEvent>e).touches[0] : (<MouseEvent>e);
             this.parent.element.style.height = eventType.clientY - boundRect.top + 'px';
             this.parent.element.style.width = (!this.parent.enableRtl) ? eventType.clientX - boundRect.left + 'px' : boundRect.right - eventType.clientX + 'px';
-        }
-        if (!this.parent.toolbarSettings.enable) {
-            const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
-            this.parent.setContentHeight('Resize', isExpand);
         }
         this.parent.refreshUI();
     }
@@ -131,9 +131,15 @@ export class Resize {
         }
         this.parent.off(events.initialEnd, this.renderResizable);
         this.parent.element.classList.remove(classes.CLS_RTE_RES_CNT);
-        EventHandler.remove(this.resizer, 'mousedown', this.resizeStart);
-        EventHandler.remove(this.resizer, this.touchStartEvent, this.resizeStart);
+        if (this.parent && this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-resize-enabled')) {
+            this.parent.rootContainer.classList.remove('e-resize-enabled');
+        }
+        if (this.parent.iframeSettings.enable && !isNullOrUndefined(this.parent.inputElement)) {
+            this.parent.inputElement.classList.remove('e-resize-enabled');
+        }
         if (this.resizer) {
+            EventHandler.remove(this.resizer, 'mousedown', this.resizeStart);
+            EventHandler.remove(this.resizer, this.touchStartEvent, this.resizeStart);
             detach(this.resizer);
         }
         this.parent.off(events.destroy, this.destroy);

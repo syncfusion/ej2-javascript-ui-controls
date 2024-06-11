@@ -208,7 +208,100 @@ describe('AppBar Testing', () => {
         it('test case for role', () => {
             const appbarElement: HTMLElement = document.getElementById('appbar');
             appbar = new AppBar({ }, appbarElement);
-            expect(appbar.element.getAttribute('role')).toEqual('header');
+            expect(appbar.element.getAttribute('role')).toEqual('banner');
+        });
+    });
+
+    describe('AppBar public property null or undefined testing', () => {
+        beforeEach((): void => {
+            const appbarElement: HTMLElement = document.createElement('div');
+            appbarElement.id = 'appbar';
+            document.body.appendChild(appbarElement);
+        });
+        afterEach(() => {
+            appbar.destroy();
+            appbar.element.remove();
+            appbar = null;
+        });
+        it('colorMode', () => {
+            const appbarElement: HTMLElement = document.getElementById('appbar');
+            appbar = new AppBar({ }, appbarElement);
+            appbar.colorMode = null;
+            appbar.dataBind();
+            expect(appbar.colorMode).toEqual(null);
+            appbar.colorMode = undefined;
+            appbar.dataBind();
+            expect(appbar.colorMode).toEqual(undefined);
+        });
+        it('cssClass', () => {
+            const appbarElement: HTMLElement = document.getElementById('appbar');
+            appbar = new AppBar({ }, appbarElement);
+            appbar.cssClass = null;
+            appbar.dataBind();
+            expect(appbar.cssClass).toEqual(null);
+            appbar.cssClass = undefined;
+            appbar.dataBind();
+            expect(appbar.cssClass).toEqual(undefined);
+        });
+        it('enablePersistence', () => {
+            const appbarElement: HTMLElement = document.getElementById('appbar');
+            appbar = new AppBar({ }, appbarElement);
+            appbar.enablePersistence = null;
+            appbar.dataBind();
+            expect(appbar.enablePersistence).toEqual(null);
+            appbar.enablePersistence = undefined;
+            appbar.dataBind();
+            expect(appbar.enablePersistence).toEqual(undefined);
+        });
+        it('enableRtl', () => {
+            const appbarElement: HTMLElement = document.getElementById('appbar');
+            appbar = new AppBar({ }, appbarElement);
+            appbar.enableRtl = null;
+            appbar.dataBind();
+            expect(appbar.enableRtl).toEqual(null);
+            appbar.enableRtl = undefined;
+            appbar.dataBind();
+            expect(appbar.enableRtl).toEqual(undefined);
+        });
+        it('htmlAttributes', () => {
+            const appbarElement: HTMLElement = document.getElementById('appbar');
+            appbar = new AppBar({ }, appbarElement);
+            appbar.htmlAttributes = null;
+            appbar.dataBind();
+            expect(appbar.htmlAttributes).toEqual(null);
+            appbar.htmlAttributes = undefined;
+            appbar.dataBind();
+            expect(appbar.htmlAttributes).toEqual(undefined);
+        });
+        it('isSticky', () => {
+            const appbarElement: HTMLElement = document.getElementById('appbar');
+            appbar = new AppBar({ }, appbarElement);
+            appbar.isSticky = null;
+            appbar.dataBind();
+            expect(appbar.isSticky).toEqual(null);
+            appbar.isSticky = undefined;
+            appbar.dataBind();
+            expect(appbar.isSticky).toEqual(undefined);
+        });
+        it('mode', () => {
+            const appbarElement: HTMLElement = document.getElementById('appbar');
+            appbar = new AppBar({ }, appbarElement);
+            appbar.mode = null;
+            appbar.dataBind();
+            expect(appbar.mode).toEqual(null);
+            appbar.mode = undefined;
+            appbar.dataBind();
+            expect(appbar.mode).toEqual(undefined);
+        });
+        it('position', () => {
+            const appbarElement: HTMLElement = document.getElementById('appbar');
+            appbar = new AppBar({ }, appbarElement);
+            appbar.position = null;
+            appbar.dataBind();
+            expect(appbar.position).toEqual(null);
+            appbar.position = undefined;
+            appbar.dataBind();
+            expect(appbar.position).toEqual(undefined);
         });
     });
 

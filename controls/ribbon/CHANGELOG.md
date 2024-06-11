@@ -2,22 +2,6 @@
 
 ## [Unreleased]
 
-## 25.2.7 (2024-06-04)
-
-### Ribbon
-
-#### Bug Fixes
-
-- `#I585010` - Now setting the ribbon ID dynamically using `htmlAttributes` breaks the UI with ribbon mode switching has been resolved.
-
-## 25.1.41 (2024-04-23)
-
-### Ribbon
-
-#### Bug Fixes
-
-- `#F575011` - Now the script issue raised while interacting a non-active Ribbon items using `updateItem` method has been resolved.
-
 ## 25.1.35 (2024-03-15)
 
 ### Ribbon

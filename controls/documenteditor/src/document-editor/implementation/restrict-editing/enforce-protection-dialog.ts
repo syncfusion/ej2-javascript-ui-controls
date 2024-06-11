@@ -32,7 +32,7 @@ export class EnforceProtectionDialog {
         //const id: string = this.viewer.owner.containerId + '_enforce_protection';
         this.target = createElement('div', { className: 'e-de-enforce' });
 
-        const passwordContainer: HTMLElement = createElement('div', {className:'e-de-container-row'});
+        const passwordContainer: HTMLElement = createElement('div', {className: 'e-de-container-row'});
         //const newPassWord: HTMLElement = createElement('div', { className: 'e-de-enforce-dlg-title', innerHTML: localValue.getConstant('Enter new password') });
         this.passwordTextBox = createElement('input', { attrs: { type: 'password', autofocus: 'true' }, className: 'e-input' }) as HTMLInputElement;
         // this.passwordTextBox.addEventListener('keyup', instance.onKeyUpOnDisplayBox);
@@ -44,8 +44,8 @@ export class EnforceProtectionDialog {
         //container.appendChild(confirmPassword);
         confirmPasswordcontainer.appendChild(this.confirmPasswordTextBox);
         this.target.appendChild(passwordContainer);
-        this.target.appendChild(confirmPasswordcontainer)
-        new TextBox ({ placeholder: localValue.getConstant('Enter new password'), floatLabelType: 'Always' , cssClass:'e-de-enforce-dlg-input' }, this.passwordTextBox);
+        this.target.appendChild(confirmPasswordcontainer);
+        new TextBox ({ placeholder: localValue.getConstant('Enter new password'), floatLabelType: 'Always' , cssClass: 'e-de-enforce-dlg-input' }, this.passwordTextBox);
         new TextBox({ placeholder: localValue.getConstant('Reenter new password to confirm'), floatLabelType: 'Always' }, this.confirmPasswordTextBox);
     }
     /**

@@ -176,14 +176,6 @@ export class CheckBoxFilterBase {
         });
     }
 
-    private foreignFilter(args: { filterCollection?: PredicateModel[] }, value: string): void {
-        const operator: string = this.options.isRemote ?
-            (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'contains' : 'equal');
-        const initalPredicate: Predicate =
-            new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.options.ignoreAccent);
-        this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
-    }
-
     private searchBoxClick(e: MouseEvent): void {
         const target: Element = e.target as Element;
         if (target.classList.contains('e-searchclear')) {
@@ -990,7 +982,7 @@ export class CheckBoxFilterBase {
 
     private getListHeight(element?: HTMLElement): number {
         const listDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-ftrchk', styles: 'visibility: hidden' });
-        listDiv.innerHTML = '<div class="e-checkbox-wrapper"><span class="e-label e-checkboxfiltertext">A</div></span>';
+        listDiv.innerHTML = '<div class="e-checkbox-wrapper"><span class="e-frame e-icons e-check"></span><span class="e-label e-checkboxfiltertext">A</div></span>';
         element.appendChild(listDiv);
         const rect: ClientRect = listDiv.getBoundingClientRect();
         element.removeChild(listDiv);
@@ -1429,7 +1421,7 @@ export class CheckBoxFilterBase {
     }
 
     private keyupHandler(e: KeyboardEventArgs): void {
-        if ((e.key === 'Tab' && e.shiftKey) || e.key === 'Tab' || ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey)) {
+        if (e.key === 'Tab' || ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey)) {
             this.setFocus(parentsUntil(e.target as Element, 'e-ftrchk'));
         }
         if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && (<{type: string}>this.parent.filterSettings).type === 'CheckBox') {
@@ -1614,6 +1606,7 @@ export class CheckBoxFilterBase {
                 const selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
                 selectAll.querySelector('.e-frame').classList.add('e-selectall');
                 if (this.infiniteRenderMod) {
+                    selectAll.classList.add('e-infinitescroll');
                     this.sBox.insertBefore(selectAll, this.spinner);
                 }
                 else {

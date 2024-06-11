@@ -7,7 +7,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='./node-base-model.d.ts'/>
-import { TextStyleModel } from '../core/appearance-model';
 import { HyperlinkModel } from './annotation-model';
 import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor, compile as baseTemplateCompiler } from '@syncfusion/ej2-base';
 import { Margin, ShapeStyle, StrokeStyle } from '../core/appearance';
@@ -35,7 +34,7 @@ import { Container } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';
 import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';
-import { SegmentInfo, Alignment,IReactDiagram } from '../rendering/canvas-interface';
+import { SegmentInfo, Alignment, IReactDiagram } from '../rendering/canvas-interface';
 import { PathAnnotationModel } from './annotation-model';
 import { NodeBase } from './node-base';
 import { DiagramTooltipModel } from './tooltip-model';
@@ -54,41 +53,35 @@ import { ResizeTool } from '../interaction/tool';
 import { PathPort, Port } from './port';
 import { PathPortModel } from './port-model';
 const getConnectorType: Function = (obj: ConnectorShape): Object => {
-    if (isBlazor()) {
-        return DiagramConnectorShape;
-    } else {
-        if (obj) {
-            switch (obj.type) {
-            case 'Bpmn':
-                return BpmnFlow;
-            case 'UmlActivity':
-                return ActivityFlow;
-            case 'UmlClassifier':
-                return RelationShip;
-            default:
-                return ConnectorShape;
-            }
+    //Removed isBlazor code
+    if (obj) {
+        switch (obj.type) {
+        case 'Bpmn':
+            return BpmnFlow;
+        case 'UmlActivity':
+            return ActivityFlow;
+        case 'UmlClassifier':
+            return RelationShip;
+        default:
+            return ConnectorShape;
         }
-        return ConnectorShape;
     }
+    return ConnectorShape;
 };
 
 const getSegmentType: Function = (obj: Connector): Object => {
 
     if (obj) {
-        if (isBlazor()) {
-            return DiagramConnectorSegment;
-        } else {
-            switch (obj.type) {
-            case 'Straight':
-                return StraightSegment;
-            case 'Bezier':
-                return BezierSegment;
-            case 'Orthogonal':
-                return OrthogonalSegment;
-            default:
-                return StraightSegment;
-            }
+        //Removed isBlazor code 
+        switch (obj.type) {
+        case 'Straight':
+            return StraightSegment;
+        case 'Bezier':
+            return BezierSegment;
+        case 'Orthogonal':
+            return OrthogonalSegment;
+        default:
+            return StraightSegment;
         }
     }
     return undefined;
@@ -209,34 +202,34 @@ export class Vector extends ChildProperty<Vector> {
  */
 export class BezierSettings extends ChildProperty<BezierSettings> {
     /**
-    * Defines the visibility of the control points in the Bezier connector
-    *
-    * @default 'All'
-    */
+     * Defines the visibility of the control points in the Bezier connector
+     *
+     * @default 'All'
+     */
     @Property(ControlPointsVisibility.All)
     public controlPointsVisibility: ControlPointsVisibility;
 
     /**
-    * Defines the editing mode of intermediate point of two bezier curve
-    *
-    * @default 'FreeForm'
-    */
+     * Defines the editing mode of intermediate point of two bezier curve
+     *
+     * @default 'FreeForm'
+     */
     @Property('FreeForm')
     public segmentEditOrientation: BezierSegmentEditOrientation;
 
     /**
-    * Defines the value to maintain the smoothness between the neighboring bezier curves.
-    *
-    * @default 'Default'
-    */
+     * Defines the value to maintain the smoothness between the neighboring bezier curves.
+     *
+     * @default 'Default'
+     */
     @Property(BezierSmoothness.Default)
     public smoothness: BezierSmoothness;
 
     /**
-    * Specifies whether to reset the current segment collections in response to a change in the connector's source and target ends.
-    *
-    * @default 'true'
-    */
+     * Specifies whether to reset the current segment collections in response to a change in the connector's source and target ends.
+     *
+     * @default 'true'
+     */
     @Property(true)
     public allowSegmentsReset: boolean;
 }
@@ -494,24 +487,26 @@ export class BezierSegment extends StraightSegment {
         return 'BezierSegment';
     }
     /**
-    * @private
-    * Returns the total points of the bezier curve
-    */
+     * @private
+     * Returns the total points of the bezier curve
+     */
     public getPoints(segments: BezierSegment, start: PointModel): PointModel[]{
         const points: PointModel[] = [];
         if (points.length > 0 || start != null)
         {
             const st: PointModel = points.length > 0 ? points[points.length - 1] : start;
             const bezier: PointModel[] = this.bezireToPoly(st, segments);
+            // 878719: Resolve ESLint errors
+            // eslint-disable-next-line prefer-spread
             points.push.apply(points, bezier);
         }
         return points;
     }
 
     /**
-    * @private
-    * Returns the total points of the bezier curve
-    */
+     * @private
+     * Returns the total points of the bezier curve
+     */
     public bezireToPoly(start: PointModel, segment: BezierSegment): PointModel[]{
         const points: PointModel[] = [];
         if (segment as BezierSegment)
@@ -527,12 +522,13 @@ export class BezierSegment extends StraightSegment {
     }
 
     /**
-    * @private
-    * Returns the total points of the bezier curve
-    */
-    public flattenCubicBezier(points: PointModel[], ptStart: Point, ptCtrl1: Point, ptCtrl2: Point, ptEnd: Point, tolerance: number){
+     * @private
+     * Returns the total points of the bezier curve
+     */
+    public flattenCubicBezier(points: PointModel[], ptStart: Point, ptCtrl1: Point, ptCtrl2: Point, ptEnd: Point, tolerance: number): void {
 
-        const max: number = ((Point.findLength(ptStart, ptCtrl1) + Point.findLength(ptCtrl1, ptCtrl2) + Point.findLength(ptCtrl2, ptEnd)) / tolerance);
+        const max: number = ((Point.findLength(ptStart, ptCtrl1) + Point.findLength(ptCtrl1, ptCtrl2)
+            + Point.findLength(ptCtrl2, ptEnd)) / tolerance);
         let i: number;
         for (i = 0; i <= max; i++)
         {
@@ -1241,7 +1237,7 @@ export class Connector extends NodeBase implements IElement {
      */
     @Property('Straight')
     public type: Segments;
-    
+
     /**
      * Defines the shape for the connector segmentThumb
      * Rhombus - Sets the segmentThumb shape as Rhombus
@@ -1257,7 +1253,7 @@ export class Connector extends NodeBase implements IElement {
      * IndentedArrow - Sets the segmentThumb shape as Indented Arrow
      * OutdentedArrow - Sets the segmentThumb shape as Outdented Arrow
      * DoubleArrow - Sets the segmentThumb shape as DoubleArrow
-     * 
+     *
      * @default 'Circle'
      */
     @Property('Circle')
@@ -1423,10 +1419,10 @@ export class Connector extends NodeBase implements IElement {
     public isBezierEditing: boolean;
     /** @private */
     public selectedSegmentIndex: number;
-     /** @private */
-     public outEdges: string[] = [];
-     /** @private */
-     public inEdges: string[] = [];
+    /** @private */
+    public outEdges: string[] = [];
+    /** @private */
+    public inEdges: string[] = [];
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
@@ -1485,7 +1481,7 @@ export class Connector extends NodeBase implements IElement {
         switch (this.shape.type) {
         case 'Bpmn':
             // eslint-disable-next-line no-case-declarations
-            const flow: BpmnFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).bpmnFlow : (this.shape as BpmnFlow).flow);
+            const flow: BpmnFlows = (this.shape as BpmnFlow).flow;
             switch (flow) {
             case 'Sequence':
                 bpmnElement = this.getBpmnSequenceFlow();
@@ -1504,8 +1500,8 @@ export class Connector extends NodeBase implements IElement {
             break;
         case 'UmlActivity':
             // eslint-disable-next-line no-case-declarations
-            const activityFlow: UmlActivityFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).umlActivityFlow :
-                (this.shape as ActivityFlow).flow);
+            const activityFlow: UmlActivityFlows = 
+                (this.shape as ActivityFlow).flow;
             switch (activityFlow) {
             case 'Object':
                 this.getUMLObjectFlow();
@@ -1560,26 +1556,28 @@ export class Connector extends NodeBase implements IElement {
         }
         for (let i: number = 0; this.fixedUserHandles !== undefined, i < this.fixedUserHandles.length; i++) {
             container.children.push(
-                this.getfixedUserHandle(this.fixedUserHandles[parseInt(i.toString(), 10)] as ConnectorFixedUserHandle, this.intermediatePoints, bounds));
+                this.getfixedUserHandle(this.fixedUserHandles[parseInt(i.toString(), 10)] as ConnectorFixedUserHandle,
+                                        this.intermediatePoints, bounds));
         }
-        // Feature 826644: Support to add ports to the connector. 
-        this.initPorts(getDescription, container,bounds);
+        // Feature 826644: Support to add ports to the connector.
+        this.initPorts(getDescription, container, bounds);
         this.wrapper = container;
         return container;
     }
 
-      /** @private */
-      public initPorts(accessibilityContent: Function | string, container: Container, bounds: Rect): void {
+    /** @private */
+    public initPorts(accessibilityContent: Function | string, container: Container, bounds: Rect): void {
         for (let i: number = 0; this.ports !== undefined, i < this.ports.length; i++) {
-            container.children.push(this.initPort(this.ports[parseInt(i.toString(), 10)] as Port,this.intermediatePoints,bounds,accessibilityContent));
+            container.children.push(this.initPort(this.ports[parseInt(i.toString(), 10)] as Port,
+                                                  this.intermediatePoints, bounds, accessibilityContent));
         }
     }
-     // Feature 826644: Support to add ports to the connector. Added below method to init the connector port. 
+    // Feature 826644: Support to add ports to the connector. Added below method to init the connector port.
     /** @private */
-    public initPort( ports: Port, points: PointModel[],
-        bounds: Rect, accessibilityContent: Function | string): PathElement | DiagramElement {
-        let portWrapper: PathElement| DiagramElement = new PathElement();
-        portWrapper.height = ports.height;  
+    public initPort(ports: Port, points: PointModel[],
+                    bounds: Rect, accessibilityContent: Function | string): PathElement | DiagramElement {
+        let portWrapper: PathElement | DiagramElement = new PathElement();
+        portWrapper.height = ports.height;
         portWrapper.width = ports.width;
         portWrapper.margin = ports.margin as Margin;
         const pathdata: string = (ports.shape === 'Custom') ? ports.pathData : getPortShape(ports.shape);
@@ -1597,11 +1595,13 @@ export class Connector extends NodeBase implements IElement {
         portWrapper.description = wrapperContent ? wrapperContent : portWrapper.id;
         portWrapper.elementActions = portWrapper.elementActions | ElementAction.ElementIsPort;
         (portWrapper as any).isPathPort = true;
-       return portWrapper;
-    };
-     // Feature 826644: Support to add ports to the connector. Added below method to init the connector portwrapper. 
+        return portWrapper;
+    }
+    // Feature 826644: Support to add ports to the connector. Added below method to init the connector portwrapper.
     /** @private */
-    public initPortWrapper(ports: Port, points: PointModel[], bounds: Rect, portContent : PathElement | DiagramElement | DiagramHtmlElement, Connector?: ConnectorModel | PathElement): DiagramElement {
+    public initPortWrapper(ports: Port, points: PointModel[], bounds: Rect,
+                           portContent: PathElement | DiagramElement | DiagramHtmlElement,
+                           Connector?: ConnectorModel | PathElement): DiagramElement {
         ports.id = ports.id || randomId();
         // Creates port element
         const pivotPoint: PointModel = { x: 0, y: 0 };
@@ -1859,9 +1859,7 @@ export class Connector extends NodeBase implements IElement {
         TextElement | DiagramHtmlElement {
         annotation.id = annotation.id || randomId();
         let textele: TextElement | DiagramHtmlElement;
-        if (isBlazor() && annotation.annotationType === 'Template') {
-            annotation.template = annotation.template ? annotation.template : '';
-        }
+        //Removed isBlazor code
         if (diagramId && (annotation.template || annotation.annotationType === 'Template'
             || (annotationTemplate && annotation.content === ''))) {
             // Task 834121: Content-Security-Policy support for diagram
@@ -1876,27 +1874,19 @@ export class Connector extends NodeBase implements IElement {
             textele = getTemplateContent(textele, annotation, annotationTemplate, diagram);
         } else {
             textele = new TextElement();
-            const style: TextStyleModel = annotation.style;
+            //876030 - Adding hyperlink for connectors
             const link: HyperlinkModel = annotation.hyperlink.link ? annotation.hyperlink : undefined;
-            (textele as TextElement).style = {
-                fill: style.fill, strokeColor: style.strokeColor, strokeWidth: style.strokeWidth,
-                bold: style.bold, textWrapping: style.textWrapping,
-                color: link ? link.color || (textele as TextElement).hyperlink.color : style.color, whiteSpace: style.whiteSpace,
-                fontFamily: style.fontFamily, fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
-                strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textOverflow: 'Wrap',
-                textDecoration: link ? link.textDecoration ||
-                    (textele as TextElement).hyperlink.textDecoration : style.textDecoration
-            };
+            (textele as TextElement).style = annotation.style;
+            (textele as TextElement).style.color = link ? link.color || (textele as TextElement).hyperlink.color : annotation.style.color;
             (textele as TextElement).hyperlink.link = annotation.hyperlink.link || undefined;
             (textele as TextElement).hyperlink.hyperlinkOpenState = annotation.hyperlink.hyperlinkOpenState || undefined;
-            (textele as TextElement).hyperlink.content = annotation.hyperlink.content || undefined;
             (textele as TextElement).hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
             (textele as TextElement).content = link ? link.content ||
                 (textele as TextElement).hyperlink.link : annotation.content;
         }
         textele.constraints = annotation.constraints;
         textele.visible = annotation.visibility;
-        (textele as TextElement).annotationVisibility = textele.visible ? 'Visible': 'Collapsed';
+        (textele as TextElement).annotationVisibility = textele.visible ? 'Visible' : 'Collapsed';
         textele.rotateAngle = annotation.rotateAngle;
         textele.horizontalAlignment = annotation.horizontalAlignment;
         textele.verticalAlignment = annotation.verticalAlignment;
@@ -2061,8 +2051,8 @@ export class Connector extends NodeBase implements IElement {
     }
     /** @private */
     public getSegmentElement(
-        connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation, diagramActions?: DiagramAction, isFlip: boolean = true
-    ): PathElement {
+        connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation,
+        diagramActions?: DiagramAction, isFlip: boolean = true): PathElement {
         //let bounds: Rect; let segmentPath: string;
         let points: PointModel[] = [];
         if (isFlip) {
@@ -2194,27 +2184,42 @@ export class Connector extends NodeBase implements IElement {
                 }
                 let direction: string; const segments: BezierSegment[] = (this.segments as BezierSegment[]);
                 for (let j: number = 0; j < segments.length; j++) {
-                    if (pts.length > 2) { segments[parseInt(j.toString(), 10)].bezierPoint1 = { x: 0, y: 0 }; segments[parseInt(j.toString(), 10)].bezierPoint2 = { x: 0, y: 0 }; }
-                    if (Point.isEmptyPoint(segments[parseInt(j.toString(), 10)].point1) && !segments[parseInt(j.toString(), 10)].vector1.angle && !segments[parseInt(j.toString(), 10)].vector1.distance) {
+                    if (pts.length > 2) {
+                        segments[parseInt(j.toString(), 10)].bezierPoint1 = { x: 0, y: 0 };
+                        segments[parseInt(j.toString(), 10)].bezierPoint2 = { x: 0, y: 0 };
+                    }
+                    if (Point.isEmptyPoint(segments[parseInt(j.toString(), 10)].point1) &&
+                        !segments[parseInt(j.toString(), 10)].vector1.angle && !segments[parseInt(j.toString(), 10)].vector1.distance) {
                         if ((connector.sourceID || this.sourcePortID) && this.sourceWrapper && !isDrawing && !isrezise) {
                             direction = getDirection(this.sourceWrapper.bounds, pts[parseInt(j.toString(), 10)], true);
                         }
-                        segments[parseInt(j.toString(), 10)].bezierPoint1 = getBezierPoints(pts[parseInt(j.toString(), 10)], pts[j + 1], direction);
-                    } else if (segments[parseInt(j.toString(), 10)].vector1.angle || segments[parseInt(j.toString(), 10)].vector1.distance) {
-                        segments[parseInt(j.toString(), 10)].bezierPoint1 = Point.transform(pts[parseInt(j.toString(), 10)], segments[parseInt(j.toString(), 10)].vector1.angle, segments[parseInt(j.toString(), 10)].vector1.distance);
+                        segments[parseInt(j.toString(), 10)].bezierPoint1 = getBezierPoints(pts[parseInt(j.toString(), 10)],
+                                                                                            pts[j + 1], direction);
+                    } else if (segments[parseInt(j.toString(), 10)].vector1.angle
+                        || segments[parseInt(j.toString(), 10)].vector1.distance) {
+                        segments[parseInt(j.toString(), 10)].bezierPoint1
+                            = Point.transform(pts[parseInt(j.toString(), 10)],
+                                              segments[parseInt(j.toString(), 10)].vector1.angle,
+                                              segments[parseInt(j.toString(), 10)].vector1.distance);
                     } else {
                         segments[parseInt(j.toString(), 10)].bezierPoint1 = {
                             x: segments[parseInt(j.toString(), 10)].point1.x || segments[parseInt(j.toString(), 10)].bezierPoint1.x,
                             y: segments[parseInt(j.toString(), 10)].point1.y || segments[parseInt(j.toString(), 10)].bezierPoint1.y
                         };
                     }
-                    if (Point.isEmptyPoint(segments[parseInt(j.toString(), 10)].point2) && !segments[parseInt(j.toString(), 10)].vector2.angle && !segments[parseInt(j.toString(), 10)].vector2.distance) {
+                    if (Point.isEmptyPoint(segments[parseInt(j.toString(), 10)].point2) &&
+                        !segments[parseInt(j.toString(), 10)].vector2.angle && !segments[parseInt(j.toString(), 10)].vector2.distance) {
                         if ((connector.targetID || this.targetPortID) && this.targetWrapper && !isDrawing && !isrezise) {
                             direction = getDirection(this.targetWrapper.bounds, pts[j + 1], true);
                         }
-                        segments[parseInt(j.toString(), 10)].bezierPoint2 = getBezierPoints(pts[j + 1], pts[parseInt(j.toString(), 10)], direction);
-                    } else if (segments[parseInt(j.toString(), 10)].vector2.angle || segments[parseInt(j.toString(), 10)].vector2.distance) {
-                        segments[parseInt(j.toString(), 10)].bezierPoint2 = Point.transform(pts[j + 1], segments[parseInt(j.toString(), 10)].vector2.angle, segments[parseInt(j.toString(), 10)].vector2.distance);
+                        segments[parseInt(j.toString(), 10)].bezierPoint2 = getBezierPoints(pts[j + 1],
+                                                                                            pts[parseInt(j.toString(), 10)], direction);
+                    } else if (segments[parseInt(j.toString(), 10)].vector2.angle
+                        || segments[parseInt(j.toString(), 10)].vector2.distance) {
+                        segments[parseInt(j.toString(), 10)].bezierPoint2
+                            = Point.transform(pts[j + 1],
+                                              segments[parseInt(j.toString(), 10)].vector2.angle,
+                                              segments[parseInt(j.toString(), 10)].vector2.distance);
                     } else {
                         segments[parseInt(j.toString(), 10)].bezierPoint2 = {
                             x: segments[parseInt(j.toString(), 10)].point2.x || segments[parseInt(j.toString(), 10)].bezierPoint2.x,
@@ -2257,14 +2262,12 @@ export class Connector extends NodeBase implements IElement {
             if (connector.wrapper.children[3] instanceof PathElement) {
                 element = connector.wrapper.children[3];
             }
-            if ((connector.shape as BpmnFlow).flow === 'Message' ||
-                    (isBlazor() && (connector.shape as DiagramConnectorShape).bpmnFlow === 'Message')) {
+            if ((connector.shape as BpmnFlow).flow === 'Message') {
                 this.updateShapePosition(connector, element);
             }
             break;
         case 'UmlActivity':
-            if ((connector.shape as ActivityFlow).flow === 'Exception' || (isBlazor() &&
-                    (connector.shape as DiagramConnectorShape).umlActivityFlow === 'Exception')) {
+            if ((connector.shape as ActivityFlow).flow === 'Exception') {
                 this.getUMLExceptionFlow(connector.wrapper.children[0] as PathElement);
             }
             break;
@@ -2272,11 +2275,11 @@ export class Connector extends NodeBase implements IElement {
     }
     /** @private */
     public updateShapePosition(connector: Connector, element: DiagramElement): void {
-        const segmentOffset: number = 0.5; let angle: number; let pt: PointModel; let length: number = 0;
+        const segmentOffset: number = 0.5; let angle: number; let pt: PointModel; const length: number = 0;
         const anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
         //Bug 860251: Bpmn message flow and sequence flow connector child path is not rendered properly.
         //To get the path offset of message flow.
-        let offset = getPathOffset(anglePoints,element,segmentOffset);
+        const offset: PointModel = getPathOffset(anglePoints, element, segmentOffset);
         element.offsetX = offset.x;
         element.offsetY = offset.y;
     }

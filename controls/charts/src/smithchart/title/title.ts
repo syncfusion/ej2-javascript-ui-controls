@@ -2,7 +2,6 @@ import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
 import { SmithchartFontModel} from '../utils/utils-model';
 import { SmithchartFont } from '../utils/utils';
 import { SmithchartAlignment } from '../utils/enum';
-
 import { SubtitleModel} from '../title/title-model';
 
 export class Subtitle extends ChildProperty<Subtitle> {
@@ -59,7 +58,7 @@ export class Subtitle extends ChildProperty<Subtitle> {
      * options for customizing sub title font.
      */
 
-    @Complex<SmithchartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, SmithchartFont)
     public textStyle: SmithchartFontModel;
 
 }
@@ -126,15 +125,14 @@ export class Title extends ChildProperty<Title> {
      * options for customizing title font.
      */
 
-    @Complex<SmithchartFontModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, SmithchartFont)
     public font: SmithchartFontModel;
 
     /**
      * options for customizing title text.
      */
 
-    @Complex<SmithchartFontModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, SmithchartFont)
     public textStyle: SmithchartFontModel;
 
 }
-

@@ -4,21 +4,27 @@ import { sampleData } from '../base/datasource.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ContextMenu } from '../../src/treegrid/actions/context-menu';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
-import { CellSaveEventArgs  } from '../../src';
-import{ L10n, select } from '@syncfusion/ej2-base';
+import { CellSaveEventArgs } from '../../src';
+import { L10n, select } from '@syncfusion/ej2-base';
 import { CellEditArgs } from '@syncfusion/ej2-grids';
 import { Edit } from '../../src/treegrid/actions/edit';
+import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import { Page } from '../../src/treegrid/actions/page';
+import { Sort } from '../../src/treegrid/actions/sort';
+import { PdfExport } from '../../src/treegrid/actions/pdf-export';
+import { ExcelExport } from '../../src/treegrid/actions/excel-export';
+import { Selection } from '../../src/treegrid/actions/selection';
 
 /**
  * Grid base spec
  */
-TreeGrid.Inject(ContextMenu, Edit);
+TreeGrid.Inject(ContextMenu, Edit, Toolbar, Page, Sort, PdfExport, ExcelExport, Selection);
 describe('ContextMenu module', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -39,11 +45,15 @@ describe('ContextMenu module', () => {
                     columns: [
                         { field: 'taskID', headerText: 'Task ID', width: 80, isPrimaryKey: true, textAlign: 'Right', editType: 'numericedit' },
                         { field: 'taskName', headerText: 'Task Name', width: 190 },
-                        { field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
-                            editType: 'datepickeredit', textAlign: 'Right' },
+                        {
+                            field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
+                            editType: 'datepickeredit', textAlign: 'Right'
+                        },
                         { field: 'endDate', headerText: 'End Date', format: 'yMd', width: 90, editType: 'datepickeredit', textAlign: 'Right' },
-                        { field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
-                            edit: { params: { format: 'n' } } },
+                        {
+                            field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
+                            edit: { params: { format: 'n' } }
+                        },
                         { field: 'priority', headerText: 'Priority', width: 80 }
                     ]
                 },
@@ -53,8 +63,8 @@ describe('ContextMenu module', () => {
         it('Check the filered records for parent mode', () => {
             expect((gridObj.grid.contextMenuModule as any).element).not.toBe(null);
         });
-        it ('Context menu property changes', () => {
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelector('tr') };
+        it('Context menu property changes', () => {
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelector('tr') };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -63,7 +73,7 @@ describe('ContextMenu module', () => {
             (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
             (gridObj.grid.contextMenuModule as any).contextMenuOpen();
             const addrow: HTMLElement = select('#' + gridObj.element.id + '_gridcontrol_cmenu_AddRow',
-                                               document.getElementById(gridObj.element.id + '_gridcontrol_cmenu'));
+                document.getElementById(gridObj.element.id + '_gridcontrol_cmenu'));
             expect(addrow.style.display).toBe('none');
             (gridObj.grid.contextMenuModule as any).contextMenuOnClose(e);
             gridObj.grid.editSettings.allowAdding = true;
@@ -71,7 +81,7 @@ describe('ContextMenu module', () => {
             (gridObj.grid.contextMenuModule as any).contextMenuOpen();
             expect(addrow.style.display).toBe('block');
             (gridObj.grid.contextMenuModule as any).contextMenuOnClose(e);
-            gridObj.contextMenuItems = [{text: 'Expand all', target: '.e-content', id: 'expandall'}];
+            gridObj.contextMenuItems = [{ text: 'Expand all', target: '.e-content', id: 'expandall' }];
             gridObj.dataBind();
             expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu').querySelector('#expandall')).not.toBe(null);
             expect(gridObj.contextMenuModule.getContextMenu()).not.toBe(null);
@@ -99,9 +109,9 @@ describe('ContextMenu module', () => {
                 done
             );
         });
-        it ('Context menu items check', () => {
+        it('Context menu items check', () => {
             const addrow: string = '#' + gridObj.element.id + '_gridcontrol_cmenu_AddRow';
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelector('tr') };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelector('tr') };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -138,11 +148,15 @@ describe('ContextMenu module', () => {
                     columns: [
                         { field: 'taskID', headerText: 'Task ID', width: 80, isPrimaryKey: true, textAlign: 'Right', editType: 'numericedit' },
                         { field: 'taskName', headerText: 'Task Name', width: 190 },
-                        { field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
-                            editType: 'datepickeredit', textAlign: 'Right' },
+                        {
+                            field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
+                            editType: 'datepickeredit', textAlign: 'Right'
+                        },
                         { field: 'endDate', headerText: 'End Date', format: 'yMd', width: 90, editType: 'datepickeredit', textAlign: 'Right' },
-                        { field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
-                            edit: {params: {format: 'n'}} },
+                        {
+                            field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
+                            edit: { params: { format: 'n' } }
+                        },
                         { field: 'priority', headerText: 'Priority', width: 80 }
                     ]
                 },
@@ -152,13 +166,13 @@ describe('ContextMenu module', () => {
         it('Add new row with AddRow - Above', (done: Function) => {
             gridObj.selectRow(2);
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.requestType === 'add'){
+                if (args.requestType === 'add') {
                     expect((<any>gridObj.getContentTable().querySelectorAll('.e-addedrow')[0]).rowIndex === 2).toBe(true);
                 }
                 done();
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -174,7 +188,7 @@ describe('ContextMenu module', () => {
         });
         it('Save the added row', (done: Function) => {
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.requestType === 'save'){
+                if (args.requestType === 'save') {
                     expect(gridObj.getRows()[2].querySelector('td').innerText === '44').toBe(true);
                 }
                 done();
@@ -210,11 +224,15 @@ describe('ContextMenu module', () => {
                     columns: [
                         { field: 'taskID', headerText: 'Task ID', width: 80, isPrimaryKey: true, textAlign: 'Right', editType: 'numericedit' },
                         { field: 'taskName', headerText: 'Task Name', width: 190 },
-                        { field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
-                            editType: 'datepickeredit', textAlign: 'Right' },
+                        {
+                            field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
+                            editType: 'datepickeredit', textAlign: 'Right'
+                        },
                         { field: 'endDate', headerText: 'End Date', format: 'yMd', width: 90, editType: 'datepickeredit', textAlign: 'Right' },
-                        { field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
-                            edit: {params: {format: 'n'}} },
+                        {
+                            field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
+                            edit: { params: { format: 'n' } }
+                        },
                         { field: 'priority', headerText: 'Priority', width: 80 }
                     ]
                 },
@@ -224,13 +242,13 @@ describe('ContextMenu module', () => {
         it('Add new row with AddRow - Below', (done: Function) => {
             gridObj.selectRow(2);
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.requestType === 'add'){
+                if (args.requestType === 'add') {
                     expect((<any>gridObj.getContentTable().querySelectorAll('.e-addedrow')[0]).rowIndex === 3).toBe(true);
                 }
                 done();
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -246,7 +264,7 @@ describe('ContextMenu module', () => {
         });
         it('Save the added row', (done: Function) => {
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.requestType === 'save'){
+                if (args.requestType === 'save') {
                     expect(gridObj.getRows()[3].getElementsByTagName('td')[0].innerText === '55').toBe(true);
                 }
                 done();
@@ -282,11 +300,15 @@ describe('ContextMenu module', () => {
                     columns: [
                         { field: 'taskID', headerText: 'Task ID', width: 80, isPrimaryKey: true, textAlign: 'Right', editType: 'numericedit' },
                         { field: 'taskName', headerText: 'Task Name', width: 190 },
-                        { field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
-                            editType: 'datepickeredit', textAlign: 'Right' },
+                        {
+                            field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
+                            editType: 'datepickeredit', textAlign: 'Right'
+                        },
                         { field: 'endDate', headerText: 'End Date', format: 'yMd', width: 90, editType: 'datepickeredit', textAlign: 'Right' },
-                        { field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
-                            edit: {params: {format: 'n'}} },
+                        {
+                            field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
+                            edit: { params: { format: 'n' } }
+                        },
                         { field: 'priority', headerText: 'Priority', width: 80 }
                     ]
                 },
@@ -295,7 +317,7 @@ describe('ContextMenu module', () => {
         });
         it('Check whether Edit Record is hidden in Edit Mode set as Cell', () => {
             gridObj.selectRow(2);
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -304,7 +326,7 @@ describe('ContextMenu module', () => {
             (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
             (gridObj.grid.contextMenuModule as any).contextMenuOpen();
             const editRecord: HTMLElement = select('#' + gridObj.element.id + '_gridcontrol_cmenu_Edit',
-                                                   document.getElementById(gridObj.element.id + '_gridcontrol_cmenu'));
+                document.getElementById(gridObj.element.id + '_gridcontrol_cmenu'));
             expect(editRecord.style.display).toBe('none');
         });
         afterAll(() => {
@@ -333,9 +355,9 @@ describe('ContextMenu module', () => {
                         'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
                         'LastPage', 'NextPage'],
                     columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                        { field: 'taskName', headerText: 'Task Name' },
-                        { field: 'progress', headerText: 'Progress' },
-                        { field: 'startDate', headerText: 'Start Date' }
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
                     ]
                 },
                 done
@@ -357,12 +379,12 @@ describe('ContextMenu module', () => {
             gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
             gridObj.selectRow(2);
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.type === 'save'){
+                if (args.type === 'save') {
                     expect(gridObj.getRows()[2].querySelectorAll('td')[1].innerText === 'test').toBe(true);
                 }
                 done();
             };
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -403,9 +425,9 @@ describe('ContextMenu module', () => {
                         'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
                         'LastPage', 'NextPage'],
                     columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                        { field: 'taskName', headerText: 'Task Name' },
-                        { field: 'progress', headerText: 'Progress' },
-                        { field: 'startDate', headerText: 'Start Date' }
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
                     ]
                 },
                 done
@@ -426,7 +448,7 @@ describe('ContextMenu module', () => {
         it('Cancel the cell edited record with contextmenu cancel', () => {
             gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
             gridObj.selectRow(2);
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -489,11 +511,15 @@ describe('ContextMenu module', () => {
                     columns: [
                         { field: 'taskID', headerText: 'Task ID', width: 80, isPrimaryKey: true, textAlign: 'Right', editType: 'numericedit' },
                         { field: 'taskName', headerText: 'Task Name', width: 190 },
-                        { field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
-                            editType: 'datepickeredit', textAlign: 'Right' },
+                        {
+                            field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
+                            editType: 'datepickeredit', textAlign: 'Right'
+                        },
                         { field: 'endDate', headerText: 'End Date', format: 'yMd', width: 90, editType: 'datepickeredit', textAlign: 'Right' },
-                        { field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
-                            edit: {params: {format: 'n'}} },
+                        {
+                            field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
+                            edit: { params: { format: 'n' } }
+                        },
                         { field: 'priority', headerText: 'Priority', width: 80 }
                     ]
                 },
@@ -503,13 +529,13 @@ describe('ContextMenu module', () => {
         it('Add new row with AddRow - Child', (done: Function) => {
             gridObj.selectRow(2);
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.requestType === 'add'){
+                if (args.requestType === 'add') {
                     expect((<any>gridObj.getContentTable().querySelectorAll('.e-addedrow')[0]).rowIndex === 3).toBe(true);
                 }
                 done();
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -525,7 +551,7 @@ describe('ContextMenu module', () => {
         });
         it('Save the added row', (done: Function) => {
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.requestType === 'save'){
+                if (args.requestType === 'save') {
                     expect(gridObj.getRows()[3].getElementsByTagName('td')[0].innerText === '55').toBe(true);
                 }
                 done();
@@ -550,9 +576,9 @@ describe('ContextMenu module', () => {
                     treeColumnIndex: 1,
                     contextMenuItems: ['Indent', 'Outdent'],
                     columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                        { field: 'taskName', headerText: 'Task Name' },
-                        { field: 'progress', headerText: 'Progress' },
-                        { field: 'startDate', headerText: 'Start Date' }
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
                     ]
                 },
                 done
@@ -561,14 +587,14 @@ describe('ContextMenu module', () => {
 
         it('Indent Action with contextmenu and ensure outdent disabling ', (done: Function) => {
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.requestType === 'indented'){
+                if (args.requestType === 'indented') {
                     expect(args.data[0].parentItem.taskID === 1).toBe(true);
                 }
                 done();
             };
             gridObj.actionComplete = actionComplete;
             gridObj.selectRow(5);
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -600,9 +626,9 @@ describe('ContextMenu module', () => {
                     treeColumnIndex: 1,
                     contextMenuItems: ['Indent', 'Outdent'],
                     columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                        { field: 'taskName', headerText: 'Task Name' },
-                        { field: 'progress', headerText: 'Progress' },
-                        { field: 'startDate', headerText: 'Start Date' }
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
                     ]
                 },
                 done
@@ -611,14 +637,14 @@ describe('ContextMenu module', () => {
 
         it('Outdent Action with contextmenu and ensure indent disabling ', (done: Function) => {
             actionComplete = (args: CellSaveEventArgs): void => {
-                if (args.requestType === 'indented'){
+                if (args.requestType === 'indented') {
                     expect(args.data[0].parentItem.taskID === 2).toBe(true);
                 }
                 done();
             };
             gridObj.actionComplete = actionComplete;
             gridObj.selectRow(1);
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -659,9 +685,9 @@ describe('ContextMenu module', () => {
                         'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
                         'LastPage', 'NextPage', 'Indent', 'Outdent'],
                     columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                        { field: 'taskName', headerText: 'Task Name' },
-                        { field: 'progress', headerText: 'Progress' },
-                        { field: 'startDate', headerText: 'Start Date' }
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
                     ]
                 },
                 done
@@ -680,7 +706,7 @@ describe('ContextMenu module', () => {
         });
         it('ensure the cancel action in context menu', (done: Function) => {
             gridObj.getRows()[2].querySelectorAll('td')[1].innerText = 'test';
-            (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
             const e: Object = {
                 event: (gridObj.grid.contextMenuModule as any).eventArgs,
                 items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -728,9 +754,9 @@ describe('Bug 863191: Indent/Outdent not shown in context menu of cell edit mode
                     'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
                     'LastPage', 'NextPage', 'Indent', 'Outdent'],
                 columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                    { field: 'taskName', headerText: 'Task Name' },
-                    { field: 'progress', headerText: 'Progress' },
-                    { field: 'startDate', headerText: 'Start Date' }
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
                 ]
             },
             done
@@ -739,7 +765,7 @@ describe('Bug 863191: Indent/Outdent not shown in context menu of cell edit mode
 
     it('ensure the Indent action in context menu', () => {
         gridObj.selectRow(2);
-        (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+        (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
         const e: Object = {
             event: (gridObj.grid.contextMenuModule as any).eventArgs,
             items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -775,9 +801,9 @@ describe('Bug 863191: Indent/Outdent not shown in context menu of cell edit mode
                     'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
                     'LastPage', 'NextPage', 'Indent', 'Outdent'],
                 columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                    { field: 'taskName', headerText: 'Task Name' },
-                    { field: 'progress', headerText: 'Progress' },
-                    { field: 'startDate', headerText: 'Start Date' }
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
                 ]
             },
             done
@@ -786,7 +812,7 @@ describe('Bug 863191: Indent/Outdent not shown in context menu of cell edit mode
 
     it('ensure the oudent action in context menu', () => {
         gridObj.selectRow(2);
-        (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+        (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
         const e: Object = {
             event: (gridObj.grid.contextMenuModule as any).eventArgs,
             items: gridObj.grid.contextMenuModule.contextMenu.items,
@@ -797,6 +823,169 @@ describe('Bug 863191: Indent/Outdent not shown in context menu of cell edit mode
         document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Outdent').click();
         expect(gridObj.getCurrentViewRecords()[2]['level'] === 0).toBe(true);
     });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Indent/Outdent not shown in context menu of batch edit mode.', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                allowPaging: true,
+                pageSettings: { pageSize: 10 },
+                treeColumnIndex: 1,
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Batch' },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                contextMenuItems: [
+                    'Edit', 'Delete', 'Save', 'Cancel', 'FirstPage', 'PrevPage', 'LastPage', 'NextPage', 'Indent', 'Outdent'],
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('ensure the oudent action in context menu', () => {
+        const event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+        (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getCellFromIndex(2, 1) };
+        const e: Object = {
+            event: (gridObj.grid.contextMenuModule as any).eventArgs,
+            items: gridObj.grid.contextMenuModule.contextMenu.items,
+            parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+        };
+        (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+        (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+        document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Cancel').click();
+        expect(gridObj.getRows()[2].querySelectorAll('td')[1].innerText === 'Plan budget').toBe(true);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Indent/Outdent in first record', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                contextMenuItems: ['Indent', 'Outdent'],
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('ensure the oudent action in context menu', () => {
+        gridObj.selectRow(0);
+        (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getCellFromIndex(0,1) };
+        const e: Object = {
+            event: (gridObj.grid.contextMenuModule as any).eventArgs,
+            items: gridObj.grid.contextMenuModule.contextMenu.items,
+            parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+        };
+        (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+        (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+        expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Indent').style.display === 'none').toBe(true);
+        expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Outdent').style.display === 'none').toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Indent/Outdent in parent record', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                contextMenuItems: ['Indent', 'Outdent'],
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('ensure the oudent action in parent record', () => {
+        gridObj.selectRow(5);
+        (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getCellFromIndex(5,1)};
+        const e: Object = {
+            event: (gridObj.grid.contextMenuModule as any).eventArgs,
+            items: gridObj.grid.contextMenuModule.contextMenu.items,
+            parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+        };
+        (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+        (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+        expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Indent').style.display === 'block').toBe(true);
+        expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Outdent').style.display === 'none').toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Indent/Outdent with checkbox selection', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                allowSelection: true,
+                contextMenuItems: ['Indent', 'Outdent'],
+                columns: [
+                { type: 'checkbox', width: 50 },
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('ensure the indent/outdent action with checkbox selection', () => {
+        gridObj.selectRow(1);
+        (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getCellFromIndex(1,2)};
+        const e: Object = {
+            event: (gridObj.grid.contextMenuModule as any).eventArgs,
+            items: gridObj.grid.contextMenuModule.contextMenu.items,
+            parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+        };
+        (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+        (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+        expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Indent').style.display === 'none').toBe(true);
+        expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Outdent').style.display === 'block').toBe(true);
+    });
+
     afterAll(() => {
         destroy(gridObj);
     });

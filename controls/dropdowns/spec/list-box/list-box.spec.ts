@@ -48,7 +48,7 @@ describe('ListBox', () => {
         });
 
         it('Normal', () => {
-            listObj = new ListBox({ dataSource: data }, elem);
+            listObj = new ListBox({ dataSource: data, allowFiltering: true }, elem);
             li = listObj.getItems();
             li[0].click();
             expect(li[0].classList).toContain(cssClass.selected);
@@ -131,7 +131,10 @@ describe('ListBox', () => {
         });
 
         it('Checkbox', () => {
-            listObj = new ListBox({ dataSource: data, selectionSettings: { showCheckbox: true } }, elem);
+            listObj = new ListBox({ dataSource: data }, elem);
+            listObj.selectionSettings.showCheckbox = true;
+            listObj.selectionSettings.showSelectAll = true;
+            listObj.dataBind();
             let liEle: any = listObj.getItems();
             liEle[2].click();
             expect(liEle[2].classList).not.toContain(cssClass.selected);
@@ -143,10 +146,12 @@ describe('ListBox', () => {
             liEle[2].click();
             expect(listObj.value[0]).not.toEqual('C++');
             expect(liEle[2].getElementsByClassName('e-frame')[0].classList).not.toContain('e-check');
+            listObj.selectionSettings.showCheckbox = false;
+            listObj.dataBind();
         });
 
         it('Select All Checkbox', () => {
-            listObj = new ListBox({ dataSource: data, selectionSettings: { showCheckbox: true, showSelectAll: true } }, elem);
+            listObj = new ListBox({ dataSource: data, allowFiltering: true, selectionSettings: { showCheckbox: true, showSelectAll: true } }, elem);
             let ele: any = listObj.list.getElementsByClassName('e-selectall-parent')[0];
             EventHandler.trigger(ele, 'mousedown', { currentTarget: ele, preventDefault: () => { } });
             expect(ele.getElementsByClassName('e-frame')[0].classList).toContain('e-check');
@@ -179,6 +184,13 @@ describe('ListBox', () => {
             listObj.dataBind();
             expect(listObj.getSelectedItems().length).toEqual(1);
             expect(listObj.getItems()[0].classList).toContain(cssClass.selected);
+            listObj.value = ['JAVA', 'C#', 'C++'];
+            listObj.dataBind();
+            listObj.moveDown(['C++']);
+            listObj.moveUp(['C++']);
+            listObj.moveBottom(['C++']);
+            listObj.moveTop(['C++']);
+            expect(listObj.getItems()[0].textContent).toEqual('C++');
         });
     });
 
@@ -288,6 +300,16 @@ describe('ListBox', () => {
             expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(2);
             expect(listObj.list.getElementsByClassName('e-list-item')[0].getAttribute('data-value').charAt(0)).toEqual(listObj.list.getElementsByClassName('e-list-item')[1].getAttribute('data-value').charAt(0));
         });
+
+        it('notify changes for allowFiltering', () => {
+            listObj = new ListBox({ dataSource: data }, elem);
+            listObj.allowFiltering = true;
+            listObj.dataBind();
+            listObj.filterBarPlaceholder = 'filter the list';
+            listObj.dataBind();
+            var ele = listObj.list.getElementsByClassName('e-input-filter')[0];
+            expect(ele).not.toBeNull();
+        });
     });
 
     describe('Angular', () => {
@@ -302,7 +324,7 @@ describe('ListBox', () => {
         });
 
         it('Listbox', () => {
-            listObj = new ListBox({ dataSource: data }, elem);
+            listObj = new ListBox({ dataSource: data, allowFiltering: true }, elem);
             expect(listObj.element.getAttribute('tabindex')).toContain('0');
             expect(listObj.element.firstElementChild.classList).toContain('e-listbox-wrapper');
             expect(listObj.getComponent(listObj.getItems()[0])).toEqual(listObj);
@@ -312,11 +334,14 @@ describe('ListBox', () => {
     describe('Toolbar', () => {
         let elem1: HTMLElement = createElement('input', { id: 'listbox1' });
         let elem2: HTMLElement = createElement('input', { id: 'listbox2' });
+        let elem3: HTMLElement = createElement('input', { id: 'listbox3' });
         let listObj1: any;
         let listObj2: any;
+        let listObj3: any;
         beforeAll(() => {
             document.body.appendChild(elem1);
             document.body.appendChild(elem2);
+            document.body.appendChild(elem3);
         });
 
         beforeEach(() => {
@@ -325,11 +350,13 @@ describe('ListBox', () => {
                 toolbarSettings: { items: ['moveUp', 'moveDown', 'moveTo', 'moveFrom', 'moveAllTo', 'moveAllFrom'] }
             }, elem1);
             listObj2 = new ListBox({ dataSource: vegetableData }, elem2);
+            listObj3 = new ListBox({ dataSource: vegetableData }, elem3);
         });
 
         afterEach(() => {
             listObj1.destroy();
             listObj2.destroy();
+            listObj3.destroy();
         });
 
         it('Move To & From', () => {
@@ -554,6 +581,27 @@ describe('ListBox', () => {
             expect(toolChild[1].disabled).toBeTruthy();
             expect(listObj1.list.scrollTop).toBeGreaterThan(0);
         });
+
+        it('MoveTo public method', () => {
+            listObj1.moveTo(['JAVA', 'C#'], 1);
+            expect(listObj1.getItems().length).toEqual(3);
+        });
+
+        it('MoveAllTo public method', () => {
+            listObj1.moveAllTo();
+            expect(listObj1.getItems().length).toEqual(0);
+        });
+
+        it('notify changes for scope', () => {
+            listObj1.scope = '#listbox3';
+            listObj1.dataBind();
+        });
+
+        it('notify changes for scope with allowDragAndDrop', () => {
+            listObj1.allowDragAndDrop = true;
+            listObj1.scope = '#listbox3';
+            listObj1.dataBind();
+        });
     });
 
     describe('Toolbar with sorting', () => {
@@ -730,6 +778,16 @@ describe('ListBox', () => {
             expect(liEle[2].getElementsByClassName('e-frame')[0].classList).toContain('e-check');
             expect(listObj.getSelectedItems().length).toEqual(3);
         });
+
+        it('formResetHandler with Checkbox', () => {
+            listObj = new ListBox({ dataSource: data }, elem);
+            listObj.formResetHandler();
+        });
+
+        it('getPersistData with Checkbox', () => {
+            listObj = new ListBox({ dataSource: data }, elem);
+            listObj.getPersistData();
+        });
     });
 
     describe('Keyboard', () => {
@@ -767,8 +825,73 @@ describe('ListBox', () => {
             expect(listObj.getItems()[1].classList).toContain(cssClass.selected);
             listObj.keyDownHandler({ keyCode: 40, preventDefault: () => { } });
             expect(listObj.getItems()[3].classList).toContain(cssClass.selected);
+            listObj.selectionSettings.showCheckbox =  true;
+            listObj.keyDownHandler({ keyCode: 36, shiftKey: true, ctrlKey: true,  preventDefault: () => { } });
         });
     });
+
+    describe('Drag and Drop', () => {
+        let elem: HTMLElement = createElement('input');
+        let elem1: HTMLElement = createElement('input1');
+        let listObj1: any;
+        let mouseEventArs: any = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            relatedTarget: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false,
+            offset: Number
+        };
+        let helper: Element = createElement('div', {className: 'e-listbox-wrapper e-wrapper e-lib e-sortableclone'});
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            document.body.appendChild(elem1);
+            document.body.appendChild(helper);
+        });
+
+        afterEach(() => {
+            listObj.destroy();
+        });
+
+        it('single listbox drag and drop action', () => {
+            listObj = new ListBox({ dataSource: data, allowDragAndDrop: true, fields: { value: 'value', text: 'text', groupBy: 'icon' } }, elem);
+            let listItem: any = listObj.list.querySelectorAll('.e-list-item');
+            li = listObj.getItems();
+            li[0].click();
+            listItem[0].classList.add('e-grabbed');
+            let dragArgs: any = { bindEvents: null, dragElement: listItem[0], element: listObj.element, event: mouseEventArs, name: 'dragStart', target: listItem[0] };
+            listObj.triggerDragStart(dragArgs);
+            dragArgs = { element: listObj.element, event: mouseEventArs, name: 'drag', target: listItem[0] };
+            listObj.triggerDrag(dragArgs);
+            dragArgs = { cancel: false, currentIndex: 3, droppedElement: listItem[0], handled: false, helper: helper, name: 'beforeDrop',
+                 target: listItem[2], previousIndex: 0
+            };
+            listObj.beforeDragEnd(dragArgs);
+            dragArgs.event = mouseEventArs; dragArgs.name = 'drop';
+            listObj.dragEnd(dragArgs);
+        });
+
+        it('Multiple listbox drag and drop action', () => {
+            listObj = new ListBox({ dataSource: data, allowDragAndDrop: true, fields: { text: 'text', groupBy: 'icon' } }, elem);
+            listObj1 = new ListBox({ dataSource: vegetableData, allowDragAndDrop: true, sortOrder: 'Ascending' }, elem1);
+            let listItem: any = listObj.list.querySelectorAll('.e-list-item');
+            let listItem1: any = listObj1.list.querySelectorAll('.e-list-item');
+            listItem[0].classList.add('e-grabbed');
+            let dragArgs: any = { bindEvents: null, dragElement: listItem[0], element: listObj.element, event: mouseEventArs, name: 'dragStart', target: listItem[0] };
+            listObj.triggerDragStart(dragArgs);
+            dragArgs = { element: listObj.element, event: mouseEventArs, name: 'drag', target: listItem[0] };
+            listObj.triggerDrag(dragArgs);
+            dragArgs = { cancel: false, currentIndex: 3, droppedElement: listItem[0], handled: false, helper: helper, name: 'beforeDrop',
+                target: listItem1[2], previousIndex: 0, element: listObj1.list
+            };
+            listObj.beforeDragEnd(dragArgs);
+            dragArgs.event = mouseEventArs; dragArgs.name = 'drop'; dragArgs.droppedElement = listItem1[2];
+            listObj.dragEnd(dragArgs);
+        });
+    });
+
     describe('Customer Reported Bug', () => {
         let elem: HTMLElement = createElement('input');
         let elem1: HTMLElement = createElement('input', { id: 'listbox1' });
@@ -846,6 +969,13 @@ describe('ListBox', () => {
             listObj.destroy();
         });
 
+        it('toolbarSettings', () => {
+            listObj1.toolbarSettings.items = ['moveUp', 'moveDown', 'moveTo', 'moveAllTo', 'moveAllFrom'];
+            listObj1.dataBind();
+            listObj1.toolbarSettings.position = 'Left';
+            listObj1.dataBind();
+        });
+
         it('EJ2-45800 - Items not updated in filtering while using delete button', () => {
             listObj = new ListBox({ dataSource: vegetableData , allowFiltering: true}, elem);
             var ele = listObj.list.getElementsByClassName('e-input-filter')[0];
@@ -915,6 +1045,7 @@ describe('ListBox', () => {
             expect(listObj.getDataList().length).toEqual(11);
             listObj.removeItem(['Garlic', 'Nopal' ]);
             expect(listObj.getDataList().length).toEqual(9);
+            listObj.removeItem();
         });
         
         it('EJ2-38419-Need to provide noRecordsTemplate support in Listbox', () => {
@@ -1006,6 +1137,244 @@ describe('ListBox', () => {
               let liEle: any = listObj.list.getElementsByClassName('e-list-item');
               expect(liEle[0].getElementsByClassName('e-frame')[0].classList).toContain('e-check');
         });
+    });
 
+    describe('Coverage improvement', () => {
+        let listObj: any
+        let listObj2: any
+        let elem: HTMLElement = createElement('input', { id: 'input' });
+        let elem2: HTMLElement = createElement('input', { id: 'input2' });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+        });
+        it('allowFiltering', () => {
+            listObj = new ListBox({ dataSource: data, allowFiltering: true }, elem);
+            listObj.dataBind();
+            expect(listObj.allowFiltering).toEqual(true);
+            listObj.allowFiltering = false;
+            listObj.dataBind();
+            expect(listObj.allowFiltering).toEqual(false);
+        });
+
+        it('allowDragAndDrop', () => {
+            listObj = new ListBox({ dataSource: data, allowDragAndDrop: true }, elem);
+            expect(listObj.allowDragAndDrop).toEqual(true);
+            listObj.dataBind();
+            listObj.allowDragAndDrop = false;
+            listObj.dataBind();
+            expect(listObj.allowDragAndDrop).toEqual(false);
+        });
+
+        it('filterBarPlaceholder', () => {
+            listObj = new ListBox({ dataSource: data, filterBarPlaceholder: '' }, elem);
+            expect(listObj.filterBarPlaceholder).toEqual('');
+            listObj.dataBind();
+            listObj.filterBarPlaceholder = 'lisbox';
+            listObj.allowDragAndDrop = true;
+            listObj.dataBind();
+            expect(listObj.filterBarPlaceholder).toEqual('lisbox');
+        });
+
+        it('getSortedList', () => {
+            listObj = new ListBox({ dataSource: data, fields: { text: 'text', groupBy: 'icon' } }, elem);
+            listObj.getSortedList();
+        });
+
+        it('dataSource', () => {
+            listObj = new ListBox({ }, elem);
+            listObj.dataSource =  data;
+            listObj.dataBind();
+        });
+
+        it('SelectItems', () => {
+            listObj = new ListBox({ fields: { text: 'text', value: 'value' },
+              dataSource: [
+                { text: 'folder1\\item1', value: 'folder1\\item1' },
+                { text: 'folder1\\item2', value: 'folder1\\item2' }],
+              selectionSettings: { showCheckbox: false, mode: 'Single' } }, elem);
+              listObj.selectItems(['folder1\\item1'], true, true);
+        });
+
+        it('removeItem', function () {
+            listObj = new ListBox({ dataSource: vegetableData, fields: { text: 'text', value: 'id' } }, elem);
+            listObj.removeItem({ text: 'Cabbage', id: 'item1' });
+            listObj.removeItems([{ text: 'Wheat', id: 'item3' }, { text: 'Yarrow', id: 'item4' } ]);
+        });
+        it('addItem', function () {
+            listObj = new ListBox({ dataSource: vegetableData, fields: { text: 'text', value: 'id' } }, elem);
+            listObj.addItem({ text: 'Cabbage1', id: 'item11' });
+        });
+        it('getDataByValues', function () {
+            listObj = new ListBox({ dataSource: vegetableData, fields: { text: 'text', value: 'id' } }, elem);
+            let data: any = listObj.getDataByValues(['Cabbage']);
+        });
+        it('getDataByElements', function () {
+            let datasource = ['Java']
+            listObj = new ListBox({ dataSource: datasource }, elem);
+            li = listObj.getItems();
+            li[0].click();
+        });
+    });
+
+    describe('Null or undefined Property testing', () => {
+        let elem: HTMLElement = createElement('input');
+        afterEach(() => {
+            listObj.destroy();
+        });
+
+        it('ListBox With allowDragAndDrop', () => {
+            listObj = new ListBox({ allowDragAndDrop: null }, elem);
+            expect(listObj.allowDragAndDrop).toEqual(null);
+            listObj = new ListBox({ allowDragAndDrop: undefined }, elem);
+            expect(listObj.allowDragAndDrop).toEqual(false);
+        });
+
+        it('ListBox With allowFiltering', () => {
+            listObj = new ListBox({ allowFiltering: null }, elem);
+            expect(listObj.allowFiltering).toEqual(null);
+            listObj = new ListBox({ allowFiltering: undefined }, elem);
+            expect(listObj.allowFiltering).toEqual(false);
+        });
+
+        it('ListBox With cssClass', () => {
+            listObj = new ListBox({ cssClass: null }, elem);
+            expect(listObj.cssClass).toEqual(null);
+            listObj = new ListBox({ cssClass: undefined }, elem);
+            expect(listObj.cssClass).toEqual('');
+        });
+
+        it('ListBox With dataSource', () => {
+            listObj = new ListBox({ dataSource: null }, elem);
+            expect(listObj.dataSource).toEqual(null);
+            listObj = new ListBox({ dataSource: undefined }, elem);
+            expect(listObj.dataSource).toEqual([]);
+        });
+
+        it('ListBox With enablePersistence', () => {
+            listObj = new ListBox({ enablePersistence: null }, elem);
+            expect(listObj.enablePersistence).toEqual(null);
+            listObj = new ListBox({ enablePersistence: undefined }, elem);
+            expect(listObj.enablePersistence).toEqual(false);
+        });
+
+        it('ListBox With enableRtl', () => {
+            listObj = new ListBox({ enableRtl: null }, elem);
+            expect(listObj.enableRtl).toEqual(false);
+            listObj = new ListBox({ enableRtl: undefined }, elem);
+            expect(listObj.enableRtl).toEqual(false);
+        });
+
+        it('ListBox With enabled', () => {
+            listObj = new ListBox({ enabled: null }, elem);
+            expect(listObj.enabled).toEqual(null);
+            listObj = new ListBox({ enabled: undefined }, elem);
+            expect(listObj.enabled).toEqual(true);
+        });
+
+        it('ListBox With fields', () => {
+            listObj = new ListBox({ fields: { text: null, value: null, iconCss: null, groupBy: null } }, elem);
+            expect(listObj.fields.text).toEqual('text');
+            expect(listObj.fields.value).toEqual('text');
+            expect(listObj.fields.iconCss).toEqual(null);
+            expect(listObj.fields.groupBy).toEqual(null);
+            listObj = new ListBox({ fields: { text: undefined, value: undefined, iconCss: undefined, groupBy: undefined } }, elem);
+            expect(listObj.fields.text).toEqual('text');
+            expect(listObj.fields.value).toEqual('text');
+            expect(listObj.fields.iconCss).toEqual(undefined);
+            expect(listObj.fields.groupBy).toEqual(undefined);
+        });
+
+        it('ListBox With filterBarPlaceholder', () => {
+            listObj = new ListBox({ filterBarPlaceholder: null }, elem);
+            expect(listObj.filterBarPlaceholder).toEqual(null);
+            listObj = new ListBox({ filterBarPlaceholder: undefined }, elem);
+            expect(listObj.filterBarPlaceholder).toEqual(null);
+        });
+
+        it('ListBox With filterType', () => {
+            listObj = new ListBox({ filterType: null }, elem);
+            expect(listObj.filterType).toEqual(null);
+            listObj = new ListBox({ filterType: undefined }, elem);
+            expect(listObj.filterType).toEqual('StartsWith');
+        });
+
+        it('ListBox With height', () => {
+            listObj = new ListBox({ height: null }, elem);
+            expect(listObj.height).toEqual(null);
+            listObj = new ListBox({ height: undefined }, elem);
+            expect(listObj.height).toEqual('');
+        });
+
+        it('ListBox With itemTemplate', () => {
+            listObj = new ListBox({ itemTemplate: null }, elem);
+            expect(listObj.itemTemplate).toEqual(null);
+            listObj = new ListBox({ itemTemplate: undefined }, elem);
+            expect(listObj.itemTemplate).toEqual(null);
+        });
+
+        it('ListBox With locale', () => {
+            listObj = new ListBox({ locale: null }, elem);
+            expect(listObj.locale).toEqual('en-US');
+            listObj = new ListBox({ locale: undefined }, elem);
+            expect(listObj.locale).toEqual('en-US');
+        });
+
+        it('ListBox With maximumSelectionLength', () => {
+            listObj = new ListBox({ maximumSelectionLength: null }, elem);
+            expect(listObj.maximumSelectionLength).toEqual(null);
+            listObj = new ListBox({ maximumSelectionLength: undefined }, elem);
+            expect(listObj.maximumSelectionLength).toEqual(1000);
+        });
+
+        it('ListBox With noRecordsTemplate', () => {
+            listObj = new ListBox({ noRecordsTemplate: null }, elem);
+            expect(listObj.noRecordsTemplate).toEqual(null);
+            listObj = new ListBox({ noRecordsTemplate: undefined }, elem);
+            expect(listObj.noRecordsTemplate).toEqual('No records found');
+        });
+
+        it('ListBox With selectionSettings', () => {
+            listObj = new ListBox({ selectionSettings: { mode: null } }, elem);
+            expect(listObj.selectionSettings.mode).toEqual(null);
+            listObj = new ListBox({ selectionSettings: { mode: undefined } }, elem);
+            expect(listObj.selectionSettings.mode).toEqual('Multiple');
+        });
+
+        it('ListBox With query', () => {
+            listObj = new ListBox({ query: null }, elem);
+            expect(listObj.query).toEqual(null);
+            listObj = new ListBox({ query: undefined }, elem);
+            expect(listObj.query).toEqual(null);
+        });
+
+        it('ListBox With scope', () => {
+            listObj = new ListBox({ scope: null }, elem);
+            expect(listObj.scope).toEqual(null);
+            listObj = new ListBox({ scope: undefined }, elem);
+            expect(listObj.scope).toEqual('');
+        });
+
+        it('ListBox With sortOrder', () => {
+            listObj = new ListBox({ sortOrder: null }, elem);
+            expect(listObj.sortOrder).toEqual(null);
+            listObj = new ListBox({ sortOrder: undefined }, elem);
+            expect(listObj.sortOrder).toEqual('None');
+        });
+
+        it('ListBox With toolbarSettings', () => {
+            listObj = new ListBox({ toolbarSettings: { items: null, position: null } }, elem);
+            expect(listObj.toolbarSettings.items).toEqual([]);
+            expect(listObj.toolbarSettings.position).toEqual(null);
+            listObj = new ListBox({ toolbarSettings: { items: undefined, position: undefined } }, elem);
+            expect(listObj.toolbarSettings.items).toEqual([]);
+            expect(listObj.toolbarSettings.position).toEqual('Right');
+        });
+
+        it('ListBox With value', () => {
+            listObj = new ListBox({ value: null }, elem);
+            expect(listObj.value).toEqual(null);
+            listObj = new ListBox({ value: undefined }, elem);
+            expect(listObj.value).toEqual([]);
+        });
     });
 });

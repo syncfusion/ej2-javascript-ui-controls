@@ -50,6 +50,14 @@ const FOOTNOTE_ID: string = '_footnote';
 const ENDNOTE_ID: string = '_endnote';
 const COLUMNS_ID: string = '_columns';
 const PAGE_SET_UP: string = '_page_set';
+const CONTENT_CONTROL_ID: string = '_content_control';
+const RICHTEXT_CONTENT_CONTROL_ID: string = '_richtext_content_control';
+const PLAINTEXT_CONTENT_CONTROL_ID: string = '_plaintext_content_control';
+const COMBOBOX_CONTENT_CONTROL_ID: string = '_combobox_content_control';
+const DROPDOWNDOWN_CONTENT_CONTROL_ID: string = '_dropdown_content_control';
+const DATEPICKER_CONTENT_CONTROL_ID: string = '_datepicker_content_control';
+const CHECKBOX_CONTENT_CONTROL_ID: string = '_checkbox_content_control';
+const PICTURE_CONTENT_CONTROL_ID: string = '_picture_content_control';
 
 /**
  * Toolbar Module
@@ -92,6 +100,7 @@ export class Toolbar {
     private toolbarTimer: number;
     private buttonElement: HTMLButtonElement;
     private PageSetUpDropDwn: DropDownButton;
+    private ContentControlDropDwn: DropDownButton;
 
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -157,7 +166,7 @@ export class Toolbar {
             iconCss: iconCss
         });
         if (this.container.showPropertiesPane)
-            this.buttonElement.title = locale.getConstant('Hide properties pane');
+        {this.buttonElement.title = locale.getConstant('Hide properties pane'); }
         else {
             this.buttonElement.title = locale.getConstant('Show properties pane');
             propertiesPaneDiv.classList.add('e-de-pane-disable-clr');
@@ -191,25 +200,41 @@ export class Toolbar {
                     items : [
                         { text : locale.getConstant('Page Setup'), iconCss: 'e-icons e-de-ctnr-page-size', id: id + PAGE_SET_UP },
                         { text : locale.getConstant('Columns'), iconCss: 'e-icons e-de-ctnr-columns', id: id + COLUMNS_ID }],
-                        cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-                        select: this.onDropDownButtonSelect.bind(this)
+                    cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                    select: this.onDropDownButtonSelect.bind(this)
                 });
                 this.PageSetUpDropDwn.appendTo('#' + id + PAGE_SET_UP_ID);
             }
+            if (this.toolbarItems.indexOf('ContentControl') >= 0) {
+                //e-btn-icon e-icons e-de-ctnr-image e-icon-left
+                this.ContentControlDropDwn = new DropDownButton({
+                    items: [
+                        { text: locale.getConstant('Rich Text Content Control'), iconCss: 'e-icons e-de-ctnr-change-case', id: id + RICHTEXT_CONTENT_CONTROL_ID},
+                        { text: locale.getConstant('Plain Text Content Control'), iconCss: 'e-icons e-de-ctnr-change-case', id: id + PLAINTEXT_CONTENT_CONTROL_ID },
+                        { text: locale.getConstant('Picture Content Control'), iconCss: 'e-icons e-de-ctnr-image', id: id + PICTURE_CONTENT_CONTROL_ID },
+                        { text: locale.getConstant('Combo Box Content Control'), iconCss: 'e-icons e-de-combo-box', id: id + COMBOBOX_CONTENT_CONTROL_ID },
+                        { text: locale.getConstant('Drop-Down List Content Control'), iconCss: 'e-icons e-de-dropdown-list', id: id + DROPDOWNDOWN_CONTENT_CONTROL_ID },
+                        { text: locale.getConstant('Date Picker Content Control'), iconCss: 'e-icons e-timeline-today', id: id + DATEPICKER_CONTENT_CONTROL_ID },
+                        { text: locale.getConstant('Check Box Content Control'), iconCss: 'e-icons e-check-box', id: id + CHECKBOX_CONTENT_CONTROL_ID}],
+                    cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                    select: this.onDropDownButtonSelect.bind(this)
+                });
+                this.ContentControlDropDwn.appendTo('#' + id + CONTENT_CONTROL_ID);
+            }
             if (this.toolbarItems.indexOf('Break') >= 0) {
-                let break_dataSource = [
+                const breakDataSource: any = [
                     { text: locale.getConstant('Page'), iconCss: 'e-de-listview e-de-listview-icon e-icons e-de-ctnr-page-break', id: PAGE_BREAK, category: locale.getConstant('Page Breaks') },
                     { text: locale.getConstant('Column'), iconCss: 'e-de-listview e-de-listview-icon e-icons e-de-ctnr-page-break-column', id: COLUMN_BREAK, category: locale.getConstant('Page Breaks') },
                     { text: locale.getConstant('Next Page'), iconCss: 'e-de-listview e-de-listview-icon e-icons e-de-ctnr-section-break', id: SECTION_BREAK, category: locale.getConstant('Section Breaks') },
                     { text: locale.getConstant('Continuous'), iconCss: 'e-de-listview e-de-listview-icon e-icons e-de-ctnr-section-break-continuous', id: SECTION_BREAK_CONTINUOUS, category: locale.getConstant('Section Breaks') }
                 ];
-                let ddbOption: DropDownButtonModel = {
+                const ddbOption: DropDownButtonModel = {
                     target: '#' + id + BREAK_ID + LISTVIEW_ID,
                     cssClass: 'e-caret-hide'
                 };
                 this.breakDropDwn = new DropDownButton(ddbOption, '#' + id + BREAK_ID);
                 this.breakListView = new ListView({
-                    dataSource: break_dataSource,
+                    dataSource: breakDataSource,
                     width: '170px',
                     fields: { iconCss: 'iconCss', groupBy: 'category' },
                     showIcon: true,
@@ -310,9 +335,9 @@ export class Toolbar {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
             paneDiv.classList.remove('e-de-pane-disable-clr');
-            this.buttonElement.title = locale.getConstant('Hide properties pane');  
-            this.buttonElement.setAttribute('aria-label',locale.getConstant('Hide properties pane'));
-            this.buttonElement.setAttribute('aria-pressed','true');
+            this.buttonElement.title = locale.getConstant('Hide properties pane');
+            this.buttonElement.setAttribute('aria-label', locale.getConstant('Hide properties pane'));
+            this.buttonElement.setAttribute('aria-pressed', 'true');
             classList(paneDiv, ['e-de-pane-enable-clr'], []);
             this.container.trigger(beforePaneSwitchEvent, { type: 'PropertiesPane' });
         } else if (this.container.previousContext.indexOf('Header') >= 0
@@ -322,8 +347,8 @@ export class Toolbar {
             this.container.showPropertiesPane = false;
             paneDiv.classList.remove('e-de-pane-enable-clr');
             this.buttonElement.title = locale.getConstant('Show properties pane');
-            this.buttonElement.setAttribute('aria-label',locale.getConstant('Show properties pane'));
-            this.buttonElement.setAttribute('aria-pressed','false');
+            this.buttonElement.setAttribute('aria-label', locale.getConstant('Show properties pane'));
+            this.buttonElement.setAttribute('aria-pressed', 'false');
             classList(paneDiv, ['e-de-pane-disable-clr'], []);
         }
         this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);
@@ -363,38 +388,38 @@ export class Toolbar {
         // items = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(items)));
         for (let i: number = 0; i < items.length; i++) {
             switch (items[parseInt(i.toString(), 10)]) {
-                case 'RestrictEditing':
-                    if (!isNullOrUndefined(this.restrictDropDwn)) {
-                        this.restrictDropDwn.destroy();
-                    }
-                    break;
-                case 'Break':
-                    if (!isNullOrUndefined(this.breakDropDwn)) {
-                        this.breakDropDwn.destroy();
-                    }
-                    break;
-                case 'PageSetup':
-                    if (!isNullOrUndefined(this.PageSetUpDropDwn)) {
-                        this.PageSetUpDropDwn.destroy();
-                    }
-                    break;
-                case 'Image':
-                    if (!isNullOrUndefined(this.imgDropDwn)) {
-                        this.imgDropDwn.destroy();
-                    }
-                    break;
-                case 'FormFields':
-                    if (!isNullOrUndefined(this.formFieldDropDown)) {
-                        this.formFieldDropDown.destroy();
-                    }
-                    break;
+            case 'RestrictEditing':
+                if (!isNullOrUndefined(this.restrictDropDwn)) {
+                    this.restrictDropDwn.destroy();
+                }
+                break;
+            case 'Break':
+                if (!isNullOrUndefined(this.breakDropDwn)) {
+                    this.breakDropDwn.destroy();
+                }
+                break;
+            case 'PageSetup':
+                if (!isNullOrUndefined(this.PageSetUpDropDwn)) {
+                    this.PageSetUpDropDwn.destroy();
+                }
+                break;
+            case 'Image':
+                if (!isNullOrUndefined(this.imgDropDwn)) {
+                    this.imgDropDwn.destroy();
+                }
+                break;
+            case 'FormFields':
+                if (!isNullOrUndefined(this.formFieldDropDown)) {
+                    this.formFieldDropDown.destroy();
+                }
+                break;
             }
         }
         this.toolbarItems = items;
         const toolbarTarget: HTMLElement = this.container.toolbarContainer;
         this.toolbar.items = this.getToolbarItems();
         /* eslint-disable @typescript-eslint/indent */
-        this.toolbarTimer = setTimeout(() => {
+        this.toolbarTimer = Number(setTimeout(() => {
             if (this.toolbarTimer) {
                 clearTimeout(this.toolbarTimer);
             }
@@ -405,7 +430,7 @@ export class Toolbar {
             if (items.indexOf('Image') >= 0) {
                 EventHandler.add(this.imagePicker, 'change', this.onImageChange, this);
             }
-        }, 200);
+        }, 200));
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private getToolbarItems(): ItemModel[] {
@@ -438,32 +463,32 @@ export class Toolbar {
                 case 'New':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document'),
-                        id: id + NEW_ID, text: locale.getConstant('New'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Create a new document')}
+                        id: id + NEW_ID, text: locale.getConstant('New'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Create a new document')}
                     });
                     break;
                 case 'Open':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document'), id: id + OPEN_ID,
-                        text: locale.getConstant('Open'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Open a document')}
+                        text: locale.getConstant('Open'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Open a document')}
                     });
                     break;
                 case 'Undo':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo Tooltip'),
-                        id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Undo Tooltip')}
+                        id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Undo Tooltip')}
                     });
                     break;
                 case 'Redo':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo Tooltip'),
-                        id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: className,htmlAttributes:{'aria-label':locale.getConstant('Redo Tooltip')}
+                        id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Redo Tooltip')}
                     });
                     break;
                 case 'Comments':
                     toolbarItems.push({
                         prefixIcon: 'e-de-cnt-cmt-add',
                         tooltipText: locale.getConstant('Show comments'),
-                        id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Show comments')}
+                        id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Show comments')}
                     });
                     break;
                 case 'TrackChanges':
@@ -471,33 +496,33 @@ export class Toolbar {
                         prefixIcon: 'e-de-cnt-track',
                         tooltipText: locale.getConstant('Track Changes'),
                         id: id + TRACK_ID, text: this.onWrapText(locale.getConstant('TrackChanges')), cssClass: className,
-                        htmlAttributes: { 'aria-label': locale.getConstant('TrackChanges'), 'aria-pressed': this.container.enableTrackChanges, role: "button", 'aria-hidden':'true'}
+                        htmlAttributes: { 'aria-label': locale.getConstant('TrackChanges'), 'aria-pressed': this.container.enableTrackChanges, role: 'button', 'aria-hidden': 'true'}
                     });
                     break;
                 case 'Image':
                     toolbarItems.push({
                         template: '<button title="' + locale.getConstant('Insert inline picture from a file') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + INSERT_IMAGE_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-image e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Image') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
-                        id: id + INSERT_IMAGE_ID,htmlAttributes:{'aria-label':locale.getConstant('Insert inline picture from a file'),'aria-haspopup':false}
+                        id: id + INSERT_IMAGE_ID, htmlAttributes: {'aria-label': locale.getConstant('Insert inline picture from a file'), 'aria-haspopup': false}
                     });
                     break;
                 case 'Table':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
-                        id: id + INSERT_TABLE_ID, text: locale.getConstant('Table'), cssClass: className,htmlAttributes:{'aria-label':locale.getConstant('Insert a table into the document'),'aria-haspopup':true}
+                        id: id + INSERT_TABLE_ID, text: locale.getConstant('Table'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Insert a table into the document'), 'aria-haspopup': true}
                     });
                     break;
                 case 'Hyperlink':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-link',
                         tooltipText: locale.getConstant('Create Hyperlink'),
-                        id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: className,htmlAttributes:{'aria-label':locale.getConstant('Create Hyperlink'),'aria-haspopup':true}
+                        id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Create Hyperlink'), 'aria-haspopup': true}
                     });
                     break;
                 case 'Bookmark':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-bookmark',
                         tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document'),
-                        id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Insert a bookmark in a specific place in this document'),'aria-haspopup':true}
+                        id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Insert a bookmark in a specific place in this document'), 'aria-haspopup': true}
                     });
                     break;
                 case 'TableOfContents':
@@ -505,45 +530,45 @@ export class Toolbar {
                         prefixIcon: 'e-de-ctnr-tableofcontent',
                         tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents'),
                         id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
-                        cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Table of Contents')}
+                        cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Table of Contents')}
                     });
                     break;
                 case 'Header':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header'),
                         id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: className,
-                        htmlAttributes:{'aria-label':locale.getConstant('Add or edit the header')}
+                        htmlAttributes: {'aria-label': locale.getConstant('Add or edit the header')}
                     });
                     break;
                 case 'Footer':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer'),
-                        id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: className,htmlAttributes:{'aria-label': locale.getConstant('Add or edit the footer')}
+                        id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Add or edit the footer')}
                     });
                     break;
                 case 'PageSetup':
                     toolbarItems.push({
                         template: '<button title="' + locale.getConstant('Page Setup') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + PAGE_SET_UP_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-pagesetup e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Page Setup')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
-                        id: id + PAGE_SET_UP_ID, htmlAttributes:{'aria-label':locale.getConstant('Page Setup')}
+                        id: id + PAGE_SET_UP_ID, htmlAttributes: {'aria-label': locale.getConstant('Page Setup')}
                     });
                     break;
                 case 'PageNumber':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
                         id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
-                        cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Page Number')}
+                        cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Page Number')}
                     });
                     break;
                 case 'Break':
                     toolbarItems.push({
-                        template: '<button title="' + locale.getConstant('Break') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + BREAK_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-break e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Break') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button><div id="' + id + BREAK_ID + LISTVIEW_ID +'"></div>',
-                        id: id + BREAK_ID, htmlAttributes:{'aria-label':locale.getConstant('Break')}
+                        template: '<button title="' + locale.getConstant('Break') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + BREAK_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-break e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Break') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button><div id="' + id + BREAK_ID + LISTVIEW_ID + '"></div>',
+                        id: id + BREAK_ID, htmlAttributes: {'aria-label': locale.getConstant('Break')}
                     });
                     break;
                 case 'Find':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find Text'),
-                        id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Find Text')}
+                        id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: className, htmlAttributes: {'aria-label': locale.getConstant('Find Text')}
                     });
                     break;
                 case 'LocalClipboard':
@@ -552,20 +577,20 @@ export class Toolbar {
                         tooltipText: locale.getConstant('Toggle between the internal clipboard and system clipboard'),
                         id: id + CLIPBOARD_ID, text: this.onWrapText(locale.getConstant('Local Clipboard')),
                         cssClass: className,
-                        htmlAttributes:{'aria-label':locale.getConstant('Local Clipboard'),'aria-pressed':this.container.enableLocalPaste, role: "button",'aria-hidden':'true'}
+                        htmlAttributes: {'aria-label': locale.getConstant('Local Clipboard'), 'aria-pressed': this.container.enableLocalPaste, role: 'button', 'aria-hidden': 'true'}
                     });
                     break;
                 case 'RestrictEditing':
                     toolbarItems.push({
                         template: '<button title="' + locale.getConstant('Restrict editing') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + RESTRICT_EDITING_ID + '"><span class="e-btn-icon e-de-ctnr-lock e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Restrict Editing')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
-                        htmlAttributes:{'aria-label':locale.getConstant('Restrict editing')}
+                        htmlAttributes: {'aria-label': locale.getConstant('Restrict editing')}
                     });
                     break;
                 case 'FormFields':
                     toolbarItems.push({
                         template: '<button title="' + locale.getConstant('Form Fields') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + FORM_FIELDS_ID + '"><span class="e-btn-icon e-de-formfield e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Form Fields')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
                         id : id + FORM_FIELDS_ID,
-                        htmlAttributes:{'aria-label':locale.getConstant('Form Fields')}
+                        htmlAttributes: {'aria-label': locale.getConstant('Form Fields')}
                     });
                     break;
                 case 'UpdateFields':
@@ -573,7 +598,7 @@ export class Toolbar {
                         prefixIcon: 'e-de-update-field', tooltipText: locale.getConstant('Update cross reference fields'),
                         id: id + UPDATE_FIELDS_ID, text: this.onWrapText(locale.getConstant('Update Fields')),
                         cssClass: className + ' e-de-formfields',
-                        htmlAttributes:{'aria-label':locale.getConstant('Update cross reference fields')}
+                        htmlAttributes: {'aria-label': locale.getConstant('Update cross reference fields')}
                     });
                     break;
                 case 'InsertFootnote':
@@ -581,7 +606,7 @@ export class Toolbar {
                         prefixIcon: 'e-de-footnote', tooltipText: locale.getConstant('Footnote Tooltip'),
                         text: this.onWrapText(locale.getConstant('Insert Footnote')), id: id + FOOTNOTE_ID,
                         cssClass: className,
-                        htmlAttributes:{'aria-label':locale.getConstant('Insert Footnote')}
+                        htmlAttributes: {'aria-label': locale.getConstant('Insert Footnote')}
                     });
                     break;
                 case 'InsertEndnote':
@@ -589,7 +614,13 @@ export class Toolbar {
                         prefixIcon: 'e-de-endnote', tooltipText: locale.getConstant('Endnote Tooltip'),
                         text: this.onWrapText(locale.getConstant('Insert Endnote')), id: id + ENDNOTE_ID,
                         cssClass: className,
-                        htmlAttributes:{'aria-label':locale.getConstant('Insert Endnote')}
+                        htmlAttributes: {'aria-label': locale.getConstant('Insert Endnote')}
+                    });
+                    break;
+                case 'ContentControl':
+                    toolbarItems.push({
+                        template: '<button title="' + locale.getConstant('Content Control') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + CONTENT_CONTROL_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-content-control e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Content Control')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
+                        id: id + CONTENT_CONTROL_ID, htmlAttributes: { 'aria-label': locale.getConstant('Content Control') }
                     });
                     break;
                 default:
@@ -612,77 +643,80 @@ export class Toolbar {
     private clickHandler(args: ClickEventArgs): void {
         const id: string = this.container.element.id + TOOLBAR_ID;
         switch (args.item.id) {
-            case id + NEW_ID:
-                this.container.documentEditor.openBlank();
-                this.documentEditor.focusIn();
-                break;
-            case id + OPEN_ID:
-                this.filePicker.value = '';
-                this.filePicker.click();
-                this.documentEditor.focusIn();
-                break;
-            case id + UNDO_ID:
-                this.container.documentEditor.editorHistoryModule.undo();
-                break;
-            case id + REDO_ID:
-                this.container.documentEditor.editorHistoryModule.redo();
-                break;
-            case id + INSERT_TABLE_ID:
-                this.container.documentEditor.showDialog('Table');
-                break;
-            case id + INSERT_LINK_ID:
-                this.container.documentEditor.showDialog('Hyperlink');
-                break;
-            case id + BOOKMARK_ID:
-                this.container.documentEditor.showDialog('Bookmark');
-                break;
-            case id + COMMENT_ID:
-                this.documentEditor.editorModule.isUserInsert =  true;
-                this.documentEditor.editorModule.insertComment('');
-                this.documentEditor.editorModule.isUserInsert =  false;
-                break;
-            case id + TRACK_ID:
-                this.toggleTrackChangesInternal(args.item.id);
-                break;
-            case id + HEADER_ID:
-                this.container.documentEditor.selectionModule.goToHeader();
-                this.container.statusBar.toggleWebLayout();
-                break;
-            case id + TABLE_OF_CONTENT_ID:
-                this.onToc();
-                break;
-            case id + FOOTER_ID:
-                this.container.documentEditor.selectionModule.goToFooter();
-                this.container.statusBar.toggleWebLayout();
-                break;
+        case id + NEW_ID:
+            this.container.documentEditor.openBlank();
+            this.documentEditor.focusIn();
+            break;
+        case id + OPEN_ID:
+            this.filePicker.value = '';
+            this.filePicker.click();
+            this.documentEditor.focusIn();
+            break;
+        case id + UNDO_ID:
+            this.container.documentEditor.editorHistoryModule.undo();
+            break;
+        case id + REDO_ID:
+            this.container.documentEditor.editorHistoryModule.redo();
+            break;
+        case id + INSERT_TABLE_ID:
+            this.container.documentEditor.showDialog('Table');
+            break;
+        case id + INSERT_LINK_ID:
+            this.container.documentEditor.showDialog('Hyperlink');
+            break;
+        case id + BOOKMARK_ID:
+            this.container.documentEditor.showDialog('Bookmark');
+            break;
+        case id + COMMENT_ID:
+            this.documentEditor.editorModule.isUserInsert =  true;
+            this.documentEditor.editorModule.insertComment('');
+            this.documentEditor.editorModule.isUserInsert =  false;
+            break;
+        case id + TRACK_ID:
+            this.toggleTrackChangesInternal(args.item.id);
+            break;
+        case id + HEADER_ID:
+            this.container.documentEditor.selectionModule.goToHeader();
+            this.container.statusBar.toggleWebLayout();
+            break;
+        case id + TABLE_OF_CONTENT_ID:
+            this.onToc();
+            break;
+        case id + FOOTER_ID:
+            this.container.documentEditor.selectionModule.goToFooter();
+            this.container.statusBar.toggleWebLayout();
+            break;
             // case id + PAGE_SET_UP_ID:
             //     this.container.documentEditor.showDialog('PageSetup');
             //     break;
-            case id + PAGE_NUMBER_ID:
-                this.container.documentEditor.editorModule.insertPageNumber();
-                break;
-            case id + FIND_ID:
-                this.container.documentEditor.showOptionsPane();
-                break;
-            case id + CLIPBOARD_ID:
-                this.toggleLocalPaste(args.item.id);
-                break;
-            case id + UPDATE_FIELDS_ID:
-                this.documentEditor.updateFields();
-                break;
-            case id + FOOTNOTE_ID:
-                this.documentEditor.editorModule.insertFootnote();
-                break;
-            case id + ENDNOTE_ID:
-                this.documentEditor.editorModule.insertEndnote();
-                break;
-            default:
-                this.container.trigger(toolbarClickEvent, args);
-                break;
+        case id + PAGE_NUMBER_ID:
+            this.container.documentEditor.editorModule.insertPageNumber();
+            break;
+        case id + FIND_ID:
+            this.container.documentEditor.showOptionsPane();
+            break;
+        case id + CLIPBOARD_ID:
+            this.toggleLocalPaste(args.item.id);
+            break;
+        case id + UPDATE_FIELDS_ID:
+            this.documentEditor.updateFields();
+            break;
+        case id + FOOTNOTE_ID:
+            this.documentEditor.editorModule.insertFootnote();
+            break;
+        case id + ENDNOTE_ID:
+            this.documentEditor.editorModule.insertEndnote();
+            break;
+        default:
+            this.container.trigger(toolbarClickEvent, args);
+            break;
         }
-        if (args.item.id === id + NEW_ID || args.item.id === id + OPEN_ID || args.item.id === id + UNDO_ID || args.item.id === REDO_ID || args.item.id === id + COMMENT_ID || args.item.id === id + TRACK_ID ||
-            args.item.id === id + HEADER_ID || args.item.id === id + TABLE_OF_CONTENT_ID || args.item.id === id + FOOTER_ID || args.item.id === id + PAGE_NUMBER_ID ||
-            args.item.id === id + CLIPBOARD_ID || args.item.id === id + UPDATE_FIELDS_ID || args.item.id === id + FOOTNOTE_ID || args.item.id === id + ENDNOTE_ID || args.item.id === id + PAGE_SET_UP_ID ||
+
+        if (args.item.id === id + NEW_ID || args.item.id === id + OPEN_ID || args.item.id === id + UNDO_ID || args.item.id === REDO_ID
+            || args.item.id === id + COMMENT_ID || args.item.id === id + TRACK_ID || args.item.id === id + HEADER_ID
+            || args.item.id === id + TABLE_OF_CONTENT_ID || args.item.id === id + FOOTER_ID || args.item.id === id + PAGE_NUMBER_ID ||
+            args.item.id === id + CLIPBOARD_ID || args.item.id === id + UPDATE_FIELDS_ID || args.item.id === id + FOOTNOTE_ID
+            || args.item.id === id + ENDNOTE_ID || args.item.id === id + PAGE_SET_UP_ID ||
             args.item.id === id + BREAK_ID || args.item.id === id + RESTRICT_EDITING_ID || args.item.id === id + FORM_FIELDS_ID) {
             this.documentEditor.focusIn();
         }
@@ -733,10 +767,27 @@ export class Toolbar {
         if (id === parentId + INSERT_IMAGE_LOCAL_ID) {
             this.imagePicker.value = '';
             this.imagePicker.click();
-        } else if(id === parentId + PAGE_SET_UP){
+        } else if (id === parentId + PAGE_SET_UP){
             this.container.documentEditor.showDialog('PageSetup');
-        } else if(id === parentId + COLUMNS_ID){
-            this.container.documentEditor.showDialog('Columns'); 
+        } else if (id === parentId + COLUMNS_ID){
+            this.container.documentEditor.showDialog('Columns');
+        } else if (id === parentId + DATEPICKER_CONTENT_CONTROL_ID) {
+            this.container.documentEditor.editor.insertContentControl('Date');
+        } else if (id === parentId + CHECKBOX_CONTENT_CONTROL_ID) {
+            this.container.documentEditor.editor.insertContentControl('CheckBox');
+        }
+        else if (id === parentId + COMBOBOX_CONTENT_CONTROL_ID) {
+            this.container.documentEditor.editor.insertContentControl('ComboBox');
+        }
+        else if (id === parentId + RICHTEXT_CONTENT_CONTROL_ID) {
+            this.container.documentEditor.editor.insertContentControl('RichText');
+        }
+        else if (id === parentId + PLAINTEXT_CONTENT_CONTROL_ID) {
+            this.container.documentEditor.editor.insertContentControl('Text');
+        } else if (id === parentId + PICTURE_CONTENT_CONTROL_ID) {
+            this.container.documentEditor.showDialog('PictureContentControl');
+        } else if (id === parentId + DROPDOWNDOWN_CONTENT_CONTROL_ID) {
+            this.container.documentEditor.editor.insertContentControl('DropDownList');
         } else if (id === parentId + INSERT_IMAGE_ONLINE_ID) {
             // Need to implement image dialog;
         } else if (id === parentId + READ_ONLY) {
@@ -764,7 +815,7 @@ export class Toolbar {
             return;
         }
         if (file) {
-            let formatType: string = file.name.substr(file.name.lastIndexOf('.'));
+            const formatType: string = file.name.substr(file.name.lastIndexOf('.'));
             if (formatType === '.sfdt' || formatType === '.txt') {
                 const fileReader: FileReader = new FileReader();
                 fileReader.onload = (): void => {
@@ -779,7 +830,8 @@ export class Toolbar {
                 fileReader.readAsText(file);
             } else {
                 if (this.isSupportedFormatType(formatType.toLowerCase())) {
-                    this.convertToSfdt(file);
+                    //this.convertToSfdt(file);
+                    this.documentEditor.open(file);
                 }
                 else {
                     const localizeValue: L10n = new L10n('documenteditor', this.documentEditor.defaultLocale);
@@ -795,38 +847,38 @@ export class Toolbar {
     }
     private isSupportedFormatType(formatType: string): boolean {
         switch (formatType) {
-            case ".dotx":
-            case ".docx":
-            case ".docm":
-            case ".dotm":
-            case ".dot":
-            case ".doc":
-            case ".rtf":
-            case ".txt":
-            case ".xml":
-            case ".html":
-                return true;
-            default:
-                return false;
+        case '.dotx':
+        case '.docx':
+        case '.docm':
+        case '.dotm':
+        case '.dot':
+        case '.doc':
+        case '.rtf':
+        case '.txt':
+        case '.xml':
+        case '.html':
+            return true;
+        default:
+            return false;
         }
     }
-    private convertToSfdt(file: File): void {
-        showSpinner(this.container.containerTarget);
-        this.importHandler.url = this.container.serviceUrl + this.container.serverActionSettings.import;
-        this.importHandler.onSuccess = this.successHandler.bind(this);
-        this.importHandler.onFailure = this.failureHandler.bind(this);
-        this.importHandler.onError = this.failureHandler.bind(this);
-        this.importHandler.customHeaders = this.container.headers;
-        const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'Import', headers: this.container.headers, timeout: 0, cancel: false, withCredentials: false  };
-        this.container.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
-        const formData: FormData = new FormData();
-        formData.append('files', file);
-        if (httprequestEventArgs.cancel) {
-            hideSpinner(this.container.containerTarget);
-        } else {
-            this.importHandler.send(formData, httprequestEventArgs);
-        }
-    }
+    // private convertToSfdt(file: File): void {
+    //     showSpinner(this.container.containerTarget);
+    //     this.importHandler.url = this.container.serviceUrl + this.container.serverActionSettings.import;
+    //     this.importHandler.onSuccess = this.successHandler.bind(this);
+    //     this.importHandler.onFailure = this.failureHandler.bind(this);
+    //     this.importHandler.onError = this.failureHandler.bind(this);
+    //     this.importHandler.customHeaders = this.container.headers;
+    //     const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'Import', headers: this.container.headers, timeout: 0, cancel: false, withCredentials: false  };
+    //     this.container.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
+    //     const formData: FormData = new FormData();
+    //     formData.append('files', file);
+    //     if (httprequestEventArgs.cancel) {
+    //         hideSpinner(this.container.containerTarget);
+    //     } else {
+    //         this.importHandler.send(formData, httprequestEventArgs);
+    //     }
+    // }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private failureHandler(args: any): void {
         if (args.name === 'onError') {
@@ -860,7 +912,7 @@ export class Toolbar {
         const image: HTMLImageElement = document.createElement('img');
         const container: DocumentEditorContainer = this.container;
         image.addEventListener('load', function (): void {
-            container.documentEditor.editorModule.insertImageInternal(data, true, this.width, this.height,this.alt);
+            container.documentEditor.editorModule.insertImageInternal(data, true, this.width, this.height, this.alt);
         });
         image.src = data;
     }
@@ -922,59 +974,62 @@ export class Toolbar {
      * @returns {void}
      */
     public enableDisableToolBarItem(enable: boolean, isProtectedContent: boolean): void {
-        const id: string = this.container.element.id + TOOLBAR_ID;
-        for (const item of this.toolbar.items) {
-            const itemId: string = item.id;
-            if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
-                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID
-                && item.type !== 'Separator') {
-                if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
-                    continue;
+        if(!isNullOrUndefined(this.container.element)) {
+            const id: string = this.container.element.id + TOOLBAR_ID;
+            for (const item of this.toolbar.items) {
+                const itemId: string = item.id;
+                if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
+                    itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID
+                    && item.type !== 'Separator') {
+                    if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
+                        continue;
+                    }
+                    if (itemId !== id + UNDO_ID && itemId !== id + REDO_ID && itemId !== id + INSERT_TABLE_ID &&
+                        itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
+                        itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
+                        itemId !== id + PAGE_SET_UP_ID && itemId !== id + CONTENT_CONTROL_ID && itemId !== id + PAGE_NUMBER_ID &&
+                        itemId !== id + INSERT_IMAGE_ID && itemId !== id + FORM_FIELDS_ID && itemId !== id + BREAK_ID &&
+                        itemId !== id + TRACK_ID && itemId !== id + FOOTNOTE_ID && itemId !== id + ENDNOTE_ID && itemId !== id + UPDATE_FIELDS_ID) {
+                        continue;
+                    }
+                    if (isProtectedContent && this.documentEditor.documentHelper.isFormFillProtectedMode && itemId === id + UPDATE_FIELDS_ID) {
+                        continue;
+                    }
+                    const element: HTMLElement = document.getElementById(item.id);
+                    if (!isNullOrUndefined(element) && !isNullOrUndefined(element.parentElement)) {
+                        this.toolbar.enableItems(element.parentElement, enable);
+                    }
                 }
-                if (itemId !== id + UNDO_ID && itemId !== id + REDO_ID && itemId !== id + INSERT_TABLE_ID &&
-                    itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
-                    itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
-                    itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
-                    && itemId !== id + FORM_FIELDS_ID && itemId !== id + BREAK_ID && itemId !== id + TRACK_ID
-                    && itemId !== id + FOOTNOTE_ID && itemId !== id + ENDNOTE_ID && itemId !== id + UPDATE_FIELDS_ID) {
-                    continue;
+            }
+            if (!isNullOrUndefined(this.documentEditor)) {
+                this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
+            }
+            if (this.documentEditor.selectionModule.isinFootnote || this.documentEditor.selectionModule.isinEndnote
+                || this.documentEditor.enableHeaderAndFooter) {
+                if (this.containsItem(id + ENDNOTE_ID)) {
+                    this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, false);
                 }
-                if(isProtectedContent && this.documentEditor.documentHelper.isFormFillProtectedMode && itemId === id + UPDATE_FIELDS_ID) {
-                    continue;
+                if (this.containsItem(id + FOOTNOTE_ID)) {
+                    this.toolbar.enableItems(document.getElementById(id + FOOTNOTE_ID).parentElement, false);
                 }
-                const element: HTMLElement = document.getElementById(item.id);
-                if (!isNullOrUndefined(element) && !isNullOrUndefined(element.parentElement)) {
-                    this.toolbar.enableItems(element.parentElement, enable);
+                if (this.containsItem(id + BREAK_ID)) {
+                    this.toolbar.enableItems(document.getElementById(id + BREAK_ID).parentElement, false);
                 }
             }
-        }
-        if (!isNullOrUndefined(this.documentEditor)) {
-            this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
-        }
-        if (this.documentEditor.selectionModule.isinFootnote || this.documentEditor.selectionModule.isinEndnote || this.documentEditor.enableHeaderAndFooter) {
-            if (this.containsItem(id + ENDNOTE_ID)) {
-                this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, false);
+            if (!isProtectedContent || this.container.showPropertiesPane) {
+                if (isProtectedContent) {
+                    enable = this.container.showPropertiesPane;
+                }
+                classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
             }
-            if (this.containsItem(id + FOOTNOTE_ID)) {
-                this.toolbar.enableItems(document.getElementById(id + FOOTNOTE_ID).parentElement, false);
+            const protectionType: ProtectionType = this.documentEditor.documentHelper.protectionType;
+            if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
+                (protectionType === 'FormFieldsOnly' || protectionType === 'CommentsOnly'))) {
+                this.enableDisableUndoRedo();
             }
-            if (this.containsItem(id+BREAK_ID)) {
-                this.toolbar.enableItems(document.getElementById(id +BREAK_ID).parentElement, false);
+            if (this.documentEditor.documentHelper.isTrackedOnlyMode && this.containsItem(id + TRACK_ID)) {
+                this.toolbar.enableItems(document.getElementById(id + TRACK_ID).parentElement, false);
             }
-        }
-        if (!isProtectedContent || this.container.showPropertiesPane) {
-            if (isProtectedContent) {
-                enable = this.container.showPropertiesPane;
-            }
-            classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
-        }
-        let protectionType: ProtectionType = this.documentEditor.documentHelper.protectionType;
-        if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
-            (protectionType === 'FormFieldsOnly' || protectionType === 'CommentsOnly'))) {
-            this.enableDisableUndoRedo();
-        }
-        if (this.documentEditor.documentHelper.isTrackedOnlyMode && this.containsItem(id + TRACK_ID)) {
-            this.toolbar.enableItems(document.getElementById(id + TRACK_ID).parentElement, false)
         }
     }
     private containsItem(id: string): boolean {
@@ -992,7 +1047,7 @@ export class Toolbar {
     public enableDisableUndoRedo(): void {
         const id: string = this.container.element.id + TOOLBAR_ID;
         if (this.toolbarItems.indexOf('Undo') >= 0) {
-            let undoElement: HTMLElement = document.getElementById(id + UNDO_ID);
+            const undoElement: HTMLElement = document.getElementById(id + UNDO_ID);
             // We can optimize this condition check to single bool validation instead of array collection.
             /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(undoElement)) {
@@ -1000,7 +1055,7 @@ export class Toolbar {
             }
         }
         if (this.toolbarItems.indexOf('Redo') >= 0) {
-            let redoElement: HTMLElement = document.getElementById(id + REDO_ID);
+            const redoElement: HTMLElement = document.getElementById(id + REDO_ID);
             // We can optimize this condition check to single bool validation instead of array collection.
             /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(redoElement)) {
@@ -1046,7 +1101,7 @@ export class Toolbar {
             this.imgDropDwn.destroy();
             this.imgDropDwn = undefined;
         }
-        if(this.PageSetUpDropDwn){
+        if (this.PageSetUpDropDwn){
             this.PageSetUpDropDwn.destroy();
             this.PageSetUpDropDwn = undefined;
         }
@@ -1057,6 +1112,10 @@ export class Toolbar {
         if (this.formFieldDropDown) {
             this.formFieldDropDown.destroy();
             this.formFieldDropDown = undefined;
+        }
+        if (this.ContentControlDropDwn) {
+            this.ContentControlDropDwn.destroy();
+            this.ContentControlDropDwn = undefined;
         }
         if (this.toolbar) {
             const toolbarElement: HTMLElement = this.toolbar.element;

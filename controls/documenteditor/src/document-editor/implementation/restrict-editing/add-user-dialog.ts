@@ -148,6 +148,7 @@ export class AddUserDialog {
         }
     };
     /**
+     * @param {string} data - Specifies the data.
      * @private
      * @returns {void}
      */

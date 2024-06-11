@@ -1,20 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isUndefined, isNullOrUndefined, merge, setImmediate, setValue, isBlazor, getValue, extend } from './util';
 import { addClass, removeClass } from './dom';
 import { Observer } from './observer';
 export interface DomElements extends HTMLElement {
-    // eslint-disable-next-line
+    // eslint-disable-next-line camelcase
     ej2_instances: Object[];
 }
 
 const isColEName: RegExp = new RegExp(']');
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 export interface AngularEventEmitter {
     subscribe?: (generatorOrNext?: any, error?: any, complete?: any) => any;
 }
 
-// eslint-disable-next-line
 export declare type EmitType<T> = AngularEventEmitter & ((arg?: any, ...rest: any[]) => void);
 
 export interface BlazorDotnetObject {
@@ -22,13 +22,14 @@ export interface BlazorDotnetObject {
     invokeMethod(methodName: string): void;
     invokeMethodAsync(methodName: string, ...args: any[]): void;
 }
-/* tslint:enable:no-any */
+
 
 
 /**
  * Base library module is common module for Framework modules like touch,keyboard and etc.,
  *
  * @private
+ * @returns {void} ?
  */
 export abstract class Base<ElementType extends HTMLElement> {
     public element: ElementType;
@@ -44,8 +45,7 @@ export abstract class Base<ElementType extends HTMLElement> {
     protected bulkChanges: { [key: string]: Object } = {};
     protected refreshing: boolean = false;
     public ignoreCollectionWatch : boolean = false;
-    // eslint-disable-next-line
-    protected finalUpdate: Function = (): void => { };
+    protected finalUpdate: Function = (): void => { /**/ };
     protected modelObserver: Observer;
     protected childChangedProperties: { [key: string]: Object } = {};
     protected abstract getModuleName(): string;
@@ -81,7 +81,6 @@ export abstract class Base<ElementType extends HTMLElement> {
      * @param {Object} parent ?
      * @returns {void} ?
      */
-    // tslint:disable-next-line:no-any
     private static callChildDataBind(obj: Object, parent: { [key: string]: any }): void {
         const keys: string[] = Object.keys(obj);
         for (const key of keys) {
@@ -122,7 +121,6 @@ export abstract class Base<ElementType extends HTMLElement> {
         }
     }
 
-    /* tslint:disable:no-any */
     public serverDataBind(newChanges?: { [key: string]: any }): void {
         if (!isBlazor()) {
             return;
@@ -135,11 +133,9 @@ export abstract class Base<ElementType extends HTMLElement> {
             this.bulkChanges = {};
         }
     }
-    /* tslint:enable:no-any */
 
     protected saveChanges(key: string, newValue: string, oldValue: string): void {
         if (isBlazor()) {
-            // tslint:disable-next-line:no-any
             const newChanges: any = {};
             newChanges[`${key}`] = newValue;
             this.serverDataBind(newChanges);
@@ -282,7 +278,7 @@ export abstract class Base<ElementType extends HTMLElement> {
      * @returns {void} ?
      */
     protected destroy(): void {
-        // eslint-disable-next-line
+        // eslint-disable-next-line camelcase
         (<DomElements>(this.element as HTMLElement)).ej2_instances =
             (<DomElements>(this.element as HTMLElement)).ej2_instances ?
                 (<DomElements>(this.element as HTMLElement)).ej2_instances.filter((i: Object) => {
@@ -310,7 +306,6 @@ export abstract class Base<ElementType extends HTMLElement> {
  * @param {string} comp Specifies the component module name or Component.
  * @returns {any} ?
  */
-// tslint:disable-next-line:no-any
 export function getComponent<T>(elem: HTMLElement | string, comp: string | any | T): T {
     let instance: T;
     let i: number;
@@ -323,7 +318,6 @@ export function getComponent<T>(elem: HTMLElement | string, comp: string | any |
                 return instance;
             }
         } else {
-            // tslint:disable-next-line:no-any
             if (instance instanceof <any>comp) {
                 return instance;
             }
@@ -336,16 +330,13 @@ export function getComponent<T>(elem: HTMLElement | string, comp: string | any |
  * Function to remove the child instances.
  *
  * @param {HTMLElement} element ?
- * @return {void}
+ * @returns {void} ?
  * @private
  */
-// tslint:disable-next-line:no-any
 export function removeChildInstance(element: HTMLElement): void {
-    // tslint:disable-next-line:no-any
     const childEle: any = [].slice.call(element.getElementsByClassName('e-control'));
     for (let i: number = 0; i < childEle.length; i++) {
         const compName: string = childEle[parseInt(i.toString(), 10)].classList[1].split('e-')[1];
-        // tslint:disable-next-line:no-any
         const compInstance: any = getComponent(childEle[parseInt(i.toString(), 10)], compName);
         if (!isUndefined(compInstance)) {
             compInstance.destroy();

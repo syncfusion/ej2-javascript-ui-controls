@@ -1,6 +1,27 @@
-@include export-module('pivotview-theme') {
+@mixin wrap-styles {
+  background-color: $pivotgrid-focus-color;
+  color: $pivotgrid-button-acitve-font-color;
 
-  /*! PivotView theme */
+  @if ($pivotgrid-skin =='bootstrap4') {
+    background-color: $pivotgrid-border-color;
+    border-color: $pivotgrid-active-border-color;
+    box-shadow: 0 0 0 .2rem $pivotgrid-box-shadow-color;
+  }
+}
+
+@mixin button-wrap-styles {
+  /* stylelint-disable */
+  font-size: $pivotgrid-bigger-button-icon-size !important;
+  height: $pivotgrid-bigger-button-icon-size !important;
+  /* stylelint-enable */
+  width: $pivotgrid-bigger-button-icon-wrapper-size;
+
+  @if ($pivotgrid-skin =='bootstrap4') {
+    padding-left: 12px;
+  }
+}
+
+@include export-module('pivotview-theme') {
   .e-pivotview {
     .e-pivotcell-container {
       align-items: center;
@@ -52,6 +73,7 @@
     }
 
     .e-valuescontent {
+      opacity: $pivotview-grid-content-opacity;
       padding-right: 8px;
       text-align: right;
     }
@@ -68,10 +90,10 @@
 
     .e-grid .e-content-virtualtable {
       overflow-x: auto;
-      scrollbar-width: none; /* firefox */
+      scrollbar-width: none;
 
       &::-webkit-scrollbar {
-        display: none; /* safari, chrome and edge */
+        display: none;
       }
     }
 
@@ -160,6 +182,10 @@
     .e-toolbar .e-tbar-btn {
       background-color: transparent;
 
+      @if ($skin-name =='fluent2') {
+        margin-top: 4px;
+      }
+
       @if ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
         border: none !important;
       }
@@ -183,10 +209,7 @@
       color: $pivotgrid-header-selection-color !important;
 
       .e-stackedheadercelldiv,.e-cellvalue,
-      .e-icons {
-        color: $pivotgrid-header-selection-color !important;
-      }
-
+      .e-icons,
       .e-headertext {
         color: $pivotgrid-header-selection-color !important;
       }
@@ -352,6 +375,7 @@
     .e-grid .e-columnsheader {
       /* stylelint-disable */
       padding-left: 8px !important;
+      padding-right: 8px !important;
 
       @if($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') {
         text-transform: none;
@@ -360,11 +384,6 @@
 
     .sf-grid .e-spinner-pane {
     z-index: 1 !important;
-    }
-
-    .e-grid .e-headercelldiv,
-    .e-grid .e-columnsheader {
-      padding-right: 8px !important;
     }
 
     .e-grid .e-headercelldiv,
@@ -392,6 +411,7 @@
 
     .e-stackedheadercelldiv {
       display: block;
+      padding: 0 0 0 1px !important;
     }
 
     .e-stackedheadertext.e-cellvalue,
@@ -406,10 +426,6 @@
       }
     }
 
-    .e-stackedheadercelldiv {
-      padding: 0 0 0 1px !important;
-    }
-
     .e-stackedheadercelldiv,
     .e-stackedheadertext,
     .e-headertext,
@@ -417,32 +433,13 @@
       color: $pivotview-grid-header-font-color;
       font-size: $pivotview-grid-header-font-size;
       font-weight: $pivotview-grid-header-font-weight;
-
-        .e-hyperlinkcell {
-          //   color: $pivotview-grid-header-font-color;
-          cursor: pointer;
-
-          //   &:hover {
-          //     color: $pivotgrid-active-color;
-          //   }    
-        }
     }
 
     .e-valuescontent .e-cellvalue {
       .e-hyperlinkcell {
-        //     color: $pivotgrid-default-font-color;
         cursor: pointer;
-
-        //     &:hover {
-        //       color: $pivotgrid-active-color;
-        //     }
       }
     }
-
-    .e-valuescontent {
-      opacity: $pivotview-grid-content-opacity !important;
-    }
-
     /* stylelint-enable */
 
     .e-rowcell {
@@ -455,7 +452,6 @@
         -ms-user-select: none;
         user-select: none;
       }
-
       /* stylelint-enable */
     }
 
@@ -467,10 +463,6 @@
       .e-left-axis-fields,
       .e-right-axis-fields {
         height: auto;
-      }
-
-      .e-left-axis-fields {
-        min-width: 250px;
       }
 
       .e-axis-row,
@@ -486,6 +478,7 @@
         border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
         border-bottom-width: 0;
         border-right-width: 0;
+        min-width: 250px;
       }
 
       /* stylelint-disable */
@@ -496,7 +489,7 @@
         height: $pivotgrid-grouping-height !important;
         min-height: $pivotgrid-grouping-height !important;
 
-        @if($skin-name == 'FluentUI') {
+        @if($skin-name == 'FluentUI') or ($skin-name == 'fluent2'){
           box-shadow: none;
         }
 
@@ -600,11 +593,7 @@
 
           &.e-drop-hover {
             border-left: 1px dashed $pivotgrid-drop-hover-color;
-            @if ($skin-name == 'tailwind') {
-              border-left: 1px solid $pivotgrid-drop-hover-color;
-            }
-
-            @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+            @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
               border-left: 1px solid $pivotgrid-drop-hover-color;
             }
           }
@@ -657,13 +646,7 @@
         }
 
         &.e-btn-focused {
-          background-color: $pivotgrid-focus-color;
-          color: $pivotgrid-button-acitve-font-color;
-          @if ($pivotgrid-skin == 'bootstrap4') {
-            background-color: $pivotgrid-border-color;
-            border-color: $pivotgrid-active-border-color;
-            box-shadow: 0 0 0 .2rem $pivotgrid-box-shadow-color;
-          }
+          @include wrap-styles;
 
           .e-sort,
           .e-dropdown-icon,
@@ -677,13 +660,7 @@
 
         &:focus,
         &:active {
-          background-color: $pivotgrid-focus-color;
-          color: $pivotgrid-button-acitve-font-color;
-          @if ($pivotgrid-skin == 'bootstrap4') {
-            background-color: $pivotgrid-border-color;
-            border-color: $pivotgrid-active-border-color;
-            box-shadow: 0 0 0 .2rem $pivotgrid-box-shadow-color;
-          }
+          @include wrap-styles;
 
           .e-sort,
           .e-dropdown-icon,
@@ -794,16 +771,6 @@
           max-width: unset;
           width: 100%;
 
-          .e-indent-div {
-            pointer-events: none;
-          }
-        }
-      }
-    }
-
-    .e-group-row {
-      .e-group-rows {
-        .e-pvt-btn-div {
           .e-pivot-button {
             width: 180px;
             @if ($pivotgrid-skin == 'bootstrap4') {
@@ -828,14 +795,7 @@
             }
 
             &.e-btn-focused {
-              background-color: $pivotgrid-focus-color;
-              color: $pivotgrid-button-acitve-font-color;
-
-              @if ($pivotgrid-skin =='bootstrap4') {
-                background-color: $pivotgrid-border-color;
-                border-color: $pivotgrid-active-border-color;
-                box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
-              }
+              @include wrap-styles;
 
               .e-sort,
               .e-dropdown-icon,
@@ -849,13 +809,7 @@
     
             &:focus,
             &:active {
-              background-color: $pivotgrid-focus-color;
-              color: $pivotgrid-button-acitve-font-color;
-              @if ($pivotgrid-skin == 'bootstrap4') {
-                background-color: $pivotgrid-border-color;
-                border-color: $pivotgrid-active-border-color;
-                box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
-              }
+              @include wrap-styles;
     
               .e-sort,
               .e-dropdown-icon,
@@ -900,12 +854,15 @@
               margin-top: 1px;
             }
           }
+
+          .e-indent-div {
+            pointer-events: none;
+          }
         }
       }
     }
 
     /* stylelint-enable */
-
     .e-axis-value {
       display: inline-block;
       height: 100%;
@@ -986,7 +943,7 @@
       height: 18px;
       text-align: center;
       width: 18px;
-      @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') or ($skin-name == 'Material3') or ($skin-name == 'tailwind') {
+      @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') or ($skin-name == 'Material3') or ($skin-name == 'tailwind') or ($skin-name == 'fluent2') {
         vertical-align: middle;
       }
     }
@@ -1055,7 +1012,6 @@
           }
 
         /* stylelint-enable */
-
           .e-pivotview-text-div {
             display: flex;
             flex-direction: row;
@@ -1159,11 +1115,26 @@
 
             .e-pagercontainer {
               margin-top: 0;
-
+              
+              @if ($skin-name == 'Material3') {
+                border: $pivotgrid-sort-select-border-color;
+              }
               &.e-pivot-pager-info-container,
               &.e-pager-dropdown {
                 border-style: none;
               }
+            }
+
+            .e-pivotview-row-pagerString,
+            .e-pivotview-column-pagerString {
+              text-align: center;
+              width: 100%;
+            }
+
+            .e-pivotview-text-div-1 {
+              /* stylelint-disable */
+              width: auto !important;
+              /* stylelint-enable */
             }
 
             .e-pivot-pager-nav-container {
@@ -1251,31 +1222,6 @@
 
             .e-pivotview-text-div-1 .e-pagercontainer{
               margin-bottom: 0;
-            }
-          }
-
-          &.e-pivot-pager-single-maindiv {
-            .e-pivot-pager-row-maindiv,
-            .e-pivot-pager-column-maindiv {
-              width: 100%;
-
-              .e-pagercontainer {
-                margin-top: 0;
-
-                @if ($skin-name == 'Material3') {
-                  border: $pivotgrid-sort-select-border-color;
-                }
-              }
-
-              .e-pivotview-row-pagerString,
-              .e-pivotview-column-pagerString {
-                text-align: center;
-                width: 100%;
-              }
-
-              .e-pivotview-text-div-1 {
-                width: auto;
-              }
             }
           }
 
@@ -1401,32 +1347,20 @@
       }
 
       /* stylelint-disable */
-      .e-grid .e-rowsheader {
-        padding-right: 8px !important;
-      }
-
-      .e-grid .e-columnsheader {
-        padding-right: 8px !important;
-      }
-
+      .e-grid .e-rowsheader,
       .e-grid .e-headercelldiv,
       .e-grid .e-columnsheader {
         padding-right: 8px !important;
       }
 
       .e-frozenheader>.e-table,
-      .e-frozencontent>.e-table {
-        border-left-width: 1px;
-        border-right: 0;
-      }
-
+      .e-frozencontent>.e-table,
       .e-leftfreeze.e-freezeleftborder {
         border-left-width: 1px;
         border-right: 0;
       }
 
       /* stylelint-enable */
-
       .e-rowsheader .e-cellvalue {
         margin-left: 0;
         margin-right: 7px;
@@ -1508,7 +1442,6 @@
                 padding-right: 7px;
               }
             }
-
             /* stylelint-enable */
           }
         }
@@ -1595,7 +1528,6 @@
     .e-pivotchart.e-chart {
       overflow: visible !important;
     }
-
     /* stylelint-enable */
   }
 
@@ -1687,10 +1619,7 @@
       }
     }
 
-    .e-grid .e-headercelldiv {
-      padding-left: 8px !important;
-    }
-
+    .e-grid .e-headercelldiv,
     .e-grid .e-columnsheader {
       padding-left: 8px !important;
     }
@@ -1757,14 +1686,7 @@
           .e-pv-filtered,
           .e-remove,
           .e-edit {
-            /* stylelint-disable */
-            font-size: $pivotgrid-bigger-button-icon-size !important;
-            height: $pivotgrid-bigger-button-icon-size !important;
-            /* stylelint-enable */
-            width: $pivotgrid-bigger-button-icon-wrapper-size;
-            @if ($pivotgrid-skin == 'bootstrap4') {
-              padding-left: 12px;
-            }
+            @include button-wrap-styles;
           }
 
           .e-sort {
@@ -1838,14 +1760,7 @@
           .e-pv-filtered,
           .e-remove,
           .e-edit {
-            /* stylelint-disable */
-            font-size: $pivotgrid-bigger-button-icon-size !important;
-            height: $pivotgrid-bigger-button-icon-size !important;
-            /* stylelint-enable */
-            width: $pivotgrid-bigger-button-icon-wrapper-size;
-            @if ($pivotgrid-skin == 'bootstrap4') {
-              padding-left: 12px;
-            }
+            @include button-wrap-styles;
           }
 
           .e-sort {

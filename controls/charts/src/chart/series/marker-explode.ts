@@ -1,8 +1,3 @@
-/* eslint-disable jsdoc/check-param-names */
-/* eslint-disable jsdoc/require-param-type */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-param-description */
-/* eslint-disable valid-jsdoc */
 import { drawSymbol, ChartLocation } from '../../common/utils/helper';
 import { PathOption, Size } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
@@ -37,7 +32,9 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * @hidden
+     * Adds event listeners for the series.
+     *
+     * @returns {void}
      */
     public addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -46,7 +43,9 @@ export class MarkerExplode extends ChartData {
 
     }
     /**
-     * @hidden
+     * Removes event listeners for the series.
+     *
+     * @returns {void}
      */
     public removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -55,7 +54,9 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * @hidden
+     * Handles the mouse up event.
+     *
+     * @returns {void}
      */
     private mouseUpHandler(): void {
         const chart: Chart = this.chart;
@@ -65,7 +66,9 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * @hidden
+     * Handles the mouse move event.
+     *
+     * @returns {void}
      */
     public mouseMoveHandler(): void {
         const chart: Chart = this.chart;
@@ -128,7 +131,8 @@ export class MarkerExplode extends ChartData {
         }
         const length: number = this.previousPoints.length;
         if (this.currentPoints.length > 0 || (length > 0 && chart.tooltip.shared)) {
-            if (length === 0 || chart.isPointMouseDown || (length > 0 && (this.currentPoints.length == 0 || (this.previousPoints[0].point !== this.currentPoints[0].point)))) {
+            if (length === 0 || chart.isPointMouseDown || (length > 0 && (this.currentPoints.length === 0 ||
+                (this.previousPoints[0].point !== this.currentPoints[0].point)))) {
                 if (length > 0) {
                     for (const previousPoint of this.previousPoints) {
                         if (!isNullOrUndefined(previousPoint)) {
@@ -258,9 +262,11 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * Animates the series.
+     * Perform animation for the series.
      *
-     * @param  {Series} series - Defines the series to animate.
+     * @param {Series} series - The series to animate.
+     * @param {Points} point - The point to animate.
+     * @param {boolean} [endAnimate=false] - Flag to indicate if the animation is ending.
      * @returns {void}
      */
     public doAnimation(series: Series, point: Points, endAnimate: boolean = false): void {
@@ -276,9 +282,17 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * Animation Effect Calculation End
+     * Perform animation for the trackball.
      *
-     * @private
+     * @param {Element} elements - The elements to animate.
+     * @param {number} delays - The delay duration for the animation.
+     * @param {number} durations - The duration of the animation.
+     * @param {Series} series - The series associated with the trackball.
+     * @param {number} pointIndex - The index of the point to animate.
+     * @param {ChartLocation} point - The location of the point to animate.
+     * @param {boolean} isLabel - Flag to indicate if the animated element is a label.
+     * @param {boolean} [endAnimate=false] - Flag to indicate if the animation is ending.
+     * @returns {void}
      */
     public trackballAnimate(
         elements: Element, delays: number, durations: number, series: Series,
@@ -289,9 +303,8 @@ export class MarkerExplode extends ChartData {
         const centerY: number = point.y;
         const clipX: number = (series.type !== 'Polar' && series.type !== 'Radar') ? series.clipRect.x : 0;
         const clipY: number = (series.type !== 'Polar' && series.type !== 'Radar') ? series.clipRect.y : 0;
-        let height: number = 0;
+        // let height: number = 0;
         //(<HTMLElement>elements).style.visibility = 'hidden';
-        const reducedHeight: number = endAnimate ? -8 : 1;
         const transform: string = elements.getAttribute('transform');
         new Animation({}).animate(<HTMLElement>elements, {
             duration: durations,
@@ -299,8 +312,8 @@ export class MarkerExplode extends ChartData {
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp > args.delay) {
                     args.element.style.visibility = 'visible';
-                    height = ((args.timeStamp - args.delay) / args.duration);
-                     elements.setAttribute('transform', 'translate(' + (centerX + clipX)
+                    // height = ((args.timeStamp - args.delay) / args.duration);
+                    elements.setAttribute('transform', 'translate(' + (centerX + clipX)
                          + ' ' + (centerY + clipY) + ') scale(1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
                 }
             },
@@ -320,16 +333,12 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * @param series
-     * @param point
-     * @param fadeOut
-     * @param series
-     * @param point
-     * @param fadeOut
-     * @param series
-     * @param point
-     * @param fadeOut
-     * @hidden
+     * Remove the highlighted marker.
+     *
+     * @param {Series} [series=null] - The series associated with the marker to remove. Defaults to null.
+     * @param {Points} [point=null] - The point associated with the marker to remove. Defaults to null.
+     * @param {boolean} [fadeOut=false] - Flag to indicate if the removal should be faded out. Defaults to false.
+     * @returns {void}
      */
     public removeHighlightedMarker(series: Series = null, point: Points = null, fadeOut: boolean = false): void {
         if (!isNullOrUndefined(series) && !isNullOrUndefined(point)) {

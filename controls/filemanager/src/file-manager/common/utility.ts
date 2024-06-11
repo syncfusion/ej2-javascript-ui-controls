@@ -1,8 +1,8 @@
 import { IFileManager, ReadArgs, SortOrder, SearchArgs, FileDragEventArgs, BeforeImageLoadEventArgs } from '../base/interface';
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
-import { read, paste, Search, filter, Download, Delete } from '../common/operations';
-import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement, Draggable, Internationalization, isNullOrUndefined, loadCldr } from '@syncfusion/ej2-base';
+import { read, paste, Search, filter, Download, Delete, isFileSystemData } from '../common/operations';
+import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement, Draggable, Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { closest, DragEventArgs, detach } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -19,23 +19,25 @@ import { ColumnModel } from '../models';
  */
 export function sortComparer(reference: string, comparer:  string): number {
     // Check if reference and comparer are files or folders
-    let referenceIsFile = /\.\S+/.test(reference);
-    let comparerIsFile = /\.\S+/.test(comparer);
+    const referenceIsFile: boolean = /\.\S+/.test(reference);
+    const comparerIsFile: boolean = /\.\S+/.test(comparer);
     // If one is a file and the other is a folder, the folder should come first
-    if (referenceIsFile && !comparerIsFile) return 1;
-    if (!referenceIsFile && comparerIsFile) return -1;
-    let referenceParts: Array<[number, string]> = [];
-    let comparerParts: Array<[number, string]> = [];
-    (reference + '').replace(/(\d+)|(\D+)/g, function(_, $1, $2) { referenceParts.push([$1 || Infinity, $2 || ""]); return ""; });
-    (comparer + '').replace(/(\d+)|(\D+)/g, function(_, $1, $2) { comparerParts.push([$1 || Infinity, $2 || ""]); return ""; });
+    if (referenceIsFile && !comparerIsFile) {return 1; }
+    if (!referenceIsFile && comparerIsFile) {return -1; }
+    const referenceParts: Array<[number, string]> = [];
+    const comparerParts: Array<[number, string]> = [];
+    (reference + '').replace(/(\d+)|(\D+)/g, function(_: string, $1: number, $2: string): string { referenceParts.push([$1 || Infinity, $2 || '']); return ''; });
+    (comparer + '').replace(/(\d+)|(\D+)/g, function(_: string, $1: number, $2: string): string { comparerParts.push([$1 || Infinity, $2 || '']); return ''; });
     // Compare each part of reference and comparer
     while (referenceParts.length && comparerParts.length) {
-        let referencePart = referenceParts.shift();
-        let comparerPart = comparerParts.shift();
-        let comparisonResult =
-            referencePart![0] - comparerPart![0] ||
-            referencePart![1].localeCompare(comparerPart![1]);
-        if (comparisonResult) return comparisonResult;
+        const referencePart: [number, string] = referenceParts.shift();
+        const comparerPart: [number, string] = comparerParts.shift();
+        if (referencePart && comparerPart) {
+            const comparisonResult: number =
+                referencePart[0] - comparerPart[0] ||
+                referencePart[1].localeCompare(comparerPart[1]);
+            if (comparisonResult) {return comparisonResult; }
+        }
     }
     return referenceParts.length - comparerParts.length;
 }
@@ -48,7 +50,6 @@ export function sortComparer(reference: string, comparer:  string): number {
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line
 export function updatePath(node: HTMLLIElement, data: Object, instance: IFileManager): void {
     const text: string = getValue('name', data);
     const id: string = node.getAttribute('data-id');
@@ -147,8 +148,7 @@ export function generatePath(parent: IFileManager): void {
     let newPath: string = '/';
     let i: number = 1;
     for (i; i < parent.pathId.length; i++) {
-        // eslint-disable-next-line
-        const data: Object = getValue(parent.pathId[i], parent.feParent);
+        const data: Object = getValue(parent.pathId[parseInt(i.toString(), 10)], parent.feParent);
         newPath += getValue(key, data) + '/';
     }
     parent.setProperties({ path: newPath }, true);
@@ -286,6 +286,25 @@ export function searchWordHandler(parent: IFileManager, value: string, isLayoutC
     if (value.length === 0 && !parent.isFiltered) {
         parent.notify(events.pathColumn, { args: parent });
     }
+
+    if (isFileSystemData(parent)) {
+        if (value === '') {
+            parent.itemData = parent.fileSystemData;
+            read(parent, events.layoutChange, parent.path);
+        }
+        else {
+            parent.searchSettings.filterType = isNOU(parent.searchSettings.filterType) ? 'contains' : parent.searchSettings.filterType;
+            const filteredData: { [key: string]: Object }[] = parent.fileSystemData.filter(
+                (obj: { [key: string]: Object; }) => obj.parentId !== null);
+            const data: Object[] = new DataManager(filteredData).
+                executeLocal(new Query().where('name', parent.searchSettings.filterType, value, parent.searchSettings.ignoreCase));
+            const searchValue: string = parent.searchSettings.ignoreCase ? value.toLowerCase() : value;
+            parent.itemData = data;
+            Search(parent, isLayoutChange ? events.layoutChange : events.search, parent.path, searchValue,
+                   parent.showHiddenItems, !parent.searchSettings.ignoreCase);
+        }
+        return;
+    }
     if (parent.searchSettings.filterType === 'startsWith') {
         searchWord = value + '*';
     } else if (parent.searchSettings.filterType === 'endsWith') {
@@ -397,7 +416,6 @@ export function openAction(parent: IFileManager): void {
  * @returns {Object} - returns the path data.
  * @private
  */
-// eslint-disable-next-line
 export function getPathObject(parent: IFileManager): Object {
     return getValue(parent.pathId[parent.pathId.length - 1], parent.feParent);
 }
@@ -440,7 +458,6 @@ export function cutFiles(parent: IFileManager): void {
  * @returns {string} - returns the file type.
  * @private
  */
-// eslint-disable-next-line
 export function fileType(file: Object): string {
     const isFile: string = getValue('isFile', file);
     if (!isFile) {
@@ -479,11 +496,18 @@ export function fileType(file: Object): string {
  * @returns {string} - returns the image url.
  * @private
  */
-// eslint-disable-next-line
 export function getImageUrl(parent: IFileManager, item: Object): string {
+    let imgUrl: string = isFileSystemData(parent) ? getValue('imageUrl', item) : '';
+    if (isFileSystemData(parent)) {
+        const eventArgs: BeforeImageLoadEventArgs = {
+            fileDetails: [item],
+            imageUrl: imgUrl
+        };
+        parent.trigger('beforeImageLoad', eventArgs);
+        return eventArgs.imageUrl;
+    }
     const baseUrl: string = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
-    let pathUrl: string = (baseUrl.indexOf('?') !== -1) ? '&path=' : '?path=';
-    let imgUrl: string;
+    const pathUrl: string = (baseUrl.indexOf('?') !== -1) ? '&path=' : '?path=';
     const fileName: string = encodeURIComponent(getValue('name', item));
     const fPath: string = getValue('filterPath', item);
     if (parent.hasId) {
@@ -512,7 +536,6 @@ export function getImageUrl(parent: IFileManager, item: Object): string {
  * @returns {string} - returns the image url.
  * @private
  */
-// eslint-disable-next-line
 export function getFullPath(parent: IFileManager, data: Object, path: string): string {
     const filePath: string = getValue(parent.hasId ? 'id' : 'name', data) + '/';
     const fPath: string = getValue(parent.hasId ? 'filterId' : 'filterPath', data);
@@ -530,7 +553,6 @@ export function getFullPath(parent: IFileManager, data: Object, path: string): s
  * @returns {string} - returns the name.
  * @private
  */
-// eslint-disable-next-line
 export function getName(parent: IFileManager, data: Object): string {
     let name: string = getValue('name', data);
     let fPath: string = getValue('filterPath', data);
@@ -549,16 +571,14 @@ export function getName(parent: IFileManager, data: Object): string {
  * @returns {Object[]} - returns the sorted data.
  * @private
  */
-// eslint-disable-next-line
 export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
     if (items.length === 0) { return items; }
     let query: Query ;
-    if (parent.sortOrder !== 'None') {
+    if (parent.sortOrder !== 'None' && !isNullOrUndefined(parent.sortOrder)) {
         query = new Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
     } else {
         query = new Query().group('isFile');
     }
-    // eslint-disable-next-line
     const lists: Object[] = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
 }
@@ -571,12 +591,9 @@ export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
  * @returns {Object} - returns the sorted data.
  * @private
  */
-// eslint-disable-next-line
 export function getObject(parent: IFileManager, key: string, value: string): Object {
-    // eslint-disable-next-line
     const currFiles: Object[] = getValue(parent.pathId[parent.pathId.length - 1], parent.feFiles);
     const query: Query = new Query().where(key, 'equal', value);
-    // eslint-disable-next-line
     const lists: Object[] = new DataManager(currFiles).executeLocal(query);
     return lists[0];
 }
@@ -639,7 +656,6 @@ export function createEmptyElement(parent: IFileManager, element: HTMLElement, a
  * @returns {Object[]} - returns the sorted data.
  * @private
  */
-// eslint-disable-next-line
 export function getDirectories(files: Object[]): Object[] {
     return new DataManager(files).executeLocal(new Query().where(events.isFile, 'equal', false, false));
 }
@@ -653,7 +669,6 @@ export function getDirectories(files: Object[]): Object[] {
  * @private
  */
 export function setNodeId(result: ReadArgs, rootId: string): void {
-    // eslint-disable-next-line
     const dirs: Object[] = getDirectories(result.files);
     for (let i: number = 0, len: number = dirs.length; i < len; i++) {
         setValue('_fm_id', rootId + '_' + i, dirs[i as number]);
@@ -664,16 +679,17 @@ export function setNodeId(result: ReadArgs, rootId: string): void {
  * set the date object
  *
  * @param {Object[]} args - specifies the file object.
+ * @param {Internationalization} localeString - The internationalization object for formatting dates.
+ * @param {string} dateFormat - The date format string.
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line
 export function setDateObject(args: Object[], localeString: Internationalization, dateFormat: string): void {
     for (let i: number = 0; i < args.length; i++) {
         const createdDate: Date = new Date(getValue('dateCreated', args[i as number]));
         const modifiedDate: Date = new Date(getValue('dateModified', args[i as number]));
         if (isNOU(dateFormat)) {
-            dateFormat = "MM/dd/yyyy";
+            dateFormat = 'MM/dd/yyyy';
         }
         setValue('_fm_created', localeString.formatDate(createdDate, {format: dateFormat }), args[i as number]);
         setValue('_fm_modified', localeString.formatDate(modifiedDate, {format: dateFormat}), args[i as number]);
@@ -734,13 +750,13 @@ export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): v
             updateLayout(parent, 'Details');
         } else {
             parent.notify(events.sortColumn, { module: 'detailsview' });
-            parent.isSortByClicked=false;
+            parent.isSortByClicked = false;
         }
     }
     if (parent.view === 'LargeIcons') {
         updateLayout(parent, 'LargeIcons');
     }
-    
+
     parent.notify(events.sortByChange, {});
 }
 
@@ -748,6 +764,7 @@ export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): v
  * Gets the sorted fields
  *
  * @param {string} id - specifies the id.
+ * @param {IFileManager} [parent] - optional parameter representing the parent IFileManager.
  * @returns {string} - returns the sorted fields
  * @private
  */
@@ -760,8 +777,8 @@ export function getSortField(id: string, parent?: IFileManager): string {
     }
     switch (text) {
     case 'date':
-        for(let i: number =0, len: number = column.length; i<len; i++) {
-            if (column[i as number].field==='dateModified' || column[i as number].field==='dateCreated') {
+        for (let i: number = 0, len: number = column.length; i < len; i++) {
+            if (column[i as number].field === 'dateModified' || column[i as number].field === 'dateCreated') {
                 field = column[i as number].field;
                 break;
             }
@@ -794,14 +811,12 @@ export function getSortField(id: string, parent?: IFileManager): string {
 export function setNextPath(parent: IFileManager, path: string): void {
     const currfolders: string[] = path.split('/');
     const folders: string[] = parent.originalPath.split('/');
-    // eslint-disable-next-line
     const root: Object = getValue(parent.pathId[0], parent.feParent);
     const key: string = isNOU(getValue('id', root)) ? 'name' : 'id';
     for (let i: number = currfolders.length - 1, len: number = folders.length - 1; i < len; i++) {
         const eventName: string = (folders[i + 1] === '') ? events.finalizeEnd : events.initialEnd;
         const newPath: string = (folders[i as number] === '') ? '/' : (parent.path + folders[i as number] + '/');
-        // eslint-disable-next-line
-        const data: Object = getObject(parent, key, folders[i]);
+        const data: Object = getObject(parent, key, folders[parseInt(i.toString(), 10)]);
         if (!isNullOrUndefined(data)) {
             const id: string = getValue('_fm_id', data);
             parent.setProperties({ path: newPath }, true);
@@ -825,18 +840,17 @@ export function setNextPath(parent: IFileManager, path: string): void {
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line
 export function openSearchFolder(parent: IFileManager, data: Object): void {
     parent.originalPath = getFullPath(parent, data, parent.path);
     const root: Object = getValue(parent.pathId[0], parent.feParent);
-    const isRoot: boolean = getValue('_fm_id', parent.itemData[0]) == 'fe_tree';
+    const isRoot: boolean = getValue('_fm_id', parent.itemData[0]) === 'fe_tree';
     const key: string = isNOU(getValue('id', root)) ? 'name' : 'id';
-    const searchData: object = getObject(parent, key, getValue('name', data));
-    if(isNullOrUndefined(searchData))
+    const searchData: object = getObject(parent, key, isFileSystemData(parent) ? getValue('id', data) : getValue('name', data));
+    if (isNullOrUndefined(searchData))
     {
-        if(!isRoot)
+        if (!isRoot)
         {
-            parent.notify(events.clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });	
+            parent.notify(events.clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
         }
         else
         {
@@ -866,7 +880,6 @@ export function pasteHandler(parent: IFileManager): void {
     parent.isDragDrop = false;
     if (parent.selectedNodes.length !== 0 && parent.enablePaste) {
         const path: string = (parent.folderPath === '') ? parent.path : parent.folderPath;
-        // eslint-disable-next-line
         const subFolder: boolean = validateSubFolder(parent, <{ [key: string]: Object; }[]>parent.actionRecords, path, parent.path);
         if (!subFolder) {
             if ((parent.fileAction === 'move' && parent.targetPath !== path) || parent.fileAction === 'copy') {
@@ -901,7 +914,6 @@ export function pasteHandler(parent: IFileManager): void {
  * @returns {boolean} - returns the validated sub folder.
  * @private
  */
-// eslint-disable-next-line
 export function validateSubFolder(parent: IFileManager, data: { [key: string]: Object; }[], dropPath: string, dragPath: string): boolean {
     let subFolder: boolean = false;
     for (let i: number = 0; i < data.length; i++) {
@@ -921,7 +933,8 @@ export function validateSubFolder(parent: IFileManager, data: { [key: string]: O
                 break;
             }
         } else {
-            const srcData: string = parent.dragNodes[i as number];
+            const name: Object = parent.dragData[i as number] ? parent.dragData[i as number].name : null;
+            const srcData: string = isFileSystemData(parent) ? name as string : parent.dragNodes[i as number];
             let len: number = 0;
             if (srcData) {
                 len = srcData.lastIndexOf('/');
@@ -996,14 +1009,14 @@ export function getParentPath(oldPath: string): string {
  */
 export function getDirectoryPath(parent: IFileManager, args: ReadArgs): string {
     const filePath: string = getValue(parent.hasId ? 'id' : 'name', args.cwd) + '/';
-    const fPath: string = getValue(parent.hasId ? 'filterId' : 'filterPath', args.cwd);
+    const fPath: string = getValue(parent.hasId && !isNullOrUndefined(parent.ajaxSettings.url) ? 'filterId' : 'filterPath', args.cwd);
     if (!isNOU(fPath)) {
         if (fPath === '') {
-            return parent.hasId ? filePath : '/';
+            return parent.hasId && !isNullOrUndefined(parent.ajaxSettings.url) ? filePath : '/';
         }
         return fPath.replace(/\\/g, '/') + filePath;
     } else {
-        return parent.path + filePath;
+        return isFileSystemData(parent) ? filePath : parent.path + filePath;
     }
 }
 
@@ -1070,8 +1083,8 @@ export function readDropPath(parent: IFileManager): void {
         if (parent.navigationpaneModule) {
             let node: Element = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
             if (!node) {
-                let liElement = document.querySelector('[data-id = "' + getValue('id', parent.dropData) + '"]');
-                pathId = liElement.getAttribute("data-uid");
+                const liElement: Element = document.querySelector('[data-id = "' + getValue('id', parent.dropData) + '"]');
+                pathId = liElement.getAttribute('data-uid');
                 node = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
             }
             updatePath(<HTMLLIElement>node, parent.dropData, parent);
@@ -1088,11 +1101,8 @@ export function readDropPath(parent: IFileManager): void {
  * @returns {object} - returns the duplicated path.
  * @private
  */
-// eslint-disable-next-line
 export function getDuplicateData(parent: IFileManager, name: string): object {
-    // eslint-disable-next-line
     let data: object = null;
-    // eslint-disable-next-line
     const records: object[] = parent.isDragDrop ? parent.dragData : parent.actionRecords;
     for (let i: number = 0; i < records.length; i++) {
         if (getValue('name', records[i as number]) === name) {
@@ -1283,14 +1293,14 @@ export function removeItemClass(parent: IFileManager, value: string): void {
  */
 export function scrollHandler(scrollParent: Element, parent: IFileManager, nodeClass: string, screenY: number, clientY: number): void {
     let position: number;
-    let elementData: DOMRect | ClientRect = scrollParent.getBoundingClientRect();
-    const node: HTMLElement = select("." + nodeClass, scrollParent);
-    if((screenY >= (elementData.top + scrollParent.clientHeight - 30)) && !isNullOrUndefined(node)) {
-        position = (parent.targetModule === 'navigationpane' || parent.targetModule === 'detailsview') ? node.offsetHeight/2.5 : node.offsetHeight/4.5;
+    const elementData: DOMRect | ClientRect = scrollParent.getBoundingClientRect();
+    const node: HTMLElement = select('.' + nodeClass, scrollParent);
+    if ((screenY >= (elementData.top + scrollParent.clientHeight - 30)) && !isNullOrUndefined(node)) {
+        position = (parent.targetModule === 'navigationpane' || parent.targetModule === 'detailsview') ? node.offsetHeight / 2.5 : node.offsetHeight / 4.5;
         scrollParent.scrollBy(0, position);
     }
-    if(!isNullOrUndefined(node) && (clientY <= (elementData.top + 30))) {
-        position = (parent.targetModule === 'navigationpane' || parent.targetModule === 'detailsview') ? node.offsetHeight/2.5 : node.offsetHeight/4.5;
+    if (!isNullOrUndefined(node) && (clientY <= (elementData.top + 30))) {
+        position = (parent.targetModule === 'navigationpane' || parent.targetModule === 'detailsview') ? node.offsetHeight / 2.5 : node.offsetHeight / 4.5;
         scrollParent.scrollBy(0, -position);
     }
 }
@@ -1360,7 +1370,6 @@ export function draggingHandler(parent: IFileManager, args: DragEventArgs): void
  * @private
  */
 // Ignored the message key value in permission object
-// eslint-disable-next-line
 export function objectToString(data: Object): string {
     let str: string = '';
     const keys: string[] = Object.keys(data);
@@ -1380,7 +1389,6 @@ export function objectToString(data: Object): string {
  * @returns {string} returns the item name.
  * @private
  */
-// eslint-disable-next-line
 export function getItemName(parent: IFileManager, data: Object): string {
     if (parent.hasId) {
         return getValue('id', data);
@@ -1396,7 +1404,6 @@ export function getItemName(parent: IFileManager, data: Object): string {
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line
 export function updateRenamingData(parent: IFileManager, data: Object): void {
     parent.itemData = [data];
     parent.currentItemText = getValue('name', data);
@@ -1428,7 +1435,6 @@ export function doRename(parent: IFileManager): void {
  * @private
  */
 export function doDownload(parent: IFileManager): void {
-    // eslint-disable-next-line
     const items: Object[] = parent.itemData;
     for (let i: number = 0; i < items.length; i++) {
         if (!hasDownloadAccess(items[i as number])) {
@@ -1450,7 +1456,6 @@ export function doDownload(parent: IFileManager): void {
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line
 export function doDeleteFiles(parent: IFileManager, data: Object[], newIds: string[]): void {
     for (let i: number = 0; i < data.length; i++) {
         if (!hasEditAccess(data[i as number])) {
@@ -1471,7 +1476,6 @@ export function doDeleteFiles(parent: IFileManager, data: Object[], newIds: stri
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line
 export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: string[]): void {
     for (let i: number = 0; i < data.length; i++) {
         if (!hasDownloadAccess(data[i as number])) {
@@ -1494,7 +1498,6 @@ export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: st
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line
 export function createDeniedDialog(parent: IFileManager, data: Object, action: string): void {
     let message: string = getValue('message', getValue('permission', data));
     if (message === '') {
@@ -1517,7 +1520,6 @@ export function createDeniedDialog(parent: IFileManager, data: Object, action: s
  * @returns {string} - returns accesses classes.
  * @private
  */
-// eslint-disable-next-line
 export function getAccessClass(data: Object): string {
     return !hasReadAccess(data) ? 'e-fe-locked e-fe-hidden' : 'e-fe-locked';
 }
@@ -1529,9 +1531,7 @@ export function getAccessClass(data: Object): string {
  * @returns {boolean} - returns read access.
  * @private
  */
-// eslint-disable-next-line
 export function hasReadAccess(data: Object): boolean {
-    // eslint-disable-next-line
     const permission: Object = getValue('permission', data);
     return (permission && !getValue('read', permission)) ? false : true;
 }
@@ -1543,9 +1543,7 @@ export function hasReadAccess(data: Object): boolean {
  * @returns {boolean} - returns edit access.
  * @private
  */
-// eslint-disable-next-line
 export function hasEditAccess(data: Object): boolean {
-    // eslint-disable-next-line
     const permission: Object = getValue('permission', data);
     return permission ? ((getValue('read', permission) && getValue('write', permission))) : true;
 }
@@ -1557,9 +1555,7 @@ export function hasEditAccess(data: Object): boolean {
  * @returns {boolean} - returns content access.
  * @private
  */
-// eslint-disable-next-line
 export function hasContentAccess(data: Object): boolean {
-    // eslint-disable-next-line
     const permission: Object = getValue('permission', data);
     return permission ? ((getValue('read', permission) && getValue('writeContents', permission))) : true;
 }
@@ -1571,9 +1567,7 @@ export function hasContentAccess(data: Object): boolean {
  * @returns {boolean} - returns upload access.
  * @private
  */
-// eslint-disable-next-line
 export function hasUploadAccess(data: Object): boolean {
-    // eslint-disable-next-line
     const permission: Object = getValue('permission', data);
     return permission ? ((getValue('read', permission) && getValue('upload', permission))) : true;
 }
@@ -1585,9 +1579,7 @@ export function hasUploadAccess(data: Object): boolean {
  * @returns {boolean} - returns download access.
  * @private
  */
-// eslint-disable-next-line
 export function hasDownloadAccess(data: Object): boolean {
-    // eslint-disable-next-line
     const permission: Object = getValue('permission', data);
     return permission ? ((getValue('read', permission) && getValue('download', permission))) : true;
 }
@@ -1600,7 +1592,6 @@ export function hasDownloadAccess(data: Object): boolean {
  * @private
  */
 export function createNewFolder(parent: IFileManager): void {
-    // eslint-disable-next-line
     const details: Object = parent.itemData[0];
     if (!hasContentAccess(details)) {
         createDeniedDialog(parent, details, events.permissionEditContents);
@@ -1617,7 +1608,6 @@ export function createNewFolder(parent: IFileManager): void {
  * @private
  */
 export function uploadItem(parent: IFileManager): void {
-    // eslint-disable-next-line
     const details: Object = parent.itemData[0];
     if (!hasUploadAccess(details)) {
         createDeniedDialog(parent, details, events.permissionUpload);
@@ -1626,4 +1616,68 @@ export function uploadItem(parent: IFileManager): void {
         const uploadEle: HTMLElement = document.querySelector(eleId);
         uploadEle.click();
     }
+}
+
+/**
+ * Close dialog popup handler
+ *
+ * @param {IFileManager} parent - specifies the parent.
+ * @returns {void}
+ * @private
+ */
+export function closePopup(parent: IFileManager): void {
+    if (!isNullOrUndefined(parent.dialogObj)) {
+        parent.dialogObj.hide();
+    }
+}
+
+/**
+ * Access control handler
+ *
+ * @param {IFileManager} parent - specifies the parent.
+ * @param {Object[]} itemData - specifies the item elements.
+ * @param {string} action - specifies the action.
+ * @param {boolean} isPathPermision - specifies the path permission.
+ * @returns {string} returns the path.
+ * @private
+ */
+export function getAccessDetails(parent: IFileManager, itemData: Object[], action: string, isPathPermision: boolean): string {
+    let accessMessage: string = '';
+    for (let i: number = 0; i < itemData.length; i++){
+        let permission: object = getValue('permission', itemData[i as number]);
+        if (permission == null) {
+            permission = undefined;
+        }
+        if (isPathPermision) {
+            if (permission && (!getValue('read', permission) || !getValue('writeContents', permission))) {
+                accessMessage = getValue('message', getValue('permission', itemData[i as number]));
+                if (accessMessage === '') {
+                    accessMessage = getLocaleText(parent, 'Access-Message').replace('{0}', getValue('name', itemData[i as number])).replace('{1}', 'writeContents');
+                }
+            }
+        }
+        else {
+            const copyOrMovePermission: boolean = action === 'copy' ? getValue('copy', permission) : getValue('write', permission);
+            if (permission && (!getValue('read', permission) || !copyOrMovePermission)) {
+                accessMessage = getValue('message', getValue('permission', itemData[i as number]));
+                if (accessMessage === '') {
+                    accessMessage = getLocaleText(parent, 'Access-Message').replace('{0}', getValue('name', itemData[i as number])).replace('{1}', action);
+                }
+            }
+        }
+        if (accessMessage !== '') {
+            parent.responseData = {
+                cwd: null,
+                details: null,
+                error: {
+                    code: '401',
+                    message: accessMessage,
+                    fileExists: null
+                },
+                files: null
+            };
+            break;
+        }
+    }
+    return accessMessage;
 }

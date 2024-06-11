@@ -436,13 +436,13 @@ export class HeaderRender implements IRenderer {
         this.frzIdx = 0;
         this.notfrzIdx = 0;
         if (this.parent.lockcolPositionCount) {
-            for (let i: number = 0; i < cols.length; i++) {
+            for (let i: number = 0; i < (!isNullOrUndefined(cols) ? cols.length : 0); i++) {
                 this.lockColsRendered = false;
                 rows = this.appendCells(
                     cols[parseInt(i.toString(), 10)], rows, 0, i === 0, false, i === (cols.length - 1), thead, tableName, false);
             }
         }
-        for (let i: number = 0, len: number = cols.length; i < len; i++) {
+        for (let i: number = 0, len: number = (!isNullOrUndefined(cols) ? cols.length : 0); i < len; i++) {
             this.notfrzIdx = 0;
             this.lockColsRendered = true;
             rows = this.appendCells(cols[parseInt(i.toString(), 10)], rows, 0, i === 0, false, i === (len - 1), thead, tableName, false);
@@ -641,7 +641,7 @@ export class HeaderRender implements IRenderer {
 
     public toggleStackClass(div: Element): void {
         const column: Column[] = this.parent.columns as Column[];
-        const stackedHdr: boolean = column.some((column: Column) => !isNullOrUndefined(column.columns));
+        const stackedHdr: boolean = (!isNullOrUndefined(column) ? column.some((column: Column) => !isNullOrUndefined(column.columns)): false);
         if (stackedHdr) {
             div.classList.add('e-stackedheader');
         } else {

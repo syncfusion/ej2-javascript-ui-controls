@@ -100,6 +100,13 @@ export const SPACE_ACTION: string = 'actionBegin';
  */
 export const FORMAT_PAINTER_ACTIONS: string = 'format_painter_actions';
 
+/**
+ * Blockquotes enter prevent when on list is applied event constant
+ *
+ * @hidden
+ */
+export const BLOCKQUOTE_LIST_HANDLE: string = 'blockquote_list_handled';
+
 
 /**
  * Emoji picker event constant

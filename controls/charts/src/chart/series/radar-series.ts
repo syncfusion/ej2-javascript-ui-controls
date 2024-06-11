@@ -1,6 +1,3 @@
-/* eslint-disable prefer-const */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { Series } from './chart-series';
 import { firstToLowerCase, ChartLocation, CoefficientToVector, valueToPolarCoefficient } from '../../common/utils/helper';
@@ -14,16 +11,19 @@ import { Axis } from '../axis/axis';
 
 export class RadarSeries extends PolarSeries {
     /**
-     * Render radar Series.
+     * Renders the provided radar series on the chart based on the given x-axis, y-axis, and inversion status.
      *
+     * @param {Series} series - The series to render.
+     * @param {Axis} xAxis - The x-axis of the chart.
+     * @param {Axis} yAxis - The y-axis of the chart.
+     * @param {boolean} inverted - A flag indicating whether the chart is inverted or not.
      * @returns {void}
-     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
-        let seriesType: string = firstToLowerCase(series.drawType);
-        let yAxisMin: number =  <number>yAxis.minimum;
-        let yAxisMax: number = <number>yAxis.maximum;
-        for (let point of series.points)  {
+        const seriesType: string = firstToLowerCase(series.drawType);
+        const yAxisMin: number =  <number>yAxis.minimum;
+        const yAxisMax: number = <number>yAxis.maximum;
+        for (const point of series.points)  {
             point.visible = point.visible && !((!isNullOrUndefined(yAxisMin) && point.yValue < yAxisMin) ||
             (!isNullOrUndefined(yAxisMax) && point.yValue > yAxisMax));
         }
@@ -39,12 +39,12 @@ export class RadarSeries extends PolarSeries {
     // path calculation for isInversed polar area series
 
     public getRadarIsInversedPath(xAxis: Axis, endPoint: string): string {
-        let chart: Chart = this.chart;
+        const chart: Chart = this.chart;
         let x1: number;
         let y1: number;
         let vector: ChartLocation;
-        let radius: number = chart.radius;
-        let length: number = xAxis.visibleLabels.length;
+        const radius: number = chart.radius;
+        const length: number = xAxis.visibleLabels.length;
         let direction: string = endPoint;
         vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
         y1 = this.centerY + radius * vector.y;
@@ -64,11 +64,12 @@ export class RadarSeries extends PolarSeries {
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'RadarSeries';
     }
@@ -79,10 +80,9 @@ export class RadarSeries extends PolarSeries {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroy method performed here
+         * Destroy method performed here.
          */
     }
 }

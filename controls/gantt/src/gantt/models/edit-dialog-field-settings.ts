@@ -33,11 +33,11 @@ export class EditDialogFieldSettings extends ChildProperty<EditDialogFieldSettin
      */
     @Property([])
     public fields: string[];
-      /**
-     * Defines the properties of Grid or RTE or TreeGrid controls in Gantt edit dialog. 
+    /**
+     * Defines the properties of Grid or RTE or TreeGrid controls in Gantt edit dialog.
      *
      * @default null
      */
-      @Property({})
-      public additionalParams: TreeGridModel | GridModel | RichTextEditorModel;
+    @Property({})
+    public additionalParams: TreeGridModel | GridModel | RichTextEditorModel;
 }

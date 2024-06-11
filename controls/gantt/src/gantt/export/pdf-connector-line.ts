@@ -1,5 +1,5 @@
 import { PointF, PdfPage, PdfGraphics, PdfPen, PdfBrush, PdfSolidBrush, RectangleF, PdfColor, SizeF } from '@syncfusion/ej2-pdf-export';
-import { IGanttStyle, PageDetail } from './../base/interface';
+import { IGanttData, IGanttStyle, PageDetail } from './../base/interface';
 import { Gantt } from './../base/gantt';
 import { pixelToPoint } from '../base/utils';
 import { PdfGantt } from './pdf-gantt';
@@ -37,14 +37,14 @@ export class PdfGanttPredecessor {
         this.parent = parent;
         this.pdfGantt = pdfGantt;
     }
-    public findindex(num: number) {
-        var dataindex: number;
+    public findindex(num: number): number {
+        let dataindex: number;
         if (!this.parent.enableVirtualization) {
-            this.parent.currentViewData.map((data, index) => { if (data.index == num) { dataindex = index } })
+            this.parent.currentViewData.map((data: IGanttData, index: number) => { if (data.index === num) { dataindex = index; } });
             return dataindex;
         }
         else {
-            this.parent.flatData.map((data, index) => { if (data.index == num) { dataindex = index } })
+            this.parent.flatData.map((data: IGanttData, index: number) => { if (data.index === num) { dataindex = index; } });
             return dataindex;
         }
     }
@@ -161,12 +161,14 @@ export class PdfGanttPredecessor {
             }
             break;
         }
-        const midPointManualparent :number = Math.round((this.parent.rowHeight - 15) / 2.0);
+        const midPointManualparent: number = Math.round((this.parent.rowHeight - 15) / 2.0);
         const midPointforTaskbar: number = Math.round((this.parent.rowHeight - 1) / 2.0);
         const midPointforBaseline: number = Math.round((this.parent.rowHeight - 10) / 2.0);
-        let midPoint = this.parent.renderBaseline ? midPointforBaseline :((!parentTask.isAutoSchedule && parentTask.isParentTask) || (!childTask.isAutoSchedule && childTask.isParentTask) )? midPointManualparent: midPointforTaskbar;
+        let midPoint: number = this.parent.renderBaseline ? midPointforBaseline :
+            ((!parentTask.isAutoSchedule && parentTask.isParentTask) || (!childTask.isAutoSchedule && childTask.isParentTask) ) ?
+                midPointManualparent : midPointforTaskbar;
         midPoint = pixelToPoint(midPoint);
-        
+
         /* eslint-disable-next-line */
         let point1, point2, point3, point4, point5, point6: PointF;
         point1 = point2 = point3 = point4 = point5 = point6 = new PointF();
@@ -485,7 +487,8 @@ export class PdfGanttPredecessor {
             if (this.type === 'FS' || this.type === 'SS') {
                 startPoint = new PointF(pixelToPoint(this.childLeft) - 1, childTask.taskStartPoint.y + pageData.startPoint.y);
             } else {
-                startPoint = new PointF(pixelToPoint(this.childLeft + this.childWidth) + 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+                startPoint = new PointF(pixelToPoint(this.childLeft + this.childWidth) + 1,
+                                        childTask.taskStartPoint.y + pageData.startPoint.y);
             }
         }
         const startPointCheck: boolean = this.contains(pageRect, startPoint.x, startPoint.y);

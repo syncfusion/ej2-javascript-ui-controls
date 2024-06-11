@@ -11,6 +11,7 @@ $rating-label-font-size: 12px !default;
 $rating-label-line-height: 18px !default;
 $rating-reset-font-size : 16px !default;
 $rating-tooltip-tip-bottom-height: 8px !default;
+$rating-border-width: 1px !default;
 
 $rating-small-li-font-size: 16px !default;
 $rating-small-li-line-height: 9px !default;
@@ -33,10 +34,9 @@ $rating-bigger-small-label-font-size: 12px !default;
 $rating-bigger-small-label-line-height: 18px !default;
 $rating-bigger-small-reset-font-size : 20px !default;
 
-$rating-border-width: 1px !default;
-
 $rating-selected-bg-color: $grey-300 !default;
 $rating-unrated-bg-color: $grey-500 !default;
+$rating-unrated-icon-bg-color: none !default;
 $rating-hover-bg-color: $primary !default;
 $rating-pressed-bg-color: $primary-300 !default;
 $rating-selected-disabled-bg-color: $grey-600 !default;

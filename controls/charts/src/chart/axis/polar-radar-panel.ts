@@ -1,6 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
 import { Axis, Row, Column, VisibleLabels } from '../axis/axis';
 import { valueToCoefficient, inside, isOverlap, textTrim } from '../../common/utils/helper';
@@ -65,8 +62,11 @@ export class PolarRadarPanel extends LineBase {
     }
 
     /**
-     * Measure the column and row in chart.
+     * Measures the column and row in the chart.
      *
+     * @param {Row | Column} definition - The row or column to measure.
+     * @param {Chart} chart - The chart instance.
+     * @param {Size} size - The size of the chart.
      * @returns {void}
      * @private
      */
@@ -324,12 +324,16 @@ export class PolarRadarPanel extends LineBase {
         };
         let previousValue: string;
         let element: Element;
+        let inversedRadius: number;
         if (axis.majorGridLines.width > 0) {
             if (chart.visibleSeries[0].type === 'Polar') {
                 for (let j: number = 0; j < axis.visibleLabels.length; j++) {
                     element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('r') : null;
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j as number].value, axis);
+                    if (axis.isInversed && !inversedRadius) {
+                        inversedRadius = radius;
+                    }
                     options = new CircleOption(
                         chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', border,
                         axis.majorGridLines.width, this.centerX, this.centerY, radius
@@ -340,7 +344,7 @@ export class PolarRadarPanel extends LineBase {
                         true, 'r', 'r', new ChartLocation(+previousValue, +previousValue), null, true
                     );
                 }
-                if (radius !== chart.radius) {
+                if (radius !== chart.radius && (!axis.isInversed || inversedRadius !== chart.radius)) {
                     options = new CircleOption(
                         chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length + 1, 'transparent', border,
                         axis.majorGridLines.width, this.centerX, this.centerY, chart.radius
@@ -521,7 +525,8 @@ export class PolarRadarPanel extends LineBase {
 
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
             isIntersect = false;
-            vector = CoefficientToVector(valueToPolarCoefficient(axis.visibleLabels[i as number].value + ticksbwtLabel, axis), this.startAngle);
+            vector = CoefficientToVector(valueToPolarCoefficient(axis.visibleLabels[i as number].value + ticksbwtLabel, axis),
+                                         this.startAngle);
             if (!isNaN(vector.x) && !isNaN(vector.y)) {
                 pointX = this.centerX + (radius + axis.majorTickLines.height + padding) * vector.x;
                 pointY = this.centerY + (radius + axis.majorTickLines.height + padding) * vector.y;
@@ -580,7 +585,8 @@ export class PolarRadarPanel extends LineBase {
                 if (isIntersect) {
                     const width: number = this.getAvailableSpaceToTrim(legendRect, labelRegions[i as number]);
                     if (width > 0) {
-                        labelText = textTrim(width, axis.visibleLabels[i as number].originalText, axis.labelStyle, this.chart.enableRtl, this.chart.themeStyle.axisLabelFont);
+                        labelText = textTrim(width, axis.visibleLabels[i as number].originalText, axis.labelStyle,
+                                             this.chart.enableRtl, this.chart.themeStyle.axisLabelFont);
                         isIntersect = false;
                     }
                 }
@@ -638,9 +644,6 @@ export class PolarRadarPanel extends LineBase {
             pointX -= (label.size.width / 2);
         } else if (anchor === 'end') {
             pointX -= label.size.width;
-        } else {
-            // eslint-disable-next-line no-self-assign
-            pointX = pointX;
         }
         pointY -= (label.size.height / 2);
         return new Rect(pointX, pointY, label.size.width, label.size.height);

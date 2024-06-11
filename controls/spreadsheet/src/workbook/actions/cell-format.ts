@@ -1,7 +1,7 @@
-import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs } from '../common/index';
+import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs, isReadOnly } from '../common/index';
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
-import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, updateCFModel } from '../index';
+import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, updateCFModel, getColumn, ColumnModel, RowModel } from '../index';
 import { getRow, ExtendedRowModel, updateCell, CellUpdateArgs, isHeightCheckNeeded, workbookFormulaOperation } from '../index';
 import { ExtendedWorkbook, ConditionalFormat, ConditionalFormatModel, applyCF, ApplyCFArgs, getColorCode } from '../index';
 
@@ -29,14 +29,18 @@ export class WorkbookCellFormat {
             eventArgs.borderType = args.borderType;
         }
         const style: CellStyleModel = {};
+        const indexes: number[] = typeof (eventArgs.range) === 'object' ? <number[]>eventArgs.range :
+            getSwapRange(getRangeIndexes(<string>eventArgs.range));
+        const isReadonlyCell: boolean = isReadOnly(getCell(indexes[0], indexes[1], sheet), getColumn(sheet, indexes[1]),
+                                                   getRow(sheet, indexes[0]));
+        const isReadonlyColumn: boolean = getColumn(sheet, indexes[1]) ? getColumn(sheet, indexes[1]).isReadOnly : false;
+        const isReadonlyRow: boolean = getRow(sheet, indexes[0]) ? getRow(sheet, indexes[0]).isReadOnly : false;
         Object.assign(style, eventArgs.style, null, true);
-        if (triggerEvt) {
+        if (triggerEvt && !isReadonlyCell && !isReadonlyColumn && !isReadonlyRow) {
             this.parent.trigger('beforeCellFormat', eventArgs);
             this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
             if (eventArgs.cancel) { args.cancel = true; return; }
         }
-        const indexes: number[] = typeof (eventArgs.range) === 'object' ? <number[]>eventArgs.range :
-            getSwapRange(getRangeIndexes(<string>eventArgs.range));
         if (args.borderType) {
             this.setTypedBorder(sheet, args.style.border, indexes, args.borderType, args.onActionUpdate);
             delete args.style.border;
@@ -144,6 +148,12 @@ export class WorkbookCellFormat {
                         }
                     }
                     cell = getCell(i, j, sheet, false, true);
+                    const readonlyColumn: ColumnModel = getColumn(sheet, j);
+                    const readOnlyRow: RowModel = getRow(sheet, i);
+                    if ((cell && cell.isReadOnly) || (readonlyColumn && readonlyColumn.isReadOnly) ||
+                        (readOnlyRow && readOnlyRow.isReadOnly)) {
+                        continue;
+                    }
                     if (cell.rowSpan > 1 || cell.colSpan > 1) {
                         for (let k: number = i, rowSpanLen: number = cell.rowSpan > 1 ? i + (cell.rowSpan - 1) : i; k <= rowSpanLen; k++) {
                             for (let l: number = j, colSpanLen: number = cell.colSpan > 1 ? j + (cell.colSpan - 1) : j;
@@ -191,7 +201,7 @@ export class WorkbookCellFormat {
         if (args.refreshRibbon) {
             this.parent.notify(activeCellChanged, null);
         }
-        if (triggerEvt) {
+        if (triggerEvt && !isReadonlyCell && !isReadonlyColumn && !isReadonlyRow) {
             eventArgs.style = style;
             eventArgs.range = `${sheet.name}!${rng}`;
             this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
@@ -249,10 +259,16 @@ export class WorkbookCellFormat {
     private textDecorationActionUpdate(args: { style: CellStyleModel, refreshRibbon?: boolean, cancel?: boolean }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const eventArgs: BeforeCellFormatArgs = { range: sheet.selectedRange, style: args.style, requestType: 'CellFormat' };
-        this.parent.trigger('beforeCellFormat', eventArgs);
-        this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
-        if (eventArgs.cancel) { args.cancel = true; return; }
         const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        const isReadonlyCell: boolean = isReadOnly(getCell(indexes[0], indexes[1], sheet), getColumn(sheet, indexes[1]),
+                                                   getRow(sheet, indexes[0]));
+        const isReadonlyColumn: boolean = getColumn(sheet, indexes[1]) ? getColumn(sheet, indexes[1]).isReadOnly : false;
+        const isReadonlyRow: boolean = getRow(sheet, indexes[0]) ? getRow(sheet, indexes[0]).isReadOnly : false;
+        if (!isReadonlyCell && !isReadonlyColumn && !isReadonlyRow) {
+            this.parent.trigger('beforeCellFormat', eventArgs);
+            this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
+            if (eventArgs.cancel) { args.cancel = true; return; }
+        }
         const value: TextDecoration = args.style.textDecoration; let changedValue: TextDecoration = value;
         const activeCellIndexes: number[] = getRangeIndexes(sheet.activeCell);
         let cellValue: TextDecoration = this.parent.getCellStyleValue(['textDecoration'], activeCellIndexes).textDecoration;
@@ -301,9 +317,11 @@ export class WorkbookCellFormat {
                 });
             }
         }
-        eventArgs.range = sheet.name + '!' + <string>eventArgs.range;
-        eventArgs.style.textDecoration = changedValue;
-        this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
+        if (!isReadonlyCell && !isReadonlyColumn && !isReadonlyRow) {
+            eventArgs.range = sheet.name + '!' + <string>eventArgs.range;
+            eventArgs.style.textDecoration = changedValue;
+            this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
+        }
     }
     private setTypedBorder(sheet: SheetModel, border: string, range: number[], type: BorderType, actionUpdate: boolean): void {
         let prevBorder: string;
@@ -381,6 +399,12 @@ export class WorkbookCellFormat {
     private setCellBorder(
         sheet: SheetModel, style: CellStyleModel, rowIdx: number, colIdx: number, actionUpdate: boolean, lastCell?: boolean, type?: string,
         modelUpdate?: boolean, isUndoRedo?: boolean): void {
+        const cell: CellModel = getCell(rowIdx, colIdx, sheet);
+        const column: ColumnModel = getColumn(sheet, colIdx);
+        const row: RowModel = getRow(sheet, rowIdx);
+        if ((cell && cell.isReadOnly) || (column && column.isReadOnly) || (row && row.isReadOnly)) {
+            return;
+        }
         this.setCellStyle(sheet, rowIdx, colIdx, style);
         if (!modelUpdate && this.parent.getActiveSheet().id === sheet.id) {
             if (type === 'Outer' && (style.borderBottom || style.borderRight)) {
@@ -390,13 +414,13 @@ export class WorkbookCellFormat {
                 colIdx = mergeArgs.range[1];
             }
             if (isUndoRedo) {
-                if (style.borderTop === "" && this.parent.getCellStyleValue(['borderBottom'], [rowIdx - 1, colIdx]).borderBottom !== "") {
+                if (style.borderTop === '' && this.parent.getCellStyleValue(['borderBottom'], [rowIdx - 1, colIdx]).borderBottom !== '') {
                     style.borderTop = this.parent.getCellStyleValue(['borderBottom'], [rowIdx - 1, colIdx]).borderBottom;
-                } 
-                if (style.borderLeft === "" && this.parent.getCellStyleValue(['borderRight'], [rowIdx, colIdx - 1]).borderRight !== "") {
+                }
+                if (style.borderLeft === '' && this.parent.getCellStyleValue(['borderRight'], [rowIdx, colIdx - 1]).borderRight !== '') {
                     style.borderLeft = this.parent.getCellStyleValue(['borderRight'], [rowIdx, colIdx - 1]).borderRight;
                 }
-                if (style.borderRight === "" && this.parent.getCellStyleValue(['borderLeft'], [rowIdx, colIdx + 1]).borderLeft !== "") {
+                if (style.borderRight === '' && this.parent.getCellStyleValue(['borderLeft'], [rowIdx, colIdx + 1]).borderLeft !== '') {
                     style.borderRight = this.parent.getCellStyleValue(['borderLeft'], [rowIdx, colIdx + 1]).borderLeft;
                 }
             }
@@ -459,7 +483,8 @@ export class WorkbookCellFormat {
             eColIdx = range[3];
             for (sColIdx; sColIdx <= eColIdx; sColIdx++) {
                 const cell: CellModel = getCell(sRowIdx, sColIdx, sheet);
-                if (cell) {
+                const isReadonlyCell: boolean = isReadOnly(cell, getColumn(sheet, sColIdx), getRow(sheet, sRowIdx));
+                if (cell && !isReadonlyCell) {
                     switch (options.type) {
                     case 'Clear Formats':
                         delete cell.format; delete cell.rowSpan; delete cell.style;

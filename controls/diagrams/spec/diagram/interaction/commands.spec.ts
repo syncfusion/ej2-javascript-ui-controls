@@ -3,6 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { MouseEvents } from './mouseevents.spec';
 
 /**
  * Command spec
@@ -556,3 +557,86 @@ describe('BringToFront exception', () => {
         done();
     });
 })
+describe('Drag HTML shape', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndexBeforeCall: number;
+    let zIndexAfterCall : number;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_html' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 250,
+            offsetY: 250, shape: {
+                type: 'HTML',
+                content: '<div style="background:#6BA5D7;height:100%;width:100%;"><button type="button" style="width:100px"> Button</button></div>'
+            }
+        };
+        diagram = new Diagram({
+            width: '900px', height: '700px', nodes: [node],
+        });
+        diagram.appendTo('#diagram_html');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking HTML shapes dragging', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 250,250,false,false)
+        mouseEvents.mouseMoveEvent(diagramCanvas, 250,250,false,false)
+        mouseEvents.mouseMoveEvent(diagramCanvas, 260,260,false,false)
+        mouseEvents.mouseUpEvent(diagramCanvas, 260,260,false,false)
+        expect(diagram.nodes.length === 1).toBe(true);
+        done();
+    });
+    
+});
+describe('Command in Canvas Mode', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndexBeforeCall: number;
+    let zIndexAfterCall : number;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_Cut' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 250,
+            offsetY: 250
+        };
+        diagram = new Diagram({
+            width: '900px', height: '700px', nodes: [node],
+        });
+        diagram.appendTo('#diagram_Cut');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking sendbackward commands', (done: Function) => {
+        diagram.select([diagram.nodes[0]]);
+        diagram.copy();
+        diagram.paste();
+        diagram.selectAll();
+        diagram.cut();
+        expect(diagram.nodes.length === 0).toBe(true);
+        done();
+    });
+    
+});

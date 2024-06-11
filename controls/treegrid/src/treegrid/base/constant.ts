@@ -158,3 +158,5 @@ export const ariaColIndex: string = 'aria-colindex';
 export const dataRowIndex: string = 'data-rowindex';
 /** @hidden */
 export const ariaRowIndex: string = 'aria-rowindex';
+/** @hidden */
+export const actionFailure: string = 'actionFailure';

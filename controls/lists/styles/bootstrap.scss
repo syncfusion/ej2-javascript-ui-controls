@@ -1,2 +1,8 @@
-@import 'list-view/bootstrap.scss';
-@import 'sortable/bootstrap.scss';
+@import 'ej2-base/styles/definition/bootstrap.scss';
+@import 'ej2-buttons/styles/check-box/bootstrap-definition.scss';
+@import 'list-view/bootstrap-definition.scss';
+@import 'list-view/icons/bootstrap.scss';
+@import 'list-view/all.scss';
+
+@import 'sortable/bootstrap-definition.scss';
+@import 'sortable/all.scss';

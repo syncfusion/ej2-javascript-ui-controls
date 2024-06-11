@@ -634,7 +634,6 @@ describe('Selection Settings', () => {
                     text: 'WorldMap',
                 },
                 layers: [{
-                    layerType: 'Geometry',
                     shapeData: World_Map,
                     shapeSettings: {
                         fill: '#80306A',
@@ -658,7 +657,6 @@ describe('Selection Settings', () => {
                     }
                 },
                 {
-                    layerType: 'Geometry',
                     shapeData: africa,
                     shapeSettings: {
                         fill: '#80306A',

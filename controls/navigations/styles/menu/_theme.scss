@@ -1,7 +1,5 @@
 @import '../context-menu/theme-mixin.scss';
 @include export-module('menu-theme') {
-
-  /*! menu theme */
   .e-menu-wrapper,
   .e-menu-container {
     background: $menu-ul-bgcolor;
@@ -36,6 +34,12 @@
           }
           @else {
             @include icon-color;
+            @if $skin-name == 'fluent2' {
+              & .e-menu-icon,
+              & .e-caret {
+                color: $icon-color;
+              }
+            }
           }
 
           &.e-menu-header {
@@ -67,6 +71,9 @@
               @if $skin-name == 'Material3' {
                 border-radius: 2px;
               }
+              @if $skin-name == 'fluent2' {
+                border-radius: 4px;
+              }
             }
           }
 
@@ -86,6 +93,9 @@
             }
             @if $skin-name == 'Material3' {
               border-radius: 2px;
+            }
+            @if $skin-name == 'fluent2' {
+              border-radius: 4px;
             }
 
             & .e-caret {
@@ -110,6 +120,14 @@
           &.e-separator {
             border-bottom-color: $menu-seperator-border-color;
           }
+
+          &:focus-visible {
+            @if $skin-name == 'fluent2' {
+              border-radius: 4px;
+              background-color: $content-bg-color;
+              box-shadow: $shadow-focus-ring1;
+            }
+          }
         }
 
         @include disabled-color;
@@ -121,19 +139,13 @@
 
         & .e-menu-item {
           @if $skin-name == 'bootstrap4' {
-            & .e-caret {
-              color: $submenu-color;
-            }
-
+            & .e-caret,
             & .e-menu-icon {
               color: $submenu-color;
             }
           }
           @else if $skin-name == 'FluentUI' {
-            & .e-caret {
-              color: $menu-icon-color;
-            }
-
+            & .e-caret,
             & .e-menu-icon {
               color: $menu-icon-color;
             }
@@ -149,18 +161,22 @@
                 color: $submenu-color;
               }
             }
+            @if $skin-name == 'fluent2' {
+              background-color: $flyout-bg-color-hover;
+              border-radius: 4px;
+            }
           }
 
           &.e-selected,
           &.e-active-item {
             @if $skin-name == 'bootstrap4' {
-              & .e-caret {
-                color: $menu-icon-focussed-color;
-              }
-
+              & .e-caret,
               & .e-menu-icon {
                 color: $menu-icon-focussed-color;
               }
+            }
+            @if $skin-name == 'fluent2' {
+              background-color: $flyout-bg-color-selected;
             }
           }
 
@@ -180,12 +196,28 @@
           &.e-separator {
             border-bottom-color: $cmenu-li-border-color;
           }
+
+          &:focus-visible {
+            @if $skin-name == 'fluent2' {
+              background-color: $content-bg-color;
+              box-shadow: $shadow-focus-ring1;
+              border-radius: 4px;
+            }
+          }
         }
       }
     }
 
     &.e-menu-popup {
       background: $cmenu-ul-bgcolor;
+
+      & .e-ul .e-menu-item.e-disabled,
+      & .e-ul .e-menu-item.e-disabled .e-menu-icon {
+        @if $skin-name == 'fluent2' {
+          color: $flyout-text-color-disabled;
+          opacity: 1;
+        }
+      }
 
       &.e-sfcontextmenu .e-menu-vscroll {
         background: inherit;

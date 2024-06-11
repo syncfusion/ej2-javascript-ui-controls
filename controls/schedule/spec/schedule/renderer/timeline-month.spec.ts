@@ -1310,6 +1310,7 @@ describe('Schedule Timeline Month view', () => {
 
     describe('Multi level resource rendering with expanded property', () => {
         let schObj: Schedule;
+        let keyModule: any;
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
                 height: '550px', width: '100%', currentView: 'TimelineMonth',
@@ -1350,6 +1351,7 @@ describe('Schedule Timeline Month view', () => {
                 selectedDate: new Date(2018, 4, 1)
             };
             schObj = util.createSchedule(model, timelineResourceData, done);
+            keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
             util.destroy(schObj);
@@ -1539,6 +1541,20 @@ describe('Schedule Timeline Month view', () => {
             };
             schObj.rowAutoHeight = true;
             schObj.dataBind();
+        });
+
+        it('Checking resource icon click through enter key', () => {
+            const resourceRow: Element = schObj.element.querySelector('.e-resource-column-wrap tbody');
+            const beforeExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
+            expect(beforeExpand.length).toEqual(11);
+            const firstRow: Element = resourceRow.children[1].querySelector('.e-resource-cells');
+            keyModule.keyActionHandler({ action: 'enter', target: firstRow });
+            const afterExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
+            expect(afterExpand.length).toEqual(7);
+            expect(resourceRow.children[1].classList.contains('e-hidden')).toEqual(false);
+            expect([resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-collapse')].length).toEqual(1);
+            expect(resourceRow.children[2].classList.contains('e-hidden')).toEqual(true);
+            expect(resourceRow.children[2].querySelector('.e-resource-cells div.e-resource-text').innerHTML).toEqual('Nancy');
         });
     });
 

@@ -1,5 +1,5 @@
 import { Calculate } from '../base';
-import { ExcelFileFormats } from './enum'
+import { ExcelFileFormats } from './enum';
 
 /**
  * Represent the common codes for calculate
@@ -122,9 +122,9 @@ export function getSkeletonVal(value: string): string {
  * @returns {boolean} - Returns boolean value.
  * @private
  */
- export function isExternalFileLink(formula: string): boolean {
+export function isExternalFileLink(formula: string): boolean {
     let isExternalFile: boolean = false;
-    for(const format in ExcelFileFormats) {
+    for (const format in ExcelFileFormats) {
         if (formula.indexOf('.' + format + ']') > -1) { isExternalFile = true; break; }
     }
     return isExternalFile;

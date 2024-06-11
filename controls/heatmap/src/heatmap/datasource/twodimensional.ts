@@ -243,4 +243,15 @@ export class TwoDimensional {
     private checkmin(val: Object): boolean {
         return !isNullOrUndefined(val) && val.toString() !== '';
     }
+
+    /**
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        this.completeDataSource = null;
+        this.tempColorArray = null;
+        this.tempSizeArray = null;
+        this.heatMap = null;
+    }
 }

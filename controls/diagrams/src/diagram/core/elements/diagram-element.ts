@@ -1,4 +1,4 @@
-import { HorizontalAlignment, VerticalAlignment, UnitMode, Transform, RelativeMode, FlipDirection, ElementAction } from '../../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, UnitMode, Transform, RelativeMode, FlipDirection, ElementAction, PortConnectionDirection } from '../../enum/enum';
 import { MarginModel, ShapeStyleModel, ShadowModel } from '../appearance-model';
 import { Size } from '../../primitives/size';
 import { PointModel } from '../../primitives/point-model';
@@ -123,6 +123,11 @@ export class DiagramElement {
      * Sets/Gets the margin of the element
      */
     public margin: MarginModel = { left: 0, right: 0, top: 0, bottom: 0 };
+
+    /**
+     * Sets/Gets the allowed direction for connections to the port
+     */
+    public connectionDirection: PortConnectionDirection = 'Auto';
 
     /**
      * Sets/Gets how the element has to be horizontally arranged with respect to its immediate parent

@@ -94,10 +94,8 @@ export class Zoom {
         this.maps = maps;
         this.wheelEvent = this.browserName === 'mozilla' ? (this.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
         this.cancelEvent = this.isPointer ? 'pointerleave' : 'mouseleave';
-        this.selectionColor = this.maps.zoomSettings.toolbarSettings.buttonSettings.selectionColor == null ?
-            this.maps.zoomSettings.selectionColor : this.maps.zoomSettings.toolbarSettings.buttonSettings.selectionColor;
-        this.fillColor = this.maps.zoomSettings.toolbarSettings.buttonSettings.color == null ? this.maps.zoomSettings.color :
-            this.maps.zoomSettings.toolbarSettings.buttonSettings.color;
+        this.selectionColor = this.maps.zoomSettings.toolbarSettings.buttonSettings.selectionColor;
+        this.fillColor = this.maps.zoomSettings.toolbarSettings.buttonSettings.color;
         this.addEventListener();
     }
 
@@ -600,7 +598,9 @@ export class Zoom {
                                         const markerData: Coordinate[] = polygonSettings.points;
                                         const path: string = calculatePolygonPath(maps, maps.tileZoomLevel, this.currentLayer, markerData);
                                         const element: Element = document.getElementById(maps.element.id + '_LayerIndex_' + this.index + '_PolygonIndex_' + polygonIndex);
-                                        element.setAttribute('d', path);
+                                        if (!isNullOrUndefined(element)) {
+                                            element.setAttribute('d', path);
+                                        }
                                     });
                                     document.getElementById(maps.element.id + '_LayerIndex_' + this.index + '_Polygons_Group').style.visibility = '';
                                 }
@@ -1075,20 +1075,6 @@ export class Zoom {
                     const templateOffset: ClientRect = element.getBoundingClientRect();
                     (<HTMLElement>element).style.left = ((location.x - (templateOffset.width / 2)) + marker.offset.x) + 'px';
                     (<HTMLElement>element).style.top = ((location.y - (templateOffset.height / 2)) + marker.offset.y) + 'px';
-                    if (this.maps.layers[this.maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
-                        const staticMapOffset : ClientRect = getElementByID(this.maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
-                        const staticMapOffsetWidth : number  = 640;
-                        if (element['style']['display'] !== 'none') {
-                            if ((staticMapOffset['x'] > templateOffset['x']  || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])
-                            && (staticMapOffset['y'] > templateOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < templateOffset['y'] + templateOffset['height'])
-                            ) {
-                                (element as HTMLElement).style.display = 'none';
-                            } else if ((staticMapOffset['x'] > templateOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])) {
-                                (element as HTMLElement).style.display = 'none';
-                            }
-                        }
-                    }
-
                 } else {
                     location.x += marker.offset.x;
                     location.y += marker.offset.y;
@@ -1357,30 +1343,30 @@ export class Zoom {
         const toolbar: ZoomToolbarSettingsModel = map.zoomSettings.toolbarSettings;
         const button: ZoomToolbarButtonSettingsModel = map.zoomSettings.toolbarSettings.buttonSettings;
         this.maps.toolbarProperties = {
-            toolBarOrientation: toolbar.orientation === 'Horizontal' ? map.zoomSettings.toolBarOrientation : toolbar.orientation,
-            highlightColor: button.highlightColor == null ? map.zoomSettings.highlightColor : button.highlightColor,
-            selectionColor: button.selectionColor == null ? map.zoomSettings.selectionColor : button.selectionColor,
-            horizontalAlignment: toolbar.horizontalAlignment === 'Far' ? map.zoomSettings.horizontalAlignment : toolbar.horizontalAlignment,
-            verticalAlignment: toolbar.verticalAlignment === 'Near' ? map.zoomSettings.verticalAlignment : toolbar.verticalAlignment,
-            color: button.color == null ? map.zoomSettings.color : button.color,
-            shapeOpacity: button.opacity !== 1 ? button.opacity : 1,
-            borderOpacity: button.borderOpacity !== 1 ? button.borderOpacity : 1
+            toolBarOrientation: toolbar.orientation,
+            highlightColor: button.highlightColor,
+            selectionColor: button.selectionColor,
+            horizontalAlignment: toolbar.horizontalAlignment,
+            verticalAlignment: toolbar.verticalAlignment,
+            color: button.color,
+            shapeOpacity: button.opacity,
+            borderOpacity: button.borderOpacity
         };
-        const cx: number = button.radius / 4;
-        const cy: number = button.radius / 4;
-        const radius: number = button.radius / 2;
+        const buttonRadius: number = button.radius || map.themeStyle.zoomButtonRadius;
+        const cx: number = buttonRadius / 4;
+        const cy: number = buttonRadius / 4;
+        const radius: number = buttonRadius / 2;
         const padding: number = button.padding;
         const orientation: Orientation = this.maps.toolbarProperties.toolBarOrientation;
         const toolbarCollection: string[] = map.zoomSettings.toolbarSettings.buttonSettings.toolbarItems.map((value: string) => { return value; });
-        const toolbarsCollection: string[] = toolbarCollection.length === 3 ? map.zoomSettings.toolbars : toolbarCollection;
-        xSpacing = (button.radius / 4) + (button.borderWidth / 2) + padding;
-        ySpacing = (button.radius / 4) + (button.borderWidth / 2) + padding;
+        xSpacing = (buttonRadius / 4) + (button.borderWidth / 2) + padding;
+        ySpacing = (buttonRadius / 4) + (button.borderWidth / 2) + padding;
         let shadowElement: string = '<filter id="chart_shadow" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/>';
         shadowElement += '<feOffset dx="-3" dy="4" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="1"/>';
         shadowElement += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
         const toolBarLength: number = toolbarCollection.length;
-        const toolWidth: number = (orientation === 'Horizontal') ? ((toolBarLength * button.radius) + (toolBarLength * padding) + padding + (toolBarLength * button.borderWidth)) : (button.radius + button.borderWidth + (2 * padding));
-        const toolHeight: number = (orientation === 'Horizontal') ? (button.radius + button.borderWidth + (2 * padding)) : ((toolBarLength * button.radius) + (toolBarLength * padding) + padding + (toolBarLength * button.borderWidth));
+        const toolWidth: number = (orientation === 'Horizontal') ? ((toolBarLength * buttonRadius) + (toolBarLength * padding) + padding + (toolBarLength * button.borderWidth)) : (buttonRadius + button.borderWidth + (2 * padding));
+        const toolHeight: number = (orientation === 'Horizontal') ? (buttonRadius + button.borderWidth + (2 * padding)) : ((toolBarLength * buttonRadius) + (toolBarLength * padding) + padding + (toolBarLength * button.borderWidth));
         const defElement: Element = map.renderer.createDefs();
         defElement.innerHTML = shadowElement;
         this.toolBarGroup.appendChild(defElement);
@@ -1389,15 +1375,15 @@ export class Zoom {
             toolbar.borderOpacity, new Rect((toolbar.borderWidth / 2), (toolbar.borderWidth / 2), (toolWidth - toolbar.borderWidth), (toolHeight - toolbar.borderWidth)), 0, 0
         ));
         this.toolBarGroup.appendChild(outerElement);
-        const scaleX: number = (button.radius - (button.borderWidth / 2)) / 30;
-        for (let i: number = 0; i < toolbarsCollection.length; i++) {
+        const scaleX: number = (buttonRadius - (button.borderWidth / 2)) / 30;
+        for (let i: number = 0; i < toolbarCollection.length; i++) {
             if (i !== 0) {
-                xSpacing = (map.toolbarProperties.toolBarOrientation === 'Horizontal') ? (xSpacing + (button.radius + padding) + button.borderWidth) : xSpacing;
-                ySpacing = (map.toolbarProperties.toolBarOrientation === 'Horizontal') ? ySpacing : (ySpacing + (button.radius + padding) + button.borderWidth);
+                xSpacing = (map.toolbarProperties.toolBarOrientation === 'Horizontal') ? (xSpacing + (buttonRadius + padding) + button.borderWidth) : xSpacing;
+                ySpacing = (map.toolbarProperties.toolBarOrientation === 'Horizontal') ? ySpacing : (ySpacing + (buttonRadius + padding) + button.borderWidth);
             }
-            const toolbar: string = toolbarsCollection[i as number];
+            const toolbar: string = toolbarCollection[i as number];
             const pathStroke: string = !isNullOrUndefined(this.maps.toolbarProperties.color) ? this.maps.toolbarProperties.color : this.maps.themeStyle.zoomFillColor;
-            const borderColor: string = button.borderColor || this.maps.themeStyle.zoomFillColor;
+            const borderColor: string = button.borderColor || (this.maps.themeStyle.zoomBorderColor || this.maps.themeStyle.zoomFillColor);
             this.currentToolbarEle = map.renderer.createGroup({
                 id: map.element.id + '_Zooming_ToolBar_' + toolbar + '_Group',
                 transform: 'translate( ' + xSpacing + ' ' + ySpacing + ' ) '

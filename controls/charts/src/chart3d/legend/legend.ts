@@ -133,7 +133,7 @@ export class Chart3DLegendSettings extends ChildProperty<Chart3DLegendSettings> 
      * Options to customize the legend text.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -250,7 +250,7 @@ export class Chart3DLegendSettings extends ChildProperty<Chart3DLegendSettings> 
      * Options to customize the legend title.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public titleStyle: FontModel;
 
     /**
@@ -548,8 +548,7 @@ export class Legend3D extends BaseLegend {
         this.isPaging = legendBounds.height < columnHeight;
         if (this.isPaging && !legend.enablePages) {
             if (this.isVertical) {
-                // eslint-disable-next-line no-self-assign
-                columnHeight = columnHeight;
+                columnHeight += columnHeight;
             } else {
                 columnHeight = (this.maxItemHeight + padding) + padding + (titlePosition === 'Top' ? titleSpace : 0);
             }
@@ -588,7 +587,8 @@ export class Legend3D extends BaseLegend {
                 legendOption.textCollection = textWrap(
                     legendOption.text,
                     (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) :
-                        (legendBounds.width - textPadding)), legend.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.legendLabelFont
+                        (legendBounds.width - textPadding)), legend.textStyle, this.chart.enableRtl,
+                    null, null, this.chart.themeStyle.legendLabelFont
                 );
             } else {
                 legendOption.textCollection.push(legendOption.text);

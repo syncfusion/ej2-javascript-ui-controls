@@ -1,0 +1,769 @@
+$input-skin-name: 'fluent2' !default;
+$zero-value: 0 !default;
+$one-value: 1px !default;
+$border-type: solid !default;
+$border-size: 1px !default;
+$input-child-padding-bottom: $zero-value !default;
+$input-child-small-bigger-padding-bottom: $zero-value !default;
+$input-child-small-padding-bottom: $zero-value !default;
+$input-child-bigger-padding-bottom: $zero-value !default;
+$input-group-full-border: $border-size $border-type !default;
+$input-child-small-bigger-padding-top: $zero-value !default;
+$input-child-small-padding-top: $zero-value !default;
+$input-child-padding-top: $zero-value !default;
+$input-child-bigger-padding-top: $zero-value !default;
+$textarea-padding: 4px 8px 4px 12px !default;
+$textarea-bigger-padding: 6px 12px 6px 16px !default;
+$textarea-small-padding: 4px 8px 4px 8px !default;
+$textarea-bigger-small-padding: 4px 8px 4px 14px !default;
+$textarea-min-height: 34px !default;
+$textarea-bigger-min-height: 38px !default;
+$textarea-bigger-small-min-height: 15px !default;
+$textarea-small-min-height: 14px !default;
+$input-text-indent: 8px !default;
+$input-bigger-text-indent: 7px !default;
+$input-small-text-indent: 8px !default;
+$input-small-bigger-text-indent: 7px !default;
+$input-font-size: $text-sm !default;
+$input-bigger-font-size: $text-base !default;
+$input-small-font-size: $text-xs !default;
+$input-bigger-small-font-size: $text-sm !default;
+$input-box-border-radius: 0 !default;
+$input-small-border-radius: 6px !default;
+$input-bigger-border-radius: 8px !default;
+$input-bigger-small-border-radius: 8px !default;
+$input-groupo-focus-border-radius: 8px !default;
+$input-group-focus-box-shadow: $primary-shadow-focus !default;
+$input-group-icon-border-radius: 3px !default;
+$input-group-child-border-width: $zero-value !default;
+$input-padding: 4px 12px 4px 12px !default;
+$float-input-padding: $zero-value !default;
+$float-label-padding: 8px !default;
+$float-input-wrap-padding-top: $zero-value !default;
+$input-padding-bottom: 4px !default;
+$input-focus-padding-bottom: 5px !default;
+$input-clear-icon: $text-sm !default;
+$input-bigger-clear-icon: $text-lg !default;
+$input-small-clear-icon: $text-xs !default;
+$input-bigger-small-clear-icon: $text-base !default;
+$input-clear-icon-padding: $zero-value !default;
+$input-clear-icon-margin: $zero-value !default;
+$input-clear-icon-position: center !default;
+$input-bigger-padding: 7px 0 7px 16px !default;
+$float-input-bigger-padding: $zero-value !default;
+$float-input-bigger-wrap-padding-top: $zero-value !default;
+$input-bigger-padding-bottom: 7px !default;
+$input-focus-bigger-padding-bottom: 7px !default;
+$input-child-padding: 5px 8px 5px 4px !default;
+$input-child-min-height: 18px !default;
+$input-child-min-width: 20px !default;
+$input-bigger-child-padding: 7px 12px 7px 6px !default;
+$input-bigger-child-min-height: 18px !default;
+$input-bigger-child-min-width: 20px !default;
+$input-margin-bottom: $zero-value !default;
+$input-bigger-margin-bottom: $zero-value !default;
+$input-small-margin-bottom: $zero-value !default;
+$input-small-bigger-margin-bottom: $zero-value !default;
+$input-margin-top: 24px !default;
+$input-bigger-margin-top: 24px !default;
+$input-small-margin-top: 20px !default;
+$input-small-bigger-margin-top: 24px !default;
+$input-small-padding: 4px 0 4px 8px !default;
+$float-input-small-padding: $zero-value !default;
+$float-input-small-wrap-padding-top: $zero-value !default;
+$input-small-padding-bottom: 4px !default;
+$input-focus-small-padding-bottom: 4px !default;
+$input-bigger-small-padding: 6px 0 6px 14px !default;
+$float-input-bigger-small-padding: $zero-value !default;
+$float-input-bigger-small-wrap-padding-top: $zero-value !default;
+$input-bigger-small-padding-bottom: 6px !default;
+$input-focus-bigger-small-padding-bottom: 6px !default;
+$input-bigger-small-child-padding: 6px !default;
+$input-bigger-small-child-min-height: 18px !default;
+$input-bigger-small-child-min-width: 20px !default;
+$input-small-child-padding: 3px 6px 3px 3px !default;
+$input-small-child-min-height: 18px !default;
+$input-small-child-min-width: 20px !default;
+$input-font-family: $font-family !default;
+$input-font-style: normal !default;
+$input-font-normal: normal !default;
+$input-border: $zero-value $border-type !default;
+$float-input-border: $zero-value $border-type !default;
+$input-box-border-width: 1px !default;
+$float-input-border-width: $zero-value $zero-value $one-value $zero-value !default;
+$input-focus-border-width: 1px !default;
+$input-disable-border-type: solid !default;
+$input-border-left-width: $zero-value !default;
+$input-group-border: 1px $border-type !default;
+$input-group-border-width: $zero-value !default;
+$input-group-border-radius: 2px !default;
+$input-valid-group-border-width: 2px !default;
+$input-child-margin-bottom: 4px !default;
+$input-child-margin-right: 4px !default;
+$input-child-margin-top: 4px !default;
+$float-input-child-margin-top: 2px !default;
+$input-child-small-bigger-margin-bottom: 4px !default;
+$input-child-small-bigger-margin-top: 4px !default;
+$float-input-child-small-bigger-margin-top: 4px !default;
+$input-child-small-bigger-margin-right: 4px !default;
+$input-child-small-margin-bottom: 4px !default;
+$input-child-small-margin-top: 4px !default;
+$float-input-child-small-margin-top: 4px !default;
+$input-child-small-margin-right: 4px !default;
+$input-child-bigger-margin-bottom: 5px !default;
+$input-child-bigger-margin-top: 6px !default;
+$float-input-child-bigger-margin-top: 6px !default;
+$input-child-bigger-margin-right:  8px !default;
+$input-child-bigger-margin: $zero-value !default;
+$input-disable-group-border-width: $zero-value $zero-value $one-value $zero-value !default;
+$input-opacity: 1 !default;
+$input-opacity-filter: 100 !default;
+$input-group-border-width-focus: $zero-value $zero-value $one-value $zero-value !default;
+$input-group-border-type-focus: $border-type !default;
+$input-group-border-width-hover: 1px !default;
+$input-group-full-border-width: $zero-value $zero-value $one-value $zero-value !default;
+$input-valid-border-bottom-width: 2px !default;
+$input-right-border-width: $zero-value !default;
+$float-label-font-size: $text-sm !default;
+$float-label-bigger-font-size: $text-sm !default;
+$float-label-small-font-size: $text-xs !default;
+$float-label-bigger-small-font-size: $text-sm !default;
+$float-placeholder-font-size: $text-sm !default;
+$float-placeholder-bigger-font-size: $text-base !default;
+$float-placeholder-small-font-size: $text-xs !default;
+$float-placeholder-bigger-small-font-size: $text-xs !default;
+$input-border-size: 2px !default;
+$input-normal-height: 30px !default;
+$input-bigger-height: 38px !default;
+$input-small-height: 26px !default;
+$input-bigger-small-height: 38px - $input-border-size !default;
+$float-input-normal-height: 32px !default;
+$float-input-bigger-height: 40px !default;
+$float-input-small-height: 28px !default;
+$float-input-bigger-small-height: 34px !default;
+$input-float-font-weight: $font-weight-normal !default;
+$input-full-height: 100% !default;
+$textarea-normal-height: auto !default;
+$textarea-bigger-height: auto !default;
+$textarea-small-height: auto !default;
+$textarea-bigger-small-height: auto !default;
+$textarea-full-height: 100% !default;
+$input-icon-font-size: 14px !default;
+$input-bigger-icon-font-size: 18px !default;
+$input-small-icon-font-size: 12px !default;
+$input-bigger-small-icon-font-size: 16px !default;
+$input-inner-wrap-margin-left: 8px !default;
+$input-clear-icon-padding-bottom: 4px !default;
+$input-clear-icon-padding-right: 8px !default;
+$input-clear-icon-padding-left: $input-clear-icon-padding-right !default;
+$input-clear-icon-padding-top: 4px !default;
+$float-input-clear-icon-padding-top: 4px !default;
+$input-clear-icon-small-bigger-padding-bottom: 4px !default;
+$input-clear-icon-small-bigger-padding-right: 4px !default;
+$input-clear-icon-small-bigger-padding-top: 4px !default;
+$float-input-clear-icon-small-bigger-padding-top: 4px !default;
+$input-clear-icon-small-padding-bottom: 4px !default;
+$input-clear-icon-small-padding-right: 4px !default;
+$input-clear-icon-small-padding-top: 4px !default;
+$float-input-clear-icon-small-padding-top: 4px !default;
+$input-clear-icon-bigger-padding-bottom: 5px !default;
+$input-clear-icon-bigger-padding-right: 8px !default;
+$input-clear-icon-bigger-padding-top: 6px !default;
+$float-input-clear-icon-bigger-padding-top: 6px !default;
+$input-clear-icon-min-height: 28px !default;
+$input-clear-icon-min-width: 28px !default;
+$input-bigger-clear-icon-min-height: 36px !default;
+$input-bigger-clear-icon-min-width: 36px !default;
+$input-bigger-small-clear-icon-min-height: 32px !default;
+$input-bigger-small-clear-icon-min-width: 32px !default;
+$input-small-clear-icon-min-height: 24px !default;
+$input-small-clear-icon-min-width: 24px !default;
+$input-error-border-shadow: none !default;
+$input-success-border-shadow: none !default;
+$input-warning-border-shadow: none !default;
+$input-group-border-shadow: $shadow-sm !default;
+$float-label-rtl-value: 0 !default;
+$input-child-icon-border-radius: 16px !default;
+$input-bigger-icon-border-radius: 20px !default;
+$input-small-child-border-radius: 14px !default;
+$input-bigger-small-child-border-radius: 20px !default;
+$input-bigger-small-child-margin: 0 !default;
+$outline-small-label-line-height: 46px !default;
+$outline-textarea-small-label-line-height: 60px !default;
+$outline-label-line-height: 54px !default;
+$outline-textarea-label-line-height: 50px !default;
+$outline-small-bigger-label-line-height: 53px !default;
+$outline-textarea-small-bigger-label-line-height: 60px !default;
+$outline-textarea-margin-top: 8px $zero-value 1px !default;
+$outline-small-textarea-margin-top: 8px $zero-value 1px !default;
+$outline-bigger-textarea-maring-top: 8px $zero-value 1px !default;
+
+// color
+
+$hover-border-color: $border-hover !default;
+$pressed-border-color: $border-pressed !default;
+$input-bg-color: $content-bg-color-alt1 !default;
+$input-box-border-focus: $primary !default;
+$input-success-color: $border-success !default;
+$input-warning-color:  $border-warning !default;
+$input-error-color: $border-error !default;
+$input-disable-bg-color: $content-bg-color-alt1 !default;
+$input-disable-font-color: $content-text-color-disabled !default;
+$input-box-border-color: $border-alt !default;
+$input-font-color: $content-text-color !default;
+$input-icon-font-color: $icon-color !default;
+$input-clear-icon-color: $icon-color !default;
+$input-clear-icon-hover-color: $icon-color-hover !default;
+$input-error-color: $border-error !default;
+$input-accent:  $content-bg-color !default;
+$input-placeholder: $placeholder-text-color !default;
+$input-active-border-color: $input-box-border-focus !default;
+$input-group-active-border-color: transparent !default;
+$input-disable-border-color: $border-disabled !default;
+$input-disabled-group-bg-color: transparent !default;
+$input-group-border-right-focus: transparent !default;
+$input-group-border-left-focus: transparent !default;
+$input-group-active-border: transparent !default;
+$input-group-pressed-bg: transparent !default;
+$input-hover-bg-color: $content-bg-color-hover !default;
+$input-header-font-color:$content-text-color-alt2 !default;
+$input-group-border-color-focus: $input-box-border-focus !default;
+$input-group-border-color-hover: $border-dark !default;
+$input-group-full-border-color: $border-dark !default;
+$input-group-full-border-bottom-color: $border-alt !default;
+$input-group-focus-border-bottom-color: $primary !default;
+$input-group-success-color: $input-success-color !default;
+$input-group-warning-color: $input-warning-color !default;
+$input-group-error-color: $input-error-color !default;
+$input-group-pressed-color: $icon-color-pressed !default;
+$input-select-font-color: $content-text-color-selected !default;
+$float-label-font-color: $placeholder-text-color !default;
+$float-label-disbale-font-color: $content-text-color-disabled !default;
+$input-placeholder-color: $placeholder-text-color !default;
+$input-group-disabled-color: $icon-color-disabled !default;
+$input-group-hovered-color: $icon-color-hover !default;
+$input-readonly-bg-color: none !default;
+$input-readonly-color: $content-text-color-alt2 !default;
+$input-icon-shadow: inset  0 3px 5px rgba(0, 0, 0, .125) !default;
+$input-border-shadow: 0 0 0 3px rgba($primary, .25) !default;
+$input-transition-shadow: border-color .15s ease-in-out, box-shadow .15s ease-in-out !default;
+
+$input-error-text-color:$danger !default;
+
+$input-smaller-min-height: 15px !default;
+$textarea-smaller-min-height: 18px !default;
+$input-min-height: 23px !default;
+$textarea-min-height: 23px !default;
+$input-bigger-min-height: 29px !default;
+$input-bigger-smaller-min-height: 25px !default;
+$float-label-rtl-value: -7px !default;
+$input-left-icon-font-size: 14px !default;
+$input-bigger-left-icon-font-size: 18px !default;
+$input-small-left-icon-font-size: 12px !default;
+$input-bigger-small-left-icon-font-size: 16px !default;
+$input-left-child-min-height: 30px !default;
+$input-left-child-min-width: 30px !default;
+$input-bigger-left-child-min-height: 32px !default;
+$input-bigger-left-child-min-width: 32px !default;
+$input-small-left-child-min-height: 28px !default;
+$input-small-left-child-min-width: 28px !default;
+$input-bigger-small-left-child-min-height: 30px !default;
+$input-bigger-small-left-child-min-width: 30px !default;
+$input-icon-inner-width: 10px !default;
+$input-icon-inner-height: 10px !default;
+$input-readonly-bg-color: none !default;
+$input-child-small-margin: 0 !default;
+$outline-bigger-label-min-width: 13px !default;
+$outline-small-label-min-width: 7px !default;
+$outline-bigger-small-label-min-width: 9px !default;
+$outline-label-height: 8px !default;
+$outline-label-margin: 4px !default;
+$outline-label-border-radius: 5px !default;
+$outline-label-before-left: -1px !default;
+$outline-label-before-left-rtl: 5px !default;
+$outline-label-after-left-rtl: -6px !default;
+$outline-floating-label-font-size: 12px !default;
+$outline-float-label-top: -8px !default;
+$outline-input-icon-margin-left: $zero-value !default;
+$outline-input-icon-margin-right: 12px !default;
+$outline-small-input-min-height: 32px !default;
+$outline-small-input-padding-left: 10px !default;
+$outline-small-input-padding-top: 7px !default;
+$outline-small-input-icon-margin-left: 10px !default;
+$outline-small-input-icon-margin-right: 6px !default;
+$outline-bigger-input-min-height: 56px !default;
+$outline-small-input-padding-left: 10px !default;
+$outline-small-input-padding-top: 7px !default;
+$outline-small-input-icon-margin-left: 10px !default;
+$outline-small-input-icon-margin-right: 6px !default;
+$outline-bigger-input-min-height: 56px !default;
+$outline-bigger-input-icon-margin-left: 16px !default;
+$outline-bigger-input-icon-margin-right: 8px !default;
+$outline-bigger-input-padding-left: 16px !default;
+$outline-bigger-input-padding-top: 15px !default;
+$outline-small-bigger-input-min-height: 48px !default;
+$outline-small-bigger-input-margin-top: 10px !default;
+$outline-small-bigger-input-margin-bottom: 9px !default;
+$outline-small-bigger-input-margin-left: 12px !default;
+$outline-small-bigger-icon-margin-left: 12px !default;
+$outline-small-bigger-icon-margin-right: 8px !default;
+$outline-input-border: $zero-value !default;
+$outline-input-group-border-width: $zero-value !default;
+$outline-disabled-border-color: rgba($border, .38) !default;
+$outline-float-label-top: -7px !default;
+$outline-label-before-element-margin-top: 6px !default;
+$outline-wrapper-border-infocused: 2px !default;
+$outline-label-min-width: 9px !default;
+$outline-small-label-min-width: 7px !default;
+$outline-bigger-label-min-width: 13px !default;
+$outline-bigger-small-label-min-width: 9px !default;
+$outline-label-height: 8px !default;
+$outline-label-margin: 4px !default;
+$outline-label-border-radius: 5px !default;
+$outline-label-before-left: -1px !default;
+$outline-label-after-left: 2px !default;
+$outline-input-icon-padding-top-bottom: 9px !default;
+$outline-input-icon-font-size: 14px !default;
+$outline-input-clear-icon-font-size: 14px !default;
+$outline-floating-label-font-size: 14px !default;
+$outline-bigger-input-font-size: 16px !default;
+$outline-bigger-input-icon-padding: 15px !default;
+$outline-bigger-input-icon-font-size: 18px !default;
+$outline-bigger-clear-icon-font-size: 18px !default;
+$outline-small-bigger-input-label-font-size: 14px !default;
+$outline-small-bigger-input-icon-font-size: 16px !default;
+$outline-small-bigger-clear-icon-font-size: 16px !default;
+$outline-label-font-color-with-value: rgba($placeholder-text-color) !default;
+$outline-valid-input-font-size: 14px !default;
+$outline-label-default-line-height: 13px !default;
+$outline-label-before-left-rtl: 5px !default;
+$outline-label-after-left-rtl: -6px !default;
+$outline-label-line-height: 54px !default;
+$outline-bigger-label-line-height: 70px !default;
+$outline-small-bigger-label-line-height: 53px !default;
+$outline-small-label-line-height: 46px !default;
+$outline-textarea-label-line-height: 50px !default;
+$outline-valid-textarea-font-size: 14px !default;
+$outline-textarea-small-label-line-height: 60px !default;
+$outline-textarea-bigger-label-line-height: 66px !default;
+$outline-textarea-small-bigger-label-line-height: 60px !default;
+$outline-textarea-margin-top: 8px $zero-value 1px !default;
+$outline-small-textarea-margin-top: 8px $zero-value 1px !default;
+$outline-bigger-textarea-maring-top: 8px $zero-value 1px !default;
+$outline-small-input-font-size: 12px !default;
+$outline-small-input-icon-font-size: 12px !default;
+$outline-small-clear-icon-font-size: 12px !default;
+$outline-small-label-font-size: 12px !default;
+$outline-bigger-label-font-size: 16px !default;
+$outline-small-bigger-input-font-size: 14px !default;
+$outline-small-bigger-label-font-size: 12px !default;
+$outline-bigger-small-group-icon-top: 9px !default;
+$outline-bigger-small-group-icon-bottom: 9px !default;
+$outline-input-small-clear-icon: 14px !default;
+$outline-input-clear-icon: 16px !default;
+$outline-input-bigger-clear-icon: 20px !default;
+$outline-input-bigger-small-clear-icon: 18px !default;
+$outline-input-clear-icon-hover-color: rgba($icon-color-hover) !default;
+$outline-input-clear-icon-active-color: rgba($icon-color) !default;
+$outline-float-label-font-size: 14px !default;
+$bigger-outline-float-label-font-size: 16px !default;
+$bigger-small-outline-float-label-font-size: 14px !default;
+$small-outline-float-label-font-size: 13px !default;
+$outline-float-label-disbale-font-color: rgba($content-text-color-alt1, .38) !default;
+$outline-disabled-input-font-color: rgba($content-text-color, .38) !default;
+$outline-input-group-disabled-color: rgba($content-text-color) !default;
+$outline-input-font-size: 14px !default;
+$outline-active-input-border: 1px !default;
+$outline-input-padding-left: 12px !default;
+$outline-input-padding-top: 10px !default;
+$outline-input-padding-bottom: 9px !default;
+$outline-input-min-height: 40px !default;
+
+@mixin input-sizing {
+  box-sizing: border-box;
+}
+
+@mixin input-height ($height) {
+  height: $height;
+}
+
+@mixin input-state-color ($color) {
+  border-color: $color;
+}
+
+@mixin input-selection {
+  background: $primary;
+  color: $primary-text-color;
+}
+/* stylelint-disable property-no-vendor-prefix */
+@mixin float-label-alignment {
+  content: '';
+}
+
+@mixin textarea-float-label-alignment {
+  content: '';
+}
+
+@mixin input-group-animation {
+  -moz-transition: .2s cubic-bezier(.4, 0, .4, 1);
+  bottom: 0;
+  content: '';
+  height: 2px;
+  position: absolute;
+  transition: .2s cubic-bezier(.4, 0, .4, 1);
+  width: 0;
+}
+@mixin input-group-animation-left {
+  left: 50%;
+}
+@mixin input-group-animation-width {
+  width: 50%;
+}
+@mixin input-group-animation-right {
+  right: 50%;
+}
+
+@mixin input-group-animation-bg {
+  background: $input-active-border-color;
+}
+
+@mixin input-group-hover-bg {
+  background: $input-group-border-color-hover;
+}
+
+@mixin input-group-success-animation-bg {
+  background: $input-success-color;
+}
+
+@mixin input-group-warning-animation-bg {
+  background: $input-warning-color;
+}
+
+@mixin input-group-error-animation-bg {
+  background: $input-error-color;
+}
+
+@mixin input-ripple-parent {
+  position: relative;
+}
+
+@mixin input-ripple-style {
+  background: $grey-74;
+  border-radius: 100%;
+  content: '';
+  display: block;
+  filter: alpha(opacity=75);
+  height: 40%;
+  opacity: .75;
+  position: absolute;
+  transform: scale(0);
+  width: 40%;
+}
+
+@mixin input-ripple-animation {
+  animation: e-input-ripple .45s linear;
+}
+@keyframes e-input-ripple {
+  100% {
+    opacity: 0;
+    transform: scale(4);
+  }
+}
+@keyframes slideTopUp {
+  from{ transform: translate3d($zero-value, $zero-value, $zero-value) scale(1); }
+  to{ transform: translate3d($zero-value, $zero-value, $zero-value) scale(1); }
+}
+
+/* stylelint-disable */
+.e-input#{$css}:focus:not(.e-success):not(.e-warning).e-error,
+.e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group) input:focus,
+.e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group) textarea:focus,
+.e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group) input:focus,
+.e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group) textarea:focus,
+.e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group).e-input-focus input,
+.e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group).e-input-focus input {
+  -webkit-box-shadow: $input-error-border-shadow !important;
+  box-shadow: $input-error-border-shadow !important;
+}
+
+.e-input#{$css}:focus:not(.e-error):not(.e-warning).e-success,
+.e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group) input:focus,
+.e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group) textarea:focus,
+.e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group) input:focus,
+.e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group) textarea:focus,
+.e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group).e-input-focus input,
+.e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group).e-input-focus input {
+  -webkit-box-shadow: $input-success-border-shadow !important;
+  box-shadow: $input-success-border-shadow !important;
+}
+
+.e-input#{$css}:focus:not(.e-success):not(.e-error).e-warning,
+.e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group) input:focus,
+.e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group) textarea:focus,
+.e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group) input:focus,
+.e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group) textarea:focus,
+.e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group).e-input-focus input,
+.e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group).e-input-focus input {
+  -webkit-box-shadow: $input-warning-border-shadow !important;
+  box-shadow: $input-warning-border-shadow !important;
+}
+
+.e-input-group.e-input-focus:not(.e-success):not(.e-warning).e-error,
+.e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning).e-error {
+  -webkit-box-shadow: $input-error-border-shadow !important;
+  box-shadow: $input-error-border-shadow !important;
+}
+
+.e-input-group.e-input-focus:not(.e-error):not(.e-warning).e-success,
+.e-input-group.e-control-wrapper.e-input-focus:not(.e-error):not(.e-warning).e-success {
+  -webkit-box-shadow: $input-success-border-shadow !important;
+  box-shadow: $input-success-border-shadow !important;
+}
+
+.e-input-group.e-input-focus:not(.e-success):not(.e-error).e-warning,
+.e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-error).e-warning {
+  -webkit-box-shadow: $input-warning-border-shadow !important;
+  box-shadow: $input-warning-border-shadow !important;
+}
+
+.e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning).e-error,
+.e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-warning).e-error {
+  -webkit-box-shadow: $input-error-border-shadow !important;
+  box-shadow: $input-error-border-shadow !important;
+}
+
+.e-input-group:not(.e-disabled):active:not(.e-error):not(.e-warning).e-success,
+.e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-error):not(.e-warning).e-success {
+  -webkit-box-shadow: $input-success-border-shadow !important;
+  box-shadow: $input-success-border-shadow !important;
+}
+
+.e-input-group:not(.e-disabled):active:not(.e-success):not(.e-error).e-warning,
+.e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-error).e-warning {
+  -webkit-box-shadow: $input-warning-border-shadow !important;
+  box-shadow: $input-warning-border-shadow !important;
+}
+
+.e-float-input.e-error label.e-float-text,
+.e-float-input.e-control-wrapper.e-error label.e-float-text,
+.e-float-input.e-error input:focus ~ label.e-float-text,
+.e-float-input.e-control-wrapper.e-error input:focus ~ label.e-float-text,
+.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
+.e-float-input.e-error textarea:focus ~ label.e-float-text,
+.e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text {
+  color: $input-error-text-color !important;
+}
+
+.e-outline.e-float-input.e-error.e-input-focus input:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-input-group.e-error.e-valid-input label.e-label-top.e-float-text,
+.e-outline.e-float-input.e-bigger.e-error.e-input-focus input:focus ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-error.e-input-focus input:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-small.e-error.e-input-focus input:focus ~ label.e-float-text,
+.e-small .e-outline.e-float-input.e-error input:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-small.e-bigger.e-error input:focus ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-small:not(.e-error) input:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-error textarea:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-bigger.e-error textarea:focus ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-error textarea:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-small.e-error textarea:focus ~ label.e-float-text,
+.e-small .e-outline.e-float-input.e-error textarea:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-small.e-bigger.e-error textarea:focus ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-small.e-error textarea:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-error input:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-bigger.e-error input:focus ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-control-wrapper.e-error input:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-small.e-error input:focus ~ label.e-float-text,
+.e-small .e-outline.e-float-input.e-control-wrapper.e-error input:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-error input:focus ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-error input:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-bigger.e-error textarea:focus ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-small.e-error textarea:focus ~ label.e-float-text,
+.e-small .e-outline.e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-error textarea:focus ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-error textarea:focus ~ label.e-float-text,
+.e-outline.e-float-input.e-error label.e-float-text.e-label-top,
+.e-outline.e-float-input.e-input-group.e-error label.e-float-text.e-label-top,
+.e-outline.e-float-input.e-control-wrapper.e-error label.e-float-text.e-label-top,
+.e-outline.e-float-input.e-valid-input.e-error:not(.e-input-focus) input:valid ~ label.e-float-text.e-label-top,
+.e-outline.e-float-input.e-control-wrapper.e-valid-input.e-error:not(.e-input-focus) input:focus ~ label.e-float-text.e-label-top,
+.e-outline.e-float-input.e-valid-input.e-error:not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-top,
+.e-outline.e-float-input.e-control-wrapper.e-valid-input.e-error:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top,
+.e-outline.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+.e-outline.e-float-input.e-bigger.e-error.e-input-focus input ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+.e-outline.e-float-input.e-small.e-error.e-input-focus input ~ label.e-float-text,
+.e-small .e-outline.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+.e-outline.e-float-input.e-small.e-bigger.e-error.e-input-focus input ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-bigger.e-error.e-input-focus input ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-small.e-error.e-input-focus input ~ label.e-float-text,
+.e-small .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
+.e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-error.e-input-focus input ~ label.e-float-text,
+.e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-error.e-input-focus input ~ label.e-float-text {
+  color: $input-error-text-color !important;
+}
+
+.e-filled.e-float-input.e-error label.e-float-text,
+.e-filled.e-float-input.e-control-wrapper.e-error label.e-float-text,
+.e-filled.e-float-input.e-error input:focus ~ label.e-float-text,
+.e-filled.e-float-input.e-control-wrapper.e-error input:focus ~ label.e-float-text,
+.e-filled.e-float-input.e-error textarea:focus ~ label.e-float-text,
+.e-filled.e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text,
+.e-filled.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+.e-filled.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text {
+  color: $input-error-text-color !important;
+}
+
+$filled-input-font-size: 14px !default;
+$bigger-filled-input-font-size: 16px !default;
+$bigger-small-filled-input-font-size: 14px !default;
+$small-filled-input-font-size: 12px !default;
+$filled-float-label-font-size: 14px !default;
+$bigger-filled-float-label-font-size: 16px !default;
+$bigger-small-filled-float-label-font-size: 14px !default;
+$small-filled-float-label-font-size: 13px !default;
+$filled-input-clear-icon-size: 14px !default;
+$bigger-filled-input-clear-icon-size: 18px !default;
+$bigger-small-filled-input-clear-icon-size: 16px !default;
+$small-filled-input-clear-icon-size: 12px !default;
+$filled-input-icon-size: 14px !default;
+$bigger-filled-input-icon-size: 18px !default;
+$bigger-small-filled-input-icon-size: 16px !default;
+$small-filled-input-icon-size: 12px !default;
+$filled-float-input-wrapper-padding: $zero-value !default;
+$bigger-filled-float-input-wrapper-padding: $zero-value !default;
+$bigger-small-filled-float-input-wrapper-padding: $zero-value 10px $zero-value 12px !default;
+$small-filled-float-input-wrapper-padding: $zero-value !default;
+$filled-float-input-wrapper-rtl-padding: $zero-value 12px $zero-value 10px !default;
+$bigger-filled-float-input-wrapper-rtl-padding: $zero-value 16px $zero-value 12px !default;
+$bigger-small-filled-float-input-wrapper-rtl-padding: $zero-value 12px $zero-value 10px !default;
+$small-filled-float-input-wrapper-rtl-padding: $zero-value 8px $zero-value 6px !default;
+$filled-wrapper-padding: $zero-value 10px $zero-value 12px !default;
+$bigger-filled-wrapper-padding: $zero-value 12px $zero-value 16px !default;
+$bigger-small-filled-wrapper-padding: $zero-value 10px $zero-value 12px !default;
+$small-filled-wrapper-padding: $zero-value 6px $zero-value 8px !default;
+$filled-wrapper-rtl-padding: $zero-value 12px $zero-value 10px !default;
+$bigger-filled-wrapper-rtl-padding: $zero-value 16px $zero-value 12px !default;
+$bigger-small-filled-wrapper-rtl-padding: $zero-value 12px $zero-value 10px !default;
+$small-filled-wrapper-rtl-padding: $zero-value 8px $zero-value 6px !default;
+$filled-wrapper-margin: $zero-value !default;
+$filled-input-padding: 10px 2px 10px $zero-value !default;
+$filled-bigger-input-padding: 16px 4px 16px $zero-value !default;
+$filled-bigger-small-input-padding: 10px 2px 10px $zero-value !default;
+$filled-small-input-padding: 7px 2px 7px $zero-value !default;
+$filled-input-rtl-padding: 10px $zero-value 10px 2px !default;
+$filled-bigger-input-rtl-padding: 16px $zero-value 16px 4px !default;
+$filled-bigger-small-input-rtl-padding: 10px $zero-value 10px 2px !default;
+$filled-small-input-rtl-padding: 7px $zero-value 7px 2px !default;
+$filled-input-padding-bottom: 10px !default;
+$filled-bigger-input-padding-bottom: 16px !default;
+$filled-bigger-small-input-padding-bottom: 10px !default;
+$filled-small-input-padding-bottom: 7px !default;
+$filled-float-input-padding: 7px $zero-value 5px 7px !default;
+$filled-bigger-float-input-padding: 3px $zero-value 4px 7px !default;
+$filled-bigger-small-float-input-padding: 14px 2px 5px $zero-value !default;
+$filled-small-float-input-padding: 12px 2px 4px $zero-value !default;
+$filled-float-input-rtl-padding: 14px $zero-value 5px 2px !default;
+$filled-bigger-float-input-rtl-padding: 20px $zero-value 6px 4px !default;
+$filled-bigger-small-float-input-rtl-padding: 14px $zero-value 5px 2px !default;
+$filled-small-float-input-rtl-padding: 12px $zero-value 4px 2px !default;
+$filled-textarea-padding: $zero-value 12px 9px !default;
+$filled-bigger-textarea-padding: $zero-value 16px 8px !default;
+$filled-bigger-small-textarea-padding: $zero-value 12px 10px !default;
+$filled-small-textarea-padding: $zero-value 8px 7px !default;
+$filled-float-textarea-padding: 4px 12px 5px !default;
+$filled-bigger-float-textarea-padding: $zero-value 16px 8px !default;
+$filled-bigger-small-float-textarea-padding: $zero-value 12px 5px !default;
+$filled-small-float-textarea-padding: $zero-value 8px 4px !default;
+$filled-textarea-wrapper-padding: 10px $zero-value $zero-value !default;
+$bigger-filled-textarea-wrapper-padding: 16px $zero-value $zero-value !default;
+$bigger-small-filled-textarea-wrapper-padding: 10px $zero-value $zero-value !default;
+$small-filled-textarea-wrapper-padding: 7px $zero-value $zero-value !default;
+$filled-float-textarea-wrapper-padding: 14px $zero-value $zero-value !default;
+$bigger-filled-float-textarea-wrapper-padding: 20px $zero-value $zero-value !default;
+$bigger-small-filled-float-textarea-wrapper-padding: 14px $zero-value $zero-value !default;
+$small-filled-float-textarea-wrapper-padding: 12px $zero-value $zero-value !default;
+$filled-input-label-top: 8px !default;
+$bigger-filled-input-label-top: 12px !default;
+$bigger-small-filled-input-label-top: 12px !default;
+$small-filled-input-label-top: 10px !default;
+$filled-input-label-top-after-floating: -7px !default;
+$bigger-filled-input-label-top-after-floating: -6px !default;
+$bigger-small-filled-input-label-top-after-floating: 12px !default;
+$small-filled-input-label-top-after-floating: 10px !default;
+$filled-input-label-left: 12px !default;
+$bigger-filled-input-label-left: 10px !default;
+$bigger-small-filled-input-label-left: 12px !default;
+$small-filled-input-label-left: 8px !default;
+$filled-input-label-initial-transform: none !default;
+$filled-input-label-line-height: 1.2 !default;
+$bigger-filled-input-label-line-height: 1.25 !default;
+$small-filled-input-label-line-height: 1.2 !default;
+$bigger-small-filled-input-label-line-height: 1.25 !default;
+$filled-input-label-width: auto !default;
+$filled-default-input-min-height: 22px !default;
+$bigger-filled-default-input-min-height: 28px !default;
+$bigger-small-filled-default-input-min-height: 39px !default;
+$small-filled-default-input-min-height: 35px !default;
+$filled-input-min-height: 22px !default;
+$bigger-filled-input-min-height: 28px !default;
+$bigger-small-filled-input-min-height: 39px !default;
+$small-filled-input-min-height: 35px !default;
+$filled-input-icon-min-height: 32px !default;
+$bigger-filled-input-icon-min-height: 40px !default;
+$bigger-small-filled-input-icon-min-height: 20px !default;
+$small-filled-input-icon-min-height: 32px !default;
+$filled-input-left-icon-min-height: 16px !default;
+$bigger-filled-input-left-icon-min-height: 20px !default;
+$bigger-small-filled-input-left-icon-min-height: 20px !default;
+$small-filled-input-left-icon-min-height: 16px !default;
+$filled-input-left-icon-min-width: 16px !default;
+$bigger-filled-input-left-icon-min-width: 20px !default;
+$bigger-small-filled-input-left-icon-min-width: 20px !default;
+$small-filled-input-left-icon-min-width: 16px !default;
+$filled-input-bg-color: $content-bg-color-alt2 !default;
+$filled-input-overlay-bg-color: $content-bg-color-alt2 !default;
+$filled-input-overlay-focused-bg-color: $content-bg-color-alt2 !default;
+$filled-input-overlay-activated-bg-color: $content-bg-color-alt2 !default;
+$background-color-transition: opacity 15ms linear,
+  background-color 15ms linear !default;
+$filled-input-hover-border-color: rgba($content-text-color) !default;
+$filled-input-float-label-color: rgba($placeholder-text-color) !default;
+$filled-input-disabled-font-color: $content-text-color-disabled !default;
+$filled-input-disabled-bg-color: transparent !default;
+$filled-input-disabled-border-color: rgba($border) !default;
+$filled-input-clear-icon-hover-color: rgba($icon-color-hover) !default;
+$filled-input-clear-icon-active-color: rgba($icon-color) !default;
+
+// Icon hover
+$input-icon-hover-border: 1px !default;
+$input-icon-hover-border-radius: 16px !default;
+$input-icon-hover-bg-color: rgba($content-text-color, .08) !default;
+$input-clear-icon-hover-border: 1px !default;
+$input-clear-icon-hover-border-radius: 16px !default;
+$input-clear-icon-hover-bg-color: rgba($content-text-color, .08) !default;
+
+$input-active-accent-color: rgba($primary) !default;
+$outline-border-color: $border !default;
+$underline-border-color: $border-alt !default;
+$input-border-bottom-color: $border-alt !default;
+$outline-input-font-color: rgba($content-text-color) !default;
+$outline-input-label-font-color: rgba($placeholder-text-color) !default;
+$outline-input-font-size: 14px !default;
+$outline-hover-border-color: $border-dark !default;
+$underline-hover-border-color: $border-alt !default;
+$outline-hover-font-color: rgba($content-text-color) !default;
+$outline-active-input-border: 1px !default;
+$outline-input-padding-left: 12px !default;
+$outline-input-padding-top: 10px !default;
+$outline-input-padding-bottom: 9px !default;
+
+$input-bigger-clear-icon-border-radius: 20px !default;
+$input-small-clear-icon-border-radius: 16px !default;
+$float-label-top-font-color: $content-text-color !default;
+$textarea-float-top: -28px !default;

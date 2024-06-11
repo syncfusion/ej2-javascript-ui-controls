@@ -1,6 +1,3 @@
-/* eslint-disable radix */
-/* eslint-disable max-len */
-/* eslint-disable valid-jsdoc */
 import { Chart } from '../chart';
 import { AnimationOptions, Animation, Browser, createElement } from '@syncfusion/ej2-base';
 import {
@@ -46,7 +43,10 @@ export class Crosshair {
     }
 
     /**
-     * @hidden
+     * Adds event listeners to the chart elements.
+     *
+     * @private
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -167,7 +167,8 @@ export class Crosshair {
             }
             options = new PathOption(
                 this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
-                crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, horizontalCross
+                crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
+                crosshair.opacity, crosshair.dashArray, horizontalCross
             );
             this.drawCrosshairLine(options, cross, chartRect.x, this.valueY, chartRect.width, 0, horizontalCross);
             /**
@@ -176,7 +177,8 @@ export class Crosshair {
              */
             options = new PathOption(
                 this.elementID + '_VerticalLine', 'none', crosshair.line.width,
-                crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
+                crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
+                crosshair.opacity, crosshair.dashArray, verticalCross
             );
             this.drawCrosshairLine(options, cross, this.valueX, chartRect.y, 0, chartRect.height, verticalCross);
             this.renderAxisTooltip(chart, chartRect, <Element>axisTooltipGroup);
@@ -189,12 +191,14 @@ export class Crosshair {
                 axisTooltipGroup = chart.renderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
                 options = new PathOption(
                     this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
-                    crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, horizontalCross
+                    crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
+                    crosshair.opacity, crosshair.dashArray, horizontalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
                 options = new PathOption(
                     this.elementID + '_VerticalLine', 'none', crosshair.line.width,
-                    crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
+                    crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
+                    crosshair.opacity, crosshair.dashArray, verticalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
                 crossGroup.appendChild(axisTooltipGroup);
@@ -306,13 +310,14 @@ export class Crosshair {
                     }
                     textElem.setAttribute('x', (rect.x + padding + (chart.enableRtl ? this.elementSize.width : 0)).toString());
                     textElem.setAttribute('y', (rect.y + padding + 3 * this.elementSize.height / 4).toString());
+                    const shadowId: string = this.chart.element.id + '_shadow';
                     if (typeof text !== 'string' && text.length > 1) {
                         let height: number = 0;
                         textElem.setAttribute('y', (rect.y + padding + 3 * this.elementSize.height / (4 * text.length)).toString());
                         for (let i: number = 0; i < textElem.children.length; i++) {
                             height += this.elementSize.height / text.length;
                             textElem.children[i as number].setAttribute('x', (rect.x + padding + (chart.enableRtl ? this.elementSize.width : 0) + this.elementSize.width / 2).toString());
-                            textElem.children[i as number].setAttribute('y', ((parseInt(textElem.getAttribute('y')) + height).toString()));
+                            textElem.children[i as number].setAttribute('y', ((parseInt(textElem.getAttribute('y'), 10) + height).toString()));
                             textElem.children[i as number].setAttribute('style', 'text-anchor: middle');
                         }
                     }
@@ -323,7 +328,18 @@ export class Crosshair {
                         defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
                         axisGroup.appendChild(defElement);
                         pathElement.setAttribute('stroke', bordercolor);
-                        pathElement.setAttribute('stroke-width',' '+ borderwidth);
+                        pathElement.setAttribute('stroke-width', ' ' + borderwidth);
+                    }
+                    else if (this.chart.theme.indexOf('Fluent2') > -1) {
+                        pathElement.setAttribute('box-shadow', '0px 1.6px 3.6px 0px #00000021, 0px 0.3px 0.9px 0px #0000001A');
+                        pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
+                        let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
+                        shadow += '<feOffset dx="-1" dy="3.6" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.2"/>';
+                        shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+                        const defElement: Element = this.chart.renderer.createDefs();
+                        defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
+                        pathElement.appendChild(defElement);
+                        defElement.innerHTML = shadow;
                     }
                 } else {
                     removeElement(this.elementID + '_axis_tooltip_' + k);
@@ -375,7 +391,8 @@ export class Crosshair {
         if (typeof text !== 'string' && text.length > 1) {
             this.elementSize.width = 0; this.elementSize.height = 0;
             for (let i: number = 0; i < text.length; i++) {
-                const size: Size = measureText(text[i as number], axis.crosshairTooltip.textStyle, this.chart.themeStyle.crosshairLabelFont);
+                const size: Size = measureText(text[i as number], axis.crosshairTooltip.textStyle,
+                                               this.chart.themeStyle.crosshairLabelFont);
                 this.elementSize.height += size.height;
                 if (this.elementSize.width < size.width) {
                     this.elementSize.width = size.width;
@@ -505,7 +522,7 @@ export class Crosshair {
      */
     protected getModuleName(): string {
         /**
-         * Returns the module name
+         * Returns the module name.
          */
         return 'Crosshair';
     }
@@ -518,7 +535,7 @@ export class Crosshair {
 
     public destroy(): void {
         /**
-         * Destroy method performed here
+         * Destroy method performed here.
          */
     }
 }

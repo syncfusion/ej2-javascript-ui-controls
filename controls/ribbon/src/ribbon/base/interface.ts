@@ -392,3 +392,19 @@ export interface ribbonTooltipData {
     id: string,
     data: RibbonTooltipModel
 }
+
+/**
+ * @hidden
+ */
+export interface KeyTipDataType {
+    id: string,
+    keyTip: string,
+    type: string
+}
+
+/**
+ * @hidden
+ */
+export interface KeyTipElements {
+    [key: string]: object
+}

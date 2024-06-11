@@ -47,7 +47,7 @@ export class ContentRender implements IRenderer {
         });
         div.appendChild(this.editableElement);
         this.setPanel(div);
-        rteObj.element.appendChild(div);
+        rteObj.rootContainer.appendChild(div);
     }
 
     /**

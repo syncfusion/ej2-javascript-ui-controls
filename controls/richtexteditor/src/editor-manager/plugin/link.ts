@@ -60,8 +60,11 @@ export class LinkCommand {
             }
             if (!isNOU(e.item.text) && e.item.text !== '') {
                 linkText = anchorEle.innerText;
-                anchorEle.firstChild.nodeName === '#text' ? anchorEle.innerText =  e.item.text :
-                 (anchorEle.firstChild as HTMLElement).innerText =  e.item.text;
+                if (anchorEle.firstChild.nodeName === '#text') {
+                    anchorEle.innerText =  e.item.text;
+                } else {
+                    (anchorEle.firstChild as HTMLElement).innerText =  e.item.text;
+                }
             }
             if (!isNOU(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
@@ -75,11 +78,11 @@ export class LinkCommand {
                 e.item.selection.restore();
             } else {
                 const startIndex: number = e.item.action === 'Paste' ? anchorEle.childNodes[0].textContent.length : 0;
-                const endIndex = anchorEle.firstChild.nodeName === '#text' ? anchorEle.childNodes[0].textContent.length : anchorEle.childNodes.length;
-                    e.item.selection.setSelectionText(this.parent.currentDocument,
-                         anchorEle.childNodes[0],
-                         anchorEle.childNodes[0],
-                         startIndex, endIndex);
+                const endIndex: number = anchorEle.firstChild.nodeName === '#text' ? anchorEle.childNodes[0].textContent.length : anchorEle.childNodes.length;
+                e.item.selection.setSelectionText(this.parent.currentDocument,
+                                                  anchorEle.childNodes[0],
+                                                  anchorEle.childNodes[0],
+                                                  startIndex, endIndex);
             }
         } else {
             const domSelection: NodeSelection = new NodeSelection();
@@ -98,7 +101,7 @@ export class LinkCommand {
                 anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
                 const text : string = anchor.innerText;
                 // Replace spaces with non-breaking spaces
-                const modifiedText : string  = text.replace(/  +/g, function(match) {
+                const modifiedText : string  = text.replace(/  +/g, function(match: string): string {
                     return '\u00A0'.repeat(match.length);
                 });
                 anchor.innerText = modifiedText;

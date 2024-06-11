@@ -1,5 +1,5 @@
-import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs, currencyFormat } from '../common/index';
-import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors } from '../base/index';
+import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs, currencyFormat, isReadOnly } from '../common/index';
+import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors, getColumn, getRow } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, IntlBase } from '@syncfusion/ej2-base';
 import { cldrData } from '@syncfusion/ej2-base';
 import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs, DateFormatCheckArgs, rowFillHandler } from '../common/index';
@@ -49,7 +49,7 @@ export class WorkbookNumberFormat {
                         const decimalPart: string = format.split('$#,##0.')[1];
                         if (decimalPart) {
                             let decimalCount: number = 0;
-                            while (decimalPart[decimalCount as number] == '0') {
+                            while (decimalPart[decimalCount as number] === '0') {
                                 decimalFormat += '0';
                                 decimalCount++;
                             }
@@ -102,19 +102,24 @@ export class WorkbookNumberFormat {
         for (let rowIdx: number = selectedRange[0]; rowIdx <= selectedRange[2]; rowIdx++) {
             for (let colIdx: number = selectedRange[1]; colIdx <= selectedRange[3]; colIdx++) {
                 prevFormat = getCell(rowIdx, colIdx, sheet, false, true).format;
-                if (!updateCell(this.parent, sheet, { cell: { format: args.format }, rowIdx: rowIdx, colIdx: colIdx })) {
+                if (!isReadOnly(getCell(rowIdx, colIdx, sheet), getColumn(sheet, colIdx), getRow(sheet, rowIdx)) &&
+                    !updateCell(this.parent, sheet, { cell: { format: args.format }, rowIdx: rowIdx, colIdx: colIdx })) {
                     cell = getCell(rowIdx, colIdx, sheet);
                     if (!(cell.rowSpan < 0 || cell.colSpan < 0)) {
-                        fArgs = { value: cell.value, format: cell.format, rowIndex: rowIdx, colIndex: colIdx, sheetIndex: sheetIdx,
-                            cell: cell, refresh: activeSheet };
+                        fArgs = {
+                            value: cell.value, format: cell.format, rowIndex: rowIdx, colIndex: colIdx, sheetIndex: sheetIdx,
+                            cell: cell, refresh: activeSheet
+                        };
                         this.getFormattedCell(fArgs);
                         if (activeSheet) {
                             this.setCell(fArgs);
                             this.parent.notify(
-                                refreshCellElement, { isRightAlign: fArgs.isRightAlign, result: fArgs.formattedText, rowIndex: rowIdx,
+                                refreshCellElement, {
+                                    isRightAlign: fArgs.isRightAlign, result: fArgs.formattedText, rowIndex: rowIdx,
                                     colIndex: colIdx, sheetIndex: fArgs.sheetIndex, type: fArgs.type, curSymbol: fArgs.curSymbol,
                                     value: fArgs.value || fArgs.value === 0 ? fArgs.value : '', isRowFill: fArgs.isRowFill,
-                                    cellEle: fArgs.td });
+                                    cellEle: fArgs.td
+                                });
                             if (prevFormat && prevFormat !== args.format && prevFormat.includes('[') &&
                                 getCustomColors().indexOf(getColorCode(args.format)) === -1) {
                                 this.removeFormatColor(fArgs, { format: prevFormat, style: cell.style });
@@ -274,6 +279,7 @@ export class WorkbookNumberFormat {
             this.parent.notify(
                 rowFillHandler, { cell: cell, cellEle: args.td, rowIdx: args.rowIndex, colIdx: args.colIndex, beforeFillText: formatText,
                     repeatChar: repeatChar, afterFillText: secText });
+            formatText = this.parent.isPrintingProcessing ? formatText + secText : formatText;
         }
         return formatText;
     }
@@ -405,7 +411,7 @@ export class WorkbookNumberFormat {
         if (isNumber(cell.value)) {
             const formatArr: string[] = cell.format.split(';');
             const val: number = Number(cell.value);
-            let compareVal: string; let values: string[]; let conditionNotMatch: boolean; let colorCode: string;
+            let compareVal: string; let conditionNotMatch: boolean; let colorCode: string;
             for (let i: number = 0; i < formatArr.length; i++) {
                 cell.format = formatArr[i as number];
                 colorCode = getColorCode(cell.format);
@@ -414,15 +420,17 @@ export class WorkbookNumberFormat {
                 }
                 if (cell.format.includes('[')) {
                     compareVal = cell.format.split('[')[1].split(']')[0];
-                    if (((values = compareVal.split('<=')).length === 2 && val <= Number(values[1])) ||
-                        (values.length === 1 && (values = compareVal.split('>=')).length === 2 && val >= Number(values[1])) ||
-                        (values.length === 1 && (values = compareVal.split('<')).length === 2 && val < Number(values[1])) ||
-                        (values.length === 1 && (values = compareVal.split('>')).length === 2 && val > Number(values[1]))) {
+                    const ltEqualTo: string[] = compareVal.split('<='); const gtEqualTo: string[] = compareVal.split('>=');
+                    const lessThan: string[] = compareVal.split('<'); const greaterThan: string[] = compareVal.split('>');
+                    if ((ltEqualTo.length === 2 && val <= Number(ltEqualTo[1])) ||
+                        (gtEqualTo.length === 2 && val >= Number(gtEqualTo[1])) ||
+                        (lessThan.length === 2 && val < Number(lessThan[1])) ||
+                        (greaterThan.length === 2 && val > Number(greaterThan[1]))) {
                         cell.format = formatArr[i as number].split(`[${compareVal}]`).join('');
                         conditionNotMatch = false;
                         break;
                     }
-                    conditionNotMatch = values.length === 2;
+                    conditionNotMatch = compareVal.split(/<=|>=|<|>/).length === 2;
                 } else {
                     cell.format = formatArr[i as number];
                     conditionNotMatch = false;
@@ -528,7 +536,7 @@ export class WorkbookNumberFormat {
                 let frontSpaceCount: number = 1;
                 let idx: number = 1;
                 while (format[idx as number] === ' ') {
-                    frontSpaceCount++; idx++
+                    frontSpaceCount++; idx++;
                 }
                 lastSpaceCount -= frontSpaceCount;
                 result.formattedText = space.repeat(frontSpaceCount) + result.formattedText;
@@ -637,7 +645,7 @@ export class WorkbookNumberFormat {
     private processText(format: string): string {
         let custFormat: string = format;
         if (custFormat.indexOf('"') > -1) {
-            custFormat = custFormat.split('"').join("'");
+            custFormat = custFormat.split('"').join('\'');
         } else if (custFormat.indexOf('\\') > -1) {
             custFormat = custFormat.split('\\').join('');
         }
@@ -981,14 +989,16 @@ export class WorkbookNumberFormat {
             if (args.td && args.td.style.color !== args.color) {
                 this.parent.notify(
                     applyCellFormat, <CellFormatArgs>{ style: { color: args.color }, rowIdx: args.rowIndex, colIdx: args.colIndex,
-                    td: args.td });
+                        td: args.td });
             }
         }
     }
     private setCell(args: NumberFormatArgs): void {
         if (!args.td) {
-            const mergeArgs: VisibleMergeIndexArgs = { sheet: getSheet(this.parent, args.sheetIndex), cell: args.cell, rowIdx: args.rowIndex,
-                colIdx: args.colIndex };
+            const mergeArgs: VisibleMergeIndexArgs = {
+                sheet: getSheet(this.parent, args.sheetIndex),
+                cell: args.cell, rowIdx: args.rowIndex, colIdx: args.colIndex
+            };
             if (args.cell.rowSpan > 1 || args.cell.colSpan > 1) {
                 setVisibleMergeIndex(mergeArgs);
             }
@@ -1354,7 +1364,7 @@ export class WorkbookNumberFormat {
         }
         if (format.length) {
             val = timeArr.join(this.localeObj.timeSeparator);
-            if((!cell.format || cell.format === 'General') && !isDefaultTime) {
+            if ((!cell.format || cell.format === 'General') && !isDefaultTime) {
                 cell.format = format.join(':');
                 return { val: val, format: cell.format };
             }
@@ -1408,7 +1418,7 @@ export class WorkbookNumberFormat {
             if (shortMonthValue === dateVal) {
                 firstVal = abbreviatedMonth[`${monthKey}`] || enUSMonth[Number(monthKey) - 1];
             }
-        }
+        };
         if (dateArr.length === 2) {
             const updateSecValue: Function = (secVal: string): void => {
                 val = firstVal;

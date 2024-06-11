@@ -107,7 +107,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * @param  {any} diagram - diagram element.
      * @returns {Container} - Returns the container element.
      */
-    // eslint-disable-next-line
     public init(diagram: any): Container {
         const container: Container = new Container();
         container.measureChildren = false;

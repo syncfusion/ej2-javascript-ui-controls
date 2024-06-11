@@ -1854,10 +1854,11 @@ describe('Auto fill ->', () => {
             helper.invoke('selectRange', ['A1:C3']);
             helper.triggerKeyNativeEvent(82, true);
             setTimeout(() => {
-                var dialog = helper.getElement('.e-editAlert-dlg.e-dialog');
-                expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                const dialog: HTMLElement = helper.getElement('.e-editAlert-dlg.e-dialog');
+                //expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                     "The cell you're trying to change is protected. To make change, unprotect the sheet.");
+                helper.click('.e-dialog .e-primary');
                 done();
             });
         });

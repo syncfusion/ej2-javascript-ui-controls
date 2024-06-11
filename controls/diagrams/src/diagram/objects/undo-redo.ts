@@ -182,7 +182,8 @@ export class UndoRedo {
     private removeFromStack(entyList: HistoryEntry[], list: HistoryEntry): void {
         if (entyList.length) {
             for (let i: number = 0; i <= entyList.length; i++) {
-                if (entyList[parseInt(i.toString(), 10)].undoObject === list.undoObject && entyList[parseInt(i.toString(), 10)].redoObject === list.redoObject) {
+                if (entyList[parseInt(i.toString(), 10)].undoObject === list.undoObject
+                    && entyList[parseInt(i.toString(), 10)].redoObject === list.redoObject) {
                     entyList.splice(i, 1); break;
                 }
             }
@@ -204,7 +205,7 @@ export class UndoRedo {
                 if (entry.type === 'EndGroup') {
                     endGroupActionCount++;
                     this.groupUndo = true;
-                    if (isBlazor()) { diagram.blazorActions |= BlazorAction.GroupingInProgress; }
+                    //Removed isBlazor code
                 } else {
                     this.undoEntry(entry, diagram);
                 }
@@ -219,49 +220,13 @@ export class UndoRedo {
                 let arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
                     entryType: 'undo', oldValue: entry.undoObject, newValue: entry.redoObject
                 };
-                if (isBlazor()) {
-                    arg = {
-                        entryType: 'undo', oldValue: this.getHistoryChangeEvent(entry.undoObject, entry.blazorHistoryEntryType),
-                        newValue: this.getHistoryChangeEvent(entry.redoObject, entry.blazorHistoryEntryType)
-                    };
-                }
+                // Removed isBlazor code
                 diagram.triggerEvent(DiagramEvent.historyStateChange, arg);
             }
         }
     }
 
-    private getHistoryChangeEvent(
-        object: NodeModel | ConnectorModel | SelectorModel | DiagramModel | ShapeAnnotation | PathAnnotation | PointPortModel,
-        prop: HistoryEntryType):
-        HistoryChangeEventObject {
-        const value: HistoryChangeEventObject = {};
-        switch (prop) {
-        case 'Node':
-            value.node = object as Node;
-            break;
-        case 'Connector':
-            value.connector = object as Connector;
-            break;
-        case 'Selector':
-            value.selector = object as Selector;
-            break;
-        case 'Diagram':
-            value.diagram = object as Diagram;
-            break;
-        case 'ShapeAnnotation':
-            value.shapeAnnotation = object as ShapeAnnotation;
-            break;
-        case 'PathAnnotation':
-            value.pathAnnotation = object as PathAnnotation;
-            break;
-        case 'PortObject':
-            value.pointPortModel = object as PortModel;
-            break;
-        case 'Object':
-            value.object = object;
-        }
-        return value;
-    }
+    // Removed getHistoryChangeEvent method as it is not used anywhere
 
     private getHistoryList(diagram: Diagram): void {
         const undoStack: HistoryEntry[] = [];
@@ -331,9 +296,7 @@ export class UndoRedo {
             }
         }
         diagram.protectPropertyChange(true); diagram.diagramActions |= DiagramAction.UndoRedo;
-        if (isBlazor() && entry.previous && entry.previous.type === 'StartGroup') {
-            diagram.blazorActions &= ~BlazorAction.GroupingInProgress;
-        }
+        //Removed isBlazor code
         switch (entry.type) {
         case 'PositionChanged':
         case 'Align':
@@ -406,7 +369,7 @@ export class UndoRedo {
         case 'RemoveChildFromGroupNode':
             this.recordRemoveChildFromGroupNode(entry, diagram, false);
             break;
-        case "ExternalEntry":
+        case 'ExternalEntry':
             //EJ2-848643 - Need to consider custom entries in start and end group action
             diagram.historyManager.undo(entry);
             break;
@@ -438,7 +401,8 @@ export class UndoRedo {
                 if (knownNode) {
                     for (const key of Object.keys(knownNode)) {
                         const index: number = Number(key);
-                        object = (value as SelectorModel).nodes ? diagram.nodes[parseInt(index.toString(), 10)] as Node : diagram.connectors[parseInt(index.toString(), 10)];
+                        object = (value as SelectorModel).nodes ? diagram.nodes[parseInt(index.toString(), 10)] as Node
+                            : diagram.connectors[parseInt(index.toString(), 10)];
                     }
                 }
             }
@@ -653,29 +617,7 @@ export class UndoRedo {
     private recordPropertyChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
         const redoObject: DiagramModel = entry.redoObject as DiagramModel;
         const undoObject: DiagramModel = entry.undoObject as DiagramModel;
-        if (isBlazor()) {
-            for (const prop of Object.keys(undoObject)) {
-                let obj: object;
-                switch (prop) {
-                case 'nodes':
-                    for (const key of Object.keys(undoObject.nodes)) {
-                        if (diagram.canEnableBlazorObject) {
-                            obj = cloneObject(diagram.nodes[Number(key)]);
-                            diagram.insertValue(obj, true);
-                        }
-                    }
-                    break;
-                case 'connectors':
-                    for (const key of Object.keys(undoObject.connectors)) {
-                        if (diagram.canEnableBlazorObject) {
-                            obj = cloneObject(diagram.connectors[Number(key)]);
-                            diagram.insertValue(obj, false);
-                        }
-                    }
-                    break;
-                }
-            }
-        }
+        //Removed isBlazor code
         this.getProperty(diagram as Object, (isRedo ? redoObject : undoObject) as Object);
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         isRedo ? diagram.onPropertyChanged(redoObject, undoObject) : diagram.onPropertyChanged(undoObject, redoObject);
@@ -731,8 +673,8 @@ export class UndoRedo {
         let connector: ConnectorModel;
         if (obj.nodes && obj.nodes.length > 0) {
             for (i = 0; i < obj.nodes.length; i++) {
-                if(diagram.bpmnModule){
-                    (diagram as any).isPositionUndo = true
+                if (diagram.bpmnModule) {
+                    (diagram as any).isPositionUndo = true;
                 }
                 node = obj.nodes[parseInt(i.toString(), 10)];
                 this.positionChanged(node, diagram);
@@ -796,12 +738,12 @@ export class UndoRedo {
                         }
                     }
                 } else {
-                    if(diagram.bpmnModule){
+                    if (diagram.bpmnModule) {
                         (diagram as any).sizeUndo = true;
                     }
                     this.sizeChanged(node, diagram);
                     this.positionChanged(node, diagram);
-                    if(diagram.bpmnModule){
+                    if (diagram.bpmnModule) {
                         (diagram as any).sizeUndo = false;
                     }
                 }
@@ -847,10 +789,10 @@ export class UndoRedo {
                 // This code is executed only for group nodes with connectors when the connector is not connected to a node either as a source or target.
                 let isConnect: boolean = false;
                 if (node.children && node.children.length > 0){
-                    for (let j: number = 0 ;j < node.children.length; j++){
-                        const child: NodeModel|ConnectorModel = diagram.nameTable[node.children[parseInt(j.toString(), 10)]];
-                        if (!(getObjectType(child) === Node)){
-                            if ((child as ConnectorModel).sourceID === '' || (child as ConnectorModel).targetID === ''){
+                    for (let j: number = 0; j < node.children.length; j++) {
+                        const child: NodeModel | ConnectorModel = diagram.nameTable[node.children[parseInt(j.toString(), 10)]];
+                        if (!(getObjectType(child) === Node)) {
+                            if ((child as ConnectorModel).sourceID === '' || (child as ConnectorModel).targetID === '') {
                                 isConnect = true;
                                 break;
                             }
@@ -858,42 +800,42 @@ export class UndoRedo {
                     }
                     if (isConnect && Object.keys(entry.childTable).length > 0){
                         const elements: (NodeModel | ConnectorModel)[] = [];
-                        var nodes = diagram.commandHandler.getAllDescendants(node, elements);
-                        for (var i_2 = 0; i_2 < nodes.length; i_2++) {
-                            var tempNode = entry.childTable[nodes[parseInt(i_2.toString(), 10)].id];
+                        const nodes: (NodeModel | ConnectorModel)[] = diagram.commandHandler.getAllDescendants(node, elements);
+                        for (let i2: number = 0; i2 < nodes.length; i2++) {
+                            const tempNode: (NodeModel | ConnectorModel) = entry.childTable[nodes[parseInt(i2.toString(), 10)].id];
                             if ((getObjectType(tempNode) === Node)) {
-                                let object = {id:'',rotateAngle:0, wrapper:{offsetX:0,offsetY:0}};
-                                if (type === 'redo'){
-                                    object.id = tempNode.id;object.rotateAngle = node.rotateAngle;
+                                let object: any = { id: '', rotateAngle: 0, wrapper: { offsetX: 0, offsetY: 0 } };
+                                if (type === 'redo') {
+                                    object.id = tempNode.id; object.rotateAngle = node.rotateAngle;
                                 }
-                                else{
-                                    object = tempNode
+                                else {
+                                    object = tempNode as any;
                                 }
                                 this.rotationChanged(object as NodeModel, diagram);
-                                if (type === 'undo'){
-                                    let offNode = diagram.nameTable[object.id];
-                                    this.undoOffsets.push({id:offNode.id,offsetX:offNode.offsetX,offsetY:offNode.offsetY})
+                                if (type === 'undo') {
+                                    const offNode: NodeModel = diagram.nameTable[object.id];
+                                    this.undoOffsets.push({ id: offNode.id, offsetX: offNode.offsetX, offsetY: offNode.offsetY });
                                 }
-                                else{
-                                    let lastIndex = -1;
-                                    for (let i = this.undoOffsets.length - 1; i >= 0; i--){
-                                        if (this.undoOffsets[parseInt(i.toString(), 10)].id === object.id){
+                                else {
+                                    let lastIndex: number = -1;
+                                    for (let i: number = this.undoOffsets.length - 1; i >= 0; i--) {
+                                        if (this.undoOffsets[parseInt(i.toString(), 10)].id === object.id) {
                                             object.wrapper = this.undoOffsets[parseInt(i.toString(), 10)];
                                             lastIndex = i;
                                             break;
                                         }
                                     }
-                                    if (lastIndex !== -1){
+                                    if (lastIndex !== -1) {
                                         this.undoOffsets.splice(lastIndex, 1);
                                     }
                                 }
                                 this.positionChanged(object as NodeModel, diagram);
                             }
                             else {
-                                this.connectionChanged(tempNode, diagram, entry);
+                                this.connectionChanged(tempNode as ConnectorModel, diagram, entry);
                             }
                         }
-                        let nd = diagram.nameTable[node.id]
+                        const nd: NodeModel = diagram.nameTable[node.id];
                         nd.rotateAngle = obj.rotateAngle;
                         diagram.updateSelector();
                         this.rotationChanged(node, diagram);
@@ -925,7 +867,7 @@ export class UndoRedo {
 
     private recordConnectionChanged(obj: SelectorModel | ConnectorModel, diagram: Diagram):
     void {
-        var connector: ConnectorModel;
+        let connector: ConnectorModel;
         if ((obj as SelectorModel) && (obj as SelectorModel).connectors)
         {
             connector = (obj as SelectorModel).connectors[0];
@@ -1113,7 +1055,7 @@ export class UndoRedo {
                 if (entry.type === 'StartGroup') {
                     startGroupActionCount++;
                     this.groupUndo = true;
-                    if (isBlazor()) { diagram.blazorActions |= BlazorAction.GroupingInProgress; }
+                    //Removed isBlazor code
                 } else {
                     this.redoEntry(entry, diagram);
                 }
@@ -1128,12 +1070,7 @@ export class UndoRedo {
                 let arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
                     entryType: 'redo', oldValue: entry.redoObject, newValue: entry.undoObject
                 };
-                if (isBlazor()) {
-                    arg = {
-                        entryType: 'redo', oldValue: this.getHistoryChangeEvent(entry.redoObject, entry.blazorHistoryEntryType),
-                        newValue: this.getHistoryChangeEvent(entry.undoObject, entry.blazorHistoryEntryType)
-                    };
-                }
+                //Removed isBlazor code
                 diagram.triggerEvent(DiagramEvent.historyStateChange, arg);
             }
         }
@@ -1167,9 +1104,7 @@ export class UndoRedo {
             }
         }
         diagram.protectPropertyChange(true);
-        if (isBlazor() && historyEntry.next && historyEntry.next.type === 'EndGroup') {
-            diagram.blazorActions &= ~BlazorAction.GroupingInProgress;
-        }
+        //Removed isBlazor code
         switch (historyEntry.type) {
         case 'PositionChanged':
         case 'Align':
@@ -1240,7 +1175,7 @@ export class UndoRedo {
             this.recordAddChildToGroupNode(historyEntry, diagram, true); break;
         case 'RemoveChildFromGroupNode':
             this.recordRemoveChildFromGroupNode(historyEntry, diagram, true); break;
-        case "ExternalEntry":
+        case 'ExternalEntry':
             //EJ2-848643 - Need to consider custom entries in start and end group action
             diagram.historyManager.redo(historyEntry);
             break;
@@ -1343,4 +1278,4 @@ interface IUndoOffsets {
     id: string;
     offsetX: number;
     offsetY: number;
-  }
+}

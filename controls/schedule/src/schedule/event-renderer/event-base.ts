@@ -1200,12 +1200,14 @@ export class EventBase {
         let firstDate: number = 0;
         let lastDate: number = dateRender.length;
         let filteredDates: Date[];
-        if (dateRender[0] < this.parent.minDate && dateRender[dateRender.length - 1] > this.parent.maxDate) {
+        const maxDate: Date = isNullOrUndefined(this.parent.maxDate) ? new Date(2099, 11, 31) : this.parent.maxDate;
+        const minDate: Date = isNullOrUndefined(this.parent.minDate) ? new Date(1900, 0, 1) : this.parent.minDate;
+        if (dateRender[0] < minDate && dateRender[dateRender.length - 1] > maxDate) {
             for (let i: number = 0; i < dateRender.length; i++) {
-                if (util.resetTime(dateRender[parseInt(i.toString(), 10)]).getTime() === util.resetTime(new Date(this.parent.minDate)).getTime()) {
+                if (util.resetTime(dateRender[parseInt(i.toString(), 10)]).getTime() === util.resetTime(new Date(minDate)).getTime()) {
                     firstDate = i;
                 }
-                if (util.resetTime(dateRender[parseInt(i.toString(), 10)]).getTime() === util.resetTime(new Date(this.parent.maxDate)).getTime()) {
+                if (util.resetTime(dateRender[parseInt(i.toString(), 10)]).getTime() === util.resetTime(new Date(maxDate)).getTime()) {
                     lastDate = i;
                 }
             }

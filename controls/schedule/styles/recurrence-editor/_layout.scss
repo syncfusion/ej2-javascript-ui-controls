@@ -1,6 +1,4 @@
 @include export-module('recurrence-editor-layout') {
-
-  /*! Recurrence-Editor component layout */
   .e-recurrenceeditor {
     .e-editor {
       display: flex;
@@ -216,15 +214,6 @@
         padding: 0 12px 14px 0;
       }
 
-      .e-form-right,
-      .e-input-wrapper-side.e-form-right {
-        padding: 0 0 10px;
-      }
-
-      .e-input-wrapper-side .e-days .e-form-left {
-        padding-bottom: 6px;
-      }
-
       .e-recurrence-table .e-monthday-element {
         padding-left: 70px;
       }
@@ -258,18 +247,13 @@
         margin-bottom: 8px;
       }
 
-      .e-input-wrapper-side .e-non-week .e-form-left {
-        padding-bottom: 12px;
-      }
-
       .e-input-wrapper-side.e-end-on .e-end-on-label {
         font-size: $recurrence-label-font-bgr-size;
         margin-bottom: 1px;
       }
 
       .e-month-expander tr:first-child .e-input-wrapper,
-      .e-year-expander,
-      .e-input-wrapper-side.e-form-right {
+      .e-year-expander {
         margin-bottom: 11px;
       }
 

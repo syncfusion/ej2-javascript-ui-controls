@@ -1,9 +1,6 @@
-//Layout Variables Start
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: 12px !default;
 $card-action-btn-txt-transform: none !default;
-
-// Font
 $card-header-font: $text-sm !default;
 $card-title-font: $text-sm !default;
 $card-action-btn-icon-font: $text-xs !default;
@@ -12,8 +9,6 @@ $card-content-font-size: $text-sm !default;
 $card-content-bigger-font-size: $text-sm !default;
 $card-header-title-font: $text-sm !default;
 $card-header-sub-title-font: $text-xs !default;
-
-// Mouse
 $card-content-line-height: $leading-normal !default;
 $card-nrml-lheight: 36px !default;
 $card-nrml-mheight: 36px !default;
@@ -46,8 +41,6 @@ $card-header-txt-nrml-subtitle-font: $text-xs !default;
 $card-image-title-font: $text-sm !default;
 $card-action-btn-icon-width: 24px !default;
 $card-action-btn-icon-height: 24px !default;
-
-// Touch
 $card-bigger-lheight: 48px !default;
 $card-bigger-mheight: 48px !default;
 $card-header-bigger-padding: 16px !default;
@@ -82,10 +75,6 @@ $card-action-btn-bigger-icon-width: 24px !default;
 $card-action-btn-bigger-icon-height: 24px !default;
 $card-image-title-nrml-padding: 12px 16px !default;
 $card-action-nrml-padding: 12px !default;
-
-//Layout Variables End
-
-//Theme Variables Start
 $card-highlight-color: rgba($primary) !default;
 $card-bg-color: $content-bg-color-alt1 !default;
 $card-focus-bg-color: $content-bg-color-alt1 !default;
@@ -121,5 +110,3 @@ $card-content-font-color: rgba($content-text-color) !default;
 $card-box-shadow: $shadow-md !default;
 $card-action-btn-icon-color: rgba($primary) !default;
 $card-hover-box-shadow: $shadow-lg !default;
-
-//Theme Variables End

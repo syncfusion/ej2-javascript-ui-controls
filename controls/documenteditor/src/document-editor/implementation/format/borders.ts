@@ -90,14 +90,14 @@ export class WBorders implements IWidget {
         this.ownerBase = node;
     }
     private getPropertyValue(property: string): Object {
-        let border: WBorder = this.getBorder(property);
+        const border: WBorder = this.getBorder(property);
         if (this.isParsing) {
             return border;
         }
         if (!border.hasValues()) {
             let baseStyle: WParagraphStyle = (this.ownerBase as WParagraphFormat).baseStyle as WParagraphStyle;
             if (!isNullOrUndefined(baseStyle)) {
-                let currentFormat: WBorders = this;
+                let currentFormat: WBorders = this as WBorders;
                 while (!isNullOrUndefined(baseStyle)) {
                     let listParaFormat: WParagraphFormat;
                     if (!(this.ownerBase as WParagraphFormat).listFormat.hasValue('listId')) {
@@ -139,25 +139,26 @@ export class WBorders implements IWidget {
         return docParagraphFormat;
     }
     public getBorder(property: string): WBorder {
-        let value: WBorder = undefined;
+        const value: WBorder = undefined;
         switch (property) {
-            case 'left':
-                return this.leftIn;
-            case 'right':
-                return this.rightIn;
-            case 'top':
-                return this.topIn;
-            case 'bottom':
-                return this.bottomIn;
-            case 'vertical':
-                return this.verticalIn;
-            case 'horizontal':
-                return this.horizontalIn;
+        case 'left':
+            return this.leftIn;
+        case 'right':
+            return this.rightIn;
+        case 'top':
+            return this.topIn;
+        case 'bottom':
+            return this.bottomIn;
+        case 'vertical':
+            return this.verticalIn;
+        case 'horizontal':
+            return this.horizontalIn;
         }
         return value;
     }
     /**
      * @private
+     * @returns {void}
      */
     public clearFormat(): void {
         if (!isNullOrUndefined(this.leftIn)) {
@@ -188,7 +189,9 @@ export class WBorders implements IWidget {
     /* eslint-enable */
     /**
      * Disposes the internal objects which are maintained.
+     *
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.leftIn)) {
@@ -239,32 +242,32 @@ export class WBorders implements IWidget {
     }
     public copyFormat(borders: WBorders): void {
         if (!isNullOrUndefined(borders.getBorder('left')) && borders.getBorder('left') instanceof WBorder) {
-            let left: WBorder = new WBorder(this);
+            const left: WBorder = new WBorder(this);
             left.copyFormat(borders.getBorder('left'));
             this.left = left;
         }
         if (!isNullOrUndefined(borders.getBorder('right')) && borders.getBorder('right') instanceof WBorder) {
-            let right: WBorder = new WBorder(this);
+            const right: WBorder = new WBorder(this);
             (right as WBorder).copyFormat(borders.getBorder('right'));
             this.right = right;
         }
         if (!isNullOrUndefined(borders.getBorder('top')) && borders.getBorder('top') instanceof WBorder) {
-            let top: WBorder = new WBorder(this);
+            const top: WBorder = new WBorder(this);
             (top as WBorder).copyFormat(borders.getBorder('top'));
             this.top = top;
         }
         if (!isNullOrUndefined(borders.getBorder('bottom')) && borders.getBorder('bottom') instanceof WBorder) {
-            let bottom: WBorder = new WBorder(this);
+            const bottom: WBorder = new WBorder(this);
             (bottom as WBorder).copyFormat(borders.getBorder('bottom'));
             this.bottom = bottom;
         }
         if (!isNullOrUndefined(borders.getBorder('horizontal')) && borders.getBorder('horizontal') instanceof WBorder) {
-            let horizontal: WBorder = new WBorder(this);
+            const horizontal: WBorder = new WBorder(this);
             (horizontal as WBorder).copyFormat(borders.getBorder('horizontal'));
             this.horizontal = horizontal;
         }
         if (!isNullOrUndefined(borders.getBorder('vertical')) && borders.getBorder('vertical') instanceof WBorder) {
-            let vertical: WBorder = new WBorder(this);
+            const vertical: WBorder = new WBorder(this);
             (vertical as WBorder).copyFormat(borders.getBorder('vertical'));
             this.vertical = vertical;
         }

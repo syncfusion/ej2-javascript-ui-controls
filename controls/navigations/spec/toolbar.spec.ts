@@ -22,7 +22,7 @@ describe('Toolbar Control', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -13025,7 +13025,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(document.activeElement).toBe(firstElement);
         });
     });
-    
+
     describe('Extended overflow mode in toolbar items ', () => {
         let toolbar: any;
         beforeEach((): void => {
@@ -13085,6 +13085,142 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             let extendedToolbar: HTMLElement = element.querySelector('.e-toolbar-extended');
             extendedToolbar.style.display = "block";
             expect(extendedToolbar.offsetWidth).toEqual(toolbarWidth);        
+        });
+    });
+
+    describe('Toolbar public property null or undefined value testing', () => {
+        let toolbar: any;
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('allowKeyboard', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.allowKeyboard = null;
+            toolbar.dataBind();
+            expect(toolbar.allowKeyboard).toEqual(null);
+            toolbar.allowKeyboard = undefined;
+            toolbar.dataBind();
+            expect(toolbar.allowKeyboard).toEqual(undefined);
+        });
+        it('cssClass', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.cssClass = null;
+            toolbar.dataBind();
+            expect(toolbar.cssClass).toEqual(null);
+            toolbar.cssClass = undefined
+            toolbar.dataBind();
+            expect(toolbar.cssClass).toEqual(undefined);
+        });
+        it('enableCollision', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.enableCollision = null;
+            toolbar.dataBind();
+            expect(toolbar.enableCollision).toEqual(null);
+            toolbar.enableCollision = undefined;
+            toolbar.dataBind();
+            expect(toolbar.enableCollision).toEqual(undefined);
+        });
+        it('enableHtmlSanitizer', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.enableHtmlSanitizer = null;
+            toolbar.dataBind();
+            expect(toolbar.enableHtmlSanitizer).toEqual(null);
+            toolbar.enableHtmlSanitizer = undefined;
+            toolbar.dataBind();
+            expect(toolbar.enableHtmlSanitizer).toEqual(undefined);
+        });
+        it('enablePersistence', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.enablePersistence = null;
+            toolbar.dataBind();
+            expect(toolbar.enablePersistence).toEqual(null);
+            toolbar.enablePersistence = undefined;
+            toolbar.dataBind();
+            expect(toolbar.enablePersistence).toEqual(undefined);
+        });
+        it('enableRtl', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.enableRtl = null;
+            toolbar.dataBind();
+            expect(toolbar.enableRtl).toEqual(null);
+            toolbar.enableRtl = undefined;
+            toolbar.dataBind();
+            expect(toolbar.enableRtl).toEqual(undefined);
+        });
+        it('height', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.height = null;
+            toolbar.dataBind();
+            expect(toolbar.height).toEqual(null);
+            toolbar.height = undefined;
+            toolbar.dataBind();
+            expect(toolbar.height).toEqual(undefined);
+        });
+        it('items', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.items = null;
+            toolbar.dataBind();
+            expect(toolbar.items.length).toEqual(0);
+            toolbar.items = undefined;
+            toolbar.dataBind();
+            expect(toolbar.items.lenght).toEqual(undefined);
+        });
+        it('locale', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.locale = null;
+            toolbar.dataBind();
+            expect(toolbar.locale).toEqual(null);
+            toolbar.locale = undefined;
+            toolbar.dataBind();
+            expect(toolbar.locale).toEqual(undefined);
+        });
+        it('overflowMode', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.overflowMode = null;
+            toolbar.dataBind();
+            expect(toolbar.overflowMode).toEqual(null);
+            toolbar.overflowMode = undefined;
+            toolbar.dataBind();
+            expect(toolbar.overflowMode).toEqual(undefined);
+        });
+        it('scrollStep', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.scrollStep = null;
+            toolbar.dataBind();
+            expect(toolbar.scrollStep).toEqual(null);
+            toolbar.scrollStep = undefined;
+            toolbar.dataBind();
+            expect(toolbar.scrollStep).toEqual(undefined);
+        });
+        it('width', () => {
+            toolbar = new Toolbar();
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.width = null;
+            toolbar.dataBind();
+            expect(toolbar.width).toEqual(null);
+            toolbar.width = undefined;
+            toolbar.dataBind();
+            expect(toolbar.width).toEqual(undefined);
         });
     });
 

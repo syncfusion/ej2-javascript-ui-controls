@@ -18,7 +18,7 @@ describe('DataSource onDemand', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
       });
@@ -149,6 +149,7 @@ describe('DataSource onDemand', () => {
     describe('datamanager offline - success testing', () => {
         let gridObj: TreeGrid;
         let dataManager: DataManager;
+        let request: JasmineAjaxRequest;
         let elem: HTMLElement = createElement('div', { id: 'Grid' });
         beforeAll((done: Function) => {
             let value : any = data.slice(0,4)
@@ -164,7 +165,7 @@ describe('DataSource onDemand', () => {
                 adaptor: new ODataAdaptor
                 }
             );
-            this.request = window.fetch['calls'].mostRecent();
+            request = window.fetch['calls'].mostRecent();
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(elem);
             gridObj = new TreeGrid(

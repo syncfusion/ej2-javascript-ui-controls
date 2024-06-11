@@ -77,7 +77,7 @@ export class DataLabel3D {
         const pointText: string = this.getLabelText(point, series, this.chart)[0];
         const size: Size = measureText(pointText as string, dataLabel.font, this.chart.themeStyle.datalabelFont);
         const location: Chart3DLocation = chart.svg3DRenderer.transform3DToVisible(series, point.symbolLocations.x,
-                                                                              point.symbolLocations.y, chart);
+                                                                                   point.symbolLocations.y, chart);
         pointY = location.y;
         pointX = location.x;
         if (series.dataLabel.position === 'Bottom') {
@@ -123,12 +123,12 @@ export class DataLabel3D {
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         const font: Chart3DTextFontModel = {
-            size: argsData.textStyle.size,
-            fontWeight: argsData.textStyle.fontWeight,
-            fontStyle: argsData.textStyle.fontStyle,
+            size: argsData.textStyle.size || this.chart.themeStyle.datalabelFont.size,
+            fontWeight: argsData.textStyle.fontWeight || this.chart.themeStyle.datalabelFont.fontWeight,
+            fontStyle: argsData.textStyle.fontStyle || chart.themeStyle.datalabelFont.fontStyle,
             fontFamily: argsData.textStyle.fontFamily || this.chart.themeStyle.datalabelFont.fontFamily,
             color: argsData.textStyle.color,
-            opacity: argsData.textStyle.opacity,
+            opacity: argsData.textStyle.opacity
         };
         const element: Chart3DLabelElement = {
             width: size.width,
@@ -183,7 +183,7 @@ export class DataLabel3D {
      * @param {Chart3DSeries} series - The 3D series to which the data point belongs.
      * @param {Chart3DDataLabelSettingsModel} dataLabel - The style settings for data labels.
      * @param {Chart3DPoint} point - The data point for which the data label template is created.
-     * @param {I3DTextRenderEventArgs} data - The text render event arguments.
+     * @param {Chart3DTextRenderEventArgs} data - The text render event arguments.
      * @param {number} labelIndex - The index of the data label.
      * @param {boolean} redraw - Indicates whether the template should be redrawn.
      * @param {Chart3DLocation} location - The location values for the data label.
@@ -200,7 +200,7 @@ export class DataLabel3D {
             createElement('div', {
                 id: this.chart.element.id + '-series-' + series.index + '-data-label-' + labelIndex,
                 styles: 'position: absolute;background-color:' + data.color + ';' +
-                    getFontStyle(dataLabel.font) + ';border:' + data.border.width + 'px solid ' + data.border.color + ';'
+                    getFontStyle(dataLabel.font, this.chart.themeStyle.datalabelFont) + ';border:' + data.border.width + 'px solid ' + data.border.color + ';'
             }),
             data.template, this.chart, point, series, this.chart.element.id + '-data-label-', labelIndex, location );
         this.calculateTemplateLabelSize(parentElement, childElement, point, series, dataLabel, clip, redraw, location);
@@ -268,7 +268,7 @@ export class DataLabel3D {
      * @returns {{ left: number, top: number, right: number }} An object representing the left, top, and right positions of the text.
      */
     private calculateTextPosition(series: Chart3DSeries, point: Chart3DPoint, elementSize: ClientRect,
-                                  location:Chart3DLocation): { left: number, top: number, right: number } {
+                                  location: Chart3DLocation): { left: number, top: number, right: number } {
         const width: number = elementSize.width / 2;
         const height: number = elementSize.height;
         let left: number;
@@ -326,7 +326,7 @@ export class DataLabel3D {
      * @param {Chart3DSeries} series - The 3D series to which the data point belongs (optional).
      * @param {string} dataLabelId - The ID for the data label element (optional).
      * @param {number} labelIndex - The index of the data label (optional).
-     * @param {LChart3DLocation} location - The location values for the data label (optional).
+     * @param {Chart3DLocation} location - The location values for the data label (optional).
      * @param {boolean} redraw - Indicates whether the template should be redrawn (optional).
      * @returns {HTMLElement} The created template element.
      */
@@ -353,7 +353,6 @@ export class DataLabel3D {
                 reactCallback = (point && series) ? this.chartReactTemplate.bind(
                     this, childElement, chart, point, series, labelIndex, redraw, location
                 ) : reactCallback;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
             }
         } catch (e) {

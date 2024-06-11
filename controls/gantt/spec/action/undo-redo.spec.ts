@@ -1,15 +1,16 @@
 /**
  * Gantt sort spec
  */
-import { Gantt, Sort,UndoRedo,Edit,Toolbar, RowDD,Filter, ContextMenu, ContextMenuClickEventArgs } from '../../src/index';
-import { projectData, projectData1, resourceDataUndo, resourceResourcesUndo } from '../base/data-source.spec';
+import { Gantt,Selection, Sort,UndoRedo,Edit,Toolbar, RowDD,Filter, ContextMenu, ContextMenuClickEventArgs, ColumnMenu, DayMarkers, Reorder, Resize } from '../../src/index';
+import { baselineData, filteredData, projectData, projectData1, resourceDataUndo, resourceResourcesUndo } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
+import { ResizeArgs } from '@syncfusion/ej2-grids';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
 describe('Gantt undoredo support', () => {
     describe('Gantt undo redo action for new record', () => {
-        Gantt.Inject(Sort,UndoRedo,Edit,Toolbar );
+        Gantt.Inject(Sort,UndoRedo,Edit,Toolbar, Selection );
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
@@ -68,7 +69,7 @@ describe('Gantt undoredo support', () => {
         });
     });
     describe('Gantt undo redo action for indent Outdent', () => {
-        Gantt.Inject(Sort,UndoRedo,Edit,Toolbar );
+        Gantt.Inject(Sort,UndoRedo,Edit,Toolbar , Selection);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
@@ -119,7 +120,7 @@ describe('Gantt undoredo support', () => {
         });
     });
     describe('Gantt undo redo action for row drag drop', () => {
-        Gantt.Inject(Sort, UndoRedo, Edit, Toolbar, RowDD);
+        Gantt.Inject(Sort, Selection,UndoRedo, Edit, Toolbar, RowDD, Filter);
         let ganttObj: Gantt;
         var projectNewData = [
             {
@@ -190,8 +191,6 @@ describe('Gantt undoredo support', () => {
                     undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search'],
                     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
                         'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
-                    allowExcelExport: true,
-                    allowPdfExport: true,
                     allowSelection: true,
                     allowRowDragAndDrop: true,
                     selectedRowIndex: 1,
@@ -264,7 +263,7 @@ describe('Gantt undoredo support', () => {
         });
     });
     describe('Gantt undo redo action for taskbar editing', () => {
-        Gantt.Inject(Sort, UndoRedo, Edit, Toolbar, RowDD,Filter);
+        Gantt.Inject(Sort,Selection, UndoRedo, Edit, Toolbar, RowDD,Filter, ContextMenu, ColumnMenu, Selection);
         let ganttObj: Gantt;
         var projectNewData = [
             {
@@ -330,8 +329,6 @@ describe('Gantt undoredo support', () => {
                     undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search','ZoomIn','ZoomOut'],
                     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
                         'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
-                    allowExcelExport: true,
-                    allowPdfExport: true,
                     allowSelection: true,
                     allowRowDragAndDrop: true,
                     selectedRowIndex: 1,
@@ -441,7 +438,7 @@ describe('Gantt undoredo support', () => {
         });
     });
     describe('Gantt undo redo action for context menu', () => {
-        Gantt.Inject(Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
+        Gantt.Inject(Selection,Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
         let ganttObj: Gantt;
         let splitTasksData: object[] = [
             {
@@ -557,8 +554,6 @@ describe('Gantt undoredo support', () => {
                     undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search'],
                     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
                         'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
-                    allowExcelExport: true,
-                    allowPdfExport: true,
                     allowSelection: true,
                     allowRowDragAndDrop: true,
                     selectedRowIndex: 1,
@@ -624,7 +619,7 @@ describe('Gantt undoredo support', () => {
         });
     });
     describe('cell edit for undo redo module', () => {
-        Gantt.Inject(Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
+        Gantt.Inject(Selection,Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
         let ganttObj: Gantt;
         var projectNewData = [
             {
@@ -692,8 +687,6 @@ describe('Gantt undoredo support', () => {
         ],
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
             'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
-        allowExcelExport: true,
-        allowPdfExport: true,
         allowSelection: true,
         allowRowDragAndDrop: true,
         selectedRowIndex: 1,
@@ -750,7 +743,7 @@ describe('Gantt undoredo support', () => {
         });
     });
     describe('cell edit for undo redo module', () => {
-        Gantt.Inject(Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
+        Gantt.Inject(Selection, Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
         let ganttObj: Gantt;
         var projectNewData = [
             {
@@ -818,8 +811,6 @@ describe('Gantt undoredo support', () => {
         ],
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
             'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
-        allowExcelExport: true,
-        allowPdfExport: true,
         allowSelection: true,
         allowRowDragAndDrop: true,
         selectedRowIndex: 1,
@@ -876,7 +867,7 @@ describe('Gantt undoredo support', () => {
         });
     });
     describe('Edit action undefined in undoRedoActions', () => {
-        Gantt.Inject(Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
+        Gantt.Inject(Selection, Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
         let ganttObj: Gantt;
         var projectNewData = [
             {
@@ -944,8 +935,6 @@ describe('Gantt undoredo support', () => {
         ],
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
             'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
-        allowExcelExport: true,
-        allowPdfExport: true,
         allowSelection: true,
         allowRowDragAndDrop: true,
         selectedRowIndex: 1,
@@ -1001,8 +990,495 @@ describe('Gantt undoredo support', () => {
             done()
         });
     });
+    describe('Gantt Searching', () => {
+        Gantt.Inject(Selection,Filter, Toolbar, UndoRedo,);
+        let ganttObj: Gantt;
+        let data : Object[]=  [
+            {
+                TaskID: 1,
+                TaskName: 'Product Concept',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                    { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                    { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                ]
+            },
+            { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource:data,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                    },
+                    enableUndoRedo: true,
+                    undoRedoActions: ['Filtering', 'Search'],
+                    columns: [
+                        { field: 'TaskID', visible: false },
+                        {
+                            field: 'TaskName',
+                            headerText: 'Task Name',
+                            width: '250',
+                            clipMode: 'EllipsisWithTooltip',
+                        },
+                        { field: 'StartDate', headerText: 'Start Date' },
+                        { field: 'Duration', headerText: 'Duration' },
+                        { field: 'EndDate', headerText: 'End Date' },
+                        { field: 'Predecessor', headerText: 'Predecessor' },
+                    ],
+                    searchSettings: {
+                        hierarchyMode: 'Both',
+                    },
+                    toolbar: ['Search','Undo','Redo'],
+                    allowFiltering: true
+                }, done);
+        });
+        it('searching Taskname', (done : Function) => {
+            ganttObj.search('Defining');
+            ganttObj.actionComplete = function (args) {
+                if (args.requestType == 'searching') {
+                    expect(ganttObj.currentViewData.length).toBe(3);
+                }
+                done();
+            };
+            ganttObj.undo();
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Gantt Sorting', () => {
+        Gantt.Inject(Selection, Toolbar,UndoRedo, DayMarkers, Sort );
+        let ganttObj: Gantt;
+        let data : Object[]=  [
+            {
+                TaskID: 1,
+                TaskName: 'Product Concept',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                    { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                    { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                ]
+            },
+            { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource:data,
+                    height: '450px',
+                    enableUndoRedo: true,
+                    allowSorting: true,
+                    undoRedoActions: ['Sorting'],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency:'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                      columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name' },
+                        { field: 'StartDate', headerText: 'Start Date' },
+                        { field: 'Duration', headerText: 'Duration'},
+                        { field: 'Progress', headerText: 'Progress' }
+                    ],
+                    toolbar: [
+                    'Undo', 'Redo'],
+                    treeColumnIndex: 1,
+                    labelSettings: {
+                        leftLabel: 'TaskName'
+                    },
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        it('Gantt sorting', (done: Function) => {
+            ganttObj.sortColumn('TaskID','Descending',true);
+            ganttObj.actionComplete = function (args) {
+                if (args.requestType === 'sorting') {
+                    expect(ganttObj.currentViewData.length).toBe(5);
+                }
+                ganttObj.undo(); 
+                ganttObj.redo();
+                done();
+            };
+           
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Gantt Column Reorder', () => {
+        Gantt.Inject(Filter, Toolbar, UndoRedo,Reorder, RowDD, Resize, Selection);
+        let ganttObj: Gantt;
+        let data: Object[] = [
+            {
+                TaskID: 1,
+                TaskName: 'Product Concept',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                    {
+                        TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                        Indicators: [
+                            {
+                                'date': '04/10/2019',
+                                'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                'name': 'Indicator title',
+                                'tooltip': 'tooltip'
+                            }
+                        ]
+                    },
+                    { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                ]
+            },
+            { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: data,
+                    allowReordering: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                    },
+                    enableUndoRedo: true,
+                    undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search'],
+                    searchSettings: {
+                        hierarchyMode: 'Both',
+                    },
+                    toolbar: ['Search', 'Undo', 'Redo'],
+                    allowFiltering: true,
+                }, done);
+        });
+        it('column reorder', (done: Function) => {
+            ganttObj.reorderColumns('TaskName', 'EndDate');
+            ganttObj.actionComplete = function (args) {
+                if (args.requestType === 'reorder') {
+                    expect(ganttObj.treeGrid.getColumns()[3].field).toBe('TaskName');
+                }
+                ganttObj.undo();
+                ganttObj.redo()
+            };
+            done();
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Gantt undo redo action for add', () => {
+        Gantt.Inject(Selection,Sort,Filter, UndoRedo, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                { dataSource: resourceDataUndo,
+                    resources: resourceResourcesUndo,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        work: 'work',
+                        type: 'taskType',
+                        resourceInfo: 'resources'
+                    },
+                    taskType: 'FixedWork',
+                    resourceFields: {
+                        id: 'resourceId',
+                        name: 'resourceName',
+                        unit: 'unit'
+                    },
+                    allowSorting: true,
+                    viewType:'ResourceView',
+                    enableUndoRedo: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', visible: false },
+                        { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                        { field: 'resources', headerText: 'Resources', width: '160' },
+                        { field: 'work', width: '110' },
+                        { field: 'Duration', width: '100' },
+                        { field: 'taskType', headerText: 'Task Type', width: '110' }
+                    ],
+                    undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search'],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Undo action for Add new record', () => {
+            ganttObj.actionComplete = function (args: any): void {
+                if(args.requestType === 'delete') {
+                    expect(ganttObj.flatData.length).toBe(25);
+                }
+            };
+            ganttObj.addRecord();
+            let undo: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_undo') as HTMLElement;
+            triggerMouseEvent(undo, 'click');
+            ganttObj.redo();
+        });
+    });
+    describe('Gantt undo redo action for zoom in', () => {
+        Gantt.Inject(Selection,Sort, UndoRedo, Edit, Toolbar, RowDD,Filter);
+        let ganttObj: Gantt;
+        var projectNewData = [
+            {
+                TaskID: 1,
+                TaskName: 'Product Concept',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                    {
+                        TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                        Indicators: [
+                            {
+                                'date': '04/10/2019',
+                                'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                'name': 'Indicator title',
+                                'tooltip': 'tooltip'
+                            }
+                        ]
+                    },
+                    { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                ]
+            },
+            { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" }
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    enableUndoRedo: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search','ZoomIn','ZoomOut'],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
+                    gridLines: "Both",
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Zooming actions', () => {
+            ganttObj.zoomIn();
+            ganttObj.undo();
+            setTimeout(function () {
+                expect(ganttObj.currentZoomingLevel.level).toBe(12);
+            }, 100);
+            ganttObj.redo();
+        });
+       
+    });
+    describe('Gantt column resize action', () => {
+        Gantt.Inject(Resize,UndoRedo,Edit,Toolbar, RowDD,Filter, ContextMenu,Selection);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: baselineData,
+                    allowResizing: true,
+                    enableUndoRedo: true,
+                    undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search','ZoomIn','ZoomOut'],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
+                    taskFields: {
+                        id: 'TaskId',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'Children'
+                    },
+                    projectStartDate: new Date('10/15/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Perform Column resize', () => {
+            ganttObj.resizeStart = (args: ResizeArgs) => {
+                expect(args.column.field).toBe('TaskId');
+                expect(args['name']).toBe('resizeStart');
+            };
+            ganttObj.resizing = (args: ResizeArgs) => {
+                expect(args.column.field).toBe('TaskId');
+                expect(args['name']).toBe('resizing');
+            };
+            ganttObj.resizeStop = (args: ResizeArgs) => {
+                expect(args.column.field).toBe('TaskId');
+                expect(args['name']).toBe('resizeStop');
+            };
+            ganttObj.dataBind();
+            let resizeColumn: HTMLElement = ganttObj.element.getElementsByClassName('e-columnheader')[0].getElementsByClassName('e-rhandler e-rcursor')[0] as HTMLElement;
+            triggerMouseEvent(resizeColumn, 'mousedown');
+            triggerMouseEvent(resizeColumn, 'mousemove', 100);
+            triggerMouseEvent(resizeColumn, 'mouseup');
+            expect(ganttObj.element.getElementsByClassName('e-columnheader')[0].querySelector('.e-headercell').classList.contains('e-resized')).toBe(true);
+            ganttObj.undo();
+            ganttObj.redo();
+        });
+    }); 
     describe('cell edit for undo redo module', () => {
-        Gantt.Inject(Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
+        Gantt.Inject(Selection,Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
@@ -1096,9 +1572,7 @@ describe('Gantt undoredo support', () => {
             triggerMouseEvent(element, 'click');
             expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
             ganttObj.undo();
-            setTimeout(() => {
-                expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('Identify site location');
-            }, 100);        
+            expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('Identify site location');
         });
     });
 });

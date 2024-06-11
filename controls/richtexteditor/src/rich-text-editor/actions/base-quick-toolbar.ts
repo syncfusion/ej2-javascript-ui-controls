@@ -105,7 +105,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         let target: HTMLElement = !isNOU(imgWrapper) ? imgWrapper : e.target;
         addClass([this.toolbarElement], [classes.CLS_RM_WHITE_SPACE]);
         let targetOffsetTop: number;
-        if (!isNOU(closest(target, 'table'))) {
+        if (!isNOU(closest(target, 'table')) && !target.classList.contains('e-multi-cells-select') && !target.classList.contains('e-rte-image')) {
             targetOffsetTop = target.offsetTop;
             let parentTable: Element = closest(target, 'table');
             while (!isNOU(parentTable)) {
@@ -113,7 +113,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                 parentTable = closest(parentTable.parentElement, 'table');
             }
         } else {
-            targetOffsetTop = (target.classList.contains("e-rte-audio")) ? target.parentElement.offsetTop : target.offsetTop;
+            targetOffsetTop = (target.classList.contains('e-rte-audio')) ? target.parentElement.offsetTop : target.offsetTop;
         }
         const parentOffsetTop: number = window.pageYOffset + e.parentData.top;
         if ((targetOffsetTop - e.editTop) > e.popHeight) {
@@ -125,15 +125,15 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         }
         target = isAligned ? e.target : target;
         let targetOffsetLeft: number;
-        if (!isNOU(closest(target, 'table'))) {
+        if (!isNOU(closest(target, 'table')) && !target.classList.contains('e-multi-cells-select') && !target.classList.contains('e-rte-image')) {
             targetOffsetLeft = target.offsetLeft;
-            let parentTable: Element = closest(target.parentElement, 'td');
+            let parentTable: Element = closest(target.parentElement, 'th, td');
             while (!isNOU(parentTable)) {
                 targetOffsetLeft += (parentTable as HTMLElement).offsetLeft;
                 parentTable = closest(parentTable.parentElement, 'table');
             }
         } else {
-            targetOffsetLeft = (target.classList.contains("e-rte-audio")) ? target.parentElement.offsetLeft : target.offsetLeft;
+            targetOffsetLeft = (target.classList.contains('e-rte-audio')) ? target.parentElement.offsetLeft : target.offsetLeft;
         }
         if (target.offsetWidth > e.popWidth) {
             x = (target.offsetWidth / 2) - (e.popWidth / 2) + e.parentData.left + targetOffsetLeft;
@@ -306,7 +306,8 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                 };
                 if ((closest(target, 'TABLE') || target.tagName === 'IMG' || target.tagName === 'AUDIO' || target.tagName === 'VIDEO' || target.tagName === 'IFRAME' || (target.classList &&
                     (target.classList.contains(classes.CLS_AUDIOWRAP) || target.classList.contains(classes.CLS_CLICKELEM) ||
-                    target.classList.contains(classes.CLS_VID_CLICK_ELEM)))) && (x == beforeQuickToolbarArgs.positionX || y == beforeQuickToolbarArgs.positionY)) {
+                    target.classList.contains(classes.CLS_VID_CLICK_ELEM)))) &&
+                    (x === beforeQuickToolbarArgs.positionX || y === beforeQuickToolbarArgs.positionY)) {
                     this.setPosition(showPopupData);
                 }
                 if (!this.parent.inlineMode.enable) {
@@ -317,8 +318,8 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                 removeClass([this.element], [classes.CLS_HIDE]);
                 this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) });
                 if (this.popupObj && this.parent.cssClass) {
-                    removeClass([this.popupObj.element], this.parent.cssClass);
-                    addClass([this.popupObj.element], this.parent.cssClass);
+                    removeClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
+                    addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 setStyleAttribute(this.element, {
                     maxWidth: window.outerWidth + 'px'
@@ -332,6 +333,9 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
     private tooltipBeforeRender(args: TooltipEventArgs): void {
         if (args.target.querySelector('.e-active')) {
             args.cancel = true;
+            if (!isNOU(args.target.getAttribute('title'))) {
+                this.parent.notify(events.closeTooltip, { target: args.target, isTitle: true });
+            }
         }
     }
 
@@ -343,13 +347,20 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
      * @deprecated
      */
     public hidePopup(): void {
-        const viewSourcePanel: HTMLElement = <HTMLElement>this.parent.sourceCodeModule.getViewPanel();
+        const isSourceCodeEnabled: boolean = !isNOU(this.parent.rootContainer) && this.parent.rootContainer.classList.contains('e-source-code-enabled');
         if (Browser.isDevice && !isIDevice()) {
             removeClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
         }
+        if (!isNOU(this.element.querySelectorAll('[data-title]'))) {
+            const removeHandEle: NodeListOf<Element> = this.element.querySelectorAll('[data-title]');
+            removeHandEle.forEach((e: Element) => {
+                const event: MouseEvent = new MouseEvent('mouseout', { bubbles: true, cancelable: true });
+                e.dispatchEvent(event);
+            });
+        }
         if (!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))) {
-            if (!isNullOrUndefined(document.querySelector('#' + this.element.id + ' [data-tooltip-id]'))){
-                const tooltipTargetEle: HTMLElement = <HTMLElement> document.querySelector('#' + this.element.id + ' [data-tooltip-id]');
+            if (!isNullOrUndefined(document.querySelector('#' + this.element.id + ' [data-tooltip-id]'))) {
+                const tooltipTargetEle: HTMLElement = <HTMLElement>document.querySelector('#' + this.element.id + ' [data-tooltip-id]');
                 const dataContent: string = tooltipTargetEle.getAttribute('data-content');
                 tooltipTargetEle.removeAttribute('data-content');
                 tooltipTargetEle.setAttribute('title', dataContent);
@@ -363,7 +374,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             }
         }
         if (!isNullOrUndefined(this.parent.getToolbar()) && !this.parent.inlineMode.enable) {
-            if (isNullOrUndefined(viewSourcePanel) || viewSourcePanel.style.display === 'none') {
+            if (!isSourceCodeEnabled) {
                 this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
             }
         }
@@ -420,9 +431,10 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                 tbItems: this.parent.quickToolbarModule.textQTBar.quickTBarObj.toolbarObj.items
             };
             setToolbarStatus(options, true, this.parent);
-            updateUndoRedoStatus(this.parent.quickToolbarModule.textQTBar.quickTBarObj, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
+            updateUndoRedoStatus(this.parent.quickToolbarModule.textQTBar.quickTBarObj,
+                                 this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
         }
-        if (!select('.'+ classes.CLS_RTE_SOURCE_CODE_TXTAREA, this.parent.element)) {
+        if (!select('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA, this.parent.element)) {
             updateUndoRedoStatus(this.parent.getBaseToolbarObject(), this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
         }
     }

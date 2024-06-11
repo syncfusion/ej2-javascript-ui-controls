@@ -199,6 +199,7 @@ describe('Image Module', () => {
     describe('image resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
+        let imgResizeDiv: HTMLElement;
         let clickEvent: any;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -232,7 +233,7 @@ describe('Image Module', () => {
         });
         it('image dialog', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -247,7 +248,7 @@ describe('Image Module', () => {
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.style.display).toBe('block');
+            expect(placeHolder.classList.contains('enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
@@ -265,7 +266,7 @@ describe('Image Module', () => {
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).not.toBe(null);
             expect((rteObj.imageModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.imgResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(imgResizeDiv)).toBe(false);
         });
         it('resizing - mousemove - bottom right', () => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
@@ -352,6 +353,7 @@ describe('Image Module', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let clickEvent: any;
+        let imgResizeDiv: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -398,7 +400,7 @@ describe('Image Module', () => {
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).not.toBe(null);
             expect((rteObj.imageModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.imgResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(imgResizeDiv)).toBe(false);
         });
         it('resizing - mousemove - bottom right', (done) => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
@@ -432,7 +434,9 @@ describe('Image Module', () => {
     describe('predefined set image', () => {
         let rteObj: RichTextEditor;
         let clickEvent: any;
+        let imgResizeDiv: HTMLElement;
         let innerHTML: string = `<p><b>Description:</b></p>
+        let imgResizeDiv: HTMLElement;
 <p>The Rich Text Editor (RTE) control is an easy to render in
 client side. Customer easy to edit the contents and get the HTML content for
 <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
@@ -471,7 +475,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             //resize end evnet cannot remove helper element.
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).not.toBe(null);
             expect((rteObj.imageModule as any).pageX).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.imgResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(imgResizeDiv)).toBe(false);
         });
         it('resizing', () => {
             let trg = (rteObj.element.querySelector('img') as HTMLElement);
@@ -514,6 +518,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('mobile resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
+        let imgResizeDiv: HTMLElement;
         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
         let defaultUA: string = navigator.userAgent;
@@ -560,7 +565,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((rteObj.imageModule as any).pageX).toBe(300);
             (rteObj.imageModule as any).onDocumentClick({ target: rteObj.contentModule.getEditPanel() });
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).toBe(null);
-            expect(rteObj.contentModule.getDocument().body.contains(this.imgResizeDiv)).toBe(false);
+            expect(rteObj.contentModule.getDocument().body.contains(imgResizeDiv)).toBe(false);
             (rteObj.imageModule as any).resizeStart(clickEvent);
             (rteObj.imageModule as any).resizeStart({ target: resizeBot, preventDefault: function () { }, stopImmediatePropagation: function () { } });
         });
@@ -2461,7 +2466,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
@@ -3061,7 +3066,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //         let range = new NodeSelection().getRange(document);
     //         let save = new NodeSelection().save(range, document);
     //         let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-    //         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+    //         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
     //         let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
     //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
     //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
@@ -3096,7 +3101,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
@@ -3135,7 +3140,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
@@ -3181,7 +3186,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //         let range = new NodeSelection().getRange(document);
     //         let save = new NodeSelection().save(range, document);
     //         let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-    //         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+    //         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
     //         let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
     //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
     //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
@@ -3236,7 +3241,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
@@ -3271,7 +3276,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
@@ -3313,7 +3318,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
@@ -3325,7 +3330,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).imageModule.deleteImg(evnArg);
                 (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
-            }, 100);
+            }, 500);
         });
     });
 
@@ -3352,7 +3357,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
@@ -3816,7 +3821,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
@@ -4984,7 +4989,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(document.querySelector('.e-rte-quick-toolbar')).toBe(null);
                 expect(document.querySelector('.e-img-resize')).toBe(null);
                 done();
-            }, 800);
+            }, 600);
         });
     });
 
@@ -5105,7 +5110,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             
         });
     });
-     describe('871139 - when image removing event API is used argument is null', () => {
+    describe('871139 - when image removing event API is used argument is null', () => {
         let rteObj: RichTextEditor;
         let propertyCheck: boolean;
         beforeEach((done: Function) => {

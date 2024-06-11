@@ -19,7 +19,7 @@ describe('TreeGrid Column Module', () => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            pending(); //Skips test (in Chai)
             return;
         }
     });
@@ -77,9 +77,9 @@ describe('Autogenerate columns - Hierarchy', () => {
                 childMapping: 'subtasks',
                 treeColumnIndex: 1,
                 dataBound: (args: Object) => {
-                    rows = this.getRows();
+                    rows = gridObj.getRows();
                     expect(rows.length).toBeGreaterThan(0);
-                    expect(this.columns.length).toBe(8);
+                    expect(gridObj.columns.length).toBe(8);
                     done();
                 }
             },

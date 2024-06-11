@@ -96,7 +96,6 @@ export declare class Columns extends ChildProperty<Columns> {
      * Specifies the sub fields in columns.
      *
      * @default null
-     *
      */
     columns: ColumnsModel[];
 }
@@ -342,6 +341,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isMiddleGroup;
     private cloneRuleBtnClick;
     private isNumInput;
+    private draggable;
+    private draggedRule;
+    private dragElement;
+    private prvtEvtTgrDaD;
+    private isDragEventPrevent;
     /**
      * Triggers when the component is created.
      *
@@ -384,6 +388,24 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @blazorProperty 'RuleChanged'
      */
     ruleChange: EmitType<RuleChangeEventArgs>;
+    /**
+     * Triggers when rule/ group dragging starts.
+     *
+     *
+     */
+    dragStart: EmitType<DragEventArgs>;
+    /**
+     * Triggers when rule/ group are dragged (moved) continuously.
+     *
+     *
+     */
+    drag: EmitType<DragEventArgs>;
+    /**
+     * Triggers when rule/ group are dropped on to the target rule/ group.
+     *
+     *
+     */
+    drop: EmitType<DropEventArgs>;
     /**
      * Specifies the showButtons settings of the query builder component.
      * The showButtons can be enable Enables or disables the ruleDelete, groupInsert, and groupDelete buttons.
@@ -522,7 +544,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @remarks
      * If this property is true, the empty rule is inserted while inserting new group.
      * If set to false, the group is inserted without any rule.
-     *
      * @default true
      */
     addRuleToNewGroups: boolean;
@@ -532,7 +553,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @remarks
      * If this property is true, the field dropdown list will render with the first value of the dropdown list.
      * If set to false, the dropdown list render with placeholder.
-     *
      * @default false
      */
     autoSelectField: boolean;
@@ -542,7 +562,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @remarks
      * If this property is true, the operator dropdown list will render with the first value of the dropdown list.
      * If set to false, the dropdown list render with placeholder.
-     *
      * @default true
      */
     autoSelectOperator: boolean;
@@ -553,12 +572,32 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     separator: string;
     /**
+     * Specifies whether to enable separate connectors between rules/groups.
+     *
+     * @remarks
+     * When this property is set to true, each rule/group will have its own connector, allowing them to be connected independently with different connectors.
+     * When set to false, will result in connectors being shared between rules/groups, possibly connecting them with the same connector.
+     *
+     * @default false
+     *
+     */
+    enableSeparateConnector: boolean;
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      *
      * @default {}
      */
     rule: RuleModel;
+    /**
+     * Specifies a boolean value whether to enable / disable the drag and drop support to move the rules/ groups.
+     *
+     * @remarks
+     * If this property is true, the drag handle will be rendered in front of the rule/ group element to perform, drag and drop.
+     * If set to false, the drag handle element is not rendered.
+     * @default false
+     */
+    allowDragAndDrop: boolean;
     constructor(options?: QueryBuilderModel, element?: string | HTMLDivElement);
     protected getPersistData(): string;
     /**
@@ -598,7 +637,10 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private ruleTemplate;
     private addGroupElement;
     private addGroupSuccess;
+    private setMultiConnector;
+    private addHeaderDiv;
     private headerTemplateFn;
+    private enableSeparateConnectorInitialRule;
     /**
      * Notify the changes to component.
      *
@@ -695,6 +737,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     onPropertyChanged(newProp: QueryBuilderModel, oldProp: QueryBuilderModel): void;
     protected preRender(): void;
     protected render(): void;
+    private initializeDrag;
+    private helper;
+    private dragStartHandler;
+    private dragHandler;
+    private dragStopHandler;
     private templateParser;
     private executeDataManager;
     private initControl;
@@ -910,8 +957,10 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     lockGroup(groupID: string): void;
     private sqlParser;
     private parseSqlStrings;
+    private getDoubleQuoteString;
     private checkCondition;
     private getSingleQuoteString;
+    private combineSingleQuoteString;
     private checkLiteral;
     private checkNumberLiteral;
     private getOperator;
@@ -919,7 +968,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getLabelFromColumn;
     private getLabelFromField;
     private processParser;
-    private getValueFromParser;
     /**
      * Clone the Group
      *
@@ -1053,4 +1101,53 @@ export interface ParameterizedNamedSql {
      * Specifies the bind variable names from the `sql` string to the associated values.
      */
     params: Record<string, object>;
+}
+/**
+ * Interface to define the DragEventArgs for dragging action of group and rules.
+ *
+ */
+export interface DragEventArgs {
+    /**
+     * Returns the ID of the rule id to be dragged.
+     *
+     * @returns {string} The ID of the rule where the drag action is performed.
+     */
+    dragRuleID: string;
+    /**
+     * Returns the ID of the group to be dragged.
+     *
+     * @returns {string} The ID of the group where the drag action is performed.
+     */
+    dragGroupID: string;
+    /**
+     * Determines whether to cancel the dragging action based on certain conditions.
+     *
+     * @returns {boolean} True if the dragging action should be cancelled, otherwise false.
+     *
+     */
+    cancel: boolean;
+}
+/**
+ * Interface to define the DropEventArgs for dropping action of group and rules.
+ *
+ */
+export interface DropEventArgs {
+    /**
+     * Determines whether to cancel the dropping action based on certain conditions.
+     *
+     * @returns {boolean} True if the dropping action should be cancelled, otherwise false.
+     */
+    cancel: boolean;
+    /**
+     * Returns the ID of the rule where the drop action is initiated.
+     *
+     * @returns {string} The ID of the rule where the drop action is performed.
+     */
+    dropRuleID: string;
+    /**
+     * Returns the ID of the group where the drop action is initiated.
+     *
+     * @returns {string} The ID of the group where the drop action is performed.
+     */
+    dropGroupID: string;
 }

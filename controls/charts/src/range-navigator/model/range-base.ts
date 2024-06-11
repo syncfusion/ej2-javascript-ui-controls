@@ -242,7 +242,7 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
      * Options to customize the ToolTip text.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public textStyle: FontModel;
 
     /**

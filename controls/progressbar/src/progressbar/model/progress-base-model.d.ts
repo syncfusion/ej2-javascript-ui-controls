@@ -193,34 +193,34 @@ export interface TooltipSettingsModel {
     enable?: boolean;
 
     /**
-      * The fill color of the tooltip that accepts value in hex as a valid CSS color string.
-      *
-      * @default null.
-      */
- 
+     * The fill color of the tooltip that accepts value in hex as a valid CSS color string.
+     *
+     * @default null.
+     */
+
     fill?: string;
 
     /**
-      * Format the tooltip content. Use ${value} as the placeholder text to display the corresponding progress value.
-      *
-      * @default null.
-      */
- 
+     * Format the tooltip content. Use ${value} as the placeholder text to display the corresponding progress value.
+     *
+     * @default null.
+     */
+
     format?: string;
 
     /**
-      * If set to true, tooltip will be displayed for the progress bar on mouse hover.
-      *
-      * @default false.
-      */
- 
+     * If set to true, tooltip will be displayed for the progress bar on mouse hover.
+     *
+     * @default false.
+     */
+
     showTooltipOnHover?: boolean;
 
     /**
-      * Options to customize the tooltip text.
-      *
-      */
- 
+     * Options to customize the tooltip text.
+     *
+     */
+
     textStyle?: FontModel;
 
     /**

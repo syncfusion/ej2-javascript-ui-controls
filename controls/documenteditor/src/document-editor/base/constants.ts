@@ -70,3 +70,5 @@ export const internalAutoResize: string = 'internalAutoResize';
 export const beforeAutoResize: string = 'beforeAutoResize';
 /** @hidden */
 export const trackChanges: string = 'trackChanges';
+/** @hidden */
+export const internalOptionPaneChange: string = 'internalOptionPaneChange';

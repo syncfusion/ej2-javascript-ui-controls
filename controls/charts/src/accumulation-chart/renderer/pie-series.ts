@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart series file
  */
@@ -20,6 +17,13 @@ export class PieSeries extends PieBase {
      * To get path option, degree, symbolLocation from the point.
      *
      * @private
+     * @param {AccPoints} point - The point data.
+     * @param {AccumulationSeries} series - The series of the chart.
+     * @param {AccumulationChart} chart - The accumulation chart control.
+     * @param {PathOption} option - The rendering options for the point.
+     * @param {Element} seriesGroup - The group element to contain the series elements.
+     * @param {boolean} redraw - Specifies whether to redraw the series.
+     * @returns {void}
      */
     public renderPoint(
         point: AccPoints, series: AccumulationSeries, chart: AccumulationChart, option: PathOption,
@@ -149,6 +153,11 @@ export class PieSeries extends PieBase {
     }
     /**
      * To get path option from the point.
+     *
+     * @param {AccPoints} point - The point data.
+     * @param {number} degree - The angle of the point.
+     * @param {number} startAngle - The start angle of the slice.
+     * @returns {string} - Returns the path option.
      */
     private getPathOption(point: AccPoints, degree: number, startAngle: number): string {
         if (!degree) {
@@ -168,10 +177,15 @@ export class PieSeries extends PieBase {
      * To animate the pie series.
      *
      * @private
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {AnimationModel} option - The animation options.
+     * @param {AccumulationSeries} series - The pie series.
+     * @param {Element} slice - The slice element to animate.
+     * @returns {void}
      */
     public animateSeries(accumulation: AccumulationChart, option: AnimationModel, series: AccumulationSeries, slice: Element): void {
         const groupId: string = accumulation.element.id + 'SeriesGroup' + series.index;
-        if (((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && accumulation.animateSeries) {
+        if (((series.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && accumulation.animateSeries) {
             const clippath: Element = accumulation.renderer.createClipPath({ id: groupId + '_clipPath' });
             const path: PathOption = new PathOption(groupId + '_slice', 'transparent', 1, 'transparent', 1, '', '');
             const clipslice: Element = accumulation.renderer.drawPath(path);
@@ -185,6 +199,8 @@ export class PieSeries extends PieBase {
 
     /**
      * To get the module name of the Pie series.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'PieSeries';
@@ -199,7 +215,7 @@ export class PieSeries extends PieBase {
 
     public destroy(): void {
         /**
-         * Destroy method calling here
+         * Destroy method calling here.
          */
     }
 }

@@ -1,4 +1,3 @@
-// layout variables
 $slider-height: 4px !default;
 $slider-handle-height: 20px !default;
 $slider-handle-width: 20px !default;
@@ -26,6 +25,7 @@ $slider-scale-font-size: $text-xs !default;
 $slider-scale-tick-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8AztTa/whsA3yqMpmsAAAAAElFTkSuQmCC');
 $slider-scale-tick-image-dark: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8AbHV9/wUNAl7Qm4m+AAAAAElFTkSuQmCC');
 $slider-disabled-handle-show: none !default;
+$slider-button-size: 24px !default;
 $slider-button-shadow: $shadow-sm !default;
 $slider-button-horizon-padding: 0 28px !default;
 $slider-button-vertical-padding: 28px 0 !default;
@@ -51,7 +51,6 @@ $slider-limit-bar-vertical-width: 4px !default;
 $slider-limit-bar-left: calc(50% - 2px) !default;
 $slider-handle-border-color: rgba($primary) !default;
 $slider-material-tooltip-content-color: $grey-white !default;
-
 $slider-handle-mobile-height: 28px !default;
 $slider-handle-mobile-width: 28px !default;
 $slider-handle-mobile-margin-left: -10px !default;
@@ -70,8 +69,6 @@ $largetick-before-mobile-left: -2px !default;
 $tick-before-mobile-top: -12px !default;
 $largetick-after-mobile-top: 8px !default;
 $tick-after-mobile-top: 4px !default;
-
-//color variables
 $slider-button-icon-color: rgba($secondary-text-color) !default;
 $slider-range-bar-color: rgba($primary) !default;
 $slider-range-bar-hover-color: $primary-bg-color-hover !default;

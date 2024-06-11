@@ -50,6 +50,14 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
      */
     @Property()
     public htmlAttributes: string;
+
+    /**
+     * Defines whether the particular field value is disabled or not.
+     *
+     * @default null
+     */
+    @Property()
+    public disabled: string;
 }
 
 export const dropDownBaseClasses: DropDownBaseClassList = {
@@ -251,7 +259,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected noRecordsTemplateId: string;
     protected actionFailureTemplateId: string;
     protected preventChange: boolean = false;
-    protected isAngular: boolean = false;
     protected isPreventChange: boolean = false;
     protected isDynamicDataChange: boolean = false;
     protected addedNewItem: boolean = false;
@@ -360,10 +367,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      *   customers.appendTo("#list");
      * ```
      *
-     * @default {text: null, value: null, iconCss: null, groupBy: null}
+     * @default {text: null, value: null, iconCss: null, groupBy: null, disabled: null}
      * @deprecated
      */
-    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
+    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null, disabled: null }, FieldSettings)
     public fields: FieldSettingsModel;
     /**
      * Accepts the template design and assigns it to each list item present in the popup.
@@ -694,7 +701,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected l10nUpdate(actionFailure?: boolean): void {
         const ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
-        if (this.noRecordsTemplate !== 'No records found' || this.actionFailureTemplate !== 'Request failed') {
+        if ((!isNullOrUndefined(this.noRecordsTemplate) && this.noRecordsTemplate !== 'No records found') || this.actionFailureTemplate !== 'Request failed') {
             const template: string | Function = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString: Function;
             const templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
@@ -1004,18 +1011,25 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             element.querySelectorAll('select>option');
         }
-        this.updateFields(fields.text, fields.value, this.fields.groupBy, this.fields.htmlAttributes, this.fields.iconCss);
+        this.updateFields(
+            fields.text, fields.value, this.fields.groupBy, this.fields.htmlAttributes, this.fields.iconCss, this.fields.disabled);
         this.resetList(jsonElement, fields);
     }
 
-    private updateFields(text?: string, value?: string, groupBy?: string, htmlAttributes?: string, iconCss?: string): void {
+    private updateFields(
+        text?: string, value?: string,
+        groupBy?: string,
+        htmlAttributes?: string,
+        iconCss?: string,
+        disabled?: string): void {
         const field: Object = {
             'fields': {
                 text: text,
                 value: value,
                 groupBy: !isNullOrUndefined(groupBy) ? groupBy : this.fields && this.fields.groupBy,
                 htmlAttributes: !isNullOrUndefined(htmlAttributes) ? htmlAttributes : this.fields && this.fields.htmlAttributes,
-                iconCss: !isNullOrUndefined(iconCss) ? iconCss : this.fields && this.fields.iconCss
+                iconCss: !isNullOrUndefined(iconCss) ? iconCss : this.fields && this.fields.iconCss,
+                disabled: !isNullOrUndefined(disabled) ? disabled : this.fields && this.fields.disabled
             }
         };
         this.setProperties(field, true);
@@ -1412,8 +1426,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         listElement: HTMLElement,
         list: { [key: string]: Object }[] | number[] | string[] | boolean[],
         bindEvent: boolean): void {
+        const isDropDown : boolean = (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox' || this.getModuleName() === 'dropdownlist' || this.getModuleName() === 'multiselect') ? true : false;
+        if (this.fields.disabled && isDropDown) {
+            const liCollections: NodeListOf<Element> = <NodeListOf<Element>>listElement.querySelectorAll('.' + dropDownBaseClasses.li);
+            for (let index: number = 0; index < liCollections.length; index++) {
+                if (JSON.parse(JSON.stringify(this.listData[index as number]))[this.fields.disabled]) {
+                    this.disableListItem(liCollections[index as number] as HTMLLIElement);
+                }
+            }
+        }
         /* eslint-enable @typescript-eslint/no-unused-vars */
-        const focusItem: Element = listElement.querySelector('.' + dropDownBaseClasses.li);
+        const focusItem: Element =  this.fields.disabled && isDropDown ? listElement.querySelector('.' + dropDownBaseClasses.li + ':not(.e-disabled') : listElement.querySelector('.' + dropDownBaseClasses.li);
         const selectedItem: Element = listElement.querySelector('.' + dropDownBaseClasses.selected);
         if (focusItem && !selectedItem) {
             focusItem.classList.add(dropDownBaseClasses.focus);
@@ -1792,7 +1815,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     protected getIndexByValue(value: string | number | boolean | object): number {
         let index: number;
-        const listItems: Element[] = this.getItems();
+        let listItems: Element[] = [];
+        if (this.fields.disabled && this.getModuleName() === 'multiselect' && this.liCollections) {
+            listItems = this.liCollections;
+        }
+        else {
+            listItems = this.getItems();
+        }
         for (let i: number = 0; i < listItems.length; i++) {
             if (!isNullOrUndefined(value) && listItems[i as number].getAttribute('data-value') === value.toString()) {
                 index = i;
@@ -2166,6 +2195,42 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         this.addedNewItem = true;
     }
+    /**
+     * Checks if the given HTML element is disabled.
+     *
+     * @param {HTMLElement} li - The HTML element to check.
+     * @returns {boolean} - Returns true if the element is disabled, otherwise false.
+     */
+    protected isDisabledElement(li: HTMLElement) : boolean {
+        if (li && li.classList.contains('e-disabled')) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Checks whether the list item at the specified index is disabled.
+     *
+     * @param {number} index - The index of the list item to check.
+     * @returns {boolean} True if the list item is disabled, false otherwise.
+     */
+    protected isDisabledItemByIndex(index: number) : boolean {
+        if (this.fields.disabled && this.liCollections) {
+            return this.isDisabledElement(this.liCollections[index as number] as HTMLElement);
+        }
+        return false;
+    }
+    /**
+     * Disables the given list item.
+     *
+     * @param { HTMLLIElement } li - The list item to disable.
+     * @returns {void}
+     */
+    protected disableListItem(li: HTMLLIElement): void {
+        li.classList.add('e-disabled');
+        li.setAttribute('aria-disabled', 'true');
+        li.setAttribute('aria-selected', 'false');
+    }
+
     protected validationAttribute(target: HTMLElement, hidden: Element): void {
         const name: string = target.getAttribute('name') ? target.getAttribute('name') : target.getAttribute('id');
         hidden.setAttribute('name', name);

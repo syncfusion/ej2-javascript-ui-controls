@@ -38,7 +38,7 @@ import { contains, Actions } from './actions';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { Selector } from '../objects/node';
 import { DiagramElement } from '../core/elements/diagram-element';
-import { getInOutConnectPorts, cloneBlazorObject, getDropEventArguements, getObjectType, checkPort, findDistance } from '../utility/diagram-util';
+import { getInOutConnectPorts, cloneBlazorObject, getObjectType, checkPort, findDistance } from '../utility/diagram-util';
 import { initializeCSPTemplate, isBlazor, remove } from '@syncfusion/ej2-base';
 import { DeepDiffMapper } from '../utility/diff-map';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../objects/fixed-user-handle-model';
@@ -126,10 +126,6 @@ export class ToolBase {
      * @private
      */
     public mouseDown(args: MouseEventArgs): void {
-        if (isBlazor()) {
-            this.commandHandler.enableCloneObject(true);
-            this.commandHandler.ismouseEvents(true);
-        }
         this.currentElement = args.source;
         this.startPosition = this.currentPosition = this.prevPosition = args.position;
         this.isTooltipVisible = true;
@@ -172,11 +168,6 @@ export class ToolBase {
         // this.currentElement = currentElement;
         this.isTooltipVisible = false;
         this.commandHandler.endTransaction(this.isProtectChange);
-        if (isBlazor()) {
-            this.commandHandler.enableCloneObject(false);
-            this.commandHandler.ismouseEvents(false);
-            this.commandHandler.getBlazorOldValues(args, this instanceof LabelDragTool);
-        }
         this.endAction();
         // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
         this.mouseDownElement = null;
@@ -327,8 +318,13 @@ export class ToolBase {
     //method to get node shape name
     public getShapeType(): string{
         let shape: string;
-        if (this.commandHandler.diagram.drawingObject.shape.type === 'Image' || 'HTML' || 'Native' || 'Path' )
-        {
+        // eslint-disable-next-line no-constant-condition
+        if (
+            this.commandHandler.diagram.drawingObject.shape.type === 'Image' ||
+            this.commandHandler.diagram.drawingObject.shape.type === 'HTML' ||
+            this.commandHandler.diagram.drawingObject.shape.type === 'Native' ||
+            this.commandHandler.diagram.drawingObject.shape.type === 'Path'
+        ) {
             shape = this.commandHandler.diagram.drawingObject.shape.type;
         }
         else
@@ -421,7 +417,7 @@ export class SelectTool extends ToolBase {
                         } else {
                             if (args.clickCount === 1) {
                                 this.commandHandler.unSelect(args.source);
-                                this.commandHandler.updateBlazorSelector();
+                                // this.commandHandler.updateBlazorSelector();
                             }
                         }
                     }
@@ -459,30 +455,13 @@ export class FixedUserHandleTool extends ToolBase {
                 fixedUserHandle = val.fixedUserHandles[parseInt(i.toString(), 10)];
             }
         }
-
-        if (isBlazor()) {
-            const element: DiagramEventObject = getObjectType(args.source) === Connector ? { connector: args.source }
-                : { node: args.source };
-            const fixedUserHandles: DiagramFixedUserHandle = getObjectType(args.source) === Connector ?
-                { connectorFixedUserHandle: fixedUserHandle } as DiagramFixedUserHandle
-                : { nodeFixedUserHandle: fixedUserHandle } as DiagramFixedUserHandle;
-            const arg: BlazorFixedUserHandleClickEventArgs = {
-                fixedUserHandle: fixedUserHandles,
-                element: element
-            };
-            const trigger: DiagramEvent = DiagramEvent.fixedUserHandleClick;
-            this.commandHandler.triggerEvent(trigger, arg);
-            super.mouseUp(args);
-
-        } else {
-            const arg: FixedUserHandleClickEventArgs = {
-                fixedUserHandle: fixedUserHandle,
-                element: args.source
-            };
-            const trigger: DiagramEvent = DiagramEvent.fixedUserHandleClick;
-            this.commandHandler.triggerEvent(trigger, arg);
-            super.mouseUp(args);
-        }
+        const arg: FixedUserHandleClickEventArgs = {
+            fixedUserHandle: fixedUserHandle,
+            element: args.source
+        };
+        const trigger: DiagramEvent = DiagramEvent.fixedUserHandleClick;
+        this.commandHandler.triggerEvent(trigger, arg);
+        super.mouseUp(args);
     }
 }
 
@@ -517,22 +496,6 @@ export class ConnectTool extends ToolBase {
      * @private
      */
     public async mouseDown(args: MouseEventArgs): Promise<void> {
-        if (isBlazor() && args && args.source) {
-            this.commandHandler.insertSelectedObjects();
-            this.commandHandler.insertBlazorConnector(args.source as Selector);
-            const selectorModel: SelectorModel = args.source as SelectorModel;
-            if (selectorModel.connectors) {
-                const connector: Connector = selectorModel.connectors[0] as Connector;
-                this.oldConnector = cloneObject(connector);
-                const arg: IBlazorConnectionChangeEventArgs = {
-                    connector: cloneBlazorObject(connector),
-                    oldValue: { connectorTargetValue: { portId: undefined, nodeId: undefined } },
-                    newValue: { connectorTargetValue: { portId: undefined, nodeId: undefined } },
-                    cancel: false, state: 'Changing', connectorEnd: this.endPoint
-                };
-                this.tempArgs = arg;
-            }
-        }
         this.inAction = true;
         this.undoElement = undefined;
         if (!(this instanceof ConnectorDrawingTool)) {
@@ -552,9 +515,9 @@ export class ConnectTool extends ToolBase {
                 const segment: BezierSegment = connectors.segments[parseInt(i.toString(), 10)] as BezierSegment;
                 const segmentpoint1: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1;
                 const segmentpoint2: PointModel = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
-                //(EJ2-70650)-Unable to drag bezier control thumb, when we increase handleSize value 
+                //(EJ2-70650)-Unable to drag bezier control thumb, when we increase handleSize value
                 //Added below code for drag the bezier control thumb while increasing handle size(For hitPadding)
-                if((this.currentElement as Selector).handleSize !== connectors.hitPadding){
+                if ((this.currentElement as Selector).handleSize !== connectors.hitPadding) {
                     connectors.hitPadding = (this.currentElement as Selector).handleSize;
                 }
                 if (contains(this.currentPosition, segmentpoint1, connectors.hitPadding) ||
@@ -571,31 +534,6 @@ export class ConnectTool extends ToolBase {
      * @private
      */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
-        if (isBlazor()) {
-            const trigger: DiagramEvent = DiagramEvent.connectionChange;
-            let temparg: IBlazorConnectionChangeEventArgs;
-            if (this.tempArgs && this.oldConnector) {
-                this.commandHandler.updatePropertiesToBlazor(args, false);
-                this.tempArgs.state = 'Changed';
-                const nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
-                const portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
-                this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
-                    { connectorSourceValue: { nodeId: this.oldConnector[`${nodeEndId}`], portId: this.oldConnector[`${portEndId}`] } } :
-                    { connectorTargetValue: { nodeId: this.oldConnector[`${nodeEndId}`], portId: this.oldConnector[`${portEndId}`] } };
-                temparg = {
-                    state: this.tempArgs.state, oldValue: this.tempArgs.oldValue,
-                    newValue: this.tempArgs.newValue, cancel: this.tempArgs.cancel, connectorEnd: this.tempArgs.connectorEnd
-                };
-                const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
-                if (window && window[`${blazor}`] && this.commandHandler[`${diagram}`].connectionChange) {
-                    const eventObj: object = { 'EventName': 'connectionChange', args: JSON.stringify(this.tempArgs) };
-                    temparg = await window[`${blazorInterop}`].updateBlazorDiagramEvents(eventObj, this.commandHandler[`${diagram}`]);
-                }
-                if (temparg) {
-                    this.commandHandler.updateConnectorValue(temparg);
-                }
-            }
-        }
         if (!isBlazor() && this.isConnected && (args.source as SelectorModel).connectors) {
             const connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
             const nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
@@ -639,12 +577,6 @@ export class ConnectTool extends ToolBase {
                 connector: connector, state: 'Completed', targetNode: targetNodeNode,
                 oldValue: oldValues, newValue: oldValues, cancel: false, targetPort: targetPortName
             };
-            if (isBlazor()) {
-                arg = {
-                    connector: cloneBlazorObject(connector), state: 'Completed', targetNode: targetNodeNode,
-                    oldValue: cloneBlazorObject(oldValues), newValue: oldValues, cancel: arg.cancel, targetPort: targetPortName
-                };
-            }
             const trigger: number = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
             this.commandHandler.triggerEvent(trigger, arg);
             this.commandHandler.removeTerminalSegment(connector as Connector, true);
@@ -667,7 +599,7 @@ export class ConnectTool extends ToolBase {
                 this.commandHandler.addHistoryEntry(entry);
             }
         }
-        this.commandHandler.updateBlazorSelector();
+        // this.commandHandler.updateBlazorSelector();
         this.canCancel = undefined; this.tempArgs = undefined;
         //(EJ2-66201) - Exception occurs when mouse-hover on ports in node
         if (args.source && (args.source as SelectorModel).connectors) {
@@ -708,12 +640,6 @@ export class ConnectTool extends ToolBase {
                 connector: connectors, state: 'Start', targetNode: targetNode,
                 oldValue: oldValue, newValue: oldValue, cancel: false, targetPort: targetPort
             };
-            if (isBlazor()) {
-                arg = {
-                    connector: cloneBlazorObject(connectors), state: 'Start', targetNode: targetNode,
-                    oldValue: oldValue, newValue: oldValue, cancel: arg.cancel, targetPort: targetPort
-                };
-            }
             const trigger: number = this.endPoint === 'ConnectorSourceEnd' ?
                 DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
             this.commandHandler.triggerEvent(trigger, arg);
@@ -740,12 +666,6 @@ export class ConnectTool extends ToolBase {
                 connector: connector, state: 'Progress', targetNode: targetNodeId,
                 oldValue: oldValue, newValue: newValue, cancel: false, targetPort: targetPortId
             };
-            if (isBlazor()) {
-                arg = {
-                    connector: cloneBlazorObject(connector), state: 'Progress', targetNode: targetNodeId,
-                    oldValue: oldValue, newValue: newValue, cancel: arg.cancel, targetPort: targetPortId
-                };
-            }
             if (!(this instanceof ConnectorDrawingTool)) {
                 const trigger: number = this.endPoint === 'ConnectorSourceEnd' ?
                     DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
@@ -897,22 +817,6 @@ export class MoveTool extends ToolBase {
             this.portId = args.sourceWrapper.id;
         }
         this.commandHandler.insertBlazorConnector(args.source as Selector);
-        let oldValues: SelectorModel;
-        if (isBlazor()) {
-            this.commandHandler.insertSelectedObjects();
-            this.startPosition = this.currentPosition = this.prevPosition = args.position;
-            this.initialOffset = { x: 0, y: 0 };
-
-            if (args.source) {
-                oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-            }
-            const arg: IDraggingEventArgs | IBlazorDraggingEventArgs = {
-                source: cloneObject(args.source), state: 'Start', oldValue: oldValues, newValue: {},
-                target: cloneObject(args.target), targetPosition: args.position, allowDrop: true, cancel: false
-            };
-            this.tempArgs = arg;
-
-        }
         super.mouseDown(args);
         this.initialOffset = { x: 0, y: 0 };
     }
@@ -927,33 +831,6 @@ export class MoveTool extends ToolBase {
      */
     public async mouseUp(args: MouseEventArgs, isPreventHistory?: boolean): Promise<void> {
         let oldValues: SelectorModel; let newValues: SelectorModel;
-
-        if (isBlazor() && this.objectType !== 'Port') {
-            this.commandHandler.updatePropertiesToBlazor(args, false);
-            if (args.source) {
-                newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-                oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-            }
-            const arg: IBlazorDraggingEventArgs = {
-                state: 'Completed',
-                oldValue: cloneBlazorObject(this.tempArgs.oldValue), newValue: cloneBlazorObject(newValues),
-                target: cloneBlazorObject(this.currentTarget), targetPosition: cloneBlazorObject(this.currentPosition),
-                allowDrop: true, cancel: false
-            };
-            let blazorArgs: void | object;
-            const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
-            if (window && window[`${blazor}`] && this.commandHandler[`${diagram}`].positionChange) {
-                const eventObj: object = { 'EventName': 'positionChange', args: JSON.stringify(arg) };
-                blazorArgs = await window[`${blazorInterop}`].updateBlazorDiagramEvents(eventObj, this.commandHandler[`${diagram}`]);
-            }
-            if (blazorArgs && (blazorArgs as IDraggingEventArgs).cancel) { this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true); this.canCancel = true; }
-            if (this.canCancel) {
-                this.commandHandler.insertBlazorObject(args.source);
-                const tx: number = this.tempArgs.oldValue.offsetX - (args.source as NodeModel).wrapper.offsetX;
-                const ty: number = this.tempArgs.oldValue.offsetY - (args.source as NodeModel).wrapper.offsetY;
-                this.commandHandler.dragSelectedObjects(tx, ty);
-            }
-        }
         this.checkPropertyValue();
         let obj: SelectorModel; let historyAdded: boolean = false; let object: NodeModel | ConnectorModel | SelectorModel;
         const redoObject: SelectorModel = { nodes: [], connectors: [] };
@@ -972,7 +849,7 @@ export class MoveTool extends ToolBase {
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper')|| ((object as Node).id !== 'helper')) {
                 //EJ2-71257 - Position change event completed state is not fired on selecting the node first and then dragging the node while changing node width at progress state.
-                // If object is instanceof selector then checked the length of selected objects is 1 or not. 
+                // If object is instanceof selector then checked the length of selected objects is 1 or not.
                 if ((((object instanceof Selector && ((Math.round(object.width) === Math.round(this.undoElement.width) && Math.round(object.height) === Math.round(this.undoElement.height)) || (object.selectedObjects && object.selectedObjects.length === 1))) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
                     (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint
                     // eslint-disable-next-line max-len
@@ -991,9 +868,6 @@ export class MoveTool extends ToolBase {
                         target: cloneBlazorObject(this.currentTarget), targetPosition: cloneBlazorObject(this.currentPosition),
                         allowDrop: arg.allowDrop, cancel: arg.cancel
                     };
-                    if (isBlazor()) {
-                        arg = this.getBlazorPositionChangeEventArgs(arg, this.currentTarget);
-                    }
                     // EJ2-824712 [Bug] - When selecting swimlane second time history change event is triggered with change type as positionChanged.
                     let canAddHistory:boolean = true;
                     //EJ2-69852): Position Change event trigger for clicking second time in swimlane header issue
@@ -1052,12 +926,7 @@ export class MoveTool extends ToolBase {
                 let arg: IDropEventArgs | IBlazorDropEventArgs = {
                     element: args.source, target: this.currentTarget, position: this.currentPosition, cancel: false
                 };
-                if (isBlazor()) {
-                    arg = getDropEventArguements(args, arg as IBlazorDropEventArgs);
-                    arg = await this.commandHandler.triggerEvent(DiagramEvent.drop, arg) as IDropEventArgs | IBlazorDropEventArgs || arg;
-                } else {
-                    this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
-                }
+                this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
                 if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget) && !this.commandHandler.isTargetSubProcess(this.currentTarget)) {
                     const nodes: NodeModel[] = (args.source instanceof Selector) ? args.source.nodes : [args.source as NodeModel];
                     let isEndGroup: boolean = false;
@@ -1100,7 +969,7 @@ export class MoveTool extends ToolBase {
             };
             this.commandHandler.addHistoryEntry(entry);
         }
-        this.commandHandler.updateBlazorSelector();
+        // this.commandHandler.updateBlazorSelector();
         super.mouseUp(args);
     }
 
@@ -1143,14 +1012,14 @@ export class MoveTool extends ToolBase {
         return false;
     }
 
-    private getBlazorPositionChangeEventArgs(args: IDraggingEventArgs | IBlazorDraggingEventArgs, target: IElement): IBlazorDraggingEventArgs {
-        args = {
-            source: cloneBlazorObject(args.source), state: args.state, oldValue: args.oldValue, newValue: args.newValue,
-            target: getObjectType(target) === Connector ? { connector: cloneBlazorObject(target) }
-                : { node: cloneBlazorObject(target) },
-            targetPosition: this.currentPosition, allowDrop: true, cancel: false
-        };
-        return args as IBlazorDraggingEventArgs;
+    private getBlazorPositionChangeEventArgs(args: IDraggingEventArgs | IBlazorDraggingEventArgs, target: IElement): any {
+        // args = {
+        //     source: cloneBlazorObject(args.source), state: args.state, oldValue: args.oldValue, newValue: args.newValue,
+        //     target: getObjectType(target) === Connector ? { connector: cloneBlazorObject(target) }
+        //         : { node: cloneBlazorObject(target) },
+        //     targetPosition: this.currentPosition, allowDrop: true, cancel: false
+        // };
+        // return args as IBlazorDraggingEventArgs;
     }
 
     /* tslint:disable */
@@ -1187,9 +1056,9 @@ export class MoveTool extends ToolBase {
             newValue: cloneBlazorObject(oldValues),
             target: args.target, targetPosition: args.position, allowDrop: arg.allowDrop, cancel: arg.cancel
         };
-         //(EJ2-277624)-In the positionChange event, during the completed state, old and new values remain identical.
-         if(!this.isStartAction){
-            this.intialValue= { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY}
+        //(EJ2-277624)-In the positionChange event, during the completed state, old and new values remain identical.
+        if (!this.isStartAction) {
+            this.intialValue = { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY };
         }
         if (isSame && !isBlazor()) {
             this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
@@ -1206,14 +1075,14 @@ export class MoveTool extends ToolBase {
             this.commandHandler.removeSnap();
             let oldValues: SelectorModel; let newValues: SelectorModel;
             //Bug 860595: Snap to lines is experiencing issues when dragging shapes from the palette to a swimlane.
-            // Added below condition to get the dragging node wrapper and pass it to snapPoint method to calculate the snapPoint, 
+            // Added below condition to get the dragging node wrapper and pass it to snapPoint method to calculate the snapPoint,
             // because while dragging node over swimlane the lane wrapper is used for calculating snapPoint
-            if(this.currentTarget === null &&  this.commandHandler.diagram.selectedItems.nodes.length > 0 && !(this.commandHandler.diagram.selectedItems.nodes[0] as Node).parentId.includes('swimlane')){
-                if(this.commandHandler.diagram.selectedItems.nodes[0].shape.type !== 'SwimLane'){
-                let dragNode = this.commandHandler.diagram.selectedItems.nodes[0];
-                this.dragWrapper = dragNode.wrapper;
+            if (this.currentTarget === null && this.commandHandler.diagram.selectedItems.nodes.length > 0 && !(this.commandHandler.diagram.selectedItems.nodes[0] as Node).parentId.includes('swimlane')) {
+                if (this.commandHandler.diagram.selectedItems.nodes[0].shape.type !== 'SwimLane') {
+                    let dragNode = this.commandHandler.diagram.selectedItems.nodes[0];
+                    this.dragWrapper = dragNode.wrapper;
                 }
-             }
+            }
             const snappedPoint: PointModel = this.commandHandler.snapPoint(
                 this.prevPosition, this.currentPosition, diffX, diffY,this.dragWrapper);
             this.initialOffset.x = diffX - snappedPoint.x;
@@ -1233,9 +1102,6 @@ export class MoveTool extends ToolBase {
                 source: object as SelectorModel, state: 'Progress', oldValue: oldValues, newValue: newValues,
                 target: args.target, targetPosition: args.position, allowDrop: true, cancel: false
             };
-            if (isBlazor()) {
-                arg = this.getBlazorPositionChangeEventArgs(arg, args.target);
-            }
             if (!isBlazor()) {
                 this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
                 this.canTrigger = true;
@@ -1325,21 +1191,7 @@ export class RotateTool extends ToolBase {
      * @private
      */
     public mouseDown(args: MouseEventArgs): void {
-        if (isBlazor()) {
-            let object: NodeModel | ConnectorModel | SelectorModel;
-            object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
-            const oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
-            const arg: IRotationEventArgs = {
-                source: cloneBlazorObject(args.source), state: 'Start', oldValue: oldValue, newValue: undefined, cancel: false
-            };
-            const temparg: IRotationEventArgs = arg;
-            this.tempArgs = temparg;
-            if (this.tempArgs && this.tempArgs.cancel) {
-                this.canCancel = true;
-            }
-        }
         this.undoElement = cloneObject(args.source);
-
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
             const objects: (NodeModel | ConnectorModel)[] = [];
             const nodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getAllDescendants(this.undoElement.nodes[0], objects);
@@ -1359,30 +1211,6 @@ export class RotateTool extends ToolBase {
      */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
         this.checkPropertyValue();
-        if (isBlazor()) {
-            const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
-            this.commandHandler.updatePropertiesToBlazor(args, false);
-            let object: NodeModel | ConnectorModel | SelectorModel;
-            object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
-            const oldValue: SelectorModel = { rotateAngle: this.tempArgs.oldValue.rotateAngle };
-            const newValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
-            const arg: IRotationEventArgs = {
-                state: 'Completed', oldValue: oldValue, newValue: newValue, cancel: false
-            };
-            let blazorArgs: void | object;
-            if (window && window[`${blazor}`] && this.commandHandler[`${diagram}`].rotateChange) {
-                const eventObj: object = { 'EventName': 'rotateChange', args: JSON.stringify(arg) };
-                blazorArgs = await window[`${blazorInterop}`].updateBlazorDiagramEvents(eventObj, this.commandHandler[`${diagram}`]);
-            }
-            if (blazorArgs && (blazorArgs as IRotationEventArgs).cancel) {
-                this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true);
-                this.canCancel = true;
-            }
-            if (this.canCancel) {
-                this.commandHandler.insertBlazorObject(args.source);
-                this.commandHandler.rotatePropertyChnage(this.tempArgs.oldValue.rotateAngle);
-            }
-        }
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
         if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
@@ -1403,7 +1231,7 @@ export class RotateTool extends ToolBase {
             this.commandHandler.updateSelector();
             this.rotateStart =false;
         }
-        this.commandHandler.updateBlazorSelector();
+        // this.commandHandler.updateBlazorSelector();
         this.canCancel = undefined;
         this.tempArgs = undefined;
         super.mouseUp(args);
@@ -1448,7 +1276,7 @@ export class RotateTool extends ToolBase {
         if (!isBlazor()) {
             this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg1);
         }
-        if ((!isBlazor() && !arg1.cancel) || (isBlazor() && !this.canCancel)) {
+        if ((!isBlazor() && !arg1.cancel)) {
             this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
         }
         if (this.commandHandler.canEnableDefaultTooltip()) {
@@ -1519,25 +1347,6 @@ export class ResizeTool extends ToolBase {
      */
     public mouseDown(args: MouseEventArgs): void {
         let oldValues: SelectorModel;
-        if (isBlazor()) {
-            this.commandHandler.insertSelectedObjects();
-            this.startPosition = this.currentPosition = this.prevPosition = args.position;
-            this.currentElement = args.source;
-            this.initialBounds.x = args.source.wrapper.offsetX;
-            this.initialBounds.y = args.source.wrapper.offsetY;
-            this.initialBounds.height = args.source.wrapper.actualSize.height;
-            this.initialBounds.width = args.source.wrapper.actualSize.width;
-            if (args.source) {
-                oldValues = {
-                    offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
-                    width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
-                };
-            }
-            const arg: ISizeChangeEventArgs = {
-                source: cloneBlazorObject(args.source), state: 'Start', oldValue: oldValues, newValue: cloneBlazorObject(this.currentElement), cancel: false
-            };
-            this.tempArgs = arg;
-        }
         this.undoElement = cloneObject(args.source);
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
         super.mouseDown(args);
@@ -1566,35 +1375,6 @@ export class ResizeTool extends ToolBase {
      * @private
      */
     public async mouseUp(args: MouseEventArgs, isPreventHistory?: boolean): Promise<boolean> {
-        if (isBlazor()) {
-            const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
-            this.commandHandler.updatePropertiesToBlazor(args, false);
-            const obj: SelectorModel = cloneObject(args.source);
-            const oldValues: SelectorModel = {
-                width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height,
-                offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY
-            };
-            const arg: ISizeChangeEventArgs = {
-                oldValue: this.tempArgs.oldValue, newValue: oldValues, cancel: false,
-                state: 'Completed'
-            };
-            if (!this.canCancel) {
-                let blazorArgs: void | object;
-                if (window && window[`${blazor}`] && this.commandHandler[`${diagram}`].sizeChange) {
-                    const eventObj: object = { 'EventName': 'sizeChange', args: JSON.stringify(arg) };
-                    blazorArgs = await window[`${blazorInterop}`].updateBlazorDiagramEvents(eventObj, this.commandHandler[`${diagram}`]);
-                }
-                if (blazorArgs && (blazorArgs as ISizeChangeEventArgs).cancel) {
-                    this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true);
-                    this.commandHandler.insertBlazorObject(args.source);
-                    const scaleWidth: number = this.tempArgs.oldValue.width / obj.wrapper.actualSize.width;
-                    const scaleHeight: number = this.tempArgs.oldValue.height / obj.wrapper.actualSize.height;
-                    this.commandHandler.scaleSelectedItems(scaleWidth, scaleHeight, this.getPivot(this.corner));
-                }
-            }
-            this.tempArgs = undefined;
-            this.canCancel = undefined;
-        }
         this.checkPropertyValue();
         this.commandHandler.removeSnap();
         let object: NodeModel | ConnectorModel | SelectorModel;
@@ -1634,7 +1414,7 @@ export class ResizeTool extends ToolBase {
                 this.commandHandler.endGroupAction();
             }
         }
-        this.commandHandler.updateBlazorSelector();
+        // this.commandHandler.updateBlazorSelector();
         super.mouseUp(args);
         return !this.blocked;
     }
@@ -1865,7 +1645,7 @@ export class NodeDrawingTool extends ToolBase {
             this.triggerElementDrawEvent(this.drawingObject,'Completed','Node',this.getShapeType(),false);
             this.drawingObject = null;
         }
-        this.commandHandler.updateBlazorSelector();
+        // this.commandHandler.updateBlazorSelector();
         super.mouseUp(args);
         this.inAction = false;
     }
@@ -1945,7 +1725,7 @@ export class ConnectorDrawingTool extends ConnectTool {
         this.commandHandler.enableServerDataBinding(true);
         return !this.blocked;
 
-    };
+    }
     // Sets the target while drawing connector from the group node port or its children port.
     private setTarget(args: MouseEventArgs){
         if(args.target){
@@ -1978,7 +1758,7 @@ export class ConnectorDrawingTool extends ConnectTool {
             this.triggerElementDrawEvent(this.drawingObject,'Completed','Connector',(this.drawingObject as ConnectorModel).type,false);
             this.drawingObject = null;
         }
-        this.commandHandler.updateBlazorSelector();
+        // this.commandHandler.updateBlazorSelector();
         this.inAction = false;
         this.commandHandler.enableServerDataBinding(true);
         super.mouseUp(args);
@@ -2068,7 +1848,7 @@ export class TextDrawingTool extends ToolBase {
         } else {
             this.drawingNode = args.source as Node;
         }
-        if (this.drawingNode && (this.drawingNode instanceof Node || this.drawingNode instanceof Connector)) {
+        if (this.drawingNode && (this.drawingNode instanceof Node)) {
             this.commandHandler.addText(this.drawingNode, this.currentPosition);
         }
         super.mouseUp(args);
@@ -2244,7 +2024,6 @@ export class PolygonDrawingTool extends ToolBase {
                         [{ x: this.startPoint.x, y: this.startPoint.y }, { x: this.currentPosition.x, y: this.currentPosition.y }]
                 }
             };
-            if (isBlazor() && node.shape.type === 'Basic') { (node.shape as DiagramShape).basicShape = 'Polygon'; }
             this.drawingObject = this.commandHandler.drawObject(node as Node);
         } else {
             let pt: PointModel;
@@ -2685,7 +2464,8 @@ export class FreeHandTool extends ToolBase {
                 const newObj: ConnectorModel = {
                     id:'newConnector'+ randomId(),type:'Bezier',
                     sourcePoint : {x:points[0].x,y:points[0].y},targetPoint: {x:points[points.length-1].x,y:points[points.length-1].y},
-                    segments:[],targetDecorator:{shape:'None'}, bezierSettings: { allowSegmentsReset: false }
+                    //EJ2-873504[BUG]- Source and target decorator for free hand connector is not rendered.
+                    segments:[], bezierSettings: { allowSegmentsReset: false }
                 };
                 this.drawingObject = this.commandHandler.drawObject(newObj as Connector);
                 this.drawingObject = this.bezierCurveSmoothness(points,smoothValue,this.drawingObject,obj);
@@ -2703,25 +2483,22 @@ export class FreeHandTool extends ToolBase {
      * @param tolerance
      * @returns points
      */
-    public pointReduction(points:PointModel[],tolerance:number)
-    {
-        if(points === null || points.length<3)
-        {
+    public pointReduction(points: PointModel[], tolerance: number) {
+        if (points === null || points.length < 3) {
             return points;
         }
-        let firstPoint:number = 0;
-        let lastPoint:number = points.length-1;
-        let pointIndex:number[]=[];
+        let firstPoint: number = 0;
+        let lastPoint: number = points.length - 1;
+        let pointIndex: number[] = [];
         pointIndex.push(firstPoint);
         pointIndex.push(lastPoint);
 
-        while(points[parseInt(firstPoint.toString(), 10)]===(points[parseInt(lastPoint.toString(), 10)]))
-        {
+        while (points[parseInt(firstPoint.toString(), 10)] === (points[parseInt(lastPoint.toString(), 10)])) {
             lastPoint--;
         }
         this.reduction(points, firstPoint, lastPoint, tolerance, pointIndex);
-        let returnedPoints:PointModel[]=[];
-        pointIndex.sort(function(a, b){return a-b});
+        let returnedPoints: PointModel[] = [];
+        pointIndex.sort(function (a, b) { return a - b; });
         pointIndex.forEach(element => {
             returnedPoints.push(points[parseInt(element.toString(), 10)]);
         });
@@ -2787,7 +2564,7 @@ export class FreeHandTool extends ToolBase {
             let pointy0:number;
             if (i === 0)
             {
-                var previousPoint = points[parseInt(i.toString(), 10)];
+                let previousPoint = points[parseInt(i.toString(), 10)];
                 pointx0 = previousPoint.x;
                 pointy0 = previousPoint.y;
             }
@@ -2796,10 +2573,10 @@ export class FreeHandTool extends ToolBase {
                 pointx0 = points[i - 1].x;
                 pointy0 = points[i - 1].y;
             }
-            let pointx3,pointy3:number;
+            let pointx3: number; let pointy3: number;
             if (i === points.length - 2)
             {
-                var nextPoint = points[i + 1];
+                let nextPoint = points[i + 1];
                 pointx3 = nextPoint.x;
                 pointy3 = nextPoint.y;
             }

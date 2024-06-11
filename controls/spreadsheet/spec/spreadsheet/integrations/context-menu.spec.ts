@@ -168,7 +168,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(11);
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(13);
                 expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(4)').textContent).toBe('Custom Item 1');
                 expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').textContent).toBe('Custom Item 2');
                 helper.click('#' + helper.id + '_contextmenu li:nth-child(6)');
@@ -187,7 +187,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(8);
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(10);
                 expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(1)').textContent).toBe('Copy');
                 helper.getInstance().contextMenuBeforeOpen = null;
                 done();
@@ -202,7 +202,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(11)').classList).toContain('e-disabled');
                 helper.getInstance().contextMenuBeforeOpen = null;
                 done();
             });
@@ -344,7 +344,7 @@ describe('Spreadsheet context menu module ->', () => {
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
                 setTimeout(() => {
-                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(11)').classList).toContain('e-disabled');
                     (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
                     helper.invoke('unprotectSheet', ['Price Details 1']);
                     done();

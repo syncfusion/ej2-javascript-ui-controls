@@ -1,5 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { getPoint, withInRange, ChartLocation, TransformToVisible } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
@@ -14,12 +12,18 @@ import { MultiColoredSeries } from './multi-colored-base';
 export class AreaSeries extends MultiColoredSeries {
 
     /**
-     * Render Area series.
+     * Renders the area series on the chart.
      *
+     * @param {Series} series - The series to be rendered.
+     * @param {Axis} xAxis - The X-axis associated with the series.
+     * @param {Axis} yAxis - The Y-axis associated with the series.
+     * @param {boolean} isInverted - Indicates whether the chart is inverted or not.
+     * @param {boolean} pointAnimate - Specifies whether the point has to be animated or not.
+     * @param {boolean} pointUpdate - Specifies whether the point has to be updated or not.
      * @returns {void}
      * @private
      */
-    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+    public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate?: boolean, pointUpdate?: boolean): void {
         let startPoint: ChartLocation = null;
         let direction: string = '';
         const isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
@@ -74,11 +78,11 @@ export class AreaSeries extends MultiColoredSeries {
             direction = direction.concat(direction + ' ' + 'Z');
         }
 
-        this.appendLinePath(
+        this[pointAnimate ? 'addAreaPath' : 'appendLinePath'](
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index, series.interior,
                 0, 'transparent', series.opacity, series.dashArray,
-                ((series.points.length > 1 && direction !== '') ? (direction + this.getAreaPathDirection(
+                ((direction !== '') ? (direction + this.getAreaPathDirection(
                     series.points[series.points.length - 1].xValue,
                     series.chart.chartAreaType === 'PolarRadar' ?
                         series.points[series.points.length - 1].yValue : origin,
@@ -93,7 +97,7 @@ export class AreaSeries extends MultiColoredSeries {
          */
         if (series.border.width !== 0) {
             emptyPointDirection = this.removeEmptyPointsBorder(direction);
-            this.appendLinePath(
+            this[pointAnimate ? 'addAreaPath' : 'appendLinePath'](
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index, 'transparent',
                     borderWidth, borderColor, 1, series.dashArray,
@@ -103,7 +107,34 @@ export class AreaSeries extends MultiColoredSeries {
             );
 
         }
-        this.renderMarker(series);
+        if (!pointUpdate) {this.renderMarker(series); }
+
+    }
+
+    /**
+     * To animate point for area series.
+     *
+     * @param {Series} series - Specifies the series.
+     * @param {number} point - Specifies the point.
+     * @returns {void}
+     * @private
+     */
+    public updateDirection(series: Series, point: number[]): void {
+        this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
+        for (let i: number = 0; i < point.length; i++) {
+            if (series.marker && series.marker.visible) {
+                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
+                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+            }
+            if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
+            }
+        }
     }
 
     /**
@@ -112,20 +143,20 @@ export class AreaSeries extends MultiColoredSeries {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroy method calling here
+         * Destroy method calling here.
          */
     }
 
     /**
-     * Get module name
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
-
     protected getModuleName(): string {
         /**
-         * Returns the module name of the series
+         * Returns the module name of the series.
          */
         return 'AreaSeries';
     }

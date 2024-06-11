@@ -71,7 +71,8 @@ describe('Chart control checking', () => {
                 height: '400', width: '600',
                 primaryYAxis: { title: 'Sales Amount in millions(USD)', rangePadding: 'Additional' },
                 series: seriesCollection,
-                loaded: loaded
+                loaded: loaded,
+                enableAnimation: false
             });
 
         });

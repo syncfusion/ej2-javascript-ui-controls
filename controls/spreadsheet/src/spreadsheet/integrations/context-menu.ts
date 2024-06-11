@@ -2,12 +2,12 @@ import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
-import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, updateSortCollection } from '../common/index';
+import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, updateSortCollection, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
-import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, applyProtect } from '../common/index';
+import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, addNote, editNote, deleteNote } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
-import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel, SortCollectionModel} from '../../workbook/common/index';
-import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow } from '../../workbook/index';
+import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel, SortCollectionModel, getDataRange} from '../../workbook/common/index';
+import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow, getRow, getColumn } from '../../workbook/index';
 import { toggleProtect } from '../common/index';
 
 /**
@@ -75,13 +75,34 @@ export class ContextMenu {
     private selectHandler(args: MenuEventArgs): void {
         const selectArgs: MenuSelectEventArgs = extend({ cancel: false }, args) as MenuSelectEventArgs;
         this.parent.trigger('contextMenuItemSelect', selectArgs); const id: string = this.parent.element.id + '_cmenu';
-        let prevSort: SortCollectionModel[] = [];
+        const range: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        const prevSort: SortCollectionModel[] = [];
         if ((id + '_ascending' || id + '_descending') && this.parent.sortCollection) {
             for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
-                if (this.parent.sortCollection[i as number] && this.parent.sortCollection[i as number].sheetIndex === this.parent.activeSheetIndex) {
+                if (this.parent.sortCollection[i as number] &&
+                    this.parent.sortCollection[i as number].sheetIndex === this.parent.activeSheetIndex) {
                     prevSort.push(this.parent.sortCollection[i as number]);
                     this.parent.sortCollection.splice(i, 1);
                 }
+            }
+        }
+        if (args.item.id === id + '_delete_row' || args.item.id === id + '_delete_column' ||
+            args.item.id === id + '_insert_column_before' || args.item.id === id + '_insert_column_after' ||
+            args.item.id === id + '_insert_row_above' || args.item.id === id + '_insert_row_below') {
+            const row: RowModel = getRow(this.parent.getActiveSheet(), range[0]);
+            const column: ColumnModel = getColumn(this.parent.getActiveSheet(), range[1]);
+            if ((row && !row.isReadOnly) && (column && !column.isReadOnly)) {
+                if (isReadOnlyCells(this.parent, range)) {
+                    this.parent.notify(readonlyAlert, null);
+                    return;
+                }
+            }
+        }
+        if (args.item.id === id + '_ascending' || args.item.id === id + '_descending' || args.item.id === id + '_customsort') {
+            const sortRange: number[] = getDataRange(range[0], range[1], this.parent.getActiveSheet());
+            if (isReadOnlyCells(this.parent, sortRange)) {
+                this.parent.notify(readonlyAlert, null);
+                return;
             }
         }
         let field: string;
@@ -130,7 +151,7 @@ export class ContextMenu {
                 focus(this.parent.element);
                 break;
             case id + '_ascending':
-                this.parent.notify(updateSortCollection,{ sortOptions: { sortDescriptors: { order: 'Ascending' } } });
+                this.parent.notify(updateSortCollection, { sortOptions: { sortDescriptors: { order: 'Ascending' } } });
                 this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: 'Ascending' } }, previousSort: prevSort });
                 break;
             case id + '_descending':
@@ -193,6 +214,15 @@ export class ContextMenu {
                 this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
                     indexes[3] + 1, end: indexes[3] + 1 + (indexes[3] - indexes[1]), modelType: 'Column', isAction: true,
                 insertType: 'after' });
+                break;
+            case id + '_addNote':
+                this.parent.notify(addNote, null);
+                break;
+            case id + '_editNote':
+                this.parent.notify(editNote, null);
+                break;
+            case id + '_deleteNote':
+                this.parent.notify(deleteNote, {rowIndex: null, columnIndex: null, isDeleteFromMenu: true});
                 break;
             case id + '_hyperlink':
                 this.parent.notify(initiateHyperlink, null);
@@ -287,10 +317,10 @@ export class ContextMenu {
                 }
                 if (this.parent.selectionSettings.mode === 'None') {
                     if (target === 'ColumnHeader') {
-                        this.parent.enableContextMenuItems(['Insert Column','Delete Column','Hide Column'], false, false);
+                        this.parent.enableContextMenuItems(['Insert Column', 'Delete Column', 'Hide Column'], false, false);
                     }
                     if (target === 'RowHeader') {
-                        this.parent.enableContextMenuItems(['Insert Row','Delete Row','Hide Row'], false, false);
+                        this.parent.enableContextMenuItems(['Insert Row', 'Delete Row', 'Hide Row'], false, false);
                     }
                 }
             }
@@ -353,6 +383,10 @@ export class ContextMenu {
             this.setFilterItems(items, id);
             this.setSortItems(items, id);
             items.push({ separator: true });
+            if (this.parent.enableNotes) {
+                this.setNotesMenu(items, id);
+                items.push({ separator: true });
+            }
             this.setHyperLink(items, id);
         } else if (target === 'RowHeader') {
             this.setClipboardData(items, l10n, id);
@@ -462,7 +496,6 @@ export class ContextMenu {
     }
 
     private setHyperLink(items: MenuItemModel[], id: string): void {
-        const sheet: SheetModel = this.parent.getActiveSheet();
         if (this.parent.allowHyperlink) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             if (!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
@@ -476,6 +509,24 @@ export class ContextMenu {
                     { text: l10n.getConstant('OpenHyperlink'), iconCss: 'e-icons e-openhyperlink-icon', id: id + '_openHyperlink' },
                     { text: l10n.getConstant('RemoveHyperlink'), iconCss: 'e-icons e-removehyperlink-icon', id: id + '_removeHyperlink' }
                 );
+            }
+        }
+    }
+
+    private setNotesMenu(items: MenuItemModel[], id: string): void {
+        if (this.parent.enableNotes) {
+            const l10n: L10n = this.parent.serviceLocator.getService(locale);
+            const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+            const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
+            if ( targetElement.children.length > 0 && targetElement.children[(targetElement.children.length - 1) as number].className.indexOf('addNoteIndicator') > -1) {
+                items.push(
+                    { text: l10n.getConstant('EditNote'), iconCss: 'e-icons e-edit-notes', id: id + '_editNote' },
+                    { text: l10n.getConstant('DeleteNote'), iconCss: 'e-icons e-delete-notes', id: id + '_deleteNote' }
+                );
+            } else {
+                items.push({
+                    text: l10n.getConstant('AddNote'), iconCss: 'e-icons e-add-notes', id: id + '_addNote'
+                });
             }
         }
     }

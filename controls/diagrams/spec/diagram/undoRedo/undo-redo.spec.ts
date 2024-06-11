@@ -1613,6 +1613,467 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('Code coverage-undo-redo', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramCodeCover' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 300, height: 300, offsetX: 400, offsetY: 300,
+                annotations: [{ content: 'Node1', style: { strokeColor: 'black', opacity: 1 } }]
+            };
+            diagram = new Diagram({
+                width: '1000px', height: '530px', nodes: [node], snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramCodeCover');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking undo after clear history', (done: Function) => {
+            let node = diagram.nodes[0];
+            diagram.drag(node,50,0);
+            let nodeOffset = node.offsetX;
+            diagram.clearHistory();
+            diagram.undo();
+            expect(node.offsetX === nodeOffset).toBe(true);
+            done();
+        });
+        it('Setting Stack limit 1', (done: Function) => {
+            let node = diagram.nodes[0];
+            diagram.drag(node,50,50);
+            diagram.drag(node,50,0);
+            diagram.drag(node,50,0);
+            diagram.setStackLimit(1);
+            expect(diagram.historyManager.undoStack.length === 1).toBe(true);
+            done();
+        });
+        it('Setting Stack limit 2', (done: Function) => {
+            let node = diagram.nodes[0];
+            diagram.setStackLimit(2);
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas,node.offsetX,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 40,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 80,node.offsetY);
+            mouseEvents.mouseUpEvent(diagramCanvas,node.offsetX  + 80,node.offsetY);
+
+            mouseEvents.mouseDownEvent(diagramCanvas,node.offsetX + 80,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 120,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 120,node.offsetY);
+            mouseEvents.mouseUpEvent(diagramCanvas,node.offsetX  + 120,node.offsetY);
+
+            mouseEvents.mouseDownEvent(diagramCanvas,node.offsetX + 120,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 160,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 200,node.offsetY);
+            mouseEvents.mouseUpEvent(diagramCanvas,node.offsetX  + 200,node.offsetY);
+
+            expect(diagram.historyManager.undoStack.length === 2).toBe(true);
+            done();
+        });
+    });
+
+    describe('Check undo and redo with group node and connector', () => {
+                let diagram: Diagram;
+                let ele: HTMLElement;
+                let mouseEvents: MouseEvents = new MouseEvents();
+                beforeAll((): void => {
+                    ele = createElement('div', { id: 'diagram_Group_undo' });
+                    document.body.appendChild(ele);
+                    let nodes: NodeModel[] = [
+                        {
+                            id: 'node1', width: 100, height: 100, offsetX: 300,
+                            offsetY: 300,
+                        }, 
+                        {
+                            id: 'node2', width: 100, height: 100, offsetX: 300,
+                            offsetY: 100,
+                        },
+                        {
+                            id: 'node3', width: 100, height: 100, offsetX: 100,
+                            offsetY: 100,
+                        }, 
+                        { id: 'group', children: ['node1', 'connector1']},
+                    ];
+        
+                    let connectors: ConnectorModel[] = [
+                        {
+                            id: 'connector1', sourceID:'node1', targetPoint: { x: 400, y: 400 }
+                        },
+                        {
+                            id: 'connector2', sourceID:'node2', targetPoint: { x: 200, y: 200 }
+                        },
+                    ];
+                    diagram = new Diagram(
+                        {
+                            width: '1050px', height: '500px', nodes: nodes,
+                            connectors: connectors,
+                        });
+        
+                    diagram.appendTo('#diagram_Group_undo');
+                });
+        
+                afterAll((): void => {
+                    diagram.destroy();
+                    ele.remove();
+                });
+                it('Checking undo and redo functionalities of group node with connector', (done: Function) => {
+                    let group = diagram.nameTable['group'];
+                    diagram.select([group]);
+                    let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+                    const preRotate_angle = group.rotateAngle;
+                    mouseEvents.mouseDownEvent(diagramCanvas, 330, 220);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, 340, 240);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, 350, 260);
+                    mouseEvents.mouseUpEvent(diagramCanvas, 350, 260);
+                    const postRotate_angle = group.rotateAngle;
+                    diagram.undo();
+                    const undoRotate_angle = group.rotateAngle;
+                    diagram.redo();
+                    const redoRotate_angle = group.rotateAngle;
+                    expect(preRotate_angle === undoRotate_angle && postRotate_angle === redoRotate_angle).toBe(true);
+                    done();
+                });
+            });
+
+    describe('842506 - Check undo and redo with group node with two connector', () => {
+                let diagram: Diagram;
+                let ele: HTMLElement;
+                beforeAll((): void => {
+                    ele = createElement('div', { id: 'diagram_GroupRotate_undo' });
+                    document.body.appendChild(ele);
+                    let nodes: NodeModel[] = [
+                        {
+                            id: 'node1',
+                            offsetX: 625,
+                            offsetY: 125,
+                          },
+                          {
+                            id : 'node2',
+                            offsetX: 775,
+                            offsetY: 175,
+                          },
+                        { id:'group1', children: ['node1', 'node2'],annotations:[{content:"Label"}]},
+                        { id: 'group2', children: ['connector1', 'connector2'],annotations:[{content:"Label"}] },
+                    ];
+        
+                    let connectors: ConnectorModel[] = [
+                        {
+                            id: 'connector1',
+                            sourcePoint: {
+                              x: 100,
+                              y: 100,
+                            },
+                            targetPoint: {
+                              x: 300,
+                              y: 100,
+                            },
+                          },
+                          {
+                            id: 'connector2',
+                            sourcePoint: {
+                              x: 100,
+                              y: 200,
+                            },
+                            targetPoint: {
+                              x: 300,
+                              y: 200,
+                            },
+                          },
+                    ];
+                    diagram = new Diagram(
+                        {
+                            width: '1050px', height: '500px', nodes: nodes,
+                            connectors: connectors,
+                        });
+        
+                    diagram.appendTo('#diagram_GroupRotate_undo');
+                });
+        
+                afterAll((): void => {
+                    diagram.destroy();
+                    ele.remove();
+                });
+               it('Checking undo functionality of group node with two connector', (done: Function) => {
+                let groupNode = diagram.nameTable['group2'];
+                diagram.select([groupNode]);
+                let prevAngle = diagram.selectedItems.nodes[0].rotateAngle;
+                let prevWidth = diagram.selectedItems.nodes[0].width;
+                let prevHeight = diagram.selectedItems.nodes[0].height;
+                diagram.rotate(diagram.selectedItems, -90);
+                diagram.rotate(diagram.selectedItems, -90);
+                diagram.undo();
+                diagram.undo();
+                let undoAngle = diagram.selectedItems.nodes[0].rotateAngle;
+                let undoWidth = diagram.selectedItems.nodes[0].width;
+                let undoHeight = diagram.selectedItems.nodes[0].height;
+                expect(prevAngle === undoAngle && prevWidth === undoWidth && prevHeight === undoHeight).toBe(true);
+                done();
+               });
+    });
+
+    describe('Undo Redo - add port and remove port', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'EditLabelUndoRedoIssue' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: '600px', height: '530px', nodes: [{
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+            }],
+            snapSettings: { constraints: SnapConstraints.ShowLines }
+        });
+        diagram.appendTo('#EditLabelUndoRedoIssue');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+        it('Checking undo redo - add port at runtime', (done: Function) => {
+            expect(diagram.nodes.length == 1 && diagram.nodes[0].ports.length == 0).toBe(true);
+            let nodes: Node = diagram.nodes[0] as Node;
+            let port: PointPortModel[] =
+                [{ id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0, y: 0 } },
+                { id: 'port2', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 1, y: 0 } },
+                { id: 'port3', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0, y: 1 } },
+                { id: 'port4', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 1, y: 1 } }
+                ]
+            diagram.addPorts(nodes, port);
+            expect(diagram.nodes.length == 1 && diagram.nodes[0].ports.length == 4).toBe(true);
+            diagram.undo();
+            expect(diagram.nodes.length == 1 && diagram.nodes[0].ports.length == 0).toBe(true);
+            diagram.redo();
+            expect(diagram.nodes.length == 1 && diagram.nodes[0].ports.length == 4).toBe(true);
+            done();
+        });
+        it('Checking undo redo - remove port at runtime', (done: Function) => {
+            expect(diagram.nodes.length == 1 && diagram.nodes[0].ports.length == 4).toBe(true);
+            let nodes: Node = diagram.nodes[0] as Node
+            let port: PointPortModel[] = [
+                { id: 'port1', }, { id: 'port2', }, { id: 'port3', }, { id: 'port4', }
+            ]
+            diagram.removePorts(nodes, port);
+            expect(diagram.nodes.length == 1 && diagram.nodes[0].ports.length == 0).toBe(true);
+            diagram.undo();
+            expect(diagram.nodes.length == 1 && diagram.nodes[0].ports.length == 4).toBe(true);
+            diagram.redo();
+            expect(diagram.nodes.length == 1 && diagram.nodes[0].ports.length == 0).toBe(true);
+            done();
+        });
+    });
+
+    describe('Testing undo redo - remove node then undo and check for connection',()=>{
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram1_remove' });
+            document.body.appendChild(ele);
+            let node0: NodeModel = {
+                id: 'node0', width: 100, height: 100, offsetX: 100, offsetY: 500,
+                shape: { type: 'Basic', shape: 'Rectangle' }
+            };
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 500,
+                shape: { type: 'Basic', shape: 'Rectangle' }
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 700,
+                shape: { type: 'Basic', shape: 'Rectangle' }
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 50, height: 50, offsetX: 350, offsetY: 100,
+            };
+            let node4: NodeModel  = {
+                id: 'node4', width: 50, height: 50, offsetX: 450, offsetY: 100,
+            };
+            let node5: NodeModel  = {
+                id: 'node5', width: 50, height: 50, offsetX: 350, offsetY: 300,
+            };
+            let node6: NodeModel  = {
+                id: 'node6', width: 50, height: 50, offsetX: 450, offsetY: 300,
+            };
+            let group1: NodeModel  = {
+                id:'group1',
+                children:['node3','node4'],
+                style:{strokeColor:'blue'},
+                padding:{left:10,top:10,right:10,bottom:10}
+            }
+            let group2: NodeModel  = {
+                id:'group2',
+                style:{strokeColor:'blue'},
+                children:['node5','node6'],
+                padding:{left:10,top:10,right:10,bottom:10}
+            }
+            let connector0: ConnectorModel = {
+                id: 'connector0', sourceID: node0.id, targetID: node1.id,constraints:ConnectorConstraints.Select
+            };
+            let connector1: ConnectorModel = {
+                id: 'connector1', sourceID: node0.id, targetID: node2.id ,constraints:ConnectorConstraints.Drag
+            }
+            let connector2: ConnectorModel = {
+                id: 'connector2', sourceID:'group1', targetID: 'group2',constraints:ConnectorConstraints.Drag
+            };
+            diagram = new Diagram({
+                width: '500px', height: '500px', nodes: [node0,node1, node2,node3,node4,node5,node6,group1,group2],
+                connectors: [connector0,connector1,connector2]
+            });
+            diagram.appendTo('#diagram1_remove');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking undo redo - remove group node and check for source id',(done:Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let groupNode = diagram.nodes[7];
+            let connector = diagram.connectors[2];
+            mouseEvents.clickEvent(diagramCanvas,500,100);
+            diagram.remove();
+            diagram.dataBind();
+            diagram.undo();
+            diagram.dataBind();
+            expect(connector.sourceID === groupNode.id).toBe(true);
+            console.log('group node outEdges');
+            done();
+        });
+        it('Checking undo redo - remove target node and check for target id',(done:Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nodes[1];
+            let connector = diagram.connectors[0];
+            mouseEvents.clickEvent(diagramCanvas,300,500);
+            diagram.remove();
+            diagram.dataBind();
+            diagram.undo();
+            diagram.dataBind();
+            expect(connector.targetID === node.id).toBe(true);
+            console.log('Target node inEdges');
+            done();
+        });
+        it('Checking undo redo - remove source node and check for source id',(done:Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nodes[0];
+            let connector1 = diagram.connectors[0];
+            let connector2 = diagram.connectors[1];
+            mouseEvents.clickEvent(diagramCanvas,100,500);
+            diagram.remove();
+            diagram.dataBind();
+            diagram.undo();
+            diagram.dataBind();
+            expect(connector1.sourceID === node.id && connector2.sourceID === node.id).toBe(true);
+            console.log('Source node outEdges');
+            done();
+        });
+        it('Checking undo redo - remove source node and check for source id',(done:Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let group = diagram.nameTable['group1'];
+            diagram.select([group]);
+            let oldSize = group.offsetX;
+            mouseEvents.mouseDownEvent(diagramCanvas,318,100);
+            mouseEvents.mouseMoveEvent(diagramCanvas,310,100);
+            mouseEvents.mouseMoveEvent(diagramCanvas,300,100);
+            mouseEvents.mouseUpEvent(diagramCanvas,300,100);
+            diagram.undo();
+            diagram.redo();
+            console.log(Math.round(group.width));
+            expect(Math.round(group.width) !== oldSize).toBe(true);
+            done();
+        });
+    });
+
+    describe('Undo Redo - Change port connection in connector', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramUndoRedoConnection' });
+            document.body.appendChild(ele);
+
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                ports: [{ id: 'port1', shape: 'Square', offset: { x: 0.5, y: 1 } }]
+            };
+
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                ports: [{ id: 'port1', shape: 'Square', offset: { x: 0.5, y: 1 } }]
+            };
+
+            let connector1: ConnectorModel = {
+                id: 'connector', sourceID: 'node1', sourcePortID: 'port1', targetID: 'node2', targetPortID: 'port1', type: 'Straight'
+            }
+
+            diagram = new Diagram({
+                width: '600px', height: '530px', nodes: [node1, node2],
+                connectors: [connector1], snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramUndoRedoConnection');
+            diagram.nodes[1].width = 300;
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking undo - connector(source port to point)', (done: Function) => {
+
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y + diagram.element.offsetTop, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y + diagram.element.offsetTop + 100);
+            expect(diagram.connectors[0].sourcePortID === '').toBe(true);
+            diagram.undo();
+            expect(diagram.connectors[0].sourcePortID === 'port1').toBe(true);
+            diagram.redo();
+            done();
+        });
+
+        it('Checking undo - connector(target port to point)', (done: Function) => {
+
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            expect(diagram.connectors[0].targetPortID === 'port1').toBe(true);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[0].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[0].targetPoint.y + diagram.element.offsetTop, diagram.connectors[0].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[0].targetPoint.y + diagram.element.offsetTop + 100);
+            expect(diagram.connectors[0].targetPortID === '').toBe(true);
+            diagram.undo();
+            expect(diagram.connectors[0].targetPortID === 'port1').toBe(true);
+            diagram.redo();
+            done();
+        });
+    });
+
     describe('884946-Undo redo not working for swimlane child nodes label edit', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

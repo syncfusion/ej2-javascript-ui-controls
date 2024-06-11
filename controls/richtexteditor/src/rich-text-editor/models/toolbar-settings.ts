@@ -44,7 +44,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
      * An array of string or object that is used to configure items.
      *
-     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
+     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote' 'OrderedList',
      * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
      */
     @Property(predefinedItems)
@@ -881,9 +881,9 @@ export class FontFamily extends ChildProperty<FontFamily> {
     /**
      * Specifies content width
      *
-     * @default '65px'
+     * @default '72px'
      */
-    @Property('65px')
+    @Property('72px')
     public width: string;
     /**
      * Specifies default font family items
@@ -909,9 +909,9 @@ export class FontSize extends ChildProperty<FontSize> {
     /**
      * Specifies content width
      *
-     * @default '35px'
+     * @default '60px'
      */
-    @Property('35px')
+    @Property('60px')
     public width: string;
     /**
      * Specifies default font size items

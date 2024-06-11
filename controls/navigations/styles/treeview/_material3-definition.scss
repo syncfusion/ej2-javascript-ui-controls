@@ -1,5 +1,3 @@
-/*! TreeView's Material 3 theme wise override definitions and variables */
-/* stylelint-disable */
 $treeview-font-size: $text-sm !default;
 $treeview-icon-font-size: 16px !default;
 $treeview-image-font-size: 16px !default;
@@ -15,7 +13,7 @@ $treeview-rtl-text-wrap-padding: 0 20px 0 0 !default;
 $treeview-icon-size: 16px !default;
 $treeview-icon-margin: 0 0 0 -16px !default;
 $treeview-rtl-icon-margin: 0 -16px 0 0 !default;
-$treeview-icon-padding: 0px !default;
+$treeview-icon-padding: 0 !default;
 $treeview-text-padding: 10px 12px !default;
 $treeview-text-margin: 0 !default;
 $treeview-image-size: 16px !default;
@@ -42,7 +40,6 @@ $treeview-check-icon-wrap-width: calc(100% - 54px) !default;
 $treeview-check-icon-img-wrap-width: calc(100% - 82px) !default;
 $treeview-icon-wrap-width: calc(100% - 32px) !default;
 $treeview-icon-img-wrap-width: calc(100% - 60px) !default;
-
 $treeview-big-font-size: $text-base !default;
 $treeview-big-icon-font-size: 20px !default;
 $treeview-big-item-height: 48px !default;
@@ -77,18 +74,13 @@ $treeview-big-check-icon-wrap-width: calc(100% - 65px) !default;
 $treeview-big-check-icon-img-wrap-width: calc(100% - 101px) !default;
 $treeview-big-icon-wrap-width: calc(100% - 35px) !default;
 $treeview-big-icon-img-wrap-width: calc(100% - 71px) !default;
-
 $treeview-font-family: $font-family !default;
 $treeview-drag-icon-font-size: 16px !default;
 $treeview-drag-icon-padding: 0 6px !default;
 $treeview-drag-icon-img-margin: 0 0 0 18px !default;
-
-//treeview ripple effect variables
 $ripple-size: -9.5px !default;
 $ripple-height: 32px !default;
 $ripple-width: 32px !default;
-
-//color variables
 $treeview-icon-color: rgba($icon-color) !default;
 $treeview-text-color: rgba($content-text-color) !default;
 $treeview-item-border-color: $transparent !default;
@@ -116,6 +108,3 @@ $treeview-drop-count-color: rgba($primary-text-color) !default;
 $treeview-drag-item-bg: $content-bg-color-alt3 !default;
 $treeview-drag-item-color: rgba($content-text-color-alt1) !default;
 $treeview-drag-icon-color: rgba($content-text-color-alt1) !default;
-$treeview-item-active-check-bg: rgba($primary-text-color) !default;
-$treeview-item-active-check-border-color: rgba($primary-text-color) !default;
-$treeview-item-active-check-color: rgba($primary) !default;

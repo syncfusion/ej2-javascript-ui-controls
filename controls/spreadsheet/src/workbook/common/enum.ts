@@ -214,6 +214,10 @@ export type ChartTheme =
 'Fluent' |
 /**  Render a chart with FluentDark theme. */
 'FluentDark' |
+/**  Render a chart with Fluent 2 theme. */
+'Fluent2' |
+/**  Render a chart with Fluent 2 dark theme. */
+'Fluent2Dark' |
 /**  Render a chart with Material3 theme. */
 'Material3' |
 /**  Render a chart with Material3Dark theme. */
@@ -260,18 +264,18 @@ export type LabelPosition =
 'Auto';
 
 /**
-* Defines the shape of marker. They are
-* * circle - Renders a circle.
-* * rectangle - Renders a rectangle.
-* * triangle - Renders a triangle.
-* * diamond - Renders a diamond.
-* * cross - Renders a cross.
-* * horizontalLine - Renders a horizontalLine.
-* * verticalLine - Renders a verticalLine.
-* * pentagon- Renders a pentagon.
-* * invertedTriangle - Renders a invertedTriangle.
-* * image - Renders a image.
-*/
+ * Defines the shape of marker. They are
+ * * circle - Renders a circle.
+ * * rectangle - Renders a rectangle.
+ * * triangle - Renders a triangle.
+ * * diamond - Renders a diamond.
+ * * cross - Renders a cross.
+ * * horizontalLine - Renders a horizontalLine.
+ * * verticalLine - Renders a verticalLine.
+ * * pentagon- Renders a pentagon.
+ * * invertedTriangle - Renders a invertedTriangle.
+ * * image - Renders a image.
+ */
 export type ChartShape =
 /** Render a circle. */
 'Circle' |

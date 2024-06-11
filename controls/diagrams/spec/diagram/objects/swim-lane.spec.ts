@@ -5929,299 +5929,6 @@ describe('Diagram Control', () => {
             done();
         });
     });
-
-    describe('876330-After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly', () => {
-        let diagram: Diagram;
-        let ele: HTMLElement;
-        let btn: HTMLButtonElement;
-        beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramSwimlaneUndo' });
-            document.body.appendChild(ele);
-            let nodes: NodeModel[] = [
-                {
-                    id: 'swimlane',
-                    shape: {
-                        type: 'SwimLane',
-                        header: {
-                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
-                            height: 50, style: { fontSize: 11 },
-                            orientation: 'Horizontal',
-                        },
-                        lanes: [
-                            {
-                                id: 'stackCanvas1',
-                                header: {
-                                    annotation: { content: 'CUSTOMER' }, width: 50,
-                                    style: { fontSize: 11 }
-                                },
-                                height: 100,
-                                style:{fill:'transparent'},
-                                children: [
-                                    {
-                                        id: 'selectItemaddcart',
-                                        annotations: [{ content: 'Select item\nAdd cart' }],
-                                        margin: { left: 190, top: 20 },
-                                        height: 40, width: 100
-                                    },
-                                ],
-                            },
-                            {
-                                id: 'stackCanvas2',
-                                header: {
-                                    annotation: { content: 'ONLINE' }, width: 50,
-                                    style: { fontSize: 11 }
-                                },
-                                height: 100,
-                            },
-                        ],
-                        phases: [
-                            {
-                                id: 'phase1', offset: 170,
-                                header: { annotation: { content: 'Phase' } }
-                            },
-                        ],
-                        phaseSize: 20,
-                    },
-                    offsetX: 420, offsetY: 270,
-                    height: 100,
-                    width: 650,
-                    style:{fill:'transparent'}
-                },
-            ];
-
-            diagram = new Diagram({
-                width: '80%',
-                height: '600px',
-                nodes: nodes,
-            });
-            diagram.appendTo('#diagramSwimlaneUndo');
-        });
-        afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
-        });
-        it('Add child node to lane and check lane children collection', (done: Function) => {
-            let child =  {
-                id: 'newChild',
-                annotations: [{ content: 'newChild' }],
-                margin: { left: 190, top: 20 },
-                height: 40, width: 100
-            };
-            let swimalne = diagram.nameTable['swimlane'];
-            let lane = swimalne.shape.lanes[1];
-            diagram.addNodeToLane(child,'swimlane',lane.id);
-            expect(lane.children.length === 1).toBe(true);
-            done();
-        });
-        it('Cut the lane and perform undo and check lane count and children', (done: Function) => {
-            diagram.select([diagram.nameTable['swimlanestackCanvas20']]);
-            let swimalne = diagram.nameTable['swimlane'];
-            diagram.cut();
-            let prevLaneCount = swimalne.shape.lanes.length;
-            diagram.undo();
-            let curLaneCount = swimalne.shape.lanes.length;
-            expect(prevLaneCount !== curLaneCount && curLaneCount === 2 && swimalne.shape.lanes[1].children.length > 0).toBe(true);
-            done();
-        });
-        it('Perform redo and check lane count', (done: Function) => {
-            diagram.redo();
-            let swimalne = diagram.nameTable['swimlane'];
-            let prevLaneCount = swimalne.shape.lanes.length;
-            diagram.undo();
-            let curLaneCount = swimalne.shape.lanes.length;
-            expect(prevLaneCount !== curLaneCount && curLaneCount === 2 && swimalne.shape.lanes[1].children.length > 0).toBe(true);
-            done();
-        });
-    });
-
-    describe('876330-After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly', () => {
-        let diagram: Diagram;
-        let ele: HTMLElement;
-        let btn: HTMLButtonElement;
-        beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramSwimlaneUndoCut' });
-            document.body.appendChild(ele);
-            let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
-    ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
-    '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
-            let nodes: NodeModel[] = [
-                {
-                    id: 'swimlane',
-                    shape: {
-                        type: 'SwimLane',
-                        header: {
-                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
-                            height: 50, style: { fontSize: 11 },
-                            orientation: 'Horizontal',
-                        },
-                        lanes: [
-                            {
-                                id: 'stackCanvas1',
-                                header: {
-                                    annotation: { content: 'CUSTOMER' }, width: 50,
-                                    style: { fontSize: 11 }
-                                },
-                                height: 100,
-                                children: [
-                                    {
-                                        id: 'Order',
-                                        shape: { type: 'Path', data: pathData },
-                                        annotations: [
-                                            {
-                                                content: 'ORDER',
-                                                style: { fontSize: 11 }
-                                            }
-                                        ],
-                                        margin: { left: 60, top: 20 },
-                                        height: 40, width: 100
-                                    }
-                                ],
-                            },
-                            {
-                                id: 'stackCanvas2',
-                                header: {
-                                    annotation: { content: 'ONLINE' }, width: 50,
-                                    style: { fontSize: 11 }
-                                },
-                                height: 100,
-                                children: [
-                                    {
-                                        id: 'selectItemaddcart',
-                                        annotations: [{ content: 'Select item\nAdd cart' }],
-                                        margin: { left: 190, top: 20 },
-                                        height: 40, width: 100
-                                    },
-                                    {
-                                        id: 'paymentondebitcreditcard',
-                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
-                                        margin: { left: 350, top: 20 },
-                                        height: 40, width: 100
-                                    }
-                                ],
-                            },
-                            {
-                                id: 'stackCanvas3',
-                                header: {
-                                    annotation: { content: 'SHOP' }, width: 50,
-                                    style: { fontSize: 11 }
-                                },
-                                height: 100,
-                                children: [
-                                    {
-                                        id: 'getmaildetailaboutorder',
-                                        annotations: [{ content: 'Get mail detail\nabout order' }],
-                                        margin: { left: 190, top: 20 },
-                                        height: 40, width: 100
-                                    },
-                                    {
-                                        id: 'pakingitem',
-                                        annotations: [{ content: 'Paking item' }],
-                                        margin: { left: 350, top: 20 },
-                                        height: 40, width: 100
-                                    }
-                                ],
-                            },
-                            {
-                                id: 'stackCanvas4',
-                                header: {
-                                    annotation: { content: 'DELIVERY' }, width: 50,
-                                    style: { fontSize: 11 }
-                                },
-                                height: 100,
-                                children: [
-                                    {
-                                        id: 'sendcourieraboutaddress',
-                                        annotations: [{ content: 'Send Courier\n about Address' }],
-                                        margin: { left: 190, top: 20 },
-                                        height: 40, width: 100
-                                    },
-                                    {
-                                        id: 'deliveryonthataddress',
-                                        annotations: [{ content: 'Delivery on that\n Address' }],
-                                        margin: { left: 350, top: 20 },
-                                        height: 40, width: 100
-                                    },
-                                    {
-                                        id: 'getitItem',
-                                        shape: { type: 'Path', data: pathData },
-                                        annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
-                                        margin: { left: 500, top: 20 },
-                                        height: 40, width: 100
-                                    }
-                                ],
-                            },
-                        ],
-                        phases: [
-                            {
-                                id: 'phase1', offset: 170,
-                                header: { content: { content: 'Phase' } }
-                            },
-                            {
-                                id: 'phase2', offset: 450,
-                                header: { content: { content: 'Phase' } }
-                            },
-                        ],
-                        phaseSize: 20,
-                    },
-                    offsetX: 420, offsetY: 270,
-                    height: 100,
-                    width: 650
-                },
-            ];
-
-            diagram = new Diagram({
-                width: '80%',
-                height: '600px',
-                nodes: nodes,
-            });
-            diagram.appendTo('#diagramSwimlaneUndoCut');
-        });
-        afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
-        });
-        it('Cut same lane multiple times and undo', (done: Function) => {
-            let swimlane = diagram.nameTable['swimlane'];
-            let laneCount = swimlane.shape.lanes.length;
-            let lane = diagram.nameTable['swimlanestackCanvas20'];
-            diagram.select([lane]);
-            diagram.cut();
-            diagram.undo();
-            diagram.select([lane]);
-            diagram.cut();
-            diagram.undo();
-            diagram.select([lane]);
-            diagram.cut();
-            let laneCutCount = swimlane.shape.lanes.length;
-            diagram.undo();
-            expect(laneCount !== laneCutCount).toBe(true);
-            done();
-        });
-        it('Cut different lanes multiple times and undo', (done: Function) => {
-            let swimlane = diagram.nameTable['swimlane'];
-            let laneCount = swimlane.shape.lanes.length;
-            let lane = diagram.nameTable['swimlanestackCanvas20'];
-            let lane2 = diagram.nameTable['swimlanestackCanvas30'];
-            diagram.select([lane]);
-            diagram.cut();
-            diagram.undo();
-            diagram.select([lane2]);
-            diagram.cut();
-            diagram.undo();
-            diagram.select([lane]);
-            diagram.cut();
-            diagram.select([diagram.nameTable['swimlanestackCanvas30']]);
-            diagram.cut();
-            diagram.undo();
-            diagram.undo();
-            let lane2ChildCount = swimlane.shape.lanes[1].children.length;
-            let laneChildCount = swimlane.shape.lanes[2].children.length;
-            let curLaneCount = swimlane.shape.lanes.length;
-            expect(lane2ChildCount > 0 && laneChildCount > 0 && laneCount === curLaneCount).toBe(true);
-            done();
-        });
-    });
-
     describe('Check swimlane render or not while passing element container as secondary parameter', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -6451,7 +6158,353 @@ describe('Diagram Control', () => {
             done();
         });
     });
-    
+
+    describe('876330-After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let btn: HTMLButtonElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlaneUndo' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                style:{fill:'transparent'},
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas2',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650,
+                    style:{fill:'transparent'}
+                },
+            ];
+
+            diagram = new Diagram({
+                width: '80%',
+                height: '600px',
+                nodes: nodes,
+            });
+            diagram.appendTo('#diagramSwimlaneUndo');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Add child node to lane and check lane children collection', (done: Function) => {
+            let child =  {
+                id: 'newChild',
+                annotations: [{ content: 'newChild' }],
+                margin: { left: 190, top: 20 },
+                height: 40, width: 100
+            };
+            let swimalne = diagram.nameTable['swimlane'];
+            let lane = swimalne.shape.lanes[1];
+            diagram.addNodeToLane(child,'swimlane',lane.id);
+            expect(lane.children.length === 1).toBe(true);
+            done();
+        });
+        it('Cut the lane and perform undo and check lane count and children', (done: Function) => {
+            diagram.select([diagram.nameTable['swimlanestackCanvas20']]);
+            let swimalne = diagram.nameTable['swimlane'];
+            diagram.cut();
+            let prevLaneCount = swimalne.shape.lanes.length;
+            diagram.undo();
+            let curLaneCount = swimalne.shape.lanes.length;
+            expect(prevLaneCount !== curLaneCount && curLaneCount === 2 && swimalne.shape.lanes[1].children.length > 0).toBe(true);
+            done();
+        });
+        it('Perform redo and check lane count', (done: Function) => {
+            diagram.redo();
+            let swimalne = diagram.nameTable['swimlane'];
+            let prevLaneCount = swimalne.shape.lanes.length;
+            diagram.undo();
+            let curLaneCount = swimalne.shape.lanes.length;
+            expect(prevLaneCount !== curLaneCount && curLaneCount === 2 && swimalne.shape.lanes[1].children.length > 0).toBe(true);
+            done();
+        });
+    });
+
+
+    describe('876330-After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let btn: HTMLButtonElement;
+        let mouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlaneUndoCut' });
+            document.body.appendChild(ele);
+            let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+    ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+    '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'Order',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas2',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'paymentondebitcreditcard',
+                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas3',
+                                header: {
+                                    annotation: { content: 'SHOP' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'getmaildetailaboutorder',
+                                        annotations: [{ content: 'Get mail detail\nabout order' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'pakingitem',
+                                        annotations: [{ content: 'Paking item' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas4',
+                                header: {
+                                    annotation: { content: 'DELIVERY' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'sendcourieraboutaddress',
+                                        annotations: [{ content: 'Send Courier\n about Address' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'deliveryonthataddress',
+                                        annotations: [{ content: 'Delivery on that\n Address' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'getitItem',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                        margin: { left: 500, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { content: { content: 'Phase' } }
+                            },
+                            {
+                                id: 'phase2', offset: 450,
+                                header: { content: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650
+                },
+            ];
+
+            diagram = new Diagram({
+                width: '80%',
+                height: '600px',
+                nodes: nodes,
+            });
+            diagram.appendTo('#diagramSwimlaneUndoCut');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Cut same lane multiple times and undo', (done: Function) => {
+            let swimlane = diagram.nameTable['swimlane'];
+            let laneCount = swimlane.shape.lanes.length;
+            let lane = diagram.nameTable['swimlanestackCanvas20'];
+            diagram.select([lane]);
+            diagram.cut();
+            diagram.undo();
+            diagram.select([lane]);
+            diagram.cut();
+            diagram.undo();
+            diagram.select([lane]);
+            diagram.cut();
+            let laneCutCount = swimlane.shape.lanes.length;
+            diagram.undo();
+            expect(laneCount !== laneCutCount).toBe(true);
+            done();
+        });
+        it('Cut different lanes multiple times and undo', (done: Function) => {
+            let swimlane = diagram.nameTable['swimlane'];
+            let laneCount = swimlane.shape.lanes.length;
+            let lane = diagram.nameTable['swimlanestackCanvas20'];
+            let lane2 = diagram.nameTable['swimlanestackCanvas30'];
+            diagram.select([lane]);
+            diagram.cut();
+            diagram.undo();
+            diagram.select([lane2]);
+            diagram.cut();
+            diagram.undo();
+            diagram.select([lane]);
+            diagram.cut();
+            diagram.select([diagram.nameTable['swimlanestackCanvas30']]);
+            diagram.cut();
+            diagram.undo();
+            diagram.undo();
+            let lane2ChildCount = swimlane.shape.lanes[1].children.length;
+            let laneChildCount = swimlane.shape.lanes[2].children.length;
+            let curLaneCount = swimlane.shape.lanes.length;
+            expect(lane2ChildCount > 0 && laneChildCount > 0 && laneCount === curLaneCount).toBe(true);
+            done();
+        });
+        it('Adding child node to lane at runtime',(done:Function)=>{
+            let nodeCount = diagram.nodes.length;
+            let node = {id:'nnn',width:100,height:50,margin:{left:300,top:20}};
+            diagram.addNodeToLane(node,'swimlane','stackCanvas1');
+            let currentCount = diagram.nodes.length;
+            expect(nodeCount+1 === currentCount).toBe(true);
+            done();
+        });
+        it('StartEditCommand for swimlane coverage',(done:Function)=>{
+            let swimlane = diagram.nameTable['swimlane'];
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            diagram.select([swimlane]);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Enter');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            let lane = diagram.nameTable['swimlanestackCanvas11'];
+            diagram.select([lane]);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Enter');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            let child = diagram.nameTable['Order'];
+            diagram.select([child]);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Enter');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            expect(diagram.selectedItems.nodes.length === 0).toBe(true);
+            done();
+        });
+        it('Apply font style at runtime for swimlane and lane using keyboard', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let swimlane:NodeModel = diagram.nameTable['swimlane'];
+            diagram.select([swimlane]);
+            mouseEvents.keyDownEvent(diagramCanvas, 'B', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'I', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+            let lane = diagram.nameTable['swimlanestackCanvas11'];
+            diagram.select([lane]);
+            mouseEvents.keyDownEvent(diagramCanvas, 'B', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'I', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+            expect((swimlane && swimlane.shape as SwimLaneModel).header.annotation.style.bold).toBe(true);
+            done();
+        });
+        it('EndEdit of swimlane phase',(done:Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nameTable['swimlanephase2_header'];
+            diagram.startTextEdit(node);
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            let swimlane = diagram.nameTable['swimlane'];
+            diagram.startTextEdit(swimlane);
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            expect(node.annotations[0].content === 'Phase').toBe(true);
+            done();
+        });
+    });
+
     describe('878835 - selecting swimlane phase after deleting first phase without header throws error', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -6509,7 +6562,7 @@ describe('Diagram Control', () => {
                     style:{fill:'transparent'}
                 },
             ];
-
+    
             diagram = new Diagram({
                 width: '80%',
                 height: '600px',
@@ -6533,7 +6586,7 @@ describe('Diagram Control', () => {
             done();
         }); 
     });
-
+    
     describe('879085: swimlane helper guides wrongly updated when diagram is zoomed', () => {
         let diagram: Diagram; let undoOffsetX: number; let undoOffsetY: number;
         let ele: HTMLElement; let redoOffsetX: number; let redoOffsetY: number;
@@ -6544,13 +6597,223 @@ describe('Diagram Control', () => {
             ele.appendChild(createElement('div', { id: 'symbolGuides', styles: 'width:25%;float:left;' }));
             ele.appendChild(createElement('div', { id: 'SwimlaneGuides', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
+    
+            diagram = new Diagram({
+                width: '70%',
+                height: '800px',
+    
+            });
+            diagram.appendTo('#SwimlaneGuides');
+    
+            palette = new SymbolPalette({
+                width: '25%', height: '500px',
+                palettes: [
+                    {
+                        id: 'swimlaneShapes', expanded: true,
+                        title: 'Swimlane Shapes',
+                        symbols: [
+                            {
+                                id: 'stackCanvas1',
+                                shape: {
+                                    type: 'SwimLane', lanes: [
+                                        {
+                                            id: 'lane1',
+                                            style: { fill: '#f5f5f5' }, height: 60, width: 150,
+                                            header: { width: 50, height: 50, style: { fill: '#C7D4DF', fontSize: 11 } },
+                                        }
+                                    ],
+                                    orientation: 'Horizontal', isLane: true
+                                },
+                                height: 60,
+                                width: 140,
+                                style: { fill: '#f5f5f5' },
+                                offsetX: 70,
+                                offsetY: 30,
+                            }, {
+                                id: 'stackCanvas2',
+                                shape: {
+                                    type: 'SwimLane',
+                                    lanes: [
+                                        {
+                                            id: 'lane1',
+                                            style: { fill: '#f5f5f5' }, height: 150, width: 60,
+                                            header: { width: 50, height: 50, style: { fill: '#C7D4DF', fontSize: 11 } },
+                                        }
+                                    ],
+                                    orientation: 'Vertical', isLane: true
+                                },
+                                height: 140,
+                                width: 60,
+                                style: { fill: '#f5f5f5' },
+                                offsetX: 70,
+                                offsetY: 30,
+                            }, {
+                                id: 'verticalPhase',
+                                shape: {
+                                    type: 'SwimLane',
+                                    phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                                    annotations: [{ text: '' }],
+                                    orientation: 'Vertical', isPhase: true
+                                },
+                                height: 60,
+                                width: 140
+                            }, {
+                                id: 'horizontalPhase',
+                                shape: {
+                                    type: 'SwimLane',
+                                    phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                                    annotations: [{ text: '' }],
+                                    orientation: 'Horizontal', isPhase: true
+                                },
+                                height: 60,
+                                width: 140
+                            }
+                        ]
+                    },
+    
+                ], symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { width: 100, height: 100 },
+                expandMode: 'Multiple',
+            });
+            palette.appendTo('#symbolGuides');
+    
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Zoom the diagram', (done: Function)=> {
+            let zoomin: ZoomOptions = { type: 'ZoomIn', zoomFactor: 0.2 };
+            diagram.zoomTo(zoomin);
+            expect(diagram.scroller.currentZoom).toBe(1.2);
+            done();
+        });
+        it('Drag and drop the Horizontal swmilane from palette to Diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['stackCanvas1'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            let ele = document.getElementById("stackCanvas1_container");
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 500, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 500, 305, false, false);
+            events.mouseMoveEvent(diagram.element, 500, 310, false, false);
+            events.mouseUpEvent(diagram.element, 500, 300, false, false);
+            done();
+        });
+       
+        it('Drag and drop new Horizontal swmilane from palette to Diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['stackCanvas1'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            let ele = document.getElementById("stackCanvas1_container");
+            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
+            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
+            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
+            events.mouseUpEvent(diagram.element, 555, 360, false, false);
+            expect(diagram.nodes.length).toBe(7);
+            diagram.clear();
+            done();
+        });
+        it('Drag and drop the vertical swmilane from palette to Diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['stackCanvas2'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            let ele = document.getElementById("stackCanvas1_container");
+            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
+    
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 600, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 600, 305, false, false);
+            events.mouseMoveEvent(diagram.element, 600, 310, false, false);
+            events.mouseUpEvent(diagram.element, 600, 300, false, false);
+            done();
+        });
+        
+        it('Drag and drop new vertical swmilane from palette to Diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['stackCanvas2'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            let ele = document.getElementById("stackCanvas1_container");
+            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
+    
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 660, 400, false, false);
+            events.mouseMoveEvent(diagram.element, 660, 405, false, false);
+            events.mouseMoveEvent(diagram.element, 660, 410, false, false);
+            events.mouseUpEvent(diagram.element, 660, 410, false, false);
+            expect(diagram.nodes.length).toBe(7);
+            done();
+        });
+    });
+    describe('879088: Swimlane throws exception when drag and drop and delete', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolException', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'ExceptionSwim', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
 
             diagram = new Diagram({
                 width: '70%',
                 height: '800px',
 
             });
-            diagram.appendTo('#SwimlaneGuides');
+            diagram.appendTo('#ExceptionSwim');
 
             palette = new SymbolPalette({
                 width: '25%', height: '500px',
@@ -6622,7 +6885,7 @@ describe('Diagram Control', () => {
                 symbolPreview: { width: 100, height: 100 },
                 expandMode: 'Multiple',
             });
-            palette.appendTo('#symbolGuides');
+            palette.appendTo('#symbolException');
 
             diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 10, 10);
@@ -6631,13 +6894,8 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
-        it('Zoom the diagram', (done: Function) => {
-            let zoomin: ZoomOptions = { type: 'ZoomIn', zoomFactor: 0.2 };
-            diagram.zoomTo(zoomin);
-            expect(diagram.scroller.currentZoom).toBe(1.2);
-            done();
-        });
-        it('Drag and drop the Horizontal swmilane from palette to Diagram', (done: Function) => {
+        
+        it('Drag and drop the swmilane from palette to Diagram - check quad Table', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                 let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
@@ -6656,94 +6914,113 @@ describe('Diagram Control', () => {
             events.mouseMoveEvent(palette.element, 200, 200, false, false);
             expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
             events.mouseMoveEvent(diagram.element, 500, 300, false, false);
-            events.mouseMoveEvent(diagram.element, 500, 305, false, false);
-            events.mouseMoveEvent(diagram.element, 500, 310, false, false);
+            events.mouseMoveEvent(diagram.element, 500, 300, false, false);
             events.mouseUpEvent(diagram.element, 500, 300, false, false);
+            expect((diagram as any).nodes.length === 5).toBe(true);
+            diagram.selectAll();
+            diagram.remove();
+            expect((diagram as any).nodes.length === 0).toBe(true);
             done();
         });
+    });
 
-        it('Drag and drop new Horizontal swmilane from palette to Diagram', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: any;
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let symbols: IElement = palette.symbolTable['stackCanvas1'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
-                }
-                return clonedElement;
-            };
-            let events: MouseEvents = new MouseEvents();
-            let ele = document.getElementById("stackCanvas1_container");
-            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
-            events.mouseDownEvent(palette.element, 75, 100, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
-            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
-            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
-            events.mouseUpEvent(diagram.element, 555, 360, false, false);
-            expect(diagram.nodes.length).toBe(7);
-            diagram.clear();
+    describe('Code coverage remove child from group and lane', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let btn: HTMLButtonElement;
+        let mouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlaneRemoveChild' });
+            document.body.appendChild(ele);
+            let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+    ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+    '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+    let nodes: NodeModel[] = [
+        {
+            id: 'swimlane',
+            shape: {
+                type: 'SwimLane',
+                header: {
+                    annotation: { content: 'ONLINE PURCHASE STATUS' },
+                    height: 50, style: { fontSize: 11 },
+                    orientation: 'Horizontal',
+                },
+                lanes: [
+                    {
+                        id: 'stackCanvas1',
+                        header: {
+                            annotation: { content: 'CUSTOMER' }, width: 50,
+                            style: { fontSize: 11 }
+                        },
+                        height: 100,
+                        children: [
+                            {
+                                id: 'Order',
+                                shape: { type: 'Path', data: pathData },
+                                annotations: [
+                                    {
+                                        content: 'ORDER',
+                                        style: { fontSize: 11 }
+                                    }
+                                ],
+                                margin: { left: 60, top: 20 },
+                                height: 40, width: 100
+                            }
+                        ],
+                    },
+                   
+                ],
+                phases: [
+                    {
+                        id: 'phase1', offset: 170,
+                        header: { content: { content: 'Phase' } }
+                    },
+                ],
+                phaseSize: 20,
+            },
+            offsetX: 420, offsetY: 270,
+            height: 100,
+            width: 650
+        },
+    
+        {
+            id: 'node6', width: 50, height: 50, offsetX: 750,
+            offsetY: 100
+        },
+        {
+            id: 'node7', width: 50, height: 50, offsetX: 750,
+            offsetY: 170
+        },
+        {
+            id: 'node8', width: 50, height: 50, offsetX: 850,
+            offsetY: 100
+        },
+        { id: 'group4', children: ['node6', 'node7'], },
+        { id: 'group5', children: ['group4', 'node8'], },
+    ];
+
+            diagram = new Diagram({
+                width: '80%',
+                height: '600px',
+                nodes: nodes,
+            });
+            diagram.appendTo('#diagramSwimlaneRemoveChild');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Remove child from group node at runtime', (done: Function) => {
+            let group = diagram.nameTable['group4'];
+            let child = diagram.nameTable['node6'];
+            diagram.removeChildFromGroup(group,child);
+            let lane = diagram.nameTable['swimlanestackCanvas10'];
+            let laneChild = diagram.nameTable['Order'];
+            diagram.removeChildFromGroup(lane, laneChild);
+            expect(child.parentId === '' && laneChild.parentId === '').toBe(true);
             done();
         });
-        it('Drag and drop the vertical swmilane from palette to Diagram', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: any;
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let symbols: IElement = palette.symbolTable['stackCanvas2'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
-                }
-                return clonedElement;
-            };
-            let events: MouseEvents = new MouseEvents();
-            let ele = document.getElementById("stackCanvas1_container");
-            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
-
-            events.mouseDownEvent(palette.element, 75, 100, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 600, 300, false, false);
-            events.mouseMoveEvent(diagram.element, 600, 305, false, false);
-            events.mouseMoveEvent(diagram.element, 600, 310, false, false);
-            events.mouseUpEvent(diagram.element, 600, 300, false, false);
-            done();
-        });
-
-        it('Drag and drop new vertical swmilane from palette to Diagram', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: any;
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let symbols: IElement = palette.symbolTable['stackCanvas2'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
-                }
-                return clonedElement;
-            };
-            let events: MouseEvents = new MouseEvents();
-            let ele = document.getElementById("stackCanvas1_container");
-            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
-
-            events.mouseDownEvent(palette.element, 75, 100, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 660, 400, false, false);
-            events.mouseMoveEvent(diagram.element, 660, 405, false, false);
-            events.mouseMoveEvent(diagram.element, 660, 410, false, false);
-            events.mouseUpEvent(diagram.element, 660, 410, false, false);
-            expect(diagram.nodes.length).toBe(7);
-            done();
-        });
-
+      
     });
 });
 
@@ -7117,36 +7394,211 @@ describe('882239 - Fill color not applied properly while adding phase at runtime
       
     });
 
- });
-
-
-describe('879088: Swimlane throws exception when drag and drop and delete', () => {
-    let diagram: Diagram;
-    let ele: HTMLElement;
+ } );
+describe('Adding phase at runtime by drag and drop', () => {
+    let diagram: Diagram; let undoOffsetX: number; let undoOffsetY: number;
+    let ele: HTMLElement; let redoOffsetX: number; let redoOffsetY: number;
     let mouseEvents = new MouseEvents();
     let diagramCanvas: HTMLElement;
     beforeAll((): void => {
         ele = createElement('div', { styles: 'width:100%;height:500px;' });
-        ele.appendChild(createElement('div', { id: 'symbolException', styles: 'width:25%;float:left;' }));
-        ele.appendChild(createElement('div', { id: 'ExceptionSwim', styles: 'width:74%;height:500px;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'symbolpalette5', styles: 'width:25%;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'SwimlaneDiagram45', styles: 'width:74%;height:500px;float:left;' }));
         document.body.appendChild(ele);
+        let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        let darkColor = '#C7D4DF';
+        let lightColor = '#f5f5f5';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fill: darkColor, fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fill: darkColor, fontSize: 11 }
+                            },
+                            style: { fill: lightColor },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'ONLINE' }, width: 50,
+                                style: { fill: darkColor, fontSize: 11 }
+                            },
+                            style: { fill: lightColor }, height: 100,
+                            children: [
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'paymentondebitcreditcard',
+                                    annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            header: {
+                                annotation: { content: 'SHOP' }, width: 50,
+                                style: { fill: darkColor, fontSize: 11 }
+                            },
+                            style: { fill: lightColor },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'getmaildetailaboutorder',
+                                    annotations: [{ content: 'Get mail detail\nabout order' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'pakingitem',
+                                    annotations: [{ content: 'Paking item' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas4',
+                            header: {
+                                annotation: { content: 'DELIVERY' }, width: 50,
+                                style: { fill: darkColor, fontSize: 11 }
+                            },
+                            style: { fill: lightColor },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'sendcourieraboutaddress',
+                                    annotations: [{ content: 'Send Courier\n about Address' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'deliveryonthataddress',
+                                    annotations: [{ content: 'Delivery on that\n Address' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'getitItem',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                    margin: { left: 500, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                        {
+                            id: 'phase2', offset: 450,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'Order',
+                targetID: 'selectItemaddcart'
+            },
+            {
+                id: 'connector2', sourceID: 'selectItemaddcart',
+                targetID: 'paymentondebitcreditcard'
+            },
+            {
+                id: 'connector3', sourceID: 'paymentondebitcreditcard',
+                targetID: 'getmaildetailaboutorder'
+            },
+            {
+                id: 'connector4', sourceID: 'getmaildetailaboutorder',
+                targetID: 'pakingitem'
+            },
+            {
+                id: 'connector5', sourceID: 'pakingitem',
+                targetID: 'sendcourieraboutaddress'
+            },
+            {
+                id: 'connector6', sourceID: 'sendcourieraboutaddress',
+                targetID: 'deliveryonthataddress'
+            },
+            {
+                id: 'connector7', sourceID: 'deliveryonthataddress',
+                targetID: 'getitItem'
+            },
+        ];
+        function getConnectorDefaults(connector: ConnectorModel): ConnectorModel {
+            connector.type = 'Orthogonal'
+            return connector;
+        }
 
         diagram = new Diagram({
             width: '70%',
             height: '800px',
-
+            nodes: nodes,
+            connectors: connectors,
+            getConnectorDefaults: getConnectorDefaults,
         });
-        diagram.appendTo('#ExceptionSwim');
+        diagram.appendTo('#SwimlaneDiagram45');
 
         palette = new SymbolPalette({
             width: '25%', height: '500px',
             palettes: [
                 {
+                    id: 'flow', expanded: true, symbols: [
+                        { id: 'Terminator', shape: { type: 'Flow', shape: 'Terminator' }, style: { strokeWidth: 1 } },
+                        { id: 'Process', shape: { type: 'Flow', shape: 'Process' }, style: { strokeWidth: 1 } },
+                        { id: 'Decision', shape: { type: 'Flow', shape: 'Decision' }, style: { strokeWidth: 1 } },
+                        { id: 'Document', shape: { type: 'Flow', shape: 'Document' }, style: { strokeWidth: 1 } }], title: 'Flow Shapes'
+                },
+                {
                     id: 'swimlaneShapes', expanded: true,
                     title: 'Swimlane Shapes',
                     symbols: [
                         {
-                            id: 'stackCanvas1',
+                            id: 'stackCanvas1a',
                             shape: {
                                 type: 'SwimLane', lanes: [
                                     {
@@ -7163,7 +7615,7 @@ describe('879088: Swimlane throws exception when drag and drop and delete', () =
                             offsetX: 70,
                             offsetY: 30,
                         }, {
-                            id: 'stackCanvas2',
+                            id: 'stackCanvas2a',
                             shape: {
                                 type: 'SwimLane',
                                 lanes: [
@@ -7181,20 +7633,20 @@ describe('879088: Swimlane throws exception when drag and drop and delete', () =
                             offsetX: 70,
                             offsetY: 30,
                         }, {
-                            id: 'verticalPhase',
+                            id: 'verticalPhase1a',
                             shape: {
                                 type: 'SwimLane',
-                                phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                                phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: 'red', fill: 'yellow' }, }],
                                 annotations: [{ text: '' }],
                                 orientation: 'Vertical', isPhase: true
                             },
                             height: 60,
                             width: 140
                         }, {
-                            id: 'horizontalPhase',
+                            id: 'horizontalPhase1a',
                             shape: {
                                 type: 'SwimLane',
-                                phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                                phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: 'yellow', fill: 'pink' }, }],
                                 annotations: [{ text: '' }],
                                 orientation: 'Horizontal', isPhase: true
                             },
@@ -7203,12 +7655,22 @@ describe('879088: Swimlane throws exception when drag and drop and delete', () =
                         }
                     ]
                 },
-
+                {
+                    id: 'connectors', expanded: true, symbols: [
+                        {
+                            id: 'Link1', type: 'Orthogonal', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 },
+                            targetDecorator: { shape: 'Arrow' }, style: { strokeWidth: 1 }
+                        },
+                        {
+                            id: 'Link2', type: 'Orthogonal', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 },
+                            targetDecorator: { shape: 'Arrow' }, style: { strokeWidth: 1, strokeDashArray: '4 4' }
+                        }], title: 'Connectors'
+                }
             ], symbolHeight: 50, symbolWidth: 50,
             symbolPreview: { width: 100, height: 100 },
             expandMode: 'Multiple',
         });
-        palette.appendTo('#symbolException');
+        palette.appendTo('#symbolpalette5');
 
         diagramCanvas = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 10, 10);
@@ -7217,12 +7679,13 @@ describe('879088: Swimlane throws exception when drag and drop and delete', () =
         diagram.destroy();
         ele.remove();
     });
-    
-    it('Drag and drop the swmilane from palette to Diagram - check quad Table', (done: Function) => {
+
+    it('Checking the vertical phase fill styles in symbol palette are properly rendered in horizontal swimlane ', (done: Function) => {
+
         palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
             let clonedElement: HTMLElement; let diagramElement: any;
             let position: PointModel = palette['getMousePosition'](e.sender);
-            let symbols: IElement = palette.symbolTable['stackCanvas1'];
+            let symbols: IElement = palette.symbolTable['verticalPhase1a'];
             palette['selectedSymbols'] = symbols;
             if (symbols !== undefined) {
                 clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
@@ -7230,19 +7693,75 @@ describe('879088: Swimlane throws exception when drag and drop and delete', () =
             }
             return clonedElement;
         };
+
+
         let events: MouseEvents = new MouseEvents();
-        let ele = document.getElementById("stackCanvas1_container");
-        events.mouseDownEvent(palette.element, 75, 100, false, false);
+        events.mouseDownEvent(palette.element, 153, 205, false, false);
         events.mouseMoveEvent(palette.element, 100, 100, false, false);
         events.mouseMoveEvent(palette.element, 200, 200, false, false);
-        expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-        events.mouseMoveEvent(diagram.element, 500, 300, false, false);
-        events.mouseMoveEvent(diagram.element, 500, 300, false, false);
-        events.mouseUpEvent(diagram.element, 500, 300, false, false);
-        expect((diagram as any).nodes.length === 5).toBe(true);
-        diagram.selectAll();
-        diagram.remove();
-        expect((diagram as any).nodes.length === 0).toBe(true);
+        events.mouseMoveEvent(diagram.element, 907, 110, false, false);
+        events.mouseUpEvent(diagram.element, 907, 110, false, false);
+        mouseEvents.clickEvent(diagramCanvas, 907, 100);
+        expect(diagram.selectedItems.nodes[0].style.fill == "yellow").toBe(true);
+
         done();
+
+    });
+
+    it('Checking the horizontal phase fill styles in symbol palette are properly rendered in vertical swimlane ', (done: Function) => {
+
+        diagram.clear();
+        palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+            let clonedElement: HTMLElement; let diagramElement: any;
+            let position: PointModel = palette['getMousePosition'](e.sender);
+            let symbols: IElement = palette.symbolTable['stackCanvas2a'];
+            palette['selectedSymbols'] = symbols;
+            if (symbols !== undefined) {
+                clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                clonedElement.setAttribute('paletteId', palette.element.id);
+            }
+            return clonedElement;
+        };
+
+
+        let events: MouseEvents = new MouseEvents();
+        events.mouseDownEvent(palette.element, 100, 259, false, false);
+        events.mouseMoveEvent(palette.element, 100, 100, false, false);
+        events.mouseMoveEvent(palette.element, 200, 200, false, false);
+
+        events.mouseMoveEvent(diagram.element, 1101, 130, false, false);
+        events.mouseUpEvent(diagram.element, 1101, 130, false, false);
+
+
+        //For horizontal phase in swimlane
+        palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+            let clonedElement: HTMLElement; let diagramElement: any;
+            let position: PointModel = palette['getMousePosition'](e.sender);
+            let symbols: IElement = palette.symbolTable['horizontalPhase1a'];
+            palette['selectedSymbols'] = symbols;
+            if (symbols !== undefined) {
+                clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                clonedElement.setAttribute('paletteId', palette.element.id);
+            }
+            return clonedElement;
+        };
+
+        let events2: MouseEvents = new MouseEvents();
+        events2.mouseDownEvent(palette.element, 194, 257, false, false);
+        events2.mouseMoveEvent(palette.element, 100, 100, false, false);
+        events2.mouseMoveEvent(palette.element, 200, 200, false, false);
+
+        events2.mouseMoveEvent(diagram.element, 1101, 240, false, false);
+        events2.mouseUpEvent(diagram.element, 1101, 240, false, false);
+
+
+
+        mouseEvents.clickEvent(diagramCanvas, 1101, 238);
+
+        expect(diagram.selectedItems.nodes[0].style.fill == 'pink').toBe(true);
+
+
+        done();
+
     });
 });

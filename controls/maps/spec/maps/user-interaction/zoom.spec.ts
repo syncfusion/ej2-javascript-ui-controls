@@ -324,7 +324,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -379,13 +379,10 @@ describe('Zoom feature tesing for map control', () => {
                 pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
                 pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
             };
-            map.layers[0].layerType = 'Bing';
             map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
             };
             map.loaded = (args: ILoadedEventArgs) => {
                 map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
@@ -405,16 +402,13 @@ describe('Zoom feature tesing for map control', () => {
                 pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
                 pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
             };
-            map.layers[0].layerType = 'Bing';
             map.zoom = (args: IMapsEventArgs) => {
                 args.cancel = true;
             };
             map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
             };
             map.loaded = (args: ILoadedEventArgs) => {
                 map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
@@ -441,7 +435,8 @@ describe('Zoom feature tesing for map control', () => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
             };
-            map.layersCollection[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.layers[0].markerClusterSettings = {
                 allowClustering: true,
                 shape: 'Image',
@@ -499,7 +494,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -571,13 +566,10 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>panningArgs);
             };
             map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
             };
-            map.layers[0].layerType = 'Bing';
             map.refresh();
 
         });
@@ -613,7 +605,7 @@ describe('Zoom feature tesing for map control', () => {
               bing.maxZoom = zoomMax;
               bing.subDomains = subDomains;
           };
-          map.layers[0].layerType = 'OSM';
+          map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
           map.refresh();
 
       });
@@ -635,7 +627,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -653,7 +645,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.toolBarOrientation = 'Vertical';
+            map.zoomSettings.toolbarSettings.orientation = 'Vertical';
             map.refresh();
         });
 
@@ -661,7 +653,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.verticalAlignment = 'Near';
+            map.zoomSettings.toolbarSettings.verticalAlignment = 'Near';
             map.refresh();
         });
 
@@ -669,7 +661,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.verticalAlignment = 'Center';
+            map.zoomSettings.toolbarSettings.verticalAlignment = 'Center';
             map.refresh();
         });
 
@@ -677,7 +669,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.verticalAlignment = 'Far';
+            map.zoomSettings.toolbarSettings.verticalAlignment = 'Far';
             map.refresh();
         });
 
@@ -685,7 +677,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.horizontalAlignment = 'Near';
+            map.zoomSettings.toolbarSettings.horizontalAlignment = 'Near';
             map.refresh();
         });
 
@@ -693,7 +685,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.horizontalAlignment = 'Center';
+            map.zoomSettings.toolbarSettings.horizontalAlignment = 'Center';
             map.refresh();
         });
 
@@ -701,7 +693,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.horizontalAlignment = 'Far';
+            map.zoomSettings.toolbarSettings.horizontalAlignment = 'Far';
             map.refresh();
         });
     });
@@ -723,7 +715,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -819,13 +811,10 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.performPinchZooming(<TouchEvent>{});
             };
             map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
             };
-            map.layers[0].layerType = 'Bing';
             map.refresh();
         });
     });
@@ -846,13 +835,17 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4',
                     }
                 ],
                 zoomSettings: {
                     enable: true,
                     zoomOnClick: true,
-                    toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                    toolbarSettings: {
+                        buttonSettings: {
+                            toolbarItems: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                        }
+                    }
                 }
             }, '#' + id);
         });
@@ -878,13 +871,10 @@ describe('Zoom feature tesing for map control', () => {
                     (rect.left + rect.width), (rect.top + rect.height), 'touch', map);
             };
             map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
             };
-            map.layers[0].layerType = 'Bing';
             map.refresh();
         });
 
@@ -898,13 +888,10 @@ describe('Zoom feature tesing for map control', () => {
                     (rect.left + 150), (rect.top + 150));
             };
             map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
             };
-            map.layers[0].layerType = 'Bing';
             map.refresh();
         });
 
@@ -918,13 +905,10 @@ describe('Zoom feature tesing for map control', () => {
                     (rect.left + 120), (rect.top + 120));
             };
             map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
             };
-            map.layers[0].layerType = 'Bing';
             map.refresh();
         });
     });
@@ -945,14 +929,18 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
                     enable: true,
                     pinchZooming: true,
                     zoomOnClick: true,
-                    toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                    toolbarSettings: {
+                        buttonSettings: {
+                            toolbarItems: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                        }
+                    }
                 }
             }, '#' + id);
         });
@@ -1113,7 +1101,8 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 map.zoomByPosition({ latitude: 21, longitude: 78 }, 5);
             };
-            map.layersCollection[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
         it('To zoom the OSM layer with center position and marker clustering', () => {
@@ -1122,7 +1111,8 @@ describe('Zoom feature tesing for map control', () => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
             };
-            map.layersCollection[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.layers[0].markerClusterSettings = {
                 allowClustering: true,
                 shape: 'Image',
@@ -1181,8 +1171,8 @@ describe('Zoom feature tesing for map control', () => {
             map = new Maps({
                 layers: [
                     {
-                       layerType: 'OSM',
-                       markerSettings: [{
+                        urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
+                        markerSettings: [{
                         visible: true,
                         shape: 'Diamond',
                         height: 15,
@@ -1264,7 +1254,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L'
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L'
                     }
                 ],
                 zoomSettings: {
@@ -1306,7 +1296,8 @@ describe('Zoom feature tesing for map control', () => {
             }
             map.width = '512px';
             map.height = '512px';
-            map.layers[0].layerType = "OSM";
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
         it('Check center position after container resize in OSM type layer', () => {
@@ -1339,7 +1330,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -1432,7 +1423,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: World_Map,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         shapePropertyPath: 'continent',
                         shapeDataPath: 'continent',
                         dataSource: randomcountriesData,
@@ -1716,7 +1707,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: usMap,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         tooltipSettings: {
                             visible: false
                         },
@@ -1821,7 +1812,7 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.zoomColor = '#e61576';
                 map.zoomModule.click(<PointerEvent>event);
             };
-            map.zoomSettings.toolbars = ['ZoomIn', 'Zoom', 'ZoomOut', 'Pan', 'Reset'];
+            map.zoomSettings.toolbarSettings.buttonSettings.toolbarItems = ['ZoomIn', 'Zoom', 'ZoomOut', 'Pan', 'Reset'];
             map.zoomSettings.doubleClickZoom = false;
             map.zoomSettings.zoomOnClick = true;
             map.refresh();
@@ -1842,7 +1833,7 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.zoomColor = '#e61576';
                 map.zoomModule.click(<PointerEvent>event);
             };
-            map.zoomSettings.toolbars = ['ZoomIn', 'Zoom', 'ZoomOut', 'Pan', 'Reset'];
+            map.zoomSettings.toolbarSettings.buttonSettings.toolbarItems = ['ZoomIn', 'Zoom', 'ZoomOut', 'Pan', 'Reset'];
             map.zoomSettings.doubleClickZoom = false;
             map.zoomSettings.zoomOnClick = true;
             map.refresh();
@@ -1863,7 +1854,7 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.zoomColor = '#e61576';
                 map.zoomModule.doubleClick(<PointerEvent>event);
             };
-            map.zoomSettings.toolbars = ['ZoomIn', 'Zoom', 'ZoomOut', 'Pan', 'Reset'];
+            map.zoomSettings.toolbarSettings.buttonSettings.toolbarItems = ['ZoomIn', 'Zoom', 'ZoomOut', 'Pan', 'Reset'];
             map.zoomSettings.doubleClickZoom = true;
             map.zoomSettings.zoomOnClick = false;
             map.refresh();
@@ -1894,13 +1885,10 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.performToolBarAction(eventObj as PointerEvent);
             };
             map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                args.maps.getBingUrlTemplate("https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial?output=json&uriScheme=https&key=AuQazZ3PUo3p2_c2KPhqMku-iKvee5fKcRREIg46MENqVTM9dp2ZyTbrHJpR9esZ").then(function (url) {
+                    args.maps.layers[0].urlTemplate = url;
+                });
             };
-            map.layers[0].layerType = 'Bing';
             map.refresh();
         });
         it('Checking with OSM map', () => {
@@ -1920,7 +1908,8 @@ describe('Zoom feature tesing for map control', () => {
                 eventObj['target'] = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
                 map.zoomModule.performToolBarAction(eventObj as PointerEvent);
             };
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
         
@@ -1951,7 +1940,8 @@ describe('Zoom feature tesing for map control', () => {
                 bing.subDomains = subDomains;
                 map.mapLayerPanel["bing"] = bing;
             };
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
         it('Checking panning', () => {
@@ -2027,7 +2017,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: World_Map,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         tooltipSettings: {
                             visible: false
                         },
@@ -2123,7 +2113,7 @@ describe('Zoom feature tesing for map control', () => {
                     horizontalAlignment: 'Far'
                 }],
                 layers: [{
-                    layerType: 'OSM',
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
                 },
                 {
                     type: 'SubLayer',
@@ -2282,7 +2272,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: usMap,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         tooltipSettings: {
                             visible: false
                         },
@@ -2415,7 +2405,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: usMap,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         tooltipSettings: {
                             visible: false
                         },
@@ -2517,12 +2507,16 @@ describe('Zoom feature tesing for map control', () => {
             map = new Maps({
                 zoomSettings: {
                     enable: true,
-                    toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset'],
+                    toolbarSettings: {
+                        buttonSettings: {
+                            toolbarItems: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset']
+                        }
+                    }
                 },
                 layers: [
                     {
                         shapeData: MapData,
-                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
+                        //key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ]
             }, '#' + id);
@@ -2574,7 +2568,8 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 map.zoomByPosition({ latitude: 21, longitude: 78 }, 1);
             };
-            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.layers[0].shapeData = null;
             map.zoomSettings.zoomFactor = 1;
             map.refresh();

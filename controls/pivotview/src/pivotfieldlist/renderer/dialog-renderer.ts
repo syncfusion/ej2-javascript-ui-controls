@@ -584,8 +584,7 @@ export class DialogRenderer {
         return axisWrapper;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private showCalculatedField(event: Event): void {
+    private showCalculatedField(): void {
         try {
             if (!this.parent.isAdaptive) {
                 this.parent.actionObj.actionName = events.openCalculatedField;
@@ -603,8 +602,7 @@ export class DialogRenderer {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private showFieldListDialog(event: Event): void {
+    private showFieldListDialog(): void {
         const activeindex: number = this.adaptiveElement.selectedItem;
         this.parent.treeViewModule.render(activeindex);
     }

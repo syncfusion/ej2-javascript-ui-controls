@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, ChildProperty, Collection, BaseEventArgs, Event, EmitType, NotifyPropertyChanges, Property, getUniqueID, addClass, attributes, isNullOrUndefined, select, compile, remove, removeClass, append } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, ChildProperty, Collection, BaseEventArgs, Event, EmitType, NotifyPropertyChanges, Property, getUniqueID, attributes, select, compile, remove, removeClass, append, isNullOrUndefined } from '@syncfusion/ej2-base';
 import {TimelineOrientation,TimelineAlign,TimelineRenderingEventArgs} from "./timeline";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -63,7 +63,7 @@ export interface TimelineModel extends ComponentModel{
      * The possible values are:
      * * Horizontal
      * * vertical
-     * 
+     *
      * {% codeBlock src='timeline/orientation/index.md' %}{% endcodeBlock %}
      *
      * @isenumeration true
@@ -80,7 +80,7 @@ export interface TimelineModel extends ComponentModel{
      * * After
      * * Alternate
      * * AlternateReverse
-     * 
+     *
      * {% codeBlock src='timeline/align/index.md' %}{% endcodeBlock %}
      *
      * @isenumeration true
@@ -104,7 +104,7 @@ export interface TimelineModel extends ComponentModel{
     cssClass?: string;
 
     /**
-     * Defines whether to show the timeline items in reverse order or not. 
+     * Defines whether to show the timeline items in reverse order or not.
      *
      * @default false
      */
@@ -112,7 +112,7 @@ export interface TimelineModel extends ComponentModel{
 
     /**
      * Defines the template content for each timeline item. The template context will contain the item model.
-     * 
+     *
      * {% codeBlock src='timeline/template/index.md' %}{% endcodeBlock %}
      *
      * @default ''

@@ -1,4 +1,3 @@
-//layout variables
 $tooltip-drop-shadow: $shadow-sm !default;
 $tooltip-close-icon-border: 1px solid rgba($tooltip-text-color) !default;
 $tooltip-icon-box-shadow: $shadow-sm !default;
@@ -17,27 +16,21 @@ $tooltip-tip-bottom-height: 8px !default;
 $tooltip-tip-bottom-left: 50% !default;
 $tooltip-tip-bottom-top: 100% !default;
 $tooltip-tip-bottom-width: 16px !default;
-
 $tooltip-tip-top-height: 8px !default;
 $tooltip-tip-top-left: 50% !default;
 $tooltip-tip-top-top: -9px !default;
 $tooltip-tip-top-width: 16px !default;
-
 $tooltip-tip-left-height: 16px !default;
 $tooltip-tip-left-left: -9px !default;
 $tooltip-tip-left-top: 48% !default;
 $tooltip-tip-left-width: 8px !default;
-
 $tooltip-tip-right-height: 16px !default;
 $tooltip-tip-right-left: 100% !default;
 $tooltip-tip-right-top: 50% !default;
 $tooltip-tip-right-width: 8px !default;
-
 $tooltip-mobile-font-size: $text-base !default;
 $tooltip-mobile-horizontal-padding: 6px !default;
 $tooltip-mobile-vertical-padding: 13px !default;
-
-//color variables
 $tooltip-content-bg-color: rgba($tooltip-bg-color) !default;
 $tooltip-content-border-color: rgba($tooltip-border) !default;
 $tooltip-content-font-color: rgba($tooltip-text-color) !default;

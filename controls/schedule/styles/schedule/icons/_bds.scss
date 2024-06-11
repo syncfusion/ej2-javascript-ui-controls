@@ -25,15 +25,13 @@
         content: '\e75e';
       }
 
-      & .e-icon-week::before {
-        content: '\e817';
-      }
-
+      & .e-icon-week::before,
       & .e-icon-workweek::before {
         content: '\e817';
       }
 
-      & .e-icon-month::before {
+      & .e-icon-month::before,
+      & .e-icon-year::before {
         content: '\e7c5';
       }
 
@@ -43,18 +41,6 @@
 
       & .e-icon-agenda::before {
         content: '\e74c';
-      }
-
-      & .e-icon-year::before {
-        content: '\e7c5';
-      }
-
-      & .e-icon-timeline-year-vertical::before {
-        content: '\e876';
-      }
-
-      & .e-icon-timeline-year-horizontal::before {
-        content: '\e876';
       }
 
       & .e-icon-timeline-day::before {
@@ -69,15 +55,14 @@
         content: '\e720';
       }
 
+      & .e-icon-timeline-year-vertical::before,
+      & .e-icon-timeline-year-horizontal::before,
       & .e-icon-timeline-month::before {
         content: '\e876';
       }
 
       &.e-toolbar {
-        .e-popup-down-icon::before {
-          content: '\e770';
-        }
-
+        .e-popup-down-icon::before,
         .e-popup-up-icon::before {
           content: '\e770';
         }

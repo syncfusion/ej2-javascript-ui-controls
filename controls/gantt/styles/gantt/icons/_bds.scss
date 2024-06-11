@@ -1,5 +1,6 @@
 @include export-module('gantt-bds-icons') {
-  #{&}.e-gantt {
+  #{&}.e-gantt,
+  .e-gantt-menu {
     .e-add::before {
       content: '\e805';
     }
@@ -16,14 +17,7 @@
       content: '\e820';
     }
 
-    .e-cancel::before {
-      content: '\e7e7';
-    }
-
-    .e-save::before {
-      content: '\e7c8';
-    }
-
+    .e-save::before,
     .e-update::before {
       content: '\e7c8';
     }
@@ -32,6 +26,7 @@
       content: '\e754';
     }
 
+    .e-toolbar-item .e-cancel::before,
     .e-cancel-icon::before {
       content: '\e7e7';
     }
@@ -53,10 +48,12 @@
       content: '\e80f';
     }
 
+    .e-gantt-tooltip-arrow-left::before,
     .e-prevtimespan::before {
       content: '\e773';
     }
 
+    .e-gantt-tooltip-arrow-right::before,
     .e-nexttimespan::before {
       content: '\e7f9';
     }
@@ -116,13 +113,5 @@
 
   .e-icon-rowselect::before {
     content: '\e7d4';
-  }
-
-  .e-gantt-tooltip-arrow-left::before {
-    content: '\e773';
-  }
-
-  .e-gantt-tooltip-arrow-right::before {
-    content: '\e7f9';
   }
 }

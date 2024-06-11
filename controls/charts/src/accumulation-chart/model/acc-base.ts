@@ -1,5 +1,3 @@
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * AccumulationChart base file
  */
@@ -206,7 +204,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
      * Option for customizing the data label text.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public font: FontModel;
 
     /**
@@ -768,9 +766,12 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      */
     public neckSize: Size;
     /**
-     * To refresh the Datamanager for series
+     * To refresh the Datamanager for series.
      *
      * @private
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {boolean} render - Specifies whether to render the accumulation chart after refreshing the DataManager.
+     * @returns {void}
      */
     public refreshDataManager(accumulation: AccumulationChart, render: boolean): void {
         this.radius = this.radius ? this.radius  : (Browser.isDevice && this.dataLabel.position === 'Outside') ? '40%' : '80%';
@@ -783,9 +784,15 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e, accumulation));
     }
     /**
-     * To get points on dataManager is success
+     * To get points on dataManager is success.
      *
      * @private
+     * @param {Object} e - The data manager result object.
+     * @param {Object} e.result - The result of the data manager process.
+     * @param {number} e.count - The count of items in the result.
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @param {boolean} render - Specifies whether to render the accumulation chart after retrieving the points.
+     * @returns {void}
      */
     public dataManagerSuccess(e: { result: Object, count: number }, accumulation: AccumulationChart, render: boolean = true): void {
         const argsData: IAccSeriesRenderEventArgs = {
@@ -797,17 +804,22 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         if (!accumulation.isBlazor && !render) {
             this.getPoints(this.resultData, accumulation); // To update datasource using onPropertyChanged method. incident id: 290690
         }
-        /* eslint-disable */
         if ((++accumulation.seriesCounts === accumulation.visibleSeries.length && render)
-            // tslint:disable-next-line:no-string-literal
             || (window['Blazor'] && !render && accumulation.seriesCounts === 1)) {
             this.getPoints(this.resultData, accumulation);
             accumulation.refreshChart();
         }
     }
-    /** @private To find points from result data */
+    /**
+     * To find points from result data.
+     *
+     * @private
+     * @param {Object} result - The result of the process.
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @returns {void}
+     */
     public getPoints(result: Object, accumulation: AccumulationChart): void {
-        let length: number = Object.keys(result).length;
+        const length: number = Object.keys(result).length;
         this.sumOfPoints = 0;
         if (length === 0) {
             // fix for Pie datalabels are not removed for empty datasource
@@ -819,11 +831,10 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         this.clubbedPoints = [];
         this.sumOfClub = 0;
         let point: AccPoints;
-        let colors: string[] = this.palettes.length ? this.palettes : getSeriesColor(accumulation.theme);
-        let clubValue: number = stringToNumber(this.groupTo, this.sumOfPoints);
+        const colors: string[] = this.palettes.length ? this.palettes : getSeriesColor(accumulation.theme);
+        const clubValue: number = stringToNumber(this.groupTo, this.sumOfPoints);
         for (let i: number = 0; i < length; i++) {
             point = this.setPoints(result, i, colors, accumulation);
-            let currentY: number = point.y;
             if (!this.isClub(point, clubValue, i)) {
                 if (isNullOrUndefined(point.y)) {
                     point.visible = false;
@@ -838,9 +849,9 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         }
         this.lastGroupTo = this.groupTo;
         if (this.sumOfClub > 0) {
-            let clubPoint: AccPoints = this.generateClubPoint();
+            const clubPoint: AccPoints = this.generateClubPoint();
             this.pushPoints(clubPoint, colors);
-            let pointsLength: number = this.points.length - 1;
+            const pointsLength: number = this.points.length - 1;
             this.clubbedPoints.map((point: AccPoints) => {
                 point.index += pointsLength;
                 point.color = clubPoint.color;
@@ -856,7 +867,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     }
 
     public generateClubPoint(): AccPoints {
-        let clubPoint: AccPoints = new AccPoints();
+        const clubPoint: AccPoints = new AccPoints();
         clubPoint.isClubbed = true;
         clubPoint.x = 'Others';
         clubPoint.y = this.sumOfClub;
@@ -865,7 +876,11 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         return clubPoint;
     }
     /**
-     * Method to set point index and color
+     * Method to set point index and color.
+     *
+     * @param {AccPoints} point - The point data.
+     * @param {string[]} colors - The array of colors used in the accumulation chart.
+     * @returns {void}
      */
     private pushPoints(point: AccPoints, colors: string[]): void {
         point.index = this.points.length;
@@ -874,7 +889,12 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         this.points.push(point);
     }
     /**
-     * Method to find club point
+     * Method to find club point.
+     *
+     * @param {AccPoints} point - The point data.
+     * @param {number} clubValue - The club value for accumulation chart.
+     * @param {number} index - The index of the point in the data set.
+     * @returns {boolean} - false
      */
     private isClub(point: AccPoints, clubValue: number, index: number): boolean {
         if (!isNullOrUndefined(clubValue)) {
@@ -889,41 +909,55 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         return false;
     }
     /**
-     * Method to find sum of points in the series
+     * Method to find sum of points in the series.
+     *
+     * @param {Object} result - The result of the process.
+     * @returns {void}
      */
     private findSumOfPoints(result: Object): void {
-        let length: number = Object.keys(result).length;
+        const length: number = Object.keys(result).length;
         for (let i: number = 0; i < length; i++) {
-            if (!isNullOrUndefined(result[i]) && !isNullOrUndefined(result[i][this.yName]) && !isNaN(result[i][this.yName])) {
-                this.sumOfPoints += Math.abs(result[i][this.yName]);
+            if (!isNullOrUndefined(result[i as number]) && !isNullOrUndefined(result[i as number][this.yName])
+            && !isNaN(result[i as number][this.yName])) {
+                this.sumOfPoints += Math.abs(result[i as number][this.yName]);
             }
         }
     }
     /**
-     * Method to set points x, y and text from data source
+     * Method to set points x, y and text from data source.
+     *
+     * @param {Object} data - The data containing information for the points.
+     * @param {number} i - The index of the current point in the data set.
+     * @param {string[]} colors - The array of colors used in the accumulation chart.
+     * @param {AccumulationChart} accumulation - The accumulation chart control.
+     * @returns {AccPoints} - The point data retrieved from the specified index.
      */
     private setPoints(data: Object, i: number, colors: string[], accumulation?: AccumulationChart): AccPoints {
-        let point: AccPoints = new AccPoints();
-        point.x = getValue(this.xName, data[i]);
-        point.y = getValue(this.yName, data[i]);
+        const point: AccPoints = new AccPoints();
+        point.x = getValue(this.xName, data[i as number]);
+        point.y = getValue(this.yName, data[i as number]);
         point.percentage = (+(point.y / this.sumOfPoints * 100).toFixed(2));
-        point.legendImageUrl = getValue(this.legendImageUrl, data[i]);
-        point.color = getValue(this.pointColorMapping, data[i]);
-        point.text = point.originalText = getValue(this.dataLabel.name || '', data[i]);
-        point.tooltip = getValue(this.tooltipMappingName || '', data[i]);
-        point.sliceRadius = getValue(this.radius, data[i]);
+        point.legendImageUrl = getValue(this.legendImageUrl, data[i as number]);
+        point.color = getValue(this.pointColorMapping, data[i as number]);
+        point.text = point.originalText = getValue(this.dataLabel.name || '', data[i as number]);
+        point.tooltip = getValue(this.tooltipMappingName || '', data[i as number]);
+        point.sliceRadius = getValue(this.radius, data[i as number]);
         point.sliceRadius = isNullOrUndefined(point.sliceRadius) ? '80%' : point.sliceRadius;
         point.separatorY = accumulation.intl.formatNumber(point.y, { useGrouping: accumulation.useGroupingSeparator });
-        this.setAccEmptyPoint(point, i, data, colors);
+        this.setAccEmptyPoint(point, i, data);
         return point;
     }
     /**
-     * Method render the series elements for accumulation chart
+     * Method render the series elements for accumulation chart.
+     *
      * @private
+     * @param {AccumulationChart} accumulation - The AccumulationChart control.
+     * @param {boolean} redraw - Specifies whether to redraw the points.
+     * @returns {void}
      */
     public renderSeries(accumulation: AccumulationChart, redraw?: boolean): void {
 
-        let seriesGroup: Element = redraw ? getElement(accumulation.element.id + '_Series_' + this.index) :
+        const seriesGroup: Element = redraw ? getElement(accumulation.element.id + '_Series_' + this.index) :
             accumulation.renderer.createGroup({ id: accumulation.element.id + '_Series_' + this.index });
 
 
@@ -936,7 +970,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             datalabelGroup = accumulation.renderer.createGroup({ id: accumulation.element.id + '_datalabel_Series_' + this.index });
 
             (datalabelGroup as HTMLElement).style.visibility =
-            (((this.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && accumulation.animateSeries && this.type === 'Pie') ? 'hidden' : 'visible';
+            (((this.animation.enable && animationMode !== 'Disable') || animationMode === 'Enable') && accumulation.animateSeries && this.type === 'Pie') ? 'hidden' : 'visible';
 
             this.renderDataLabel(accumulation, datalabelGroup, redraw);
         }
@@ -953,12 +987,17 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     }
     /**
      * Method render the points elements for accumulation chart series.
+     *
+     * @param {AccumulationChart} accumulation - The AccumulationChart control.
+     * @param {Element} seriesGroup - The group element to contain the point elements.
+     * @param {boolean} redraw - Specifies whether to redraw the points.
+     * @returns {void}
      */
     private renderPoints(accumulation: AccumulationChart, seriesGroup: Element, redraw?: boolean): void {
-        let pointId: string = accumulation.element.id + '_Series_' + this.index + '_Point_';
+        const pointId: string = accumulation.element.id + '_Series_' + this.index + '_Point_';
         let option: PathOption;
-        for (let point of this.points) {
-            let argsData: IAccPointRenderEventArgs = {
+        for (const point of this.points) {
+            const argsData: IAccPointRenderEventArgs = {
                 cancel: false, name: pointRender, series: this, point: point, fill: point.color,
                 border: this.isEmpty(point) ? { width: this.emptyPointSettings.border.width, color: this.emptyPointSettings.border.color } :
                     { width: this.border.width, color: this.border.color }
@@ -976,16 +1015,22 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     }
     /**
      * Method render the datalabel elements for accumulation chart.
+     *
+     * @param {AccumulationChart} accumulation - The AccumulationChart control.
+     * @param {Element} datalabelGroup - The group element to contain the data label elements.
+     * @param {boolean} redraw - Specifies whether to redraw the data labels.
+     * @returns {void}
      */
     private renderDataLabel(accumulation: AccumulationChart, datalabelGroup: Element, redraw?: boolean): void {
         accumulation.accumulationDataLabelModule.findAreaRect();
-        let element: HTMLElement = createElement('div', {
+        const element: HTMLElement = createElement('div', {
             id: accumulation.element.id + '_Series_0' + '_DataLabelCollections'
         });
-        this.leftSidePoints = [], this.rightSidePoints = [];
-        let firstQuarter: AccPoints[] = [];
-        let secondQuarter: AccPoints[] = [];
-        for (let point of this.points) {
+        this.leftSidePoints = [];
+        this.rightSidePoints = [];
+        const firstQuarter: AccPoints[] = [];
+        const secondQuarter: AccPoints[] = [];
+        for (const point of this.points) {
             if (point.visible) {
                 if (this.dataLabel.showZero || (!this.dataLabel.showZero && ((point.y !== 0) || (point.y === 0 &&
                     this.emptyPointSettings.mode === 'Zero')))) {
@@ -1011,11 +1056,10 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         this.rightSidePoints = firstQuarter.concat(secondQuarter);
         accumulation.accumulationDataLabelModule.drawDataLabels(this, this.dataLabel, datalabelGroup as HTMLElement, element, redraw);
         if (this.dataLabel.template !== null && element.childElementCount) {
-            let dataLabelCallBack: Function = accumulation.accumulationDataLabelModule.drawDataLabels.bind(
+            const dataLabelCallBack: Function = accumulation.accumulationDataLabelModule.drawDataLabels.bind(
                 accumulation.accumulationDataLabelModule, this, this.dataLabel, datalabelGroup, element, redraw
-                );
-            // tslint:disable-next-line:no-any
-            if ((accumulation as any).isReact) { (accumulation as any).renderReactTemplates(dataLabelCallBack);}
+            );
+            if ((accumulation as any).isReact) { (accumulation as any).renderReactTemplates(dataLabelCallBack); }
             appendChildElement(
                 false, getElement(accumulation.element.id + '_Secondary_Element'), element, redraw
             );
@@ -1024,9 +1068,12 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     }
 
     /**
-     * To find maximum bounds for smart legend placing
+     * To find maximum bounds for smart legend placing.
      *
      * @private
+     * @param {Rect} totalbound - The total bounding rect.
+     * @param {Rect} bound - The bounding rect to be compared.
+     * @returns {void}
      */
     public findMaxBounds(totalbound: Rect, bound: Rect): void {
         totalbound.x = bound.x < totalbound.x ? bound.x : totalbound.x;
@@ -1035,44 +1082,57 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         totalbound.width = (bound.x + bound.width) > totalbound.width ? (bound.x + bound.width) : totalbound.width;
     }
     /**
-     * To set empty point value for null points
+     * To set empty point value for null points.
+     *
      * @private
+     * @param {AccPoints} point - The point to set as empty.
+     * @param {number} i - The index of the point in the data set.
+     * @param {Object} data - The data object.
+     * @returns {void}
      */
-    public setAccEmptyPoint(point: AccPoints, i: number, data: Object, colors: string[]): void {
+    public setAccEmptyPoint(point: AccPoints, i: number, data: Object): void {
         if (!(isNullOrUndefined(point.y) || isNaN(point.y))) {
             return null;
         }
         point.color = this.emptyPointSettings.fill || point.color;
         switch (this.emptyPointSettings.mode) {
-            case 'Zero':
-                point.y = 0;
-                point.visible = true;
-                break;
-            case 'Average':
-                let previous: number = data[i - 1] ? (data[i - 1][this.yName] || 0) : 0;
-                let next: number = data[i + 1] ? (data[i + 1][this.yName] || 0) : 0;
-                point.y = (Math.abs(previous) + Math.abs(next)) / 2;
-                this.sumOfPoints += point.y;
-                point.visible = true;
-                break;
-            default:
-                point.visible = false;
-                break;
+        case 'Zero':
+            point.y = 0;
+            point.visible = true;
+            break;
+        case 'Average': {
+            const previous: number = data[i - 1] ? (data[i - 1][this.yName] || 0) : 0;
+            const next: number = data[i + 1] ? (data[i + 1][this.yName] || 0) : 0;
+            point.y = (Math.abs(previous) + Math.abs(next)) / 2;
+            this.sumOfPoints += point.y;
+            point.visible = true;
+            break;
+        }
+        default:
+            point.visible = false;
+            break;
         }
     }
     /**
-     * To find point is empty
+     * To find point is empty.
+     *
+     * @param {AccPoints} point - The point to check.
+     * @returns {boolean} - True if the point is empty, otherwise false.
      */
     private isEmpty(point: AccPoints): boolean {
         return point.color === this.emptyPointSettings.fill;
     }
 }
 /**
- * method to get series from index
+ * method to get series from index.
+ *
  * @private
+ * @param {number} index - The index of the series to retrieve.
+ * @param {AccumulationSeries[]} visibleSeries - The array of visible series in the chart.
+ * @returns {AccumulationSeries} - The series retrieved from the specified index.
  */
 export function getSeriesFromIndex(index: number, visibleSeries: AccumulationSeries[]): AccumulationSeries {
-    for (let series of visibleSeries) {
+    for (const series of visibleSeries) {
         if (index === series.index) {
             return <AccumulationSeries>series;
         }
@@ -1080,11 +1140,15 @@ export function getSeriesFromIndex(index: number, visibleSeries: AccumulationSer
     return <AccumulationSeries>visibleSeries[0];
 }
 /**
- * method to get point from index
+ * method to get point from index.
+ *
  * @private
+ * @param {number} index - The index of the point to retrieve.
+ * @param {AccPoints[]} points - The array of points in the data set.
+ * @returns {AccPoints} - The point retrieved from the specified index.
  */
 export function pointByIndex(index: number, points: AccPoints[]): AccPoints {
-    for (let point of points) {
+    for (const point of points) {
         if (point.index === index) {
             return point;
         }

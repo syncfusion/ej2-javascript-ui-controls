@@ -23,6 +23,17 @@ Tabs and shift-tabs work too`;
                 toolbarSettings: {
                     items: ['|', 'Formats', '|', 'OrderedList', 'UnorderedList']
                 },
+                format: {
+                    types: [
+                        { text: 'Paragraph', value: 'P' },
+                        { text: 'Code', value: 'Pre'},
+                        { text: 'Quotation', value: 'BlockQuote'},
+                        { text: 'Heading 1', value: 'H1' },
+                        { text: 'Heading 2', value: 'H2' },
+                        { text: 'Heading 3', value: 'H3' },
+                        { text: 'Heading 4', value: 'H4' }
+                    ]
+                },
                 editorMode: 'Markdown',
                 formatter: new MarkdownFormatter({
                     listTags: { 'OL': '2. ', 'UL': '* ' }, formatTags: {

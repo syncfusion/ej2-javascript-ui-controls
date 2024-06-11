@@ -494,7 +494,8 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
                 svg = createSvgElement('svg', attr);
                 if (rulerSpace.childNodes.length > 0) {
                     for (let i: number = rulerSpace.childNodes.length - 1; i >= 0; i--) {
-                        rulerSpace.childNodes[parseInt(i.toString(), 10)].parentNode.removeChild(rulerSpace.childNodes[parseInt(i.toString(), 10)]);
+                        rulerSpace.childNodes[parseInt(i.toString(), 10)].parentNode.removeChild(
+                            rulerSpace.childNodes[parseInt(i.toString(), 10)]);
                     }
                 }
                 rulerSpace.appendChild(svg);

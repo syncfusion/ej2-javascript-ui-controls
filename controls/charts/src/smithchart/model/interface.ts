@@ -120,6 +120,7 @@ export interface ISmithChartTooltipEventArgs extends ISmithchartEventArgs {
     /** Defines point of the tooltip. */
     point: ISmithChartPoint;
     /** template.
+     *
      * @aspType string
      */
     template: string | Function;

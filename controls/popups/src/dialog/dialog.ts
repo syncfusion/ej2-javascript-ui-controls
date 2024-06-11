@@ -418,7 +418,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private primaryButtonEle: HTMLElement;
     private targetEle: HTMLElement;
     private dialogOpen: boolean;
-    private isVue: boolean;
     private initialRender: boolean;
     private innerContentElement: Node;
     private storeActiveElement: HTMLElement;
@@ -430,6 +429,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private calculatezIndex: boolean;
     private allowMaxHeight: boolean;
     private preventVisibility: boolean;
+    private IsDragStop: boolean;
     private refElement: HTMLElement;
     private dlgClosedBy: string;
     private boundWindowResizeHandler: () => void;
@@ -1046,8 +1046,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             let buttonIndex: number;
             const firstPrimary: boolean = this.buttons.some((data: { [key: string]: Object }, index: number) => {
                 buttonIndex = index;
-                // eslint-disable-next-line
-                    let buttonModel: { [key: string]: Object } = (data.buttonModel as { [key: string]: Object });
+                const buttonModel: { [key: string]: Object } = (data.buttonModel as { [key: string]: Object });
                 return !isNullOrUndefined(buttonModel) && buttonModel.isPrimary === true;
             });
             if (firstPrimary && typeof (this.buttons[buttonIndex as number].click) === 'function') {
@@ -1144,8 +1143,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             parentEle.insertBefore(this.refElement, (this.isModal ? this.dlgContainer : this.element));
         }
         if (!isNullOrUndefined(this.targetEle)) {
-            // eslint-disable-next-line
-            this.isModal ? this.targetEle.appendChild(this.dlgContainer) : this.targetEle.appendChild(this.element);
+            if (this.isModal) {
+                this.targetEle.appendChild(this.dlgContainer);
+            } else {
+                this.targetEle.appendChild(this.element);
+            }
         }
         this.popupObj = new Popup(this.element, {
             height: this.height,
@@ -1201,12 +1203,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.visible) {
             this.show();
             if (this.isModal) {
-                const targetType = this.getTargetContainer(this.target);
+                const targetType: HTMLElement = this.getTargetContainer(this.target);
                 if (targetType instanceof Element){
-                    const computedStyle = window.getComputedStyle(targetType);
+                    const computedStyle: CSSStyleDeclaration = window.getComputedStyle(targetType);
                     if (computedStyle.getPropertyValue('direction') === 'rtl') {
                         this.setPopupPosition();
-                    } 
+                    }
                 }
             }
         } else {
@@ -1218,12 +1220,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private getTargetContainer(targetValue: HTMLElement | string): HTMLElement | null {
-        let targetElement = null;
+        let targetElement: null | HTMLElement = null;
         if (typeof targetValue === 'string') {
             if (targetValue.startsWith('#')) {
                 targetElement = document.getElementById(targetValue.substring(1));
             } else if (targetValue.startsWith('.')) {
-                const elements = document.getElementsByClassName(targetValue.substring(1));
+                const elements: HTMLCollectionOf<Element> = document.getElementsByClassName(targetValue.substring(1));
                 targetElement = elements.length > 0 ? elements[0] as HTMLElement : null;
             } else {
                 if (!((targetValue as any) instanceof HTMLElement) && (targetValue as any) !== document.body) {
@@ -1235,7 +1237,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         return targetElement;
     }
-    
+
     private resetResizeIcon(): void {
         const dialogConHeight: number = this.getMinHeight();
         if (this.targetEle.offsetHeight < dialogConHeight) {
@@ -1300,13 +1302,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 },
                 dragStop: (event: Object) => {
                     if (this.isModal) {
+                        this.IsDragStop = true;
                         if (!isNullOrUndefined(this.position)) {
                             this.dlgContainer.classList.remove('e-dlg-' + this.position.X + '-' + this.position.Y);
                         }
                         // Reset the dialog position after drag completion.
-                        const targetType = this.getTargetContainer(this.target);
+                        const targetType: HTMLElement = this.getTargetContainer(this.target);
                         if (targetType instanceof Element) {
-                            const computedStyle = window.getComputedStyle(targetType);
+                            const computedStyle: CSSStyleDeclaration = window.getComputedStyle(targetType);
                             if (computedStyle.getPropertyValue('direction') === 'rtl') {
                                 this.element.style.position = 'absolute';
                             } else {
@@ -1334,11 +1337,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (!this.isBlazorServerRender()) {
             this.buttonContent = [];
             this.btnObj = [];
-            // eslint-disable-next-line
-            const primaryBtnFlag: boolean = true;
             for (let i: number = 0; i < this.buttons.length; i++) {
-                const buttonType: string = !isNullOrUndefined(this.buttons[i as number].type) ? this.buttons[i as number].type.toLowerCase() : 'button';
-                const btn: HTMLElement = this.createElement('button', { className: this.cssClass, attrs: {type: buttonType }});
+                const buttonType: string = !isNullOrUndefined(this.buttons[i as number].type) ?
+                    this.buttons[i as number].type.toLowerCase() : 'button';
+                const btn: HTMLElement =
+                this.createElement('button', { className: this.cssClass, attrs: {type: buttonType }});
                 this.buttonContent.push(btn.outerHTML);
             }
             this.setFooterTemplate();
@@ -1384,12 +1387,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         else {
             attributes(this.element, { 'aria-describedby': this.element.id + '_dialog-content' });
-        } 
+        }
         if (this.innerContentElement) {
             this.contentEle.appendChild(this.innerContentElement);
         } else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
-            // eslint-disable-next-line
-            const blazorContain: string[] = Object.keys(window) as string[];
             if (typeof (this.content) === 'string' && !isBlazor()) {
                 this.setTemplate(this.content, this.contentEle, 'content');
             } else if (this.content instanceof HTMLElement) {
@@ -1414,8 +1415,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private setTemplate(template: string | HTMLElement | Function, toElement: HTMLElement, prop: string): void {
         let templateFn: Function;
         let templateProps: string;
-        // eslint-disable-next-line
-        const blazorContain: string[] = Object.keys(window) as string[];
         if (toElement.classList.contains(DLG_HEADER)) {
             templateProps = this.element.id + 'header';
         } else if (toElement.classList.contains(DLG_FOOTER_CONTENT)) {
@@ -1489,8 +1488,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setEnableRTL(): void {
         if (!this.isBlazorServerRender()) {
-            // eslint-disable-next-line
-            this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+            if (this.enableRtl) {
+                addClass([this.element], RTL);
+            } else {
+                removeClass([this.element], RTL);
+            }
         }
         if (!isNullOrUndefined(this.element.querySelector('.e-resize-handle'))) {
             removeResize();
@@ -1522,7 +1524,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.headerContent.appendChild(this.headerEle);
         this.setTemplate(this.header, this.headerEle, 'header');
         attributes(this.element, { 'aria-describedby': this.element.id + '_title' });
-        attributes(this.element, { 'aria-label': "dialog" });
+        attributes(this.element, { 'aria-label': 'dialog' });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();
@@ -1723,10 +1725,15 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         if (typeof (this.content) === 'function') {
                             this.clearTemplate(['content']); detach(this.contentEle); this.contentEle = null; this.setContent();
                         } else {
-                            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                            typeof (this.content) === 'string' ? (this.isBlazorServerRender() && (this.contentEle.innerText === '')) ?
-                                this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
-                                this.updateSanitizeContent() : this.contentEle.appendChild(this.content);
+                            if (typeof (this.content) === 'string') {
+                                if (this.isBlazorServerRender() && (this.contentEle.innerText === '')) {
+                                    this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content));
+                                } else {
+                                    this.updateSanitizeContent();
+                                }
+                            } else {
+                                this.contentEle.appendChild(this.content);
+                            }
                         }
                         this.setMaxHeight();
                     } else {
@@ -1787,8 +1794,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.closeIconTitle();
                 } break;
             case 'visible':
-                // eslint-disable-next-line
-                this.visible ? this.show() : this.hide(); break;
+                if (this.visible)
+                {
+                    this.show();
+                } else {
+                    this.hide();
+                } break;
             case 'isModal':
                 this.updateIsModal(); break;
             case 'height':
@@ -1830,14 +1841,23 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             case 'position':
                 this.checkPositionData();
                 if (this.isModal) {
-                    const positionX: string | number = !isNullOrUndefined(oldProp.position) && !isNullOrUndefined(oldProp.position.X) ? oldProp.position.X: this.position.X;
-                    const positionY: string | number = !isNullOrUndefined(oldProp.position) && !isNullOrUndefined(oldProp.position.Y) ? oldProp.position.Y :this.position.Y;
-                    if (this.dlgContainer.classList.contains('e-dlg-' + positionX + '-' + positionY )) {
-                        this.dlgContainer.classList.remove('e-dlg-' + positionX + '-' + positionY );
+                    let positionX: string | number = this.position.X;
+                    let positionY: string | number = this.position.Y;
+                    if (!isNullOrUndefined(oldProp.position)) {
+                        if (!isNullOrUndefined(oldProp.position.X)) {
+                            positionX = oldProp.position.X;
+                        }
+                        if (!isNullOrUndefined(oldProp.position.Y)) {
+                            positionY = oldProp.position.Y;
+                        }
+                    }
+                    if (this.dlgContainer.classList.contains('e-dlg-' + positionX + '-' + positionY)) {
+                        this.dlgContainer.classList.remove('e-dlg-' + positionX + '-' + positionY);
                     }
                 }
                 this.positionChange();
-                this.updatePersistData(); break;
+                this.updatePersistData();
+                break;
             case 'enableRtl':
                 this.setEnableRTL(); break;
             case 'enableResize':
@@ -2123,9 +2143,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                                 this.dlgContainer.style.position = 'absolute';
                             }
                             this.dlgOverlay.style.position = 'absolute';
-                            const targetType = this.getTargetContainer(this.target);
+                            const targetType: HTMLElement = this.getTargetContainer(this.target);
                             if (targetType instanceof Element) {
-                                const computedStyle = window.getComputedStyle(targetType);
+                                const computedStyle: CSSStyleDeclaration = window.getComputedStyle(targetType);
                                 if (computedStyle.getPropertyValue('direction') === 'rtl') {
                                     this.element.style.position = 'absolute';
                                 } else {
@@ -2154,6 +2174,15 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     }
                     // eslint-disable-next-line
                     (this.animationSettings.effect === 'None' && animationMode === 'Enable') ? this.popupObj.show(openAnimation) : ((this.animationSettings.effect === 'None') ? this.popupObj.show() : this.popupObj.show(openAnimation));
+                    if (this.isModal) {
+                        const targetType = this.getTargetContainer(this.target);
+                        if (targetType instanceof Element){
+                            const computedStyle = window.getComputedStyle(targetType);
+                            if (computedStyle.getPropertyValue('direction') === 'rtl'  && !this.IsDragStop) {
+                                this.setPopupPosition();
+                            } 
+                        }
+                    }
                     this.dialogOpen = true;
                     const prevOnChange: boolean = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
@@ -2214,8 +2243,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         duration: this.animationSettings.duration,
                         delay: this.animationSettings.delay
                     };
-                    // eslint-disable-next-line
-                    (this.animationSettings.effect === 'None' && animationMode === 'Enable') ? this.popupObj.hide(closeAnimation) : ((this.animationSettings.effect === 'None') ?  this.popupObj.hide() : this.popupObj.hide(closeAnimation));
+                    if (this.animationSettings.effect === 'None' && animationMode === 'Enable') {
+                        this.popupObj.hide(closeAnimation);
+                    } else if (this.animationSettings.effect === 'None') {
+                        this.popupObj.hide();
+                    } else {
+                        this.popupObj.hide(closeAnimation);
+                    }
                     this.dialogOpen = false;
                     const prevOnChange: boolean = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
@@ -2227,11 +2261,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             });
         }
     }
-    // eslint-disable-next-line
     /**
      * Specifies to view the Full screen Dialog.
      *
-     * @returns {void}
+     * @param {boolean} args - specifies the arguments
+     * @returns {boolean} - returns the boolean value
      * @private
      */
     private fullScreen(args: boolean): boolean {
@@ -2298,8 +2332,6 @@ export namespace DialogUtility {
      * @returns {Dialog} - returns the dialog element.
      */
     export function alert(args?: AlertDialogArgs | string): Dialog {
-        // eslint-disable-next-line
-        let dialogComponent: Dialog;
         const dialogElement: HTMLElement = createElement('div', { 'className': DLG_UTIL_ALERT });
         document.body.appendChild(dialogElement);
         let alertDialogObj: Dialog;
@@ -2346,8 +2378,6 @@ export namespace DialogUtility {
      * @returns {Dialog} - returns te element
      */
     export function confirm(args?: ConfirmDialogArgs | string): Dialog {
-        // eslint-disable-next-line
-        let dialogComponent: Dialog;
         const dialogElement: HTMLElement = createElement('div', { 'className': DLG_UTIL_CONFIRM });
         document.body.appendChild(dialogElement);
         let confirmDialogObj: Dialog;
@@ -2490,7 +2520,7 @@ export namespace DialogUtility {
         if (!isNullOrUndefined(option.click)) {
             buttonProps.click = option.click;
         }
-        if(!isNullOrUndefined(option.isFlat)) {
+        if (!isNullOrUndefined(option.isFlat)) {
             buttonProps.isFlat = option.isFlat;
         }
         return buttonProps;

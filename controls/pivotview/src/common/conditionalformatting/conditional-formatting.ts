@@ -125,8 +125,8 @@ export class ConditionalFormatting {
                 fontFamily: 'Arial',
                 fontSize: '12px'
             }
-        };  // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const conditionalFormating: ConditionalFormatting = this;
+        };
+        const conditionalFormating: ConditionalFormatting = this as ConditionalFormatting;
         this.parent.trigger(events.conditionalFormatting, format, (observedArgs: ConditionalFormatSettingsModel) => {
             conditionalFormating.refreshConditionValues();
             this.destroyColorPickers();

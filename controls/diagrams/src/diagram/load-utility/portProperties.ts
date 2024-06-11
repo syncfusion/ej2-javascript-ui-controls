@@ -1,19 +1,18 @@
-import { Diagram } from "../diagram";
-import { HorizontalAlignment, PortConstraints, PortShapes, PortVisibility, VerticalAlignment } from "../enum/enum";
-import { PortModel } from "../objects/port-model";
-import { PointModel } from "../primitives/point-model";
-import { Ej1Serialization } from "./modelProperties";
+import { Diagram } from '../diagram';
+import { HorizontalAlignment, PortConstraints, PortShapes, PortVisibility, VerticalAlignment } from '../enum/enum';
+import { PortModel } from '../objects/port-model';
+import { PointModel } from '../primitives/point-model';
+import { Ej1Serialization } from './modelProperties';
 
 
 export class PortProperties {
     private diagram: Diagram;
 
-    
     private modelProperties: Ej1Serialization;
 
-   constructor(modelProperties: Ej1Serialization) {
-       this.modelProperties = modelProperties;
-   }
+    constructor(modelProperties: Ej1Serialization) {
+        this.modelProperties = modelProperties;
+    }
 
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Convert and assign EJ1 to EJ2 port properties
@@ -117,11 +116,10 @@ export class PortProperties {
 
 
     /**
-*To destroy the ruler
-*
-* @returns {void} To destroy the ruler
-*/
-
+     * To destroy the ruler
+     *
+     * @returns {void} To destroy the ruler
+     */
     public destroy(): void {
         /**
          * Destroys the Port properties module
@@ -129,14 +127,14 @@ export class PortProperties {
     }
 
     /**
- * Get module name.
- */
+     * Get module name.
+     * @returns {string} Returns the module name
+     */
     protected getModuleName(): string {
         /**
          * Returns the module name
          */
         return 'PortProperties';
-
     }
 }
 

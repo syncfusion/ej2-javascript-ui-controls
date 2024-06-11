@@ -1,14 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-constant-condition */
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * Selection src file
  */
-import { Browser} from '@syncfusion/ej2-base';
+import { AnimationOptions, Animation, Browser} from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import {
@@ -86,7 +79,9 @@ export class Selection extends BaseSelection {
         this.addEventListener();
     }
     /**
-     * Binding events for selection module.
+     * Adds event listeners for the chart.
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed || (this.chart.stockChart && this.chart.stockChart.onPanning)) { return; }
@@ -98,7 +93,11 @@ export class Selection extends BaseSelection {
         this.chart.on(Browser.touchEndEvent, this.mouseLeave, this);
     }
     /**
-     * Chart mouse down
+     * Handles the mousedown event.
+     *
+     * @private
+     * @param {Event} e - The event object.
+     * @returns {void}
      */
     private mousedown(e: Event): void {
         const chart: Chart = this.chart;
@@ -111,6 +110,8 @@ export class Selection extends BaseSelection {
     }
     /**
      * UnBinding events for selection module.
+     *
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -121,7 +122,11 @@ export class Selection extends BaseSelection {
         this.chart.off(Browser.touchEndEvent, this.mouseLeave);
     }
     /**
-     * To find private variable values
+     * Initializes private variables for the chart.
+     *
+     * @private
+     * @param {Chart} chart - The chart instance.
+     * @returns {void}
      */
     private initPrivateVariables(chart: Chart): void {
         this.styleId = chart.element.id + '_ej2_chart_selection';
@@ -138,6 +143,7 @@ export class Selection extends BaseSelection {
     /**
      * Method to select the point and series.
      *
+     * @param {Chart} chart - The chart instance.
      * @returns {void}
      */
     public invokeSelection(chart: Chart): void {
@@ -163,9 +169,11 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     *  Method to get the selected data index
+     * Selects data points in the chart based on the provided indexes.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Index[]} indexes - An array of Index objects specifying the series and point indexes to be selected.
+     * @returns {void}
      */
     public selectDataIndex(chart: Chart, indexes: Index[]): void {
         for (const index of indexes) {
@@ -174,9 +182,13 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     *  Method to get the selected index element
+     * Retrieves the DOM elements corresponding to the specified data point index.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Index} index - The index object specifying the series and point indexes.
+     * @param {string} [suffix=''] - Optional suffix to be appended to the element IDs.
+     * @param {boolean} [marker] - Optional parameter to specify whether to retrieve marker elements. Default is false.
+     * @returns {Element[]} - An array of DOM elements corresponding to the specified data point index.
      */
     public  getElementByIndex(chart: Chart, index: Index, suffix: string = '', marker?: boolean): Element[] {
         let elementId: string = chart.element.id + '_Series_' + index.series + '_Point' + '_' + index.point;
@@ -188,9 +200,11 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     *  Method to get the selected cluster element
+     * Retrieves the DOM elements corresponding to the cluster of data points at the specified index.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Index} index - The index object specifying the series and point indexes.
+     * @returns {Element[]} - An array of DOM elements corresponding to the cluster of data points at the specified index.
      */
     public getClusterElements(chart: Chart, index: Index): Element[] {
         const clusters: Element[] = []; let seriesStyle: string; let selectedElements: NodeListOf<HTMLElement>;
@@ -215,9 +229,11 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     *  Method to get trackball elements
+     * Finds the elements within the selected elements that match the specified class name.
      *
-     * @private
+     * @param {Element[] | NodeListOf<HTMLElement>} selectedElements - The elements to search within.
+     * @param {string} className - The class name to search for.
+     * @returns {void}
      */
     public findTrackballElements(selectedElements: Element[] | NodeListOf<HTMLElement>, className: string): void {
         let trackballElements: Element[]; let elements: Element[];
@@ -239,9 +255,14 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     *  Method to get the selected element
+     * Finds the elements in the chart corresponding to the specified series and data point index.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {SeriesModel} series - The series for which to find the elements.
+     * @param {Index} index - The index of the data point.
+     * @param {string} [suffix=''] - A suffix to append to the element IDs.
+     * @param {boolean} [marker] - Specifies whether to include marker elements.
+     * @returns {Element[]} - An array of elements corresponding to the specified series and data point index.
      */
     public findElements(chart: Chart, series: SeriesModel, index: Index, suffix: string = '', marker?: boolean): Element[] {
         if (this.isSeriesMode) {
@@ -253,10 +274,11 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     * To find the selected element.
+     * Checks if the target element is already selected for the specified event type.
      *
-     * @returns {void}
-     * @private
+     * @param {Element} targetElem - The target element to check.
+     * @param {string} eventType - The type of event (e.g., 'mouse move', 'touch move').
+     * @returns {boolean} - A boolean value indicating whether the target element is already selected for the specified event type.
      */
     public isAlreadySelected(targetElem: Element, eventType: string): boolean {
         if (eventType === 'click') {
@@ -292,9 +314,11 @@ export class Selection extends BaseSelection {
                                 this.previousSelectedEle[i as number].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(this.previousSelectedEle[i as number].id).series].interior);
                             }
                         }
-                        this.addOrRemoveIndex(this.highlightDataIndexes, this.indexFinder((<HTMLElement>this.previousSelectedEle[i as number]).id));
+                        this.addOrRemoveIndex(this.highlightDataIndexes,
+                                              this.indexFinder((<HTMLElement>this.previousSelectedEle[i as number]).id));
                     } else if (!isElement && this.previousSelectedEle[i as number].getAttribute('class').indexOf('highlight') > -1) {
-                        this.performSelection(this.indexFinder(this.previousSelectedEle[i as number].id), this.chart, this.previousSelectedEle[i as number]);
+                        this.performSelection(this.indexFinder(this.previousSelectedEle[i as number].id),
+                                              this.chart, this.previousSelectedEle[i as number]);
                     }
                 }
             }
@@ -305,13 +329,19 @@ export class Selection extends BaseSelection {
 
     private mouseClick(event: Event): void {
         this.calculateSelectedElements(event.target as HTMLElement, event.type);
+        if (this.chart.isTouch && Browser.isDevice && this.chart.highlightModule && this.chart.highlightModule.highlightDataIndexes
+            && this.chart.highlightModule.highlightDataIndexes.length > 0 && (<Element>event.target).id.indexOf('_chart_legend_') === -1
+            && (<Element>event.target).id.indexOf('_Series_') === -1) {
+            this.removeLegendHighlightStyles();
+        }
     }
 
     /**
-     * To find the selected element.
+     * Calculates the selected elements based on the target element and event type.
      *
+     * @param {HTMLElement} targetElement - The target element for which to calculate selected elements.
+     * @param {string} eventType - The type of event (e.g., 'mouse move', 'touch move').
      * @returns {void}
-     * @private
      */
     public calculateSelectedElements(targetElement: HTMLElement, eventType: string): void {
         if (isNullOrUndefined(targetElement)) {
@@ -345,9 +375,12 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     *  Method to perform the selection
+     * Performs selection based on the provided index and chart.
      *
-     * @private
+     * @param {Index} index - The index for which to perform the selection.
+     * @param {Chart} chart - The chart instance.
+     * @param {Element} [element] - Optional. The element associated with the selection.
+     * @returns {void}
      */
     public performSelection(index: Index, chart: Chart, element?: Element): void {
         this.isSeriesMode = this.currentMode === 'Series';
@@ -396,11 +429,14 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     *  Method to get the selected data index
+     * Completes the selection process based on the provided index and selection mode.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Index} index - The index for which the selection is completed.
+     * @param {SelectionMode | HighlightMode} selectionMode - The selection mode.
+     * @returns {void}
      */
-    public selectionComplete(chart: Chart, index: Index, selectionMode: SelectionMode| HighlightMode): void {
+    public selectionComplete(chart: Chart, index: Index, selectionMode: SelectionMode | HighlightMode): void {
         let points: Points[]; let pointIndex: number; let seriesIndex: number;
         const selectedPointValues: { x?: string | number | Date, y?: number, seriesIndex?: number, pointIndex?: number }[] = [];
         let yValue: number; let selectedPointX: string | number | Date;
@@ -412,7 +448,7 @@ export class Selection extends BaseSelection {
                         seriesIndex = series.index;
                         points = (<Series>series).points;
                         if (!isNaN(pointIndex) && (pointIndex < points.length)) {
-                            yValue = (series.type !== 'RangeArea' || 'SplineRangeArea' || 'RangeStepArea') ? points[pointIndex as number].yValue :
+                            yValue = (series.type !== 'RangeArea' || series.type.indexOf('SplineRangeArea') > -1 || series.type.indexOf('RangeStepArea') > -1 ) ? points[pointIndex as number].yValue :
                                 points[pointIndex as number].regions[0].y;
                             selectedPointX = points[pointIndex as number].xValue;
                             if (chart.primaryXAxis.valueType === 'Category') {
@@ -447,7 +483,8 @@ export class Selection extends BaseSelection {
                     }
                 }
             } else {
-                seriesIndex = (this.selectedDataIndexes.length > 0) ? this.selectedDataIndexes[0].series : (this.highlightDataIndexes && this.highlightDataIndexes.length > 0) ? this.highlightDataIndexes[0].series : 0;
+                seriesIndex = (this.selectedDataIndexes.length > 0) ? this.selectedDataIndexes[0].series :
+                    (this.highlightDataIndexes && this.highlightDataIndexes.length > 0) ? this.highlightDataIndexes[0].series : 0;
                 if (this.selectedDataIndexes.length > 0 || (this.highlightDataIndexes && this.highlightDataIndexes.length > 0)) {
                     selectedPointValues.push({
                         seriesIndex: seriesIndex
@@ -468,7 +505,7 @@ export class Selection extends BaseSelection {
                 points = (<Series>series).points;
                 if (!isNaN(pointIndex)) {
                     selectedPointX = points[pointIndex as number].xValue;
-                    yValue = (series.type !== 'RangeArea' || 'SplineRangeArea' || 'RangeStepArea') ? points[pointIndex as number].yValue :
+                    yValue = (series.type !== 'RangeArea' || series.type.indexOf('SplineRangeArea') > -1 || series.type.indexOf('RangeStepArea') > -1) ? points[pointIndex as number].yValue :
                         points[pointIndex as number].regions[0].y;
                     if (chart.primaryXAxis.valueType === 'Category') {
                         selectedPointX = points[pointIndex as number].x.toLocaleString();
@@ -491,9 +528,12 @@ export class Selection extends BaseSelection {
         chart.trigger(selectionComplete, args);
     }
     /**
-     *  Method to perform selection
+     * Handles the selection logic for the chart.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Index} index - The index of the selected data point.
+     * @param {Element[]} selectedElements - The elements representing the selected data point.
+     * @returns {void}
      */
     public selection(chart: Chart, index: Index, selectedElements: Element[]): void {
         if (!(this.currentMode === 'Lasso')) {
@@ -540,17 +580,23 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     *  Method to get the cluster selection element
+     * Handles the selection logic for clustered data points in the chart.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Index} index - The index of the selected clustered data point.
+     * @returns {void}
      */
     public clusterSelection(chart: Chart, index: Index): void {
         this.selection(chart, index, this.getClusterElements(chart, new Index(index.series, index.point)));
     }
     /**
-     * Method to remove the multi selected elements
+     * Removes the multi-selected elements from the chart.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Index[]} index - The indices of the multi-selected elements to be removed.
+     * @param {Index} currentIndex - The index of the current selected element.
+     * @param {SeriesModel[]} seriesCollection - The collection of series in the chart.
+     * @returns {void}
      */
     public removeMultiSelectElements(chart: Chart, index: Index[], currentIndex: Index, seriesCollection: SeriesModel[]): void {
         let series: SeriesModel;
@@ -570,9 +616,13 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     * Method to remove the selection
+     * Applies a blur effect to a specific chart or legend.
      *
-     * @private
+     * @param {string} chartId - The ID of the chart or legend.
+     * @param {Series[]} visibleSeries - The collection of visible series in the chart.
+     * @param {boolean} isLegend - Indicates whether the blur effect should be applied to a legend. Defaults to false.
+     * @param {number} index - The index of the series or legend item to which the blur effect should be applied. Defaults to 0.
+     * @returns {void}
      */
     public blurEffect(chartId: string, visibleSeries: Series[], isLegend: boolean = false, index: number = 0): void {
         const visibility: boolean = (this.checkVisibility(this.highlightDataIndexes, this.chart ) ||
@@ -608,14 +658,20 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     * Method to add the add/remove class to element
+     * Checks and updates the selection state of elements based on the provided criteria.
      *
-     * @private
+     * @param {Element} element - The element to check for selection.
+     * @param {string} className - The class name used for selecting elements.
+     * @param {boolean} visibility - The visibility state of the element.
+     * @param {boolean} isLegend - Indicates whether the element is a legend. Defaults to true.
+     * @param {number} series - The index of the series associated with the element. Defaults to 0.
+     * @param {string} legendStrokeColor - The stroke color of the legend. Defaults to '#D3D3D3'.
+     * @returns {void}
      */
     public checkSelectionElements(element: Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = '#D3D3D3'): void {
-        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? element.childNodes ||  [element] : element.childNodes || element);
+        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ?
+            element.childNodes ||  [element] : element.childNodes || element);
         if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             children = (element.childNodes as any || element);
         }
         let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
@@ -635,6 +691,10 @@ export class Selection extends BaseSelection {
                 selectElement = children[i as number];
                 this.removeSvgClass(children[i as number], this.unselected);
                 this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
+                if (children[i as number].id !== '' && elementClassName.indexOf(this.unselected) !== -1 && parentClassName.indexOf(className) === -1) {
+                    this.highlightAnimation(children[i as number] as HTMLElement, this.chart.series.length === 1 ? 0 :
+                        this.indexFinder(children[i as number].id).series, 700, 0.3);
+                }
             }
             if (children[i as number].id.indexOf('Trackball') > 0 && selectElement.classList[0] === className) {
                 this.removeSvgClass(children[i as number], this.unselected);
@@ -717,9 +777,10 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     *  Method to apply the styles
+     * Applies styles to the specified elements.
      *
-     * @private
+     * @param {Element[]} elements - The elements to which styles will be applied.
+     * @returns {void}
      */
     public applyStyles(elements: Element[]): void {
         for (const element of elements) {
@@ -742,6 +803,14 @@ export class Selection extends BaseSelection {
                     }
                 }
                 this.addSvgClass(element, this.getSelectionClass(element.id));
+                if (element.id.indexOf('Group') > 0) {
+                    const seriesIndex: Index = this.indexFinder(element.id);
+                    for (let i: number = 0; i < element.children.length; i++) {
+                        if (element.children[i as number].nodeName !== 'defs') {
+                            this.stopElementAnimation(element.children[i as number] as HTMLElement, seriesIndex.series);
+                        }
+                    }
+                }
                 if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightPattern === 'None' && this.chart.highlightColor !== 'transparent') {
                     if (element.id.indexOf('Group') > 0) {
                         for (let i: number = 0; i < element.children.length; i++) {
@@ -755,17 +824,19 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     *  Method to get the selection class
+     * Gets the CSS class for selection based on the provided identifier.
      *
-     * @private
+     * @param {string} id - The identifier used to determine the selection class.
+     * @returns {string} - The CSS class for selection.
      */
     public getSelectionClass(id: string): string {
         return this.generateStyle((this.control as Chart).visibleSeries[this.indexFinder(id).series]);
     }
     /**
-     *  Method to remove styles
+     * Removes styles from the provided elements.
      *
-     * @private
+     * @param {Element[]} elements - The elements from which styles will be removed.
+     * @returns {void}
      */
     public removeStyles(elements: Element[]): void {
         for (const element of elements) {
@@ -786,9 +857,12 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     *  Method to remove the selected data index
+     * Adds or removes an index from the provided array of indexes.
      *
-     * @private
+     * @param {Index[]} indexes - The array of indexes.
+     * @param {Index} index - The index to add or remove.
+     * @param {boolean} [isAdd] - Optional parameter to specify whether to add or remove the index. Defaults to true (add).
+     * @returns {void}
      */
     public addOrRemoveIndex(indexes: Index[], index: Index, isAdd?: boolean): void {
         for (let i: number = 0; i < indexes.length; i++) {
@@ -800,19 +874,24 @@ export class Selection extends BaseSelection {
         if (isAdd) { indexes.push(index); }
     }
     /**
-     *  Method to get the equal index
+     * Checks if two Index objects are equal.
      *
-     * @private
+     * @param {Index} first - The first Index object.
+     * @param {Index} second - The second Index object.
+     * @param {boolean} checkSeriesOnly - Specifies whether to check series properties only.
+     * @returns {boolean} - True if the two Index objects are equal, otherwise false.
      */
     public toEquals(first: Index, second: Index, checkSeriesOnly: boolean): boolean {
         return ((first.series === second.series || (this.currentMode === 'Cluster' && !checkSeriesOnly))
             && (checkSeriesOnly || (first.point === second.point)));
     }
     /**
-     * To redraw the selected points.
+     * Redraws the selection or highlight on the chart.
      *
+     * @param {Chart} chart - The chart instance.
+     * @param {SelectionMode | HighlightMode} oldMode - The previous selection or highlight mode.
+     * @param {boolean} chartRedraw - Specifies whether to redraw the entire chart.
      * @returns {void}
-     * @private
      */
     public redrawSelection(chart: Chart, oldMode: SelectionMode | HighlightMode, chartRedraw?: boolean): void {
         this.isSeriesMode = oldMode === 'Series';
@@ -834,7 +913,15 @@ export class Selection extends BaseSelection {
         this.blurEffect(chart.element.id, chart.visibleSeries, false);
         this.selectDataIndex(chart, selectedDataIndexes);
     }
-    /** @private */
+    /**
+     * Handles selection on legend item click.
+     *
+     * @param {Chart} chart - The chart instance.
+     * @param {number} series - The index of the series.
+     * @param {Element} targetElement - The target element clicked.
+     * @param {string} eventType - The type of event triggered.
+     * @returns {void}
+     */
     public legendSelection(chart: Chart, series: number, targetElement: Element, eventType: string): void {
         if (eventType === 'mousemove') {
             if (targetElement.id.indexOf('text') > 1) {
@@ -870,8 +957,7 @@ export class Selection extends BaseSelection {
                 }
                 let seriesElements: Element[] = [];
                 if (this.rangeColorMappingEnabled()) {
-                    // eslint-disable-next-line @typescript-eslint/tslint/config
-                    for (let i: number = 0, a = chart.visibleSeries[0].seriesElement.children; i < a.length; i++) {
+                    for (let i: number = 0, a: HTMLCollection = chart.visibleSeries[0].seriesElement.children; i < a.length; i++) {
                         const point: Element = a[i as number];
                         if (targetElement.getAttribute('fill') === point.getAttribute('fill')) {
                             seriesElements.push(point);
@@ -900,7 +986,11 @@ export class Selection extends BaseSelection {
             }
         }
     }
-    /** @private */
+    /**
+     * Checks if range color mapping is enabled for the chart.
+     *
+     * @returns {boolean} - Returns true if range color mapping is enabled, otherwise false.
+     */
     public rangeColorMappingEnabled(): boolean {
         if ((this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 &&
             this.chart.rangeColorSettings[0].colors.length > 0  &&
@@ -939,7 +1029,12 @@ export class Selection extends BaseSelection {
             }
         }
     }
-    /** @private */
+    /**
+     * Retrieves the SVG elements associated with a particular series in the chart.
+     *
+     * @param {SeriesModel} series - The series for which to retrieve the SVG elements.
+     * @returns {Element[]} - An array of SVG elements representing the series.
+     */
     public getSeriesElements(series: SeriesModel): Element[] {
         const seriesElements: Element[] = [(<Series>series).seriesElement];
         if (series.marker.visible && series.type !== 'Scatter' && series.type !== 'Bubble' && !(<Series>series).isRectSeries) {
@@ -949,7 +1044,12 @@ export class Selection extends BaseSelection {
         }
         return seriesElements;
     }
-    /** @private */
+    /**
+     * Finds the index associated with a particular element ID.
+     *
+     * @param {string} id - The ID of the element to find the index for.
+     * @returns {Index} - The index associated with the element ID.
+     */
     public indexFinder(id: string): Index {
         let ids: string[] = ['NaN', 'NaN'];
         if (id.indexOf('SeriesGroup') > -1) {
@@ -971,10 +1071,12 @@ export class Selection extends BaseSelection {
         return new Index(parseInt(ids[0], 10), parseInt(ids[1], 10));
     }
     /**
-     * Drag selection that returns the selected data.
+     * Calculates the elements selected by dragging a rectangle on the chart.
      *
+     * @param {Chart} chart - The chart instance.
+     * @param {Rect} dragRect - The rectangle representing the selection area.
+     * @param {boolean} isClose - Flag indicating whether the selection should be close.
      * @returns {void}
-     * @private
      */
     public calculateDragSelectedElements(chart: Chart, dragRect: Rect, isClose?: boolean): void {
         this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
@@ -1013,7 +1115,7 @@ export class Selection extends BaseSelection {
                     yAxisOffset = series.yAxis.rect.y - axisOffset.y;
                 }
                 for (let j: number = 0; j < points.length; j++) {
-                    const yValue: number = (series.type !== 'RangeArea' || 'SplineRangeArea' || 'RangeStepArea') ? points[j as number].yValue :
+                    const yValue: number = (series.type !== 'RangeArea' || series.type.indexOf('SplineRangeArea') > -1 || series.type.indexOf('RangeStepArea') > -1) ? points[j as number].yValue :
                         points[j as number].regions[0].y;
                     let isCurrentPoint: boolean;
                     let selectedPointX: string | number | Date = points[j as number].xValue;
@@ -1082,10 +1184,11 @@ export class Selection extends BaseSelection {
         return false;
     }
     /**
-     * Method to draw dragging rect.
+     * Draws the dragging rectangle on the chart.
      *
+     * @param {Chart} chart - The chart instance.
+     * @param {Rect} dragRect - The rectangle representing the dragging area.
      * @returns {void}
-     * @private
      */
     public drawDraggingRect(chart: Chart, dragRect: Rect): void {
         const cartesianLayout: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
@@ -1131,12 +1234,17 @@ export class Selection extends BaseSelection {
             } else if (!getElement(this.draggedRectGroup + this.count)) {
                 dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup + this.count });
                 const svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                chart.enableCanvas ? svgElement.appendChild(dragGroup) : multiGroup.appendChild(dragGroup);
+                if (chart.enableCanvas) {
+                    svgElement.appendChild(dragGroup);
+                }
+                else {
+                    multiGroup.appendChild(dragGroup);
+                }
+                // chart.enableCanvas ? svgElement.appendChild(dragGroup) : multiGroup.appendChild(dragGroup);
             }
             if (!(chart.selectionMode === 'Lasso')) {
                 element = chart.svgRenderer.drawRectangle(new RectOption(
-                    this.draggedRect + this.count, rectFill, { color: rectStroke, width: 1 }, 1, dragRect));
+                    this.draggedRect + this.count, rectFill, { color: rectStroke, width: 1 }, 1, dragRect, 0, 0, '', chart.theme.indexOf('Fluent2') < 1 ? '3' : ''));
                 (element as HTMLElement).style.cursor = 'move';
             } else {
                 element = chart.svgRenderer.drawPath(
@@ -1164,11 +1272,16 @@ export class Selection extends BaseSelection {
             } else {
                 const dragGroup: Element = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
                 const svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
+                if (chart.enableCanvas) {
+                    svgElement.appendChild(dragGroup);
+                }
+                else {
+                    chart.svgObject.appendChild(dragGroup);
+                }
+                // chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
                 if (!(chart.selectionMode === 'Lasso')) {
                     element = chart.svgRenderer.drawRectangle(new RectOption(
-                        this.draggedRect, rectFill, { color: rectStroke, width: 1 }, 1, dragRect));
+                        this.draggedRect, rectFill, { color: rectStroke, width: 1 }, 1, dragRect, 0, 0, '', chart.theme.indexOf('Fluent2') < 1 ? '3' : ''));
                 } else {
                     element = chart.svgRenderer.drawPath(new PathOption(this.lassoPath, rectFill, 3, rectStroke, 1, '', this.path));
                 }
@@ -1179,9 +1292,10 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     * To get drag selected group element index from its id
+     * Retrieves the index of a particular item based on its identifier.
      *
-     * @param {string} id element id
+     * @param {string} id - The identifier of the item.
+     * @returns {number} - The index of the item, or -1 if not found.
      */
     private getIndex(id: string): number {
         let i: number;
@@ -1285,10 +1399,13 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     * Method to resize the drag rect.
+     * Updates the selection rectangle during resizing.
      *
+     * @param {Chart} chart - The chart instance.
+     * @param {ChartLocation} location - The location of the resizing action.
+     * @param {boolean} [tapped=false] - Indicates whether the resizing action was initiated by tapping.
+     * @param {Element} [target] - The target element of the resizing action.
      * @returns {void}
-     * @private
      */
     public resizingSelectionRect(chart: Chart, location: ChartLocation, tapped?: boolean, target?: Element): void {
         let rect: Rect;
@@ -1405,12 +1522,15 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     * Method to move the dragged rect.
+     * Updates the position of the dragged rectangle.
      *
+     * @param {Chart} chart - The chart instance.
+     * @param {Rect} grabbedPoint - The rectangle representing the grabbed point.
+     * @param {boolean} [doDrawing=false] - Indicates whether to redraw the dragging rectangle.
+    //  * @param {Element} [target] - The target element related to the dragging action.
      * @returns {void}
-     * @private
      */
-    public draggedRectMoved(chart: Chart, grabbedPoint: Rect, doDrawing?: boolean, target?: Element): void {
+    public draggedRectMoved(chart: Chart, grabbedPoint: Rect, doDrawing?: boolean): void {
         let rect: Rect;
         if ((this.resizing || this.rectGrabbing) && (chart.allowMultiSelection)) {
             const r: Rect = this.dragRectArray[this.targetIndex];
@@ -1432,10 +1552,11 @@ export class Selection extends BaseSelection {
         this.completeSelection(event.target as HTMLElement, event.type);
     }
     /**
-     * To complete the selection.
+     * Completes the selection process.
      *
+     * @param {HTMLElement} target - The target element where the selection is completed.
+     * @param {string} eventType - The type of event that triggered the selection completion.
      * @returns {void}
-     * @private
      */
     public completeSelection(target: HTMLElement, eventType: string): void {
         const chart: Chart = this.chart;
@@ -1452,7 +1573,7 @@ export class Selection extends BaseSelection {
             this.draggedRectMoved(chart, this.dragRect);
         }
         if (chart.selectionMode === 'Lasso' && this.dragging && this.path) {
-            if ((this.path as String).indexOf('L') !== -1) {
+            if ((this.path as string).indexOf('L') !== -1) {
                 if (!(chart.allowMultiSelection)) {
                     getElement(this.lassoPath).setAttribute('d', this.path + 'Z');
                     this.pointChecking(getElement(this.lassoPath) as SVGPathElement);
@@ -1474,7 +1595,16 @@ export class Selection extends BaseSelection {
         return getDraggedRectLocation(chart.mouseDownX, chart.mouseDownY, chart.mouseX, chart.mouseY, seriesClipRect);
     }
 
-    /** @private */
+    /**
+     * Initiates the drag operation.
+     *
+     * @param {Chart} chart - The chart instance where the drag operation is initiated.
+     * @param {Rect} seriesClipRect - The clipping rectangle of the series.
+     * @param {number} mouseDownX - The X-coordinate where the mouse was pressed down.
+     * @param {number} mouseDownY - The Y-coordinate where the mouse was pressed down.
+     * @param {Event} event - The event object associated with the mouse down event.
+     * @returns {void}
+     */
     public dragStart(chart: Chart, seriesClipRect: Rect, mouseDownX: number, mouseDownY: number, event: Event): void {
         const mode: SelectionMode = chart.selectionMode;
         this.currentMode = chart.selectionMode;
@@ -1521,7 +1651,12 @@ export class Selection extends BaseSelection {
     private isDragRect(id: string): boolean {
         return id.indexOf('_ej2_drag_rect') > -1;
     }
-    /** @private */
+    /**
+     * Handles the mouse move event.
+     *
+     * @param {PointerEvent | TouchEvent} event - The pointer event or touch event associated with the mouse move.
+     * @returns {void}
+     */
     public mouseMove(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
         const target: Element = <Element>event.target;
@@ -1537,9 +1672,11 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     * highlight parts
+     * Highlights the specified chart element.
      *
-     * @private
+     * @param {Element} target - The target element to highlight.
+     * @param {string} eventType - The type of event triggering the highlighting.
+     * @returns {void}
      */
     public highlightChart(target: Element, eventType: string): void {
         if (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight) {
@@ -1562,15 +1699,18 @@ export class Selection extends BaseSelection {
     }
 
     /**
-     * selection and drag selection
+     * Handles the selection and dragging functionality for the chart.
      *
-     * @private
+     * @param {Chart} chart - The chart instance.
+     * @param {Element} target - The target element involved in the selection or dragging action.
+     * @param {string} eventType - The type of event triggering the selection or dragging action.
+     * @returns {void}
      */
     public selectionAndDrag(chart: Chart, target: Element, eventType: string): void {
         const insideMoving: boolean = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
         if (insideMoving && !this.chart.enableCanvas) {
             if (this.rectGrabbing && !this.resizing) {
-                this.draggedRectMoved(chart, this.dragRect, true, target);
+                this.draggedRectMoved(chart, this.dragRect, true);
             } else if (this.dragging && !this.resizing) {
                 if (chart.selectionMode === 'Lasso') {
                     this.getPath(chart.mouseDownX, chart.mouseDownY, chart.mouseX, chart.mouseY);
@@ -1590,9 +1730,10 @@ export class Selection extends BaseSelection {
         }
     }
     /**
-     * remove highlighted legend when not focused.
+     * Remove highlighted legend when not focused.
      *
      * @private
+     * @returns {void}
      */
     public removeLegendHighlightStyles(): void {
         this.chart.highlightModule.highlightDataIndexes = [];
@@ -1605,6 +1746,15 @@ export class Selection extends BaseSelection {
                     const element: HTMLElement = elementCollection[0] as HTMLElement;
                     if (element) {
                         this.removeSvgClass(element, element.getAttribute('class'));
+                        if (element.id.indexOf('Group') > 0 && !this.chart.visibleSeries[i as number].isRectSeries) {
+                            const seriesIndex: Index = this.indexFinder(element.id);
+                            for (let j: number = 0; j < element.children.length; j++) {
+                                if (element.children[j as number].nodeName !== 'defs') {
+                                    this.highlightAnimation(element.children[j as number] as HTMLElement, seriesIndex.series,
+                                                            700, 0.3, true);
+                                }
+                            }
+                        }
                     }
                 }
                 elementCollection = document.getElementsByClassName(this.unselected);
@@ -1612,6 +1762,10 @@ export class Selection extends BaseSelection {
                     const element: HTMLElement = elementCollection[0] as HTMLElement;
                     if (element) {
                         this.removeSvgClass(element, element.getAttribute('class'));
+                        if (element.id !== '') {
+                            this.highlightAnimation(element, this.chart.series.length === 1 ? 0 : this.indexFinder(element.id).series
+                                , 700, 0.3);
+                        }
                     }
                 }
             } else {
@@ -1635,6 +1789,96 @@ export class Selection extends BaseSelection {
                 this.path = 'M ' + startX + ' ' + startY;
             }
         }
+    }
+
+    /**
+     * Performs a highlight animation on the specified HTML element.
+     *
+     * @param {HTMLElement} element - The HTML element to animate.
+     * @param {number} index - The index to find the opacity value of the series.
+     * @param {number} duration - The duration of the animation in milliseconds.
+     * @param {number} startOpacity - The starting opacity value for the animation.
+     * @param {boolean} strokeWidth - The starting opacity value for the animation.
+     * @returns {void}
+     */
+    private highlightAnimation(element: HTMLElement, index: number, duration: number, startOpacity: number, strokeWidth?: boolean): void {
+        let endOpacity: number;
+        let endWidth: number;
+        const startWidth: number = parseFloat(this.chart.visibleSeries[index as number].width.toString()) + 1;
+        if (strokeWidth) {
+            if (element.id.indexOf('border') !== -1 && this.chart.visibleSeries[index as number].border.width) {
+                endWidth = parseFloat(this.chart.visibleSeries[index as number].border.width.toString());
+            }
+            else if (element.id.indexOf('Symbol') !== -1 && this.chart.visibleSeries[index as number].marker.border.width) {
+                endWidth = parseFloat(this.chart.visibleSeries[index as number].marker.border.width.toString());
+            }
+            else {
+                endWidth = parseFloat(this.chart.visibleSeries[index as number].width.toString());
+            }
+        }
+        else {
+            if (element.id.indexOf('border') !== -1) {
+                endOpacity = 1;
+            }
+            else if (element.id.indexOf('Symbol') !== -1) {
+                endOpacity = parseFloat(this.chart.visibleSeries[index as number].marker.opacity.toString());
+            }
+            else {
+                endOpacity = parseFloat(this.chart.visibleSeries[index as number].opacity.toString());
+            }
+            if (isNullOrUndefined(this.chart.selectionModule) && this.chart.selectionMode === 'None' && this.chart.highlightColor !== '') {
+                startOpacity = 1;
+            }
+        }
+        if (endOpacity || (strokeWidth && endWidth && startWidth)) {
+            new Animation({}).animate(element, {
+                duration: duration,
+                progress: (args: AnimationOptions): void => {
+                    element.style.animation = '';
+                    const progress: number = args.timeStamp / args.duration;
+                    if (strokeWidth) {
+                        const currentWidth: number = startWidth + (endWidth - startWidth) * progress;
+                        element.setAttribute('stroke-width', currentWidth.toString());
+                    }
+                    else {
+                        const currentOpacity: number = startOpacity + (endOpacity - startOpacity) * progress;
+                        element.setAttribute('opacity', currentOpacity.toString());
+                    }
+                },
+                end: (): void => {
+                    if (strokeWidth) {
+                        element.setAttribute('stroke-width', endWidth.toString());
+                    }
+                    else {
+                        element.setAttribute('opacity', endOpacity.toString());
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Stops the animation and sets opacity of the specified HTML element.
+     *
+     * @param {HTMLElement} element - The HTML element to stop the animation.
+     * @param {number} index - The index to find the opacity value of the series.
+     * @returns {void}
+     */
+    private stopElementAnimation(element: HTMLElement, index: number): void {
+        let endOpacity: number;
+        if (element.id.indexOf('border') !== -1) {
+            endOpacity = 1;
+        }
+        else if (element.id.indexOf('Symbol') !== -1) {
+            endOpacity = parseFloat(this.chart.visibleSeries[index as number].marker.opacity.toString());
+        }
+        else {
+            endOpacity = parseFloat(this.chart.visibleSeries[index as number].opacity.toString());
+        }
+        if (element.getAttribute('e-animate')) {
+            Animation.stop(element);
+        }
+        element.setAttribute('opacity', endOpacity.toString());
     }
 
     private pointChecking(path: SVGPathElement): void {
@@ -1671,6 +1915,7 @@ export class Selection extends BaseSelection {
      * Get module name.
      *
      * @private
+     * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {
         return 'Selection';

@@ -172,7 +172,7 @@ export class SeriesMarkerDataLabel extends ChildProperty<SeriesMarkerDataLabel> 
     /**
      * options for customizing font.
      */
-    @Complex<SmithchartFontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, SmithchartFont)
     public textStyle: SmithchartFontModel;
 
 }

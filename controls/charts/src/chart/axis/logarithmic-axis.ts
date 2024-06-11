@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/tslint/config */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Axis } from '../axis/axis';
 import { Double } from '../axis/double-axis';
 import { getActualDesiredIntervalsCount, triggerLabelRender } from '../../common/utils/helper';
@@ -11,6 +7,7 @@ import { Chart } from '../chart';
 import { RangeNavigator } from '../../range-navigator';
 import { extend, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
+import { Series } from '../series/chart-series';
 
 /**
  * `Logarithmic` module is used to render log axis.
@@ -22,6 +19,7 @@ export class Logarithmic extends Double {
      * Constructor for the logerithmic module.
      *
      * @private
+     * @param {Chart} chart - Specifies the chart.
      */
     constructor(chart: Chart) {
         super(chart);
@@ -58,7 +56,7 @@ export class Logarithmic extends Double {
         let logEnd: number = this.max === 1 ? 1 : logBase(<number>this.max, axis.logBase);
         logEnd = isFinite(logStart) ? logEnd : <number>this.max;
         this.min = Math.floor(logStart / 1);
-        const isRectSeries: boolean = axis.series && axis.series.some((item) => {
+        const isRectSeries: boolean = axis.series && axis.series.some((item: Series) => {
             return (item.type.indexOf('Column') !== -1 || item.type.indexOf('Bar') !== -1) && item.type.indexOf('Range') === -1;
         });
         if (isRectSeries) {
@@ -75,6 +73,9 @@ export class Logarithmic extends Double {
      * Calculates visible range for the axis.
      *
      * @private
+     * @param {Size} size - The size used for calculation.
+     * @param {Axis} axis - The axis for which the visible range is calculated.
+     * @returns {void}
      */
     protected calculateVisibleRange(size: Size, axis: Axis): void {
         axis.visibleRange = {
@@ -83,7 +84,7 @@ export class Logarithmic extends Double {
         };
         const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRangeOnZooming(size);
+            axis.calculateVisibleRangeOnZooming();
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateLogNiceInterval(axis.doubleRange.delta, size, axis)
                 : axis.visibleRange.interval;
@@ -92,9 +93,13 @@ export class Logarithmic extends Double {
         }
     }
     /**
-     * Calculates log iInteval for the axis.
+     * Calculates log inteval for the axis.
      *
      * @private
+     * @param {number} delta - The difference between the axis maximum and minimum values.
+     * @param {Size} size - The size of the axis.
+     * @param {Axis} axis - The axis.
+     * @returns {number} - The calculated logarithmic interval.
      */
     protected calculateLogNiceInterval(delta: number, size: Size, axis: Axis): number {
         const actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
@@ -114,6 +119,9 @@ export class Logarithmic extends Double {
      * Calculates labels for the axis.
      *
      * @private
+     * @param {Axis} axis - The axis.
+     * @param {Chart | RangeNavigator} chart - The chart or range navigator control.
+     * @returns {void}
      */
     public calculateVisibleLabels(axis: Axis, chart: Chart | RangeNavigator): void {
         /*! Generate axis labels */

@@ -22,6 +22,9 @@
         @else {
           border-left-width: 0;
           border-right-width: 0;
+          @if $skin-name == 'fluent2' {
+            border-bottom-width: 0;
+          }
           @if $skin-name == 'Material3' {
             min-height: 40px;
           }
@@ -50,7 +53,6 @@
           @if $skin-name == 'bootstrap' {
             border-width: 0;
           }
-
           @if $skin-name == 'fabric' {
             margin-right: 0;
           }
@@ -59,12 +61,10 @@
             @if $skin-name != 'Material3' {
               padding: $file-menu-wrap-padding;
             }
-
             @if $skin-name == 'Material3' {
               padding-left: $file-menu-wrap-padding;
               padding-right: $file-menu-wrap-padding;
             }
-
             @if $skin-name == 'bootstrap4' {
               border-width: 0;
             }
@@ -78,7 +78,6 @@
         & .e-indicator {
           z-index: 1;
         }
-
         @if $skin-name == 'material' {
           & .e-toolbar-item .e-tab-wrap {
             padding: 0 12px;
@@ -89,13 +88,11 @@
           display: none;
         }
       }
-
       @if $skin-name == 'bootstrap5' {
         & .e-content .e-toolbar .e-toolbar-items {
           height: 38px;
         }
       }
-
       @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         & .e-tab-header {
           margin-top: 10px;
@@ -105,7 +102,6 @@
           border-radius: 0;
         }
       }
-
       @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
         & .e-content .e-item {
           padding: 0;
@@ -126,7 +122,6 @@
       transform: rotate(180deg);
       transition: transform 300ms ease;
       width: 18px;
-
       @if $skin-name != 'bootstrap4' {
         font-size: $spreadsheet-ribbon-drop-icon-font-size;
       }
@@ -142,12 +137,17 @@
     }
 
     &.e-collapsed {
+      & .e-tab .e-tab-header {
+        @if $skin-name == 'fluent2' {
+          border-bottom: 0;
+        }
+      }
+
       & .e-content,
       & .e-indicator,
       & .e-tab-header .e-toolbar-item.e-active .e-text-wrap::before {
         display: none;
       }
-
       @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         & .e-tab .e-tab-header:not(.e-vertical) {
           &::before {
@@ -160,13 +160,11 @@
         transform: rotate(0deg);
       }
     }
-
     @if $skin-name == 'fabric' {
       & .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator {
-        min-height: 24px;
+        min-height: $spreadsheet-toolbar-item-separator-height;
       }
     }
-
     @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
       .e-tab-header .e-menu-wrapper.e-file-menu ul.e-menu {
         font-size: $tab-file-menu-font-size;
@@ -177,7 +175,6 @@
       & .e-toolbar-items {
         display: inline-block;
       }
-
       @if $skin-name == 'highcontrast' {
         border-color: transparent;
 
@@ -193,6 +190,14 @@
 
     & .e-menu-wrapper {
       border-width: 0;
+      @if $skin-name == 'fluent2' {
+        &.e-file-menu .e-menu {
+          & .e-menu-item.e-selected,
+          & .e-menu-item.e-focused {
+            border-radius: 4px 0 0 4px;
+          }
+        }
+      }
       &.e-file-menu.e-scrollable {
         .e-menu {
           @if $skin-name == 'Material3' {
@@ -204,23 +209,25 @@
         &.e-menu {
           padding: 0;
         }
-
         @if $skin-name != 'bootstrap4' and $skin-name != 'Material3' {
           & .e-menu-item.e-menu-caret-icon {
-            height: 35px;
-            line-height: 35px;
+            height: $spreadsheet-ribbon-tab-menu-items-height;
+            line-height: $spreadsheet-ribbon-tab-menu-items-line-height;
 
             & .e-caret {
               @if $skin-name == 'FluentUI' {
-                line-height: 38px;
+                line-height: $spreadsheet-file-drop-icon-line-height;
+              }
+              @else if $skin-name == 'fluent2' {
+                font-size: $spreadsheet-file-drop-icon-font-size;
+                line-height: $spreadsheet-file-drop-icon-line-height;
               }
               @else {
-                line-height: 35px;
+                line-height: $spreadsheet-ribbon-tab-menu-items-line-height;
               }
             }
           }
         }
-
         @if $skin-name == 'Material3' {
           & .e-menu-item.e-menu-caret-icon {
             border-radius: 4px;
@@ -252,26 +259,27 @@
 
       & .e-menu-item.e-menu-caret-icon {
         @if $skin-name != 'Material3' {
-          height: 41px;
-          line-height: 41px;
+          height: $bigger-spread-ribbon-tab-menu-items-height;
+          line-height: $bigger-spread-ribbon-tab-menu-items-line-height;
         }
         
-
         & .e-caret {
           @if $skin-name == 'FluentUI' {
             line-height: 44px;
           }
+          @else if $skin-name == 'fluent2' {
+            font-size: $bigger-spread-file-drop-icon-font-size;
+            line-height: $bigger-spread-ribbon-tab-menu-items-line-height;
+          }
           @else {
-            line-height: 41px;
+            line-height: $bigger-spread-ribbon-tab-menu-items-line-height;
           }
         }
       }
-
       @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'Material3' {
         font-size: $bigger-tab-file-menu-font-size;
       }
     }
-
     @if $skin-name == 'bootstrap5' {
       & .e-tab .e-content .e-toolbar .e-toolbar-items {
         height: 46px;
@@ -281,12 +289,10 @@
     & .e-drop-icon {
       font-size: $bigger-spreadsheet-ribbon-drop-icon-font-size;
       margin: $bigger-drop-icon-margin;
-
       @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
         line-height: 8px;
       }
     }
-
     @if $skin-name == 'material' {
       & .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
         padding: 0 16px;

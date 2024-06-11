@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 26.1.35 (2024-06-11)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I591752` - Now, the textbox field and comment panel focused when entering `Shift + H` and `Shift + V` characters.
+
+#### Features
+
+- Experience seamless page movement, allowing you to reorder pages effortlessly.
+- Effortlessly duplicate pages to better manage your documents.
+- Quickly undo or redo changes made within the organize pages dialog for a smoother editing experience.
+- Enabled minimum and maximum zoom settings in the PDF Viewer for enhanced control over zoom levels.
+
 ## 25.2.7 (2024-06-04)
 
 ### PDF Viewer
@@ -9,6 +24,10 @@
 #### Bug Fixes
 
 - `#I583706` - Now, the PDF Viewer scroll bar was not updated after deleting the existing value using API from the signature field.
+- `#I587314` - Now, the text markup annotations is properly locked using isLock and `isCommentLock` properties.
+- `#I589575` - Now, the links are loaded correctly when navigate and return to same page.
+- `#I581546` - Now, able to download PDF from AWS S3 signed URL in mobile device.
+- `#F188158` - Now, script error does not occurred when searching the non-matched word in the provided document.
 
 ## 25.2.6 (2024-05-28)
 
@@ -29,16 +48,16 @@
 
 #### Bug Fixes
 
-- `#I577813` - Now, the document is loading properly without any script errors when a value has already been included in the session storage by default.
-- `#I583019` - Now, the annotation collection and action collection will match in multiple undo.
 - `#I582982` - Now, the Undo does not retains the deleted annotation in annotation collection.
+- `#I577813` - Now, the document is loading properly without any script errors when a value has already been included in the session storage by default.
 - `#I580839`, `#I580793` - Now, the extra page is not appeared in the print preview when print the provided document.
-- `#I582676` - Now, the annotation order in the comment panel does not change when adding new annotations in the standalone PDF Viewer.
 - `#I586052` - Now, able to use markup annotations over shape annotations.
+- `#I583019` - Now, the annotation collection and action collection will match in multiple undo.
+- `#I582676` - Now, the annotation order in the comment panel does not change when adding new annotations in client-side rendering.
 - `#I586408` - Now, the form field ID is not missing in `FormFieldResizerArgs` event.
-- `#I583890` - Now, the Edit and Delete option will get disabled when use isCommentLock
-- `#I582388` - Now, the form field tab order is working properly for the customer-provided document.
 - `#I577318`, `#I577549` - Now, the `deleteFormField` method is working properly for the non-render pages.
+- `#I582388` - Now, the form field tab order is working properly for the customer-provided document.
+- `#I583890` - Now, the Edit and Delete option will get disabled when use `isCommentLock`.
 
 ## 25.2.4 (2024-05-14)
 
@@ -47,9 +66,9 @@
 #### Bug Fixes
 
 - `#I575320` - Now, the Form Fields data does not wrongly appear when exporting.
-- `#I583505` - Now, the Export annotations is properly working when drawing the annotation outside page boundaries.
 - `#I581452` - Now, the form field background and border color are set to transparent properly.
-- `#I585089` - Now, the annotation selector is properly removed when undoing annotations in select mode. 
+- `#I585089` - Now, the annotation selector is properly removed when undoing annotations in select mode.
+- `#I575320` - Now, the Form Fields data does not wrongly appear when exporting.
 
 ## 25.2.3 (2024-05-08)
 
@@ -81,10 +100,10 @@
 
 - `#I578038` - Now, the script error will not occur after resizing the annotations for ink, stamp and signature annotations.
 - `#I558650` - Now, the customer document will get loaded without any issue or script error.
-- `#I559996` - Now, the freeText annotations are updating properly with editAnnotation method.
 - `#I573798` - Now, the form fields are properly preserved in the provided document when saving it.
 - `#I574104` - Now, the cursor position change when pressing the left and right arrow keys in the text box fields.
 - `#I572302` - Now, the form field validation event was not triggered when the Form Designer module was removed.
+- `#I559996` - Now, the freeText annotations are updating properly with editAnnotation method.
 
 ## 25.1.40 (2024-04-16)
 
@@ -94,10 +113,10 @@
 
 - `#I571265` - Now, the author name is not changed for shape and free text annotations upon saving the document.
 - `#I572045` - Now, the transparent background color is not changed to black upon importing exported annotation and saving the document.
-- `#I572061` - Now, the standalone saved PDF document with a `Not Approved` dynamic stamp does not throw an error when opened in Adobe.
+- `#I572061` - Now, the Stand-alone saved PDF document with a `Not Approved` dynamic stamp does not throw an error when opened in Adobe.
 - `#I569884` - Now, the script error is not occurred when setting the text markup annotation module to false.
 - `#F187662` - Now, the exception is not occurred when right clicking the form fields in the provided document.
-- `#I572289` - Now, the exception does not occur when dynamically loading PDF documents in standalone mode.
+- `#I572289` - Now, the exception does not occur when dynamically loading PDF documents in Stand-alone mode.
 
 ## 25.1.39 (2024-04-09)
 
@@ -117,7 +136,7 @@
 
 - `#I565875` - Now, the page does not navigate to undefined when loading the provided PDF document.
 - `#I559473` - Now, the thickness value is properly loaded when loading float thickness value annotations on the server side.
-- `#I567299` - Now, does not throw NullReferenceException when loading Empty PDF document.
+- `#I567299` - Now, does not throw `NullReferenceException` when loading Empty PDF document.
 - `#I567306` - Now, the annotations are not shifted to the left in landscape documents.
 
 ## 25.1.37 (2024-03-26)
@@ -126,18 +145,14 @@
 
 #### Bug Fixes
 
+- `#I561320` - Now, the undo has restored the programmatically deleted annotations.
 - `#I562878` - Now, the custom data is not missing from deleted annotation properties when initializing settings with custom data.
 - `#I565199` - Now, the annotation custom data is not missing in `AnnotationSelect` events.
 - `#I563333` - Now, the comments cannot be edited when the annotation is locked.
 - `#I874338` - Now, the locked annotations are preserved properly when importing the annotation.
-- `#I561320` - Now, the undo has restored the programmatically deleted annotations.
 - `#I566765` - Now, the create and clear buttons are not enabled if the text box is empty in the text signature tab.
 - `#I564309` - Now, the script error not occurred when dynamically updating toolbar items without annotation module.
 - `#I564643` - Now, the form fields are rendered properly after deleting it from the customer document.
-
-#### Features
- 
-- `#I531005` - Now, provided the option to turn off the autocomplete option for comments in the comment panel.
 
 ## 25.1.35 (2024-03-15)
 
@@ -151,14 +166,14 @@
 - `#I559473` - Now, the exporting rectangle annotation with custom thickness is working properly.
 
 #### Features
- 
+
 - `#I551138`, `#I553282` - Implemented functionality to manage PDF page organization, including insertion, deletion, and rotation in the PDF Viewer.
 - `#I325358`, `#I336517`, `#I355078` - Enabled customization of context menu items in the PDF Viewer by introducing the `addCustomMenu` API for adding custom menu items. Additionally, provided the `customContextMenuSelect` and `customContextMenuBeforeOpen` events to enhance flexibility and control over context menu interactions within the PDF Viewer.
 - `#I516224` - Implemented the ability to programmatically control the opening and closing of the bookmark pane in the PDF Viewer through the introduction of the `openBookmarkPane` and `closeBookmarkPane` APIs. This allows users to conveniently interact with the bookmark pane within the PDF Viewer interface.
 - `#I515986` - Introduced events, namely `pageRenderInitiate` and `pageRenderComplete`, in the PDF Viewer to provide notification regarding the initiation and completion of page rendering processes. These events offer users enhanced control and insights into the rendering workflow within the viewer interface.
 - Integrated keyboard accessibility shortcuts and options for custom key commands using the `commandManager` API in the PDF Viewer, utilizing properties such as `keyboardCommand.name` for specifying custom command names and `keyboardCommand.gesture` for defining custom key gestures.
 - `#I477482`- Enhanced support for rendering custom appearance stamp images in the PDF Viewer.
-- Implemented support for utilizing PNG format images in the Standalone PDF Viewer for adding images to handwritten annotations, custom stamps, signatures, and initial form fields. Previously limited to certain formats like JPEG, now PNG images can also be saved and rendered for these purposes.
+- Implemented support for utilizing PNG format images in the Stand-alone PDF Viewer for adding images to handwritten annotations, custom stamps, signatures, and initial form fields. Previously limited to certain formats like JPEG, now PNG images can also be saved and rendered for these purposes.
 
 ## 24.2.9 (2024-03-05)
 

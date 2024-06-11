@@ -293,7 +293,7 @@ export class Link {
         const title: string = this.i10n.getConstant('linkTitle');
         const linkDialogEle: HTMLElement = this.parent.createElement('div', {
             className: 'e-rte-link-dialog' + this.parent.getCssClass(true), id: this.rteID + '_rtelink' });
-        this.parent.element.appendChild(linkDialogEle);
+        this.parent.rootContainer.appendChild(linkDialogEle);
         const linkContent: HTMLElement = this.parent.createElement('div', {
             className: 'e-rte-linkcontent' + this.parent.getCssClass(true), id: this.rteID + '_linkContent'
         });
@@ -401,10 +401,10 @@ export class Link {
             linkTitle = (linkEle.querySelector('.e-rte-linkTitle') as HTMLInputElement).value;
         }
         const target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
-        const linkLabel = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? (this as NotifyArgs).selfLink.i10n.getConstant('linkAriaLabel') : null;
+        const linkLabel : string | null = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? (this as NotifyArgs).selfLink.i10n.getConstant('linkAriaLabel') : null;
         if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown' && linkUrl === '') {
             linkUrl = 'http://';
-        } 
+        }
         if (linkUrl === '') {
             (this as NotifyArgs).selfLink.checkUrl(true);
             return;
@@ -476,8 +476,8 @@ export class Link {
         ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
     }
     private isUrl(url: string): boolean {
-        // eslint-disable-next-line
-        const regexp: RegExp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gi;
+        const regExp: RegExpConstructor = RegExp;
+        const regexp: RegExp = new regExp('(ftp|http|https)://(\\w+:{0,1}\\w*@)?(\\S+)(:[0-9]+)?(/|/([\\w#!:.?+=&%@\\-\\/]))?', 'gi');
         return regexp.test(url);
     }
     private checkUrl(e: boolean): void {
@@ -551,7 +551,7 @@ export class Link {
             const x: number = window.scrollX;
             const y: number = window.scrollY;
             ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
-            window.scrollTo(x,y);
+            window.scrollTo(x, y);
         }
     }
 
@@ -566,7 +566,7 @@ export class Link {
              !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
                 !target.querySelector('#' + this.parent.getID() + '_toolbar_CreateLink')))
         ) {
-            this.parent.notify(events.documentClickClosedBy, { closedBy: "outside click" });
+            this.parent.notify(events.documentClickClosedBy, { closedBy: 'outside click' });
             this.dialogObj.hide({ returnValue: true } as Event);
             EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
             this.parent.isBlur = true;

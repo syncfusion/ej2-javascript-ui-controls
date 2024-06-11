@@ -372,6 +372,18 @@ export class ComboBox extends DropDownList {
         }
     }
     protected updateValues(): void {
+        if (this.fields.disabled) {
+            if (this.value != null) {
+                this.value = !this.isDisableItemValue(this.value) ? this.value : null;
+            }
+            if (this.text != null) {
+                this.text = !this.isDisabledItemByIndex(this.getIndexByValue(this.getValueByText(this.text))) ? this.text : null;
+            }
+            if (this.index != null) {
+                this.index = !this.isDisabledItemByIndex(this.index) ? this.index : null;
+                this.activeIndex = this.index;
+            }
+        }
         if (!isNullOrUndefined(this.value)) {
             let currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
             const li: Element = this.getElementByValue(currentValue);
@@ -806,6 +818,9 @@ export class ComboBox extends DropDownList {
                 li = this.list.querySelector('.' + dropDownListClasses.selected);
             } else {
                 li = this.list.querySelector('.' + dropDownListClasses.focus);
+            }
+            if (this.isDisabledElement(li as HTMLElement)) {
+                return;
             }
             if (li) {
                 this.setSelection(li, e);

@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Matrix, Rect, Size } from '@syncfusion/ej2-drawings';
+import { Rect, Size } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, _PdfDictionary, _PdfName, PdfBorderEffectStyle, PdfBorderEffect, PdfAnnotationState, PdfAnnotationStateModel, PdfCircleAnnotation, PdfPopupAnnotation, PdfLineAnnotation, PdfLineEndingStyle, PdfFont, PdfFontStyle, PdfFontFamily, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfRubberStampAnnotation, PdfPen, PdfBrush, PdfGraphics, PdfVerticalAlignment, PdfGraphicsState, _PdfPath, PdfRubberStampAnnotationIcon, PdfBitmap, PdfImage, PdfPolyLineAnnotation, PdfCircleMeasurementType, PdfPopupIcon, PdfFreeTextAnnotation, PdfBorderStyle, PdfAnnotationCollection, PdfRectangleAnnotation, PdfPolygonAnnotation, PdfEllipseAnnotation, PdfTextMarkupAnnotation, PdfAnnotation, PdfInkAnnotation, PdfLineIntent, PdfAppearance, PdfTemplate, PdfTextMarkupAnnotationType, PdfLineCaptionType, PdfMeasurementUnit, PdfAnnotationIntent, PdfTrueTypeFont, _decode, _PdfBaseStream} from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase, SizeBase, PageRenderer } from '../index';
 
@@ -22,6 +22,7 @@ export class AnnotationRenderer {
     private pdfViewerBase: PdfViewerBase;
     private defaultWidth: number;
     private defaultHeight: number;
+    // eslint-disable-next-line
     public m_renderer: PageRenderer;
 
     /**
@@ -35,43 +36,32 @@ export class AnnotationRenderer {
     }
 
     /**
-     * @param details
-     * @param page
-     *
+     * @param {any} details - details
+     * @param {PdfPage} page - page
      * @private
+     * @returns {void}
      */
     public addShape(details: any, page: PdfPage): void {
         const shapeAnnotation: any = details;
         const isLock: boolean = this.checkAnnotationLock(shapeAnnotation);
-        if (!isNullOrUndefined(shapeAnnotation.author)) {
-            shapeAnnotation.author = shapeAnnotation.author;
-        }
         if (!isNullOrUndefined(shapeAnnotation.shapeAnnotationType) && shapeAnnotation.shapeAnnotationType === 'Line') {
             const points: any = JSON.parse(shapeAnnotation.vertexPoints);
-
             const linePoints: number[] = this.getSaveVertexPoints(points, page);
-
             const lineAnnotation: PdfLineAnnotation = new PdfLineAnnotation(linePoints);
-
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 lineAnnotation.text = shapeAnnotation.note.toString();
             }
-            lineAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !=="" ? shapeAnnotation.author.toString() : 'Guest';
+            lineAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !== '' ? shapeAnnotation.author.toString() : 'Guest';
             lineAnnotation._dictionary.set('NM', shapeAnnotation.annotName.toString());
-
             if (!isNullOrUndefined(shapeAnnotation.subject)) {
                 lineAnnotation.subject = shapeAnnotation.subject.toString();
             }
-
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                // eslint-disable-next-line max-len
                 const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
                 lineAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
                 const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
                 lineAnnotation.innerColor = innerColor;
@@ -92,10 +82,8 @@ export class AnnotationRenderer {
             lineBorder.dash = shapeAnnotation.borderDashArray;
             lineAnnotation.border = lineBorder;
             lineAnnotation.rotationAngle = this.getRotateAngle(shapeAnnotation.rotateAngle);
-
             lineAnnotation.lineEndingStyle.begin = this.getLineEndingStyle(shapeAnnotation.lineHeadStart);
             lineAnnotation.lineEndingStyle.end = this.getLineEndingStyle(shapeAnnotation.lineHeadEnd);
-
             let dateValue: Date;
             if (!isNullOrUndefined(shapeAnnotation.modifiedDate) && !isNaN(Date.parse(shapeAnnotation.modifiedDate))) {
                 dateValue = new Date(Date.parse(shapeAnnotation.modifiedDate));
@@ -106,16 +94,14 @@ export class AnnotationRenderer {
             lineAnnotation.bounds = bounds;
             lineAnnotation.bounds.x = bounds.left;
             lineAnnotation.bounds.y = bounds.top;
-
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    // eslint-disable-next-line max-len
-                    lineAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], lineAnnotation.bounds));
+                    lineAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                           lineAnnotation.bounds));
                 }
             }
             const reviewDetails: any = shapeAnnotation.review;
             lineAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, lineAnnotation.bounds));
-
             if (!isNullOrUndefined(shapeAnnotation.isLocked && shapeAnnotation.isLocked)) {
                 lineAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
@@ -124,11 +110,9 @@ export class AnnotationRenderer {
             if (shapeAnnotation.isCommentLock && shapeAnnotation['isCommentLock'] !== null) {
                 isCommentLock = Boolean(shapeAnnotation['isCommentLock'].toString());
             }
-
             if (shapeAnnotation.isPrint && shapeAnnotation['isPrint'] !== null) {
                 isPrint = Boolean(shapeAnnotation['isPrint'].toString());
             }
-
             if (isCommentLock && isPrint) {
                 lineAnnotation._annotFlags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
             } else if (isPrint) {
@@ -160,38 +144,31 @@ export class AnnotationRenderer {
             const height: number = this.convertPixelToPoint(bounds.height);
             let cropX : number = 0;
             let cropY : number = 0;
-            if (cropValues.x != 0 && cropValues.y != 0 && cropValues.x == left) {
+            if (cropValues.x !== 0 && cropValues.y !== 0 && cropValues.x === left) {
                 cropX = cropValues.x;
                 cropY = cropValues.y;
             }
 
-            else if (cropValues.x == 0 && page.cropBox[2] == page.size[0] && cropValues.y == page.size[1]) {
+            else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
                 cropX = cropValues.x;
                 cropY = cropValues.y;
             }
-
-            // eslint-disable-next-line max-len
             const squareAnnotation: PdfSquareAnnotation = new PdfSquareAnnotation(cropX + left, cropY + top, width, height);
-
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 squareAnnotation.text = shapeAnnotation.note.toString();
             }
-            squareAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !=="" ? shapeAnnotation.author.toString() : 'Guest';
+            squareAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !== '' ? shapeAnnotation.author.toString() : 'Guest';
             squareAnnotation._dictionary.set('NM', shapeAnnotation.annotName.toString());
             if (!isNullOrUndefined(shapeAnnotation.subject)) {
                 squareAnnotation.subject = shapeAnnotation.subject.toString();
             }
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                // eslint-disable-next-line max-len
                 const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
                 squareAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
-                // eslint-disable-next-line max-len
                 if (!this.isTransparentColor(fillColor)){
                     const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
                     squareAnnotation.innerColor = innerColor;
@@ -213,7 +190,6 @@ export class AnnotationRenderer {
             lineBorder.dash = shapeAnnotation.borderDashArray;
             squareAnnotation.border = lineBorder;
             squareAnnotation.rotationAngle = this.getRotateAngle(shapeAnnotation.rotateAngle);
-
             let dateValue: Date;
             if (!isNullOrUndefined(shapeAnnotation.modifiedDate) && !isNaN(Date.parse(shapeAnnotation.modifiedDate))) {
                 dateValue = new Date(Date.parse(shapeAnnotation.modifiedDate));
@@ -222,13 +198,12 @@ export class AnnotationRenderer {
             const commentsDetails: any = shapeAnnotation.comments;
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    // eslint-disable-next-line max-len
-                    squareAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], squareAnnotation.bounds));
+                    squareAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                             squareAnnotation.bounds));
                 }
             }
             const reviewDetails: any = shapeAnnotation.review;
             squareAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, squareAnnotation.bounds));
-
             if (!isNullOrUndefined(shapeAnnotation.isCloudShape) && shapeAnnotation.isCloudShape) {
                 const borderEffect: PdfBorderEffect = new PdfBorderEffect();
                 borderEffect.style = PdfBorderEffectStyle.cloudy;
@@ -240,8 +215,6 @@ export class AnnotationRenderer {
                     squareAnnotation._dictionary.update('RD', rd);
                 }
             }
-
-
             if (!isNullOrUndefined(shapeAnnotation.isLocked) && shapeAnnotation.isLocked) {
                 squareAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
@@ -250,11 +223,9 @@ export class AnnotationRenderer {
             if (shapeAnnotation.isCommentLock && shapeAnnotation['isCommentLock'] !== null) {
                 isCommentLock = Boolean(shapeAnnotation['isCommentLock'].toString());
             }
-
             if (shapeAnnotation.isPrint && shapeAnnotation['isPrint'] !== null) {
                 isPrint = Boolean(shapeAnnotation['isPrint'].toString());
             }
-
             if (isCommentLock && isPrint) {
                 squareAnnotation._annotFlags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
             } else if (isPrint) {
@@ -270,7 +241,6 @@ export class AnnotationRenderer {
             }
             squareAnnotation.setAppearance(true);
             page.annotations.add(squareAnnotation);
-
         }
         else if (!isNullOrUndefined(shapeAnnotation.shapeAnnotationType) && shapeAnnotation.shapeAnnotationType === 'Circle') {
             const bounds: Rect = JSON.parse(shapeAnnotation.bounds);
@@ -284,44 +254,32 @@ export class AnnotationRenderer {
             if (isNullOrUndefined(bounds.top)) {
                 shapeAnnotation.bounds.top = 0;
             }
-
             const cropValues : PointBase = this.getCropBoxValue(page, false);
             let cropX : number = 0;
             let cropY : number = 0;
-            if (cropValues.x != 0 && cropValues.y != 0 && cropValues.x == left) {
+            if (cropValues.x !== 0 && cropValues.y !== 0 && cropValues.x === left) {
                 cropX = cropValues.x;
                 cropY = cropValues.y;
             }
-
-            else if (cropValues.x == 0 && page.cropBox[2] == page.size[0] && cropValues.y == page.size[1]) {
+            else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
                 cropX = cropValues.x;
                 cropY = cropValues.y;
             }
-            // eslint-disable-next-line max-len
             const circleAnnotation: PdfCircleAnnotation = new PdfCircleAnnotation(cropX + left, cropY + top, width, height);
-
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 circleAnnotation.text = shapeAnnotation.note.toString();
             }
-
-            circleAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !=="" ? shapeAnnotation.author.toString() : 'Guest';
-
+            circleAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !== '' ? shapeAnnotation.author.toString() : 'Guest';
             circleAnnotation._dictionary.set('NM', shapeAnnotation.annotName.toString());
-
             if (!isNullOrUndefined(shapeAnnotation.subject)) {
                 circleAnnotation.subject = shapeAnnotation.subject.toString();
             }
-
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                // eslint-disable-next-line max-len
                 const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
                 circleAnnotation.color = color;
             }
-
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
                 if (!this.isTransparentColor(fillColor)){
                     const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
@@ -352,13 +310,12 @@ export class AnnotationRenderer {
             const commentsDetails: any = shapeAnnotation.comments;
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    // eslint-disable-next-line max-len
-                    circleAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], circleAnnotation.bounds));
+                    circleAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                             circleAnnotation.bounds));
                 }
             }
             const reviewDetails: any = shapeAnnotation.review;
             circleAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, circleAnnotation.bounds));
-
             if (!isNullOrUndefined(shapeAnnotation.isCloudShape) && shapeAnnotation.isCloudShape) {
                 const borderEffect: PdfBorderEffect = new PdfBorderEffect();
                 borderEffect.style = PdfBorderEffectStyle.cloudy;
@@ -370,7 +327,6 @@ export class AnnotationRenderer {
                     circleAnnotation._dictionary.update('RD', rd);
                 }
             }
-
             if (!isNullOrUndefined(shapeAnnotation.isLocked && shapeAnnotation.isLocked)) {
                 circleAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
@@ -379,11 +335,9 @@ export class AnnotationRenderer {
             if (shapeAnnotation.isCommentLock && shapeAnnotation['isCommentLock'] !== null) {
                 isCommentLock = Boolean(shapeAnnotation['isCommentLock'].toString());
             }
-
             if (shapeAnnotation.isPrint && shapeAnnotation['isPrint'] !== null) {
                 isPrint = Boolean(shapeAnnotation['isPrint'].toString());
             }
-
             if (isCommentLock && isPrint) {
                 circleAnnotation._annotFlags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
             } else if (isPrint) {
@@ -419,20 +373,17 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 polygonAnnotation.text = shapeAnnotation.note.toString();
             }
-            polygonAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !=="" ? shapeAnnotation.author.toString() : 'Guest';
+            polygonAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !== '' ? shapeAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(shapeAnnotation.subject)) {
                 polygonAnnotation.subject = shapeAnnotation.subject.toString();
             }
             polygonAnnotation._dictionary.set('NM', shapeAnnotation.annotName.toString());
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                // eslint-disable-next-line max-len
                 const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
                 polygonAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
                 if (!this.isTransparentColor(fillColor)){
                     const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
@@ -463,8 +414,8 @@ export class AnnotationRenderer {
             const commentsDetails: any = shapeAnnotation.comments;
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    // eslint-disable-next-line max-len
-                    polygonAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], polygonAnnotation.bounds));
+                    polygonAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                              polygonAnnotation.bounds));
                 }
             }
             const reviewDetails: any = shapeAnnotation.review;
@@ -480,7 +431,6 @@ export class AnnotationRenderer {
                     polygonAnnotation._dictionary.update('RD', rd);
                 }
             }
-
             if (!isNullOrUndefined(shapeAnnotation.isLocked && shapeAnnotation.isLocked)) {
                 polygonAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
@@ -520,20 +470,17 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 polylineAnnotation.text = shapeAnnotation.note.toString();
             }
-            polylineAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !=="" ? shapeAnnotation.author.toString() : 'Guest';
+            polylineAnnotation.author = !isNullOrUndefined(shapeAnnotation.author) && shapeAnnotation.author.toString() !== '' ? shapeAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(shapeAnnotation.subject)) {
                 polylineAnnotation.subject = shapeAnnotation.subject.toString();
             }
             polylineAnnotation._dictionary.set('NM', shapeAnnotation.annotName.toString());
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                // eslint-disable-next-line max-len
                 const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
                 polylineAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
                 if (!this.isTransparentColor(fillColor)){
                     const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
@@ -566,8 +513,8 @@ export class AnnotationRenderer {
             const commentsDetails: any = shapeAnnotation.comments;
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    // eslint-disable-next-line max-len
-                    polylineAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], polylineAnnotation.bounds));
+                    polylineAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                               polylineAnnotation.bounds));
                 }
             }
             const reviewDetails: any = shapeAnnotation.review;
@@ -605,17 +552,18 @@ export class AnnotationRenderer {
     }
 
     /**
-    * @private
-    * @param details 
-    * @param page 
-    */
+     * @private
+     * @param {any} details - details
+     * @param {PdfPage} page - page
+     * @returns {void}
+     */
     public saveInkSignature(details: any, page: PdfPage): PdfInkAnnotation {
-        let inkSignatureAnnotation: any = details;
+        const inkSignatureAnnotation: any = details;
         const bounds: Rect = JSON.parse(inkSignatureAnnotation.bounds);
-        let stampObjects: any = JSON.parse(inkSignatureAnnotation.data.toString());
-        let rotationAngle: number = this.getRotateAngle(page.rotation.toString());
+        const stampObjects: any = JSON.parse(inkSignatureAnnotation.data.toString());
+        const rotationAngle: number = this.getRotateAngle(page.rotation.toString());
         const cropValues: PointBase = this.getCropBoxValue(page, false);
-        let left: number = cropValues.x + this.convertPixelToPoint(bounds.x);
+        const left: number = cropValues.x + this.convertPixelToPoint(bounds.x);
         let top: number = this.convertPixelToPoint(bounds.y);
         if (!(cropValues.x === 0 && (page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]))) {
             top -= cropValues.y;
@@ -625,9 +573,7 @@ export class AnnotationRenderer {
         const opacity: number = inkSignatureAnnotation.opacity;
         const thickness: number = parseInt(inkSignatureAnnotation.thickness.toString(), 10);
         if (!isNullOrUndefined(inkSignatureAnnotation.strokeColor)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const strokeColor: any = JSON.parse(inkSignatureAnnotation.strokeColor);
-            // eslint-disable-next-line max-len
             const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
             inkSignatureAnnotation.color = color;
         }
@@ -635,23 +581,22 @@ export class AnnotationRenderer {
         let minimumY: number = -1;
         let maximumX: number = -1;
         let maximumY: number = -1;
-        let drawingPath: _PdfPath = new _PdfPath();
-        for (let p = 0; p < stampObjects.length; p++) {
-            let val = stampObjects[parseInt(p.toString(), 10)];
+        const drawingPath: _PdfPath = new _PdfPath();
+        for (let p: number = 0; p < stampObjects.length; p++) {
+            const val: any = stampObjects[parseInt(p.toString(), 10)];
             drawingPath._addLine(val.x, val.y, 0, 0);
         }
-        for (let k = 0; k < drawingPath._points.length; k += 2) {
-            const value = drawingPath._points[parseInt(k.toString(), 10)];
-
-            if (minimumX == -1) {
+        for (let k: number = 0; k < drawingPath._points.length; k += 2) {
+            const value: number[] = drawingPath._points[parseInt(k.toString(), 10)];
+            if (minimumX === -1) {
                 minimumX = value[0];
                 minimumY = value[1];
                 maximumX = value[0];
                 maximumY = value[1];
             }
             else {
-                let point1: number = value[0];
-                let point2: number = value[1];
+                const point1: number = value[0];
+                const point2: number = value[1];
                 if (minimumX >= point1) {
                     minimumX = point1;
                 }
@@ -668,79 +613,75 @@ export class AnnotationRenderer {
         }
         let newDifferenceX: number = (maximumX - minimumX) / width;
         let newDifferenceY: number = (maximumY - minimumY) / height;
-
-        if (newDifferenceX == 0) {
+        if (newDifferenceX === 0) {
             newDifferenceX = 1;
         }
-        else if (newDifferenceY == 0) {
+        else if (newDifferenceY === 0) {
             newDifferenceY = 1;
         }
-
         let linePoints: number[] = [];
-        let isNewValues = 0;
+        let isNewValues: number = 0;
         if (rotationAngle !== 0) {
-            for (let j = 0; j < stampObjects.length; j++) {
-                const val = stampObjects[parseInt(j.toString(), 10)];
-                const path = val["command"].toString();
-                if (path === "M" && j !== isNewValues) {
+            for (let j: number = 0; j < stampObjects.length; j++) {
+                const val: any = stampObjects[parseInt(j.toString(), 10)];
+                const path: string = val['command'].toString();
+                if (path === 'M' && j !== isNewValues) {
                     isNewValues = j;
                     break;
                 }
-                linePoints.push((parseFloat(val["x"].toString())));
-                linePoints.push((parseFloat(val["y"].toString())));
+                linePoints.push((parseFloat(val['x'].toString())));
+                linePoints.push((parseFloat(val['y'].toString())));
             }
-            let rotatedPoints: _PdfPath = this.getRotatedPath(linePoints, rotationAngle);
+            const rotatedPoints: _PdfPath = this.getRotatedPath(linePoints, rotationAngle);
             linePoints = [];
-            for (var z = 0; z < rotatedPoints._points.length; z += 2) {
+            for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
                 linePoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX) / newDifferenceX + left);
                 linePoints.push(page.size[1] - (rotatedPoints._points[z + 1][1] - minimumY) / newDifferenceY - top);
             }
         }
-
         else {
-            for (let j = 0; j < stampObjects.length; j++) {
-                const val = stampObjects[parseInt(j.toString(), 10)];
-                const path = val["command"].toString();
-                if (path === "M" && j !== isNewValues) {
+            for (let j: number = 0; j < stampObjects.length; j++) {
+                const val: any = stampObjects[parseInt(j.toString(), 10)];
+                const path: string = val['command'].toString();
+                if (path === 'M' && j !== isNewValues) {
                     isNewValues = j;
                     break;
                 }
                 linePoints.push(((val.x - minimumX) / newDifferenceX) + left);
-                let newX: number = ((val.y - minimumY) / newDifferenceY);
+                const newX: number = ((val.y - minimumY) / newDifferenceY);
                 linePoints.push(page.size[1] - newX - top);
             }
         }
-        let rectangle: Rect = new Rect(left, top, width, height);
-        let colors: number[] = [inkSignatureAnnotation.color[0], inkSignatureAnnotation.color[1], inkSignatureAnnotation.color[2]];
-        let inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
+        const colors: number[] = [inkSignatureAnnotation.color[0], inkSignatureAnnotation.color[1], inkSignatureAnnotation.color[2]];
+        const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
         let bound: Rect = new Rect();
-        bound = new Rect(inkAnnotation.bounds.x, (page.size[1] - (inkAnnotation.bounds.y + inkAnnotation.bounds.height)), inkAnnotation.bounds.width, inkAnnotation.bounds.height);
+        bound = new Rect(inkAnnotation.bounds.x, (page.size[1] - (inkAnnotation.bounds.y + inkAnnotation.bounds.height)),
+                         inkAnnotation.bounds.width, inkAnnotation.bounds.height);
         inkAnnotation.bounds = bound;
         inkAnnotation.color = colors;
         linePoints = [];
-
         if (isNewValues > 0) {
-            if (rotationAngle != 0) {
-                let pathCollection: number[][] = [];
-                for (var i = isNewValues; i < stampObjects.length; i++) {
-                    const val = stampObjects[parseInt(i.toString(), 10)];
-                    const path = val["command"].toString();
-                    if (path === "M" && i !== isNewValues) {
+            if (rotationAngle !== 0) {
+                const pathCollection: number[][] = [];
+                for (let i: number = isNewValues; i < stampObjects.length; i++) {
+                    const val: any = stampObjects[parseInt(i.toString(), 10)];
+                    const path: string = val['command'].toString();
+                    if (path === 'M' && i !== isNewValues) {
                         pathCollection.push(linePoints);
                         linePoints = [];
                     }
-                    linePoints.push(val["x"]);
-                    linePoints.push(val["y"]);
+                    linePoints.push(val['x']);
+                    linePoints.push(val['y']);
                 }
                 if (linePoints.length > 0) {
                     pathCollection.push(linePoints);
                 }
-                for (var g = 0; g < pathCollection.length; g++) {
-                    let graphicsPoints = [];
-                    const pointsCollections = pathCollection[parseInt(g.toString(), 10)];
+                for (let g: number = 0; g < pathCollection.length; g++) {
+                    let graphicsPoints: any = [];
+                    const pointsCollections: number[] = pathCollection[parseInt(g.toString(), 10)];
                     if (pointsCollections.length > 0) {
                         const rotatedPoints: _PdfPath = this.getRotatedPath(pointsCollections, rotationAngle);
-                        for (var z = 0; z < rotatedPoints._points.length; z += 2) {
+                        for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
                             graphicsPoints.push(rotatedPoints._points[parseInt(g.toString(), 10)][0] / minimumX + left);
                             graphicsPoints.push((rotatedPoints._points[z + 1][1] - minimumY / newDifferenceY) - top);
                         }
@@ -748,18 +689,17 @@ export class AnnotationRenderer {
                     }
                     graphicsPoints = [];
                 }
-
             }
             else {
-                for (var i = isNewValues; i < stampObjects.length; i++) {
-                    const val = stampObjects[parseInt(i.toString(), 10)];
-                    const path = val["command"].toString();
-                    if (path === "M" && i !== isNewValues) {
+                for (let i: number = isNewValues; i < stampObjects.length; i++) {
+                    const val: any = stampObjects[parseInt(i.toString(), 10)];
+                    const path: string = val['command'].toString();
+                    if (path === 'M' && i !== isNewValues) {
                         inkAnnotation.inkPointsCollection.push(linePoints);
                         linePoints = [];
                     }
-                    linePoints.push((val["x"] - minimumX) / newDifferenceX + left);
-                    var newX = ((val["y"] - minimumY) / newDifferenceY);
+                    linePoints.push((val['x'] - minimumX) / newDifferenceX + left);
+                    const newX: number = ((val['y'] - minimumY) / newDifferenceY);
                     linePoints.push(page.size[1] - newX - top);
                 }
                 if (linePoints.length > 0) {
@@ -788,11 +728,9 @@ export class AnnotationRenderer {
         }
         const reviewDetails: any = inkSignatureAnnotation.review;
         inkAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, inkAnnotation.bounds));
-
         const commentsDetails: any = inkSignatureAnnotation.comments;
         if (commentsDetails.length > 0) {
             for (let i: number = 0; i < commentsDetails.length; i++) {
-                // eslint-disable-next-line max-len
                 inkAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], inkAnnotation.bounds));
             }
         }
@@ -821,8 +759,8 @@ export class AnnotationRenderer {
     }
 
     private getRotatedPath(linePoints: number[], rotationAngle: number): _PdfPath {
-        let graphicsPath: _PdfPath = new _PdfPath();
-        for (var j = 0; j < linePoints.length; j += 2) {
+        const graphicsPath: _PdfPath = new _PdfPath();
+        for (let j: number = 0; j < linePoints.length; j += 2) {
             graphicsPath._addLine(linePoints[parseInt(j.toString(), 10)], linePoints[j + 1], 0, 0);
         }
         return graphicsPath;
@@ -830,12 +768,13 @@ export class AnnotationRenderer {
 
 
     /**
-     * @param details
-     * @param loadedDocument
+     * @param {any} details -details
+     * @param {PdfDocument} loadedDocument - loadedDocument
      * @private
+     * @returns {void}
      */
     public addTextMarkup(details: any, loadedDocument: PdfDocument): void{
-        const markupAnnotation = details;
+        const markupAnnotation: any = details;
         const pageNo: number = parseInt(markupAnnotation['pageNumber'].toString(), 10);
         const page: PdfPage = loadedDocument.getPage(pageNo);
         const annotationtypes: PdfTextMarkupAnnotation = new PdfTextMarkupAnnotation();
@@ -859,35 +798,30 @@ export class AnnotationRenderer {
             const bound:  {[key: string]: number} = bounds[parseInt(i.toString(), 10)];
             const cropValues: PointBase = this.getCropBoxValue(page, true);
             if (!isNullOrUndefined(bound['left'])){
-                boundsCollection.push(new Rect(cropValues.x + this.convertPixelToPoint(bound['left']), cropValues.y + this.convertPixelToPoint(bound['top']), bound.hasOwnProperty('width') ? this.convertPixelToPoint(bound['width']) : 0, bound.hasOwnProperty('height') ? this.convertPixelToPoint(bound['height']) : 0));
+                boundsCollection.push(new Rect(cropValues.x + this.convertPixelToPoint(bound['left']), cropValues.y + this.convertPixelToPoint(bound['top']), Object.prototype.hasOwnProperty.call(bound, 'width') ? this.convertPixelToPoint(bound['width']) : 0, Object.prototype.hasOwnProperty.call(bound, 'height') ? this.convertPixelToPoint(bound['height']) : 0));
             }
-
             // Assuming boundsCollection is an array of RectangleF objects
-            const groupedRectangles = new Map<number, Rect[]>();
-
+            const groupedRectangles: Map<number, Rect[]> = new Map<number, Rect[]>();
             // Group rectangles by their Y values
             for (const rect of boundsCollection) {
                 if (!groupedRectangles.has(rect.y)) {
                     groupedRectangles.set(rect.y, []);
                 }
-                if(groupedRectangles.get(rect.y))
+                if (groupedRectangles.get(rect.y))
                 {
                     groupedRectangles.get(rect.y).push(rect);
                 }
             }
-
             // Calculate combined rectangles within each group
             const combinedRectangles: Rect[] = [];
-            groupedRectangles.forEach((group, groupKey) => {
+            groupedRectangles.forEach((group: Rect[], groupKey: number) => {
                 if (group.length > 0) {
-                    const minX = Math.min(...group.map(rect => rect.x));
-                    const width = group.map(rect => rect.width).reduce((sum, width) => sum + width, 0);
-                    const height = group[0].height;
-
+                    const minX: number = Math.min(...group.map((rect: Rect) => rect.x));
+                    const width: number = group.map((rect: Rect) => rect.width).reduce((sum: number, width: number) => sum + width, 0);
+                    const height: number = group[0].height;
                     combinedRectangles.push(new Rect(minX, groupKey, width, height));
                 }
             });
-
             boundsCollection = combinedRectangles;
         }
         const annotation: PdfTextMarkupAnnotation = new PdfTextMarkupAnnotation(null, 0, 0, 0, 0);
@@ -915,16 +849,13 @@ export class AnnotationRenderer {
         }
         annotation._dictionary.set('NM', markupAnnotation.annotName.toString());
         if (!isNullOrUndefined(markupAnnotation.color)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const annotColor: any = JSON.parse(markupAnnotation.color);
-            // eslint-disable-next-line max-len
             const color: number[] = [annotColor.r, annotColor.g, annotColor.b];
             annotation.color = color;
         }
         if (!isNullOrUndefined(markupAnnotation.opacity)) {
             annotation.opacity = markupAnnotation.opacity;
         }
-        const rect: any = markupAnnotation.rect;
         if (boundsCollection.length > 0){
             // Don't need to set bounds explicitly for text markup annotation
             const boundArrayCollection: number[][] = [];
@@ -941,16 +872,13 @@ export class AnnotationRenderer {
         const commentsDetails: any = markupAnnotation.comments;
         if (commentsDetails.length > 0) {
             for (let i: number = 0; i < commentsDetails.length; i++) {
-                // eslint-disable-next-line max-len
                 annotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], annotation.bounds));
             }
         }
         const reviewDetails: any = markupAnnotation.review;
         annotation.reviewHistory.add(this.addReviewCollections(reviewDetails, annotation.bounds));
         if (!isNullOrUndefined(markupAnnotation.color)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const annotColor: any = JSON.parse(markupAnnotation.color);
-            // eslint-disable-next-line max-len
             const color: number[] = [annotColor.r, annotColor.g, annotColor.b];
             annotation.textMarkUpColor = color;
         }
@@ -1007,8 +935,9 @@ export class AnnotationRenderer {
 
     /**
      * @private
-     * @param details
-     * @param page
+     * @param {any} details - details
+     * @param {PdfPage} page - page
+     * @returns {void}
      */
     public addCustomStampAnnotation(details: any, page: PdfPage): void {
         const stampAnnotation: any = details;
@@ -1018,69 +947,59 @@ export class AnnotationRenderer {
         let left: number = 0;
         let top: number = 0;
         const graphics: PdfGraphics = page.graphics;
-        let isTemplate: boolean = (!isNullOrUndefined(stampAnnotation.template) && (stampAnnotation.template !== "")) ? true : false; 
-        if (stampAnnotation.hasOwnProperty('wrapperBounds') && !isTemplate) {
+        const isTemplate: boolean = (!isNullOrUndefined(stampAnnotation.template) && (stampAnnotation.template !== '')) ? true : false;
+        if (Object.prototype.hasOwnProperty.call(stampAnnotation, 'wrapperBounds') && !isTemplate) {
             const wrapperBounds: any = stampAnnotation.wrapperBounds;
             const boundsXY: Rect = this.calculateBoundsXY(wrapperBounds, bounds, pageNo, page);
             left = boundsXY.x;
             top = boundsXY.y;
-
         }
         else {
             left = this.convertPixelToPoint(bounds.left);
             top = this.convertPixelToPoint(bounds.top);
         }
-
         let cropX : number = 0;
         let cropY : number = 0;
-
-        if (cropValues.x != 0 && cropValues.y != 0 && cropValues.x == left) {
+        if (cropValues.x !== 0 && cropValues.y !== 0 && cropValues.x === left) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-
-        else if (cropValues.x == 0 && page.cropBox[2] == page.size[0] && cropValues.y == page.size[1]) {
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-
         left += cropX;
         top += cropY;
-
         let width: number = this.convertPixelToPoint(bounds.width);
         let height: number = this.convertPixelToPoint(bounds.height);
-
         if (!isNullOrUndefined(stampAnnotation.stampAnnotationType) && (stampAnnotation.stampAnnotationType === 'image') && (stampAnnotation.stampAnnotationPath !== ' ') && !isTemplate) {
             if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                 width = this.convertPixelToPoint((bounds.height));
                 height = this.convertPixelToPoint((bounds.width));
             }
         }
-
         const opacity: number = stampAnnotation.opacity;
         const rotateAngle: number = stampAnnotation.rotateAngle;
         let isLock: boolean = false;
-
-        if (stampAnnotation.hasOwnProperty('annotationSettings') && !isNullOrUndefined(stampAnnotation.annotationSettings)) {
+        if (Object.prototype.hasOwnProperty.call(stampAnnotation, 'annotationSettings') && !isNullOrUndefined(stampAnnotation.annotationSettings)) {
             const annotationSettings: any = stampAnnotation.annotationSettings;
             if (!isNullOrUndefined(annotationSettings.isLock)) {
                 isLock = annotationSettings.isLock;
             }
         }
         if (!isNullOrUndefined(stampAnnotation.stampAnnotationType) && (stampAnnotation.stampAnnotationType === 'image') && (stampAnnotation.stampAnnotationPath !== ' ') || isTemplate) {
-            let pageRender: PageRenderer = new PageRenderer(this.pdfViewer, this.pdfViewerBase);
             const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(left, top, width, height);
             page.annotations.add(rubberStampAnnotation);
             if (isTemplate) {
-                let appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
+                const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
                 const dictionary: _PdfDictionary = new _PdfDictionary(page._crossReference);
                 const state: PdfGraphicsState = graphics.save();
-                let template: PdfTemplate = new PdfTemplate(stampAnnotation.template, dictionary._crossReference);
+                const template: PdfTemplate = new PdfTemplate(stampAnnotation.template, dictionary._crossReference);
                 template._isExported = true;
                 template._appearance = stampAnnotation.template;
                 template._crossReference = dictionary._crossReference;
                 template._size = [stampAnnotation.templateSize[0], stampAnnotation.templateSize[1]];
-                let bounds = {x: 0, y: 0, width: width, height: height };
+                const bounds: any = {x: 0, y: 0, width: width, height: height };
                 appearance.graphics.drawTemplate(template, bounds);
                 appearance.graphics.restore(state);
             }
@@ -1088,24 +1007,25 @@ export class AnnotationRenderer {
                 const imageUrl: string = (stampAnnotation['stampAnnotationPath'].toString()).split(',')[1];
                 const bytes: Uint8Array = _decode(imageUrl, false) as Uint8Array;
                 let bitmap: PdfImage;
-                if (bytes && bytes.length > 2 && ((bytes[0] === 255 && bytes[1] === 216) || (bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71 && bytes[4] === 13 && bytes[5] === 10  && bytes[6] === 26 && bytes[7] === 10 ) )) {
+                if (bytes && bytes.length > 2 && ((bytes[0] === 255 && bytes[1] === 216) || (bytes[0] === 137 && bytes[1] === 80 &&
+                     bytes[2] === 78 && bytes[3] === 71 && bytes[4] === 13 && bytes[5] === 10  && bytes[6] === 26 && bytes[7] === 10 ) )) {
                     bitmap = new PdfBitmap(bytes);
-                    let appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
+                    const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
                     const state: PdfGraphicsState = graphics.save();
                     appearance.graphics.drawImage(bitmap, 0, 0, width, height);
                     appearance.graphics.restore(state);
                 }
                 else {
                     const appearance: PdfAppearance = rubberStampAnnotation.appearance;
-                    const filterAnnot: any = this.pdfViewerBase.pngData.filter((nameStamp) => nameStamp.name === stampAnnotation.annotName);
-                    let dictionary: _PdfDictionary = filterAnnot[0]._dictionary.get('AP');
-                    let pngDictionary: _PdfBaseStream = dictionary.get('N');
+                    const filterAnnot: any =
+                    this.pdfViewerBase.pngData.filter((nameStamp: any) => nameStamp.name === stampAnnotation.annotName);
+                    const dictionary: _PdfDictionary = filterAnnot[0]._dictionary.get('AP');
+                    const pngDictionary: _PdfBaseStream = dictionary.get('N');
                     appearance.normal = new PdfTemplate(pngDictionary, page._crossReference);
                 }
                 rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(page.rotation, rotateAngle);
             }
             rubberStampAnnotation.opacity = opacity;
-
             if (!isNullOrUndefined(stampAnnotation.note)) {
                 rubberStampAnnotation.text = stampAnnotation.note.toString();
             }
@@ -1118,15 +1038,12 @@ export class AnnotationRenderer {
             const commentsDetails: any = stampAnnotation.comments;
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    // eslint-disable-next-line max-len
-                    rubberStampAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], rubberStampAnnotation.bounds));
+                    rubberStampAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                                  rubberStampAnnotation.bounds));
                 }
             }
             const reviewDetails: any = stampAnnotation.review;
             rubberStampAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, rubberStampAnnotation.bounds));
-            if (!isNullOrUndefined(stampAnnotation.author)) {
-                stampAnnotation.author = stampAnnotation.author;
-            }
             if (!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject) {
                 rubberStampAnnotation.subject = stampAnnotation.subject.toString();
             }
@@ -1142,20 +1059,17 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(stampAnnotation.customData)) {
                 rubberStampAnnotation.setValues('CustomData', stampAnnotation.customData);
             }
-            if(!isNullOrUndefined(stampAnnotation.icon)){
+            if (!isNullOrUndefined(stampAnnotation.icon)){
                 rubberStampAnnotation.setValues('iconName', stampAnnotation.icon);
             }
         }
-
         else {
-            const subject: string = stampAnnotation.subject.toString();
             const icon: string = stampAnnotation.icon.toString();
             const stampColor: string = stampAnnotation.stampFillcolor.toString();
             const fillColor: string = !isNullOrUndefined(stampAnnotation.fillColor) ? stampAnnotation.fillColor.toString() : '#192760';
             const isDynamic: string = stampAnnotation.isDynamicStamp.toString();
             let textBrush: PdfBrush = new PdfBrush([0, 0, 0]);
             let colors: number[] = [];
-            const stampWidth: number = width;
             if (fillColor === '#192760') {
                 colors = [25, 39, 96];
             }
@@ -1166,10 +1080,8 @@ export class AnnotationRenderer {
                 colors = [138, 37, 26];
             }
             textBrush = new PdfBrush(colors);
-
             let stampBrush: PdfBrush = new PdfBrush([0, 0, 0]);
             let stampcolors: number[] = [];
-
             if (stampColor === '#e6eddf') {
                 stampcolors = [230, 237, 223];
             }
@@ -1181,10 +1093,8 @@ export class AnnotationRenderer {
             }
             textBrush = new PdfBrush(colors);
             stampBrush = new PdfBrush(stampcolors);
-
             const pens: PdfPen = new PdfPen(colors, 1);
             let rectangle: Rect = new Rect(left, top, width, height);
-
             if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                 rectangle = new Rect(left, top, height, width);
             }
@@ -1195,7 +1105,6 @@ export class AnnotationRenderer {
                 rubberStampAnnotation.text = stampAnnotation.note.toString();
             }
             rubberStampAnnotation._dictionary.set('NM', stampAnnotation.annotName.toString());
-
             let dateValue: Date;
             if (!isNullOrUndefined(stampAnnotation.modifiedDate) && !isNaN(Date.parse(stampAnnotation.modifiedDate))) {
                 dateValue = new Date(Date.parse(stampAnnotation.modifiedDate));
@@ -1204,8 +1113,8 @@ export class AnnotationRenderer {
             const commentsDetails: any = stampAnnotation.comments;
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    // eslint-disable-next-line max-len
-                    rubberStampAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], rubberStampAnnotation.bounds));
+                    rubberStampAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                                  rubberStampAnnotation.bounds));
                 }
             }
             const reviewDetails: any = stampAnnotation.review;
@@ -1217,7 +1126,7 @@ export class AnnotationRenderer {
             if (icon.trim() === 'Accepted' || icon.trim() === 'Rejected') {
                 this.drawStampAsPath(stampAnnotation.stampAnnotationPath, rubberStampAnnotation, textBrush, stampBrush);
             }
-            else if(isIconExists) {
+            else if (isIconExists) {
                 if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                     rubberStampAnnotation.bounds = rectangle;
                 }
@@ -1231,7 +1140,7 @@ export class AnnotationRenderer {
                 }
             }
             rubberStampAnnotation.opacity = opacity;
-            rubberStampAnnotation.author = !isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author.toString() !=="" ? stampAnnotation.author.toString() : 'Guest';
+            rubberStampAnnotation.author = !isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author.toString() !== '' ? stampAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(stampAnnotation.isLocked) && stampAnnotation.isLocked) {
                 rubberStampAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
@@ -1247,20 +1156,20 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(stampAnnotation.rotateAngle)) {
                 rubberStampAnnotation.setValues('rotateAngle', stampAnnotation.rotateAngle.toString());
             }
-            if(!isNullOrUndefined(stampAnnotation.icon)){
+            if (!isNullOrUndefined(stampAnnotation.icon)){
                 rubberStampAnnotation.setValues('iconName', stampAnnotation.icon.toString());
             }
             page.annotations.add(rubberStampAnnotation);
             if (!isIconExists) {
-                let appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
-                appearance.graphics.drawRoundedRectangle(0,0, rectangle.width, rectangle.height, 10, pens, stampBrush);
+                const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
+                appearance.graphics.drawRoundedRectangle(0, 0, rectangle.width, rectangle.height, 10, pens, stampBrush);
                 if (isDynamic === 'true') {
                     const text: string = stampAnnotation.dynamicText.toString();
                     const state: PdfGraphicsState = appearance.graphics.save();
                     appearance.graphics.setTransparency(opacity);
                     this.renderDynamicStamp(rubberStampAnnotation, icon, text, textBrush, rectangle, pens, page);
                     appearance.graphics.restore(state);
-                    rubberStampAnnotation._dictionary.set('Name', _PdfName.get('#23D' + icon.split(" ").join("")));
+                    rubberStampAnnotation._dictionary.set('Name', _PdfName.get('#23D' + icon.split(' ').join('')));
                 }
                 else {
                     this.retriveDefaultWidth(icon.trim());
@@ -1275,24 +1184,21 @@ export class AnnotationRenderer {
     }
 
     /**
-     * @param details
-     * @param page
-     *
+     * @param {any} details - details
+     * @param {PdfPage} page - page
      * @private
+     * @returns {void}
      */
     public addMeasure(details: any, page: PdfPage): void {
         const measureShapeAnnotation: any = details;
-        if (!isNullOrUndefined(measureShapeAnnotation.author)) {
-            measureShapeAnnotation.author = measureShapeAnnotation.author;
-        }
         if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && measureShapeAnnotation.shapeAnnotationType === 'Line') {
             const points: any = JSON.parse(measureShapeAnnotation.vertexPoints);
             const linePoints: number[] = this.getSaveVertexPoints(points, page);
-            let lineAnnotation: PdfLineAnnotation = new PdfLineAnnotation(linePoints);
+            const lineAnnotation: PdfLineAnnotation = new PdfLineAnnotation(linePoints);
             if (!isNullOrUndefined(measureShapeAnnotation.note)) {
                 lineAnnotation.text = measureShapeAnnotation.note.toString();
-        }
-            lineAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !=="" ? measureShapeAnnotation.author.toString() : 'Guest';
+            }
+            lineAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !== '' ? measureShapeAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(measureShapeAnnotation.subject)) {
                 lineAnnotation.subject = measureShapeAnnotation.subject.toString();
             }
@@ -1321,7 +1227,7 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(measureShapeAnnotation.opacity)) {
                 lineAnnotation.opacity = measureShapeAnnotation.opacity;
             }
-            let lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
+            const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
             lineBorder.width = measureShapeAnnotation.thickness;
             if (!isNullOrUndefined(measureShapeAnnotation.borderStyle) && measureShapeAnnotation.borderStyle !== '') {
                 lineBorder.style = this.getBorderStyle(measureShapeAnnotation.borderStyle);
@@ -1349,7 +1255,8 @@ export class AnnotationRenderer {
             lineAnnotation.bounds.y = bounds.top;
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    lineAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], lineAnnotation.bounds));
+                    lineAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                           lineAnnotation.bounds));
                 }
             }
             const reviewDetails: any = measureShapeAnnotation.review;
@@ -1384,12 +1291,9 @@ export class AnnotationRenderer {
         }
         else if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && measureShapeAnnotation.shapeAnnotationType === 'Polyline') {
             const points: any = JSON.parse(measureShapeAnnotation.vertexPoints);
-
             const linePoints: number[] = this.getSaveVertexPoints(points, page);
-
             const polylineAnnotation: PdfPolyLineAnnotation = new PdfPolyLineAnnotation(linePoints);
-
-            polylineAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !=="" ? measureShapeAnnotation.author.toString() : 'Guest';
+            polylineAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !== '' ? measureShapeAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(measureShapeAnnotation.note)) {
                 polylineAnnotation.text = measureShapeAnnotation.note.toString();
             }
@@ -1397,17 +1301,12 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(measureShapeAnnotation.subject)) {
                 polylineAnnotation.subject = measureShapeAnnotation.subject.toString();
             }
-
             if (!isNullOrUndefined(measureShapeAnnotation.strokeColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const strokeColor: any = JSON.parse(measureShapeAnnotation.strokeColor);
-                // eslint-disable-next-line max-len
                 const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
                 polylineAnnotation.color = color;
             }
-
             if (!isNullOrUndefined(measureShapeAnnotation.fillColor)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const fillColor: any = JSON.parse(measureShapeAnnotation.fillColor);
                 if (!this.isTransparentColor(fillColor)){
                     const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
@@ -1421,11 +1320,9 @@ export class AnnotationRenderer {
                     polylineAnnotation._dictionary.update('FillOpacity', fillColor.a);
                 }
             }
-
             if (!isNullOrUndefined(measureShapeAnnotation.opacity)) {
                 polylineAnnotation.opacity = measureShapeAnnotation.opacity;
             }
-
             const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
             lineBorder.width = measureShapeAnnotation.thickness;
             lineBorder.style = this.getBorderStyle(measureShapeAnnotation.borderStyle);
@@ -1434,7 +1331,6 @@ export class AnnotationRenderer {
             polylineAnnotation.rotationAngle = this.getRotateAngle(measureShapeAnnotation.rotateAngle);
             polylineAnnotation.beginLineStyle = this.getLineEndingStyle(measureShapeAnnotation.lineHeadStart);
             polylineAnnotation.endLineStyle = this.getLineEndingStyle(measureShapeAnnotation.lineHeadEnd);
-
             let dateValue: Date;
             if (!isNullOrUndefined(measureShapeAnnotation.modifiedDate) && !isNaN(Date.parse(measureShapeAnnotation.modifiedDate))) {
                 dateValue = new Date(Date.parse(measureShapeAnnotation.modifiedDate));
@@ -1445,18 +1341,15 @@ export class AnnotationRenderer {
             polylineAnnotation.bounds = bounds;
             polylineAnnotation.bounds.x = bounds.left;
             polylineAnnotation.bounds.y = bounds.top;
-
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    // eslint-disable-next-line max-len
-                    polylineAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], polylineAnnotation.bounds));
+                    polylineAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                               polylineAnnotation.bounds));
                 }
             }
             const reviewDetails: any = measureShapeAnnotation.review;
             polylineAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, polylineAnnotation.bounds));
-
             polylineAnnotation._dictionary.set('IT', _PdfName.get(measureShapeAnnotation.indent.toString()));
-
             if (!isNullOrUndefined(measureShapeAnnotation.isCloudShape) && measureShapeAnnotation.isCloudShape) {
                 const dictionary: _PdfDictionary = new _PdfDictionary(page._crossReference);
                 dictionary.update('S', _PdfName.get('C'));
@@ -1468,7 +1361,6 @@ export class AnnotationRenderer {
                     polylineAnnotation._dictionary.update('RD', rd);
                 }
             }
-
             if (!isNullOrUndefined(measureShapeAnnotation.isLocked && measureShapeAnnotation.isLocked)) {
                 polylineAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
@@ -1483,14 +1375,13 @@ export class AnnotationRenderer {
                 }
             }
             const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
-
             if (!isNullOrUndefined(measureDetail)) {
                 polylineAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
             }
             if (!isNullOrUndefined(measureShapeAnnotation.customData)) {
                 polylineAnnotation.setValues('CustomData', measureShapeAnnotation.customData);
             }
-            if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] != null){
+            if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] !== null){
                 polylineAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation['allowedInteractions']));
             }
             polylineAnnotation.setAppearance(true);
@@ -1503,8 +1394,8 @@ export class AnnotationRenderer {
         } else if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && (measureShapeAnnotation.shapeAnnotationType === 'Polygon') && measureShapeAnnotation.indent !== 'PolygonRadius') {
             const points: any = JSON.parse(measureShapeAnnotation.vertexPoints);
             const linePoints: number[] = this.getSaveVertexPoints(points, page);
-            let polygonAnnotation: PdfPolygonAnnotation = new PdfPolygonAnnotation(linePoints);
-            polygonAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !=="" ? measureShapeAnnotation.author.toString() : 'Guest';
+            const polygonAnnotation: PdfPolygonAnnotation = new PdfPolygonAnnotation(linePoints);
+            polygonAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !== '' ? measureShapeAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(measureShapeAnnotation.note)) {
                 polygonAnnotation.text = measureShapeAnnotation.note.toString();
             }
@@ -1535,7 +1426,7 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(measureShapeAnnotation.opacity)) {
                 polygonAnnotation.opacity = measureShapeAnnotation.opacity;
             }
-            let lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
+            const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
             lineBorder.width = measureShapeAnnotation.thickness;
             lineBorder.style = measureShapeAnnotation.borderStyle;
             if (!isNullOrUndefined(measureShapeAnnotation.borderDashArray)) {
@@ -1556,7 +1447,8 @@ export class AnnotationRenderer {
             polygonAnnotation.bounds.y = bounds.top;
             if (commentsDetails.length > 0) {
                 for (let i: number = 0; i < commentsDetails.length; i++) {
-                    polygonAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], polygonAnnotation.bounds));
+                    polygonAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                              polygonAnnotation.bounds));
                 }
             }
             const reviewDetails: any = measureShapeAnnotation.review;
@@ -1570,16 +1462,16 @@ export class AnnotationRenderer {
                     polygonAnnotation._dictionary.update('RD', rd);
                 }
             }
-            if (measureShapeAnnotation.isPrint && !isNullOrUndefined(measureShapeAnnotation["isPrint"]) && Boolean(measureShapeAnnotation["isPrint"].toString())) {
-                if (measureShapeAnnotation.isCommentLock && !isNullOrUndefined(measureShapeAnnotation["isCommentLock"]) && Boolean(measureShapeAnnotation["isCommentLock"].toString())) {
+            if (measureShapeAnnotation.isPrint && !isNullOrUndefined(measureShapeAnnotation['isPrint']) && Boolean(measureShapeAnnotation['isPrint'].toString())) {
+                if (measureShapeAnnotation.isCommentLock && !isNullOrUndefined(measureShapeAnnotation['isCommentLock']) && Boolean(measureShapeAnnotation['isCommentLock'].toString())) {
                     polygonAnnotation.flags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
                 } else {
                     polygonAnnotation.flags = PdfAnnotationFlag.print;
                 }
             }
-            if (measureShapeAnnotation.isLocked && !isNullOrUndefined(measureShapeAnnotation["isLocked"]) && Boolean(measureShapeAnnotation["isLocked"].toString())) {
+            if (measureShapeAnnotation.isLocked && !isNullOrUndefined(measureShapeAnnotation['isLocked']) && Boolean(measureShapeAnnotation['isLocked'].toString())) {
                 polygonAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            } else if (measureShapeAnnotation.isCommentLock && !isNullOrUndefined(measureShapeAnnotation["isCommentLock"]) && Boolean(measureShapeAnnotation["isCommentLock"].toString())) {
+            } else if (measureShapeAnnotation.isCommentLock && !isNullOrUndefined(measureShapeAnnotation['isCommentLock']) && Boolean(measureShapeAnnotation['isCommentLock'].toString())) {
                 polygonAnnotation.flags = PdfAnnotationFlag.readOnly;
             } else {
                 polygonAnnotation.flags = PdfAnnotationFlag.print;
@@ -1587,28 +1479,28 @@ export class AnnotationRenderer {
             const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
             if (!isNullOrUndefined(measureDetail)) {
                 polygonAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
-                if (measureShapeAnnotation["indent"] === "PolygonVolume" && measureDetail.hasOwnProperty('depth')) {
-                    polygonAnnotation._dictionary.update("Depth", measureDetail["depth"]);
+                if (measureShapeAnnotation['indent'] === 'PolygonVolume' && Object.prototype.hasOwnProperty.call(measureDetail, 'depth')) {
+                    polygonAnnotation._dictionary.update('Depth', measureDetail['depth']);
                 }
             }
             if (!isNullOrUndefined(measureShapeAnnotation.customData)) {
                 polygonAnnotation.setValues('CustomData', measureShapeAnnotation.customData);
             }
-            if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation["allowedInteractions"] != null){
-                polygonAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation["allowedInteractions"]));
+            if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] != null){
+                polygonAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation['allowedInteractions']));
             }
             polygonAnnotation.setAppearance(true);
             page.annotations.add(polygonAnnotation);
         }
     }
+
     /**
-     * @param details
-     * @param page
-     *
+     * @param {any} details - details
+     * @param {PdfPage} page - page
      * @private
+     * @returns {void}
      */
     public addStickyNotes(details: any, page: PdfPage): void {
-        const pageNo: number = details.pageNumber;
         const popUpAnnotation: any = details;
         const bounds: Rect = JSON.parse(popUpAnnotation.bounds);
         const cropValues : PointBase = this.getCropBoxValue(page, false);
@@ -1616,22 +1508,17 @@ export class AnnotationRenderer {
         const top: number = this.convertPixelToPoint(bounds.top);
         const width: number = this.convertPixelToPoint(bounds.width);
         const height: number = this.convertPixelToPoint(bounds.height);
-
         let cropX : number = 0;
         let cropY : number = 0;
-
-        if (cropValues.x != 0 && cropValues.y != 0 && cropValues.x == left) {
+        if (cropValues.x !== 0 && cropValues.y !== 0 && cropValues.x === left) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-
-        else if (cropValues.x == 0 && page.cropBox[2] == page.size[0] && cropValues.y == page.size[1]) {
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-
         const annotation: PdfPopupAnnotation = new PdfPopupAnnotation(null, cropX + left, cropY + top, width, height);
-
         if (popUpAnnotation['author'] === null) {
             popUpAnnotation['author'] = 'Guest';
         }
@@ -1660,13 +1547,9 @@ export class AnnotationRenderer {
         annotation.color = color;
         annotation.opacity = popUpAnnotation.opacity;
         annotation.icon = PdfPopupIcon.comment;
-
-        const isAnnotationFlagSet: boolean = false;
-
         if (!isNullOrUndefined(popUpAnnotation.annotationSettings)) {
             const annotationSettings: any = popUpAnnotation.annotationSettings;
             const isLock: boolean = annotationSettings.isLock;
-
             if (isLock) {
                 annotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
@@ -1684,14 +1567,13 @@ export class AnnotationRenderer {
     }
 
     /**
-     * @param details
-     * @param page
-     * @param textFont
-     *
+     * @param {any} details - details
+     * @param {PdfPage} page - page
+     * @param {string} textFont - textFont
      * @private
+     * @returns {void}
      */
     public addFreeText(details: any, page: PdfPage, textFont?: { [key: string]: any; }): void {
-        const pageNo: number = details.pageIndex;
         const freeTextAnnotation: any = details;
         const bounds: Rect = JSON.parse(freeTextAnnotation.bounds);
         const cropValues : PointBase = this.getCropBoxValue(page, false);
@@ -1701,11 +1583,11 @@ export class AnnotationRenderer {
         const height: number = this.convertPixelToPoint(bounds.height);
         let cropX : number = 0;
         let cropY : number = 0;
-        if (cropValues.x != 0 && cropValues.y != 0 && cropValues.x == left) {
+        if (cropValues.x !== 0 && cropValues.y !== 0 && cropValues.x === left) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        else if (cropValues.x == 0 && page.cropBox[2] == page.size[0] && cropValues.y == page.size[1]) {
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
@@ -1726,29 +1608,30 @@ export class AnnotationRenderer {
         annotation.lineEndingStyle = PdfLineEndingStyle.openArrow;
         annotation.annotationIntent = PdfAnnotationIntent.freeTextTypeWriter;
         let fontSize: number = 0;
-        if(!isNullOrUndefined(freeTextAnnotation.fontSize)) {
+        if (!isNullOrUndefined(freeTextAnnotation.fontSize)) {
             fontSize = parseFloat(freeTextAnnotation.fontSize);
         }
         fontSize = !isNullOrUndefined(fontSize) && !isNaN(fontSize) && fontSize > 0 ? fontSize : 16; //default 16px
-        let fontFamily: PdfFontFamily = this.getFontFamily(freeTextAnnotation.fontFamily);
-        let fontJson: {[key:string]: boolean} = {};
-        if (freeTextAnnotation.hasOwnProperty('font') && !isNullOrUndefined(freeTextAnnotation.font)) {
+        const fontFamily: PdfFontFamily = this.getFontFamily(freeTextAnnotation.fontFamily);
+        let fontJson: {[key: string]: boolean} = {};
+        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'font') && !isNullOrUndefined(freeTextAnnotation.font)) {
             fontJson = freeTextAnnotation.font;
         }
-        let fontStyle: PdfFontStyle = this.getFontStyle(fontJson);
+        const fontStyle: PdfFontStyle = this.getFontStyle(fontJson);
         annotation.font = new PdfStandardFont(fontFamily, this.convertPixelToPoint(fontSize), fontStyle);
-        if(!isNullOrUndefined(textFont) && textFont.length > 0) {
+        if (!isNullOrUndefined(textFont) && textFont.length > 0) {
             textFont.Keys.forEach((key: string) => {
                 // Need to implement font stream
-                let fontStream = textFont[`${key}`]; 
-                if (freeTextAnnotation.hasOwnProperty('dynamicText') && !isNullOrUndefined(freeTextAnnotation.dynamicText.toString())) {
-                   let fontAnnotation: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize), PdfFontStyle.regular);
-                   let format: PdfStringFormat = new PdfStringFormat();
-                   fontAnnotation.measureString(freeTextAnnotation.dynamicText.toString(), format);
-                   let glyphPresent: boolean = fontAnnotation._dictionary.has('IsContainsFont') ? fontAnnotation._dictionary.get('IsContainsFont') : false;
-                   if(glyphPresent) {
-                       annotation.font = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize));
-                   }
+                const fontStream: any = textFont[`${key}`];
+                if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'dynamicText') && !isNullOrUndefined(freeTextAnnotation.dynamicText.toString())) {
+                    const fontAnnotation: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize),
+                                                                                PdfFontStyle.regular);
+                    const format: PdfStringFormat = new PdfStringFormat();
+                    fontAnnotation.measureString(freeTextAnnotation.dynamicText.toString(), format);
+                    const glyphPresent: boolean = fontAnnotation._dictionary.has('IsContainsFont') ? fontAnnotation._dictionary.get('IsContainsFont') : false;
+                    if (glyphPresent) {
+                        annotation.font = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize));
+                    }
                 }
             });
         }
@@ -1757,36 +1640,31 @@ export class AnnotationRenderer {
         }
         // Markup Text
         annotation.text = '';
-        if (freeTextAnnotation.hasOwnProperty('dynamicText') && !isNullOrUndefined(freeTextAnnotation.dynamicText.toString())) {
+        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'dynamicText') && !isNullOrUndefined(freeTextAnnotation.dynamicText.toString())) {
             // Markup Text
             annotation.text = freeTextAnnotation.dynamicText.toString();
         }
-        const rotateAngle = "RotateAngle" + Math.abs(freeTextAnnotation.rotateAngle);
+        const rotateAngle: string = 'RotateAngle' + Math.abs(freeTextAnnotation.rotateAngle);
         annotation.rotationAngle = this.getRotateAngle(rotateAngle);
         const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
         lineBorder.width = !isNullOrUndefined(freeTextAnnotation.thickness) ? freeTextAnnotation.thickness : 1;
         annotation.border = lineBorder;
         annotation.border.width = lineBorder.width;
-        if(freeTextAnnotation.hasOwnProperty('padding') && !isNullOrUndefined(freeTextAnnotation.padding)){
-            const paddingValues: number = freeTextAnnotation.padding;
+        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'padding') && !isNullOrUndefined(freeTextAnnotation.padding)){
             // let padding: PdfPaddings = new PdfPaddings(); // PdfPaddings not exist in ej2-pdf
             // annotation.setPaddings(padding);  // setPaddings not exist
         }
         annotation.opacity = !isNullOrUndefined(freeTextAnnotation.opacity) ? freeTextAnnotation.opacity : 1;
         if (!isNullOrUndefined(freeTextAnnotation.strokeColor)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const strokeColor: any = JSON.parse(freeTextAnnotation.strokeColor);
-            // eslint-disable-next-line max-len
             const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
             annotation.borderColor = color;
             // Modified Implementation for setting border width for transparent border
-            if(!this.isTransparentColor(strokeColor)) {
+            if (!this.isTransparentColor(strokeColor)) {
                 annotation.border.width = !isNullOrUndefined(freeTextAnnotation.thickness) ? freeTextAnnotation.thickness : 0;
-                
             }
         }
         if (!isNullOrUndefined(freeTextAnnotation.fillColor)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fillColor: any = JSON.parse(freeTextAnnotation.fillColor);
             if (!this.isTransparentColor(fillColor)){
                 const color: number[] = [fillColor.r, fillColor.g, fillColor.b];
@@ -1806,7 +1684,6 @@ export class AnnotationRenderer {
             }
         }
         if (!isNullOrUndefined(freeTextAnnotation.fontColor)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const textMarkupColor: any = JSON.parse(freeTextAnnotation.fontColor);
             if (!this.isTransparentColor(textMarkupColor)){
                 const fontColor: number[] = [textMarkupColor.r, textMarkupColor.g, textMarkupColor.b];
@@ -1816,14 +1693,13 @@ export class AnnotationRenderer {
         const commentsDetails: any = freeTextAnnotation.comments;
         if (commentsDetails.length > 0) {
             for (let i: number = 0; i < commentsDetails.length; i++) {
-                // eslint-disable-next-line max-len
                 annotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], annotation.bounds));
             }
         }
-        if (freeTextAnnotation.hasOwnProperty('annotationSettings') && !isNullOrUndefined(freeTextAnnotation.annotationSettings)) {
+        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'annotationSettings') && !isNullOrUndefined(freeTextAnnotation.annotationSettings)) {
             const annotationSettings: any = freeTextAnnotation.annotationSettings;
-            if (annotationSettings.hasOwnProperty('isLock') && !isNullOrUndefined(annotationSettings.isLock)) {
-                if(annotationSettings.isLock){
+            if (Object.prototype.hasOwnProperty.call(annotationSettings, 'isLock') && !isNullOrUndefined(annotationSettings.isLock)) {
+                if (annotationSettings.isLock){
                     annotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
                 }
             }
@@ -1837,16 +1713,16 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(freeTextAnnotation.customData)) {
             annotation.setValues('CustomData', freeTextAnnotation.customData);
         }
-        if (freeTextAnnotation.hasOwnProperty("textAlign") &&!isNullOrUndefined(freeTextAnnotation.textAlign))
+        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'textAlign') && !isNullOrUndefined(freeTextAnnotation.textAlign))
         {
             annotation.textAlignment = this.getPdfTextAlignment(freeTextAnnotation.textAlign.toString().toLowerCase());
         }
         let isReadonly: boolean = false;
         let isPrint: boolean = false;
-        if (freeTextAnnotation.hasOwnProperty("isReadonly")) {
+        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'isReadonly')) {
             isReadonly = !isNullOrUndefined(freeTextAnnotation.isReadonly) ? freeTextAnnotation.isReadonly : false;
         }
-        if (freeTextAnnotation.hasOwnProperty("isPrint")) {
+        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'isPrint')) {
             isPrint = !isNullOrUndefined(freeTextAnnotation.isPrint) ? freeTextAnnotation.isPrint : false;
         }
         if (isReadonly && isPrint) {
@@ -1858,15 +1734,16 @@ export class AnnotationRenderer {
         else if (isReadonly) {
             annotation.flags = PdfAnnotationFlag.readOnly;
         }
-        if (freeTextAnnotation.hasOwnProperty("allowedInteractions") &&!isNullOrUndefined(freeTextAnnotation.allowedInteractions))
+        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'allowedInteractions') && !isNullOrUndefined(freeTextAnnotation.allowedInteractions))
         {
             annotation.setValues('AllowedInteractions', JSON.stringify(freeTextAnnotation.allowedInteractions));
         }
         page.annotations.add(annotation);
     }
-    
-    // eslint-disable-next-line max-len
-    private renderSignHereStamp(rubberStampAnnotation: PdfRubberStampAnnotation, rectangle: Rect, icon: string, textBrush: PdfBrush, page: PdfPage, pens: PdfPen): void {
+
+
+    private renderSignHereStamp(rubberStampAnnotation: PdfRubberStampAnnotation, rectangle: Rect, icon: string, textBrush:
+    PdfBrush, page: PdfPage, pens: PdfPen): void {
         const stringFormat: PdfStringFormat = new PdfStringFormat();
         const font: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, 20, PdfFontStyle.bold | PdfFontStyle.italic);
         stringFormat.alignment = PdfTextAlignment.center;
@@ -1905,14 +1782,15 @@ export class AnnotationRenderer {
             break;
         }
     }
-    // eslint-disable-next-line max-len
-    private renderDynamicStamp(rubberStampAnnotation: PdfRubberStampAnnotation, icon: string, text: string, textBrush: PdfBrush, rectangle: Rect, pens: PdfPen, page: PdfPage): void {
+
+    private renderDynamicStamp(rubberStampAnnotation: PdfRubberStampAnnotation, icon: string, text: string, textBrush: PdfBrush,
+                               rectangle: Rect, pens: PdfPen, page: PdfPage): void {
         const stringFormat: PdfStringFormat = new PdfStringFormat();
         stringFormat.alignment = PdfTextAlignment.left;
         stringFormat.lineAlignment = PdfVerticalAlignment.middle;
         const stampFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, 20, PdfFontStyle.bold | PdfFontStyle.italic);
-        // eslint-disable-next-line max-len
-        const detailsFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, (rectangle.height / 6), PdfFontStyle.bold | PdfFontStyle.italic);
+        const detailsFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, (rectangle.height / 6),
+                                                         PdfFontStyle.bold | PdfFontStyle.italic);
         const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
         let point1: number[] = [0, 0];
         let point2: number[] = [0, 0];
@@ -1921,25 +1799,24 @@ export class AnnotationRenderer {
         point2 = [5, (rectangle.height - (detailsFont.size * 2))];
         drawingPath._addLine(point1[0], point1[1], point2[0], point2[1]);
         const stampTypeBounds: number[] = [drawingPath._points[0][0], drawingPath._points[0][1], 0, 0];
-        const stampTimeStampbounds: number[] = [drawingPath._points[1][0], drawingPath._points[1][1], (rectangle.width - drawingPath._points[1][0]), (rectangle.height - drawingPath._points[1][1])];
+        const stampTimeStampbounds: number[] = [drawingPath._points[1][0], drawingPath._points[1][1],
+            (rectangle.width - drawingPath._points[1][0]), (rectangle.height - drawingPath._points[1][1])];
         appearance.graphics.drawString(icon.toUpperCase(), stampFont, stampTypeBounds, pens, textBrush, stringFormat);
         appearance.graphics.drawString(text, detailsFont, stampTimeStampbounds, pens, textBrush, stringFormat);
     }
 
     private calculateBoundsXY(wrapperBounds: any, bounds: Rect, pageNo: number, pdfPageBase: any): Rect {
         const boundsXY: Rect = new Rect();
-
         const pageSize: Size = this.pdfViewer.pdfRendererModule.getPageSize(pageNo);
-
-        if (pdfPageBase.rotation  === PdfRotationAngle.angle90) {
+        if (pdfPageBase.rotation === PdfRotationAngle.angle90) {
             boundsXY.x = this.convertPixelToPoint(wrapperBounds.y);
             boundsXY.y = this.convertPixelToPoint(pageSize.width - wrapperBounds.x - wrapperBounds.width);
         }
-        else if (pdfPageBase.rotation  === PdfRotationAngle.angle180) {
+        else if (pdfPageBase.rotation === PdfRotationAngle.angle180) {
             boundsXY.x = this.convertPixelToPoint(pageSize.width - wrapperBounds.x - wrapperBounds.width);
             boundsXY.y = this.convertPixelToPoint(pageSize.height - wrapperBounds.y - wrapperBounds.height);
         }
-        else if (pdfPageBase.rotation  === PdfRotationAngle.angle270) {
+        else if (pdfPageBase.rotation === PdfRotationAngle.angle270) {
             boundsXY.x = this.convertPixelToPoint(pageSize.height - wrapperBounds.y - wrapperBounds.height);
             boundsXY.y = this.convertPixelToPoint(wrapperBounds.x);
         }
@@ -1953,41 +1830,42 @@ export class AnnotationRenderer {
     private setMeasurementUnit(unit: string): PdfMeasurementUnit {
         let measurementUnit: PdfMeasurementUnit;
         switch (unit) {
-            case 'cm':
-                measurementUnit = PdfMeasurementUnit.centimeter;
-                break;
-            case 'in':
-                measurementUnit = PdfMeasurementUnit.inch;
-                break;
-            case 'mm':
-                measurementUnit = PdfMeasurementUnit.millimeter;
-                break;
-            case 'pt':
-                measurementUnit = PdfMeasurementUnit.point;
-                break;
-            case 'p':
-                measurementUnit = PdfMeasurementUnit.pica;
-                break;
+        case 'cm':
+            measurementUnit = PdfMeasurementUnit.centimeter;
+            break;
+        case 'in':
+            measurementUnit = PdfMeasurementUnit.inch;
+            break;
+        case 'mm':
+            measurementUnit = PdfMeasurementUnit.millimeter;
+            break;
+        case 'pt':
+            measurementUnit = PdfMeasurementUnit.point;
+            break;
+        case 'p':
+            measurementUnit = PdfMeasurementUnit.pica;
+            break;
         }
         return measurementUnit;
     }
+
     private getRubberStampRotateAngle(angleEnum: PdfRotationAngle, rotationAngle: number): PdfRotationAngle {
         let angle: PdfRotationAngle = PdfRotationAngle.angle0;
         switch (rotationAngle) {
-            case 0:
-                angle = PdfRotationAngle.angle0
-                break;
-            case 90:
-                angle = PdfRotationAngle.angle90
-                break;
-            case 180:
-                angle = PdfRotationAngle.angle180
-                break;
-            case 270:
-                angle = PdfRotationAngle.angle270
-                break;
-            default:
-                break;
+        case 0:
+            angle = PdfRotationAngle.angle0;
+            break;
+        case 90:
+            angle = PdfRotationAngle.angle90;
+            break;
+        case 180:
+            angle = PdfRotationAngle.angle180;
+            break;
+        case 270:
+            angle = PdfRotationAngle.angle270;
+            break;
+        default:
+            break;
         }
         angle = ((angleEnum as number) - (angle as number)  + 4) % 4;
         return angle;
@@ -2018,19 +1896,19 @@ export class AnnotationRenderer {
         return font;
     }
 
-    private getFontStyle(fontJson: {[key:string]: boolean}): PdfFontStyle{
+    private getFontStyle(fontJson: {[key: string]: boolean}): PdfFontStyle{
         let fontStyle: PdfFontStyle = PdfFontStyle.regular;
-        if(!isNullOrUndefined(fontJson)){
-            if(fontJson.isBold){
+        if (!isNullOrUndefined(fontJson)){
+            if (fontJson.isBold){
                 fontStyle = fontStyle | PdfFontStyle.bold;
             }
-            if(fontJson.isItalic){
+            if (fontJson.isItalic){
                 fontStyle = fontStyle | PdfFontStyle.italic;
             }
-            if(fontJson.isStrikeout){
+            if (fontJson.isStrikeout){
                 fontStyle = fontStyle | PdfFontStyle.strikeout;
             }
-            if(fontJson.isUnderline){
+            if (fontJson.isUnderline){
                 fontStyle = fontStyle | PdfFontStyle.underline;
             }
         }
@@ -2055,36 +1933,29 @@ export class AnnotationRenderer {
         return textAlignment;
     }
 
-    // eslint-disable-next-line max-len
-    private drawStampAsPath(resultObjects: string, rubberStampAnnotation: PdfRubberStampAnnotation, textBrush: PdfBrush, stampBrush: PdfBrush): void {
-        const transformMatrix: Matrix = new Matrix(1, 0, 0, 1, 0, 0);
+    private drawStampAsPath(resultObjects: string, rubberStampAnnotation: PdfRubberStampAnnotation, textBrush: PdfBrush,
+                            stampBrush: PdfBrush): void {
         let currentPoint: PointBase = { x: 0, y: 0 };
-        let graphics: PdfGraphics;
         const graphicsPath: _PdfPath = new _PdfPath();
-        const stampObjects: any = resultObjects;
+        const stampObjects: string = resultObjects;
         for (let index: number = 0; index < stampObjects.length; index++) {
             const val: any = stampObjects[parseInt(index.toString(), 10)];
-            const path: any = val.command.toString();
-
+            const path: string = val.command.toString();
             if (path === 'M') {
                 graphicsPath._startFigure();
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'L') {
-
                 const array: any[] = [
                     currentPoint, { x: val.x, y: val.y }
                 ];
                 this.transformPoints(array);
-
                 const array1: PointBase[] = [
                     { x: array[0].x, y: array[0].y }, { x: array[1].x, y: array[1].y }
                 ];
                 graphicsPath._addLine(array1[0].x, array1[0].y, array1[1].x, array1[1].y);
-
                 currentPoint = { x: val.x, y: val.y };
             }
-
             if (path === 'C') {
                 const array2: PointBase[] = [
                     currentPoint,
@@ -2099,8 +1970,8 @@ export class AnnotationRenderer {
                     { x: array2[2].x, y: array2[2].y },
                     { x: array2[3].x, y: array2[3].y }
                 ];
-                // eslint-disable-next-line max-len
-                graphicsPath._addBezier(array21[0].x, array21[0].y, array21[1].x, array21[1].y, array21[2].x, array21[2].y, array21[3].x, array21[3].y);
+                graphicsPath._addBezier(array21[0].x, array21[0].y, array21[1].x, array21[1].y, array21[2].x,
+                                        array21[2].y, array21[3].x, array21[3].y);
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'Z') {
@@ -2163,7 +2034,6 @@ export class AnnotationRenderer {
         case 'Information Only':
             rubberStampAnnotation.icon = PdfRubberStampAnnotationIcon.informationOnly;
             break;
-
         default:
             iconExists = false;
             break;
@@ -2186,39 +2056,29 @@ export class AnnotationRenderer {
         }
         let cropX : number = 0;
         let cropY : number = 0;
-        if (cropValues.x != 0 && cropValues.y != 0 && cropValues.x == left) {
+        if (cropValues.x !== 0 && cropValues.y !== 0 && cropValues.x === left) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-
-        else if (cropValues.x == 0 && page.cropBox[2] == page.size[0] && cropValues.y == page.size[1]) {
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        // eslint-disable-next-line max-len
         const circleAnnotation: PdfCircleAnnotation = new PdfCircleAnnotation(cropX + left, cropY + top, width, height);
         if (!isNullOrUndefined(measureShapeAnnotation.note)) {
             circleAnnotation.text = measureShapeAnnotation.note.toString();
         }
-
-        circleAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !=="" ? measureShapeAnnotation.author.toString() : 'Guest';
-
+        circleAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !== '' ? measureShapeAnnotation.author.toString() : 'Guest';
         circleAnnotation._dictionary.set('NM', measureShapeAnnotation.annotName.toString());
-
         if (!isNullOrUndefined(measureShapeAnnotation.subject)) {
             circleAnnotation.subject = measureShapeAnnotation.subject.toString();
         }
-
         if (!isNullOrUndefined(measureShapeAnnotation.strokeColor)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const strokeColor: any = JSON.parse(measureShapeAnnotation.strokeColor);
-            // eslint-disable-next-line max-len
             const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
             circleAnnotation.color = color;
         }
-
         if (!isNullOrUndefined(measureShapeAnnotation.fillColor)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fillColor: any = JSON.parse(measureShapeAnnotation.fillColor);
             if (!this.isTransparentColor(fillColor)){
                 const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
@@ -2235,14 +2095,12 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(measureShapeAnnotation.opacity)) {
             circleAnnotation.opacity = measureShapeAnnotation.opacity;
         }
-
         const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
         lineBorder.width = measureShapeAnnotation.thickness;
         lineBorder.style = measureShapeAnnotation.borderStyle;
         lineBorder.dash = measureShapeAnnotation.borderDashArray;
         circleAnnotation.border = lineBorder;
         circleAnnotation.rotationAngle = this.getRotateAngle(measureShapeAnnotation.rotateAngle);
-
         let dateValue: Date;
         if (!isNullOrUndefined(measureShapeAnnotation.modifiedDate) && !isNaN(Date.parse(measureShapeAnnotation.modifiedDate))) {
             dateValue = new Date(Date.parse(measureShapeAnnotation.modifiedDate));
@@ -2251,13 +2109,12 @@ export class AnnotationRenderer {
         const commentsDetails: any = measureShapeAnnotation.comments;
         if (commentsDetails.length > 0) {
             for (let i: number = 0; i < commentsDetails.length; i++) {
-                // eslint-disable-next-line max-len
-                circleAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], circleAnnotation.bounds));
+                circleAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                         circleAnnotation.bounds));
             }
         }
         const reviewDetails: any = measureShapeAnnotation.review;
         circleAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, circleAnnotation.bounds));
-
         if (!isNullOrUndefined(measureShapeAnnotation.isCloudShape) && measureShapeAnnotation.isCloudShape) {
             const borderEffect: PdfBorderEffect = new PdfBorderEffect();
             borderEffect.style = PdfBorderEffectStyle.cloudy; borderEffect.intensity = measureShapeAnnotation.cloudIntensity;
@@ -2278,9 +2135,7 @@ export class AnnotationRenderer {
             circleAnnotation.flags = PdfAnnotationFlag.print;
         }
         circleAnnotation.measureType = PdfCircleMeasurementType.radius;
-
         const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
-
         if (!isNullOrUndefined(measureDetail)) {
             circleAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
         }
@@ -2298,47 +2153,40 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(measureDetail.x)) {
             const xNumberFormat: _PdfDictionary[] = this.createNumberFormat(measureDetail.x);
             measureDictionary.set('X', xNumberFormat);
-
         }
         if (!isNullOrUndefined(measureDetail.distance)) {
             const dNumberFormat: _PdfDictionary[] = this.createNumberFormat(JSON.parse(measureDetail.distance));
             measureDictionary.set('D', dNumberFormat);
-
         }
         if (!isNullOrUndefined(measureDetail.area)) {
             const aNumberFormat: _PdfDictionary[] = this.createNumberFormat(JSON.parse(measureDetail.area));
             measureDictionary.set('A', aNumberFormat);
-
         }
         if (!isNullOrUndefined(measureDetail.angle)) {
             const tNumberFormat: _PdfDictionary[] = this.createNumberFormat(JSON.parse(measureDetail.angle));
             measureDictionary.set('T', tNumberFormat);
-
         }
         if (!isNullOrUndefined(measureDetail.volume)) {
             const vNumberFormat: _PdfDictionary[] = this.createNumberFormat(JSON.parse(measureDetail.volume));
             measureDictionary.set('V', vNumberFormat);
         }
         return measureDictionary;
-
     }
 
     private createNumberFormat(numberFormatList: any): _PdfDictionary[] {
         const numberFormats: _PdfDictionary[] = [];
-        if(isNullOrUndefined(numberFormatList) || numberFormatList.length === 0) {
+        if (isNullOrUndefined(numberFormatList) || numberFormatList.length === 0) {
             return undefined;
         }
         for (let index: number = 0; index < numberFormatList.length; index++) {
             const numberFormatDictionary: _PdfDictionary = new _PdfDictionary();
             const numberFormat: any = numberFormatList[parseInt(index.toString(), 10)];
-
             numberFormatDictionary.set('Type', 'NumberFormat');
             numberFormatDictionary.set('U', numberFormat.unit);
             numberFormatDictionary.set('F', numberFormat.fractionalType);
             numberFormatDictionary.set('D', numberFormat.denominator);
             numberFormatDictionary.set('C', numberFormat.conversionFactor);
             numberFormatDictionary.set('FD', numberFormat.formatDenominator);
-
             numberFormats.push(numberFormatDictionary);
         }
         return numberFormats;
@@ -2357,7 +2205,7 @@ export class AnnotationRenderer {
 
     private getSaveVertexPoints(points: any, page: PdfPage): number[] {
         const cropValues : PointBase = this.getCropBoxValue(page, false);
-        if (cropValues.x == 0 && page.cropBox[2] == page.size[0] && cropValues.y == page.size[1]) {
+        if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
             cropValues.x = 0;
             cropValues.y = 0;
         }
@@ -2409,12 +2257,12 @@ export class AnnotationRenderer {
     private getCaptionType(captionPosition: string): PdfLineCaptionType {
         let captionType: PdfLineCaptionType = PdfLineCaptionType.inline;
         switch (captionPosition) {
-            case 'Inline':
-                captionType = PdfLineCaptionType.inline;
-                break;
-            case 'Top':
-                captionType = PdfLineCaptionType.top;
-                break;
+        case 'Inline':
+            captionType = PdfLineCaptionType.inline;
+            break;
+        case 'Top':
+            captionType = PdfLineCaptionType.top;
+            break;
         }
         return captionType;
     }
@@ -2429,7 +2277,6 @@ export class AnnotationRenderer {
     }
 
     private addCommentsCollection(popupAnnotation: any, bounds: any): PdfPopupAnnotation {
-        // eslint-disable-next-line max-len
         const annotation: PdfPopupAnnotation = new PdfPopupAnnotation();
         annotation.text = popupAnnotation.note;
         annotation.author = popupAnnotation.author;
@@ -2449,12 +2296,10 @@ export class AnnotationRenderer {
         }
         annotation._dictionary.set('NM', popupAnnotation.annotName.toString());
         return annotation;
-
     }
 
     private getReviewState(state: string): PdfAnnotationState {
         let reviewState: PdfAnnotationState;
-
         switch (state) {
         case 'Accepted':
             reviewState = PdfAnnotationState.accepted;
@@ -2478,7 +2323,6 @@ export class AnnotationRenderer {
         return reviewState;
     }
 
-
     private convertPixelToPoint(value: number): number {
         return (value * 72 / 96);
     }
@@ -2494,7 +2338,6 @@ export class AnnotationRenderer {
 
     private getRDValues(values: string[]): number[] {
         const rectDifference: number[] = [];
-
         for (let i: number = 0; i < values.length; i++) {
             rectDifference.push(parseFloat(values[parseInt(i.toString(), 10)]));
         }
@@ -2519,27 +2362,25 @@ export class AnnotationRenderer {
         }
         return angle;
     }
-    
+
     /**
      * @private
-     * @param inkAnnot 
-     * @param height 
-     * @param width 
-     * @param pageRotation 
-     * @param pageNumber 
-     * @param loadedPage 
-     * @returns 
+     * @param {PdfInkAnnotation} inkAnnot - inkAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {number} pageNumber - pageNumber
+     * @param {PdfPage} loadedPage - loadedPage
+     * @returns {void}
      */
-    public loadSignature(inkAnnot: PdfInkAnnotation, height: number, width: number, pageRotation: number, pageNumber: number, loadedPage: PdfPage): SignatureAnnotationBase {
-
-        let signature: SignatureAnnotationBase = new SignatureAnnotationBase();
-
+    public loadSignature(inkAnnot: PdfInkAnnotation, height: number, width: number, pageRotation: number, pageNumber: number,
+                         loadedPage: PdfPage): SignatureAnnotationBase {
+        const signature: SignatureAnnotationBase = new SignatureAnnotationBase();
         let outputstring: string = '';
         if (!isNullOrUndefined(inkAnnot.inkPointsCollection)) {
             for (let index: number = 0; index < inkAnnot.inkPointsCollection.length; index++) {
                 const inkList: any = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
-
-                for (let j = 0; j < inkList.length; j+= 2) {
+                for (let j: number = 0; j < inkList.length; j += 2) {
                     let x: number;
                     let y: number;
                     if (j === 0) {
@@ -2555,49 +2396,46 @@ export class AnnotationRenderer {
                 }
             }
         }
-
         signature.AnnotationType = 'Signature';
         signature.Bounds = this.getBounds(inkAnnot.bounds, width, height, pageRotation);
         signature.Opacity = inkAnnot.opacity;
         signature.Thickness = inkAnnot.border.width;
         signature.PathData = outputstring;
-        signature.StrokeColor = 'rgba(' + inkAnnot.color[0] + ',' + inkAnnot.color[1] + ',' + inkAnnot.color[2] + ',' + (inkAnnot.color[3] ? inkAnnot.color[3] : 1) + ')'
+        signature.StrokeColor = 'rgba(' + inkAnnot.color[0] + ',' + inkAnnot.color[1] + ',' + inkAnnot.color[2] + ',' + (inkAnnot.color[3] ? inkAnnot.color[3] : 1) + ')';
         signature.PageNumber = pageNumber;
         signature.SignatureName = inkAnnot.name;
-        
         return signature;
-        
     }
 
     /**
      * @private
-     * @param inkAnnot 
-     * @param height 
-     * @param width 
-     * @param pageRotation 
-     * @param pageNumber 
-     * @param loadedPage 
-     * @returns 
+     * @param {PdfInkAnnotation} inkAnnot - inkAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - PageRotation
+     * @param {number} pageNumber - number
+     * @param {PdfPage} loadedPage - loadedPage
+     * @returns {void}
      */
-    public loadInkAnnotation(inkAnnot: PdfInkAnnotation, height: number, width: number, pageRotation: number, pageNumber: number, loadedPage: PdfPage): InkSignatureAnnotation {
-        let signature: InkSignatureAnnotation = new InkSignatureAnnotation();
+    public loadInkAnnotation(inkAnnot: PdfInkAnnotation, height: number, width: number, pageRotation: number, pageNumber: number,
+                             loadedPage: PdfPage): InkSignatureAnnotation {
+        const signature: InkSignatureAnnotation = new InkSignatureAnnotation();
         let outputstring: string = '';
         if (!isNullOrUndefined(inkAnnot.inkPointsCollection)) {
-            for (let index = 0; index < inkAnnot.inkPointsCollection.length; index++) {
-                const inkList = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
-
-                for (let j = 0; j < inkList.length; j += 2) {
+            for (let index: number = 0; index < inkAnnot.inkPointsCollection.length; index++) {
+                const inkList: number[] = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
+                for (let j: number = 0; j < inkList.length; j += 2) {
                     let x: number;
                     let y: number;
-                    if (inkAnnot._page.rotation == PdfRotationAngle.angle90) {
+                    if (inkAnnot._page.rotation === PdfRotationAngle.angle90) {
                         x = inkList[j + 1];
                         y = inkList[parseInt(j.toString(), 10)];
                     }
-                    else if (inkAnnot._page.rotation == PdfRotationAngle.angle180) {
+                    else if (inkAnnot._page.rotation === PdfRotationAngle.angle180) {
                         x = inkAnnot._page.size[0] - inkList[parseInt(j.toString(), 10)];
                         y = inkList[j + 1];
                     }
-                    else if (inkAnnot._page.rotation == PdfRotationAngle.angle270) {
+                    else if (inkAnnot._page.rotation === PdfRotationAngle.angle270) {
                         x = inkAnnot._page.size[0] - inkList[j + 1];
                         y = inkAnnot._page.size[1] - inkList[parseInt(j.toString(), 10)];
                     }
@@ -2621,9 +2459,9 @@ export class AnnotationRenderer {
         }
         else {
             signature.ModifiedDate = this.formatDate(new Date());
-        }   
+        }
         signature.Note = this.getValidNoteContent(inkAnnot.text);
-        for (let i = 0; i < inkAnnot.reviewHistory.count; i++) {
+        for (let i: number = 0; i < inkAnnot.reviewHistory.count; i++) {
             signature.State = this.getStateString(inkAnnot.reviewHistory.at(parseInt(i.toString(), 10)).state);
             signature.StateModel = this.getStateModelString(inkAnnot.reviewHistory.at(parseInt(i.toString(), 10)).stateModel);
         }
@@ -2652,36 +2490,36 @@ export class AnnotationRenderer {
         signature.AnnotType = 'Ink';
         signature.Bounds = this.getBounds(inkAnnot.bounds, height, width, pageRotation);
         if (inkAnnot.bounds.y < 0) {
-            let cropRect: Rect = new Rect(inkAnnot.bounds.x, loadedPage.cropBox[1] + inkAnnot.bounds.y, inkAnnot.bounds.width, inkAnnot.bounds.height);
+            const cropRect: Rect = new Rect(inkAnnot.bounds.x, loadedPage.cropBox[1] + inkAnnot.bounds.y, inkAnnot.bounds.width,
+                                            inkAnnot.bounds.height);
             signature.Bounds = this.getBounds(cropRect, height, width, pageRotation);
         }
         signature.Opacity = inkAnnot.opacity;
         signature.Thickness = inkAnnot.border.width;
         signature.PathData = outputstring;
-        signature.StrokeColor = 'rgba(' + inkAnnot.color[0] + ',' + inkAnnot.color[1] + ',' + inkAnnot.color[2] + ',' + (inkAnnot.color[3] ? inkAnnot.color[3] : 1) + ')'
+        signature.StrokeColor = 'rgba(' + inkAnnot.color[0] + ',' + inkAnnot.color[1] + ',' + inkAnnot.color[2] + ',' + (inkAnnot.color[3] ? inkAnnot.color[3] : 1) + ')';
         signature.PageNumber = pageNumber;
         signature.AnnotName = inkAnnot.name;
-
         if (inkAnnot._dictionary.has('CustomData') && !isNullOrUndefined(inkAnnot._dictionary.get('CustomData'))) {
             const customData: any = inkAnnot._dictionary.get('CustomData');
             if (customData != null) {
                 signature.ExistingCustomData = JSON.stringify(customData);
             }
         }
-
         return signature;
-
     }
 
     /**
-     * @param squareAnnot
-     * @param height
-     * @param width
-     * @param pageRotation
-     * @param shapeFreeText
+     * @param {PdfSquareAnnotation} squareAnnot - squareAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {PdfFreeTextAnnotation} shapeFreeText - shapeFreeText
      * @private
+     * @returns {void}
      */
-    public loadSquareAnnotation(squareAnnot: PdfSquareAnnotation, height: number, width: number, pageRotation: number, shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
+    public loadSquareAnnotation(squareAnnot: PdfSquareAnnotation, height: number, width: number, pageRotation: number,
+                                shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
         const shapeAnnotation: ShapeAnnotationBase = new ShapeAnnotationBase();
         shapeAnnotation.ShapeAnnotationType = 'Square';
         shapeAnnotation.Author = squareAnnot.author;
@@ -2754,7 +2592,7 @@ export class AnnotationRenderer {
             shapeAnnotation.IsPrint = true;
         }
         if (squareAnnot._dictionary.has('AllowedInteractions')) {
-            const allowedInteractions: any = squareAnnot.getValues('AllowedInteractions');
+            const allowedInteractions: string[] = squareAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
@@ -2784,16 +2622,17 @@ export class AnnotationRenderer {
         return shapeAnnotation;
     }
 
-    // eslint-disable-next-line max-len
     /**
-     * @param lineAnnot
-     * @param height
-     * @param width
-     * @param pageRotation
-     * @param shapeFreeText
+     * @param {PdfLineAnnotation} lineAnnot - lineAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {PdfFreeTextAnnotation} shapeFreeText - shapeFreeText
      * @private
+     * @returns {void}
      */
-    public loadLineAnnotation(lineAnnot: PdfLineAnnotation, height: number, width: number, pageRotation: number, shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
+    public loadLineAnnotation(lineAnnot: PdfLineAnnotation, height: number, width: number, pageRotation: number,
+                              shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
         const shapeAnnotation: ShapeAnnotationBase = new ShapeAnnotationBase();
         shapeAnnotation.ShapeAnnotationType = 'Line';
         shapeAnnotation.Author = lineAnnot.author;
@@ -2850,14 +2689,12 @@ export class AnnotationRenderer {
             shapeAnnotation.IsCloudShape = false;
             shapeAnnotation.CloudIntensity = 0;
         }
-        const indent: string = this.getLineIndentString(lineAnnot.lineIntent);
         shapeAnnotation.VertexPoints = this.getLinePoints(lineAnnot.linePoints, height, width, pageRotation, lineAnnot._page);
         if (lineAnnot._dictionary.has('RD') && !isNullOrUndefined(lineAnnot._dictionary.get('RD'))) {
             shapeAnnotation.RectangleDifference = lineAnnot._dictionary.get('RD');
         } else {
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-
         if (lineAnnot.flags === PdfAnnotationFlag.locked) {
             shapeAnnotation.IsLocked = true;
         }
@@ -2874,11 +2711,11 @@ export class AnnotationRenderer {
             shapeAnnotation.IsPrint = true;
         }
         if (lineAnnot._dictionary.has('AllowedInteractions')) {
-            const allowedInteractions: any = lineAnnot.getValues('AllowedInteractions');
+            const allowedInteractions: string[] = lineAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
-        let color: any = !isNullOrUndefined(lineAnnot.color) ? lineAnnot.color : [0,0,0];
+        const color: number[] = !isNullOrUndefined(lineAnnot.color) ? lineAnnot.color : [0, 0, 0];
         shapeAnnotation.StrokeColor = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + (color[3] ? color[3] : 1) + ')';
         let fillOpacity: number = lineAnnot.color && lineAnnot.color[3] ? lineAnnot.color[3] : 1;
         if (lineAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(lineAnnot._dictionary.get('FillOpacity'))) {
@@ -2894,12 +2731,12 @@ export class AnnotationRenderer {
             }
         }
         if (lineAnnot.lineIntent === PdfLineIntent.lineArrow || !lineAnnot._dictionary.has('Measure')) {
-        return shapeAnnotation;
+            return shapeAnnotation;
         } else {
-            let measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
+            const measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
             if (lineAnnot._dictionary.has('Measure')) {
                 measureShapeAnnotation.Calibrate = this.getMeasureObject(lineAnnot);
-    }
+            }
             measureShapeAnnotation.Indent = lineAnnot.lineIntent.toString();
             measureShapeAnnotation.Caption = lineAnnot.caption.cap;
             measureShapeAnnotation.LeaderLength = lineAnnot.leaderExt;
@@ -2936,20 +2773,22 @@ export class AnnotationRenderer {
         const cropBox: number[] = this.getBothCropBoxValue(page);
         let cropBoxX: number = 0;
         let cropBoxY: number = 0;
-        if (!(cropBox[0] == 0 && (page as PdfPage).cropBox[2] == page.size[2] && cropBox[1] == page.size[3])) {
+        if (!(cropBox[0] === 0 && (page as PdfPage).cropBox[2] === page.size[2] && cropBox[1] === page.size[3])) {
             cropBoxX = cropBox[0];
             cropBoxY = cropBox[1];
         }
-        if (pageRotation == 0) {
-            startingPoint = { X: this.convertPointToPixel(points[0]) - this.convertPointToPixel(cropBoxX), Y: (pageHeight - this.convertPointToPixel(points[1])) + this.convertPointToPixel(cropBoxY) };
-            endingPoint = { X: this.convertPointToPixel(points[2]) - this.convertPointToPixel(cropBoxX), Y: (pageHeight - this.convertPointToPixel(points[3])) + this.convertPointToPixel(cropBoxY) };
-        } else if (pageRotation == 1) {
+        if (pageRotation === 0) {
+            startingPoint = { X: this.convertPointToPixel(points[0]) - this.convertPointToPixel(cropBoxX),
+                Y: (pageHeight - this.convertPointToPixel(points[1])) + this.convertPointToPixel(cropBoxY) };
+            endingPoint = { X: this.convertPointToPixel(points[2]) - this.convertPointToPixel(cropBoxX),
+                Y: (pageHeight - this.convertPointToPixel(points[3])) + this.convertPointToPixel(cropBoxY) };
+        } else if (pageRotation === 1) {
             startingPoint = { X: this.convertPointToPixel(points[1]), Y: this.convertPointToPixel(points[0]) };
             endingPoint = { X: this.convertPointToPixel(points[3]), Y: this.convertPointToPixel(points[2]) };
-        } else if (pageRotation == 2) {
+        } else if (pageRotation === 2) {
             startingPoint = { X: pageWidth - this.convertPointToPixel(points[0]), Y: this.convertPointToPixel(points[1]) };
             endingPoint = { X: pageWidth - this.convertPointToPixel(points[2]), Y: this.convertPointToPixel(points[3]) };
-        } else if (pageRotation == 3) {
+        } else if (pageRotation === 3) {
             startingPoint = { X: (pageWidth - this.convertPointToPixel(points[1])), Y: (pageHeight - this.convertPointToPixel(points[0])) };
             endingPoint = { X: pageWidth - this.convertPointToPixel(points[3]), Y: pageHeight - this.convertPointToPixel(points[2]) };
         }
@@ -2959,14 +2798,16 @@ export class AnnotationRenderer {
     }
 
     /**
-     * @param ellipseAnnot
-     * @param height
-     * @param width
-     * @param pageRotation
-     * @param shapeFreeText
+     * @param {PdfEllipseAnnotation} ellipseAnnot - ellipseAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {PdfFreeTextAnnotation} shapeFreeText - shapeFreeTezt
      * @private
+     * @returns {void}
      */
-    public loadEllipseAnnotation(ellipseAnnot: PdfEllipseAnnotation, height: number, width: number, pageRotation: number, shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
+    public loadEllipseAnnotation(ellipseAnnot: PdfEllipseAnnotation, height: number, width: number,
+                                 pageRotation: number, shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
         const shapeAnnotation: ShapeAnnotationBase = new ShapeAnnotationBase();
         shapeAnnotation.ShapeAnnotationType = 'Circle';
         shapeAnnotation.Author = ellipseAnnot.author;
@@ -2993,7 +2834,6 @@ export class AnnotationRenderer {
             shapeAnnotation.State = 'Unmarked';
             shapeAnnotation.StateModel = 'None';
         }
-
         shapeAnnotation.Comments = new Array<PopupAnnotationBase>();
         for (let i: number = 0; i < ellipseAnnot.comments.count; i++) {
             const annot: PopupAnnotationBase = this.loadPopupAnnotation(ellipseAnnot.comments.at(i), height, width, pageRotation);
@@ -3022,7 +2862,6 @@ export class AnnotationRenderer {
         else {
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-
         if (ellipseAnnot.flags === PdfAnnotationFlag.locked) {
             shapeAnnotation.IsLocked = true;
         }
@@ -3039,7 +2878,7 @@ export class AnnotationRenderer {
             shapeAnnotation.IsPrint = true;
         }
         if (ellipseAnnot._dictionary.has('AllowedInteractions')) {
-            const allowedInteractions: any = ellipseAnnot.getValues('AllowedInteractions');
+            const allowedInteractions: string[] = ellipseAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
@@ -3068,7 +2907,7 @@ export class AnnotationRenderer {
         }
         if (ellipseAnnot._dictionary.has('Measure')) {
             shapeAnnotation.FillColor = 'rgba(' + ellipseAnnot.innerColor[0] + ',' + ellipseAnnot.innerColor[1] + ',' + ellipseAnnot.innerColor[2] + ',' + fillOpacity + ')';
-            let measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
+            const measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
             measureShapeAnnotation.Calibrate = this.getMeasureObject(ellipseAnnot as PdfAnnotation);
             if (ellipseAnnot._dictionary.has('IT')) {
                 measureShapeAnnotation.Indent = ellipseAnnot._dictionary.get('IT');
@@ -3099,19 +2938,21 @@ export class AnnotationRenderer {
             return measureShapeAnnotation;
         }
         else {
-        return shapeAnnotation;
-    }
+            return shapeAnnotation;
+        }
     }
 
     /**
-     * @param polygonAnnot
-     * @param height
-     * @param width
-     * @param pageRotation
-     * @param shapeFreeText
+     * @param {PdfPolygonAnnotation} polygonAnnot - polygonAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {PdfFreeTextAnnotation} shapeFreeText - shapeFreeText
      * @private
+     * @returns {void}
      */
-    public loadPolygonAnnotation(polygonAnnot: PdfPolygonAnnotation, height: number, width: number, pageRotation: number, shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
+    public loadPolygonAnnotation(polygonAnnot: PdfPolygonAnnotation, height: number, width: number, pageRotation: number,
+                                 shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
         const shapeAnnotation: ShapeAnnotationBase = new ShapeAnnotationBase();
         shapeAnnotation.ShapeAnnotationType = 'Polygon';
         shapeAnnotation.Author = polygonAnnot.author;
@@ -3140,7 +2981,6 @@ export class AnnotationRenderer {
             shapeAnnotation.State = 'Unmarked';
             shapeAnnotation.StateModel = 'None';
         }
-
         shapeAnnotation.Comments = new Array<PopupAnnotationBase>();
         for (let i: number = 0; i < polygonAnnot.comments.count; i++)
         {
@@ -3151,7 +2991,8 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(polygonAnnot._dictionary.get('Vertices'))){
             shapeAnnotation.VertexPoints = this.getVertexPoints(polygonAnnot._dictionary.get('Vertices'), width, height, pageRotation, polygonAnnot._page);
         }
-        if (!isNullOrUndefined(shapeAnnotation.VertexPoints) && shapeAnnotation.VertexPoints[0] !== shapeAnnotation.VertexPoints[shapeAnnotation.VertexPoints.length - 1]){
+        if (!isNullOrUndefined(shapeAnnotation.VertexPoints) && shapeAnnotation.VertexPoints[0] !==
+        shapeAnnotation.VertexPoints[shapeAnnotation.VertexPoints.length - 1]){
             shapeAnnotation.VertexPoints.push(shapeAnnotation.VertexPoints[0]);
         }
         shapeAnnotation.StrokeColor = 'rgba(' + polygonAnnot.color[0] + ',' + polygonAnnot.color[1] + ',' + polygonAnnot.color[2] + ',' + (polygonAnnot.color[3] ? polygonAnnot.color[3] : 1) + ')';
@@ -3193,7 +3034,6 @@ export class AnnotationRenderer {
         else{
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-
         if (polygonAnnot.flags === PdfAnnotationFlag.locked) {
             shapeAnnotation.IsLocked = true;
         }
@@ -3218,12 +3058,12 @@ export class AnnotationRenderer {
             }
         }
         if (polygonAnnot._dictionary.has('AllowedInteractions')) {
-            const allowedInteractions: any = polygonAnnot.getValues('AllowedInteractions');
+            const allowedInteractions: string[] = polygonAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
         if (polygonAnnot._dictionary.has('Measure')) {
-            let measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
+            const measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
             if (polygonAnnot._dictionary.has('IT') && !isNullOrUndefined(polygonAnnot._dictionary.get('IT'))) {
                 measureShapeAnnotation.Indent = polygonAnnot._dictionary.get('IT').name;
             } else {
@@ -3262,15 +3102,16 @@ export class AnnotationRenderer {
     }
 
     /**
-     * @param polyLineAnnot
-     * @param height
-     * @param width
-     * @param pageRotation
-     * @param shapeFreeText
+     * @param {PdfPolyLineAnnotation} polyLineAnnot - polyLineAnnot
+     * @param {number} height -height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {PdfFreeTextAnnotation} shapeFreeText - shapeFreeText
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line max-len
-    public loadPolylineAnnotation(polyLineAnnot: PdfPolyLineAnnotation, height: number, width: number, pageRotation: number, shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
+    public loadPolylineAnnotation(polyLineAnnot: PdfPolyLineAnnotation, height: number, width: number,
+                                  pageRotation: number, shapeFreeText: PdfFreeTextAnnotation): ShapeAnnotationBase {
         const shapeAnnotation: ShapeAnnotationBase = new ShapeAnnotationBase();
         shapeAnnotation.ShapeAnnotationType = 'Polyline';
         shapeAnnotation.Author = polyLineAnnot.author;
@@ -3291,28 +3132,28 @@ export class AnnotationRenderer {
         shapeAnnotation.AnnotType = 'shape';
         if (!isNullOrUndefined(polyLineAnnot.reviewHistory)) {
             for (let i: number = 0; i < polyLineAnnot.reviewHistory.count; i++) {
-            shapeAnnotation.State = this.getStateString(polyLineAnnot.reviewHistory.at(parseInt(i.toString(), 10)).state);
-            shapeAnnotation.StateModel = this.getStateModelString(polyLineAnnot.reviewHistory.at(parseInt(i.toString(), 10)).stateModel);
+                shapeAnnotation.State = this.getStateString(polyLineAnnot.reviewHistory.at(parseInt(i.toString(), 10)).state);
+
+                shapeAnnotation.StateModel = this.getStateModelString(polyLineAnnot.reviewHistory.at(parseInt(i.toString(), 10)).
+                    stateModel);
+            }
         }
-        } 
         if (isNullOrUndefined(shapeAnnotation.State) || isNullOrUndefined(shapeAnnotation.StateModel))
         {
             shapeAnnotation.State = 'Unmarked';
             shapeAnnotation.StateModel = 'None';
         }
-
         shapeAnnotation.Comments = new Array<PopupAnnotationBase>();
         if (!isNullOrUndefined(polyLineAnnot.comments)) {
             for (let i: number = 0; i < polyLineAnnot.comments.count; i++) {
-            const annot: PopupAnnotationBase = this.loadPopupAnnotation(polyLineAnnot.comments.at(i), height, width, pageRotation);
-            shapeAnnotation.Comments.push(annot);
-        }
+                const annot: PopupAnnotationBase = this.loadPopupAnnotation(polyLineAnnot.comments.at(i), height, width, pageRotation);
+                shapeAnnotation.Comments.push(annot);
+            }
         }
         shapeAnnotation.Bounds = this.getBounds(polyLineAnnot.bounds, height, width, pageRotation);
-        if(!isNullOrUndefined(polyLineAnnot._dictionary.get('Vertices'))){
+        if (!isNullOrUndefined(polyLineAnnot._dictionary.get('Vertices'))){
             shapeAnnotation.VertexPoints = this.getVertexPoints(polyLineAnnot._dictionary.get('Vertices'), width, height, pageRotation, polyLineAnnot._page);
         }
-        
         shapeAnnotation.StrokeColor = 'rgba(' + polyLineAnnot.color[0] + ',' + polyLineAnnot.color[1] + ',' + polyLineAnnot.color[2] + ',' + (polyLineAnnot.color[3] ? polyLineAnnot.color[3] : 1) + ')';
         let fillOpacity: number = polyLineAnnot.color[3] ? polyLineAnnot.color[3] : 1;
         if (polyLineAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(polyLineAnnot._dictionary.get('FillOpacity'))) {
@@ -3352,7 +3193,6 @@ export class AnnotationRenderer {
         else{
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-
         if (polyLineAnnot.flags === PdfAnnotationFlag.locked) {
             shapeAnnotation.IsLocked = true;
         }
@@ -3377,13 +3217,13 @@ export class AnnotationRenderer {
             }
         }
         if (polyLineAnnot._dictionary.has('AllowedInteractions')) {
-            const allowedInteractions: any = polyLineAnnot.getValues('AllowedInteractions');
+            const allowedInteractions: string[] = polyLineAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
         if (polyLineAnnot._dictionary.has('Measure')) {
             shapeAnnotation.FillColor = 'rgba(' + polyLineAnnot.innerColor[0] + ',' + polyLineAnnot.innerColor[1] + ',' + polyLineAnnot.innerColor[2] + ',' + fillOpacity + ')';
-            let measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
+            const measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
             measureShapeAnnotation.Calibrate = this.getMeasureObject(polyLineAnnot as PdfAnnotation);
             if (polyLineAnnot._dictionary.has('IT')) {
                 measureShapeAnnotation.Indent = polyLineAnnot._dictionary.get('IT').name;
@@ -3414,45 +3254,45 @@ export class AnnotationRenderer {
             return measureShapeAnnotation;
         }
         else {
-        return shapeAnnotation;
-    }
+            return shapeAnnotation;
+        }
     }
 
     /**
      * @private
-     * @param annotation 
-     * @param pageNumber 
-     * @returns 
+     * @param {PdfRubberStampAnnotation} annotation - annotation
+     * @param {number} pageNumber - pageNumber
+     * @returns {void}
      */
     public loadSignatureImage(annotation: PdfRubberStampAnnotation, pageNumber: number): SignatureAnnotationBase {
-        const stampAnnotation = annotation as PdfRubberStampAnnotation;
-        const formsFields = new SignatureAnnotationBase();
+        const stampAnnotation: PdfRubberStampAnnotation = annotation as PdfRubberStampAnnotation;
+        const formsFields: SignatureAnnotationBase = new SignatureAnnotationBase();
         formsFields.SignatureName = stampAnnotation.name;
-        let dictionary = annotation._dictionary.get('AP');
+        let dictionary: any = annotation._dictionary.get('AP');
         if (dictionary === null) {
-        const pdfReference = annotation._dictionary.get('AP');
-          if (pdfReference !== null && pdfReference.Object !== null) {
-            dictionary = pdfReference.Object;
-          }
+            const pdfReference: any = annotation._dictionary.get('AP');
+            if (pdfReference !== null && pdfReference.Object !== null) {
+                dictionary = pdfReference.Object;
+            }
         }
         if (dictionary !== null && dictionary.has('N') ){
             this.m_renderer.findStampImage(annotation);
         }
-        formsFields.Bounds = new Rect(stampAnnotation.bounds.x, stampAnnotation.bounds.y, stampAnnotation.bounds.width, stampAnnotation.bounds.height);
+        formsFields.Bounds = new Rect(stampAnnotation.bounds.x, stampAnnotation.bounds.y, stampAnnotation.bounds.width,
+                                      stampAnnotation.bounds.height);
         formsFields.PathData = this.m_renderer.imageData;
-        formsFields.AnnotationType = "SignatureImage";
+        formsFields.AnnotationType = 'SignatureImage';
         formsFields.PageNumber = pageNumber;
         formsFields.Opacity = stampAnnotation.opacity;
         formsFields.StrokeColor = 'rgba(' + stampAnnotation.color + ',' + stampAnnotation.color[1] + ',' + stampAnnotation.color[2] + ',' + (stampAnnotation.color[3] ? stampAnnotation.color[3] : 1) + ')';
         return formsFields;
-      }
+    }
 
     private getMeasureObject(annotation: PdfAnnotation): Measure {
-        let measureObject : Measure = new Measure();
+        const measureObject : Measure = new Measure();
         let measureDictionary : _PdfDictionary;
-
         if (annotation._dictionary.has('Measure')) {
-            measureDictionary = annotation._dictionary.get('Measure')            
+            measureDictionary = annotation._dictionary.get('Measure');
         }
         if (measureDictionary.has('R')) {
             measureObject.Ratio = measureDictionary.get('R');
@@ -3460,7 +3300,6 @@ export class AnnotationRenderer {
         else{
             return null;
         }
-
         let xList: NumberFormat[];
         if (measureDictionary.has('X')) {
             xList = this.getMeasureValues(measureDictionary.getArray('X'));
@@ -3486,23 +3325,21 @@ export class AnnotationRenderer {
             volumeList = this.getMeasureValues(measureDictionary.getArray('V'));
         }
         measureObject.Volume = volumeList;
-
         if (!isNullOrUndefined(measureDictionary) && measureDictionary.has('TargetUnitConversion')) {
             measureObject.TargetUnitConversion = measureDictionary.get('TargetUnitConversion').FloatValue;
         }
         else {
             measureObject.TargetUnitConversion = 0;
         }
-
         return measureObject;
     }
 
     private getMeasureValues(arrayValues: any[]): NumberFormat[] {
-        let measureValuesArray: NumberFormat[] = new Array<NumberFormat>();
+        const measureValuesArray: NumberFormat[] = new Array<NumberFormat>();
         if (!isNullOrUndefined(arrayValues)) {
-            for (let index = 0; index < arrayValues.length; index++) {
-                let measureFormat = arrayValues[parseInt(index.toString(), 10)];
-                let measureValue: NumberFormat = new NumberFormat();
+            for (let index: number = 0; index < arrayValues.length; index++) {
+                const measureFormat: any = arrayValues[parseInt(index.toString(), 10)];
+                const measureValue: NumberFormat = new NumberFormat();
                 if (!isNullOrUndefined(measureFormat)) {
                     if (measureFormat.has('D') && !isNullOrUndefined(measureFormat.get('D'))) {
                         measureValue.Denominator = measureFormat.get('D');
@@ -3528,34 +3365,39 @@ export class AnnotationRenderer {
 
     private getVertexPoints(vertices: number[], pageWidth: number, pageHeight: number, pageRotation: number, page: PdfPage): AnnotPoint[] {
         const vertexPoints: AnnotPoint[] = [];
-        const cropBox = this.getBothCropBoxValue(page);
+        const cropBox: number[] = this.getBothCropBoxValue(page);
         let cropBoxX: number = 0;
         let cropBoxY: number = 0;
-        if (!(cropBox[0] == 0 && (page as PdfPage).cropBox[2] == page.size[2] && cropBox[1] == page.size[3])) {
+        if (!(cropBox[0] === 0 && (page as PdfPage).cropBox[2] === page.size[2] && cropBox[1] === page.size[3])) {
             cropBoxX = cropBox[0];
             cropBoxY = cropBox[1];
         }
-        if (pageRotation == 0) {
+        if (pageRotation === 0) {
             for (let i: number = 0; i < vertices.length; i++) {
-                const point: AnnotPoint = { X: this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]) - this.convertPointToPixel(cropBoxX), Y: (pageHeight - this.convertPointToPixel(vertices[i + 1])) + this.convertPointToPixel(cropBoxY) };
+                const point: AnnotPoint = { X: this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]) -
+                    this.convertPointToPixel(cropBoxX), Y: (pageHeight - this.convertPointToPixel(vertices[i + 1])) +
+                    this.convertPointToPixel(cropBoxY) };
                 i = i + 1;
                 vertexPoints.push(point);
             }
-        } else if (pageRotation == 1){
+        } else if (pageRotation === 1){
             for (let i: number = 0; i < vertices.length; i ++) {
-                const point: AnnotPoint = { X: this.convertPointToPixel(vertices[i + 1]), Y: this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]) };
+                const point: AnnotPoint = { X: this.convertPointToPixel(vertices[i + 1]),
+                    Y: this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]) };
                 i = i + 1;
                 vertexPoints.push(point);
             }
-        } else if (pageRotation == 2){
+        } else if (pageRotation === 2){
             for (let i: number = 0; i < vertices.length; i ++) {
-                const point: AnnotPoint = { X: pageWidth - this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]), Y: pageHeight - this.convertPointToPixel(vertices[i + 1]) };
+                const point: AnnotPoint = { X: pageWidth - this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]),
+                    Y: pageHeight - this.convertPointToPixel(vertices[i + 1]) };
                 i = i + 1;
                 vertexPoints.push(point);
             }
-        } else if (pageRotation == 3){
+        } else if (pageRotation === 3){
             for (let i: number = 0; i < vertices.length; i ++) {
-                const point: AnnotPoint = { X: pageWidth - this.convertPointToPixel(vertices[i + 1]), Y: pageHeight - this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]) };
+                const point: AnnotPoint = { X: pageWidth - this.convertPointToPixel(vertices[i + 1]),
+                    Y: pageHeight - this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]) };
                 i = i + 1;
                 vertexPoints.push(point);
             }
@@ -3615,6 +3457,7 @@ export class AnnotationRenderer {
             return 'None';
         }
     }
+
     private getBorderStyle(borderStyle: string): PdfBorderStyle {
         let style: PdfBorderStyle = PdfBorderStyle.solid;
         switch (borderStyle) {
@@ -3639,6 +3482,7 @@ export class AnnotationRenderer {
         }
         return style;
     }
+
     private getRotateAngleString(angle: PdfRotationAngle): string {
         switch (angle) {
         case PdfRotationAngle.angle0:
@@ -3664,32 +3508,33 @@ export class AnnotationRenderer {
     private getBounds(bounds: any, pageHeight: number, pageWidth: number, pageRotation: number): AnnotBounds {
         let bound: AnnotBounds;
         if (pageRotation === 0) {
-            // eslint-disable-next-line max-len
-            bound = new AnnotBounds(this.convertPointToPixel(bounds.x), this.convertPointToPixel(bounds.y), this.convertPointToPixel(bounds.width), this.convertPointToPixel(bounds.height));
+            bound = new AnnotBounds(this.convertPointToPixel(bounds.x), this.convertPointToPixel(bounds.y),
+                                    this.convertPointToPixel(bounds.width), this.convertPointToPixel(bounds.height));
         }
         else if (pageRotation === 1) {
-            // eslint-disable-next-line max-len
-            bound = new AnnotBounds(pageWidth - this.convertPointToPixel(bounds.y) - this.convertPointToPixel(bounds.height), this.convertPointToPixel(bounds.x), this.convertPointToPixel(bounds.height), this.convertPointToPixel(bounds.width));
+            bound = new AnnotBounds(pageWidth - this.convertPointToPixel(bounds.y) - this.convertPointToPixel(bounds.height),
+                                    this.convertPointToPixel(bounds.x), this.convertPointToPixel(bounds.height),
+                                    this.convertPointToPixel(bounds.width));
         }
         else if (pageRotation === 2) {
-            // eslint-disable-next-line max-len
-            bound = new AnnotBounds(pageWidth - this.convertPointToPixel(bounds.x) - this.convertPointToPixel(bounds.width), pageHeight - this.convertPointToPixel(bounds.y) - this.convertPointToPixel(bounds.height), this.convertPointToPixel(bounds.width), this.convertPointToPixel(bounds.height));
+            bound = new AnnotBounds(pageWidth - this.convertPointToPixel(bounds.x) - this.convertPointToPixel(bounds.width),
+                                    pageHeight - this.convertPointToPixel(bounds.y) - this.convertPointToPixel(bounds.height),
+                                    this.convertPointToPixel(bounds.width), this.convertPointToPixel(bounds.height));
         }
         else if (pageRotation === 3) {
-            // eslint-disable-next-line max-len
-            bound = new AnnotBounds(this.convertPointToPixel(bounds.y), pageHeight - this.convertPointToPixel(bounds.x) - this.convertPointToPixel(bounds.width), this.convertPointToPixel(bounds.height), this.convertPointToPixel(bounds.width));
+            bound = new AnnotBounds(this.convertPointToPixel(bounds.y), pageHeight - this.convertPointToPixel(bounds.x) -
+            this.convertPointToPixel(bounds.width), this.convertPointToPixel(bounds.height), this.convertPointToPixel(bounds.width));
         }
         return bound;
     }
 
-
     /**
      * @private
-     * @param popupAnnot 
-     * @param height 
-     * @param width 
-     * @param pageRotation 
-     * @returns 
+     * @param {PdfPopupAnnotation} popupAnnot - popupAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @returns {void}
      */
     public loadPopupAnnotation(popupAnnot: PdfPopupAnnotation, height: number, width: number, pageRotation: number): PopupAnnotationBase {
         const popupAnnotation: PopupAnnotationBase = new PopupAnnotationBase();
@@ -3759,28 +3604,31 @@ export class AnnotationRenderer {
     }
 
     /**
-     * @param freeTextAnnot
-     * @param height
-     * @param width
-     * @param pageRotation
-     * @param page
+     * @param {PdfFreeTextAnnotation} freeTextAnnot - freeTextAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {PdfPage} page - page
      * @private
+     * @returns {void}
      */
-    public loadFreeTextAnnotation(freeTextAnnot: PdfFreeTextAnnotation, height: number, width: number, pageRotation: number, page: PdfPage): FreeTextAnnotationBase {
-        let freeTextAnnotation: FreeTextAnnotationBase = new FreeTextAnnotationBase();
+    public loadFreeTextAnnotation(freeTextAnnot: PdfFreeTextAnnotation, height: number, width: number,
+                                  pageRotation: number, page: PdfPage): FreeTextAnnotationBase {
+        const freeTextAnnotation: FreeTextAnnotationBase = new FreeTextAnnotationBase();
         freeTextAnnotation.AnnotationIntent = this.getAnnotationIntentString(freeTextAnnot.annotationIntent); // returns wrong value
         freeTextAnnotation.AnnotationFlags = this.getAnnotationFlagsString(freeTextAnnot.flags);
         freeTextAnnotation.Author = freeTextAnnot.author;
         freeTextAnnotation.AnnotName = freeTextAnnot.name;
-        if(isNullOrUndefined(freeTextAnnotation.AnnotName) || freeTextAnnotation.AnnotName === ''){
+        if (isNullOrUndefined(freeTextAnnotation.AnnotName) || freeTextAnnotation.AnnotName === ''){
             freeTextAnnotation.AnnotName = Math.abs(Math.random()).toString(36).substring(2);
         }
         freeTextAnnotation.AnnotType = 'Text Box';
         freeTextAnnotation.FreeTextAnnotationType = 'Text Box';
-        freeTextAnnotation.BorderColor = new AnnotColor(freeTextAnnot.borderColor[0], freeTextAnnot.borderColor[1], freeTextAnnot.borderColor[2]);
-        let points: AnnotPoint[] = [{X: 100, Y: 400}, {X: 200, Y: 400}];
+        freeTextAnnotation.BorderColor = new AnnotColor(freeTextAnnot.borderColor[0], freeTextAnnot.borderColor[1],
+                                                        freeTextAnnot.borderColor[2]);
+        const points: AnnotPoint[] = [{X: 100, Y: 400}, {X: 200, Y: 400}];
         freeTextAnnotation.CalloutLines = points;
-        let backgroundColor: any = freeTextAnnot.color ? freeTextAnnot.color : [0, 0, 0];
+        const backgroundColor: number[] = freeTextAnnot.color ? freeTextAnnot.color : [0, 0, 0];
         if (isNullOrUndefined(freeTextAnnot.color)) {
             freeTextAnnotation.IsTransparentSet = true;
         }
@@ -3800,7 +3648,7 @@ export class AnnotationRenderer {
         freeTextAnnotation.FillColor = 'rgba(' + backgroundColor[0] + ',' + backgroundColor[1] + ',' + backgroundColor[2] + ',' + fillOpacity + ')';
         freeTextAnnotation.Layer = freeTextAnnot._dictionary.has('Layer') ? freeTextAnnot._dictionary.get('Layer') : null;
         // freeTextAnnotation.Location = freeTextAnnot._dictionary.has('Location') ? freeTextAnnot._dictionary.get('Location') : JSON.stringify({X: freeTextAnnot.bounds.x ,Y: freeTextAnnot.bounds.y});
-        freeTextAnnotation.Location = freeTextAnnot._dictionary.has('Location') ? freeTextAnnot._dictionary.get('Location') : '{X='+ freeTextAnnot.bounds.x + ',Y='+ freeTextAnnot.bounds.y + '}';
+        freeTextAnnotation.Location = freeTextAnnot._dictionary.has('Location') ? freeTextAnnot._dictionary.get('Location') : '{X=' + freeTextAnnot.bounds.x + ',Y=' + freeTextAnnot.bounds.y + '}';
         freeTextAnnotation.MarkupText = freeTextAnnot.text;
         if (!isNullOrUndefined(freeTextAnnot.modifiedDate)) {
             freeTextAnnotation.ModifiedDate = this.formatDate(freeTextAnnot.modifiedDate);
@@ -3808,15 +3656,15 @@ export class AnnotationRenderer {
         else {
             freeTextAnnotation.ModifiedDate = this.formatDate(new Date());
         }
-        freeTextAnnotation.Name = "freeText";
+        freeTextAnnotation.Name = 'freeText';
         freeTextAnnotation.Opacity = freeTextAnnot.opacity;
-        if(freeTextAnnot._dictionary.has('Rotation') && !isNullOrUndefined(freeTextAnnot._dictionary.get('Rotation'))){
-            freeTextAnnotation.Rotate = parseInt(freeTextAnnot._dictionary.get('Rotation'));
+        if (freeTextAnnot._dictionary.has('Rotation') && !isNullOrUndefined(freeTextAnnot._dictionary.get('Rotation'))){
+            freeTextAnnotation.Rotate = parseInt(freeTextAnnot._dictionary.get('Rotation'), 10);
         }
-        if(freeTextAnnot._dictionary.has('Rotate') && !isNullOrUndefined(freeTextAnnot._dictionary.get('Rotate'))){
-            freeTextAnnotation.Rotate = parseInt(freeTextAnnot._dictionary.get('Rotate'));
+        if (freeTextAnnot._dictionary.has('Rotate') && !isNullOrUndefined(freeTextAnnot._dictionary.get('Rotate'))){
+            freeTextAnnotation.Rotate = parseInt(freeTextAnnot._dictionary.get('Rotate'), 10);
         }
-        if(!isNullOrUndefined(freeTextAnnot.subject)){
+        if (!isNullOrUndefined(freeTextAnnot.subject)){
             freeTextAnnotation.Subject = freeTextAnnot.subject;
         }
         else{
@@ -3840,8 +3688,9 @@ export class AnnotationRenderer {
             freeTextAnnotation.Comments.push(annot);
         }
         freeTextAnnotation.Bounds = this.getBounds(freeTextAnnot.bounds, height, width, pageRotation);
-        if(freeTextAnnotation.Bounds.Y < 0){
-            let cropRect = {x: freeTextAnnot.bounds.x, y: page.cropBox[1] + freeTextAnnot.bounds.y, width: freeTextAnnot.bounds.width, height: freeTextAnnot.bounds.height};
+        if (freeTextAnnotation.Bounds.Y < 0){
+            const cropRect: any = {x: freeTextAnnot.bounds.x, y: page.cropBox[1] + freeTextAnnot.bounds.y,
+                width: freeTextAnnot.bounds.width, height: freeTextAnnot.bounds.height};
             freeTextAnnotation.Bounds = this.getBounds(cropRect, height, width, pageRotation);
         }
         freeTextAnnotation.PageRotation = pageRotation;
@@ -3852,10 +3701,10 @@ export class AnnotationRenderer {
         else {
             freeTextAnnotation.IsCommentLock = false;
         }
-        if(freeTextAnnot.flags === PdfAnnotationFlag.print){
+        if (freeTextAnnot.flags === PdfAnnotationFlag.print){
             freeTextAnnotation.IsPrint = true;
         }
-        if(freeTextAnnot.flags === PdfAnnotationFlag.locked){
+        if (freeTextAnnot.flags === PdfAnnotationFlag.locked){
             freeTextAnnotation.IsLocked = true;
         }
         else{
@@ -3868,7 +3717,7 @@ export class AnnotationRenderer {
             }
         }
         if (freeTextAnnot._dictionary.has('AllowedInteractions')) {
-            const allowedInteractions: any = freeTextAnnot.getValues('AllowedInteractions');
+            const allowedInteractions: string[] = freeTextAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             freeTextAnnotation.AllowedInteractions = JSON.parse(text);
         }
@@ -3877,28 +3726,34 @@ export class AnnotationRenderer {
 
     private getTextAlignmentString(textAlignment: PdfTextAlignment): string {
         switch (textAlignment) {
-            case PdfTextAlignment.left:
-                return 'Left';
-            case PdfTextAlignment.right:
-                return 'Right';
-            case PdfTextAlignment.center:
-                return 'Center';
-            case PdfTextAlignment.justify:
-                return 'Justify';
-            default:
-                return 'Left';
+        case PdfTextAlignment.left:
+            return 'Left';
+        case PdfTextAlignment.right:
+            return 'Right';
+        case PdfTextAlignment.center:
+            return 'Center';
+        case PdfTextAlignment.justify:
+            return 'Justify';
+        default:
+            return 'Left';
         }
     }
 
     /**
-     * 
+     * @param {PdfFreeTextAnnotation} inkAnnot - inkAnnot
+     * @param {number} pageNumber - pageNumber
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
      * @private
+     * @returns {void}
      */
-    public loadSignatureText(inkAnnot: PdfFreeTextAnnotation, pageNumber: number, height: number, width: number, pageRotation: number): SignatureAnnotationBase {
-        let formFields: SignatureAnnotationBase = new SignatureAnnotationBase();
+    public loadSignatureText(inkAnnot: PdfFreeTextAnnotation, pageNumber: number, height: number,
+                             width: number, pageRotation: number): SignatureAnnotationBase {
+        const formFields: SignatureAnnotationBase = new SignatureAnnotationBase();
         formFields.SignatureName = inkAnnot.name;
         formFields.Bounds = this.getBounds(inkAnnot.bounds, width, height, pageRotation);
-        formFields.AnnotationType = "SignatureText";
+        formFields.AnnotationType = 'SignatureText';
         formFields.FontFamily = this.getFontFamilyString((inkAnnot.font as PdfStandardFont)._fontFamily);
         formFields.FontSize = this.convertPointToPixel(inkAnnot.font.size);
         formFields.PathData = inkAnnot.text;
@@ -3911,45 +3766,45 @@ export class AnnotationRenderer {
 
     private getFontFamilyString(fontFamily: PdfFontFamily): string {
         switch (fontFamily) {
-            case PdfFontFamily.helvetica:
-                return 'Helvetica';
-            case PdfFontFamily.timesRoman:
-                return 'TimesRoman';
-            case PdfFontFamily.courier:
-                return 'Courier';
-            case PdfFontFamily.symbol:
-                return 'Symbol';
-            case PdfFontFamily.zapfDingbats:
-                return 'ZapfDingbats';
-            default:
-                return 'Helvetica';
+        case PdfFontFamily.helvetica:
+            return 'Helvetica';
+        case PdfFontFamily.timesRoman:
+            return 'Times new Roman';
+        case PdfFontFamily.courier:
+            return 'Courier';
+        case PdfFontFamily.symbol:
+            return 'Symbol';
+        case PdfFontFamily.zapfDingbats:
+            return 'ZapfDingbats';
+        default:
+            return 'Helvetica';
         }
     }
 
     private getAnnotationFlagsString(flags: PdfAnnotationFlag): string {
         switch (flags) {
-            case PdfAnnotationFlag.default:
-                return 'Default';
-            case PdfAnnotationFlag.invisible:
-                return 'Invisible';
-            case PdfAnnotationFlag.hidden:
-                return 'Hidden';
-            case PdfAnnotationFlag.print:
-                return 'Print';
-            case PdfAnnotationFlag.noZoom:
-                return 'NoZoom';
-            case PdfAnnotationFlag.noRotate:
-                return 'NoRotate';
-            case PdfAnnotationFlag.noView:
-                return 'NoView';
-            case PdfAnnotationFlag.readOnly:
-                return 'ReadOnly';
-            case PdfAnnotationFlag.locked:
-                return 'Locked';
-            case PdfAnnotationFlag.toggleNoView:
-                return 'ToggleNoView';
-            default:
-                return 'Default';
+        case PdfAnnotationFlag.default:
+            return 'Default';
+        case PdfAnnotationFlag.invisible:
+            return 'Invisible';
+        case PdfAnnotationFlag.hidden:
+            return 'Hidden';
+        case PdfAnnotationFlag.print:
+            return 'Print';
+        case PdfAnnotationFlag.noZoom:
+            return 'NoZoom';
+        case PdfAnnotationFlag.noRotate:
+            return 'NoRotate';
+        case PdfAnnotationFlag.noView:
+            return 'NoView';
+        case PdfAnnotationFlag.readOnly:
+            return 'ReadOnly';
+        case PdfAnnotationFlag.locked:
+            return 'Locked';
+        case PdfAnnotationFlag.toggleNoView:
+            return 'ToggleNoView';
+        default:
+            return 'Default';
         }
     }
 
@@ -4029,7 +3884,6 @@ export class AnnotationRenderer {
         const hours: string = this.datePadding(date.getHours());
         const minutes: string = this.datePadding(date.getMinutes());
         const seconds: string = this.datePadding(date.getSeconds());
-
         return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
     }
 
@@ -4039,21 +3893,23 @@ export class AnnotationRenderer {
     }
 
     /**
-     * @param loadedDocument
+     * @param {string} jsonObject - jsonObject
+     * @param {PdfDocument} loadedDocument - loadedDocument
      * @private
+     * @returns {void}
      */
     public removeSignatureTypeAnnot(jsonObject: { [key: string]: string }, loadedDocument: PdfDocument): void {
         if (
-            (jsonObject.hasOwnProperty('isAnnotationsExist') &&
+            (Object.prototype.hasOwnProperty.call(jsonObject, 'isAnnotationsExist') &&
                 JSON.parse(jsonObject['isAnnotationsExist'])) ||
-            (jsonObject.hasOwnProperty('isFormFieldAnnotationsExist') &&
+            (Object.prototype.hasOwnProperty.call(jsonObject, 'isFormFieldAnnotationsExist') &&
                 JSON.parse(jsonObject['isFormFieldAnnotationsExist']))
         ) {
             const annotationPageList: any = jsonObject.annotationsPageList ? jsonObject.annotationsPageList : [];
-            const formFieldsPageList : string = jsonObject.formFieldsPageList ? (jsonObject.formFieldsPageList) : '[]';
-            if (annotationPageList.length != 0) {
+            const formFieldsPageList : string = jsonObject.formFieldsPageList ? (jsonObject.formFieldsPageList) : '[]' ;
+            if (annotationPageList.length !== 0) {
                 const removeAnnotList: any = JSON.parse(annotationPageList);
-                for (let i = 0; i < removeAnnotList.length; i++) {
+                for (let i: number = 0; i < removeAnnotList.length; i++) {
                     const loadedPageNo: string = removeAnnotList[parseInt(i.toString(), 10)];
                     // Removing annotations from the page.
                     const page: PdfPage = loadedDocument.getPage(parseInt(loadedPageNo, 10));
@@ -4061,7 +3917,6 @@ export class AnnotationRenderer {
                     const totalAnnotation: number = parseInt(oldPageAnnotations.count.toString(), 10);
                     for (let m: number = totalAnnotation - 1; m >= 0; m--) {
                         const annotation: PdfAnnotation = oldPageAnnotations.at(m);
-
                         if (
                             annotation instanceof PdfFreeTextAnnotation ||
                             annotation instanceof PdfInkAnnotation ||
@@ -4082,12 +3937,12 @@ export class AnnotationRenderer {
 
                 }
             }
-            if (formFieldsPageList.length != 0) {
+            if (formFieldsPageList.length !== 0) {
                 const removeAnnotList: any = JSON.parse(formFieldsPageList);
                 for (let i: number = 0; i < removeAnnotList.length; i++) {
                     const loadedPageNo: string = removeAnnotList[parseInt(i.toString(), 10)];
                     // Removing formfields from the page.
-                    const page: PdfPage = loadedDocument.getPage(parseInt(loadedPageNo, 10)-1);
+                    const page: PdfPage = loadedDocument.getPage(parseInt(loadedPageNo, 10) - 1);
                     const oldPageAnnotations: PdfAnnotationCollection = page.annotations;
                     const totalAnnotation: number = parseInt(oldPageAnnotations.count.toString(), 10);
                     for (let m: number = totalAnnotation - 1; m >= 0; m--) {
@@ -4117,14 +3972,16 @@ export class AnnotationRenderer {
     }
 
     /**
-     * @param textMarkup
-     * @param height
-     * @param width
-     * @param pageRotation
+     * @param {PdfTextMarkupAnnotation} textMarkup - textMarkup
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {PdfPage} page - page
      * @private
+     * @returns {void}
      */
-    // eslint-disable-next-line max-len
-    public loadTextMarkupAnnotation(textMarkup: PdfTextMarkupAnnotation, height: number, width: number, pageRotation: number, page: PdfPage): TextMarkupAnnotationBase {
+    public loadTextMarkupAnnotation(textMarkup: PdfTextMarkupAnnotation, height: number, width: number, pageRotation: number,
+                                    page: PdfPage): TextMarkupAnnotationBase {
         const markupAnnotation: TextMarkupAnnotationBase = new TextMarkupAnnotationBase();
         markupAnnotation.TextMarkupAnnotationType = this.getMarkupAnnotTypeString(textMarkup.textMarkupType);
         if (markupAnnotation.TextMarkupAnnotationType === 'StrikeOut') {
@@ -4134,8 +3991,9 @@ export class AnnotationRenderer {
         markupAnnotation.Subject = textMarkup.subject;
         markupAnnotation.AnnotName = textMarkup.name;
         markupAnnotation.Note = textMarkup.text ? textMarkup.text : '';
-        // eslint-disable-next-line max-len
-        markupAnnotation.Rect = new RectangleBase(textMarkup.bounds.x, textMarkup.bounds.y, textMarkup.bounds.width + textMarkup.bounds.x, textMarkup.bounds.height + textMarkup.bounds.y);
+        markupAnnotation.Rect = new RectangleBase(textMarkup.bounds.x, textMarkup.bounds.y,
+                                                  textMarkup.bounds.width + textMarkup.bounds.x,
+                                                  textMarkup.bounds.height + textMarkup.bounds.y);
         markupAnnotation.Opacity = textMarkup.opacity;
         // markupAnnotation.Color = 'rgba(' + textMarkup.color[0] + ',' + textMarkup.color[1] + ',' + textMarkup.color[2] + ',' + (textMarkup.color[3] ? textMarkup.color[3] : 1) + ')';
         markupAnnotation.Color = '#' + (1 << 24 | textMarkup.color[0] << 16 | textMarkup.color[1] << 8 | textMarkup.color[2]).toString(16).slice(1);
@@ -4160,7 +4018,6 @@ export class AnnotationRenderer {
             markupAnnotation.State = 'Unmarked';
             markupAnnotation.StateModel = 'None';
         }
-
         markupAnnotation.Comments = new Array<PopupAnnotationBase>();
         for (let i: number = 0; i < textMarkup.comments.count; i++)
         {
@@ -4185,12 +4042,12 @@ export class AnnotationRenderer {
             }
         }
         if (textMarkup._dictionary.has('AllowedInteractions')) {
-            const allowedInteractions: any = textMarkup.getValues('AllowedInteractions');
+            const allowedInteractions: string[] = textMarkup.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             markupAnnotation.AllowedInteractions = JSON.parse(text);
         }
         if (textMarkup._dictionary.has('TextMarkupContent')) {
-            const textMarkupData: any = textMarkup.getValues('TextMarkupContent');
+            const textMarkupData: string[] = textMarkup.getValues('TextMarkupContent');
             if (!isNullOrUndefined(textMarkupData)) {
                 markupAnnotation.TextMarkupContent = textMarkupData[0];
             }
@@ -4198,8 +4055,8 @@ export class AnnotationRenderer {
         return markupAnnotation;
     }
 
-    // eslint-disable-next-line max-len
-    private getTextMarkupBounds(quadPoints: string[], pageHeight: number, pageWidth: number, pageRotation: number, page: PdfPage): AnnotBounds[] {
+    private getTextMarkupBounds(quadPoints: string[], pageHeight: number, pageWidth: number, pageRotation: number,
+                                page: PdfPage): AnnotBounds[] {
         let x: number = 0;
         let y: number = 0;
         let width: number = 0;
@@ -4272,8 +4129,8 @@ export class AnnotationRenderer {
  * @hidden
  */
 export class PointBase {
-    x: number
-    y: number
+    x: number;
+    y: number;
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
@@ -4339,6 +4196,7 @@ export class FreeTextAnnotationBase {
     public PageRotation: number = 0;
     public IsTransparentSet: boolean = false;
 }
+
 /**
  *
  * @hidden
@@ -4364,12 +4222,10 @@ export class InkSignatureAnnotation {
     public AnnotationSelectorSettings: any;
     public AnnotationSettings: any;
     public AllowedInteractions: string[];
-  
     public Comments: PopupAnnotationBase[];
     public AnnotType: string;
     public IsPrint: boolean;
     public ExistingCustomData: string;
-  
     constructor() {
         this.AnnotationType = null;
         this.Bounds = null;
@@ -4396,7 +4252,7 @@ export class InkSignatureAnnotation {
         this.IsPrint = null;
         this.ExistingCustomData = null;
     }
-  }
+}
 
 /**
  *
@@ -4444,7 +4300,6 @@ export class ShapeAnnotationBase {
     public IsPrint: boolean;
     public ExistingCustomData: string;
     public AnnotationRotation: number;
-
     constructor() {
         this.LabelBounds = new AnnotBounds(0, 0, 0, 0);
         this.LabelContent = null;
@@ -4514,21 +4369,21 @@ export class MeasureShapeAnnotationBase{
     public ExistingCustomData: string;
     public AnnotationRotation: number;
     constructor(shapeAnnotation: ShapeAnnotationBase) {
-            this.LabelBounds = new AnnotBounds(0, 0, 0, 0);
-            this.LabelContent = null;
-            this.LabelFillColor = null;
-            this.LabelBorderColor = null;
-            this.LabelSettings = null;
-            this.FontColor = null;
-            this.FontSize = 0;
-            this.AnnotationSettings = null;
-            this.AnnotationSelectorSettings = null;
-            this.VertexPoints = null;
-            this.CustomData = null;
-            this.ExistingCustomData = null;
-            this.IsPrint = true;
-            this.AllowedInteractions = null;
-            this.AnnotationRotation = 0;
+        this.LabelBounds = new AnnotBounds(0, 0, 0, 0);
+        this.LabelContent = null;
+        this.LabelFillColor = null;
+        this.LabelBorderColor = null;
+        this.LabelSettings = null;
+        this.FontColor = null;
+        this.FontSize = 0;
+        this.AnnotationSettings = null;
+        this.AnnotationSelectorSettings = null;
+        this.VertexPoints = null;
+        this.CustomData = null;
+        this.ExistingCustomData = null;
+        this.IsPrint = true;
+        this.AllowedInteractions = null;
+        this.AnnotationRotation = 0;
         this.Author = shapeAnnotation.Author;
         this.AnnotationSelectorSettings = shapeAnnotation.AnnotationSelectorSettings;
         this.BorderDashArray = shapeAnnotation.BorderDashArray;
@@ -4559,7 +4414,7 @@ export class MeasureShapeAnnotationBase{
         this.EnableShapeLabel = shapeAnnotation.EnableShapeLabel;
         this.AllowedInteractions = shapeAnnotation.AllowedInteractions;
         this.AnnotationRotation = shapeAnnotation.AnnotationRotation;
-        if (shapeAnnotation.EnableShapeLabel == true) {
+        if (shapeAnnotation.EnableShapeLabel === true) {
             this.LabelContent = shapeAnnotation.LabelContent;
             this.LabelFillColor = shapeAnnotation.LabelFillColor;
             this.FontColor = shapeAnnotation.FontColor;
@@ -4622,7 +4477,6 @@ class NumberFormat {
     }
 }
 
-
 /**
  *
  * @hidden
@@ -4655,7 +4509,6 @@ export class PopupAnnotationBase {
     public Bounds: AnnotBounds;
     public Size: SizeBase;
     public IsLocked: boolean;
-
     constructor() {
         this.AnnotationFlags = null;
         this.AnnotationSelectorSettings = null;
@@ -4708,6 +4561,7 @@ export class TextMarkupAnnotationBase{
         this.AnnotNameCollection = null;
     }
 }
+
 /**
  *
  * @hidden
@@ -4742,12 +4596,11 @@ export class AnnotBounds {
         X: number;
         Y: number;
     };
-    public Size: SizeBase
+    public Size: SizeBase;
     public Left: number;
     public Top: number;
     public Right: number;
     public Bottom: number;
-
     constructor(_X: number, _Y: number, _Width: number, _Height: number) {
         this.X = _X;
         this.Y = _Y;
@@ -4822,25 +4675,33 @@ export class FontBase{
 export class RectangleBase{
     /**
      * Value of `left`.
+     *
      * @private
      */
     left: number;
     /**
      * Value of `top`.
+     *
      * @private
      */
     top: number;
     /**
      * Value of `right`.
+     *
      * @private
      */
     right: number;
     /**
      * Value of `bottom`.
+     *
      * @private
      */
     bottom: number;
     /**
+     * @param {number} left - left
+     * @param {number} top - top
+     * @param {number} right - right
+     * @param {number} bottom - bottom
      * @private
      */
     constructor(left: number, top: number, right: number, bottom: number){

@@ -228,8 +228,7 @@ export class NodeSelection {
      */
     public getSelectionNodes(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
-        // eslint-disable-next-line
-        const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+        const regEx: RegExp = new RegExp('\u200B', 'g');
         for (let index: number = 0; index < nodeCollection.length; index++) {
             if (nodeCollection[index as number].nodeType !== 3 || (nodeCollection[index as number].textContent.trim() === '' ||
             (nodeCollection[index as number].textContent.length === 1 && nodeCollection[index as number].textContent.match(regEx)))) {
@@ -250,8 +249,7 @@ export class NodeSelection {
      */
     public getSelectionNodesBr(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
-        // eslint-disable-next-line
-        const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+        const regEx: RegExp = new RegExp('\u200B', 'g');
         for (let index: number = 0; index < nodeCollection.length; index++) {
             if (nodeCollection[index as number].nodeName !== 'BR' &&
             (nodeCollection[index as number].nodeType !== 3 || (nodeCollection[index as number].textContent.trim() === '' ||

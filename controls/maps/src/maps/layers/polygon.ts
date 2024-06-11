@@ -1,3 +1,4 @@
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Maps, PolygonSettingModel } from '../../index';
 import { Coordinate, LayerSettings} from '../index';
 import { PathOption, calculatePolygonPath, maintainSelection } from '../utils/helper';
@@ -30,16 +31,18 @@ export class Polygon {
                 id: maps.element.id + '_LayerIndex_' + layerIndex + '_Polygons_Group_' + polygonIndex
             });
             const polygonData: Coordinate[] = polygonSetting.points;
-            const path: string = calculatePolygonPath(maps, factor, currentLayer, polygonData);
-            const pathOptions: PathOption = new PathOption(
-                maps.element.id + '_LayerIndex_' + layerIndex + '_PolygonIndex_' + polygonIndex,
-                polygonSetting.fill, (polygonSetting.borderWidth / factor), polygonSetting.borderColor,
-                polygonSetting.opacity, polygonSetting.borderOpacity, '', path);
-            const polygonEle: Element = maps.renderer.drawPath(pathOptions) as SVGPathElement;
-            maintainSelection(maps.selectedPolygonElementId, maps.polygonSelectionClass, polygonEle,
-                              'PolygonselectionMapStyle');
-            polygonSVGObject.appendChild(polygonEle);
-            polygonsSVGObject.appendChild(polygonSVGObject);
+            if (!isNullOrUndefined(polygonSetting.points) && polygonSetting.points.length > 0) {
+                const path: string = calculatePolygonPath(maps, factor, currentLayer, polygonData);
+                const pathOptions: PathOption = new PathOption(
+                    maps.element.id + '_LayerIndex_' + layerIndex + '_PolygonIndex_' + polygonIndex,
+                    polygonSetting.fill, (polygonSetting.borderWidth / factor), polygonSetting.borderColor,
+                    polygonSetting.opacity, polygonSetting.borderOpacity, '', path);
+                const polygonEle: Element = maps.renderer.drawPath(pathOptions) as SVGPathElement;
+                maintainSelection(maps.selectedPolygonElementId, maps.polygonSelectionClass, polygonEle,
+                                  'PolygonselectionMapStyle');
+                polygonSVGObject.appendChild(polygonEle);
+                polygonsSVGObject.appendChild(polygonSVGObject);
+            }
         });
         return polygonsSVGObject;
     }

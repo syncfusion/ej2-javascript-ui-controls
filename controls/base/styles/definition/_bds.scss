@@ -1,25 +1,22 @@
 @import '../common/mixin.scss';
 
 @function mapcolorvariable($pallete-name){
-  @return var(#{'--color-sf-'+  $pallete-name});
+  @return var(#{'--color-sf-'+ $pallete-name});
 }
 
 :root{
-
-  //bds color system
   --color-sf-base-white: #fff;
   --color-sf-base-black: #000;
-
-  //Transparent
   --color-sf-base-transparent: transparent;
 
-  //branding
   --color-sf-brand-primary: #{#7e56d8};
   --color-sf-brand-primary-d10: #{darken(#7e56d8, 5%)};
   --color-sf-on-brand-solid-primary: #{#fff};
   --color-sf-brand-solid-primary: #{#7e56d8};
+  --color-sf-brand-solid-primary-hover: #{#6840c6};
+  --color-sf-brand-solid-primary-pressed: #{#52379e};
+  --color-sf-brand-solid-shadow: #{rgba(157, 118, 237, .24)};
 
-  //Text
   --color-sf-text-primary: #{#101828};
   --color-sf-text-primary-on-brand: #{#fff};
   --color-sf-text-secondary: #{#344054};
@@ -41,8 +38,7 @@
   --color-sf-text-error-primary: #{#d92c20};
   --color-sf-text-warning-primary: #{#db6803};
   --color-sf-text-success-primary: #{#069454};
-  
-  //background
+
   --color-sf-bg-primary: #{#fff};
   --color-sf-bg-primary-alt: #{#fff};
   --color-sf-bg-primary-hover: #{#f9fafb};
@@ -74,8 +70,7 @@
   --color-sf-bg-success-primary: #{#ecfcf2};
   --color-sf-bg-success-secondary: #{#dbf9e6};
   --color-sf-bg-success-solid: #{#069454};
-  
-  //border
+
   --color-sf-border-primary: #{#d0d5dd};
   --color-sf-border-primary-alt: #{#98a1b2};
   --color-sf-border-secondary: #{#eaecf0};
@@ -89,8 +84,7 @@
   --color-sf-border-error-solid: #{#d92c20};
   --color-sf-border-success: #{#47cd89};
   --color-sf-border-warning: #{#fec84a};
-  
-  //foreground
+
   --color-sf-fg-primary: #{#101828};
   --color-sf-fg-secondary: #{#344054};
   --color-sf-fg-secondary-hover: #{#18212f};
@@ -114,11 +108,9 @@
   --color-sf-fg-success-primary: #{#069454};
   --color-sf-fg-success-secondary: #{#17b169};
 
-  //utility
   --color-sf-utility-tooltip-bg: #{#0c111d};
   --color-sf-utility-tooltip-text: #{#fff};
 
-  //utility helper
   --color-sf-utility-success: #{#069454};
   --color-sf-utility-info: #{#065986};
   --color-sf-utility-warning: #{#db6803};
@@ -135,14 +127,12 @@
   --color-sf-utility-warning-lighter: #{#fede88};
   --color-sf-utility-danger-lighter: #{#fecdc9};
 
-  //utility btn
   --color-sf-utility-info-border-color: #{#d6bbfb}; //brand color
   --color-sf-utility-info-bg-color-hover: #{#f4ebff}; //brand color
   --color-sf-utility-info-bg-color-pressed: #{#e9d7fe}; //brand color
   --color-sf-utility-info-text: #{#6840c6};
   --color-sf-utility-info-text-hover: #{#52379e};
 
-  //secondary btn
   --color-sf-utility-secondary-border-color: #{#d0d5dd};
   --color-sf-utility-secondary-bg-color: #{#fff};
   --color-sf-utility-secondary-text-color: #{#344054};
@@ -151,127 +141,107 @@
   --color-sf-utility-secondary-bg-color-pressed: #{#eaecf0};
   --color-sf-utility-secondary-text-color-pressed: #{#18212f};
 
-  //selected bg
   --color-sf-utility-content-bg-color-selected: #{#eaecf0};
 
-  //Message default
   --color-sf-utility-msg-color: #{#344054};
   --color-sf-utility-msg-bg-color: #{#f9fafb};
   --color-sf-utility-msg-border-color: #{#d0d5dd};
   --color-sf-utility-msg-color-alt1: #{#344054};
-  --color-sf-utility-msg-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-border-color-alt1: #{#98a1b2};
   --color-sf-utility-msg-color-alt2: #{#fff};
   --color-sf-utility-msg-bg-color-alt2: #{#475467};
   --color-sf-utility-msg-border-color-alt2: #{#475467};
-  
-  //msg
+
   --color-sf-utility-msg-icon-color: #{#475467};
   --color-sf-utility-msg-icon-color-alt1: #{#475467};
   --color-sf-utility-msg-icon-color-alt2: #{#fff};
-  
-  //msg
+
   --color-sf-utility-msg-close-icon-color: #{#344054};
   --color-sf-utility-msg-close-icon-color-alt1: #{#344054};
   --color-sf-utility-msg-close-icon-color-alt2: #{#fff};
-  
-  //Message danger
+
   --color-sf-utility-msg-danger-color: #{#b32218};
   --color-sf-utility-msg-danger-bg-color: #{#fef2f1};
   --color-sf-utility-msg-danger-border-color: #{#fecdc9};
   --color-sf-utility-msg-danger-color-alt1: #{#d92c20};
-  --color-sf-utility-msg-danger-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-danger-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-danger-border-color-alt1: #{#f97066};
   --color-sf-utility-msg-danger-color-alt2: #{#fff};
   --color-sf-utility-msg-danger-bg-color-alt2: #{#d92c20};
   --color-sf-utility-msg-danger-border-color-alt2: #{#d92c20};
-  
-  //msg
+
   --color-sf-utility-msg-danger-icon-color: #{#d92c20};
   --color-sf-utility-msg-danger-icon-color-alt1: #{#d92c20};
   --color-sf-utility-msg-danger-icon-color-alt2: #{#d0d5dd};
-  
-  //msg
+
   --color-sf-utility-msg-danger-close-icon-color: #{#344054};
   --color-sf-utility-msg-danger-close-icon-color-alt1: #{#344054};
   --color-sf-utility-msg-danger-close-icon-color-alt2: #{#fff};
-  
-  //Message success
+
   --color-sf-utility-msg-success-color: #{#057647};
   --color-sf-utility-msg-success-bg-color: #{#ecfcf2};
   --color-sf-utility-msg-success-border-color: #{#aaefc6};
   --color-sf-utility-msg-success-color-alt1: #{#057647};
-  --color-sf-utility-msg-success-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-success-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-success-border-color-alt1: #{#47cd89};
   --color-sf-utility-msg-success-color-alt2: #{#fff};
   --color-sf-utility-msg-success-bg-color-alt2: #{#069454};
   --color-sf-utility-msg-success-border-color-alt2: #{#069454};
-  
-  //msg
+
   --color-sf-utility-msg-success-icon-color: #{#069454};
   --color-sf-utility-msg-success-icon-color-alt1: #{#069454};
   --color-sf-utility-msg-success-icon-color-alt2: #{#d0d5dd};
-  //msg
   --color-sf-utility-msg-success-close-icon-color: #{#344054};
   --color-sf-utility-msg-success-close-icon-color-alt1: #{#344054};
   --color-sf-utility-msg-success-close-icon-color-alt2: #{#fff};
-  
-  //Message warning
+
   --color-sf-utility-msg-warning-color: #{#b54707};
   --color-sf-utility-msg-warning-bg-color: #{#fffcf4};
   --color-sf-utility-msg-warning-border-color: #{#fede88};
   --color-sf-utility-msg-warning-color-alt1: #{#b54707};
-  --color-sf-utility-msg-warning-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-warning-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-warning-border-color-alt1: #{#fcb022};
   --color-sf-utility-msg-warning-color-alt2: #{#fff};
   --color-sf-utility-msg-warning-bg-color-alt2: #{#db6803};
   --color-sf-utility-msg-warning-border-color-alt2: #{#db6803};
-  
-  //msg
+
   --color-sf-utility-msg-warning-icon-color: #{#db6803};
   --color-sf-utility-msg-warning-icon-color-alt1: #{#db6803};
   --color-sf-utility-msg-warning-icon-color-alt2: #{#d0d5dd};
-  
-  //msg
+
   --color-sf-utility-msg-warning-close-icon-color: #{#344054};
   --color-sf-utility-msg-warning-close-icon-color-alt1: #{#344054};
   --color-sf-utility-msg-warning-close-icon-color-alt2: #{#fff};
-  
-  //Message Info
+
   --color-sf-utility-msg-info-color: #{#026aa2};
   --color-sf-utility-msg-info-bg-color: #{#f0f9ff};
   --color-sf-utility-msg-info-border-color: #{#7cd4fd};
   --color-sf-utility-msg-info-color-alt1: #{#026aa2};
-  --color-sf-utility-msg-info-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-info-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-info-border-color-alt1: #{#36bffa};
   --color-sf-utility-msg-info-color-alt2: #{#fff};
   --color-sf-utility-msg-info-bg-color-alt2: #{#0086c9};
   --color-sf-utility-msg-info-border-color-alt2: #{#0086c9};
-  
-  //msg
+
   --color-sf-utility-msg-info-icon-color: #{#0086c9};
   --color-sf-utility-msg-info-icon-color-alt1: #{#0086c9};
   --color-sf-utility-msg-info-icon-color-alt2: #{#fff};
-  
-  //msg
+
   --color-sf-utility-msg-info-close-icon-color: #{#344054};
   --color-sf-utility-msg-info-close-icon-color-alt1: #{#344054};
   --color-sf-utility-msg-info-close-icon-color-alt2: #{#fff};
-  
-  //appbar
-  //Light
+
   --color-sf-utility-appbar-bg-color-alt1: #{#fff};
   --color-sf-utility-appbar-color-alt1: #{#101828};
   --color-sf-utility-appbar-border-color-alt1: #{#eaecf0};
   --color-sf-utility-appbar-hover-bg-color-alt1: rgba(16, 24, 40, .056);
-  
-  //dark
+
   --color-sf-utility-appbar-bg-color-alt2: #{#101828};
   --color-sf-utility-appbar-color-alt2: #{#fff};
   --color-sf-utility-appbar-border-color-alt2: #{#18212f};
   --color-sf-utility-appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08);
-  
-  //rating
+
   --color-sf-utility-rating-selected-color: #{#fcb022};
   --color-sf-utility-rating-unrated-color: #{#eaecf0};
   --color-sf-utility-rating-selected-disabled-color: #{#fede88};
@@ -280,11 +250,11 @@
   --color-sf-utility-rating-unrated-hover-color: #{#fec84a};
   --color-sf-utility-rating-pressed-color: #{#f78f08};
 
-  //avatar
   --color-sf-utility-avatar-border-color: rgba(0, 0, 0, .075);
+
+  --color-sf-utility-overlay-bg-color: rgba(71, 84, 103, .7);
 }
 
-//gray
 $gray-25: #fcfcfd;
 $gray-50: #f9fafb;
 $gray-100: #f2f4f7;
@@ -298,7 +268,6 @@ $gray-800: #18212f;
 $gray-900: #101828;
 $gray-950: #0c111d;
 
-//brand
 $brand-25: #fcfaff;
 $brand-50: #f9f5ff;
 $brand-100: #f4ebff;
@@ -312,7 +281,6 @@ $brand-800: #52379e;
 $brand-900: #422f7d;
 $brand-950: #2b1b5e;
 
-//error
 $error-25: #fefafa;
 $error-50: #fef2f1;
 $error-100: #fee3e1;
@@ -326,7 +294,6 @@ $error-800: #901f17;
 $error-900: #7a2619;
 $error-950: #54150c;
 
-//Warning
 $warning-25: #fffcf4;
 $warning-50: #fff9eb;
 $warning-100: #feefc6;
@@ -340,7 +307,6 @@ $warning-800: #93370c;
 $warning-900: #792d0d;
 $warning-950: #4e1d08;
 
-//Success
 $success-25: #f5fdf9;
 $success-50: #ecfcf2;
 $success-100: #dbf9e6;
@@ -354,13 +320,12 @@ $success-800: #075d39;
 $success-900: #074c30;
 $success-950: #043320;
 
-//cyan-color-variables
 $cyan-25: #f5feff !default;
 $cyan-50: #ecfdff !default;
 $cyan-100: #cff9fe !default;
 $cyan-200: #a5f0fc !default;
 $cyan-300: #67e3f9 !default;
-$cyan-400: #22ccee !default;
+$cyan-400: #2ce !default;
 $cyan-500: #06aeda !default;
 $cyan-600: #088ab2 !default;
 $cyan-700: #0e7090 !default;
@@ -370,20 +335,19 @@ $cyan-950: #0d2d3a !default;
 
 //collection: 1. color modes with mode: light mode
 
-//bds color system
 $base-white: mapcolorvariable('base-white');
 $base-black: mapcolorvariable('base-black');
 
-//Transparent
 $base-transparent: mapcolorvariable('base-transparent');
 
-//brand primary
 $brand-primary: mapcolorvariable('brand-primary');
 $brand-primary-d10: mapcolorvariable('brand-primary-d10');
 $on-brand-solid-primary: mapcolorvariable('on-brand-solid-primary');
 $brand-solid-primary: mapcolorvariable('brand-solid-primary');
+$brand-solid-primary-hover: mapcolorvariable('brand-solid-primary-hover');
+$brand-solid-primary-pressed: mapcolorvariable('brand-solid-primary-pressed');
+$brand-solid-shadow: mapcolorvariable('brand-solid-shadow');
 
-//Text
 $text-primary: mapcolorvariable('text-primary');
 $text-primary-on-brand: mapcolorvariable('text-primary-on-brand');
 $text-secondary: mapcolorvariable('text-secondary');
@@ -406,7 +370,6 @@ $text-error-primary: mapcolorvariable('text-error-primary');
 $text-warning-primary: mapcolorvariable('text-warning-primary');
 $text-success-primary: mapcolorvariable('text-success-primary ');
 
-//background
 $bg-primary: mapcolorvariable('bg-primary');
 $bg-primary-alt: mapcolorvariable('bg-primary-alt');
 $bg-primary-hover: mapcolorvariable('bg-primary-hover');
@@ -439,7 +402,6 @@ $bg-success-primary: mapcolorvariable('bg-success-primary');
 $bg-success-secondary: mapcolorvariable('bg-success-secondary');
 $bg-success-solid: mapcolorvariable('bg-success-solid');
 
-//border
 $border-primary: mapcolorvariable('border-primary');
 $border-primary-alt: mapcolorvariable('border-primary-alt');
 $border-secondary: mapcolorvariable('border-secondary');
@@ -454,7 +416,6 @@ $border-error-solid: mapcolorvariable('border-error-solid');
 $border-success: mapcolorvariable('border-success');
 $border-warning: mapcolorvariable('border-warning');
 
-//foreground
 $fg-primary: mapcolorvariable('fg-primary');
 $fg-secondary: mapcolorvariable('fg-secondary');
 $fg-secondary-hover: mapcolorvariable('fg-secondary-hover');
@@ -481,7 +442,6 @@ $fg-success-secondary: mapcolorvariable('fg-success-secondary');
 $utility-tooltip-bg: mapcolorvariable('utility-tooltip-bg');
 $utility-tooltip-text: mapcolorvariable('utility-tooltip-text');
 
-//utility helper
 $utility-success: mapcolorvariable('utility-success');
 $utility-info: mapcolorvariable('utility-info');
 $utility-warning: mapcolorvariable('utility-warning');
@@ -498,7 +458,6 @@ $utility-info-lighter: mapcolorvariable('utility-info-lighter');
 $utility-warning-lighter: mapcolorvariable('utility-warning-lighter');
 $utility-danger-lighter: mapcolorvariable('utility-danger-lighter');
 
-//utility btn
 $utility-info-border-color: mapcolorvariable('utility-info-border-color');
 $utility-info-bg-color-hover: mapcolorvariable('utility-info-bg-color-hover');
 $utility-info-bg-color-pressed: mapcolorvariable('utility-info-bg-color-pressed');
@@ -513,10 +472,8 @@ $utility-secondary-text-color-hover: mapcolorvariable('utility-secondary-text-co
 $utility-secondary-bg-color-pressed: mapcolorvariable('utility-secondary-bg-color-pressed');
 $utility-secondary-text-color-pressed: mapcolorvariable('utility-secondary-text-color-pressed');
 
-//utility states
 $utility-content-bg-color-selected: mapcolorvariable('utility-content-bg-color-selected');
 
-//Message default
 $utility-msg-color: mapcolorvariable('utility-msg-color');
 $utility-msg-bg-color: mapcolorvariable('utility-msg-bg-color');
 $utility-msg-border-color: mapcolorvariable('utility-msg-border-color');
@@ -535,7 +492,6 @@ $utility-msg-close-icon-color: mapcolorvariable('utility-msg-close-icon-color');
 $utility-msg-close-icon-color-alt1: mapcolorvariable('utility-msg-close-icon-color-alt1');
 $utility-msg-close-icon-color-alt2: mapcolorvariable('utility-msg-close-icon-color-alt2');
 
-//Message danger
 $utility-msg-danger-color: mapcolorvariable('utility-msg-danger-color');
 $utility-msg-danger-bg-color: mapcolorvariable('utility-msg-danger-bg-color');
 $utility-msg-danger-border-color: mapcolorvariable('utility-msg-danger-border-color');
@@ -554,7 +510,6 @@ $utility-msg-danger-close-icon-color: mapcolorvariable('utility-msg-danger-close
 $utility-msg-danger-close-icon-color-alt1: mapcolorvariable('utility-msg-danger-close-icon-color-alt1');
 $utility-msg-danger-close-icon-color-alt2: mapcolorvariable('utility-msg-danger-close-icon-color-alt2');
 
-//Message success
 $utility-msg-success-color: mapcolorvariable('utility-msg-success-color');
 $utility-msg-success-bg-color: mapcolorvariable('utility-msg-success-bg-color');
 $utility-msg-success-border-color: mapcolorvariable('utility-msg-success-border-color');
@@ -573,7 +528,6 @@ $utility-msg-success-close-icon-color: mapcolorvariable('utility-msg-success-clo
 $utility-msg-success-close-icon-color-alt1: mapcolorvariable('utility-msg-success-close-icon-color-alt1');
 $utility-msg-success-close-icon-color-alt2: mapcolorvariable('utility-msg-success-close-icon-color-alt2');
 
-//Message warning
 $utility-msg-warning-color: mapcolorvariable('utility-msg-warning-color');
 $utility-msg-warning-bg-color: mapcolorvariable('utility-msg-warning-bg-color');
 $utility-msg-warning-border-color: mapcolorvariable('utility-msg-warning-border-color');
@@ -592,7 +546,6 @@ $utility-msg-warning-close-icon-color: mapcolorvariable('utility-msg-warning-clo
 $utility-msg-warning-close-icon-color-alt1: mapcolorvariable('utility-msg-warning-close-icon-color-alt1');
 $utility-msg-warning-close-icon-color-alt2: mapcolorvariable('utility-msg-warning-close-icon-color-alt2');
 
-//Message Info
 $utility-msg-info-color: mapcolorvariable('utility-msg-info-color');
 $utility-msg-info-bg-color: mapcolorvariable('utility-msg-info-bg-color');
 $utility-msg-info-border-color: mapcolorvariable('utility-msg-info-border-color');
@@ -611,20 +564,16 @@ $utility-msg-info-close-icon-color: mapcolorvariable('utility-msg-info-close-ico
 $utility-msg-info-close-icon-color-alt1: mapcolorvariable('utility-msg-info-close-icon-color-alt1');
 $utility-msg-info-close-icon-color-alt2: mapcolorvariable('utility-msg-info-close-icon-color-alt2');
 
-//app bar
-//Light
 $utility-appbar-bg-color-alt1: mapcolorvariable('utility-appbar-bg-color-alt1');
 $utility-appbar-color-alt1: mapcolorvariable('utility-appbar-color-alt1');
 $utility-appbar-border-color-alt1: mapcolorvariable('utility-appbar-border-color-alt1');
 $utility-appbar-hover-bg-color-alt1: mapcolorvariable('utility-appbar-border-color-alt2');
 
-//dark
 $utility-appbar-bg-color-alt2: mapcolorvariable('utility-appbar-bg-color-alt2');
 $utility-appbar-color-alt2: mapcolorvariable('utility-appbar-color-alt2');
 $utility-appbar-border-color-alt2: mapcolorvariable('utility-appbar-border-color-alt2');
 $utility-appbar-hover-bg-color-alt2: mapcolorvariable('utility-appbar-hover-bg-color-alt2');
 
-//rating
 $utility-rating-selected-color: mapcolorvariable('utility-rating-selected-color');
 $utility-rating-unrated-color: mapcolorvariable('utility-rating-unrated-color');
 $utility-rating-selected-disabled-color: mapcolorvariable('utility-rating-selected-disabled-color');
@@ -633,21 +582,16 @@ $utility-rating-selected-hover-color: mapcolorvariable('utility-rating-selected-
 $utility-rating-unrated-hover-color: mapcolorvariable('utility-rating-unrated-hover-color');
 $utility-rating-pressed-color: mapcolorvariable('utility-rating-pressed-color');
 
-//avatar
 $utility-avatar-border-color: mapcolorvariable('utility-avatar-border-color');
+
+$utility-overlay-bg-color: mapcolorvariable('utility-overlay-bg-color');
 
 //sf base variable
 
-//black
 $black:$base-black;
-
-//White
 $white: $base-white;
-
-//Transparent
 $transparent: $base-transparent;
 
-//cool-gray-color-variables
 $cool-gray-25: $gray-25 !default;
 $cool-gray-50: $gray-50 !default;
 $cool-gray-100: $gray-100 !default;
@@ -660,7 +604,6 @@ $cool-gray-700: $gray-700 !default;
 $cool-gray-800: $gray-800 !default;
 $cool-gray-900: $gray-900 !default;
 
-//red-color-variables updated
 $red-25: $error-25 !default;
 $red-50: $error-50 !default;
 $red-100: $error-100 !default;
@@ -673,7 +616,6 @@ $red-700: $error-700 !default;
 $red-800: $error-800 !default;
 $red-900: $error-900 !default;
 
-//green-color-variables
 $green-25: $success-25 !default;
 $green-50: $success-50 !default;
 $green-100: $success-100 !default;
@@ -686,7 +628,6 @@ $green-700: $success-700 !default;
 $green-800: $success-800 !default;
 $green-900: $success-900 !default;
 
-//orange-color-variables
 $orange-25: $warning-25 !default;
 $orange-50: $warning-50 !default;
 $orange-100: $warning-100 !default;
@@ -699,7 +640,6 @@ $orange-700: $warning-700 !default;
 $orange-800: $warning-800 !default;
 $orange-900: $warning-900 !default;
 
-//cyan-color-variables
 $cyan-25: #f5fbff !default;
 $cyan-50: #f0f9ff !default;
 $cyan-100: #e0f2fe !default;
@@ -712,7 +652,6 @@ $cyan-700: #026aa2 !default;
 $cyan-800: #065986 !default;
 $cyan-900: #0b4a6f !default;
 
-//indigo-color-variables
 $indigo-25: #fcfaff !default;
 $indigo-50: #f9f5ff !default;
 $indigo-100: #f4ebff !default;
@@ -744,7 +683,6 @@ $info-lighter: $utility-info-lighter !default;
 $warning-lighter: $utility-warning-lighter !default;
 $danger-lighter: $utility-danger-lighter !default;
 
-//backgroundcolor
 $content-bg-color: $bg-primary !default;
 $content-bg-color-alt1: $bg-primary-alt !default;
 $content-bg-color-alt2: $bg-secondary !default;
@@ -759,12 +697,12 @@ $content-bg-color-dragged: $bg-quaternary !default;
 $content-bg-color-disabled: $content-bg-color !default;
 $flyout-bg-color: $bg-primary-alt !default;
 $flyout-bg-color-hover: $bg-secondary-hover !default;
-$overlay-bg-color: rgba(12, 17, 29, .7);
+$flyout-bg-color-selected: $bg-secondary-subtle !default;
+$overlay-bg-color: $utility-overlay-bg-color;
 $table-bg-color-hover: $bg-secondary !default;
 $table-bg-color-pressed: $bg-quaternary !default;
 $table-bg-color-selected: $bg-tertiary !default;
 
-//text-color
 $content-text-color: $text-primary !default;
 $content-text-color-alt1: $text-secondary !default;
 $content-text-color-alt2: $text-tertiary !default;
@@ -773,7 +711,7 @@ $content-text-color-alt4: $text-primary !default;
 $content-text-color-hover: $text-secondary-hover !default;
 $content-text-color-pressed: $text-primary !default;
 $content-text-color-focus: $text-primary !default;
-$content-text-color-selected: $text-brand-primary !default;
+$content-text-color-selected: $text-primary !default;
 $content-text-color-dragged: $text-primary !default;
 $content-text-color-disabled: $text-disabled !default;
 $placeholder-text-color: $text-placeholder !default;
@@ -781,13 +719,11 @@ $table-text-color-hover: $text-secondary-hover !default;
 $table-text-color-pressed: $text-primary !default;
 $table-text-color-selected: $text-primary !default;
 
-//icon-color
 $icon-color:$fg-secondary !default;
 $icon-color-hover: $fg-secondary-hover !default;
 $icon-color-pressed:$fg-primary !default;
 $icon-color-disabled:$fg-disabled !default;
 
-//border-color
 $border-light: $border-secondary !default;
 $border: $border-primary !default;
 $border-dark: $border-primary-alt !default;
@@ -801,12 +737,10 @@ $border-warning: $border-warning !default;
 $border-error: $border-error !default;
 $border-success: $border-success !default;
 
-//Tooltip
 $tooltip-bg-color: $utility-tooltip-bg !default;
 $tooltip-border: $utility-tooltip-bg !default;
 $toooltip-text-color: $utility-tooltip-text !default;
 
-//shadow
 $shadow-xs: 0 1px 2px 0 rgba($gray-900, .05);
 $shadow: 0 1px 3px 0 rgba($gray-900, .1), 0 1px 2px 0 rgba($gray-900, .06);
 $shadow-sm:0 1px 2px 0 rgba($gray-900, .05);
@@ -818,22 +752,19 @@ $shadow-3xl: 0 32px 64px -12px rgba($gray-900, .14);
 $shadow-inner: inset 0 2px 4px 0 rgba($black, .06);
 $shadow-none: 0 0 rgba($black, 0);
 $shadow-focus-ring1: 0 0 0 1px rgba($primary, 1);
-$shadow-focus-ring2: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px rgba($brand-500, .24);
-$primary-shadow-focus: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px rgba($brand-500, .24);
+$shadow-focus-ring2: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px $brand-solid-shadow;
+$primary-shadow-focus: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px $brand-solid-shadow;
 $secondary-shadow-focus: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px rgba($gray-500, .24);
 $success-shadow-focus: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px rgba($success-500, .24);
 $danger-shadow-focus: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px rgba($error-500, .24);
-$info-shadow-focus: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px rgba($brand-500, .24);
+$info-shadow-focus: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px $brand-solid-shadow;
 $warning-shadow-focus: 0 1px 2px 0 rgba($gray-900, .05), 0 0 0 4px rgba($warning-500, .24);
 
-//shadow
 $appbar-bottom-shadow: $shadow-none !default;
 $appbar-top-shadow: $shadow-none !default;
 
-//fontfamily
 $font-family: 'Inter' !default;
 
-//default font Size
 $text-xxs: 10px !default;
 $text-xs: 12px !default;
 $text-sm: 14px !default;
@@ -850,7 +781,6 @@ $text-7xl: 72px !default;
 $text-8xl: 96px !default;
 $text-9xl: 128px !default;
 
-//display
 $display-xs:24px !default;
 $display-sm:30px !default;
 $display-md:26px !default;
@@ -858,7 +788,6 @@ $display-lg:48px !default;
 $display-xl:60px !default;
 $display-2xl:72px !default;
 
-//Line height
 $leading-none: 1 !default;
 $leading-tight: 1.25 !default;
 $leading-snug: 1.375 !default;
@@ -866,7 +795,6 @@ $leading-normal: 1.5 !default;
 $leading-relaxed: 1.625 !default;
 $leading-loose: 2 !default;
 
-//font Weight
 $font-weight-lighter: lighter !default;
 $font-weight-light: 300 !default;
 $font-weight-normal: 400 !default;
@@ -874,8 +802,6 @@ $font-weight-medium: 500 !default;
 $font-weight-semibold: 600 !default;
 $font-weight-bold: 700 !default;
 $font-weight-bolder: bolder !default;
-
-//Secondary-button
 
 $secondary-bg-color: $utility-secondary-bg-color !default;
 $secondary-border-color: $utility-secondary-border-color !default;
@@ -893,25 +819,21 @@ $secondary-bg-color-disabled: $bg-disabled !default;
 $secondary-border-color-disabled: $border-disabled-subtle !default;
 $secondary-text-color-disabled: $fg-disabled !default;
 
-//Primary-button
-
 $primary-bg-color: $brand-solid-primary !default;
 $primary-border-color: $brand-solid-primary !default;
 $primary-text: $on-brand-solid-primary !default;
-$primary-bg-color-hover: $brand-700 !default;
+$primary-bg-color-hover: $brand-solid-primary-hover !default;
 $primary-border-color-hover: $primary-bg-color-hover !default;
 $primary-text-hover: $primary-text !default;
-$primary-bg-color-pressed: $brand-800 !default;
+$primary-bg-color-pressed: $brand-solid-primary-pressed !default;
 $primary-border-color-pressed: $primary-bg-color-pressed !default;
 $primary-text-pressed: $primary-text !default;
 $primary-bg-color-focus: $primary-bg-color-hover !default;
-$primary-border-color-focus: $primary-border-color-hover !default;
+$primary-border-color-focus: $primary-bg-color-hover !default;
 $primary-text-focus: $primary-text !default;
 $primary-bg-color-disabled: $bg-disabled !default;
 $primary-border-color-disabled: $primary-bg-color-disabled !default;
 $primary-text-disabled: $fg-disabled !default;
-
-//Success-button
 
 $success-bg-color: $success-700 !default;
 $success-border-color: $success-bg-color !default;
@@ -929,7 +851,6 @@ $success-bg-color-disabled: $bg-disabled !default;
 $success-border-color-disabled: $success-bg-color-disabled !default;
 $success-text-disabled: $fg-disabled !default;
 
-//Warning-button
 $warning-bg-color: $warning-700 !default;
 $warning-border-color: $warning-bg-color !default;
 $warning-text: $white !default;
@@ -946,7 +867,6 @@ $warning-bg-color-disabled: $bg-disabled !default;
 $warning-border-color-disabled: $warning-bg-color-disabled !default;
 $warning-text-disabled: $fg-disabled !default;
 
-//danger-button
 $danger-bg-color: $error-600 !default;
 $danger-border-color: $danger-bg-color !default;
 $danger-text: $white !default;
@@ -963,7 +883,6 @@ $danger-bg-color-disabled: $bg-disabled !default;
 $danger-border-color-disabled: $danger-bg-color-disabled !default;
 $danger-text-disabled: $fg-disabled !default;
 
-//Info-button
 $info-bg-color: $content-bg-color !default;
 $info-border-color: $utility-info-border-color !default;
 $info-text: $utility-info-text !default;
@@ -979,8 +898,6 @@ $info-text-focus: $info-text-hover !default;
 $info-bg-color-disabled: $bg-disabled !default;
 $info-border-color-disabled: $info-bg-color-disabled !default;
 $info-text-disabled: $fg-disabled !default;
-
-//chart series
 
 $series-1: $gray-200;
 $series-2: $gray-300;
@@ -1010,13 +927,9 @@ $spreadsheet-selection-4: #4caf51;
 $spreadsheet-selection-5: #fe9800;
 $spreadsheet-selection-6: #3f52b5;
 
-//diagram Palette color
 $diagram-palette-background: $base-white !default;
 $diagram-palette-hover-background: $content-bg-color-hover !default;
 
-//Message component
-
-//Message default
 $msg-color: $utility-msg-color !default;
 $msg-bg-color: $utility-msg-bg-color !default;
 $msg-border-color: $utility-msg-border-color !default;
@@ -1035,7 +948,6 @@ $msg-close-icon-color: $utility-msg-close-icon-color !default;
 $msg-close-icon-color-alt1: $utility-msg-close-icon-color-alt1 !default;
 $msg-close-icon-color-alt2: $utility-msg-close-icon-color-alt2 !default;
 
-//Message danger
 $msg-danger-color: $utility-msg-danger-color !default;
 $msg-danger-bg-color: $utility-msg-danger-bg-color !default;
 $msg-danger-border-color: $utility-msg-danger-border-color !default;
@@ -1054,7 +966,6 @@ $msg-danger-close-icon-color: $utility-msg-danger-close-icon-color !default;
 $msg-danger-close-icon-color-alt1: $utility-msg-danger-close-icon-color-alt1 !default;
 $msg-danger-close-icon-color-alt2: $utility-msg-danger-close-icon-color-alt2 !default;
 
-//Message success
 $msg-success-color: $utility-msg-success-color !default;
 $msg-success-bg-color: $utility-msg-success-bg-color !default;
 $msg-success-border-color: $utility-msg-success-border-color !default;
@@ -1073,7 +984,6 @@ $msg-success-close-icon-color: $utility-msg-success-close-icon-color !default;
 $msg-success-close-icon-color-alt1: $utility-msg-success-close-icon-color-alt1 !default;
 $msg-success-close-icon-color-alt2: $utility-msg-success-close-icon-color-alt2 !default;
 
-//Message warning
 $msg-warning-color: $utility-msg-warning-color !default;
 $msg-warning-bg-color: $utility-msg-warning-bg-color !default;
 $msg-warning-border-color: $utility-msg-warning-border-color !default;
@@ -1092,7 +1002,6 @@ $msg-warning-close-icon-color: $utility-msg-warning-close-icon-color !default;
 $msg-warning-close-icon-color-alt1: $utility-msg-warning-close-icon-color-alt1 !default;
 $msg-warning-close-icon-color-alt2: $utility-msg-warning-close-icon-color-alt2 !default;
 
-//Message Info
 $msg-info-color: $utility-msg-info-color !default;
 $msg-info-bg-color: $utility-msg-info-bg-color !default;
 $msg-info-border-color: $utility-msg-info-border-color !default;
@@ -1111,20 +1020,16 @@ $msg-info-close-icon-color: $utility-msg-info-close-icon-color !default;
 $msg-info-close-icon-color-alt1: $utility-msg-info-close-icon-color-alt1 !default;
 $msg-info-close-icon-color-alt2: $utility-msg-info-close-icon-color-alt2 !default;
 
-//app bar
-//Light
 $appbar-bg-color-alt1: $utility-appbar-bg-color-alt1 !default;
 $appbar-color-alt1: $utility-appbar-color-alt1 !default;
 $appbar-border-color-alt1: $utility-appbar-border-color-alt1 !default;
 $appbar-hover-bg-color-alt1: $utility-appbar-hover-bg-color-alt1 !default;
 
-//dark
 $appbar-bg-color-alt2: $utility-appbar-bg-color-alt2 !default;
 $appbar-color-alt2: $utility-appbar-color-alt2 !default;
 $appbar-border-color-alt2: $utility-appbar-border-color-alt2 !default;
 $appbar-hover-bg-color-alt2: $utility-appbar-hover-bg-color-alt2 !default;
 
-//rating
 $rating-selected-color: $utility-rating-selected-color !default;
 $rating-unrated-color: $utility-rating-unrated-color !default;
 $rating-selected-disabled-color: $utility-rating-selected-disabled-color !default;
@@ -1133,7 +1038,6 @@ $rating-selected-hover-color: $utility-rating-selected-hover-color !default;
 $rating-unrated-hover-color: $utility-rating-unrated-hover-color !default;
 $rating-pressed-color: $utility-rating-pressed-color !default;
 
-//font-icons
 $font-icon-8: 8px !default;
 $font-icon-9: 9px !default;
 $font-icon-10: 10px !default;
@@ -1151,10 +1055,8 @@ $font-icon-26: 26px !default;
 $font-icon-28: 28px !default;
 $font-icon-32: 32px !default;
 
-//avatar
 $avatar-border-color: $utility-avatar-border-color;
 
-//badge
 $badge-primary-ghost-border-color:$brand-primary !default;
 $badge-primary-ghost-text-color: $brand-primary !default;
 $badge-success-ghost-border-color:$success-lighter !default;
@@ -1166,10 +1068,8 @@ $badge-warning-ghost-text-color: $warning !default;
 $badge-info-ghost-border-color:$info-lighter !default;
 $badge-info-ghost-text-color: $info !default;
 
-//Switch
 $switch-off-handle-bg-color:$fg-white !default;
 
-//chip
 $chip-secondary-active-bg-color: $fg-senary !default;
 $chip-secondary-active-border-color: $fg-senary !default;
 
@@ -1178,20 +1078,15 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
 
 .e-dark-mode {
 
-  //bds color system
   --color-sf-base-white: #fff;
   --color-sf-base-black: #000;
-
-  //Transparent
   --color-sf-base-transparent: transparent;
-  
-  //branding
+
   --color-sf-brand-primary: #{#9d76ed};
   --color-sf-brand-primary-d10: #{darken(#9d76ed, 5%)};
   --color-sf-on-brand-solid-primary: #{#fff};
   --color-sf-brand-solid-primary: #{#7e56d8};
 
-  //Text
   --color-sf-text-primary: #{#f5f5f6};
   --color-sf-text-primary-on-brand: #{#f5f5f6};
   --color-sf-text-secondary: #{#cecfd2};
@@ -1213,8 +1108,7 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
   --color-sf-text-error-primary: #{#f97066};
   --color-sf-text-warning-primary: #{#fcb022};
   --color-sf-text-success-primary: #{#47cd89};
-  
-  //background
+
   --color-sf-bg-primary: #{#0c111d};
   --color-sf-bg-secondary: #{#161b26};
   --color-sf-bg-primary-alt: #{#161b26};
@@ -1246,8 +1140,7 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
   --color-sf-bg-success-primary: #{#17b169};
   --color-sf-bg-success-secondary: #{#069454};
   --color-sf-bg-success-solid: #{#069454};
-  
-  //border
+
   --color-sf-border-primary: #{#333741};
   --color-sf-border-primary-alt: #{#61646c};
   --color-sf-border-secondary: #{#1f242f};
@@ -1261,8 +1154,7 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
   --color-sf-border-error-solid: #{#f04437};
   --color-sf-border-success: #{#47cd89};
   --color-sf-border-warning: #{#fcb022};
-  
-  //foreground
+
   --color-sf-fg-primary: #{#fff};
   --color-sf-fg-secondary: #{#cecfd2};
   --color-sf-fg-secondary-hover: #{#ececed};
@@ -1286,11 +1178,9 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
   --color-sf-fg-success-primary: #{#17b169};
   --color-sf-fg-success-secondary: #{#47cd89};
 
-  //tooltip
   --color-sf-utility-tooltip-bg: #{#ececed};
   --color-sf-utility-tooltip-text: #{#0c111d};
-  
-  //utility helper
+
   --color-sf-utility-success: #{#47cd89};
   --color-sf-utility-info: #{#36bffa};
   --color-sf-utility-warning: #{#fcb022};
@@ -1307,14 +1197,12 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
   --color-sf-utility-warning-lighter: #{#93370c};
   --color-sf-utility-danger-lighter: #{#901f17};
 
-  //utility btn
   --color-sf-utility-info-border-color: #{#52379e}; //brand color
   --color-sf-utility-info-bg-color-hover: #{#2b1b5e}; //brand color
   --color-sf-utility-info-bg-color-pressed: #{#52379e}; //brand color
   --color-sf-utility-info-text: #{#9d76ed};
   --color-sf-utility-info-text-hover: #{#b692f6};
 
-  //secondary btn
   --color-sf-utility-secondary-border-color: #{#333741};
   --color-sf-utility-secondary-bg-color: #{#161b26};
   --color-sf-utility-secondary-text-color: #{#cecfd2};
@@ -1323,128 +1211,108 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
   --color-sf-utility-secondary-bg-color-pressed: #{#333741};
   --color-sf-utility-secondary-text-color-pressed: #{#cecfd2};
 
-  //selected bg
   --color-sf-utility-content-bg-color-selected: #{#1f242f};
 
-  //Message default
   --color-sf-utility-msg-color: #{#cecfd2};
   --color-sf-utility-msg-bg-color: #{#161b26};
   --color-sf-utility-msg-border-color: #{#333741};
   --color-sf-utility-msg-color-alt1: #{#ececed};
-  --color-sf-utility-msg-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-border-color-alt1: #{#61646c};
   --color-sf-utility-msg-color-alt2: #{#333741};
   --color-sf-utility-msg-bg-color-alt2: #{#ececed};
   --color-sf-utility-msg-border-color-alt2: #{#94969c};
-  
-  //Message icon
+
   --color-sf-utility-msg-icon-color: #{#94969c};
   --color-sf-utility-msg-icon-color-alt1: #{#cecfd2};
   --color-sf-utility-msg-icon-color-alt2: #{#333741};
-  
-  //Message close icon
+
   --color-sf-utility-msg-close-icon-color: #{#cecfd2};
   --color-sf-utility-msg-close-icon-color-alt1: #{#cecfd2};
   --color-sf-utility-msg-close-icon-color-alt2: #{#333741};
-  
-  //Message danger
+
   --color-sf-utility-msg-danger-color: #{#fca19b};
   --color-sf-utility-msg-danger-bg-color: #{#54150c};
   --color-sf-utility-msg-danger-border-color: #{#901f17};
   --color-sf-utility-msg-danger-color-alt1: #{#fecdc9};
-  --color-sf-utility-msg-danger-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-danger-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-danger-border-color-alt1: #{#901f17};
   --color-sf-utility-msg-danger-color-alt2: #{#7a2619};
   --color-sf-utility-msg-danger-bg-color-alt2: #{#fecdc9};
   --color-sf-utility-msg-danger-border-color-alt2: #{#fca19b};
-  
-  //Message icon
+
   --color-sf-utility-msg-danger-icon-color: #{#fca19b};
   --color-sf-utility-msg-danger-icon-color-alt1: #{#fca19b};
   --color-sf-utility-msg-danger-icon-color-alt2: #{#333741};
-  
-  //Message close icon
+
   --color-sf-utility-msg-danger-close-icon-color: #{#fca19b};
   --color-sf-utility-msg-danger-close-icon-color-alt1: #{#fca19b};
   --color-sf-utility-msg-danger-close-icon-color-alt2: #{#161b26};
-  
-  //Message success
+
   --color-sf-utility-msg-success-color: #{#75dfa6};
   --color-sf-utility-msg-success-bg-color: #{#043320};
   --color-sf-utility-msg-success-border-color: #{#075d39};
   --color-sf-utility-msg-success-color-alt1: #{#aaefc6};
-  --color-sf-utility-msg-success-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-success-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-success-border-color-alt1: #{#075d39};
   --color-sf-utility-msg-success-color-alt2: #{#161b26};
   --color-sf-utility-msg-success-bg-color-alt2: #{#aaefc6};
   --color-sf-utility-msg-success-border-color-alt2: #{#75dfa6};
-  
-  //Message icon
+
   --color-sf-utility-msg-success-icon-color: #{#47cd89};
   --color-sf-utility-msg-success-icon-color-alt1: #{#75dfa6};
   --color-sf-utility-msg-success-icon-color-alt2: #{#333741};
-  
-  //Message close icon
+
   --color-sf-utility-msg-success-close-icon-color: #{#75dfa6};
   --color-sf-utility-msg-success-close-icon-color-alt1: #{#75dfa6};
   --color-sf-utility-msg-success-close-icon-color-alt2: #{#161b26};
-  
-  //Message warning
+
   --color-sf-utility-msg-warning-color: #{#fec84a};
   --color-sf-utility-msg-warning-bg-color: #{#4e1d08};
   --color-sf-utility-msg-warning-border-color: #{#93370c};
   --color-sf-utility-msg-warning-color-alt1: #{#fede88};
-  --color-sf-utility-msg-warning-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-warning-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-warning-border-color-alt1: #{#93370c};
   --color-sf-utility-msg-warning-color-alt2: #{#161b26};
   --color-sf-utility-msg-warning-bg-color-alt2: #{#fede88};
   --color-sf-utility-msg-warning-border-color-alt2: #{#fec84a};
 
-  //Message icon
   --color-sf-utility-msg-warning-icon-color: #{#f78f08};
   --color-sf-utility-msg-warning-icon-color-alt1: #{#f78f08};
   --color-sf-utility-msg-warning-icon-color-alt2: #{#333741};
 
-  //Message close icon
   --color-sf-utility-msg-warning-close-icon-color: #{#fec84a};
   --color-sf-utility-msg-warning-close-icon-color-alt1: #{#fec84a};
   --color-sf-utility-msg-warning-close-icon-color-alt2: #{#161b26};
-  
-  //Message Info
+
   --color-sf-utility-msg-info-color: #{#7cd4fd};
   --color-sf-utility-msg-info-bg-color: #{#0b4a6f};
   --color-sf-utility-msg-info-border-color: #{#065986};
   --color-sf-utility-msg-info-color-alt1: #{#b9e6fe};
-  --color-sf-utility-msg-info-bg-color-alt1: #{#00000000};
+  --color-sf-utility-msg-info-bg-color-alt1: #{#0000};
   --color-sf-utility-msg-info-border-color-alt1: #{#065986};
   --color-sf-utility-msg-info-color-alt2: #{#065986};
   --color-sf-utility-msg-info-bg-color-alt2: #{#d0d5dd};
   --color-sf-utility-msg-info-border-color-alt2: #{#d0d5dd};
 
-  //Message icon
   --color-sf-utility-msg-info-icon-color: #{#0ba5ec};
   --color-sf-utility-msg-info-icon-color-alt1: #{#0ba5ec};
   --color-sf-utility-msg-info-icon-color-alt2: #{#d0d5dd};
-  
-  //Message close icon
+
   --color-sf-utility-msg-info-close-icon-color: #{#7cd4fd};
   --color-sf-utility-msg-info-close-icon-color-alt1: #{#7cd4fd};
   --color-sf-utility-msg-info-close-icon-color-alt2: #{#161b26};
-  
-  //app bar
-  //Light
+
   --color-sf-utility-appbar-bg-color-alt1: #{#0c111d};
   --color-sf-utility-appbar-color-alt1: #{#f5f5f6};
   --color-sf-utility-appbar-border-color-alt1: #{#1f242f};
   --color-sf-utility-appbar-hover-bg-color-alt1: rgba(245, 245, 246, .06);
-  
-  //dark
+
   --color-sf-utility-appbar-bg-color-alt2: #{#f0f1f1};
   --color-sf-utility-appbar-color-alt2: #{#161b26};
   --color-sf-utility-appbar-border-color-alt2: #{#ececed};
   --color-sf-utility-appbar-hover-bg-color-alt2: rgba(22, 27, 38, .08);
-  
-  //rating
+
   --color-sf-utility-rating-selected-color: #{#fcb022};
   --color-sf-utility-rating-unrated-color: #{#333741};
   --color-sf-utility-rating-selected-disabled-color: #{#93370c};
@@ -1453,6 +1321,7 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
   --color-sf-utility-rating-unrated-hover-color: #{#fec84a};
   --color-sf-utility-rating-pressed-color: #{#f78f08};
 
-  //avatar
   --color-sf-utility-avatar-border-color: rgba(255, 255, 255, .075);
+
+  --color-sf-utility-overlay-bg-color: rgba(97, 100, 108, .5);
 }

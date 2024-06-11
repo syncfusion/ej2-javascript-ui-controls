@@ -1,6 +1,4 @@
 @include export-module('timepicker-theme') {
-
-  /*! timepicker theme */
   .e-time-wrapper {
     #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
       @if $timepicker-skin-name == 'bootstrap4' or $timepicker-skin-name == 'bootstrap5' {
@@ -90,7 +88,6 @@
   #{if(&, '&', '*')}.e-small#{&}.e-timepicker.e-popup,
   .e-bigger.e-small #{&}.e-timepicker.e-popup,
   #{if(&, '&', '*')}.e-bigger.e-small#{&}.e-timepicker.e-popup {
-
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       #{if(&, '&', '*')} .e-list-item {
         color: $timepicker-list-small-font-color;
@@ -100,7 +97,7 @@
 
   .e-timepicker-mob-popup-wrap .e-timepicker.e-popup-expand,
   .e-datetimepicker.e-popup-expand {
-  
+
     #{if(&, '&', '*')} .e-model-header {
       background-color: $modal-header-bg-color;
       color: $modal-header-text-color;

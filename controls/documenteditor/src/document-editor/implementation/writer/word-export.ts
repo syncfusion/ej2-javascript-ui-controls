@@ -284,7 +284,7 @@ export class WordExport {
     private mLists: any;
     private mAbstractLists: any;
     private mStyles: any;
-    private mThemes:any;
+    private mThemes: any;
     private defCharacterFormat: any;
     private themeFontLang: any;
     private defParagraphFormat: any;
@@ -342,8 +342,8 @@ export class WordExport {
     private formFieldShading: boolean;
     private trackChanges: boolean;
     private compatibilityMode: number;
-    private isBookmarkAtEnd: Boolean = false;
-    private isBookmarkAtRowEnd: Boolean = false;
+    private isBookmarkAtEnd: boolean = false;
+    private isBookmarkAtRowEnd: boolean = false;
     private keywordIndex: number = undefined;
     private isHeaderFooter: boolean = false;
     private isSerializeFootEndNote: string = undefined;
@@ -415,6 +415,7 @@ export class WordExport {
      * @private
      * @param {DocumentHelper} documentHelper - Document helper
      * @param {string} fileName - file name
+     * @param {string} formatType - format type
      * @returns {void}
      */
     public save(documentHelper: DocumentHelper, fileName: string, formatType?: string): void {
@@ -432,21 +433,22 @@ export class WordExport {
     }
 
     private saveInternal(fileName: string, formatType?: string): void {
-        if(formatType == 'Docx'){
+        if (formatType === 'Docx'){
             this.mArchive.save(fileName + '.docx').then((mArchive: ZipArchive): void => {
                 mArchive.destroy();
             });
         }
-        else if(formatType == 'Dotx'){
+        else if (formatType === 'Dotx'){
             this.mArchive.save(fileName + '.dotx').then((mArchive: ZipArchive): void => {
                 mArchive.destroy();
             });
         }
-        
+
     }
     /**
      * @private
      * @param {DocumentHelper} documentHelper - Document helper
+     * @param {string} formatType - format type
      * @returns {Promise<Blob>} - Return Promise
      */
     public saveAsBlob(documentHelper: DocumentHelper, formatType?: string): Promise<Blob> {
@@ -598,9 +600,9 @@ export class WordExport {
         this.clearDocument();
     }
     // Sets the document
-    private setDocument(document: any,keyindex?:number): void {
+    private setDocument(document: any, keyindex?: number): void {
         if (isNullOrUndefined(this.keywordIndex)) {
-            this.keywordIndex = keyindex
+            this.keywordIndex = keyindex;
         }
         this.document = document;
         this.mSections = document[sectionsProperty[this.keywordIndex]];
@@ -610,7 +612,8 @@ export class WordExport {
         this.defParagraphFormat = document[paragraphFormatProperty[this.keywordIndex]];
         this.defaultTabWidthValue = document[defaultTabWidthProperty[this.keywordIndex]];
         this.themeFontLang = document[themeFontLanguagesProperty[this.keywordIndex]];
-        this.dontUseHtmlParagraphAutoSpacing = HelperMethods.parseBoolValue(document[doNotUseHTMLParagraphAutoSpacingProperty[this.keywordIndex]]);
+        this.dontUseHtmlParagraphAutoSpacing = HelperMethods.parseBoolValue(
+            document[doNotUseHTMLParagraphAutoSpacingProperty[this.keywordIndex]]);
         this.mStyles = document[stylesProperty[this.keywordIndex]];
         this.mThemes = document[themesProperty[this.keywordIndex]];
         this.formatting = HelperMethods.parseBoolValue(document[formattingProperty[this.keywordIndex]]);
@@ -703,7 +706,7 @@ export class WordExport {
         writer.writeStartElement('w', 'document', this.wNamespace);
         this.writeCommonAttributeStrings(writer);
         writer.writeStartElement('w', 'background', this.wNamespace);
-        writer.writeAttributeString('w','color', undefined,this.getColor(this.document[backgroundProperty[this.keywordIndex]][colorProperty[this.keywordIndex]]));
+        writer.writeAttributeString('w', 'color', undefined, this.getColor(this.document[backgroundProperty[this.keywordIndex]][colorProperty[this.keywordIndex]]));
         writer.writeEndElement();
         this.serializeDocumentBody(writer);
 
@@ -743,7 +746,9 @@ export class WordExport {
         for (let i: number = 0; i < count; i++) {
             this.section = this.document[sectionsProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
             this.lastSection = i === count - 1;
-            this.containerWidth = this.section[sectionFormatProperty[this.keywordIndex]][pageWidthProperty[this.keywordIndex]] - (this.section[sectionFormatProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]] + this.section[sectionFormatProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]]);
+            this.containerWidth = this.section[sectionFormatProperty[this.keywordIndex]][pageWidthProperty[this.keywordIndex]] -
+                (this.section[sectionFormatProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]] +
+                    this.section[sectionFormatProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]]);
             this.serializeSection(writer, this.section, i === count - 1);
             this.section = undefined;
         }
@@ -776,7 +781,7 @@ export class WordExport {
     //SerializeThemes the themes (theme.xml)
     private serializeThemes(): void {
         if (!isNullOrUndefined(this.mThemes)) {
-            let writer: XmlWriter = new XmlWriter();
+            const writer: XmlWriter = new XmlWriter();
             writer.writeStartElement('a', 'theme', this.aNamespace);
             writer.writeAttributeString(undefined, 'name', undefined, 'Office Theme');
             writer.writeStartElement(undefined, 'themeElements', this.aNamespace);
@@ -784,22 +789,28 @@ export class WordExport {
             writer.writeStartElement(undefined, 'fontScheme', this.aNamespace);
             writer.writeAttributeString(undefined, 'name', undefined, this.mThemes[fontSchemeNameProperty[this.keywordIndex]]);
             writer.writeStartElement(undefined, 'majorFont', this.aNamespace);
-            for (let i: number = 0; i < this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]].length; i++) {
-                let theme: any = this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
+            for (let i: number = 0; i < this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[
+                this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]].length; i++) {
+                const theme: any = this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[
+                    this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
                 this.themeFont(writer, theme);
             }
-            let keys: string[] = Object.keys(this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]]);
-            for (let key of keys) {
+            let keys: string[] = Object.keys(this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[
+                this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]]);
+            for (const key of keys) {
                 this.themeType(writer, key, this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]][`${key}`]);
             }
             writer.writeEndElement();
             writer.writeStartElement(undefined, 'minorFont', this.aNamespace);
-            for (let i: number = 0; i < this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]].length; i++) {
-                let theme: any = this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
+            for (let i: number = 0; i < this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[
+                this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]].length; i++) {
+                const theme: any = this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[
+                    this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
                 this.themeFont(writer, theme);
             }
-            keys = Object.keys(this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]]);
-            for (let key of keys) {
+            keys = Object.keys(this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[
+                this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]]);
+            for (const key of keys) {
                 this.themeType(writer, key, this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]][`${key}`]);
             }
             writer.writeEndElement();
@@ -815,7 +826,7 @@ export class WordExport {
         }
     }
     private themeFont(writer: XmlWriter, theme: any): void {
-        if (theme[nameProperty[this.keywordIndex]] == 'latin' || theme[nameProperty[this.keywordIndex]] == 'ea' || theme[nameProperty[this.keywordIndex]] == 'cs') {
+        if (theme[nameProperty[this.keywordIndex]] === 'latin' || theme[nameProperty[this.keywordIndex]] === 'ea' || theme[nameProperty[this.keywordIndex]] === 'cs') {
             writer.writeStartElement(undefined, theme[nameProperty[this.keywordIndex]], this.aNamespace);
             writer.writeAttributeString(undefined, 'typeface', undefined, theme[typefaceProperty[this.keywordIndex]]);
             writer.writeAttributeString(undefined, 'panose', undefined, theme[panoseProperty[this.keywordIndex]]);
@@ -881,24 +892,24 @@ export class WordExport {
 
     }
     private retrieveCommentText(text: string, mentions: FieldSettingsModel[]): any[] {
-        let blocks: any = [];
-        let multiText: string[] = text.split('\n');
-        let tempText : string = "";
+        const blocks: any = [];
+        const multiText: string[] = text.split('\n');
+        let tempText : string = '';
         while (multiText.length > 0) {
             let block: any = {};
             block[inlinesProperty[this.keywordIndex]] = [];
-            let inlines: any = {};
-            let dataName: string = "";
+            const inlines: any = {};
+            let dataName: string = '';
             if (mentions && mentions.length > 0) {
-                let text: string = "";
-                let url: string = "";
+                let text: string = '';
+                let url: string = '';
                 for (let i: number = 0; i < mentions.length; i++) {
                     dataName = (mentions[parseInt(i.toString(), 10)] as any).Name;
                     if (multiText[0].indexOf('span') !== -1 && (mentions[parseInt(i.toString(), 10)] as any).Name) {
-                        const regex = /(<span[^>]*>.*<\/span>)/;
-                        const match = multiText[0].match(regex);
+                        const regex: RegExp = /(<span[^>]*>.*<\/span>)/;
+                        const match: RegExpMatchArray = multiText[0].match(regex);
                         text = multiText[0].substring(match.index + match[0].length);
-                        let temp: string[] = text.split("&nbsp;");
+                        const temp: string[] = text.split('&nbsp;');
                         dataName = (mentions[parseInt(i.toString(), 10)] as any).Name;
                         url = (mentions[parseInt(i.toString(), 10)] as any).EmailId;
                         tempText = temp.length > 1 ? temp[1] : temp[0];
@@ -908,9 +919,11 @@ export class WordExport {
             }
             if (multiText[0].indexOf('span') !== -1) {
                 let email = multiText[0].match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-                let matchText : RegExpMatchArray = multiText[0].match(/&nbsp;(.+)/);
-                let text : string = matchText ? matchText[1] : '';
-                multiText[0] = email + " " + text;
+                multiText[0] = email ? email + '': multiText[0] ;
+            }
+            if(multiText[0].indexOf('&nbsp;')!== -1 || multiText[0].indexOf('<div><br></div>') !== -1){
+                const match = multiText[0].match(/^(.*?)(<div><br><\/div>|&nbsp;)/);
+                multiText[0] = match ? match[1] : multiText[0];
             }
             inlines[textProperty[this.keywordIndex]] = mentions.length > 0 ? tempText : multiText[0];
             block[inlinesProperty[this.keywordIndex]].push(inlines);
@@ -921,30 +934,30 @@ export class WordExport {
     }
 
     private serializeMentions(dataName: string, url: string, blocks: string): any {
-        var inlines = {};
+        const inlines: object = {};
         inlines[characterFormatProperty[this.keywordIndex]] = {};
-        inlines["fieldType"] = 0;
-        inlines["hasFieldEnd"] = true;
+        inlines['fieldType'] = 0;
+        inlines['hasFieldEnd'] = true;
         blocks[inlinesProperty[this.keywordIndex]].push(inlines);
-        var inlines2 = {};
+        const inlines2: object = {};
         inlines2[characterFormatProperty[this.keywordIndex]] = {};
-        inlines2[textProperty[this.keywordIndex]] = ' HYPERLINK \"' + url + '\" ';
+        inlines2[textProperty[this.keywordIndex]] = ' HYPERLINK \'' + url + '\' ';
         blocks[inlinesProperty[this.keywordIndex]].push(inlines2);
-        var inlines3 = {};
+        const inlines3: object = {};
         inlines3[characterFormatProperty[this.keywordIndex]] = {};
-        inlines3["fieldType"] = 2;
+        inlines3['fieldType'] = 2;
         blocks[inlinesProperty[this.keywordIndex]].push(inlines3);
-        var inlines4 = {};
+        const inlines4: object = {};
         inlines4[characterFormatProperty[this.keywordIndex]] = {
-            "underline": "Single",
-            "fontColor": "#0563c1",
-            "bidi": false
+            'underline': 'Single',
+            'fontColor': '#0563c1',
+            'bidi': false
         };
         inlines4[textProperty[this.keywordIndex]] = dataName;
         blocks[inlinesProperty[this.keywordIndex]].push(inlines4);
-        var inlines5 = {};
+        const inlines5: object = {};
         inlines5[characterFormatProperty[this.keywordIndex]] = {};
-        inlines5["fieldType"] = 1;
+        inlines5['fieldType'] = 1;
         blocks[inlinesProperty[this.keywordIndex]].push(inlines5);
         return blocks;
     }
@@ -983,7 +996,7 @@ export class WordExport {
     }
     // Serialize the section properties.
     private serializeSectionProperties(writer: XmlWriter, section: any): void {
-        if(!isNullOrUndefined(this.document.optimizeSfdt)){
+        if (!isNullOrUndefined(this.document.optimizeSfdt)){
             this.keywordIndex = this.document.optimizeSfdt ? 1 : 0;
         }
         writer.writeStartElement('w', 'sectPr', this.wNamespace);
@@ -1027,14 +1040,18 @@ export class WordExport {
         //     writer.WriteEndElement();
         // }
 
-        if (section[sectionFormatProperty[this.keywordIndex]] !== undefined && HelperMethods.parseBoolValue(section[sectionFormatProperty[this.keywordIndex]][differentFirstPageProperty[this.keywordIndex]])) {
+        if (section[sectionFormatProperty[this.keywordIndex]] !== undefined
+            && HelperMethods.parseBoolValue(
+                section[sectionFormatProperty[this.keywordIndex]][differentFirstPageProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'titlePg', this.wNamespace);
             writer.writeEndElement();
         }
 
         // SerializeTextDirection(section);
 
-        if (!isNullOrUndefined(section[sectionFormatProperty[this.keywordIndex]]) && HelperMethods.parseBoolValue(section[sectionFormatProperty[this.keywordIndex]][bidiProperty[this.keywordIndex]])) {
+        if (!isNullOrUndefined(section[sectionFormatProperty[this.keywordIndex]])
+            && HelperMethods.parseBoolValue(
+                section[sectionFormatProperty[this.keywordIndex]][bidiProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
@@ -1074,25 +1091,25 @@ export class WordExport {
     private getFootNoteNumberFormat(numberFormat: number | string): string {
         let patternType: string;
         switch (numberFormat) {
-            case 'UpperCaseRoman':
-            case 1:
-                patternType = 'upperRoman';
-                break;
-            case 'LowerCaseRoman':
-            case 2:
-                patternType = 'lowerRoman';
-                break;
-            case 'UpperCaseLetter':
-            case 3:
-                patternType = 'upperLetter';
-                break;
-            case 'LowerCaseLetter':
-            case 4:
-                patternType = 'lowerLetter';
-                break;
-            default:
-                patternType = 'decimal';
-                break;
+        case 'UpperCaseRoman':
+        case 1:
+            patternType = 'upperRoman';
+            break;
+        case 'LowerCaseRoman':
+        case 2:
+            patternType = 'lowerRoman';
+            break;
+        case 'UpperCaseLetter':
+        case 3:
+            patternType = 'upperLetter';
+            break;
+        case 'LowerCaseLetter':
+        case 4:
+            patternType = 'lowerLetter';
+            break;
+        default:
+            patternType = 'decimal';
+            break;
         }
         return patternType;
     }
@@ -1100,35 +1117,35 @@ export class WordExport {
 
     private getFootNoteNumberRestart(numberRestart: number | string): string {
         switch (numberRestart) {
-            case 'RestartForEachSection ':
-            case 1:
-                return 'eachSect';
-            case 'RestartForEachPage':
-            case 2:
-                return 'eachPage';
-            default:
-                return 'continuous';
+        case 'RestartForEachSection ':
+        case 1:
+            return 'eachSect';
+        case 'RestartForEachPage':
+        case 2:
+            return 'eachPage';
+        default:
+            return 'continuous';
         }
     }
 
     private getPageNumberFormat(numberFormat: string): string {
         let patternType: string;
         switch (numberFormat) {
-            case 'RomanUpper':
-                patternType = 'upperRoman';
-                break;
-            case 'RomanLower':
-                patternType = 'lowerRoman';
-                break;
-            case 'LetterUpper':
-                patternType = 'upperLetter';
-                break;
-            case 'LetterLower':
-                patternType = 'lowerLetter';
-                break;
-            default:
-                patternType = 'Arabic';
-                break;
+        case 'RomanUpper':
+            patternType = 'upperRoman';
+            break;
+        case 'RomanLower':
+            patternType = 'lowerRoman';
+            break;
+        case 'LetterUpper':
+            patternType = 'upperLetter';
+            break;
+        case 'LetterLower':
+            patternType = 'lowerLetter';
+            break;
+        default:
+            patternType = 'Arabic';
+            break;
         }
         return patternType;
     }
@@ -1163,9 +1180,11 @@ export class WordExport {
 
     // Serialize the column properties of section.
     private serializeColumns(writer: XmlWriter, sectionFormat: any): void {
-        if (sectionFormat[numberOfColumnsProperty[this.keywordIndex]] !== undefined && sectionFormat[numberOfColumnsProperty[this.keywordIndex]] > 1) {
+        if (sectionFormat[numberOfColumnsProperty[this.keywordIndex]] !== undefined
+            && sectionFormat[numberOfColumnsProperty[this.keywordIndex]] > 1) {
             writer.writeStartElement(undefined, 'cols', this.wNamespace);
-            writer.writeAttributeString(undefined, 'num', this.wNamespace, sectionFormat[numberOfColumnsProperty[this.keywordIndex]].toString());
+            writer.writeAttributeString(undefined, 'num', this.wNamespace,
+                                        sectionFormat[numberOfColumnsProperty[this.keywordIndex]].toString());
             if (HelperMethods.parseBoolValue(sectionFormat[lineBetweenColumnsProperty[this.keywordIndex]])) {
                 writer.writeAttributeString(undefined, 'sep', this.wNamespace, '1');
             }
@@ -1173,11 +1192,18 @@ export class WordExport {
                 writer.writeAttributeString(undefined, 'equalWidth', this.wNamespace, '1');
             } else {
                 writer.writeAttributeString(undefined, 'equalWidth', this.wNamespace, '0');
-                if (sectionFormat[columnsProperty[this.keywordIndex]] !== undefined && sectionFormat[columnsProperty[this.keywordIndex]].length > 0) {
-                    for (let i = 0; i < sectionFormat[columnsProperty[this.keywordIndex]].length; i++) {
-                        writer.writeStartElement(undefined, 'col', this.wNamespace);                        
-                        writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(sectionFormat[columnsProperty[this.keywordIndex]][parseInt(i.toString(), 10)][widthProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
-                        writer.writeAttributeString(undefined, 'space', this.wNamespace, this.roundToTwoDecimal(sectionFormat[columnsProperty[this.keywordIndex]][parseInt(i.toString(), 10)][spaceProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
+                if (sectionFormat[columnsProperty[this.keywordIndex]] !== undefined
+                    && sectionFormat[columnsProperty[this.keywordIndex]].length > 0) {
+                    for (let i: number = 0; i < sectionFormat[columnsProperty[this.keywordIndex]].length; i++) {
+                        writer.writeStartElement(undefined, 'col', this.wNamespace);
+                        writer.writeAttributeString(undefined, 'w', this.wNamespace,
+                                                    this.roundToTwoDecimal(sectionFormat[columnsProperty[this.keywordIndex]][parseInt(
+                                                        i.toString(), 10)][widthProperty[this.keywordIndex]]
+                                * this.twentiethOfPoint).toString());
+                        writer.writeAttributeString(undefined, 'space', this.wNamespace,
+                                                    this.roundToTwoDecimal(sectionFormat[columnsProperty[this.keywordIndex]][parseInt(
+                                                        i.toString(), 10)][spaceProperty[this.keywordIndex]]
+                                * this.twentiethOfPoint).toString());
                         writer.writeEndElement();
                     }
                 }
@@ -1224,7 +1250,7 @@ export class WordExport {
         if (pageSetup !== undefined) {
             this.serializePageSize(writer, pageSetup);
             this.serializePageMargins(writer, pageSetup);
-            this.serializePageNumberType(writer,pageSetup);
+            this.serializePageNumberType(writer, pageSetup);
         }
         // // StartElement paperSrc (if any)
         // if (pageSetup.FirstPageTray > 0 || pageSetup.OtherPagesTray > 0) {
@@ -1312,7 +1338,8 @@ export class WordExport {
 
         let hfId: string = '';
         if (headersFooters !== undefined) {
-            this.mDifferentFirstPage = HelperMethods.parseBoolValue(this.section[sectionFormatProperty[this.keywordIndex]][differentOddAndEvenPagesProperty[this.keywordIndex]]);
+            this.mDifferentFirstPage = HelperMethods.parseBoolValue(
+                this.section[sectionFormatProperty[this.keywordIndex]][differentOddAndEvenPagesProperty[this.keywordIndex]]);
             let hf: any = headersFooters[firstPageHeaderProperty[this.keywordIndex]];
             if (hf && hf[blocksProperty[this.keywordIndex]] && hf[blocksProperty[this.keywordIndex]].length > 0) {
                 writer.writeStartElement(undefined, 'headerReference', this.wNamespace);
@@ -1406,14 +1433,17 @@ export class WordExport {
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(contentProperties[characterFormatProperty[this.keywordIndex]])) {
-            this.serializeCharacterFormat(writer, items[contentControlPropertiesProperty[this.keywordIndex]][characterFormatProperty[this.keywordIndex]]);
+            this.serializeCharacterFormat(
+                writer, items[contentControlPropertiesProperty[this.keywordIndex]][characterFormatProperty[this.keywordIndex]]);
         }
         // if (items.hasOwnProperty('blocks') && contentProperties.type !== 'CheckBox') {
         //     this.serializeContentParagraph(writer, items);
         // }
-        if (HelperMethods.parseBoolValue(contentProperties[lockContentsProperty[this.keywordIndex]]) || HelperMethods.parseBoolValue(contentProperties[lockContentControlProperty[this.keywordIndex]])) {
+        if (HelperMethods.parseBoolValue(contentProperties[lockContentsProperty[this.keywordIndex]])
+            || HelperMethods.parseBoolValue(contentProperties[lockContentControlProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'lock', this.wNamespace);
-            if (HelperMethods.parseBoolValue(contentProperties[lockContentControlProperty[this.keywordIndex]]) && HelperMethods.parseBoolValue(contentProperties[lockContentsProperty[this.keywordIndex]])) {
+            if (HelperMethods.parseBoolValue(contentProperties[lockContentControlProperty[this.keywordIndex]])
+                && HelperMethods.parseBoolValue(contentProperties[lockContentsProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'sdtContentLocked');
             } else if (HelperMethods.parseBoolValue(contentProperties[lockContentControlProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'sdtLocked');
@@ -1422,7 +1452,8 @@ export class WordExport {
             }
             writer.writeEndElement();
         }
-        if (HelperMethods.parseBoolValue(contentProperties[hasPlaceHolderTextProperty[this.keywordIndex]]) && isNullOrUndefined(repeatSdt)) {
+        if (HelperMethods.parseBoolValue(contentProperties[hasPlaceHolderTextProperty[this.keywordIndex]])
+            && isNullOrUndefined(repeatSdt)) {
             writer.writeStartElement('w', 'placeholder', undefined);
             writer.writeAttributeString('w', 'docPart', this.wNamespace, undefined);
             writer.writeEndElement();
@@ -1435,12 +1466,20 @@ export class WordExport {
         }
         if (!isNullOrUndefined(contentProperties[appearanceProperty[this.keywordIndex]])) {
             writer.writeStartElement('w15', 'appearance', undefined);
-            writer.writeAttributeString('w15', 'val', undefined, this.keywordIndex == 1 ? this.getContentControlAppearance(contentProperties[appearanceProperty[this.keywordIndex]]).toLowerCase() : contentProperties[appearanceProperty[this.keywordIndex]].toLowerCase());
+            writer.writeAttributeString('w15', 'val', undefined, this.keywordIndex === 1 ? this.getContentControlAppearance(contentProperties[appearanceProperty[this.keywordIndex]]).toLowerCase() : contentProperties[appearanceProperty[this.keywordIndex]].toLowerCase());
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(contentProperties[colorProperty[this.keywordIndex]])) {
             writer.writeStartElement('w15', 'color', undefined);
-            writer.writeAttributeString('w', 'val', undefined, this.getColor(contentProperties[colorProperty[this.keywordIndex]]));
+            if (contentProperties[colorProperty[this.keywordIndex]] === 'empty' || contentProperties[colorProperty[this.keywordIndex]] === '#00000000') {
+                writer.writeAttributeString('w', 'val', undefined, 'auto');
+            } else {
+                writer.writeAttributeString('w', 'val', undefined, this.getColor(contentProperties[colorProperty[this.keywordIndex]]));
+            }
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(contentProperties[typeProperty[this.keywordIndex]]) && (contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex === 1 ? 9 : 'Text'))) {
+            writer.writeStartElement(undefined, 'text', this.wNamespace);
             writer.writeEndElement();
         }
         if (HelperMethods.parseBoolValue(contentProperties[multiLineProperty[this.keywordIndex]])) {
@@ -1449,10 +1488,14 @@ export class WordExport {
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(contentProperties[xmlMappingProperty[this.keywordIndex]])) {
-            if (HelperMethods.parseBoolValue(contentProperties[xmlMappingProperty[this.keywordIndex]][isMappedProperty[this.keywordIndex]])) {
+            if (HelperMethods.parseBoolValue(
+                contentProperties[xmlMappingProperty[this.keywordIndex]][isMappedProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w', 'dataBinding', this.wNamespace);
-                writer.writeAttributeString('w', 'xpath', undefined, contentProperties[xmlMappingProperty[this.keywordIndex]][xPathProperty[this.keywordIndex]]);
-                writer.writeAttributeString('w', 'storeItemID', undefined, contentProperties[xmlMappingProperty[this.keywordIndex]][storeItemIdProperty[this.keywordIndex]]);
+                writer.writeAttributeString('w', 'xpath', undefined,
+                                            contentProperties[xmlMappingProperty[this.keywordIndex]][xPathProperty[this.keywordIndex]]);
+                writer.writeAttributeString('w', 'storeItemID', undefined,
+                                            contentProperties[xmlMappingProperty[this.keywordIndex]][storeItemIdProperty[this.keywordIndex]
+                                            ]);
                 writer.writeEndElement();
             }
         }
@@ -1460,7 +1503,8 @@ export class WordExport {
             writer.writeStartElement('w', 'picture', this.wNamespace);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties[uncheckedStateProperty[this.keywordIndex]] || contentProperties[checkedStateProperty[this.keywordIndex]])) {
+        if (!isNullOrUndefined(contentProperties[uncheckedStateProperty[this.keywordIndex]]
+            || contentProperties[checkedStateProperty[this.keywordIndex]])) {
             writer.writeStartElement('w14', 'checkbox', undefined);
             if (HelperMethods.parseBoolValue(contentProperties[isCheckedProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w14', 'checked', undefined);
@@ -1485,13 +1529,15 @@ export class WordExport {
             }
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties[contentControlListItemsProperty[this.keywordIndex]]) && contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 5: 'DropDownList')) {
+        if (!isNullOrUndefined(contentProperties[contentControlListItemsProperty[this.keywordIndex]])
+            && contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex === 1 ? 5 : 'DropDownList')) {
             const dropDownLists: any = contentProperties[contentControlListItemsProperty[this.keywordIndex]];
             writer.writeStartElement(undefined, 'dropDownList', this.wNamespace);
             this.serializeContentControlList(writer, dropDownLists);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties[contentControlListItemsProperty[this.keywordIndex]]) && contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 3 : 'ComboBox')) {
+        if (!isNullOrUndefined(contentProperties[contentControlListItemsProperty[this.keywordIndex]])
+            && contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex === 1 ? 3 : 'ComboBox')) {
             const comboList: any = contentProperties[contentControlListItemsProperty[this.keywordIndex]];
             writer.writeStartElement(undefined, 'comboBox', this.wNamespace);
             this.serializeContentControlList(writer, comboList);
@@ -1499,7 +1545,7 @@ export class WordExport {
         }
         this.serializeContentControlDate(writer, contentProperties);
         if (!isNullOrUndefined(contentProperties[typeProperty[this.keywordIndex]])) {
-            if (contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 7 : 'Picture')) {
+            if (contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex === 1 ? 7 : 'Picture')) {
                 writer.writeStartElement(undefined, 'picture', this.wNamespace);
                 writer.writeEndElement();
             }

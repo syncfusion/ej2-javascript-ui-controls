@@ -1,5 +1,14 @@
-@import 'avatar/tailwind.scss';
-@import 'card/tailwind.scss';
-@import 'splitter/tailwind.scss';
-@import 'dashboard-layout/tailwind.scss';
-@import 'timeline/tailwind.scss';
+@import 'ej2-base/styles/definition/tailwind.scss';
+@import 'avatar/tailwind-definition.scss';
+@import 'avatar/all.scss';
+
+@import 'card/tailwind-definition.scss';
+@import 'card/all.scss';
+@import 'splitter/tailwind-definition.scss';
+@import 'splitter/icons/tailwind.scss';
+@import 'splitter/all.scss';
+@import 'dashboard-layout/tailwind-definition.scss';
+@import 'dashboard-layout/icons/tailwind.scss';
+@import 'dashboard-layout/all.scss';
+@import 'timeline/tailwind-definition.scss';
+@import 'timeline/all.scss';

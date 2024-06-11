@@ -57,16 +57,17 @@ export class CellEdit {
         }
         if (data.hasChildRecords && !this.parent.allowParentDependency && ((field === taskSettings.endDate && ((!isNullOrUndefined(data['isManual']) &&
             data['isManual'] === false) || this.parent.taskMode === 'Auto')) || field === taskSettings.duration
-            || field === taskSettings.dependency || field === taskSettings.progress || field === taskSettings.work || field === taskSettings.type)) {
+            || field === taskSettings.dependency || field === taskSettings.progress || field === taskSettings.work ||
+            field === taskSettings.type || field === 'taskType')) {
             if ((field === taskSettings.dependency && !this.parent.allowParentDependency) || field !== taskSettings.dependency) {
                 args.cancel = true;
             }
         } else {
             const callBackPromise: Deferred = new Deferred();
-            let parentReference:any = this.parent;
+            const parentReference: Gantt = this.parent;
             this.parent.trigger('cellEdit', args, (arg: CellEditArgs) => {
-                if (arg.columnName == parentReference.taskFields.progress && arg.rowData.hasChildRecords) {
-                    arg.cancel = true
+                if (arg.columnName === parentReference.taskFields.progress && arg.rowData.hasChildRecords) {
+                    arg.cancel = true;
                 }
                 if (data.level === 0 && this.parent.viewType === 'ResourceView') {
                     arg.cancel = true;
@@ -111,23 +112,23 @@ export class CellEdit {
             this.isCellEdit = true;
         }
     }
-    private isValueChange(args: Record<string, unknown>, field: string): boolean {
-        const data: IGanttData = getValue('data', args);
-        const editedValue: Record<string, unknown> = data[`${field}`];
-        const previousValue: Record<string, unknown> = getValue('previousData', args);
-        if ((isNOU(editedValue) && !isNOU(previousValue)) || (!isNOU(editedValue) && isNOU(previousValue))) {
-            return true;
-        } else if (!isNOU(editedValue) && !isNOU(previousValue)) {
-            if (editedValue instanceof Date) {
-                return editedValue.getTime() !== data.taskData[field as string].getTime() ? true : false;
-            } else if (field === this.parent.taskFields.resourceInfo) {
-                return editedValue !== previousValue ? true : false;
-            } else if (editedValue !== data.taskData[field as string]) {
-                return true;
-            }
-        }
-        return false;
-    }
+    // private isValueChange(args: Record<string, unknown>, field: string): boolean {
+    //     const data: IGanttData = getValue('data', args);
+    //     const editedValue: Record<string, unknown> = data[`${field}`];
+    //     const previousValue: Record<string, unknown> = getValue('previousData', args);
+    //     if ((isNOU(editedValue) && !isNOU(previousValue)) || (!isNOU(editedValue) && isNOU(previousValue))) {
+    //         return true;
+    //     } else if (!isNOU(editedValue) && !isNOU(previousValue)) {
+    //         if (editedValue instanceof Date) {
+    //             return editedValue.getTime() !== data.taskData[field as string].getTime() ? true : false;
+    //         } else if (field === this.parent.taskFields.resourceInfo) {
+    //             return editedValue !== previousValue ? true : false;
+    //         } else if (editedValue !== data.taskData[field as string]) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
     /**
      * Initiate cell save action on Gantt with arguments from TreeGrid
      *
@@ -138,7 +139,7 @@ export class CellEdit {
      */
     public initiateCellEdit(args: object, editedObj: object): void {
         let isValid: boolean = true;
-        if (args['name'] == 'actionComplete' && args['previousData'] == args['data'][args['column'].field]) {
+        if (args['name'] === 'actionComplete' && args['previousData'] === args['data'][args['column'].field]) {
             isValid = false;
         }
         if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('Edit')) {
@@ -147,7 +148,7 @@ export class CellEdit {
                     this.parent.undoRedoModule['disableRedo']();
                 }
                 this.parent.undoRedoModule['createUndoCollection']();
-                let action: Object = {};
+                const action: Object = {};
                 action['action'] = 'CellEditing';
                 action['editedColumn'] = args['column'].field;
                 action['modifiedRecords'] = [];
@@ -168,7 +169,23 @@ export class CellEdit {
             data[column.field] = previousValue;
             editedArgs.data[column.field] = previousValue;
             this.parent.initiateEditAction(true);
-            this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
+            if (this.parent.weekWorkingTime.length > 0 && editedValue && (column.field === this.parent.taskFields.startDate ||
+                column.field === this.parent.taskFields.baselineStartDate)) {
+                const sDate: Date = column.field === this.parent.taskFields.startDate ? data.ganttProperties.startDate :
+                    data.ganttProperties.baselineStartDate;
+                const prevDay: number = this.parent['getStartTime'](sDate);
+                if (prevDay / 3600 === sDate.getHours()) {
+                    const dayStartTime: number = this.parent['getStartTime'](editedValue as Date);
+                    this.parent.dataOperation.setTime(dayStartTime, editedValue as Date);
+                    this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
+                }
+                else {
+                    this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
+                }
+            }
+            else {
+                this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
+            }
             if (column.field === this.parent.taskFields.name) {
                 this.taskNameEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.startDate) {
@@ -190,7 +207,8 @@ export class CellEdit {
                 this.notedEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.work) {
                 this.workEdited(editedArgs);
-            } else if (column.field === this.parent.taskFields.type && !isNOU(this.parent.taskFields.work)) {
+            } else if ((column.field === this.parent.taskFields.type || column.field === 'taskType') &&
+            !isNOU(this.parent.taskFields.work)) {
                 this.typeEdited(editedArgs, editedObj);
             } else if (column.field === this.parent.taskFields.manual) {
                 this.taskmodeEdited(editedArgs);
@@ -324,15 +342,17 @@ export class CellEdit {
             }
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
         } else {
-            if ((currentValue.getHours() === 0 && this.parent.defaultEndTime !== 86400)) {
-                this.parent.dateValidationModule.setTime(this.parent.defaultEndTime, currentValue);
+            let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentValue);
+            if ((currentValue.getHours() === 0 && dayEndTime !== 86400)) {
+                this.parent.dateValidationModule.setTime(dayEndTime, currentValue);
             }
             currentValue = this.parent.dateValidationModule.checkEndDate(currentValue, ganttProb);
             this.parent.setRecordValue('endDate', currentValue, ganttProb, true);
             if (!isNOU(ganttProb.startDate) && isNOU(ganttProb.duration)) {
                 if (this.parent.dateValidationModule.compareDates(ganttProb.endDate, ganttProb.startDate) === -1) {
                     this.parent.setRecordValue('endDate', new Date(ganttProb.startDate.getTime()), ganttProb, true);
-                    this.parent.dateValidationModule.setTime(this.parent.defaultEndTime, ganttProb.endDate);
+                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProb.endDate);
+                    this.parent.dateValidationModule.setTime(dayEndTime, ganttProb.endDate);
                 }
             } else if (!isNOU(ganttProb.duration) && isNOU(ganttProb.startDate)) {
                 this.parent.setRecordValue(
@@ -380,7 +400,12 @@ export class CellEdit {
      * @returns {void} .
      */
     private durationEdited(args: ITaskbarEditedEventArgs): void {
-        if (parseInt(args.data[this.parent.taskFields.duration]) < 0) {
+        const regex: RegExp = /^[^\d.-]+$/;
+        if (regex.test(args.data['Duration'])) {
+            const err: string = `The provided value for the ${this.parent.taskFields.duration} field is invalid. Please ensure the ${this.parent.taskFields.duration} field contains only valid numeric values.`;
+            this.parent.trigger('actionFailure', { error: err });
+        }
+        if (parseInt(args.data[this.parent.taskFields.duration], 10) < 0) {
             args.data[this.parent.taskFields.duration] = 0;
         }
         const ganttProb: ITaskData = args.data.ganttProperties;
@@ -403,7 +428,7 @@ export class CellEdit {
         const currentDuration: number = ganttProb.duration;
         if (isNOU(currentDuration)) {
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
-            if (args.data[this.parent.taskFields.duration] != null) {
+            if (args.data[this.parent.taskFields.duration] !== null) {
                 this.parent.setRecordValue('endDate', null, ganttProb, true);
             }
         } else {
@@ -482,12 +507,13 @@ export class CellEdit {
         const ganttRecord: ITaskData = args.data.ganttProperties;
         const baseLineStartDate: Date = args.data[this.parent.taskFields.baselineStartDate];
         const baseLineEndDate: Date = args.data[this.parent.taskFields.baselineEndDate];
-        if (baseLineEndDate && baseLineEndDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
-            this.parent.dateValidationModule.setTime(this.parent.defaultEndTime, baseLineEndDate);
+        const dayEndTime: number = this.parent['getCurrentDayEndTime'](baseLineEndDate);
+        if (baseLineEndDate && baseLineEndDate.getHours() === 0 && dayEndTime !== 86400) {
+            this.parent.dateValidationModule.setTime(dayEndTime, baseLineEndDate);
         }
         this.parent.setRecordValue(
             'baselineStartDate',
-            this.parent.dateValidationModule.checkBaselineStartDate(baseLineStartDate),
+            this.parent.dateValidationModule.checkBaselineStartDate(baseLineStartDate, ganttRecord),
             ganttRecord,
             true);
         this.parent.setRecordValue(
@@ -572,6 +598,11 @@ export class CellEdit {
      * @returns {void} .
      */
     private dependencyEdited(editedArgs: ITaskbarEditedEventArgs, cellEditArgs: object): void {
+        const specialCharacterPattern: RegExp = /[!@#$%^&*()_=[\]{};:<>|./?-]/;
+        if (specialCharacterPattern.test(editedArgs.data['Predecessor'])) {
+            const err: string = `The provided value for the ${this.parent.taskFields.dependency} field is invalid. Please ensure that the ${this.parent.taskFields.dependency} field does not contain any special characters.`;
+            this.parent.trigger('actionFailure', { error: err });
+        }
         this.parent.predecessorModule.updateUnscheduledDependency(editedArgs.data);
         if (!this.parent.connectorLineEditModule.updatePredecessor(
             editedArgs.data,
@@ -587,7 +618,7 @@ export class CellEdit {
      */
     private workEdited(editedArgs: ITaskbarEditedEventArgs): void {
         const ganttProb: ITaskData = editedArgs.data.ganttProperties;
-        if(editedArgs.data[this.parent.taskFields.work] < 0) {
+        if (editedArgs.data[this.parent.taskFields.work] < 0) {
             editedArgs.data[this.parent.taskFields.work] = 0;
         }
         const workValue: number = editedArgs.data[this.parent.taskFields.work];
@@ -604,7 +635,7 @@ export class CellEdit {
      * @returns {void} .
      */
     private typeEdited(args: ITaskbarEditedEventArgs, editedObj: Object): void {
-        const key: string = this.parent.taskFields.type;
+        const key: string = this.parent.taskFields.type || 'taskType';
         const ganttProb: ITaskData = args.data.ganttProperties;
         const taskType: string = editedObj[`${key}`];
         this.parent.setRecordValue('taskType', taskType, ganttProb, true);

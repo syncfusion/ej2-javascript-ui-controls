@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /**
  * Chart legend
  */
@@ -27,6 +24,8 @@ export class BulletChartLegend extends BaseLegend {
     }
     /**
      * Binding events for legend module.
+     *
+     * @returns {void}
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -36,6 +35,8 @@ export class BulletChartLegend extends BaseLegend {
     }
     /**
      * UnBinding events for bullet chart legend module.
+     *
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -44,7 +45,10 @@ export class BulletChartLegend extends BaseLegend {
         this.chart.off(Browser.touchMoveEvent, this.bulletMouseMove);
     }
     /**
-     * To handle mosue move for legend module
+     * To handle mouse move for legend module.
+     *
+     * @param {MouseEvent} e - The mouse move event for the legend module.
+     * @returns {void}
      */
     private bulletMouseMove(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && this.chart.isTouch) {
@@ -52,7 +56,10 @@ export class BulletChartLegend extends BaseLegend {
         }
     }
     /**
-     * To handle mosue end for legend module
+     * To handle mouse end for legend module.
+     *
+     * @param {MouseEvent} e - The mouse end event for the legend module.
+     * @returns {void}
      */
     private mouseEnd(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && this.chart.isTouch) {
@@ -62,6 +69,7 @@ export class BulletChartLegend extends BaseLegend {
     /**
      * Get the legend options.
      *
+     * @param {Range[]} visibleRangeCollection - The collection of visible ranges.
      * @returns {void}
      * @private
      */
@@ -123,7 +131,15 @@ export class BulletChartLegend extends BaseLegend {
             }
         }
     }
-    /** @private */
+    /**
+     * Retrieves the legend bounds for the bullet chart.
+     *
+     * @param {Size} availableSize - The available size for rendering.
+     * @param {Rect} bulletLegendBounds - The bounds of the bullet chart legend.
+     * @param {LegendSettingsModel} legend - The legend settings for the bullet chart.
+     * @returns {void}
+     * @private
+     */
     public getLegendBounds(availableSize: Size, bulletLegendBounds: Rect, legend: LegendSettingsModel): void {
         let extraWidth: number = 0;
         const padding: number = legend.padding;
@@ -180,7 +196,19 @@ export class BulletChartLegend extends BaseLegend {
             this.setBounds(0, 0, legend, bulletLegendBounds);
         }
     }
-    /** @private */
+    /**
+     * Retrieves the rendering point for the bullet chart legend.
+     *
+     * @param {LegendOptions} bulletLegendOption - The legend options for the bullet chart.
+     * @param {ChartLocation} start - The starting location for rendering.
+     * @param {number} textPadding - The padding around the text.
+     * @param {LegendOptions} prevLegend - The previous legend options.
+     * @param {Rect} rect - The rect region for the legend.
+     * @param {number} count - The count of legends.
+     * @param {number} firstLegend - The index of the first legend.
+     * @returns {void}
+     * @private
+     */
     public getRenderPoint(
         bulletLegendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
         rect: Rect, count: number, firstLegend: number): void {
@@ -197,12 +225,15 @@ export class BulletChartLegend extends BaseLegend {
             bulletLegendOption.location.y = prevLegend.location.y;
         }
         const availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
-            textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (bulletLegendOption.location.x - textPadding + this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
-        bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
+            textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (bulletLegendOption.location.x - textPadding +
+                this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
+        bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle,
+                                           this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
     }
     /**
      * To show the tooltip for the trimmed text in legend.
      *
+     * @param {Event | PointerEvent} event - The click event.
      * @returns {void}
      */
     public click(event: Event | PointerEvent): void {
@@ -215,7 +246,9 @@ export class BulletChartLegend extends BaseLegend {
     }
 
     /**
-     * Get module name
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         return 'BulletChartLegend';
@@ -229,7 +262,7 @@ export class BulletChartLegend extends BaseLegend {
      */
     public destroy(): void {
         /**
-         * Destroy method calling here
+         * Destroy method calling here.
          */
         this.removeEventListener();
     }

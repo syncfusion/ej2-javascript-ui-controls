@@ -167,12 +167,11 @@ export class MarkdownSelection {
      */
     public isStartWith(line: string, command: string): boolean {
         let isStart: boolean = false;
+        const regExp: RegExpConstructor = RegExp;
         if (line) {
             const reg: RegExp = line.trim() === command.trim() ?
-                // eslint-disable-next-line
-                new RegExp('^(' + this.replaceSpecialChar(command.trim()) + ')', 'gim') :
-                // eslint-disable-next-line
-                new RegExp('^(' + this.replaceSpecialChar(command) + ')', 'gim');
+                new regExp('^(' + this.replaceSpecialChar(command.trim()) + ')', 'gim') :
+                new regExp('^(' + this.replaceSpecialChar(command) + ')', 'gim');
             isStart = reg.test(line.trim());
         }
         return isStart;
@@ -200,9 +199,9 @@ export class MarkdownSelection {
      */
     public isClear(parents: { [key: string]: string | number }[], regex: string): boolean {
         const isClear: boolean = false;
+        const regExp: RegExpConstructor = RegExp;
         for (let i: number = 0; i < parents.length; i++) {
-            // eslint-disable-next-line
-            if (new RegExp(regex, 'gim').test((parents[i as number].text as string))) {
+            if (new regExp(regex, 'gim').test((parents[i as number].text as string))) {
                 return true;
             }
         }

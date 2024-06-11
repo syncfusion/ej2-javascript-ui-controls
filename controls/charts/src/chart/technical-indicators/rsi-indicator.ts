@@ -1,6 +1,3 @@
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
@@ -15,6 +12,9 @@ export class RsiIndicator extends TechnicalAnalysis {
      * Initializes the series collection to represent the RSI Indicator
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the series collection is initialized.
+     * @param {Chart} chart - The chart associated with the technical indicator.
+     * @returns {void}
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         super.initSeriesCollection(indicator, chart);
@@ -32,6 +32,8 @@ export class RsiIndicator extends TechnicalAnalysis {
      * Defines the predictions using RSI approach
      *
      * @private
+     * @param {TechnicalIndicator} indicator - The technical indicator for which the data source is to be initialized.
+     * @returns {void}
      */
     public initDataSource(indicator: TechnicalIndicator): void {
         const signalCollection: Points[] = [];
@@ -103,15 +105,16 @@ export class RsiIndicator extends TechnicalAnalysis {
      * @returns {void}
      * @private
      */
-
     public destroy(): void {
         /**
-         * Destroys the RSI Indicator
+         * Destroys the RSI Indicator.
          */
     }
 
     /**
      * Get module name.
+     *
+     * @returns {string} - Returns the module name.
      */
     protected getModuleName(): string {
         /**

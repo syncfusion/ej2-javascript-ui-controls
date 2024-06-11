@@ -25,6 +25,7 @@ import { InsertTextExec } from '../plugin/insert-text';
 import { NodeCutter } from '../plugin/nodecutter';
 import { FormatPainterActions } from '../plugin/format-painter-actions';
 import { EmojiPickerAction } from '../plugin/emoji-picker-action';
+import { TableSelection } from '../plugin/table-selection';
 /**
  * EditorManager internal component
  *
@@ -55,6 +56,7 @@ export class EditorManager {
     public formatPainterEditor: IFormatPainterEditor;
     public editableElement: Element;
     public emojiPickerObj: EmojiPickerAction;
+    public tableCellSelection: TableSelection;
     /**
      * Constructor for creating the component
      *
@@ -86,6 +88,7 @@ export class EditorManager {
         this.msWordPaste = new MsWordPaste(this);
         this.formatPainterEditor = new FormatPainterActions(this, options.formatPainterSettings);
         this.emojiPickerObj = new EmojiPickerAction(this);
+        this.tableCellSelection = new TableSelection(this.editableElement as HTMLElement, this.currentDocument);
         this.wireEvents();
     }
     private wireEvents(): void {
@@ -291,7 +294,7 @@ export class EditorManager {
         return blockParent;
     }
 
-    private getLastTextNode(node: Node): Node | null {
+    public getLastTextNode(node: Node): Node | null {
         const treeWalker: TreeWalker = this.currentDocument.createTreeWalker(
             node,
             NodeFilter.SHOW_TEXT,

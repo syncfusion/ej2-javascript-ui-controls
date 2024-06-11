@@ -1,6 +1,4 @@
 @include export-module('appbar-layout') {
-
-  /*! appbar component styles */
   .e-bigger .e-appbar,
   .e-appbar.e-bigger {
     height: 56px;
@@ -26,6 +24,9 @@
     padding: 8px;
     overflow: hidden;
     font-size: $appbar-font-size;
+    @if ($skin-name == 'fluent2') {
+      border-radius: 4px;
+    }
 
     > div:first-child {
       display: flex;

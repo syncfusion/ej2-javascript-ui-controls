@@ -154,7 +154,7 @@ export interface TabItemModel {
      *
      * @default -1
      */
-    tabIndex?: number
+    tabIndex?: number;
 
 }
 

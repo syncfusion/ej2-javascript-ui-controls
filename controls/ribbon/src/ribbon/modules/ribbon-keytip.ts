@@ -1,6 +1,6 @@
 import { Ribbon } from '../base';
 import { getGroup, getItem } from '../base/utils';
-import { itemProps } from '../base/interface';
+import { itemProps, KeyTipDataType, KeyTipElements} from '../base/interface';
 import { getIndex} from '../base/index';
 import * as constants from '../base/constant';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -34,55 +34,54 @@ export class RibbonKeyTip {
      */
     public createKeytip(key?: string): void {
         if (this.parent.keyTipElements) {
-            let keytipData: any;
+            let keytipData: {[key: string]: KeyTipDataType};
             if (key === 'tab') {
                 for (let i: number = 0; i < this.parent.tabs.length; i++) {
                     if (this.parent.keyTipElements[parseInt(i.toString(), 10)]) {
-                        // eslint-disable-next-line
-                        keytipData = (this.parent.keyTipElements[i] as {[key: string]: object})[key];
+                        keytipData = ((this.parent.keyTipElements[parseInt(i.toString(), 10)] as KeyTipElements)[`${key}`] as {[key: string]: KeyTipDataType});
                         this.createKeyTipElement((keytipData[0].id), keytipData[0].keyTip, 'tab', 'center', 'bottom', true);
                     }
                 }
-                if ((this.parent.keyTipElements as {[key: string]: object})['filemenu']) {
-                    keytipData = (this.parent.keyTipElements as {[key: string]: object})['filemenu'];
+                if ((this.parent.keyTipElements as KeyTipElements)['filemenu']) {
+                    keytipData = ((this.parent.keyTipElements as KeyTipElements)['filemenu'] as {[key: string]: KeyTipDataType});
                     this.createKeyTipElement((keytipData[0].id), keytipData[0].keyTip, 'filemenu');
                 }
-                if ((this.parent.keyTipElements as {[key: string]: object})['backstage']) {
-                    keytipData = (this.parent.keyTipElements as {[key: string]: object})['backstage'];
+                if ((this.parent.keyTipElements as KeyTipElements)['backstage']) {
+                    keytipData = ((this.parent.keyTipElements as KeyTipElements)['backstage'] as {[key: string]: KeyTipDataType});
                     this.createKeyTipElement((keytipData[0].id), keytipData[0].keyTip, 'backstage');
                 }
-                if ((this.parent.keyTipElements as {[key: string]: object})['collapse']) {
-                    keytipData = (this.parent.keyTipElements as {[key: string]: object})['collapse'];
+                if ((this.parent.keyTipElements as KeyTipElements)['collapse']) {
+                    keytipData = ((this.parent.keyTipElements as KeyTipElements)['collapse'] as {[key: string]: KeyTipDataType});
                     this.createKeyTipElement((keytipData[0].id), keytipData[0].keyTip, 'collapse');
                 }
-                if ((this.parent.keyTipElements as {[key: string]: object})['taboverflow']) {
-                    keytipData = (this.parent.keyTipElements as {[key: string]: object})['taboverflow'];
+                if ((this.parent.keyTipElements as KeyTipElements)['taboverflow']) {
+                    keytipData = ((this.parent.keyTipElements as KeyTipElements)['taboverflow'] as {[key: string]: KeyTipDataType});
                     this.createKeyTipElement((keytipData[0].id), keytipData[0].keyTip, 'taboverflow');
                 }
             }
             else if (key === 'popupitem') {
-                if ((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['popupitem']) {
-                    const popupKeyTipData: any = (this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['popupitem'];
-                    for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['popupitem']).length; i++) {
+                if ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['popupitem']) {
+                    const popupKeyTipData: {[key: string]: KeyTipDataType} = ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['popupitem'] as {[key: string]: KeyTipDataType});
+                    for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['popupitem']).length; i++) {
                         this.createKeyTipElement((popupKeyTipData[parseInt(i.toString(), 10)].id), popupKeyTipData[parseInt(i.toString(), 10)].keyTip, 'popupitem', 'left', 'top', false, true);
                     }
                 }
             }
             else if (key === 'backstageMenu') {
-                if ((this.parent.keyTipElements as {[key: string]: object})['backstageMenu']) {
-                    const backstageKeyTipData: any = (this.parent.keyTipElements as {[key: string]: object})['backstageMenu'];
-                    for (let i: number = 0; i < Object.keys((this.parent.keyTipElements as {[key: string]: object})['backstageMenu']).length; i++) {
+                if ((this.parent.keyTipElements as KeyTipElements)['backstageMenu']) {
+                    const backstageKeyTipData: {[key: string]: KeyTipDataType} = ((this.parent.keyTipElements as KeyTipElements)['backstageMenu'] as {[key: string]: KeyTipDataType});
+                    for (let i: number = 0; i < Object.keys((this.parent.keyTipElements as KeyTipElements)['backstageMenu']).length; i++) {
                         this.createKeyTipElement((backstageKeyTipData[parseInt(i.toString(), 10)].id), backstageKeyTipData[parseInt(i.toString(), 10)].keyTip, 'backstageMenu', 'left', 'center');
                     }
                 }
             }
             else if (key === 'grpoverflowpopup' && this.parent.activeLayout === 'Classic') {
-                if ((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['grpoverflowpopup']) {
+                if ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['grpoverflowpopup']) {
                     this.calculateItemPosition(key);
                 }
-                if ((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['launcher']) {
-                    for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['launcher']).length; i++) {
-                        keytipData = (this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['launcher'];
+                if ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['launcher']) {
+                    for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['launcher']).length; i++) {
+                        keytipData = ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['launcher'] as {[key: string]: KeyTipDataType});
                         this.createKeyTipElement((keytipData[parseInt(i.toString(), 10)].id), keytipData[parseInt(i.toString(), 10)].keyTip, 'launcher', 'center', 'bottom', false, true);
                     }
                 }
@@ -90,27 +89,27 @@ export class RibbonKeyTip {
             else {
                 this.calculateItemPosition(key);
                 if (this.parent.activeLayout === 'Classic') {
-                    if ((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['launcher']) {
-                        for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['launcher']).length; i++) {
-                            keytipData = (this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['launcher'];
+                    if ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['launcher']) {
+                        for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['launcher']).length; i++) {
+                            keytipData = ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['launcher'] as {[key: string]: KeyTipDataType});
                             this.createKeyTipElement((keytipData[parseInt(i.toString(), 10)].id), keytipData[parseInt(i.toString(), 10)].keyTip, 'launcher');
                         }
                     }
-                    if ((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['grpoverflow']) {
-                        for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['grpoverflow']).length; i++) {
-                            keytipData = (this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['grpoverflow'];
+                    if ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['grpoverflow']) {
+                        for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['grpoverflow']).length; i++) {
+                            keytipData = ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['grpoverflow'] as {[key: string]: KeyTipDataType});
                             this.createKeyTipElement((keytipData[parseInt(i.toString(), 10)].id), keytipData[parseInt(i.toString(), 10)].keyTip, 'grpoverflow');
                         }
                     }
                 }
                 if (this.parent.activeLayout === 'Simplified') {
-                    if ((this.parent.keyTipElements as {[key: string]: object})['overflowbtn']) {
-                        keytipData = (this.parent.keyTipElements as {[key: string]: object})['overflowbtn'];
+                    if ((this.parent.keyTipElements as KeyTipElements)['overflowbtn']) {
+                        keytipData = ((this.parent.keyTipElements as KeyTipElements)['overflowbtn'] as {[key: string]: KeyTipDataType});
                         this.createKeyTipElement((keytipData[0].id), keytipData[0].keyTip, 'overflowbtn');
                     }
-                    if ((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['grpofbtn']) {
-                        for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['grpofbtn']).length; i++) {
-                            keytipData = (this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})['grpofbtn'];
+                    if ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['grpofbtn']) {
+                        for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['grpofbtn']).length; i++) {
+                            keytipData = ((this.parent.keyTipElements[this.parent.selectedTab] as KeyTipElements)['grpofbtn'] as {[key: string]: KeyTipDataType});
                             this.createKeyTipElement((keytipData[parseInt(i.toString(), 10)].id), keytipData[parseInt(i.toString(), 10)].keyTip, 'grpofbtn');
                         }
                     }
@@ -122,15 +121,14 @@ export class RibbonKeyTip {
     private calculateItemPosition(key: string, isMethod: boolean = false, keyTip ?: string): void {
         let xOffset: string;
         let yOffset: string;
-        let keytipData: any;
-         /* eslint-disable */
-        keytipData = (this.parent.keyTipElements[parseInt(this.parent.selectedTab.toString(), 10)] as {[key: string]: object})[key];
+        const keytipData: {[key: string]: KeyTipDataType} = ((this.parent.keyTipElements[parseInt(this.parent.selectedTab.toString(), 10)
+        ] as KeyTipElements)[`${key}`] as {[key: string]: KeyTipDataType});
         if (keytipData) {
-            for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[parseInt(this.parent.selectedTab.toString(), 10)] as {[key: string]: object})[key]).length; i++) {
-                /* eslint-enable */
+            for (let i: number = 0; i < Object.keys((this.parent.keyTipElements[parseInt(this.parent.selectedTab.toString(), 10)] as
+            KeyTipElements)[`${key}`]).length; i++) {
                 if ((isMethod && (keytipData[parseInt(i.toString(), 10)].keyTip === keyTip)) || !isMethod) {
                     let itemID: string = keytipData[parseInt(i.toString(), 10)].id;
-                    if (keytipData[parseInt(i.toString(), 10)].id.includes("_grpbtn")) {
+                    if (keytipData[parseInt(i.toString(), 10)].id.indexOf('_grpbtn') !== -1) {
                         itemID = keytipData[parseInt(i.toString(), 10)].id.replace(/_grpbtn\d+/, '');
                     }
                     const itemProp: itemProps = getItem(this.parent.tabs, itemID);
@@ -158,7 +156,12 @@ export class RibbonKeyTip {
                             yOffset = 'bottom';
                         }
                     }
-                    key === 'item' ? this.createKeyTipElement((keytipData[parseInt(i.toString(), 10)].id), keytipData[parseInt(i.toString(), 10)].keyTip, key, xOffset, yOffset) : this.createKeyTipElement((keytipData[parseInt(i.toString(), 10)].id), keytipData[parseInt(i.toString(), 10)].keyTip, key, xOffset, yOffset, false, true);
+                    if (key === 'item') {
+                        this.createKeyTipElement((keytipData[parseInt(i.toString(), 10)].id),
+                                                 keytipData[parseInt(i.toString(), 10)].keyTip, key, xOffset, yOffset); }
+                    else {
+                        this.createKeyTipElement((keytipData[parseInt(i.toString(), 10)].id),
+                                                 keytipData[parseInt(i.toString(), 10)].keyTip, key, xOffset, yOffset, false, true); }
                 }
             }
         }
@@ -179,7 +182,7 @@ export class RibbonKeyTip {
                 isPopUpPresent = true;
             }
             if (keyEle.closest('.e-split-btn-wrapper')) {
-                let splitBtn: HTMLElement = keyEle.closest('.e-split-btn-wrapper') as HTMLElement;
+                const splitBtn: HTMLElement = keyEle.closest('.e-split-btn-wrapper') as HTMLElement;
                 splitBtnID = splitBtn.closest('.e-ribbon-item').id;
             }
             else {
@@ -205,17 +208,18 @@ export class RibbonKeyTip {
                     enableRtl: this.parent.enableRtl
                 });
                 keytipPopup.show();
-                this.calculateKeyTipPosition(keyEle, keytipElement, type, yOffset, (isTab && isPopUpItem));
+                this.calculateKeyTipPosition(keyEle, keytipElement, type, yOffset);
                 this.parent.isKeytipOpen = true;
             }
         }
     }
 
-    private calculateKeyTipPosition(itemEle: HTMLElement, keytipElement: HTMLElement, type: string, yOffset: string, isTabOverflow: boolean = false): void {
+    private calculateKeyTipPosition(itemEle: HTMLElement, keytipElement: HTMLElement, type: string,
+                                    yOffset: string): void {
         const position: ClientRect = itemEle.getBoundingClientRect();
         if (type === 'backstageMenu') {
             keytipElement.style.top = position.top + ((keytipElement.offsetHeight) / 2) + 'px';
-            keytipElement.style.left = position.left + (itemEle.offsetWidth/5) + 'px';
+            keytipElement.style.left = position.left + (itemEle.offsetWidth / 5) + 'px';
         }
         else {
             if (type !== 'popupitem') {
@@ -223,16 +227,17 @@ export class RibbonKeyTip {
             }
         }
         if (type === 'filemenu' || type === 'backstage') {
-            keytipElement.style.top = position.top + ((itemEle.offsetHeight - (itemEle.offsetHeight/3)) + (keytipElement.offsetHeight/6)) + 'px';
+            keytipElement.style.top = position.top + ((itemEle.offsetHeight - (itemEle.offsetHeight / 3)) + (keytipElement.offsetHeight / 6)) + 'px';
         }
         else if ((type === 'item' && yOffset === 'top')) {
-            keytipElement.style.top = (position.top - (itemEle.offsetHeight)/2) + 'px';
+            keytipElement.style.top = (position.top - (itemEle.offsetHeight) / 2) + 'px';
         }
     }
     /**
      * Performs keytip action.
      *
      * @param {string} keyPress - Gets the keytip text.
+     * @param {boolean} isMethod - Gets the isMethod.
      * @returns {void}
      * @hidden
      */
@@ -240,9 +245,13 @@ export class RibbonKeyTip {
         this.isKeytipPresent = false;
         for (let i: number = 0; ((i < Object.keys(this.parent.keyTipElements).length) && !this.isKeytipPresent); i++) {
             if (this.parent.keyTipElements[parseInt(i.toString(), 10)]) {
-                for (let j: number = 0; ((j < Object.keys(this.parent.keyTipElements[parseInt(i.toString(), 10)]).length) && !this.isKeytipPresent); j++) {
-                    let keytipData: any = (this.parent.keyTipElements[parseInt(i.toString(), 10)] as {[key: string]: object})[Object.keys(this.parent.keyTipElements[parseInt(i.toString(), 10)])[parseInt(j.toString(), 10)]];
-                    for (let k: number = 0; ((k < keytipData.length) && !this.isKeytipPresent); k++) {
+                for (let j: number = 0; ((j < Object.keys(this.parent.keyTipElements[parseInt(i.toString(), 10)]).length) &&
+                !this.isKeytipPresent); j++) {
+                    const keytipData: {[key: string]: KeyTipDataType} = ((this.parent.keyTipElements[parseInt(i.toString(), 10)] as
+                    KeyTipElements)[Object.
+                        keys(this.parent.keyTipElements[parseInt(i.toString(), 10)])[parseInt(j.toString(), 10)]] as
+                        {[key: string]: KeyTipDataType});
+                    for (let k: number = 0; ((k < Object.keys(keytipData).length) && !this.isKeytipPresent); k++) {
                         if (keyPress.toUpperCase() === keytipData[parseInt(k.toString(), 10)].keyTip) {
                             const keyTipElement: HTMLElement = document.querySelector('#' + keytipData[parseInt(k.toString(), 10)].id + constants.RIBBON_KEYTIP_ID);
                             if (keyTipElement || isMethod) {
@@ -253,8 +262,8 @@ export class RibbonKeyTip {
                                         this.parent.tabObj.select(i);
                                         setTimeout(() => {
                                             const tabOverflow: HTMLElement = this.parent.tabObj.element.querySelector('.e-nav-active');
-                                            if (tabOverflow)
-                                                tabOverflow.click();
+                                            if (tabOverflow) {
+                                                tabOverflow.click(); }
                                             this.createKeytip('item');
                                         }, 600);
                                     } else {
@@ -268,7 +277,7 @@ export class RibbonKeyTip {
                                         }
                                         else {
                                             let itemProp: itemProps;
-                                            if ((keytipData[parseInt(k.toString(), 10)].id).includes("_popupButton")) {
+                                            if ((keytipData[parseInt(k.toString(), 10)].id).indexOf('_popupButton') !== -1) {
                                                 const galleryID: string = keytipData[parseInt(k.toString(), 10)].id.replace(/_popupButton/g, '');
                                                 itemProp = getItem(this.parent.tabs, galleryID);
                                             }
@@ -286,7 +295,7 @@ export class RibbonKeyTip {
                                         if (keyEle) {
                                             let groupID: string = keytipData[parseInt(k.toString(), 10)].id;
                                             if (isMethod) {
-                                                if (keytipData[parseInt(k.toString(), 10)].id.includes("_launcher") || keytipData[parseInt(k.toString(), 10)].id.includes("_sim_grp_overflow") || keytipData[parseInt(k.toString(), 10)].id.includes("_overflow_dropdown")) {
+                                                if (keytipData[parseInt(k.toString(), 10)].id.indexOf('_launcher') !== -1 || keytipData[parseInt(k.toString(), 10)].id.indexOf('_sim_grp_overflow') !== -1 || keytipData[parseInt(k.toString(), 10)].id.indexOf('_overflow_dropdown') !== -1) {
                                                     groupID = keytipData[parseInt(k.toString(), 10)].id.replace(/_launcher|_sim_grp_overflow|_overflow_dropdown/g, '');
                                                     const itemProp: itemProps = getGroup(this.parent.tabs, groupID);
                                                     if (itemProp.tabIndex === this.parent.selectedTab) {
@@ -313,16 +322,18 @@ export class RibbonKeyTip {
         }
     }
 
-    private clickItems(itemProp: itemProps, keytipData: any, k: number, isGroupItems: boolean, isMethod: boolean, keyEle?: HTMLElement): void {
+    private clickItems(itemProp: itemProps, keytipData: {[key: string]: KeyTipDataType}, k: number,
+                       isGroupItems: boolean, isMethod: boolean, keyEle?: HTMLElement): void {
         if (isGroupItems) {
             keyEle.click();
             if (!(keytipData[parseInt(k.toString(), 10)].type === 'launcher')) {
                 this.isKeytipPopupOpen = true;
-                keytipData[parseInt(k.toString(), 10)].type === 'grpoverflow' ? this.createKeytip('grpoverflowpopup') : this.createKeytip('popupitem');
+                if (keytipData[parseInt(k.toString(), 10)].type === 'grpoverflow') { this.createKeytip('grpoverflowpopup'); }
+                else { this.createKeytip('popupitem'); }
             }
         }
         else {
-            let itemID: string = keytipData[parseInt(k.toString(), 10)].id;
+            const itemID: string = keytipData[parseInt(k.toString(), 10)].id;
             if (document.querySelector('#' + itemID) && isMethod) {
                 if (this.parent.activeLayout === 'Simplified') {
                     if (document.querySelector('#' + itemID).closest('#' + itemProp.group.id + '_sim_grp_overflow-popup') && document.querySelector('#' + itemID).closest('#' + itemProp.group.id + '_sim_grp_overflow-popup').classList.contains('e-popup-close')) {
@@ -355,21 +366,24 @@ export class RibbonKeyTip {
             case 'colorpicker':
                 this.parent.ribbonColorPickerModule.toggle(itemID);
                 break;
-            case 'combobox':
+            case 'combobox': {
                 const itemEle: HTMLElement = document.querySelector('#' + itemID);
                 setTimeout(() => {
                     itemEle.focus();
                 }, 100);
                 break;
-            case 'gallery':
+            }
+            case 'gallery': {
                 const galleryEle: HTMLElement = document.querySelector('#' + itemID);
                 galleryEle.click();
                 break;
-            case 'template':
+            }
+            case 'template': {
                 const templateEle: HTMLElement = document.querySelector('#' + itemID);
                 templateEle.focus();
                 break;
-            case 'group-btn':
+            }
+            case 'group-btn': {
                 const itemElement: HTMLElement = document.querySelector('#' + itemID);
                 if (itemElement) {
                     const item: DropDownButton = getInstance(itemElement, DropDownButton) as DropDownButton;
@@ -382,20 +396,20 @@ export class RibbonKeyTip {
                 }
                 break;
             }
+            }
         }
     }
 
     private commonItemsKeyTipPress(keyPress: string, key: string, isMethod: boolean): void {
-        /* eslint-disable */
-        if ((this.parent.keyTipElements as {[key: string]: object})[key]) {
+        if ((this.parent.keyTipElements as KeyTipElements)[`${key}`]) {
             let isKeyPressed: boolean = false;
-            let keytipData: any = (this.parent.keyTipElements as {[key: string]: object})[key];
+            const keytipData: {[key: string]: KeyTipDataType} = ((this.parent.keyTipElements as KeyTipElements)[`${key}`] as
+            {[key: string]: KeyTipDataType});
             let keyEle: HTMLElement;
             let keytipElement: HTMLElement;
             if (keytipData) {
                 if (key === 'backstageMenu') {
-                    for (let i: number = 0; i < Object.keys((this.parent.keyTipElements as {[key: string]: object})[key]).length; i++){
-                        /* eslint-enable */
+                    for (let i: number = 0; i < Object.keys((this.parent.keyTipElements as KeyTipElements)[`${key}`]).length; i++) {
                         if (keytipData[parseInt(i.toString(), 10)].keyTip === keyPress.toUpperCase()) {
                             keyEle = document.querySelector('#' + keytipData[parseInt(i.toString(), 10)].id);
                             keytipElement = document.querySelector('#' + keyEle.id + constants.RIBBON_KEYTIP_ID) as HTMLElement;
@@ -435,7 +449,7 @@ export class RibbonKeyTip {
                         setTimeout(() => {
                             for (let i: number = 0; i < Object.keys(this.parent.keyTipElements).length; i++) {
                                 if (this.parent.keyTipElements[parseInt(i.toString(), 10)]) {
-                                    let keytipData: any = (this.parent.keyTipElements[parseInt(i.toString(), 10)] as {[key: string]: object})['tab'];
+                                    const keytipData: {[key: string]: KeyTipDataType} = ((this.parent.keyTipElements[parseInt(i.toString(), 10)] as KeyTipElements)['tab'] as {[key: string]: KeyTipDataType});
                                     this.createKeyTipElement((keytipData[0].id), keytipData[0].keyTip, 'tab', 'center', 'bottom', true, true);
                                 }
                             }
@@ -460,34 +474,35 @@ export class RibbonKeyTip {
         for (let i: number = 0; i < keyTipItems.length; i++) {
             const keyTipItem: HTMLElement = keyTipItems[parseInt(i.toString(), 10)] as HTMLElement;
             if (key === 'Escape' && this.parent.keyTipElements && this.parent.keyTipElements[this.parent.selectedTab]) {
-                /* eslint-disable */
                 for (let j: number = 0; j < Object.keys(this.parent.keyTipElements[this.parent.selectedTab]).length; j++) {
-                    let keyText: string = (Object.keys(this.parent.keyTipElements[this.parent.selectedTab]))[j];
-                    if ((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})[keyText]) {
-                        const index: number = getIndex((this.parent.keyTipElements[this.parent.selectedTab] as {[key: string]: object})[keyText] as object[], (e: object) => { return (e as any).id + constants.RIBBON_KEYTIP_ID === keyTipItems[parseInt(i.toString(), 10)].id; });
-                        /* eslint-enable */
-                        if (index !== -1) {
-                            if ((keyText === 'item' && !(this.isKeytipPopupOpen)) || (keyText === 'grpoverflow' && this.parent.activeLayout === 'Classic')) {
-                                this.createKeytip('tab');
+                    const keyText: string = (Object.keys(this.parent.keyTipElements[parseInt(
+                        this.parent.selectedTab.toString(), 10)]))[parseInt(j.toString(), 10)];
+                    const keyTipElement: KeyTipElements = this.parent.keyTipElements[parseInt(
+                        this.parent.selectedTab.toString(), 10)] as KeyTipElements;
+                    const index: number = getIndex(keyTipElement[`${keyText}`] as {[key: string]: KeyTipDataType}[],
+                                                   (e: {[key: string]: KeyTipDataType} ) => { return e.id +
+                                                    constants.RIBBON_KEYTIP_ID === keyTipItems[parseInt(i.toString(), 10)].id; });
+                    if (index !== -1) {
+                        if ((keyText === 'item' && !(this.isKeytipPopupOpen)) || (keyText === 'grpoverflow' && this.parent.activeLayout === 'Classic')) {
+                            this.createKeytip('tab');
+                            key = '';
+                            isKeyTipExist = true;
+                            break;
+                        }
+                        else if (this.isKeytipPopupOpen) {
+                            if ((keyText === 'popupitem' && this.parent.activeLayout === 'Simplified') || (keyText === 'grpoverflowpopup' && this.parent.activeLayout === 'Classic')) {
+                                this.createKeytip('item');
                                 key = '';
                                 isKeyTipExist = true;
                                 break;
-                            }
-                            else if (this.isKeytipPopupOpen) {
-                                if ((keyText === 'popupitem' && this.parent.activeLayout === 'Simplified') || (keyText === 'grpoverflowpopup' && this.parent.activeLayout === 'Classic')) {
-                                    this.createKeytip('item');
-                                    key = '';
-                                    isKeyTipExist = true;
-                                    break;
-                                }
                             }
                         }
                     }
                 }
                 for (let n: number = 0; n < Object.keys(this.parent.keyTipElements).length; n++) {
                     if (this.parent.keyTipElements[parseInt(n.toString(), 10)]) {
-                        let keytipData: any = (this.parent.keyTipElements[parseInt(n.toString(), 10)] as {[key: string]: object})['tab'];
-                        for (let j: number = 0; j < keytipData.length; j++) {
+                        const keytipData: {[key: string]: KeyTipDataType} = ((this.parent.keyTipElements[parseInt(n.toString(), 10)] as KeyTipElements)['tab'] as {[key: string]: KeyTipDataType});
+                        for (let j: number = 0; j < Object.keys(keytipData).length; j++) {
                             if (keyTipItem.id === keytipData[0].id + constants.RIBBON_KEYTIP_ID) {
                                 if (document.querySelector('#' + keytipData[0].id + constants.HEADER_ID).closest('.e-toolbar-pop')) {
                                     const tabOverflow: HTMLElement = this.parent.tabObj.element.querySelector('.e-nav-active');
@@ -506,8 +521,8 @@ export class RibbonKeyTip {
                         }
                     }
                 }
-                if (!isKeyTipExist && (this.parent.keyTipElements as {[key: string]: object})['backstageMenu']) {
-                    const index: number = getIndex((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] as object[], (e: object) => { return (e as any).id + constants.RIBBON_KEYTIP_ID === keyTipItems[parseInt(i.toString(), 10)].id; });
+                if (!isKeyTipExist && (this.parent.keyTipElements as KeyTipElements)['backstageMenu']) {
+                    const index: number = getIndex((this.parent.keyTipElements as KeyTipElements)['backstageMenu'] as {[key: string]: KeyTipDataType}[], (e: {[key: string]: KeyTipDataType}) => { return e.id + constants.RIBBON_KEYTIP_ID === keyTipItems[parseInt(i.toString(), 10)].id; });
                     if (index !== -1) {
                         this.createKeytip('tab');
                         key = '';
@@ -520,8 +535,8 @@ export class RibbonKeyTip {
             }
         }
         this.isKeytipPopupOpen = false;
-        if (!isKeyTipExist)
-            this.parent.isKeytipOpen = false;
+        if (!isKeyTipExist) {
+            this.parent.isKeytipOpen = false; }
     }
 
     /**
@@ -550,3 +565,4 @@ export class RibbonKeyTip {
         this.removeKeytip();
     }
 }
+

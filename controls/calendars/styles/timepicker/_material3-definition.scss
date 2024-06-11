@@ -37,8 +37,6 @@ $timepicker-default-overlay: $content-bg-color-alt1 !default;
 $timepicker-icon-padding: 4px !default;
 $timepicker-normal-icon-border-radius: 16px !default;
 $timepicker-bigger-icon-border-radius: 20px !default;
-
-// icon active
 $timepicker-icon-active-border: 1px !default;
 $timepicker-icon-active-border-radius: 20px;
 $timepicker-icon-active-bg-color: rgba($content-text-color, .12) !default;
@@ -46,35 +44,23 @@ $timepicker-bigger-icon-margin: 0 !default;
 $timepicker-icon-margin: 0 !default;
 $timepicker-time-small-icon-margin: 0 !default;
 $timepicker-bigger-small-icon-margin: 0 !default;
-
-// mouse small
 $timepicker-list-small-font-size: 12px !default;
 $timepicker-list-small-line-height: 26px !default;
 $timepicker-list-small-text-indent: 12px !default;
 $timepicker-list-small-font-color: rgba($content-text-color) !default;
-
-// mouse small icon
 $timepicker-icon-small-font-size: $font-icon-16 !default;
 $timepicker-small-input-min-height: 22px !default;
 $timepicker-small-input-min-width: 22px !default;
 $timepicker-small-icon-border-radius: 14px !default;
-
-// Touch small
 $timepicker-list-bigger-small-font-size: 13px !default;
 $timepicker-list-bigger-small-line-height: 36px !default;
 $timepicker-list-bigger-small-text-indent: 16px !default;
-
-// Touch small icon
 $timepicker-icon-bigger-small-font-size: $font-icon-20 !default;
 $timepicker-bigger-small-input-min-height: 34px !default;
 $timepicker-bigger-small-input-min-width: 34px !default;
 $timepicker-bigger-small-icon-border-radius: 20px !default;
-
-// modal dialog colors
 $modal-header-bg-color: rgba($primary) !default;
 $modal-header-text-color: rgba($primary-text-color) !default;
-
-// modal dialog portrait dimensions
 $modal-header-height: 10% !default;
 $modal-header-padding: 2.5vh 2.5vw 2.5vh 1.5vw !default;
 $modal-header-display-style: flex !default;
@@ -88,8 +74,6 @@ $modal-header-title-transform: uppercase !default;
 $modal-header-border-bottom: none !default;
 $modal-list-line-height: 5vh !default;
 $modal-landscape-list-line-height: 10vh !default;
-
-// modal dialog landscape dimensions
 $modal-header-landscape-height: 15% !default;
 $modal-content-landscape-height: 85% !default;
 $modal-header-landscape-font-size: 2vw !default;

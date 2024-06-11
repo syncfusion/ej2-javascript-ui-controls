@@ -1937,8 +1937,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterAll(()=> {
+        afterAll((done: DoneFn)=> {
             Browser.userAgent = currentBrowserUA;
+            done();
         });
 
         it('Toolbar availability testing', (done: Function) => {

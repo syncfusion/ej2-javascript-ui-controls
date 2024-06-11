@@ -1,17 +1,9 @@
 @import '../common/mixin.scss';
 
-// color system
-
-// black
 $black: #000;
-
-// White
 $white: #fff;
-
-// Transparent
 $transparent: transparent;
 
-// cool-gray-color-variables
 $cool-gray-50: #f9fafb !default;
 $cool-gray-100: #f3f4f6 !default;
 $cool-gray-200: #e5e7eb !default;
@@ -23,7 +15,6 @@ $cool-gray-700: #374151 !default;
 $cool-gray-800: #1f2937 !default;
 $cool-gray-900: #111827 !default;
 
-// red-color-variables
 $red-50: #fef2f2 !default;
 $red-100: #fee2e2 !default;
 $red-200: #fecaca !default;
@@ -35,7 +26,6 @@ $red-700: #b91c1c !default;
 $red-800: #991b1b !default;
 $red-900: #7f1d1d !default;
 
-// Green-color-variables
 $green-50: #f0fdf4 !default;
 $green-100: #dcfce7 !default;
 $green-200: #bbf7d0 !default;
@@ -47,7 +37,6 @@ $green-700: #15803d !default;
 $green-800: #166534 !default;
 $green-900: #14532d !default;
 
-// orange-color-variables
 $orange-50: #fff7ed !default;
 $orange-100: #ffedd5 !default;
 $orange-200: #fed7aa !default;
@@ -59,7 +48,6 @@ $orange-700: #c2410c !default;
 $orange-800: #9a3412 !default;
 $orange-900: #7c2d12 !default;
 
-// cyan-color-variables
 $cyan-50: #ecfeff !default;
 $cyan-100: #cffafe !default;
 $cyan-200: #a5f3fc !default;
@@ -71,7 +59,6 @@ $cyan-700: #0e7490 !default;
 $cyan-800: #155e75 !default;
 $cyan-900: #164e63 !default;
 
-// light-blue-color-variables
 $light-blue-50: #f0f9ff;
 $light-blue-100: #e0f2fe;
 $light-blue-200: #bae6fd;
@@ -83,16 +70,15 @@ $light-blue-700: #0369a1;
 $light-blue-800: #075985;
 $light-blue-900: #0c4a6e;
 
-$primary:       $cyan-400 !default;
-$success:       $green-500 !default;
-$info:          $light-blue-400 !default;
-$warning:       $orange-500 !default;
-$danger:        $red-400 !default;
+$primary: $cyan-400 !default;
+$success: $green-500 !default;
+$info: $light-blue-400 !default;
+$warning: $orange-500 !default;
+$danger: $red-400 !default;
 $primary-text-color: $black !default;
-$primary-light:       $cyan-600 !default;
-$primary-lighter:       $cyan-800 !default;
+$primary-light: $cyan-600 !default;
+$primary-lighter: $cyan-800 !default;
 
-// backgroundcolor
 $content-bg-color: $cool-gray-800 !default;
 $content-bg-color-alt1: lighten($cool-gray-800, 2%) !default;
 $content-bg-color-alt2: $cool-gray-700 !default;
@@ -108,7 +94,6 @@ $content-bg-color-disabled: $content-bg-color !default;
 $flyout-bg-color: $cool-gray-700 !default;
 $overlay-bg-color: rgba($cool-gray-500, .75) !default;
 
-// text-color
 $content-text-color: $white !default;
 $content-text-color-alt1: $cool-gray-300 !default;
 $content-text-color-alt2: $cool-gray-400 !default;
@@ -121,13 +106,11 @@ $content-text-color-dragged: $white !default;
 $content-text-color-disabled: $cool-gray-500 !default;
 $placeholder-text-color: $cool-gray-500, !default;
 
-// iconcolor
 $icon-color: $cool-gray-300 !default;
 $icon-color-hover: $cool-gray-100 !default;
 $icon-color-pressed: $cool-gray-400 !default;
 $icon-color-disabled: $cool-gray-500 !default;
 
-// border-color
 $border-light: $cool-gray-600 !default;
 $border: $cool-gray-500 !default;
 $border-dark: $cool-gray-400 !default;
@@ -141,12 +124,10 @@ $border-warning: $warning !default;
 $border-error: $danger !default;
 $border-success: $success !default;
 
-// Tooltip
 $tooltip-bg-color: $cool-gray-50 !default;
 $tooltip-border: $cool-gray-50;
 $toooltip-text-color: $cool-gray-800 !default;
 
-// shadow
 $shadow: 0 1px 3px 0 rgba($black, .1), 0 1px 2px 0 rgba($black, .06) !default;
 $shadow-sm: 0 1px 2px 0 rgba($black, .05) !default;
 $shadow-md: 0 4px 6px -1px rgba($black, .1), 0 2px 4px -1px rgba($black, .06) !default;
@@ -158,10 +139,8 @@ $shadow-none: 0 0 rgba($black, 0) !default;
 $shadow-focus-ring1: 0 0 0 1px rgba($primary, 1) !default;
 $shadow-focus-ring2: 0 0 0 2px rgba($content-bg-color, .95), 0 0 0 4px rgba($primary, 1) !default;
 
-//fontfamily
 $font-family: 'Inter' !default;
 
-// default font Size
 $text-xxs: 10px !default;
 $text-xs: 12px !default;
 $text-sm: 14px !default;
@@ -177,7 +156,6 @@ $text-7xl: 72px !default;
 $text-8xl: 96px !default;
 $text-9xl: 128px !default;
 
-// Line height
 $leading-none: 1 !default;
 $leading-tight: 1.25 !default;
 $leading-snug: 1.375 !default;
@@ -185,15 +163,12 @@ $leading-normal: 1.5 !default;
 $leading-relaxed: 1.625 !default;
 $leading-loose: 2 !default;
 
-// font Weight
-$font-weight-lighter:         lighter !default;
-$font-weight-light:           300 !default;
-$font-weight-normal:          400 !default;
-$font-weight-medium:          500 !default;
-$font-weight-bold:            700 !default;
-$font-weight-bolder:          bolder !default;
-
-// Secondary-button
+$font-weight-lighter: lighter !default;
+$font-weight-light: 300 !default;
+$font-weight-normal: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-bold: 700 !default;
+$font-weight-bolder: bolder !default;
 
 $secondary-bg-color: $cool-gray-800 !default;
 $secondary-border-color: $cool-gray-500 !default;
@@ -211,8 +186,6 @@ $secondary-bg-color-disabled: $secondary-bg-color !default;
 $secondary-border-color-disabled: $cool-gray-700 !default;
 $secondary-text-color-disabled: $cool-gray-500 !default;
 
-// Primary-button
-
 $primary-bg-color: $primary !default;
 $primary-border-color: $primary !default;
 $primary-text: $primary-text-color !default;
@@ -228,8 +201,6 @@ $primary-text-focus: $primary-text !default;
 $primary-bg-color-disabled: $cyan-800 !default;
 $primary-border-color-disabled: $primary-bg-color-disabled !default;
 $primary-text-disabled: $primary-text !default;
-
-//Success-button
 
 $success-bg-color: $green-500 !default;
 $success-border-color: $green-500 !default;
@@ -247,7 +218,6 @@ $success-bg-color-disabled: $green-700 !default;
 $success-border-color-disabled: $success-bg-color-disabled !default;
 $success-text-disabled: $black !default;
 
-// Warning-button
 $warning-bg-color: $orange-600 !default;
 $warning-border-color: $orange-600 !default;
 $warning-text: $black !default;
@@ -264,7 +234,6 @@ $warning-bg-color-disabled: $orange-800 !default;
 $warning-border-color-disabled: $warning-bg-color-disabled !default;
 $warning-text-disabled: $black !default;
 
-// danger-button
 $danger-bg-color: $red-400 !default;
 $danger-border-color: $red-400 !default;
 $danger-text: $black !default;
@@ -281,7 +250,6 @@ $danger-bg-color-disabled: $red-800 !default;
 $danger-border-color-disabled: $danger-bg-color-disabled !default;
 $danger-text-disabled: $black !default;
 
-// Info-button
 $info-bg-color: $light-blue-500 !default;
 $info-border-color: $light-blue-500 !default;
 $info-text: $black !default;
@@ -298,13 +266,10 @@ $info-bg-color-disabled: $light-blue-800 !default;
 $info-border-color-disabled: $info-bg-color-disabled !default;
 $info-text-disabled: $info-text !default;
 
-// others
-$success-light:       $green-100 !default;
-$info-light:          $light-blue-100 !default;
-$warning-light:       $orange-100 !default;
-$danger-light:        $red-100 !default;
-
-// chart series
+$success-light: $green-100 !default;
+$info-light: $light-blue-100 !default;
+$warning-light: $orange-100 !default;
+$danger-light: $red-100 !default;
 
 $series-1: $cool-gray-700;
 $series-2: $cool-gray-600;
@@ -334,13 +299,9 @@ $spreadsheet-selection-4: #4caf51;
 $spreadsheet-selection-5: #fe9800;
 $spreadsheet-selection-6: #3f52b5;
 
-// Diagram Palette color
 $diagram-palette-background: $cool-gray-300 !default;
 $diagram-palette-hover-background: $cool-gray-400 !default;
 
-//Message component
-
-//Message Default
 $msg-color: $white !default;
 $msg-bg-color: $cool-gray-700 !default;
 $msg-border-color: $cool-gray-600 !default;
@@ -359,7 +320,6 @@ $msg-close-icon-color: $icon-color !default;
 $msg-close-icon-color-alt1: $icon-color !default;
 $msg-close-icon-color-alt2: $white !default;
 
-//Message Danger
 $msg-danger-color: $red-100 !default;
 $msg-danger-bg-color: $red-900 !default;
 $msg-danger-border-color: $red-800 !default;
@@ -378,7 +338,6 @@ $msg-danger-close-icon-color: $icon-color !default;
 $msg-danger-close-icon-color-alt1: $icon-color !default;
 $msg-danger-close-icon-color-alt2: $cool-gray-800 !default;
 
-//Message success
 $msg-success-color: $green-100 !default;
 $msg-success-bg-color: $green-900 !default;
 $msg-success-border-color: $green-800 !default;
@@ -397,7 +356,6 @@ $msg-success-close-icon-color: $icon-color !default;
 $msg-success-close-icon-color-alt1: $icon-color !default;
 $msg-success-close-icon-color-alt2: $cool-gray-800 !default;
 
-//Message warning
 $msg-warning-color: $orange-100 !default;
 $msg-warning-bg-color: $orange-900 !default;
 $msg-warning-border-color: $orange-800 !default;
@@ -416,7 +374,6 @@ $msg-warning-close-icon-color: $icon-color !default;
 $msg-warning-close-icon-color-alt1: $icon-color !default;
 $msg-warning-close-icon-color-alt2: $cool-gray-800 !default;
 
-//Message Info
 $msg-info-color: $cyan-100 !default;
 $msg-info-bg-color: $cyan-900 !default;
 $msg-info-border-color: $cyan-800 !default;
@@ -435,24 +392,19 @@ $msg-info-close-icon-color: $icon-color !default;
 $msg-info-close-icon-color-alt1: $icon-color !default;
 $msg-info-close-icon-color-alt2: $cool-gray-800 !default;
 
-//App bar
-//Light
 $appbar-bg-color-alt1: $cool-gray-700 !default;
 $appbar-color-alt1: $white !default;
 $appbar-border-color-alt1: $cool-gray-700 !default;
 $appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
 
-//Dark
 $appbar-bg-color-alt2: $cool-gray-200 !default;
 $appbar-color-alt2: $cool-gray-900 !default;
 $appbar-border-color-alt2: $cool-gray-200 !default;
 $appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
 
-//shadow
 $appbar-bottom-shadow: 0 1px 3px 0 rgba($black, .1), 0 1px 2px 0 rgba($black, .06) !default;
 $appbar-top-shadow: 0 -1px 3px 0 rgba($black, .1), 0 -1px 2px 0 rgba($black, .06) !default;
 
-//rating
 $rating-selected-color: $cool-gray-300 !default;
 $rating-unrated-color: $cool-gray-700 !default;
 $rating-selected-disabled-color: $cool-gray-500 !default;
@@ -461,7 +413,6 @@ $rating-selected-hover-color: $primary !default;
 $rating-unrated-hover-color: $cool-gray-400 !default;
 $rating-pressed-color: lighten($primary, 15%) !default;
 
-//font-icons
 $font-icon-8: 8px !default;
 $font-icon-9: 9px !default;
 $font-icon-10: 10px !default;
